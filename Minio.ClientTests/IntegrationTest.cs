@@ -39,7 +39,6 @@ namespace Minio.ClientTests
 
         private static readonly string bucket = "goroutine-dotnet";
         private static ObjectStorageClient client = ObjectStorageClient.GetClient("https://s3-us-west-2.amazonaws.com", "", "");
-
         /// <summary>
         ///Gets or sets the test context which provides
         ///information about and functionality for the current test run.
@@ -79,6 +78,7 @@ namespace Minio.ClientTests
         #endregion
 
         [TestMethod]
+        [ExpectedException(typeof(RequestException))]
         public void MakeBucket()
         {
             client.MakeBucket(bucket);

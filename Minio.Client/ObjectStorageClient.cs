@@ -114,7 +114,21 @@ namespace Minio.Client
                 return;
             }
 
+            ParseError(response);
+        }
+
+        private ErrorResponse ParseError(IRestResponse response)
+        {
+            Console.Out.WriteLine("response!");
             Console.Out.WriteLine(response.Content);
+            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+            var stream = new MemoryStream(contentBytes);
+            ErrorResponse errorResponse = (ErrorResponse)(new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream));
+            throw new RequestException()
+            {
+                Response = errorResponse,
+                XmlError = response.Content
+            };
         }
 
         public void MakeBucket(string bucket)
