@@ -1,0 +1,284 @@
+﻿/*
+ * Minimal Object Storage Library, (C) 2015 Minio, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+using RestSharp;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Minio.Client
+{
+    class V4Authenticator : IAuthenticator
+    {
+        private readonly string accessKey;
+        private readonly string secretKey;
+
+        public V4Authenticator(string accessKey, string secretKey)
+        {
+            this.accessKey = accessKey;
+            this.secretKey = secretKey;
+        }
+
+        public void Authenticate(IRestClient client, IRestRequest request)
+        {
+            DateTime signingDate = DateTime.UtcNow;
+            SetContentMd5(request);
+            SetContentSha256(request);
+            SetHostHeader(client, request);
+            SetDateHeader(request, signingDate);
+            SortedDictionary<string, string> headersToSign = GetHeadersToSign(request);
+            string signedHeaders = GetSignedHeaders(headersToSign);
+            string region = GetRegion();
+            string canonicalRequest = GetCanonicalRequest(client, request, headersToSign);
+            byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
+            string canonicalRequestHash = BytesToHex(ComputeSha256(canonicalRequestBytes));
+            string stringToSign = GetStringToSign(region, canonicalRequestHash, signingDate);
+            byte[] signingKey = GenerateSigningKey(region, signingDate);
+
+            byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(stringToSign);
+
+            byte[] signatureBytes = SignHmac(signingKey, stringToSignBytes);
+
+            string signature = BytesToHex(signatureBytes);
+
+            string authorization = GetAuthorizationHeader(signedHeaders, signature, signingDate, region);
+            request.AddHeader("Authorization", authorization);
+
+        }
+
+        private string GetAuthorizationHeader(string signedHeaders, string signature, DateTime signingDate, string region)
+        {
+            return "AWS4-HMAC-SHA256 Credential=" + this.accessKey + "/" + GetScope(region, signingDate) + 
+                ", SignedHeaders=" + signedHeaders + ", Signature=" + signature;
+        }
+
+        private string GetSignedHeaders(SortedDictionary<string, string> headersToSign)
+        {
+            return string.Join(";", headersToSign.Keys);
+        }
+
+        private byte[] GenerateSigningKey(string region, DateTime signingDate)
+        {
+            byte[] formattedDateBytes = System.Text.Encoding.UTF8.GetBytes(signingDate.ToString("yyyMMdd"));
+            byte[] formattedKeyBytes = System.Text.Encoding.UTF8.GetBytes("AWS4" + this.secretKey);
+            byte[] dateKey = SignHmac(formattedKeyBytes, formattedDateBytes);
+
+            byte[] regionBytes = System.Text.Encoding.UTF8.GetBytes(region);
+            byte[] dateRegionKey = SignHmac(dateKey, regionBytes);
+
+            byte[] serviceBytes = System.Text.Encoding.UTF8.GetBytes("s3");
+            byte[] dateRegionServiceKey = SignHmac(dateRegionKey, serviceBytes);
+
+            byte[] requestBytes = System.Text.Encoding.UTF8.GetBytes("aws4_request");
+            return SignHmac(dateRegionServiceKey, requestBytes);
+        }
+
+        private byte[] SignHmac(byte[] key, byte[] content)
+        {
+            HMACSHA256 hmac = new HMACSHA256(key);
+            hmac.Initialize();
+            return hmac.ComputeHash(content);
+        }
+
+        private string GetStringToSign(string region, string canonicalRequestHash, DateTime signingDate)
+        {
+            return "AWS4-HMAC-SHA256\n" +
+                signingDate.ToString("yyyyMMddThhmmssZ") + "\n" +
+                GetScope(region, signingDate) + "\n" +
+                canonicalRequestHash;
+        }
+
+        private string GetScope(string region, DateTime signingDate)
+        {
+            string formattedDate = signingDate.ToString("yyyyMMdd");
+            return formattedDate + "/" + region + "/s3/aws4_request";
+        }
+
+        private byte[] ComputeSha256(byte[] body)
+        {
+
+            SHA256 sha256 = System.Security.Cryptography.SHA256.Create();
+            return sha256.ComputeHash(body);
+        }
+
+        private string BytesToHex(byte[] body)
+        {
+            return BitConverter.ToString(body).Replace("-", string.Empty).ToLower();
+        }
+
+        private string GetCanonicalRequest(IRestClient client, IRestRequest request, SortedDictionary<string, string> headersToSign)
+        {
+            LinkedList<string> canonicalStringList = new LinkedList<string>();
+            // METHOD
+            canonicalStringList.AddLast(request.Method.ToString());
+
+            //// PATH
+            //var pathParameter = request.Parameters.Where(p => p.Type.Equals(ParameterType.UrlSegment)).FirstOrDefault();
+            //if (pathParameter == null)
+            //{
+            //    throw new NullReferenceException();
+            //}
+            //var path = pathParameter.Value.ToString();
+            string path = request.Resource;
+            if (!path.StartsWith("/"))
+            {
+                path = "/" + path;
+            }
+            canonicalStringList.AddLast(path);
+
+            // QUERY
+            var queryParameter = request.Parameters.Where(p => p.Type.Equals(ParameterType.QueryString)).FirstOrDefault();
+            var query = "";
+            if (queryParameter != null)
+            {
+                var parameterString = queryParameter.Value as string;
+                var parameterList = parameterString.Split('&');
+                SortedSet<string> sortedQueries = new SortedSet<string>();
+                foreach (string individualParameterString in parameterList)
+                {
+                    if (individualParameterString.Contains('='))
+                    {
+                        string[] splitQuery = individualParameterString.Split(new char[] { '=' }, 2);
+                        splitQuery[0] = WebUtility.UrlEncode(splitQuery[0]);
+                        splitQuery[1] = WebUtility.UrlEncode(splitQuery[1]);
+                        sortedQueries.Add(splitQuery[0] + "=" + splitQuery[1]);
+                    }
+                    else
+                    {
+                        sortedQueries.Add(individualParameterString + "=");
+                    }
+                }
+                query = string.Join("&", sortedQueries);
+            }
+            canonicalStringList.AddLast(query);
+
+            foreach (string header in headersToSign.Keys)
+            {
+                canonicalStringList.AddLast(header + ":" + headersToSign[header]);
+            }
+            canonicalStringList.AddLast("");
+            canonicalStringList.AddLast(string.Join(";", headersToSign.Keys));
+            if (headersToSign.Keys.Contains("x-amz-content-sha256"))
+            {
+                canonicalStringList.AddLast(headersToSign["x-amz-content-sha256"]);
+            }
+            else
+            {
+                canonicalStringList.AddLast("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+            }
+
+            return string.Join("\n", canonicalStringList);
+        }
+
+        private string GetCanonicalRequest(IRestRequest request)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void SetDateHeader(IRestRequest request, DateTime signingDate)
+        {
+            request.AddHeader("x-amz-date", signingDate.ToString("yyyyMMddThhmmssZ"));
+        }
+
+        private void SetHostHeader(IRestClient client, IRestRequest request)
+        {
+            request.AddHeader("Host", client.BaseUrl.Host + ":" + client.BaseUrl.Port);
+        }
+
+        private string GetRegion()
+        {
+            return "us-west-2";
+        }
+
+        private SortedDictionary<string, string> GetHeadersToSign(IRestRequest request)
+        {
+            var headers = request.Parameters.Where(p => p.Type.Equals(ParameterType.HttpHeader)).ToList();
+
+            SortedDictionary<string, string> sortedHeaders = new SortedDictionary<string, string>();
+            foreach (Parameter header in headers)
+            {
+                sortedHeaders.Add(header.Name.ToLower(), header.Value.ToString());
+            }
+            return sortedHeaders;
+        }
+
+        private void SetContentSha256(IRestRequest request)
+        {
+            if (request.Method == Method.PUT || request.Method.Equals(Method.POST))
+            {
+                var bodyParameter = request.Parameters.Where(p => p.Type.Equals(ParameterType.RequestBody)).FirstOrDefault();
+                if (bodyParameter == null)
+                {
+                    request.AddHeader("x-amz-content-sha256", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+                    return;
+                }
+                byte[] body = null;
+                if (bodyParameter.Value is string)
+                {
+                    body = System.Text.Encoding.UTF8.GetBytes(bodyParameter.Value as string);
+                }
+                if (bodyParameter.Value is byte[])
+                {
+                    body = bodyParameter.Value as byte[];
+                }
+                if (body == null)
+                {
+                    body = new byte[0];
+                }
+                SHA256 sha256 = System.Security.Cryptography.SHA256.Create();
+                byte[] hash = sha256.ComputeHash(body);
+                string hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
+                request.AddHeader("x-amz-content-sha256", hex);
+            }
+        }
+
+        private void SetContentMd5(IRestRequest request)
+        {
+            if (request.Method == Method.PUT || request.Method.Equals(Method.POST))
+            {
+                var bodyParameter = request.Parameters.Where(p => p.Type.Equals(ParameterType.RequestBody)).FirstOrDefault();
+                if (bodyParameter == null)
+                {
+                    return;
+                }
+                byte[] body = null;
+                if (bodyParameter.Value is string)
+                {
+                    Console.Out.WriteLine(bodyParameter.Value as string);
+                    body = System.Text.Encoding.UTF8.GetBytes(bodyParameter.Value as string);
+                }
+                if (bodyParameter.Value is byte[])
+                {
+                    body = bodyParameter.Value as byte[];
+                }
+                if (body == null)
+                {
+                    body = new byte[0];
+                }
+                MD5 md5 = System.Security.Cryptography.MD5.Create();
+                byte[] hash = md5.ComputeHash(body);
+
+                string base64 = Convert.ToBase64String(hash);
+                Console.Out.WriteLine(base64);
+                request.AddHeader("Content-MD5", base64);
+            }
+        }
+    }
+}
