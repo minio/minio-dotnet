@@ -52,6 +52,8 @@ namespace Minio.Client
             string stringToSign = GetStringToSign(region, canonicalRequestHash, signingDate);
             byte[] signingKey = GenerateSigningKey(region, signingDate);
 
+            Console.Out.WriteLine(canonicalRequest);
+
             byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(stringToSign);
 
             byte[] signatureBytes = SignHmac(signingKey, stringToSignBytes);
@@ -136,19 +138,18 @@ namespace Minio.Client
             //    throw new NullReferenceException();
             //}
             //var path = pathParameter.Value.ToString();
-            string path = request.Resource;
-            if (!path.StartsWith("/"))
+            string[] path = request.Resource.Split(new char[] {'?'}, 2);
+            if (!path[0].StartsWith("/"))
             {
-                path = "/" + path;
+                path[0] = "/" + path[0];
             }
-            canonicalStringList.AddLast(path);
+            canonicalStringList.AddLast(path[0]);
 
+            string query = "";
             // QUERY
-            var queryParameter = request.Parameters.Where(p => p.Type.Equals(ParameterType.QueryString)).FirstOrDefault();
-            var query = "";
-            if (queryParameter != null)
+            if (path.Length == 2)
             {
-                var parameterString = queryParameter.Value as string;
+                var parameterString = path[1];
                 var parameterList = parameterString.Split('&');
                 SortedSet<string> sortedQueries = new SortedSet<string>();
                 foreach (string individualParameterString in parameterList)
