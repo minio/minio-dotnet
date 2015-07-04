@@ -114,7 +114,7 @@ namespace Minio.Client
                 return;
             }
 
-            ParseError(response);
+            throw ParseError(response);
         }
 
         public void MakeBucket(string bucket)
@@ -154,7 +154,6 @@ namespace Minio.Client
             var request = new RestRequest("/", Method.GET);
             var response = client.Execute(request);
 
-            Console.Out.WriteLine(response.Content);
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
@@ -162,9 +161,7 @@ namespace Minio.Client
                 ListAllMyBucketsResult bucketList = (ListAllMyBucketsResult)(new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream));
                 return bucketList;
             }
-
-            // TODO throw proper exception
-            throw new NotImplementedException();
+            throw ParseError(response);
         }
 
         public Stream GetObject(string bucket, string key)
@@ -226,12 +223,12 @@ namespace Minio.Client
             throw new NotImplementedException();
         }
 
-        private ErrorResponse ParseError(IRestResponse response)
+        private RequestException ParseError(IRestResponse response)
         {
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
             ErrorResponse errorResponse = (ErrorResponse)(new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream));
-            throw new RequestException()
+            return new RequestException()
             {
                 Response = errorResponse,
                 XmlError = response.Content

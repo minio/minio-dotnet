@@ -94,5 +94,19 @@ namespace Minio.ClientTests
                 Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDate);
             }
         }
+
+        [TestMethod]
+        public void BucketExists()
+        {
+            bool exists = client.BucketExists(bucket);
+            Assert.IsTrue(exists);
+        }
+
+        [TestMethod]
+        public void BucketExistsNonExistantBucket()
+        {
+            bool exists = client.BucketExists(bucket + "-missing");
+            Assert.IsFalse(exists);
+        }
     }
 }
