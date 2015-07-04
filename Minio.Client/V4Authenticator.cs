@@ -100,7 +100,7 @@ namespace Minio.Client
         private string GetStringToSign(string region, string canonicalRequestHash, DateTime signingDate)
         {
             return "AWS4-HMAC-SHA256\n" +
-                signingDate.ToString("yyyyMMddThhmmssZ") + "\n" +
+                signingDate.ToString("yyyyMMddTHHmmssZ") + "\n" +
                 GetScope(region, signingDate) + "\n" +
                 canonicalRequestHash;
         }
@@ -194,7 +194,7 @@ namespace Minio.Client
 
         private void SetDateHeader(IRestRequest request, DateTime signingDate)
         {
-            request.AddHeader("x-amz-date", signingDate.ToString("yyyyMMddThhmmssZ"));
+            request.AddHeader("x-amz-date", signingDate.ToString("yyyyMMddTHHmmssZ"));
         }
 
         private void SetHostHeader(IRestClient client, IRestRequest request)
@@ -246,6 +246,10 @@ namespace Minio.Client
                 byte[] hash = sha256.ComputeHash(body);
                 string hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
                 request.AddHeader("x-amz-content-sha256", hex);
+            }
+            else
+            {
+                request.AddHeader("x-amz-content-sha256", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
             }
         }
 

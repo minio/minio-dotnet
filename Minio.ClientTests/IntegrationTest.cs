@@ -19,6 +19,7 @@ using System.Text;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Client;
+using Minio.Client.xml;
 
 namespace Minio.ClientTests
 {
@@ -82,6 +83,16 @@ namespace Minio.ClientTests
         public void MakeBucket()
         {
             client.MakeBucket(bucket);
+        }
+
+        [TestMethod]
+        public void ListBuckets()
+        {
+            var buckets = client.ListBuckets();
+            foreach (Bucket bucket in buckets.Buckets)
+            {
+                Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDate);
+            }
         }
     }
 }

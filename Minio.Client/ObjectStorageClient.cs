@@ -117,20 +117,6 @@ namespace Minio.Client
             ParseError(response);
         }
 
-        private ErrorResponse ParseError(IRestResponse response)
-        {
-            Console.Out.WriteLine("response!");
-            Console.Out.WriteLine(response.Content);
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-            var stream = new MemoryStream(contentBytes);
-            ErrorResponse errorResponse = (ErrorResponse)(new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream));
-            throw new RequestException()
-            {
-                Response = errorResponse,
-                XmlError = response.Content
-            };
-        }
-
         public void MakeBucket(string bucket)
         {
             this.MakeBucket(bucket, Acl.Private);
@@ -163,14 +149,18 @@ namespace Minio.Client
             var response = client.Execute(request);
         }
 
-        public void ListBuckets()
+        public ListAllMyBucketsResult ListBuckets()
         {
             var request = new RestRequest("/", Method.GET);
             var response = client.Execute(request);
 
+            Console.Out.WriteLine(response.Content);
             if (response.StatusCode == HttpStatusCode.OK)
             {
-                // TODO parse
+                var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+                var stream = new MemoryStream(contentBytes);
+                ListAllMyBucketsResult bucketList = (ListAllMyBucketsResult)(new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream));
+                return bucketList;
             }
 
             // TODO throw proper exception
@@ -234,6 +224,18 @@ namespace Minio.Client
                 return new ObjectStat(key, size, lastModified, etag);
             }
             throw new NotImplementedException();
+        }
+
+        private ErrorResponse ParseError(IRestResponse response)
+        {
+            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+            var stream = new MemoryStream(contentBytes);
+            ErrorResponse errorResponse = (ErrorResponse)(new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream));
+            throw new RequestException()
+            {
+                Response = errorResponse,
+                XmlError = response.Content
+            };
         }
 
     }
