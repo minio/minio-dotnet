@@ -128,5 +128,27 @@ namespace Minio.ClientTests
             acl = client.GetBucketAcl(bucket);
             Assert.AreEqual(Acl.Private, acl);
         }
+
+        [TestMethod]
+        public void RemoveBucket()
+        {
+            string bucketToDelete = bucket + "-delme";
+
+            try
+            {
+                client.RemoveBucket(bucketToDelete);
+            }
+            catch (RequestException ex)
+            {
+                Console.Out.WriteLine(ex);
+            }
+
+
+            client.MakeBucket(bucketToDelete);
+            Assert.IsTrue(client.BucketExists(bucketToDelete));
+
+            client.RemoveBucket(bucketToDelete);
+            Assert.IsFalse(client.BucketExists(bucketToDelete));
+        }
     }
 }

@@ -110,7 +110,7 @@ namespace Minio.Client
             request.AddBody(config);
 
             var response = client.Execute(request);
-            if (response.StatusCode == HttpStatusCode.NoContent)
+            if (response.StatusCode == HttpStatusCode.OK)
             {
                 return;
             }
@@ -126,15 +126,17 @@ namespace Minio.Client
         public void RemoveBucket(string bucket)
         {
             var request = new RestRequest(bucket, Method.DELETE);
-            client.Execute(request);
+            var response = client.Execute(request);
+
+            if(!response.StatusCode.Equals(HttpStatusCode.NoContent)) {
+                throw ParseError(response);
+            }
         }
 
         public Acl GetBucketAcl(string bucket)
         {
             var request = new RestRequest(bucket + "?acl", Method.GET);
             var response = client.Execute(request);
-
-
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
@@ -258,11 +260,13 @@ namespace Minio.Client
 
                 return new ObjectStat(key, size, lastModified, etag);
             }
-            throw new NotImplementedException();
+            throw ParseError(response);
         }
 
         private RequestException ParseError(IRestResponse response)
         {
+            Console.Out.WriteLine(response.StatusCode + " " + response.StatusDescription);
+            Console.Out.WriteLine(response.Content);
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
             ErrorResponse errorResponse = (ErrorResponse)(new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream));
