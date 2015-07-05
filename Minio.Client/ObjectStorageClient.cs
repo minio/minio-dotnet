@@ -25,6 +25,7 @@ using System.IO;
 using Minio.Client.xml;
 using System.Xml.Serialization;
 using System.Security.Cryptography;
+using System.Xml.Linq;
 
 namespace Minio.Client
 {
@@ -128,17 +129,54 @@ namespace Minio.Client
             client.Execute(request);
         }
 
-        public void GetBucketAcl(string bucket)
+        public Acl GetBucketAcl(string bucket)
         {
             var request = new RestRequest(bucket + "?acl", Method.GET);
             var response = client.Execute(request);
 
+
+
             if (response.StatusCode == HttpStatusCode.OK)
             {
-                // TODO parse
+                var content = StripXmlnsXsi(response.Content);
+                Console.Out.WriteLine(content);
+                var contentBytes = System.Text.Encoding.UTF8.GetBytes(content);
+                var stream = new MemoryStream(contentBytes);
+                AccessControlPolicy bucketList = (AccessControlPolicy)(new XmlSerializer(typeof(AccessControlPolicy)).Deserialize(stream));
+
+                bool publicRead = false;
+                bool publicWrite = false;
+                bool authenticatedRead = false;
+                foreach (var x in bucketList.Grants)
+                {
+                    if ("http://acs.amazonaws.com/groups/global/AllUsers".Equals(x.Grantee.URI) && x.Permission.Equals("READ"))
+                    {
+                        publicRead = true;
+                    }
+                    if ("http://acs.amazonaws.com/groups/global/AllUsers".Equals(x.Grantee.URI) && x.Permission.Equals("WRITE"))
+                    {
+                        publicWrite = true;
+                    }
+                    if ("http://acs.amazonaws.com/groups/global/AuthenticatedUsers".Equals(x.Grantee.URI) && x.Permission.Equals("READ"))
+                    {
+                        authenticatedRead = true;
+                    }
+                }
+                if (publicRead && publicWrite && !authenticatedRead)
+                {
+                    return Acl.PublicReadWrite;
+                }
+                if (publicRead && !publicWrite && !authenticatedRead)
+                {
+                    return Acl.PublicRead;
+                }
+                if (!publicRead && !publicWrite && authenticatedRead)
+                {
+                    return Acl.AuthenticatedRead;
+                }
+                return Acl.Private;
             }
-            // TODO work out what error to throw
-            throw new NotImplementedException();
+            throw ParseError(response);
         }
 
         public void SetBucketAcl(string bucket, Acl acl)
@@ -235,5 +273,11 @@ namespace Minio.Client
             };
         }
 
+        private string StripXmlnsXsi(string input)
+        {
+            string result = input.Replace("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"CanonicalUser\"", "");
+            result = result.Replace("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"Group\"", "");
+            return result;
+        }
     }
 }

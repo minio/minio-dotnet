@@ -20,24 +20,15 @@ using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 
-namespace Minio.Client
+namespace Minio.Client.xml
 {
     [Serializable]
-    [XmlRoot(ElementName="Error", Namespace = "")]
-     public class ErrorResponse
-     {
-        [XmlAttribute]
-         public string Code { get; set; }
-        [XmlAttribute]
-         public string Message { get; set; }
-        [XmlAttribute]
-         public string RequestID { get; set; }
-        [XmlAttribute]
-         public string HostID { get; set; }
-        [XmlAttribute]
-         public string Resource { get; set; }
-        
-        // not an attribute, we fix it up later
-         public string XAmzID2 { get; set; }
+    [XmlInclude(typeof(GranteeUser))]
+    public class Grant
+    {
+        public string Permission { get; set; }
+
+        [XmlElement]
+        public GranteeUser Grantee;
     }
 }

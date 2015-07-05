@@ -108,5 +108,25 @@ namespace Minio.ClientTests
             bool exists = client.BucketExists(bucket + "-missing");
             Assert.IsFalse(exists);
         }
+
+        [TestMethod]
+        public void GetAndSetBucketAcl()
+        {
+            client.SetBucketAcl(bucket, Acl.PublicRead);
+            Acl acl = client.GetBucketAcl(bucket);
+            Assert.AreEqual(Acl.PublicRead, acl);
+
+            client.SetBucketAcl(bucket, Acl.PublicReadWrite);
+            acl = client.GetBucketAcl(bucket);
+            Assert.AreEqual(Acl.PublicReadWrite, acl);
+
+            client.SetBucketAcl(bucket, Acl.AuthenticatedRead);
+            acl = client.GetBucketAcl(bucket);
+            Assert.AreEqual(Acl.AuthenticatedRead, acl);
+
+            client.SetBucketAcl(bucket, Acl.Private);
+            acl = client.GetBucketAcl(bucket);
+            Assert.AreEqual(Acl.Private, acl);
+        }
     }
 }
