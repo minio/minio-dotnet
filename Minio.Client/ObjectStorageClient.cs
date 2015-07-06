@@ -26,6 +26,7 @@ using Minio.Client.xml;
 using System.Xml.Serialization;
 using System.Security.Cryptography;
 using System.Xml.Linq;
+using System.Collections;
 
 namespace Minio.Client
 {
@@ -322,6 +323,61 @@ namespace Minio.Client
             string result = input.Replace("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"CanonicalUser\"", "");
             result = result.Replace("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"Group\"", "");
             return result;
+        }
+
+        public IEnumerable<Item> ListObjects(string bucket)
+        {
+            bool isRunning = true;
+
+            string marker = null;
+
+            while (isRunning)
+            {
+                Tuple<ListBucketResult, List<Item>> result = GetObjectList(bucket, marker, true);
+                foreach (Item item in result.Item2)
+                {
+                    yield return item;
+                }
+                marker = result.Item1.NextMarker;
+                isRunning = result.Item1.IsTruncated;
+            }
+        }
+
+        private Tuple<ListBucketResult, List<Item>> GetObjectList(string bucket, string prefix, bool recursive)
+        {
+            var queries = new List<string>();
+            if (!recursive)
+            {
+                queries.Add("delim=/");
+            }
+            if (prefix != null)
+            {
+                queries.Add("prefix=" + WebUtility.UrlEncode(prefix));
+            }
+            string path = bucket;
+            var request = new RestRequest(path, Method.GET);
+            var response = client.Execute(request);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+                var stream = new MemoryStream(contentBytes);
+                ListBucketResult listBucketResult = (ListBucketResult)(new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream));
+
+                XDocument root = XDocument.Parse(response.Content);
+
+                var query = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
+                             select new Item()
+                             {
+                                 Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
+                                 LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
+                                 ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value,
+                                 Size = UInt64.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value)
+                             });
+
+                return new Tuple<ListBucketResult, List<Item>>(listBucketResult, query.ToList());
+            }
+            throw ParseError(response);
         }
     }
 }

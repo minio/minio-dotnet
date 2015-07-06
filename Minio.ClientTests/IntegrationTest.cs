@@ -195,5 +195,16 @@ namespace Minio.ClientTests
             byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");
             client.PutObject(bucket, "smallobj", 11, "application/octet-stream", new MemoryStream(data));
         }
+
+        [TestMethod]
+        public void ListObjects()
+        {
+            var items = client.ListObjects(bucket);
+
+            foreach (Item item in items)
+            {
+                Console.Out.WriteLine("{0} {1} {2} {3}", item.Key, item.LastModified, item.Size, item.ETag);
+            }
+        }
     }
 }

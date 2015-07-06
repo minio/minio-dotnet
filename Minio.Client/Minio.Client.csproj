@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Acl.cs" />
+    <Compile Include="ItemEnumerable.cs" />
     <Compile Include="RequestException.cs" />
     <Compile Include="xml\AccessControlPolicy.cs" />
     <Compile Include="xml\Bucket.cs" />
@@ -55,7 +56,10 @@
     <Compile Include="xml\CreateBucketConfiguration.cs" />
     <Compile Include="xml\Grant.cs" />
     <Compile Include="xml\GranteeUser.cs" />
+    <Compile Include="xml\Item.cs" />
     <Compile Include="xml\ListAllMyBucketsResult.cs" />
+    <Compile Include="xml\ListBucketResult.cs" />
+    <Compile Include="xml\Prefix.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
