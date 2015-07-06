@@ -197,9 +197,39 @@ namespace Minio.ClientTests
         }
 
         [TestMethod]
+        public void PutDirObject()
+        {
+            byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");
+            client.PutObject(bucket, "dir/one", 11, "application/octet-stream", new MemoryStream(data));
+            client.PutObject(bucket, "dir/two", 11, "application/octet-stream", new MemoryStream(data));
+        }
+
+        [TestMethod]
         public void ListObjects()
         {
             var items = client.ListObjects(bucket);
+
+            foreach (Item item in items)
+            {
+                Console.Out.WriteLine("{0} {1} {2} {3}", item.Key, item.LastModified, item.Size, item.ETag);
+            }
+        }
+
+        [TestMethod]
+        public void ListObjectsWithPrefix()
+        {
+            var items = client.ListObjects(bucket, "dir");
+
+            foreach (Item item in items)
+            {
+                Console.Out.WriteLine("{0} {1} {2} {3}", item.Key, item.LastModified, item.Size, item.ETag);
+            }
+        }
+
+        [TestMethod]
+        public void ListObjectsWithPrefixAndNoRecursive()
+        {
+            var items = client.ListObjects(bucket, null, false);
 
             foreach (Item item in items)
             {

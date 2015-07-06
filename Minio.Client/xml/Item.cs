@@ -13,5 +13,7 @@ namespace Minio.Client.xml
         public string LastModified { get; set; }
         public string ETag { get; set; }
         public UInt64 Size { get; set; }
+
+        public bool IsDir { get; set; }
     }
 }

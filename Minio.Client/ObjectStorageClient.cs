@@ -40,7 +40,7 @@ namespace Minio.Client
         internal ObjectStorageClient(Uri uri, string accessKey, string secretKey)
         {
             this.client = new RestClient(uri);
-            this.client.UserAgent =  "minio-cs/0.0.1 (Windows 8.1; x86_64)";
+            this.client.UserAgent = "minio-cs/0.0.1 (Windows 8.1; x86_64)";
             this.region = "us-west-2";
             if (accessKey != null && secretKey != null)
             {
@@ -129,7 +129,8 @@ namespace Minio.Client
             var request = new RestRequest(bucket, Method.DELETE);
             var response = client.Execute(request);
 
-            if(!response.StatusCode.Equals(HttpStatusCode.NoContent)) {
+            if (!response.StatusCode.Equals(HttpStatusCode.NoContent))
+            {
                 throw ParseError(response);
             }
         }
@@ -221,7 +222,7 @@ namespace Minio.Client
         {
             var stat = this.StatObject(bucket, key);
             RestRequest request = new RestRequest(bucket + "/" + key, Method.GET);
-            request.AddHeader("Range", "bytes=" + offset + "-" + (stat.Size-1));
+            request.AddHeader("Range", "bytes=" + offset + "-" + (stat.Size - 1));
             request.ResponseWriter = writer;
             client.Execute(request);
             // response status code is 0, bug in upstream library, cannot rely on it for errors with PartialContent
@@ -246,8 +247,10 @@ namespace Minio.Client
                 UInt64 size = 0;
                 DateTime lastModified = new DateTime();
                 string etag = "";
-                foreach (Parameter parameter in response.Headers) {
-                    if(parameter.Name == "Content-Length") {
+                foreach (Parameter parameter in response.Headers)
+                {
+                    if (parameter.Name == "Content-Length")
+                    {
                         size = UInt64.Parse(parameter.Value.ToString());
                     }
                     if (parameter.Name == "Last-Modified")
@@ -327,13 +330,23 @@ namespace Minio.Client
 
         public IEnumerable<Item> ListObjects(string bucket)
         {
+            return this.ListObjects(bucket, null, true);
+        }
+
+        public IEnumerable<Item> ListObjects(string bucket, string prefix)
+        {
+            return this.ListObjects(bucket, prefix, true);
+        }
+
+        public IEnumerable<Item> ListObjects(string bucket, string prefix, bool recursive)
+        {
             bool isRunning = true;
 
             string marker = null;
 
             while (isRunning)
             {
-                Tuple<ListBucketResult, List<Item>> result = GetObjectList(bucket, marker, true);
+                Tuple<ListBucketResult, List<Item>> result = GetObjectList(bucket, prefix, recursive, marker);
                 foreach (Item item in result.Item2)
                 {
                     yield return item;
@@ -343,18 +356,28 @@ namespace Minio.Client
             }
         }
 
-        private Tuple<ListBucketResult, List<Item>> GetObjectList(string bucket, string prefix, bool recursive)
+        private Tuple<ListBucketResult, List<Item>> GetObjectList(string bucket, string prefix, bool recursive, string marker)
         {
             var queries = new List<string>();
             if (!recursive)
             {
-                queries.Add("delim=/");
+                queries.Add("delimiter=/");
             }
             if (prefix != null)
             {
-                queries.Add("prefix=" + WebUtility.UrlEncode(prefix));
+                queries.Add("prefix=" + prefix);
             }
+            if (marker != null)
+            {
+                queries.Add("marker=" + marker);
+            }
+            string query = string.Join("&", queries);
+
             string path = bucket;
+            if (query.Length > 0)
+            {
+                path += "?" + query;
+            }
             var request = new RestRequest(path, Method.GET);
             var response = client.Execute(request);
 
@@ -366,16 +389,28 @@ namespace Minio.Client
 
                 XDocument root = XDocument.Parse(response.Content);
 
-                var query = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
+                Console.Out.WriteLine(root);
+
+                var items = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
                              select new Item()
                              {
                                  Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
                                  LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
                                  ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value,
-                                 Size = UInt64.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value)
+                                 Size = UInt64.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value),
+                                 IsDir = false
                              });
 
-                return new Tuple<ListBucketResult, List<Item>>(listBucketResult, query.ToList());
+                var prefixes = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}CommonPrefixes")
+                                select new Item()
+                                {
+                                    Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Prefix").Value,
+                                    IsDir = true
+                                });
+
+                items = items.Concat(prefixes);
+
+                return new Tuple<ListBucketResult, List<Item>>(listBucketResult, items.ToList());
             }
             throw ParseError(response);
         }
