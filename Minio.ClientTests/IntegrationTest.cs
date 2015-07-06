@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Client;
 using Minio.Client.xml;
+using System.IO;
 
 namespace Minio.ClientTests
 {
@@ -149,6 +150,43 @@ namespace Minio.ClientTests
 
             client.RemoveBucket(bucketToDelete);
             Assert.IsFalse(client.BucketExists(bucketToDelete));
+        }
+
+        [TestMethod]
+        public void GetObject()
+        {
+            client.GetObject(bucket, "hello_world", (stream) =>
+            {
+                byte[] buffer = new byte[11];
+                stream.Read(buffer, 0, 11);
+                Assert.AreEqual("hello world", System.Text.Encoding.UTF8.GetString(buffer));
+            });
+        }
+
+        [TestMethod]
+        public void GetObjectWithOffset()
+        {
+            client.GetObject(bucket, "hello_world", 2, (stream) =>
+            {
+                byte[] buffer = new byte[(int)stream.Length];
+                stream.Read(buffer, 0, buffer.Length);
+                string result = System.Text.Encoding.UTF8.GetString(buffer);
+                Console.Out.WriteLine(result);
+                Assert.AreEqual("llo world", result);
+            });
+        }
+
+        [TestMethod]
+        public void GetObjectWithOffsetAndLength()
+        {
+            client.GetObject(bucket, "hello_world", 2, 5, (stream) =>
+            {
+                byte[] buffer = new byte[(int)stream.Length];
+                stream.Read(buffer, 0, buffer.Length);
+                string result = System.Text.Encoding.UTF8.GetString(buffer);
+                Console.Out.WriteLine(result);
+                Assert.AreEqual("llo w", result);
+            });
         }
     }
 }

@@ -204,33 +204,36 @@ namespace Minio.Client
             throw ParseError(response);
         }
 
-        public Stream GetObject(string bucket, string key)
+        public void GetObject(string bucket, string key, Action<Stream> writer)
         {
-            MemoryStream stream = new MemoryStream();
-            var request = new RestRequest(bucket + "/ " + key, Method.GET);
-            request.ResponseWriter(stream);
+            RestRequest request = new RestRequest(bucket + "/" + key, Method.GET);
+            request.ResponseWriter = writer;
             var response = client.Execute(request);
-            return stream;
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                return;
+            }
+            throw ParseError(response);
         }
 
-        public Stream GetObject(string bucket, string key, UInt64 offset)
+        public void GetObject(string bucket, string key, ulong offset, Action<Stream> writer)
         {
-            MemoryStream stream = new MemoryStream();
-            var request = new RestRequest(bucket + "/ " + key, Method.GET);
-            request.AddHeader("Range", "bytes=" + offset + "-");
-            request.ResponseWriter(stream);
-            var response = client.Execute(request);
-            return stream;
+            var stat = this.StatObject(bucket, key);
+            RestRequest request = new RestRequest(bucket + "/" + key, Method.GET);
+            request.AddHeader("Range", "bytes=" + offset + "-" + (stat.Size-1));
+            request.ResponseWriter = writer;
+            client.Execute(request);
+            // response status code is 0, bug in upstream library, cannot rely on it for errors with PartialContent
         }
 
-        public Stream GetObject(string bucket, string key, UInt64 offset, UInt64 length)
+        public void GetObject(string bucket, string key, ulong offset, ulong length, Action<Stream> writer)
         {
-            MemoryStream stream = new MemoryStream();
-            var request = new RestRequest(bucket + "/ " + key, Method.GET);
+            var stat = this.StatObject(bucket, key);
+            RestRequest request = new RestRequest(bucket + "/" + key, Method.GET);
             request.AddHeader("Range", "bytes=" + offset + "-" + (offset + length - 1));
-            request.ResponseWriter(stream);
-            var response = client.Execute(request);
-            return stream;
+            request.ResponseWriter = writer;
+            client.Execute(request);
+            // response status code is 0, bug in upstream library, cannot rely on it for errors with PartialContent
         }
 
         public ObjectStat StatObject(string bucket, string key)
@@ -265,8 +268,10 @@ namespace Minio.Client
 
         private RequestException ParseError(IRestResponse response)
         {
-            Console.Out.WriteLine(response.StatusCode + " " + response.StatusDescription);
+            Console.Out.WriteLine("Status: " + response.StatusCode + " " + response.StatusDescription);
+            Console.Out.WriteLine("Output:");
             Console.Out.WriteLine(response.Content);
+            Console.Out.WriteLine("---");
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
             ErrorResponse errorResponse = (ErrorResponse)(new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream));
