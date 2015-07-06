@@ -188,5 +188,12 @@ namespace Minio.ClientTests
                 Assert.AreEqual("llo w", result);
             });
         }
+
+        [TestMethod]
+        public void PutSmallObject()
+        {
+            byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");
+            client.PutObject(bucket, "smallobj", 11, "application/octet-stream", new MemoryStream(data));
+        }
     }
 }

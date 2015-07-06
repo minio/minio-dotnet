@@ -266,6 +266,42 @@ namespace Minio.Client
             throw ParseError(response);
         }
 
+        public void PutObject(string bucket, string key, UInt64 size, string contentType, Stream data)
+        {
+            if (size <= (UInt64)(ObjectStorageClient.PART_SIZE))
+            {
+                var stream = new MemoryStream(new byte[(int)size]);
+                data.CopyTo(stream, (int)size);
+                var bytes = stream.ToArray();
+                this.DoPutObject(bucket, key, null, null, contentType, bytes);
+            }
+        }
+
+        private string DoPutObject(string bucket, string key, string uploadId, string partNumber, string contentType, byte[] data)
+        {
+            var request = new RestRequest(bucket + "/" + key, Method.PUT);
+            if (contentType == null)
+            {
+                contentType = "application/octet-stream";
+            }
+            request.AddHeader("Content-Type", contentType);
+            request.AddParameter(contentType, data, RestSharp.ParameterType.RequestBody);
+            var response = client.Execute(request);
+            if (response.StatusCode.Equals(HttpStatusCode.OK))
+            {
+                string etag = null;
+                foreach (Parameter parameter in response.Headers)
+                {
+                    if (parameter.Name == "ETag")
+                    {
+                        etag = parameter.Value.ToString();
+                    }
+                }
+                return etag;
+            }
+            throw ParseError(response);
+        }
+
         private RequestException ParseError(IRestResponse response)
         {
             Console.Out.WriteLine("Status: " + response.StatusCode + " " + response.StatusDescription);
