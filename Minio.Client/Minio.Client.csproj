@@ -59,7 +59,9 @@
     <Compile Include="xml\Item.cs" />
     <Compile Include="xml\ListAllMyBucketsResult.cs" />
     <Compile Include="xml\ListBucketResult.cs" />
+    <Compile Include="xml\ListMultipartUploadsResult.cs" />
     <Compile Include="xml\Prefix.cs" />
+    <Compile Include="xml\Upload.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

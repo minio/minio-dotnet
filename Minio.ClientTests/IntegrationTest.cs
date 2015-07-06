@@ -236,5 +236,16 @@ namespace Minio.ClientTests
                 Console.Out.WriteLine("{0} {1} {2} {3}", item.Key, item.LastModified, item.Size, item.ETag);
             }
         }
+
+        [TestMethod]
+        public void ListUnfinishedUploads()
+        {
+            var uploads = client.ListUnfinishedUploads(bucket);
+
+            foreach (Upload upload in uploads)
+            {
+                Console.Out.WriteLine(upload.Key + " " + upload.Initiated + " " + upload.UploadId);
+            }
+        }
     }
 }

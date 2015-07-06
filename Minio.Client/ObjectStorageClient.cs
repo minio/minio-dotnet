@@ -414,5 +414,75 @@ namespace Minio.Client
             }
             throw ParseError(response);
         }
+
+        public Tuple<ListMultipartUploadsResult, List<Upload>> GetMultipartUploadsList(string bucket, string prefix, string keyMarker, string uploadIdMarker)
+        {
+            var queries = new List<string>();
+            queries.Add("uploads");
+            if (prefix != null)
+            {
+                queries.Add("prefix=" + prefix);
+            }
+            if (keyMarker != null)
+            {
+                queries.Add("key-marker=" + keyMarker);
+            }
+            if (uploadIdMarker != null)
+            {
+                queries.Add("upload-id-marker=" + uploadIdMarker);
+            }
+
+            string query = string.Join("&", queries);
+            string path = bucket;
+            path += "?" + query;
+
+            var request = new RestRequest(path, Method.GET);
+            var response = client.Execute(request);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+                var stream = new MemoryStream(contentBytes);
+                ListMultipartUploadsResult listBucketResult = (ListMultipartUploadsResult)(new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(stream));
+
+                XDocument root = XDocument.Parse(response.Content);
+
+                Console.Out.WriteLine(root);
+
+                var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
+                             select new Upload()
+                             {
+                                 Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
+                                 UploadId = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}UploadId").Value,
+                                 Initiated = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Initiated").Value
+                             });
+
+                return new Tuple<ListMultipartUploadsResult, List<Upload>>(listBucketResult, uploads.ToList());
+            }
+            throw ParseError(response);
+        }
+
+        public IEnumerable<Upload> ListUnfinishedUploads(string bucket)
+        {
+            return this.ListUnfinishedUploads(bucket, null);
+        }
+
+        public IEnumerable<Upload> ListUnfinishedUploads(string bucket, string prefix)
+        {
+            string nextKeyMarker = null;
+            string nextUploadIdMarker = null;
+            bool isRunning = true;
+            while (isRunning)
+            {
+                var uploads = GetMultipartUploadsList(bucket, prefix, nextKeyMarker, nextUploadIdMarker);
+                foreach (Upload upload in uploads.Item2)
+                {
+                    yield return upload;
+                }
+                nextKeyMarker = uploads.Item1.NextKeyMarker;
+                nextUploadIdMarker = uploads.Item1.NextUploadIdMarker;
+                isRunning = uploads.Item1.IsTruncated;
+            }
+        }
     }
 }
