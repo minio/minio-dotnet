@@ -56,10 +56,13 @@
     <Compile Include="xml\CreateBucketConfiguration.cs" />
     <Compile Include="xml\Grant.cs" />
     <Compile Include="xml\GranteeUser.cs" />
+    <Compile Include="xml\InitiateMultipartUploadResult.cs" />
     <Compile Include="xml\Item.cs" />
     <Compile Include="xml\ListAllMyBucketsResult.cs" />
     <Compile Include="xml\ListBucketResult.cs" />
     <Compile Include="xml\ListMultipartUploadsResult.cs" />
+    <Compile Include="xml\ListPartsResult.cs" />
+    <Compile Include="xml\Part.cs" />
     <Compile Include="xml\Prefix.cs" />
     <Compile Include="xml\Upload.cs" />
   </ItemGroup>
