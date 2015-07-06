@@ -228,7 +228,6 @@ namespace Minio.Client
 
         public void GetObject(string bucket, string key, ulong offset, ulong length, Action<Stream> writer)
         {
-            var stat = this.StatObject(bucket, key);
             RestRequest request = new RestRequest(bucket + "/" + key, Method.GET);
             request.AddHeader("Range", "bytes=" + offset + "-" + (offset + length - 1));
             request.ResponseWriter = writer;
