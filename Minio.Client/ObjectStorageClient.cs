@@ -318,6 +318,18 @@ namespace Minio.Client
                     totalWritten += (UInt64)dataToCopy.Length;
                 }
 
+                // test if any more data is on the stream
+                if (data.ReadByte() != -1)
+                {
+                    throw new InputSizeMismatchError()
+                    {
+                        Bucket = bucket,
+                        Key = key,
+                        UserSpecifiedSize = size,
+                        ActualReadSize = totalWritten+1
+                    };
+                }
+
                 if (totalWritten != size)
                 {
                     throw new InputSizeMismatchError()

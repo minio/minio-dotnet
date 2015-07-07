@@ -208,6 +208,57 @@ namespace Minio.ClientTests
         }
 
         [TestMethod]
+        public void PutLargeObjectResume() {
+            byte[] data = new byte[9 * 1024 * 1024];
+            for (int i = 0; i < 9 * 1024 * 1024; i++)
+            {
+                data[i] = (byte)'a';
+            }
+            try
+            {
+                client.PutObject(bucket, "largeobj", 11 * 1024 * 1024, "application/octet-stream", new MemoryStream(data));
+                Assert.Fail("Should throw mismatch error");
+            }
+            catch (InputSizeMismatchError err)
+            {
+                // do nothing
+            }
+
+            data = new byte[11 * 1024 * 1024];
+            for (int i = 0; i < 11 * 1024 * 1024; i++)
+            {
+                data[i] = (byte)'a';
+            }
+            client.PutObject(bucket, "largeobj", 11 * 1024 * 1024, "application/octet-stream", new MemoryStream(data));
+        }
+
+        [TestMethod]
+        public void PutLargeObjectDataTooLarge()
+        {
+            byte[] data = new byte[16 * 1024 * 1024];
+            for (int i = 0; i < 16 * 1024 * 1024; i++)
+            {
+                data[i] = (byte)'a';
+            }
+            try
+            {
+                client.PutObject(bucket, "largeobj", 11 * 1024 * 1024, "application/octet-stream", new MemoryStream(data));
+                Assert.Fail("Should throw mismatch error");
+            }
+            catch (InputSizeMismatchError err)
+            {
+                // do nothing
+            }
+
+            data = new byte[11 * 1024 * 1024];
+            for (int i = 0; i < 11 * 1024 * 1024; i++)
+            {
+                data[i] = (byte)'a';
+            }
+            client.PutObject(bucket, "largeobj", 11 * 1024 * 1024, "application/octet-stream", new MemoryStream(data));
+        }
+
+        [TestMethod]
         public void PutDirObject()
         {
             byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");

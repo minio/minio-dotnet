@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Minio.Client
 {
-    class InputSizeMismatchError : Exception
+    public class InputSizeMismatchError : Exception
     {
         public string Bucket { get; set; }
         public string Key { get; set; }
