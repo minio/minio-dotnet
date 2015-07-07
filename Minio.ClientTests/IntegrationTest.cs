@@ -204,11 +204,12 @@ namespace Minio.ClientTests
             {
                 data[i] = (byte)'a';
             }
-                client.PutObject(bucket, "largeobj", 11 * 1024 * 1024, "application/octet-stream", new MemoryStream(data));
+            client.PutObject(bucket, "largeobj", 11 * 1024 * 1024, "application/octet-stream", new MemoryStream(data));
         }
 
         [TestMethod]
-        public void PutLargeObjectResume() {
+        public void PutLargeObjectResume()
+        {
             byte[] data = new byte[9 * 1024 * 1024];
             for (int i = 0; i < 9 * 1024 * 1024; i++)
             {
@@ -221,7 +222,7 @@ namespace Minio.ClientTests
             }
             catch (InputSizeMismatchError err)
             {
-                // do nothing
+                Console.Out.WriteLine(err);
             }
 
             data = new byte[11 * 1024 * 1024];
@@ -247,7 +248,7 @@ namespace Minio.ClientTests
             }
             catch (InputSizeMismatchError err)
             {
-                // do nothing
+                Console.Out.WriteLine(err);
             }
 
             data = new byte[11 * 1024 * 1024];
@@ -308,6 +309,62 @@ namespace Minio.ClientTests
             {
                 Console.Out.WriteLine(upload.Key + " " + upload.Initiated + " " + upload.UploadId);
             }
+        }
+
+        [TestMethod]
+        public void DropAllUploads()
+        {
+            try
+            {
+                var stream = new MemoryStream(new byte[10]);
+                client.PutObject(bucket, "incomplete1", 6 * 1024 * 1024, null, stream);
+                Assert.Fail();
+            }
+            catch (InputSizeMismatchError err)
+            {
+                Console.Out.WriteLine(err);
+            }
+            try
+            {
+                var stream = new MemoryStream(new byte[10]);
+                client.PutObject(bucket, "incomplete2", 6 * 1024 * 1024, null, stream);
+                Assert.Fail();
+            }
+            catch (InputSizeMismatchError err)
+            {
+                Console.Out.WriteLine(err);
+            }
+            try
+            {
+                var stream = new MemoryStream(new byte[10]);
+                client.PutObject(bucket, "incomplete3", 6 * 1024 * 1024, null, stream);
+                Assert.Fail();
+            }
+            catch (InputSizeMismatchError err)
+            {
+                Console.Out.WriteLine(err);
+            }
+            var uploads = client.ListUnfinishedUploads(bucket);
+            var uploadCount = 0;
+            foreach (Upload upload in uploads)
+            {
+                uploadCount++;
+            }
+            Assert.AreNotEqual(0, uploadCount);
+
+            client.DropIncompleteUpload(bucket, "incomplete1");
+            uploads = client.ListUnfinishedUploads(bucket);
+            foreach (Upload upload in uploads)
+            {
+                Assert.AreNotEqual("incomplete1", upload.Key);
+            }
+            client.DropAllIncompleteUploads(bucket);
+            uploadCount = 0;
+            foreach (Upload upload in uploads)
+            {
+                uploadCount++;
+            }
+            Assert.AreEqual(0, uploadCount);
         }
     }
 }

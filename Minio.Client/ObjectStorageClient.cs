@@ -288,7 +288,8 @@ namespace Minio.Client
                 {
                     uploadId = uploads.Last().UploadId;
                     var parts = this.ListParts(bucket, key, uploadId);
-                    foreach(Part part in parts) {
+                    foreach (Part part in parts)
+                    {
                         etags[part.PartNumber] = part.ETag;
                     }
                 }
@@ -326,7 +327,7 @@ namespace Minio.Client
                         Bucket = bucket,
                         Key = key,
                         UserSpecifiedSize = size,
-                        ActualReadSize = totalWritten+1
+                        ActualReadSize = totalWritten + 1
                     };
                 }
 
@@ -341,7 +342,8 @@ namespace Minio.Client
                     };
                 }
 
-                foreach (int curPartNumber in etags.Keys) {
+                foreach (int curPartNumber in etags.Keys)
+                {
                     if (curPartNumber > partNumber)
                     {
                         etags.Remove(curPartNumber);
@@ -374,7 +376,7 @@ namespace Minio.Client
             if (totalRead == 0) return null;
 
             if (totalRead == currentPartSize) return result;
-            
+
             byte[] truncatedResult = new byte[totalRead];
             for (int i = 0; i < totalRead; i++)
             {
@@ -659,12 +661,12 @@ namespace Minio.Client
                 Console.Out.WriteLine(root);
 
                 var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
-                             select new Upload()
-                             {
-                                 Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
-                                 UploadId = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}UploadId").Value,
-                                 Initiated = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Initiated").Value
-                             });
+                               select new Upload()
+                               {
+                                   Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
+                                   UploadId = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}UploadId").Value,
+                                   Initiated = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Initiated").Value
+                               });
 
                 return new Tuple<ListMultipartUploadsResult, List<Upload>>(listBucketResult, uploads.ToList());
             }
@@ -695,6 +697,37 @@ namespace Minio.Client
                 nextKeyMarker = uploads.Item1.NextKeyMarker;
                 nextUploadIdMarker = uploads.Item1.NextUploadIdMarker;
                 isRunning = uploads.Item1.IsTruncated;
+            }
+        }
+
+        public void DropIncompleteUpload(string bucket, string key)
+        {
+            var uploads = this.ListUnfinishedUploads(bucket, key);
+            foreach (Upload upload in uploads)
+            {
+                this.DropUpload(bucket, key, upload.UploadId);
+            }
+        }
+
+        private void DropUpload(string bucket, string key, string uploadId)
+        {
+            var path = bucket + "/" + key + "?uploadId=" + uploadId;
+            var request = new RestRequest(path, Method.DELETE);
+            var response = client.Execute(request);
+
+            if (response.StatusCode == HttpStatusCode.NoContent)
+            {
+                return;
+            }
+            throw ParseError(response);
+        }
+
+        public void DropAllIncompleteUploads(string bucket)
+        {
+            var uploads = this.ListUnfinishedUploads(bucket);
+            foreach (Upload upload in uploads)
+            {
+                this.DropUpload(bucket, upload.Key, upload.UploadId);
             }
         }
     }
