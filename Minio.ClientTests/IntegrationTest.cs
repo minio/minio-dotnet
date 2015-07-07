@@ -90,7 +90,7 @@ namespace Minio.ClientTests
         public void ListBuckets()
         {
             var buckets = client.ListBuckets();
-            foreach (Bucket bucket in buckets.Buckets)
+            foreach (Bucket bucket in buckets)
             {
                 Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDate);
             }
