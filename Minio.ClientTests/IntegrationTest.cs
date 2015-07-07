@@ -197,7 +197,7 @@ namespace Minio.ClientTests
         }
 
         [TestMethod]
-        public void putLargeObject()
+        public void PutLargeObject()
         {
             byte[] data = new byte[11 * 1024 * 1024];
             for (int i = 0; i < 11 * 1024 * 1024; i++)

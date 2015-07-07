@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Acl.cs" />
+    <Compile Include="InputSizeMismatchError.cs" />
     <Compile Include="ItemEnumerable.cs" />
     <Compile Include="RequestException.cs" />
     <Compile Include="xml\AccessControlPolicy.cs" />

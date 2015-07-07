@@ -302,11 +302,31 @@ namespace Minio.Client
                 {
                     partNumber++;
                     var currentPartSize = (int)Math.Min((UInt64)partSize, (size - totalWritten));
-                    byte[] dataToCopy = new byte[currentPartSize];
-                    int currentRead = data.Read(dataToCopy, 0, currentPartSize);
-                    string etag = DoPutObject(bucket, key, uploadId, partNumber, contentType, dataToCopy);
+                    byte[] dataToCopy = ReadFull(data, currentPartSize);
+                    if (dataToCopy == null)
+                    {
+                        break;
+                    }
+                    System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create();
+                    byte[] hash = md5.ComputeHash(dataToCopy);
+                    string etag = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
+                    if (!etags.ContainsKey(partNumber) || !etags[partNumber].Equals(etag))
+                    {
+                        etag = DoPutObject(bucket, key, uploadId, partNumber, contentType, dataToCopy);
+                    }
                     etags[partNumber] = etag;
                     totalWritten += (UInt64)dataToCopy.Length;
+                }
+
+                if (totalWritten != size)
+                {
+                    throw new InputSizeMismatchError()
+                    {
+                        Bucket = bucket,
+                        Key = key,
+                        UserSpecifiedSize = size,
+                        ActualReadSize = totalWritten
+                    };
                 }
 
                 foreach (int curPartNumber in etags.Keys) {
@@ -318,6 +338,37 @@ namespace Minio.Client
 
                 this.CompleteMultipartUpload(bucket, key, uploadId, etags);
             }
+        }
+
+        private byte[] ReadFull(Stream data, int currentPartSize)
+        {
+            byte[] result = new byte[currentPartSize];
+            int totalRead = 0;
+            while (totalRead < currentPartSize)
+            {
+                byte[] curData = new byte[currentPartSize - totalRead];
+                int curRead = data.Read(curData, 0, currentPartSize - totalRead);
+                if (curRead == 0)
+                {
+                    break;
+                }
+                for (int i = 0; i < curRead; i++)
+                {
+                    result[totalRead + i] = curData[i];
+                }
+                totalRead += curRead;
+            }
+
+            if (totalRead == 0) return null;
+
+            if (totalRead == currentPartSize) return result;
+            
+            byte[] truncatedResult = new byte[totalRead];
+            for (int i = 0; i < totalRead; i++)
+            {
+                truncatedResult[i] = result[i];
+            }
+            return truncatedResult;
         }
 
         private void CompleteMultipartUpload(string bucket, string key, string uploadId, Dictionary<int, string> etags)
@@ -339,6 +390,8 @@ namespace Minio.Client
             var bodyString = completeMultipartUploadXml.ToString();
 
             var body = System.Text.Encoding.UTF8.GetBytes(bodyString);
+
+            Console.Out.WriteLine(bodyString);
 
             request.AddParameter("application/xml", body, RestSharp.ParameterType.RequestBody);
 
@@ -392,7 +445,7 @@ namespace Minio.Client
                                select new Part()
                                {
                                    PartNumber = int.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}PartNumber").Value),
-                                   ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value
+                                   ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value.Replace("\"", "")
                                });
 
                 return new Tuple<ListPartsResult, List<Part>>(listPartsResult, new List<Part>());
