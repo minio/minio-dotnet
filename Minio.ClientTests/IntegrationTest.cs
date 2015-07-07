@@ -303,7 +303,7 @@ namespace Minio.ClientTests
         [TestMethod]
         public void ListUnfinishedUploads()
         {
-            var uploads = client.ListUnfinishedUploads(bucket);
+            var uploads = client.ListAllUnfinishedUploads(bucket);
 
             foreach (Upload upload in uploads)
             {
@@ -344,7 +344,7 @@ namespace Minio.ClientTests
             {
                 Console.Out.WriteLine(err);
             }
-            var uploads = client.ListUnfinishedUploads(bucket);
+            var uploads = client.ListAllUnfinishedUploads(bucket);
             var uploadCount = 0;
             foreach (Upload upload in uploads)
             {
@@ -353,7 +353,7 @@ namespace Minio.ClientTests
             Assert.AreNotEqual(0, uploadCount);
 
             client.DropIncompleteUpload(bucket, "incomplete1");
-            uploads = client.ListUnfinishedUploads(bucket);
+            uploads = client.ListAllUnfinishedUploads(bucket);
             foreach (Upload upload in uploads)
             {
                 Assert.AreNotEqual("incomplete1", upload.Key);

@@ -281,7 +281,7 @@ namespace Minio.Client
             else
             {
                 var partSize = CalculatePartSize(size);
-                var uploads = this.ListUnfinishedUploads(bucket, key);
+                var uploads = this.ListAllUnfinishedUploads(bucket, key);
                 string uploadId = null;
                 Dictionary<int, string> etags = new Dictionary<int, string>();
                 if (uploads.Count() > 0)
@@ -673,12 +673,12 @@ namespace Minio.Client
             throw ParseError(response);
         }
 
-        public IEnumerable<Upload> ListUnfinishedUploads(string bucket)
+        public IEnumerable<Upload> ListAllUnfinishedUploads(string bucket)
         {
-            return this.ListUnfinishedUploads(bucket, null);
+            return this.ListAllUnfinishedUploads(bucket, null);
         }
 
-        public IEnumerable<Upload> ListUnfinishedUploads(string bucket, string prefix)
+        public IEnumerable<Upload> ListAllUnfinishedUploads(string bucket, string prefix)
         {
             string nextKeyMarker = null;
             string nextUploadIdMarker = null;
@@ -702,7 +702,7 @@ namespace Minio.Client
 
         public void DropIncompleteUpload(string bucket, string key)
         {
-            var uploads = this.ListUnfinishedUploads(bucket, key);
+            var uploads = this.ListAllUnfinishedUploads(bucket, key);
             foreach (Upload upload in uploads)
             {
                 this.DropUpload(bucket, key, upload.UploadId);
@@ -724,7 +724,7 @@ namespace Minio.Client
 
         public void DropAllIncompleteUploads(string bucket)
         {
-            var uploads = this.ListUnfinishedUploads(bucket);
+            var uploads = this.ListAllUnfinishedUploads(bucket);
             foreach (Upload upload in uploads)
             {
                 this.DropUpload(bucket, upload.Key, upload.UploadId);
