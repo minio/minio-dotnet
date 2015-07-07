@@ -143,7 +143,6 @@ namespace Minio.Client
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 var content = StripXmlnsXsi(response.Content);
-                Console.Out.WriteLine(content);
                 var contentBytes = System.Text.Encoding.UTF8.GetBytes(content);
                 var stream = new MemoryStream(contentBytes);
                 AccessControlPolicy bucketList = (AccessControlPolicy)(new XmlSerializer(typeof(AccessControlPolicy)).Deserialize(stream));
@@ -405,8 +404,6 @@ namespace Minio.Client
 
             var body = System.Text.Encoding.UTF8.GetBytes(bodyString);
 
-            Console.Out.WriteLine(bodyString);
-
             request.AddParameter("application/xml", body, RestSharp.ParameterType.RequestBody);
 
             var response = client.Execute(request);
@@ -452,8 +449,6 @@ namespace Minio.Client
                 ListPartsResult listPartsResult = (ListPartsResult)(new XmlSerializer(typeof(ListPartsResult)).Deserialize(stream));
 
                 XDocument root = XDocument.Parse(response.Content);
-
-                Console.Out.WriteLine(root);
 
                 var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Part")
                                select new Part()
@@ -518,10 +513,6 @@ namespace Minio.Client
 
         private RequestException ParseError(IRestResponse response)
         {
-            Console.Out.WriteLine("Status: " + response.StatusCode + " " + response.StatusDescription);
-            Console.Out.WriteLine("Output:");
-            Console.Out.WriteLine(response.Content);
-            Console.Out.WriteLine("---");
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
             ErrorResponse errorResponse = (ErrorResponse)(new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream));
@@ -600,8 +591,6 @@ namespace Minio.Client
 
                 XDocument root = XDocument.Parse(response.Content);
 
-                Console.Out.WriteLine(root);
-
                 var items = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
                              select new Item()
                              {
@@ -657,8 +646,6 @@ namespace Minio.Client
                 ListMultipartUploadsResult listBucketResult = (ListMultipartUploadsResult)(new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(stream));
 
                 XDocument root = XDocument.Parse(response.Content);
-
-                Console.Out.WriteLine(root);
 
                 var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
                                select new Upload()

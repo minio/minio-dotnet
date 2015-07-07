@@ -52,8 +52,6 @@ namespace Minio.Client
             string stringToSign = GetStringToSign(region, canonicalRequestHash, signingDate);
             byte[] signingKey = GenerateSigningKey(region, signingDate);
 
-            Console.Out.WriteLine(canonicalRequest);
-
             byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(stringToSign);
 
             byte[] signatureBytes = SignHmac(signingKey, stringToSignBytes);
@@ -266,7 +264,6 @@ namespace Minio.Client
                 byte[] body = null;
                 if (bodyParameter.Value is string)
                 {
-                    Console.Out.WriteLine(bodyParameter.Value as string);
                     body = System.Text.Encoding.UTF8.GetBytes(bodyParameter.Value as string);
                 }
                 if (bodyParameter.Value is byte[])
@@ -281,7 +278,6 @@ namespace Minio.Client
                 byte[] hash = md5.ComputeHash(body);
 
                 string base64 = Convert.ToBase64String(hash);
-                Console.Out.WriteLine(base64);
                 request.AddHeader("Content-MD5", base64);
             }
         }
