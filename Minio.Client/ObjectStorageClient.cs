@@ -719,8 +719,6 @@ namespace Minio.Client
 
                 XDocument root = XDocument.Parse(response.Content);
 
-                Console.Out.WriteLine(root);
-
                 var items = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
                              select new Item()
                              {

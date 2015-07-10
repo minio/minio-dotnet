@@ -30,6 +30,41 @@ namespace Minio.Client
         private readonly string accessKey;
         private readonly string secretKey;
 
+        //
+        // Excerpts from @lsegal - https://github.com/aws/aws-sdk-js/issues/659#issuecomment-120477258
+        //
+        //  User-Agent:
+        //
+        //      This is ignored from signing because signing this causes problems with generating pre-signed URLs
+        //      (that are executed by other agents) or when customers pass requests through proxies, which may
+        //      modify the user-agent.
+        //
+        //  Content-Length:
+        //
+        //      This is ignored from signing because generating a pre-signed URL should not provide a content-length
+        //      constraint, specifically when vending a S3 pre-signed PUT URL. The corollary to this is that when
+        //      sending regular requests (non-pre-signed), the signature contains a checksum of the body, which
+        //      implicitly validates the payload length (since changing the number of bytes would change the checksum)
+        //      and therefore this header is not valuable in the signature.
+        //
+        //  Content-Type:
+        //
+        //      Signing this header causes quite a number of problems in browser environments, where browsers
+        //      like to modify and normalize the content-type header in different ways. There is more information
+        //      on this in https://github.com/aws/aws-sdk-js/issues/244. Avoiding this field simplifies logic
+        //      and reduces the possibility of future bugs
+        //
+        //  Authorization:
+        //
+        //      Is skipped for obvious reasons
+        //
+        private static HashSet<string> ignoredHeaders = new HashSet<string>() {
+            "authorization",
+            "content-length",
+            "content-type",
+            "user-agent"
+        };
+
         public V4Authenticator(string accessKey, string secretKey)
         {
             this.accessKey = accessKey;
@@ -65,7 +100,7 @@ namespace Minio.Client
 
         private string GetAuthorizationHeader(string signedHeaders, string signature, DateTime signingDate, string region)
         {
-            return "AWS4-HMAC-SHA256 Credential=" + this.accessKey + "/" + GetScope(region, signingDate) + 
+            return "AWS4-HMAC-SHA256 Credential=" + this.accessKey + "/" + GetScope(region, signingDate) +
                 ", SignedHeaders=" + signedHeaders + ", Signature=" + signature;
         }
 
@@ -136,7 +171,7 @@ namespace Minio.Client
             //    throw new NullReferenceException();
             //}
             //var path = pathParameter.Value.ToString();
-            string[] path = request.Resource.Split(new char[] {'?'}, 2);
+            string[] path = request.Resource.Split(new char[] { '?' }, 2);
             if (!path[0].StartsWith("/"))
             {
                 path[0] = "/" + path[0];
@@ -213,7 +248,12 @@ namespace Minio.Client
             SortedDictionary<string, string> sortedHeaders = new SortedDictionary<string, string>();
             foreach (Parameter header in headers)
             {
-                sortedHeaders.Add(header.Name.ToLower(), header.Value.ToString());
+                string headerName = header.Name.ToLower();
+                string headerValue = header.Value.ToString();
+                if (!ignoredHeaders.Contains(headerName))
+                {
+                    sortedHeaders.Add(headerName, headerValue);
+                }
             }
             return sortedHeaders;
         }
