@@ -361,9 +361,9 @@ namespace Minio.Client
         /// <param name="size">Total size of bytes to be written, must match with data's length</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
         /// <param name="data">Stream of bytes to send</param>
-        public void PutObject(string bucket, string key, UInt64 size, string contentType, Stream data)
+        public void PutObject(string bucket, string key, long size, string contentType, Stream data)
         {
-            if (size <= (UInt64)(ObjectStorageClient.PART_SIZE))
+            if (size <= ObjectStorageClient.PART_SIZE)
             {
                 var bytes = ReadFull(data, (int)size);
                 if (bytes.Length != (int)size)
@@ -373,7 +373,7 @@ namespace Minio.Client
                         Bucket = bucket,
                         Key = key,
                         UserSpecifiedSize = size,
-                        ActualReadSize = (UInt64)bytes.Length
+                        ActualReadSize = bytes.Length
                     };
                 }
                 this.DoPutObject(bucket, key, null, 0, contentType, bytes);
@@ -398,11 +398,11 @@ namespace Minio.Client
                     uploadId = this.NewMultipartUpload(bucket, key);
                 }
                 int partNumber = 0;
-                UInt64 totalWritten = 0;
+                long totalWritten = 0;
                 while (totalWritten < size)
                 {
                     partNumber++;
-                    var currentPartSize = (int)Math.Min((UInt64)partSize, (size - totalWritten));
+                    var currentPartSize = (int)Math.Min((long)partSize, (size - totalWritten));
                     byte[] dataToCopy = ReadFull(data, currentPartSize);
                     if (dataToCopy == null)
                     {
@@ -416,7 +416,7 @@ namespace Minio.Client
                         etag = DoPutObject(bucket, key, uploadId, partNumber, contentType, dataToCopy);
                     }
                     etags[partNumber] = etag;
-                    totalWritten += (UInt64)dataToCopy.Length;
+                    totalWritten += dataToCopy.Length;
                 }
 
                 // test if any more data is on the stream
@@ -515,7 +515,7 @@ namespace Minio.Client
             throw ParseError(response);
         }
 
-        private int CalculatePartSize(UInt64 size)
+        private int CalculatePartSize(long size)
         {
             int minimumPartSize = PART_SIZE; // 5MB
             int partSize = (int)(size / 9999); // using 10000 may cause part size to become too small, and not fit the entire object in

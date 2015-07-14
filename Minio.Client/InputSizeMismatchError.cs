@@ -9,7 +9,7 @@ namespace Minio.Client
     {
         public string Bucket { get; set; }
         public string Key { get; set; }
-        public UInt64 UserSpecifiedSize { get; set; }
-        public UInt64 ActualReadSize { get; set; }
+        public long UserSpecifiedSize { get; set; }
+        public long ActualReadSize { get; set; }
     }
 }
