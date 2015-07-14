@@ -87,6 +87,99 @@ namespace Minio.ClientTests
         }
 
         [TestMethod]
+        public void makeBucketWithAcl()
+        {
+            client.MakeBucket(bucket + "-auth", Acl.AuthenticatedRead);
+            Acl acl = client.GetBucketAcl(bucket + "-auth");
+            Console.Out.WriteLine(acl);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(RequestException))]
+        public void RemoveAuthBucket()
+        {
+            client.RemoveBucket(bucket + "-auth");
+            client.GetBucketAcl(bucket + "-auth");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(RequestException))]
+        public void RemoveFromAnotherRegion()
+        {
+            standardClient.RemoveBucket(bucket);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(RequestException))]
+        public void RemoveFromAnotherUser()
+        {
+            standardClient.RemoveBucket("bucket");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(RequestException))]
+        public void RemoveFromAnotherUserAnotherRegion()
+        {
+            client.RemoveBucket("bucket");
+        }
+
+        [TestMethod]
+        public void MakeInStandard()
+        {
+            client.MakeBucket(bucket + "-standard");
+        }
+
+        /*
+         * ACLS
+         */
+
+        [TestMethod]
+        public void TestAcls()
+        {
+            client.SetBucketAcl(bucket, Acl.PublicReadWrite);
+            Assert.AreEqual(Acl.PublicReadWrite, client.GetBucketAcl(bucket));
+
+            client.SetBucketAcl(bucket, Acl.PublicRead);
+            Assert.AreEqual(Acl.PublicRead, client.GetBucketAcl(bucket));
+
+            client.SetBucketAcl(bucket, Acl.AuthenticatedRead);
+            Assert.AreEqual(Acl.AuthenticatedRead, client.GetBucketAcl(bucket));
+
+            client.SetBucketAcl(bucket, Acl.Private);
+            Assert.AreEqual(Acl.Private, client.GetBucketAcl(bucket));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(RequestException))]
+        public void TestAclNonExistingBucket()
+        {
+            client.SetBucketAcl(bucket + "-no-exist", Acl.AuthenticatedRead);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(RequestException))]
+        public void TestSetAclNotOwned()
+        {
+            standardClient.SetBucketAcl("bucket", Acl.AuthenticatedRead);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(RequestException))]
+        public void TestSetAclDifferentRegion()
+        {
+            standardClient.SetBucketAcl(bucket, Acl.AuthenticatedRead);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(RequestException))]
+        public void TestSetAclDifferentRegionNotOwned()
+        {
+            standardClient.SetBucketAcl("bucket", Acl.AuthenticatedRead);
+        }
+
+        // TODO List Buckets (populate with more data first)
+
+        [TestMethod]
         public void ListBuckets()
         {
             var buckets = client.ListBuckets();
@@ -96,11 +189,36 @@ namespace Minio.ClientTests
             }
         }
 
+        /*
+         * LIST BUCKETS
+         */
+
+
         [TestMethod]
         public void BucketExists()
         {
             bool exists = client.BucketExists(bucket);
             Assert.IsTrue(exists);
+        }
+
+        [TestMethod]
+        public void BucketExistsOwnedByOtherUser()
+        {
+            bool exists = standardClient.BucketExists("bucket");
+            Assert.IsFalse(exists);
+        }
+
+        [TestMethod]
+        public void BuckExistsAnotherRegion()
+        {
+            bool exists = standardClient.BucketExists(bucket);
+            Assert.IsFalse(exists);
+        }
+
+        public void BucketExistsAnotherRegionAnotherUser()
+        {
+            bool exists = client.BucketExists("bucket");
+            Assert.IsFalse(exists);
         }
 
         [TestMethod]
@@ -194,6 +312,33 @@ namespace Minio.ClientTests
         {
             byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");
             client.PutObject(bucket, "smallobj", 11, "application/octet-stream", new MemoryStream(data));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InputSizeMismatchError))]
+        public void PutSmallObjectTooSmall()
+        {
+            byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");
+            client.PutObject(bucket, "toosmall", 10, "application/octet-stream", new MemoryStream(data));
+        }
+
+
+        [TestMethod]
+        [ExpectedException(typeof(InputSizeMismatchError))]
+        public void PutSmallObjectTooLarge()
+        {
+            byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");
+            client.PutObject(bucket, "toolarge", 12, "application/octet-stream", new MemoryStream(data));
+        }
+
+        [TestMethod]
+        public void PutSmallTextFile()
+        {
+            string filePath = "..\\..\\..\\README.md";
+            FileInfo fileInfo = new FileInfo(filePath);
+            FileStream file = File.OpenRead(filePath);
+            
+            client.PutObject(bucket, "smallfile", fileInfo.Length, "application/octet-stream", file);
         }
 
         [TestMethod]
