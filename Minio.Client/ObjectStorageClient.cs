@@ -18,15 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using RestSharp;
 using System.IO;
 using Minio.Client.Xml;
 using System.Xml.Serialization;
-using System.Security.Cryptography;
 using System.Xml.Linq;
-using System.Collections;
 using Minio.Client.Errors;
 
 namespace Minio.Client
@@ -319,7 +315,7 @@ namespace Minio.Client
         /// <param name="callback">A stream will be passed to the callback</param>
         public void GetObject(string bucket, string key, Action<Stream> callback)
         {
-            RestRequest request = new RestRequest(bucket + "/" + key, Method.GET);
+            RestRequest request = new RestRequest(bucket + "/" + UrlEncode(key), Method.GET);
             request.ResponseWriter = callback;
             var response = client.Execute(request);
             if (response.StatusCode == HttpStatusCode.OK)
@@ -339,7 +335,7 @@ namespace Minio.Client
         public void GetObject(string bucket, string key, ulong offset, Action<Stream> callback)
         {
             var stat = this.StatObject(bucket, key);
-            RestRequest request = new RestRequest(bucket + "/" + key, Method.GET);
+            RestRequest request = new RestRequest(bucket + "/" + UrlEncode(key), Method.GET);
             request.AddHeader("Range", "bytes=" + offset + "-" + (stat.Size - 1));
             request.ResponseWriter = callback;
             client.Execute(request);
@@ -356,7 +352,7 @@ namespace Minio.Client
         /// <param name="callback">A stream will be passed to the callback</param>
         public void GetObject(string bucket, string key, ulong offset, ulong length, Action<Stream> callback)
         {
-            RestRequest request = new RestRequest(bucket + "/" + key, Method.GET);
+            RestRequest request = new RestRequest(bucket + "/" + UrlEncode(key), Method.GET);
             request.AddHeader("Range", "bytes=" + offset + "-" + (offset + length - 1));
             request.ResponseWriter = callback;
             client.Execute(request);
@@ -371,7 +367,7 @@ namespace Minio.Client
         /// <returns>Facts about the object</returns>
         public ObjectStat StatObject(string bucket, string key)
         {
-            var request = new RestRequest(bucket + "/" + key, Method.HEAD);
+            var request = new RestRequest(bucket + "/" + UrlEncode(key), Method.HEAD);
             var response = client.Execute(request);
 
             if (response.StatusCode == HttpStatusCode.OK)
@@ -538,7 +534,7 @@ namespace Minio.Client
 
         private void CompleteMultipartUpload(string bucket, string key, string uploadId, Dictionary<int, string> etags)
         {
-            var path = bucket + "/" + key + "?uploadId=" + uploadId;
+            var path = bucket + "/" + UrlEncode(key) + "?uploadId=" + uploadId;
             var request = new RestRequest(path, Method.POST);
 
             List<XElement> parts = new List<XElement>();
@@ -591,7 +587,7 @@ namespace Minio.Client
 
         private Tuple<ListPartsResult, List<Part>> GetListParts(string bucket, string key, string uploadId)
         {
-            var path = bucket + "/" + key + "?uploadId=" + uploadId;
+            var path = bucket + "/" + UrlEncode(key) + "?uploadId=" + uploadId;
             var request = new RestRequest(path, Method.GET);
             var response = client.Execute(request);
             if (response.StatusCode.Equals(HttpStatusCode.OK))
@@ -616,7 +612,7 @@ namespace Minio.Client
 
         private string NewMultipartUpload(string bucket, string key)
         {
-            var path = bucket + "/" + key + "?uploads";
+            var path = bucket + "/" + UrlEncode(key) + "?uploads";
             var request = new RestRequest(path, Method.POST);
             var response = client.Execute(request);
             if (response.StatusCode.Equals(HttpStatusCode.OK))
@@ -631,7 +627,7 @@ namespace Minio.Client
 
         private string DoPutObject(string bucket, string key, string uploadId, int partNumber, string contentType, byte[] data)
         {
-            var path = bucket + "/" + key;
+            var path = bucket + "/" + UrlEncode(key);
             var queries = new List<string>();
             if (uploadId != null)
             {
@@ -878,11 +874,11 @@ namespace Minio.Client
             queries.Add("uploads");
             if (prefix != null)
             {
-                queries.Add("prefix=" + prefix);
+                queries.Add("prefix=" + UrlEncode(prefix));
             }
             if (keyMarker != null)
             {
-                queries.Add("key-marker=" + keyMarker);
+                queries.Add("key-marker=" + UrlEncode(keyMarker));
             }
             if (uploadIdMarker != null)
             {
@@ -984,7 +980,7 @@ namespace Minio.Client
 
         private void DropUpload(string bucket, string key, string uploadId)
         {
-            var path = bucket + "/" + key + "?uploadId=" + uploadId;
+            var path = bucket + "/" + UrlEncode(key) + "?uploadId=" + uploadId;
             var request = new RestRequest(path, Method.DELETE);
             var response = client.Execute(request);
 
@@ -993,6 +989,11 @@ namespace Minio.Client
                 return;
             }
             throw ParseError(response);
+        }
+
+        private string UrlEncode(string input)
+        {
+            return Uri.EscapeDataString(input).Replace("%2F", "/");
         }
     }
 }

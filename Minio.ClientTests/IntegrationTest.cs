@@ -380,6 +380,46 @@ namespace Minio.ClientTests
         }
 
         [TestMethod]
+        public void PutSmallFileWithHash()
+        {
+            string filePath = "..\\..\\..\\README.md";
+            FileInfo fileInfo = new FileInfo(filePath);
+            FileStream file = File.OpenRead(filePath);
+
+            client.PutObject(bucket, "small/ob#ject", fileInfo.Length, "text/plain", file);
+        }
+
+        [TestMethod]
+        public void PutSmallFileWithUnicode1()
+        {
+            string filePath = "..\\..\\..\\README.md";
+            FileInfo fileInfo = new FileInfo(filePath);
+            FileStream file = File.OpenRead(filePath);
+
+            client.PutObject(bucket, "small/世界", fileInfo.Length, "text/plain", file);
+        }
+
+        [TestMethod]
+        public void PutSmallFileWithUnicode2()
+        {
+            string filePath = "..\\..\\..\\README.md";
+            FileInfo fileInfo = new FileInfo(filePath);
+            FileStream file = File.OpenRead(filePath);
+
+            client.PutObject(bucket, "small/世界世", fileInfo.Length, "text/plain", file);
+        }
+
+        [TestMethod]
+        public void PutSmallFileWithUnicode3()
+        {
+            string filePath = "..\\..\\..\\README.md";
+            FileInfo fileInfo = new FileInfo(filePath);
+            FileStream file = File.OpenRead(filePath);
+
+            client.PutObject(bucket, "small/世界世界", fileInfo.Length, "text/plain", file);
+        }
+
+        [TestMethod]
         public void PutSmallFileWithContentType()
         {
             string filePath = "..\\..\\..\\README.md";
