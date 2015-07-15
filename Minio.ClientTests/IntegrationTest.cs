@@ -507,6 +507,18 @@ namespace Minio.ClientTests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(DataSizeMismatchException))]
+        public void PutLargeObjectWithUnicode4()
+        {
+            byte[] data = new byte[11 * 1024 * 1024];
+            for (int i = 0; i < 11 * 1024 * 1024; i++)
+            {
+                data[i] = (byte)'a';
+            }
+            client.PutObject(bucket, "large/世界世界", 11 * 1024 * 1024-1, "application/octet-stream", new MemoryStream(data));
+        }
+
+        [TestMethod]
         public void PutLargeObjectResume()
         {
             byte[] data = new byte[9 * 1024 * 1024];

@@ -575,7 +575,7 @@ namespace Minio.Client
             bool isRunning = true;
             while (isRunning)
             {
-                var uploads = GetListParts(bucket, key, uploadId);
+                var uploads = GetListParts(bucket, key, uploadId, nextPartNumberMarker);
                 foreach (Part part in uploads.Item2)
                 {
                     yield return part;
@@ -585,9 +585,13 @@ namespace Minio.Client
             }
         }
 
-        private Tuple<ListPartsResult, List<Part>> GetListParts(string bucket, string key, string uploadId)
+        private Tuple<ListPartsResult, List<Part>> GetListParts(string bucket, string key, string uploadId, int partNumberMarker)
         {
             var path = bucket + "/" + UrlEncode(key) + "?uploadId=" + uploadId;
+            if(partNumberMarker > 0) {
+                path += "&part-number-marker=" + partNumberMarker;
+            }
+            path += "&max-parts=1000";
             var request = new RestRequest(path, Method.GET);
             var response = client.Execute(request);
             if (response.StatusCode.Equals(HttpStatusCode.OK))
@@ -605,7 +609,7 @@ namespace Minio.Client
                                    ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value.Replace("\"", "")
                                });
 
-                return new Tuple<ListPartsResult, List<Part>>(listPartsResult, new List<Part>());
+                return new Tuple<ListPartsResult, List<Part>>(listPartsResult, uploads.ToList());
             }
             throw ParseError(response);
         }
