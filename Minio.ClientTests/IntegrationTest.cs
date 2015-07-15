@@ -519,6 +519,30 @@ namespace Minio.ClientTests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(DataSizeMismatchException))]
+        public void PutLargeObjectWithUnicode5()
+        {
+            byte[] data = new byte[11 * 1024 * 1024];
+            for (int i = 0; i < 11 * 1024 * 1024; i++)
+            {
+                data[i] = (byte)'a';
+            }
+            client.PutObject(bucket, "large/世界世界世", 11 * 1024 * 1024 - 1, "application/octet-stream", new MemoryStream(data));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(DataSizeMismatchException))]
+        public void PutLargeObjectWithUnicode6()
+        {
+            byte[] data = new byte[11 * 1024 * 1024];
+            for (int i = 0; i < 11 * 1024 * 1024; i++)
+            {
+                data[i] = (byte)'a';
+            }
+            client.PutObject(bucket, "large/世界世界界", 11 * 1024 * 1024 - 1, "application/octet-stream", new MemoryStream(data));
+        }
+
+        [TestMethod]
         public void PutLargeObjectResume()
         {
             byte[] data = new byte[9 * 1024 * 1024];
@@ -612,6 +636,17 @@ namespace Minio.ClientTests
         }
 
         [TestMethod]
+        public void ListObjectsWithPrefixAndNoRecursiveAndUnicode()
+        {
+            var items = client.ListObjects(bucket, "large/", false);
+
+            foreach (Item item in items)
+            {
+                Console.Out.WriteLine("{0} {1} {2} {3}", item.Key, item.LastModified, item.Size, item.ETag);
+            }
+        }
+
+        [TestMethod]
         public void ListAllIncompleteUploads()
         {
             var uploads = client.ListAllIncompleteUploads(bucket);
@@ -676,6 +711,12 @@ namespace Minio.ClientTests
                 uploadCount++;
             }
             Assert.AreEqual(0, uploadCount);
+        }
+
+        [TestMethod]
+        public void DropAllUploadsTest()
+        {
+            client.DropAllIncompleteUploads(bucket);
         }
 
         [TestMethod]

@@ -828,8 +828,9 @@ namespace Minio.Client
             }
             if (marker != null)
             {
-                queries.Add("marker=" + marker);
+                queries.Add("marker=" + Uri.EscapeDataString(marker));
             }
+            queries.Add("max-keys=1000");
             string query = string.Join("&", queries);
 
             string path = bucket;
@@ -888,6 +889,7 @@ namespace Minio.Client
             {
                 queries.Add("upload-id-marker=" + uploadIdMarker);
             }
+            queries.Add("max-uploads=1000");
 
             string query = string.Join("&", queries);
             string path = bucket;
