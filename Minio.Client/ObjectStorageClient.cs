@@ -399,7 +399,7 @@ namespace Minio.Client
                 var bytes = ReadFull(data, (int)size);
                 if (bytes.Length != (int)size)
                 {
-                    throw new InputSizeMismatchError()
+                    throw new DataSizeMismatchException()
                     {
                         Bucket = bucket,
                         Key = key,
@@ -453,7 +453,7 @@ namespace Minio.Client
                 // test if any more data is on the stream
                 if (data.ReadByte() != -1)
                 {
-                    throw new InputSizeMismatchError()
+                    throw new DataSizeMismatchException()
                     {
                         Bucket = bucket,
                         Key = key,
@@ -464,7 +464,7 @@ namespace Minio.Client
 
                 if (totalWritten != size)
                 {
-                    throw new InputSizeMismatchError()
+                    throw new DataSizeMismatchException()
                     {
                         Bucket = bucket,
                         Key = key,
@@ -643,12 +643,12 @@ namespace Minio.Client
             throw ParseError(response);
         }
 
-        private RequestException ParseError(IRestResponse response)
+        private ClientException ParseError(IRestResponse response)
         {
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
             ErrorResponse errorResponse = (ErrorResponse)(new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream));
-            return new RequestException()
+            return new ClientException()
             {
                 Response = errorResponse,
                 XmlError = response.Content

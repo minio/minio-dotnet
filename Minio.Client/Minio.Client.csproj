@@ -44,13 +44,26 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Acl.cs" />
-    <Compile Include="InputSizeMismatchError.cs" />
+    <Compile Include="Errors\AccessDeniedException.cs" />
+    <Compile Include="Errors\ForbiddenException.cs" />
+    <Compile Include="Errors\RedirectionException.cs" />
+    <Compile Include="Errors\ObjectNotFoundException.cs" />
+    <Compile Include="Errors\ObjectExistsException.cs" />
+    <Compile Include="Errors\MaxBucketsReachedException.cs" />
+    <Compile Include="Errors\InvalidRangeException.cs" />
+    <Compile Include="Errors\InvalidKeyNameException.cs" />
+    <Compile Include="Errors\InvalidBucketNameException.cs" />
+    <Compile Include="Errors\InvalidAclNameException.cs" />
+    <Compile Include="Errors\InternalClientException.cs" />
+    <Compile Include="Errors\BucketNotFoundException.cs" />
+    <Compile Include="Errors\BucketExistsException.cs" />
+    <Compile Include="Errors\DataSizeMismatchException.cs" />
     <Compile Include="ItemEnumerable.cs" />
     <Compile Include="Regions.cs" />
-    <Compile Include="errors\RequestException.cs" />
+    <Compile Include="Errors\ClientException.cs" />
     <Compile Include="Xml\AccessControlPolicy.cs" />
     <Compile Include="Xml\Bucket.cs" />
-    <Compile Include="errors\ErrorResponse.cs" />
+    <Compile Include="Errors\ErrorResponse.cs" />
     <Compile Include="ObjectStorageClient.cs" />
     <Compile Include="ObjectStat.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

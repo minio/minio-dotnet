@@ -22,9 +22,7 @@ using System.Threading.Tasks;
 
 namespace Minio.Client.Errors
 {
-    public class RequestException : Exception
+    public class ObjectNotFoundException : ClientException
     {
-        public ErrorResponse Response { get; set; }
-        public string XmlError { get; set; }
     }
 }

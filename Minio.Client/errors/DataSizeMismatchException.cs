@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Minio.Client
+namespace Minio.Client.Errors
 {
-    public class InputSizeMismatchError : Exception
+    public class DataSizeMismatchException : ClientException
     {
         public string Bucket { get; set; }
         public string Key { get; set; }

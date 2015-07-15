@@ -82,7 +82,7 @@ namespace Minio.ClientTests
         #endregion
 
         [TestMethod]
-        [ExpectedException(typeof(RequestException))]
+        [ExpectedException(typeof(BucketExistsException))]
         public void MakeBucket()
         {
             client.MakeBucket(bucket);
@@ -97,7 +97,7 @@ namespace Minio.ClientTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(RequestException))]
+        [ExpectedException(typeof(BucketNotFoundException))]
         public void RemoveAuthBucket()
         {
             client.RemoveBucket(bucket + "-auth");
@@ -105,21 +105,21 @@ namespace Minio.ClientTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(RequestException))]
+        [ExpectedException(typeof(RedirectionException))]
         public void RemoveFromAnotherRegion()
         {
             standardClient.RemoveBucket(bucket);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(RequestException))]
+        [ExpectedException(typeof(AccessDeniedException))]
         public void RemoveFromAnotherUser()
         {
             standardClient.RemoveBucket("bucket");
         }
 
         [TestMethod]
-        [ExpectedException(typeof(RequestException))]
+        [ExpectedException(typeof(RedirectionException))]
         public void RemoveFromAnotherUserAnotherRegion()
         {
             client.RemoveBucket("bucket");
@@ -152,34 +152,38 @@ namespace Minio.ClientTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(RequestException))]
+        [ExpectedException(typeof(BucketNotFoundException))]
         public void TestAclNonExistingBucket()
         {
             client.SetBucketAcl(bucket + "-no-exist", Acl.AuthenticatedRead);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(RequestException))]
+        [ExpectedException(typeof(AccessDeniedException))]
         public void TestSetAclNotOwned()
         {
             standardClient.SetBucketAcl("bucket", Acl.AuthenticatedRead);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(RequestException))]
+        [ExpectedException(typeof(RedirectionException))]
         public void TestSetAclDifferentRegion()
         {
             standardClient.SetBucketAcl(bucket, Acl.AuthenticatedRead);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(RequestException))]
+        [ExpectedException(typeof(RedirectionException))]
         public void TestSetAclDifferentRegionNotOwned()
         {
             standardClient.SetBucketAcl("bucket", Acl.AuthenticatedRead);
         }
 
         // TODO List Buckets (populate with more data first)
+
+        /*
+         * LIST BUCKETS
+         */
 
         [TestMethod]
         public void ListBuckets()
@@ -191,10 +195,21 @@ namespace Minio.ClientTests
             }
         }
 
-        /*
-         * LIST BUCKETS
-         */
+        [TestMethod]
+        [ExpectedException(typeof(AccessDeniedException))]
+        public void ListBucketsBadCredentials()
+        {
+            var badCredentials = ObjectStorageClient.GetClient("https://s3.amazonaws.com", "BADACCESS", "BADSECRET");
+            badCredentials.ListBuckets();
+        }
 
+        [TestMethod]
+        [ExpectedException(typeof(AccessDeniedException))]
+        public void ListBucketsNoCredentials()
+        {
+            var unauthedClient = ObjectStorageClient.GetClient("https://s3.amazonaws.com");
+            unauthedClient.ListBuckets();
+        }
 
         [TestMethod]
         public void BucketExists()
@@ -217,6 +232,7 @@ namespace Minio.ClientTests
             Assert.IsFalse(exists);
         }
 
+        [TestMethod]
         public void BucketExistsAnotherRegionAnotherUser()
         {
             bool exists = client.BucketExists("bucket");
@@ -259,7 +275,7 @@ namespace Minio.ClientTests
             {
                 client.RemoveBucket(bucketToDelete);
             }
-            catch (RequestException ex)
+            catch (ClientException ex)
             {
                 Console.Out.WriteLine(ex);
             }
@@ -317,7 +333,7 @@ namespace Minio.ClientTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InputSizeMismatchError))]
+        [ExpectedException(typeof(DataSizeMismatchException))]
         public void PutSmallObjectTooSmall()
         {
             byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");
@@ -326,7 +342,7 @@ namespace Minio.ClientTests
 
 
         [TestMethod]
-        [ExpectedException(typeof(InputSizeMismatchError))]
+        [ExpectedException(typeof(DataSizeMismatchException))]
         public void PutSmallObjectTooLarge()
         {
             byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");
@@ -397,7 +413,7 @@ namespace Minio.ClientTests
                 client.PutObject(bucket, "largeobj", 11 * 1024 * 1024, "application/octet-stream", new MemoryStream(data));
                 Assert.Fail("Should throw mismatch error");
             }
-            catch (InputSizeMismatchError err)
+            catch (DataSizeMismatchException err)
             {
                 Console.Out.WriteLine(err);
             }
@@ -423,7 +439,7 @@ namespace Minio.ClientTests
                 client.PutObject(bucket, "largeobj", 11 * 1024 * 1024, "application/octet-stream", new MemoryStream(data));
                 Assert.Fail("Should throw mismatch error");
             }
-            catch (InputSizeMismatchError err)
+            catch (DataSizeMismatchException err)
             {
                 Console.Out.WriteLine(err);
             }
@@ -497,7 +513,7 @@ namespace Minio.ClientTests
                 client.PutObject(bucket, "incomplete1", 6 * 1024 * 1024, null, stream);
                 Assert.Fail();
             }
-            catch (InputSizeMismatchError err)
+            catch (DataSizeMismatchException err)
             {
                 Console.Out.WriteLine(err);
             }
@@ -507,7 +523,7 @@ namespace Minio.ClientTests
                 client.PutObject(bucket, "incomplete2", 6 * 1024 * 1024, null, stream);
                 Assert.Fail();
             }
-            catch (InputSizeMismatchError err)
+            catch (DataSizeMismatchException err)
             {
                 Console.Out.WriteLine(err);
             }
@@ -517,7 +533,7 @@ namespace Minio.ClientTests
                 client.PutObject(bucket, "incomplete3", 6 * 1024 * 1024, null, stream);
                 Assert.Fail();
             }
-            catch (InputSizeMismatchError err)
+            catch (DataSizeMismatchException err)
             {
                 Console.Out.WriteLine(err);
             }
