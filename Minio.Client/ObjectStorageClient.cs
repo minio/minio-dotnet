@@ -37,11 +37,23 @@ namespace Minio.Client
         private RestClient client;
         private string region;
 
+        private string SystemUserAgent = "minio-cs/0.0.1 (Windows 8.1; x86_64)";
+        private string CustomUserAgent = "";
+
+        private string FullUserAgent
+        {
+            get
+            {
+                return SystemUserAgent + " " + CustomUserAgent;
+            }
+        }
+
+
         internal ObjectStorageClient(Uri uri, string accessKey, string secretKey)
         {
             this.client = new RestClient(uri);
-            this.client.UserAgent = "minio-cs/0.0.1 (Windows 8.1; x86_64)";
-            this.region = "us-west-2";
+            this.region = Regions.GetRegion(uri.Host);
+            this.client.UserAgent = this.FullUserAgent;
             if (accessKey != null && secretKey != null)
             {
                 this.client.Authenticator = new V4Authenticator(accessKey, secretKey);
@@ -109,6 +121,26 @@ namespace Minio.Client
         {
             Uri uri = new Uri(url);
             return GetClient(uri, accessKey, secretKey);
+        }
+
+        public void SetUserAgent(string product, string version, IEnumerable<string> attributes)
+        {
+            if (string.IsNullOrEmpty(product)) {
+                throw new ArgumentException("product cannot be null or empty");
+            }
+            if (string.IsNullOrEmpty(version)) {
+                throw new ArgumentException("version cannot be null or empty");
+            }
+            string customAgent = product + "/" + version;
+            string[] attributesArray = attributes.ToArray();
+            if (attributes.Count() > 0) {
+                customAgent += "(";
+                customAgent += string.Join("; ", attributesArray);
+                customAgent += ")";
+            }
+            this.CustomUserAgent = customAgent;
+            this.client.UserAgent = this.FullUserAgent;
+
         }
 
         /// <summary>
