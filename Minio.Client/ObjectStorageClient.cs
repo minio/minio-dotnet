@@ -22,11 +22,12 @@ using System.Text;
 using System.Threading.Tasks;
 using RestSharp;
 using System.IO;
-using Minio.Client.xml;
+using Minio.Client.Xml;
 using System.Xml.Serialization;
 using System.Security.Cryptography;
 using System.Xml.Linq;
 using System.Collections;
+using Minio.Client.Errors;
 
 namespace Minio.Client
 {

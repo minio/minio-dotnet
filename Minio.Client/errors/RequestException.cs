@@ -20,7 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Minio.Client
+namespace Minio.Client.Errors
 {
     public class RequestException : Exception
     {

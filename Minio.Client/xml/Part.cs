@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Minio.Client.xml
+namespace Minio.Client.Xml
 {
     [Serializable]
     public class Part

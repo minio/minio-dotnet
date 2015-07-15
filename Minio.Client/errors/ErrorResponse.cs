@@ -20,7 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 
-namespace Minio.Client
+namespace Minio.Client.Errors
 {
     [Serializable]
     [XmlRoot(ElementName="Error", Namespace = "")]

@@ -19,8 +19,9 @@ using System.Text;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Client;
-using Minio.Client.xml;
+using Minio.Client.Xml;
 using System.IO;
+using Minio.Client.Errors;
 
 namespace Minio.ClientTests
 {
@@ -40,7 +41,8 @@ namespace Minio.ClientTests
         private TestContext testContextInstance;
 
         private static readonly string bucket = "goroutine-dotnet";
-        private static ObjectStorageClient client = ObjectStorageClient.GetClient("https://s3-us-west-2.amazonaws.com", "", "");
+        //private static ObjectStorageClient client = ObjectStorageClient.GetClient("https://s3-us-west-2.amazonaws.com", "", "");
+        //private static ObjectStorageClient client = ObjectStorageClient.GetClient("https://s3.amazonaws.com", "", "");
         /// <summary>
         ///Gets or sets the test context which provides
         ///information about and functionality for the current test run.
@@ -185,7 +187,7 @@ namespace Minio.ClientTests
             var buckets = client.ListBuckets();
             foreach (Bucket bucket in buckets)
             {
-                Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDate);
+                Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
             }
         }
 
@@ -338,7 +340,37 @@ namespace Minio.ClientTests
             FileInfo fileInfo = new FileInfo(filePath);
             FileStream file = File.OpenRead(filePath);
             
-            client.PutObject(bucket, "smallfile", fileInfo.Length, "application/octet-stream", file);
+            client.PutObject(bucket, "small/text_file", fileInfo.Length, "application/octet-stream", file);
+        }
+
+        [TestMethod]
+        public void PutSmallBinaryFile()
+        {
+            string filePath = "C:\\Users\\fkautz\\Documents\\Visual Studio 2013\\Projects\\Minio.Client\\packages\\RestSharp.105.1.0\\lib\\net4\\RestSharp.dll";
+            FileInfo fileInfo = new FileInfo(filePath);
+            FileStream file = File.OpenRead(filePath);
+
+            client.PutObject(bucket, "small/binary_file", fileInfo.Length, "application/octet-stream", file);
+        }
+
+        [TestMethod]
+        public void PutSmallFileWithQuestionMark()
+        {
+            string filePath = "..\\..\\..\\README.md";
+            FileInfo fileInfo = new FileInfo(filePath);
+            FileStream file = File.OpenRead(filePath);
+
+            client.PutObject(bucket, "small/ob?ject", fileInfo.Length, "text/plain", file);
+        }
+
+        [TestMethod]
+        public void PutSmallFileWithContentType()
+        {
+            string filePath = "..\\..\\..\\README.md";
+            FileInfo fileInfo = new FileInfo(filePath);
+            FileStream file = File.OpenRead(filePath);
+
+            client.PutObject(bucket, "small/text_plain", fileInfo.Length, "text/plain", file);
         }
 
         [TestMethod]
@@ -419,7 +451,7 @@ namespace Minio.ClientTests
 
             foreach (Item item in items)
             {
-                Console.Out.WriteLine("{0} {1} {2} {3}", item.Key, item.LastModified, item.Size, item.ETag);
+                Console.Out.WriteLine("{0} {1} {2} {3}", item.Key, item.LastModifiedDateTime, item.Size, item.ETag);
             }
         }
 
@@ -510,6 +542,13 @@ namespace Minio.ClientTests
                 uploadCount++;
             }
             Assert.AreEqual(0, uploadCount);
+        }
+
+        [TestMethod]
+        public void TestStatObject()
+        {
+            ObjectStat stat = client.StatObject(bucket, "smallobj");
+            Console.Out.WriteLine(stat);
         }
     }
 }

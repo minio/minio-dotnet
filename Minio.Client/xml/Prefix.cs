@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 
-namespace Minio.Client.xml
+namespace Minio.Client.Xml
 {
     [Serializable]
     public class Prefix
