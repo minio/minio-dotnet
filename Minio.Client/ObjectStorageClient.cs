@@ -126,21 +126,25 @@ namespace Minio.Client
 
         public void SetUserAgent(string product, string version, IEnumerable<string> attributes)
         {
-            if (string.IsNullOrEmpty(product)) {
+            if (string.IsNullOrEmpty(product))
+            {
                 throw new ArgumentException("product cannot be null or empty");
             }
-            if (string.IsNullOrEmpty(version)) {
+            if (string.IsNullOrEmpty(version))
+            {
                 throw new ArgumentException("version cannot be null or empty");
             }
             string customAgent = product + "/" + version;
             string[] attributesArray = attributes.ToArray();
-            if (attributes.Count() > 0) {
+            if (attributes.Count() > 0)
+            {
                 customAgent += "(";
                 customAgent += string.Join("; ", attributesArray);
                 customAgent += ")";
             }
             this.CustomUserAgent = customAgent;
             this.client.UserAgent = this.FullUserAgent;
+            this.client.FollowRedirects = false;
         }
 
         /// <summary>
@@ -274,6 +278,10 @@ namespace Minio.Client
             // TODO add acl header
             request.AddHeader("x-amz-acl", acl.ToString());
             var response = client.Execute(request);
+            if (!HttpStatusCode.OK.Equals(response.StatusCode))
+            {
+                throw ParseError(response);
+            }
         }
 
         /// <summary>
@@ -287,10 +295,18 @@ namespace Minio.Client
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
-                var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-                var stream = new MemoryStream(contentBytes);
-                ListAllMyBucketsResult bucketList = (ListAllMyBucketsResult)(new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream));
-                return bucketList.Buckets;
+                try
+                {
+                    var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+                    var stream = new MemoryStream(contentBytes);
+                    ListAllMyBucketsResult bucketList = (ListAllMyBucketsResult)(new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream));
+                    return bucketList.Buckets;
+                }
+                catch (InvalidOperationException ex)
+                {
+                    // unauthed returns html, so we catch xml parse exception and return access denied
+                    throw new AccessDeniedException();
+                }
             }
             throw ParseError(response);
         }
@@ -645,14 +661,92 @@ namespace Minio.Client
 
         private ClientException ParseError(IRestResponse response)
         {
+            if (response == null)
+            {
+                return new ConnectionException();
+            }
+            if (HttpStatusCode.Redirect.Equals(response.StatusCode) || HttpStatusCode.TemporaryRedirect.Equals(response.StatusCode))
+            {
+                return new RedirectionException();
+            }
+
+            if (HttpStatusCode.Forbidden.Equals(response.StatusCode) || HttpStatusCode.NotFound.Equals(response.StatusCode))
+            {
+                ClientException e = null;
+                ErrorResponse errorResponse = new ErrorResponse();
+
+                foreach (Parameter parameter in response.Headers)
+                {
+                    if (parameter.Name.Equals("x-amz-id-2", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        errorResponse.XAmzID2 = parameter.Value.ToString();
+                    }
+                    if (parameter.Name.Equals("x-amz-request-id", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        errorResponse.RequestID = parameter.Value.ToString();
+                    }
+                }
+
+                errorResponse.Resource = response.Request.Resource;
+
+                if (HttpStatusCode.NotFound.Equals(response.StatusCode))
+                {
+                    int pathLength = response.Request.Resource.Split('/').Count();
+                    if (pathLength > 1)
+                    {
+                        errorResponse.Code = "NoSuchKey";
+                        e = new ObjectNotFoundException();
+                    }
+                    else if (pathLength == 1)
+                    {
+                        errorResponse.Code = "NoSuchBucket";
+                        e = new BucketNotFoundException();
+                    }
+                    else
+                    {
+                        e = new InternalClientException("404 without body resulted in path with less than two components");
+                    }
+                }
+                else
+                {
+                    errorResponse.Code = "Forbidden";
+                    e = new AccessDeniedException();
+                }
+                e.Response = errorResponse;
+                return e;
+            }
+
+            if (string.IsNullOrWhiteSpace(response.Content))
+            {
+                throw new InternalClientException("Unsuccessful response from server without XML error: " + response.StatusCode);
+            }
+
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
-            ErrorResponse errorResponse = (ErrorResponse)(new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream));
-            return new ClientException()
-            {
-                Response = errorResponse,
-                XmlError = response.Content
-            };
+            ErrorResponse errResponse = (ErrorResponse)(new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream));
+            string code = errResponse.Code;
+
+            ClientException clientException;
+
+            if ("NoSuchBucket".Equals(code)) clientException = new BucketNotFoundException();
+            else if ("NoSuchKey".Equals(code)) clientException = new ObjectNotFoundException();
+            else if ("InvalidBucketName".Equals(code)) clientException = new InvalidKeyNameException();
+            else if ("InvalidObjectName".Equals(code)) clientException = new InvalidKeyNameException();
+            else if ("AccessDenied".Equals(code)) clientException = new AccessDeniedException();
+            else if ("BucketAlreadyExists".Equals(code)) clientException = new BucketExistsException();
+            else if ("ObjectAlreadyExists".Equals(code)) clientException = new ObjectExistsException();
+            else if ("InternalError".Equals(code)) clientException = new InternalServerException();
+            else if ("KeyTooLong".Equals(code)) clientException = new InvalidKeyNameException();
+            else if ("TooManyBuckets".Equals(code)) clientException = new MaxBucketsReachedException();
+            else if ("PermanentRedirect".Equals(code)) clientException = new RedirectionException();
+            else if ("MethodNotAllowed".Equals(code)) clientException = new ObjectExistsException();
+            else if ("BucketAlreadyOwnedByYou".Equals(code)) clientException = new BucketExistsException();
+            else clientException = new InternalClientException(errResponse.ToString());
+
+
+            clientException.Response = errResponse;
+            clientException.XmlError = response.Content;
+            return clientException;
         }
 
         private string StripXmlnsXsi(string input)

@@ -126,6 +126,7 @@ namespace Minio.ClientTests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(BucketExistsException))]
         public void MakeInStandard()
         {
             client.MakeBucket(bucket + "-standard");
@@ -176,7 +177,7 @@ namespace Minio.ClientTests
         [ExpectedException(typeof(RedirectionException))]
         public void TestSetAclDifferentRegionNotOwned()
         {
-            standardClient.SetBucketAcl("bucket", Acl.AuthenticatedRead);
+            client.SetBucketAcl("bucket", Acl.AuthenticatedRead);
         }
 
         // TODO List Buckets (populate with more data first)
@@ -339,7 +340,6 @@ namespace Minio.ClientTests
             byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");
             client.PutObject(bucket, "toosmall", 10, "application/octet-stream", new MemoryStream(data));
         }
-
 
         [TestMethod]
         [ExpectedException(typeof(DataSizeMismatchException))]

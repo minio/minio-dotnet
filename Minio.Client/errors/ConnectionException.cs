@@ -18,21 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Xml.Serialization;
+using System.Threading.Tasks;
 
 namespace Minio.Client.Errors
 {
-    [Serializable]
-    [XmlRoot(ElementName="Error", Namespace = "")]
-     public class ErrorResponse
-     {
-         public string Code { get; set; }
-         public string Message { get; set; }
-         public string RequestID { get; set; }
-         public string HostID { get; set; }
-         public string Resource { get; set; }
-        
-        // not an attribute, we fix it up later
-         public string XAmzID2 { get; set; }
+    public class ConnectionException : ClientException
+    {
     }
 }

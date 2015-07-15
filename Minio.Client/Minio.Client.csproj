@@ -44,8 +44,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Acl.cs" />
+    <Compile Include="Errors\ConnectionException.cs" />
     <Compile Include="Errors\AccessDeniedException.cs" />
     <Compile Include="Errors\ForbiddenException.cs" />
+    <Compile Include="Errors\InternalServerException.cs" />
     <Compile Include="Errors\RedirectionException.cs" />
     <Compile Include="Errors\ObjectNotFoundException.cs" />
     <Compile Include="Errors\ObjectExistsException.cs" />
