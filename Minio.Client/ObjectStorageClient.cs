@@ -413,6 +413,10 @@ namespace Minio.Client
             if (size <= ObjectStorageClient.PART_SIZE)
             {
                 var bytes = ReadFull(data, (int)size);
+                if (data.ReadByte() > 0)
+                {
+                    throw new DataSizeMismatchException();
+                }
                 if (bytes.Length != (int)size)
                 {
                     throw new DataSizeMismatchException()
