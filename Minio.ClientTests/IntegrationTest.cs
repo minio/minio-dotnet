@@ -220,13 +220,14 @@ namespace Minio.ClientTests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(AccessDeniedException))]
         public void BucketExistsOwnedByOtherUser()
         {
             bool exists = standardClient.BucketExists("bucket");
-            Assert.IsFalse(exists);
         }
 
         [TestMethod]
+        [ExpectedException(typeof(RedirectionException))]
         public void BuckExistsAnotherRegion()
         {
             bool exists = standardClient.BucketExists(bucket);
@@ -234,6 +235,7 @@ namespace Minio.ClientTests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(RedirectionException))]
         public void BucketExistsAnotherRegionAnotherUser()
         {
             bool exists = client.BucketExists("bucket");
@@ -449,6 +451,8 @@ namespace Minio.ClientTests
                 data[i] = (byte)'a';
             }
             client.PutObject(bucket, "large/text_plain", 11 * 1024 * 1024, "text/plain", new MemoryStream(data));
+            var stat = client.StatObject(bucket, "large/text_plain");
+            Assert.AreEqual("text/plain", stat.ContentType);
         }
 
         [TestMethod]
@@ -720,10 +724,33 @@ namespace Minio.ClientTests
         }
 
         [TestMethod]
-        public void TestStatObject()
+        public void StatObject()
         {
             ObjectStat stat = client.StatObject(bucket, "smallobj");
-            Console.Out.WriteLine(stat);
+            Console.Out.WriteLine("{0} {1} {2} {3} {4}", stat.Key, stat.LastModified, stat.Size, stat.ETag, stat.ContentType);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ObjectNotFoundException))]
+        public void StatObjectMissingObject()
+        {
+            ObjectStat stat = client.StatObject(bucket, "smallobj-missing");
+            Console.Out.WriteLine("{0} {1} {2} {3} {4}", stat.Key, stat.LastModified, stat.Size, stat.ETag, stat.ContentType);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(BucketNotFoundException))]
+        public void StatObjectMissingBucket()
+        {
+            ObjectStat stat = client.StatObject(bucket + "-no-exist", "smallobj");
+            Console.Out.WriteLine("{0} {1} {2} {3} {4}", stat.Key, stat.LastModified, stat.Size, stat.ETag, stat.ContentType);
+        }
+
+        [TestMethod]
+        public void StatObjectUnicode()
+        {
+            ObjectStat stat = client.StatObject(bucket, "large/世界");
+            Console.Out.WriteLine("{0} {1} {2} {3} {4}", stat.Key, stat.LastModified, stat.Size, stat.ETag, stat.ContentType);
         }
     }
 }

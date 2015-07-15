@@ -463,7 +463,7 @@ namespace Minio.Client
                 }
                 if (uploadId == null)
                 {
-                    uploadId = this.NewMultipartUpload(bucket, key);
+                    uploadId = this.NewMultipartUpload(bucket, key, contentType);
                 }
                 int partNumber = 0;
                 long totalWritten = 0;
@@ -635,10 +635,15 @@ namespace Minio.Client
             throw ParseError(response);
         }
 
-        private string NewMultipartUpload(string bucket, string key)
+        private string NewMultipartUpload(string bucket, string key, string contentType)
         {
             var path = bucket + "/" + UrlEncode(key) + "?uploads";
             var request = new RestRequest(path, Method.POST);
+            if (string.IsNullOrWhiteSpace(contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+            request.AddHeader("Content-Type", contentType);
             var response = client.Execute(request);
             if (response.StatusCode.Equals(HttpStatusCode.OK))
             {
