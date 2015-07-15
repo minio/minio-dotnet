@@ -41,8 +41,8 @@ namespace Minio.ClientTests
         private TestContext testContextInstance;
 
         private static readonly string bucket = "goroutine-dotnet";
-        //private static ObjectStorageClient client = ObjectStorageClient.GetClient("https://s3-us-west-2.amazonaws.com", "", "");
-        //private static ObjectStorageClient client = ObjectStorageClient.GetClient("https://s3.amazonaws.com", "", "");
+        private static ObjectStorageClient client = ObjectStorageClient.GetClient("https://s3-us-west-2.amazonaws.com", "", "");
+        private static ObjectStorageClient standardClient = ObjectStorageClient.GetClient("https://s3.amazonaws.com", "", "");
         /// <summary>
         ///Gets or sets the test context which provides
         ///information about and functionality for the current test run.
