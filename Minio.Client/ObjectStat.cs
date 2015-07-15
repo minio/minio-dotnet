@@ -23,15 +23,17 @@ namespace Minio.Client
 {
     public class ObjectStat
     {
-        public ObjectStat(string key, long size, DateTime lastModified, string etag) {
+        public ObjectStat(string key, long size, DateTime lastModified, string etag, string contentType) {
             this.Key = key;
             this.Size = size;
             this.LastModified = lastModified;
             this.ETag = etag;
+            this.ContentType = contentType;
         }
         public string Key { get; private set; }
         public long Size { get; private set; }
         public DateTime LastModified { get; private set;  }
         public string ETag { get; private set; }
+        public string ContentType { get; private set; }
     }
 }

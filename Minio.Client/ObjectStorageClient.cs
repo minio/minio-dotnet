@@ -375,6 +375,7 @@ namespace Minio.Client
                 long size = 0;
                 DateTime lastModified = new DateTime();
                 string etag = "";
+                string contentType = null;
                 foreach (Parameter parameter in response.Headers)
                 {
                     if (parameter.Name == "Content-Length")
@@ -389,9 +390,13 @@ namespace Minio.Client
                     {
                         etag = parameter.Value.ToString().Replace("\"", "");
                     }
+                    if (parameter.Name == "Content-Type")
+                    {
+                        contentType = parameter.Value.ToString();
+                    }
                 }
 
-                return new ObjectStat(key, size, lastModified, etag);
+                return new ObjectStat(key, size, lastModified, etag, contentType);
             }
             throw ParseError(response);
         }
