@@ -716,54 +716,53 @@ namespace Minio.Client
                 return new RedirectionException();
             }
 
-            if (HttpStatusCode.Forbidden.Equals(response.StatusCode) || HttpStatusCode.NotFound.Equals(response.StatusCode))
+            if (string.IsNullOrWhiteSpace(response.Content))
             {
-                ClientException e = null;
-                ErrorResponse errorResponse = new ErrorResponse();
-
-                foreach (Parameter parameter in response.Headers)
+                if (HttpStatusCode.Forbidden.Equals(response.StatusCode) || HttpStatusCode.NotFound.Equals(response.StatusCode))
                 {
-                    if (parameter.Name.Equals("x-amz-id-2", StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        errorResponse.XAmzID2 = parameter.Value.ToString();
-                    }
-                    if (parameter.Name.Equals("x-amz-request-id", StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        errorResponse.RequestID = parameter.Value.ToString();
-                    }
-                }
+                    ClientException e = null;
+                    ErrorResponse errorResponse = new ErrorResponse();
 
-                errorResponse.Resource = response.Request.Resource;
-
-                if (HttpStatusCode.NotFound.Equals(response.StatusCode))
-                {
-                    int pathLength = response.Request.Resource.Split('/').Count();
-                    if (pathLength > 1)
+                    foreach (Parameter parameter in response.Headers)
                     {
-                        errorResponse.Code = "NoSuchKey";
-                        e = new ObjectNotFoundException();
+                        if (parameter.Name.Equals("x-amz-id-2", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            errorResponse.XAmzID2 = parameter.Value.ToString();
+                        }
+                        if (parameter.Name.Equals("x-amz-request-id", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            errorResponse.RequestID = parameter.Value.ToString();
+                        }
                     }
-                    else if (pathLength == 1)
+
+                    errorResponse.Resource = response.Request.Resource;
+
+                    if (HttpStatusCode.NotFound.Equals(response.StatusCode))
                     {
-                        errorResponse.Code = "NoSuchBucket";
-                        e = new BucketNotFoundException();
+                        int pathLength = response.Request.Resource.Split('/').Count();
+                        if (pathLength > 1)
+                        {
+                            errorResponse.Code = "NoSuchKey";
+                            e = new ObjectNotFoundException();
+                        }
+                        else if (pathLength == 1)
+                        {
+                            errorResponse.Code = "NoSuchBucket";
+                            e = new BucketNotFoundException();
+                        }
+                        else
+                        {
+                            e = new InternalClientException("404 without body resulted in path with less than two components");
+                        }
                     }
                     else
                     {
-                        e = new InternalClientException("404 without body resulted in path with less than two components");
+                        errorResponse.Code = "Forbidden";
+                        e = new AccessDeniedException();
                     }
+                    e.Response = errorResponse;
+                    return e;
                 }
-                else
-                {
-                    errorResponse.Code = "Forbidden";
-                    e = new AccessDeniedException();
-                }
-                e.Response = errorResponse;
-                return e;
-            }
-
-            if (string.IsNullOrWhiteSpace(response.Content))
-            {
                 throw new InternalClientException("Unsuccessful response from server without XML error: " + response.StatusCode);
             }
 
@@ -779,6 +778,7 @@ namespace Minio.Client
             else if ("InvalidBucketName".Equals(code)) clientException = new InvalidKeyNameException();
             else if ("InvalidObjectName".Equals(code)) clientException = new InvalidKeyNameException();
             else if ("AccessDenied".Equals(code)) clientException = new AccessDeniedException();
+            else if ("InvalidAccessKeyId".Equals(code)) clientException = new AccessDeniedException();
             else if ("BucketAlreadyExists".Equals(code)) clientException = new BucketExistsException();
             else if ("ObjectAlreadyExists".Equals(code)) clientException = new ObjectExistsException();
             else if ("InternalError".Equals(code)) clientException = new InternalServerException();

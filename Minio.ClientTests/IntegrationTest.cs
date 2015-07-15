@@ -758,5 +758,18 @@ namespace Minio.ClientTests
         {
             client.RemoveObject(bucket, "large/世界世界");
         }
+
+        [TestMethod]
+        public void RemoveObjectWithoutObject()
+        {
+            client.RemoveObject(bucket, "large/世界世界");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(BucketNotFoundException))]
+        public void RemoveObjectWithoutBucket()
+        {
+            client.RemoveObject(bucket+ "no-exist", "large/世界世界");
+        }
     }
 }
