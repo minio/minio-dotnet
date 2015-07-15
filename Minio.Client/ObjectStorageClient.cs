@@ -157,7 +157,13 @@ namespace Minio.Client
             {
                 return true;
             }
-            return false;
+
+            var ex = ParseError(response);
+            if (ex.GetType() == typeof(BucketNotFoundException))
+            {
+                return false;
+            }
+            throw ex;
         }
 
         /// <summary>
@@ -684,7 +690,7 @@ namespace Minio.Client
             {
                 return new ConnectionException();
             }
-            if (HttpStatusCode.Redirect.Equals(response.StatusCode) || HttpStatusCode.TemporaryRedirect.Equals(response.StatusCode))
+            if (HttpStatusCode.Redirect.Equals(response.StatusCode) || HttpStatusCode.TemporaryRedirect.Equals(response.StatusCode) || HttpStatusCode.MovedPermanently.Equals(response.StatusCode))
             {
                 return new RedirectionException();
             }
