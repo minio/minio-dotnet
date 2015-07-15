@@ -816,11 +816,11 @@ namespace Minio.Client
             var queries = new List<string>();
             if (!recursive)
             {
-                queries.Add("delimiter=/");
+                queries.Add("delimiter=%2F");
             }
             if (prefix != null)
             {
-                queries.Add("prefix=" + prefix);
+                queries.Add("prefix=" + Uri.EscapeDataString(prefix));
             }
             if (marker != null)
             {
@@ -874,11 +874,11 @@ namespace Minio.Client
             queries.Add("uploads");
             if (prefix != null)
             {
-                queries.Add("prefix=" + UrlEncode(prefix));
+                queries.Add("prefix=" + Uri.EscapeDataString(prefix));
             }
             if (keyMarker != null)
             {
-                queries.Add("key-marker=" + UrlEncode(keyMarker));
+                queries.Add("key-marker=" + Uri.EscapeDataString(keyMarker));
             }
             if (uploadIdMarker != null)
             {

@@ -190,8 +190,6 @@ namespace Minio.Client
                     if (individualParameterString.Contains('='))
                     {
                         string[] splitQuery = individualParameterString.Split(new char[] { '=' }, 2);
-                        splitQuery[0] = WebUtility.UrlEncode(splitQuery[0]);
-                        splitQuery[1] = WebUtility.UrlEncode(splitQuery[1]);
                         sortedQueries.Add(splitQuery[0] + "=" + splitQuery[1]);
                     }
                     else

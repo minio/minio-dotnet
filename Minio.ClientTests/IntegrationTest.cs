@@ -437,7 +437,73 @@ namespace Minio.ClientTests
             {
                 data[i] = (byte)'a';
             }
-            client.PutObject(bucket, "largeobj", 11 * 1024 * 1024, "application/octet-stream", new MemoryStream(data));
+            client.PutObject(bucket, "large/object", 11 * 1024 * 1024, "application/octet-stream", new MemoryStream(data));
+        }
+
+        [TestMethod]
+        public void PutLargeObjectWithContentType()
+        {
+            byte[] data = new byte[11 * 1024 * 1024];
+            for (int i = 0; i < 11 * 1024 * 1024; i++)
+            {
+                data[i] = (byte)'a';
+            }
+            client.PutObject(bucket, "large/text_plain", 11 * 1024 * 1024, "text/plain", new MemoryStream(data));
+        }
+
+        [TestMethod]
+        public void PutLargeObjectWithQuestionMark()
+        {
+            byte[] data = new byte[11 * 1024 * 1024];
+            for (int i = 0; i < 11 * 1024 * 1024; i++)
+            {
+                data[i] = (byte)'a';
+            }
+            client.PutObject(bucket, "large/obj?ect", 11 * 1024 * 1024, "application/octet-stream", new MemoryStream(data));
+        }
+
+        [TestMethod]
+        public void PutLargeObjectWithHash()
+        {
+            byte[] data = new byte[11 * 1024 * 1024];
+            for (int i = 0; i < 11 * 1024 * 1024; i++)
+            {
+                data[i] = (byte)'a';
+            }
+            client.PutObject(bucket, "large/obj#ect", 11 * 1024 * 1024, "application/octet-stream", new MemoryStream(data));
+        }
+
+        [TestMethod]
+        public void PutLargeObjectWithUnicode1()
+        {
+            byte[] data = new byte[11 * 1024 * 1024];
+            for (int i = 0; i < 11 * 1024 * 1024; i++)
+            {
+                data[i] = (byte)'a';
+            }
+            client.PutObject(bucket, "large/世界", 11 * 1024 * 1024, "application/octet-stream", new MemoryStream(data));
+        }
+
+        [TestMethod]
+        public void PutLargeObjectWithUnicode2()
+        {
+            byte[] data = new byte[11 * 1024 * 1024];
+            for (int i = 0; i < 11 * 1024 * 1024; i++)
+            {
+                data[i] = (byte)'a';
+            }
+            client.PutObject(bucket, "large/世界世", 11 * 1024 * 1024, "application/octet-stream", new MemoryStream(data));
+        }
+
+        [TestMethod]
+        public void PutLargeObjectWithUnicode3()
+        {
+            byte[] data = new byte[11 * 1024 * 1024];
+            for (int i = 0; i < 11 * 1024 * 1024; i++)
+            {
+                data[i] = (byte)'a';
+            }
+            client.PutObject(bucket, "large/世界世界", 11 * 1024 * 1024, "application/octet-stream", new MemoryStream(data));
         }
 
         [TestMethod]
