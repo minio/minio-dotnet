@@ -398,7 +398,17 @@ namespace Minio.Client
 
                 return new ObjectStat(key, size, lastModified, etag, contentType);
             }
-            throw ParseError(response);
+            ClientException ex = ParseError(response);
+            if (ex.GetType() == typeof(ObjectNotFoundException))
+            {
+                if (!this.BucketExists(bucket))
+                {
+                    var bnfe = new BucketNotFoundException();
+                    bnfe.Response = ex.Response;
+                    throw new BucketNotFoundException();
+                }
+            }
+            throw ex;
         }
 
         /// <summary>
