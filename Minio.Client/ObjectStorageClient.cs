@@ -140,7 +140,6 @@ namespace Minio.Client
             }
             this.CustomUserAgent = customAgent;
             this.client.UserAgent = this.FullUserAgent;
-
         }
 
         /// <summary>
@@ -375,7 +374,7 @@ namespace Minio.Client
                     }
                     if (parameter.Name == "ETag")
                     {
-                        etag = parameter.Value.ToString();
+                        etag = parameter.Value.ToString().Replace("\"", "");
                     }
                 }
 

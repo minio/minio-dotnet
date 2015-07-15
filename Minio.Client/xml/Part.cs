@@ -9,8 +9,26 @@ namespace Minio.Client.xml
     [Serializable]
     public class Part
     {
+        private string etag;
         public int PartNumber { get; set; }
 
-        public string ETag { get; set; }
+        public string ETag
+        {
+            get
+            {
+                return etag;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    etag = value.Replace("\"", "");
+                }
+                else
+                {
+                    etag = null;
+                }
+            }
+        }
     }
 }
