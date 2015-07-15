@@ -80,7 +80,7 @@ namespace Minio.Client
             SetDateHeader(request, signingDate);
             SortedDictionary<string, string> headersToSign = GetHeadersToSign(request);
             string signedHeaders = GetSignedHeaders(headersToSign);
-            string region = GetRegion();
+            string region = Regions.GetRegion(client.BaseUrl.Host);
             string canonicalRequest = GetCanonicalRequest(client, request, headersToSign);
             byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = BytesToHex(ComputeSha256(canonicalRequestBytes));
@@ -234,11 +234,6 @@ namespace Minio.Client
         private void SetHostHeader(IRestClient client, IRestRequest request)
         {
             request.AddHeader("Host", client.BaseUrl.Host + ":" + client.BaseUrl.Port);
-        }
-
-        private string GetRegion()
-        {
-            return "us-west-2";
         }
 
         private SortedDictionary<string, string> GetHeadersToSign(IRestRequest request)
