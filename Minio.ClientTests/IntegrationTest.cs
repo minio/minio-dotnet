@@ -305,7 +305,7 @@ namespace Minio.ClientTests
         [TestMethod]
         public void GetObjectWithOffset()
         {
-            client.GetObject(bucket, "hello_world", 2, (stream) =>
+            client.GetPartialObject(bucket, "hello_world", 2, (stream) =>
             {
                 byte[] buffer = new byte[(int)stream.Length];
                 stream.Read(buffer, 0, buffer.Length);
@@ -318,7 +318,7 @@ namespace Minio.ClientTests
         [TestMethod]
         public void GetObjectWithOffsetAndLength()
         {
-            client.GetObject(bucket, "hello_world", 2, 5, (stream) =>
+            client.GetPartialObject(bucket, "hello_world", 2, 5, (stream) =>
             {
                 byte[] buffer = new byte[(int)stream.Length];
                 stream.Read(buffer, 0, buffer.Length);

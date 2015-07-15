@@ -354,7 +354,7 @@ namespace Minio.Client
         /// <param name="key">Key of object to retrieve</param>
         /// <param name="offset">Number of bytes to skip</param>
         /// <param name="callback">A stream will be passed to the callback</param>
-        public void GetObject(string bucket, string key, ulong offset, Action<Stream> callback)
+        public void GetPartialObject(string bucket, string key, ulong offset, Action<Stream> callback)
         {
             var stat = this.StatObject(bucket, key);
             RestRequest request = new RestRequest(bucket + "/" + UrlEncode(key), Method.GET);
@@ -372,7 +372,7 @@ namespace Minio.Client
         /// <param name="offset">Number of bytes to skip</param>
         /// <param name="length">Length of requested byte range</param>
         /// <param name="callback">A stream will be passed to the callback</param>
-        public void GetObject(string bucket, string key, ulong offset, ulong length, Action<Stream> callback)
+        public void GetPartialObject(string bucket, string key, ulong offset, ulong length, Action<Stream> callback)
         {
             RestRequest request = new RestRequest(bucket + "/" + UrlEncode(key), Method.GET);
             request.AddHeader("Range", "bytes=" + offset + "-" + (offset + length - 1));
