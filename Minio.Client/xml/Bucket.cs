@@ -28,5 +28,11 @@ namespace Minio.Client.xml
     {
         public string Name { get; set; }
         public string CreationDate { get; set; }
+
+        public DateTime CreationDateDateTime {
+            get {
+                return DateTime.Parse(this.CreationDate);
+            }
+        }
     }
 }

@@ -328,19 +328,18 @@ namespace Minio.Client
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
-                UInt64 size = 0;
+                long size = 0;
                 DateTime lastModified = new DateTime();
                 string etag = "";
                 foreach (Parameter parameter in response.Headers)
                 {
                     if (parameter.Name == "Content-Length")
                     {
-                        size = UInt64.Parse(parameter.Value.ToString());
+                        size = long.Parse(parameter.Value.ToString());
                     }
                     if (parameter.Name == "Last-Modified")
                     {
-                        // TODO parse datetime
-                        lastModified = new DateTime();
+                        DateTime.Parse(parameter.Value.ToString());
                     }
                     if (parameter.Name == "ETag")
                     {

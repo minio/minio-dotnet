@@ -15,5 +15,13 @@ namespace Minio.Client.xml
         public UInt64 Size { get; set; }
 
         public bool IsDir { get; set; }
+
+        public DateTime LastModifiedDateTime
+        {
+            get
+            {
+                return DateTime.Parse(this.LastModified);
+            }
+        }
     }
 }
