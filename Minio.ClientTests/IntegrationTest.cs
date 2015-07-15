@@ -752,5 +752,11 @@ namespace Minio.ClientTests
             ObjectStat stat = client.StatObject(bucket, "large/世界");
             Console.Out.WriteLine("{0} {1} {2} {3} {4}", stat.Key, stat.LastModified, stat.Size, stat.ETag, stat.ContentType);
         }
+
+        [TestMethod]
+        public void RemoveObject()
+        {
+            client.RemoveObject(bucket, "large/世界世界");
+        }
     }
 }

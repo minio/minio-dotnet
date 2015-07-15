@@ -218,6 +218,22 @@ namespace Minio.Client
         }
 
         /// <summary>
+        /// Remove an object
+        /// </summary>
+        /// <param name="bucket">Name of bucket to remove</param>
+        /// <param name="key">Name of object to remove</param>
+        public void RemoveObject(string bucket, string key)
+        {
+            var request = new RestRequest(bucket + "/" + UrlEncode(key), Method.DELETE);
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(HttpStatusCode.NoContent))
+            {
+                throw ParseError(response);
+            }
+        }
+
+        /// <summary>
         /// Get bucket ACL
         /// </summary>
         /// <param name="bucket">NAme of bucket to retrieve canned ACL</param>
