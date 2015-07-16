@@ -1,4 +1,4 @@
-# Minimal object storage library for the .NET Platform
+# Minimal object storage library for the .NET Platform [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Minio/minio?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Install from NuGet
 
@@ -22,11 +22,15 @@ foreach (Bucket bucket in buckets)
 
 ### Additional Examples
 
-TODO
+### Additional Examples
 
-## Join The Community
-* Community hangout on Gitter    [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Minio/minio?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-* Ask questions on Quora  [![Quora](http://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Quora_logo.svg/55px-Quora_logo.svg.png)](http://www.quora.com/Minio)
+* [ExamplePutObject.cs](./Minio.ClientTests/Examples/ExamplePutObject.cs)
+* [ExampleGetObject.cs](./Minio.ClientTests/Examples/ExampleGetObject.cs)
+* [ExampleGetPartialObject.cs](./Minio.ClientTests/Examples/ExampleGetPartialObject.cs)
+* [ExampleListBuckets.cs](./Minio.ClientTests/Examples/ExampleListBuckets.cs)
+* [ExampleListObjects.cs](./Minio.ClientTests/Examples/ExampleListObjects.cs)
+* [ExampleMakeBucket.cs](./Minio.ClientTests/Examples/ExampleMakeBucket.cs)
+* [ExampleRemoveBucket.cs](./Minio.ClientTests/Examples/ExampleRemoveBucket.cs)
 
 ## Contribute
 
