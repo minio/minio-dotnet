@@ -22,8 +22,6 @@ foreach (Bucket bucket in buckets)
 
 ### Additional Examples
 
-### Additional Examples
-
 * [ExamplePutObject.cs](./Minio.ClientTests/Examples/ExamplePutObject.cs)
 * [ExampleGetObject.cs](./Minio.ClientTests/Examples/ExampleGetObject.cs)
 * [ExampleGetPartialObject.cs](./Minio.ClientTests/Examples/ExampleGetPartialObject.cs)
