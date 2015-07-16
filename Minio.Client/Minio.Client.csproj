@@ -46,6 +46,7 @@
     <Compile Include="Acl.cs" />
     <Compile Include="Errors\ConnectionException.cs" />
     <Compile Include="Errors\AccessDeniedException.cs" />
+    <Compile Include="Errors\MethodNotAllowedException.cs" />
     <Compile Include="Errors\ForbiddenException.cs" />
     <Compile Include="Errors\InternalServerException.cs" />
     <Compile Include="Errors\RedirectionException.cs" />

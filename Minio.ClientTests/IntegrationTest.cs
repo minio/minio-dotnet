@@ -43,6 +43,9 @@ namespace Minio.ClientTests
         private static readonly string bucket = "goroutine-dotnet";
         private static ObjectStorageClient client = ObjectStorageClient.GetClient("https://s3-us-west-2.amazonaws.com", "", "");
         private static ObjectStorageClient standardClient = ObjectStorageClient.GetClient("https://s3.amazonaws.com", "", "");
+
+
+        private static ObjectStorageClient playClient = ObjectStorageClient.GetClient("https://play.minio.io:9000");
         /// <summary>
         ///Gets or sets the test context which provides
         ///information about and functionality for the current test run.
@@ -770,6 +773,29 @@ namespace Minio.ClientTests
         public void RemoveObjectWithoutBucket()
         {
             client.RemoveObject(bucket+ "no-exist", "large/世界世界");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(MethodNotAllowedException))]
+        public void RemoveBucketFromMinio()
+        {
+            playClient.RemoveBucket("foo");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(MethodNotAllowedException))]
+        public void RemoveObjectFromMinio()
+        {
+            playClient.RemoveObject("foo", "bar");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ObjectExistsException))]
+        public void ObjectAlreadyExists()
+        {
+            byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");
+            playClient.PutObject("foo", "smallobj", 11, "application/octet-stream", new MemoryStream(data));
+            playClient.PutObject("foo", "smallobj", 11, "application/octet-stream", new MemoryStream(data));
         }
     }
 }

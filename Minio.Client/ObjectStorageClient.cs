@@ -718,7 +718,8 @@ namespace Minio.Client
 
             if (string.IsNullOrWhiteSpace(response.Content))
             {
-                if (HttpStatusCode.Forbidden.Equals(response.StatusCode) || HttpStatusCode.NotFound.Equals(response.StatusCode))
+                if (HttpStatusCode.Forbidden.Equals(response.StatusCode) || HttpStatusCode.NotFound.Equals(response.StatusCode) ||
+                    HttpStatusCode.MethodNotAllowed.Equals(response.StatusCode) || HttpStatusCode.NotImplemented.Equals(response.StatusCode))
                 {
                     ClientException e = null;
                     ErrorResponse errorResponse = new ErrorResponse();
@@ -755,10 +756,20 @@ namespace Minio.Client
                             e = new InternalClientException("404 without body resulted in path with less than two components");
                         }
                     }
-                    else
+                    else if (HttpStatusCode.Forbidden.Equals(response.StatusCode))
                     {
                         errorResponse.Code = "Forbidden";
                         e = new AccessDeniedException();
+                    }
+                    else if (HttpStatusCode.MethodNotAllowed.Equals(response.StatusCode))
+                    {
+                        errorResponse.Code = "MethodNotAllowed";
+                        e = new MethodNotAllowedException();
+                    }
+                    else
+                    {
+                        errorResponse.Code = "MethodNotAllowed";
+                        e = new MethodNotAllowedException();
                     }
                     e.Response = errorResponse;
                     return e;
