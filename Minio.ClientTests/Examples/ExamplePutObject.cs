@@ -1,5 +1,4 @@
-﻿using Minio.Client;
-/*
+﻿/*
  * Minimal Object Storage Library, (C) 2015 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +19,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
+using Minio.Client;
 
 namespace Minio.ClientTests.Examples
 {
