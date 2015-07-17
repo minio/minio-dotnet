@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Minio.Client")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Minimal object storage library for the .NET platform")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Minio, Inc.")]
 [assembly: AssemblyProduct("Minio.Client")]
 [assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
