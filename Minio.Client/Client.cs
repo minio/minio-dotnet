@@ -27,14 +27,14 @@ using Minio.Client.Errors;
 
 namespace Minio.Client
 {
-    public class ObjectStorageClient
+    public class Client
     {
         private static int PART_SIZE = 5 * 1024 * 1024;
 
         private RestClient client;
         private string region;
 
-        private string SystemUserAgent = "minio-cs/0.0.1 (Windows 8.1; x86_64)";
+        private string SystemUserAgent = "minio-dotnet/0.0.1 (Windows 8.1; x86_64)";
         private string CustomUserAgent = "";
 
         private string FullUserAgent
@@ -46,7 +46,7 @@ namespace Minio.Client
         }
 
 
-        internal ObjectStorageClient(Uri uri, string accessKey, string secretKey)
+        internal Client(Uri uri, string accessKey, string secretKey)
         {
             this.client = new RestClient(uri);
             this.region = Regions.GetRegion(uri.Host);
@@ -61,7 +61,7 @@ namespace Minio.Client
         /// </summary>
         /// <param name="uri">Location of the server, supports HTTP and HTTPS.</param>
         /// <returns>Object Storage Client with the uri set as the server location.</returns>
-        public static ObjectStorageClient GetClient(Uri uri)
+        public static Client GetClient(Uri uri)
         {
             return GetClient(uri, null, null);
         }
@@ -72,7 +72,7 @@ namespace Minio.Client
         /// <param name="accessKey">Access Key for authenticated requests</param>
         /// <param name="secretKey">Secret Key for authenticated requests</param>
         /// <returns>Object Storage Client with the uri set as the server location and authentication parameters set.</returns>
-        public static ObjectStorageClient GetClient(Uri uri, string accessKey, string secretKey)
+        public static Client GetClient(Uri uri, string accessKey, string secretKey)
         {
             if (uri == null)
             {
@@ -92,7 +92,7 @@ namespace Minio.Client
             if (uri.AbsolutePath.Length == 0 || (uri.AbsolutePath.Length == 1 && uri.AbsolutePath[0] == '/'))
             {
                 String path = uri.Scheme + "://" + uri.Host + ":" + uri.Port + "/";
-                return new ObjectStorageClient(new Uri(path), accessKey, secretKey);
+                return new Client(new Uri(path), accessKey, secretKey);
             }
             throw new UriFormatException("Expecting AbsolutePath to be empty");
         }
@@ -102,7 +102,7 @@ namespace Minio.Client
         /// </summary>
         /// <param name="uri">Location of the server, supports HTTP and HTTPS</param>
         /// <returns>Object Storage Client with the uri set as the server location and authentication parameters set.</returns>
-        public static ObjectStorageClient GetClient(string url)
+        public static Client GetClient(string url)
         {
             return GetClient(url, null, null);
         }
@@ -114,7 +114,7 @@ namespace Minio.Client
         /// <param name="accessKey">Access Key for authenticated requests</param>
         /// <param name="secretKey">Secret Key for authenticated requests</param>
         /// <returns>Object Storage Client with the uri set as the server location and authentication parameters set.</returns>
-        public static ObjectStorageClient GetClient(string url, string accessKey, string secretKey)
+        public static Client GetClient(string url, string accessKey, string secretKey)
         {
             Uri uri = new Uri(url);
             return GetClient(uri, accessKey, secretKey);
@@ -293,7 +293,6 @@ namespace Minio.Client
         public void SetBucketAcl(string bucket, Acl acl)
         {
             var request = new RestRequest(bucket + "?acl", Method.PUT);
-            // TODO add acl header
             request.AddHeader("x-amz-acl", acl.ToString());
             var response = client.Execute(request);
             if (!HttpStatusCode.OK.Equals(response.StatusCode))
@@ -311,21 +310,14 @@ namespace Minio.Client
             var request = new RestRequest("/", Method.GET);
             var response = client.Execute(request);
 
-            if (response.StatusCode == HttpStatusCode.OK)
+            if (HttpStatusCode.OK.Equals(response.StatusCode))
             {
-                try
-                {
-                    var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-                    var stream = new MemoryStream(contentBytes);
-                    ListAllMyBucketsResult bucketList = (ListAllMyBucketsResult)(new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream));
-                    return bucketList.Buckets;
-                }
-                catch (InvalidOperationException ex)
-                {
-                    // unauthed returns html, so we catch xml parse exception and return access denied
-                    throw new AccessDeniedException();
-                }
+                var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+                var stream = new MemoryStream(contentBytes);
+                ListAllMyBucketsResult bucketList = (ListAllMyBucketsResult)(new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream));
+                return bucketList.Buckets;
             }
+
             throw ParseError(response);
         }
 
@@ -417,7 +409,6 @@ namespace Minio.Client
                         contentType = parameter.Value.ToString();
                     }
                 }
-
                 return new ObjectStat(key, size, lastModified, etag, contentType);
             }
             ClientException ex = ParseError(response);
@@ -427,7 +418,7 @@ namespace Minio.Client
                 {
                     var bnfe = new BucketNotFoundException();
                     bnfe.Response = ex.Response;
-                    throw new BucketNotFoundException();
+                    throw bnfe;
                 }
             }
             throw ex;
@@ -443,7 +434,7 @@ namespace Minio.Client
         /// <param name="data">Stream of bytes to send</param>
         public void PutObject(string bucket, string key, long size, string contentType, Stream data)
         {
-            if (size <= ObjectStorageClient.PART_SIZE)
+            if (size <= Client.PART_SIZE)
             {
                 var bytes = ReadFull(data, (int)size);
                 if (data.ReadByte() > 0)
@@ -674,7 +665,6 @@ namespace Minio.Client
         private string DoPutObject(string bucket, string key, string uploadId, int partNumber, string contentType, byte[] data)
         {
             var path = bucket + "/" + UrlEncode(key);
-            var queries = new List<string>();
             if (uploadId != null)
             {
                 path += "?uploadId=" + uploadId + "&partNumber=" + partNumber;
