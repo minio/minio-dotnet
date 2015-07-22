@@ -34,7 +34,24 @@ namespace Minio
         private RestClient client;
         private string region;
 
-        private string SystemUserAgent = "minio-dotnet/0.0.1 (Windows 8.1; x86_64)";
+        private string SystemUserAgent
+        {
+            get
+            {
+                string userAgent = "minio-dotnet/0.1.0";
+                userAgent += " (" + System.Environment.OSVersion.ToString() + "; ";
+                string arch = "";
+                if (System.Environment.Is64BitOperatingSystem)
+                {
+                    arch = "x86_64";
+                }
+                else
+                {
+                    arch = "x86";
+                }
+                return userAgent + arch + ") ";;
+            }
+        }
         private string CustomUserAgent = "";
 
         private string FullUserAgent

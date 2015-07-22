@@ -12,7 +12,7 @@ PM> Install-Package Minio
 ```cs
 using Minio;
 
-private static Client client = Client.GetClient("https://s3-us-west-2.amazonaws.com", "Access Key", "Secret Key");
+private static Client client = Client.Create("https://s3-us-west-2.amazonaws.com", "Access Key", "Secret Key");
 
 var buckets = client.ListBuckets();
 foreach (Bucket bucket in buckets)

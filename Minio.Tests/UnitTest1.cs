@@ -32,7 +32,7 @@ namespace Minio.Tests
         [Test]
         public void TestWithoutPort()
         {
-            Client.Create("http://localhost:9000");
+            Client.Create("http://localhost");
         }
 
         [Test]
