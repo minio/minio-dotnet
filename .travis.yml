@@ -1,12 +1,9 @@
 language: csharp
-
-before_install:
-  - nuget restore Minio.Client.sln
-  - nuget install Nunit.Runners -Version 2.6.4 -OutputDirectory testrunner
+solution: Minio.Client.sln
 
 script:
   - xbuild
-  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./Minio.ClientTests/bin/Debug/Minio.ClientTests.dll
+  - mono ./packages/NUnit.Runners.2.6.4/tools/nunit-console.exe ./Minio.ClientTests/bin/Debug/Minio.ClientTests.dll
 
 notifications:
   slack:
