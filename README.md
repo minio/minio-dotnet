@@ -10,7 +10,9 @@ PM> Install-Package Minio
 
 ## Example
 ```cs
-private static ObjectStorageClient client = ObjectStorageClient.GetClient("https://s3-us-west-2.amazonaws.com", "Access Key", "Secret Key");
+using Minio;
+
+private static Client client = Client.GetClient("https://s3-us-west-2.amazonaws.com", "Access Key", "Secret Key");
 
 var buckets = client.ListBuckets();
 foreach (Bucket bucket in buckets)
@@ -22,13 +24,13 @@ foreach (Bucket bucket in buckets)
 
 ### Additional Examples
 
-* [ExamplePutObject.cs](./Minio.ClientTests/Examples/ExamplePutObject.cs)
-* [ExampleGetObject.cs](./Minio.ClientTests/Examples/ExampleGetObject.cs)
-* [ExampleGetPartialObject.cs](./Minio.ClientTests/Examples/ExampleGetPartialObject.cs)
-* [ExampleListBuckets.cs](./Minio.ClientTests/Examples/ExampleListBuckets.cs)
-* [ExampleListObjects.cs](./Minio.ClientTests/Examples/ExampleListObjects.cs)
-* [ExampleMakeBucket.cs](./Minio.ClientTests/Examples/ExampleMakeBucket.cs)
-* [ExampleRemoveBucket.cs](./Minio.ClientTests/Examples/ExampleRemoveBucket.cs)
+* [ExamplePutObject.cs](./Minio.Tests/Examples/ExamplePutObject.cs)
+* [ExampleGetObject.cs](./Minio.Tests/Examples/ExampleGetObject.cs)
+* [ExampleGetPartialObject.cs](./Minio.Tests/Examples/ExampleGetPartialObject.cs)
+* [ExampleListBuckets.cs](./Minio.Tests/Examples/ExampleListBuckets.cs)
+* [ExampleListObjects.cs](./Minio.Tests/Examples/ExampleListObjects.cs)
+* [ExampleMakeBucket.cs](./Minio.Tests/Examples/ExampleMakeBucket.cs)
+* [ExampleRemoveBucket.cs](./Minio.Tests/Examples/ExampleRemoveBucket.cs)
 
 ## Contribute
 

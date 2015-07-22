@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{DCC0B399-5931-4EA8-9E19-1CF49E799F81}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Minio</RootNamespace>
+    <AssemblyName>Minio</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="RestSharp">
+      <HintPath>..\packages\RestSharp.105.1.0\lib\net45\RestSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Acl.cs" />
+    <Compile Include="Errors\ConnectionException.cs" />
+    <Compile Include="Errors\AccessDeniedException.cs" />
+    <Compile Include="Errors\MethodNotAllowedException.cs" />
+    <Compile Include="Errors\ForbiddenException.cs" />
+    <Compile Include="Errors\InternalServerException.cs" />
+    <Compile Include="Errors\RedirectionException.cs" />
+    <Compile Include="Errors\ObjectNotFoundException.cs" />
+    <Compile Include="Errors\ObjectExistsException.cs" />
+    <Compile Include="Errors\MaxBucketsReachedException.cs" />
+    <Compile Include="Errors\InvalidRangeException.cs" />
+    <Compile Include="Errors\InvalidKeyNameException.cs" />
+    <Compile Include="Errors\InvalidBucketNameException.cs" />
+    <Compile Include="Errors\InvalidAclNameException.cs" />
+    <Compile Include="Errors\InternalClientException.cs" />
+    <Compile Include="Errors\BucketNotFoundException.cs" />
+    <Compile Include="Errors\BucketExistsException.cs" />
+    <Compile Include="Errors\DataSizeMismatchException.cs" />
+    <Compile Include="ItemEnumerable.cs" />
+    <Compile Include="Regions.cs" />
+    <Compile Include="Errors\ClientException.cs" />
+    <Compile Include="Xml\AccessControlPolicy.cs" />
+    <Compile Include="Xml\Bucket.cs" />
+    <Compile Include="Errors\ErrorResponse.cs" />
+    <Compile Include="Client.cs" />
+    <Compile Include="ObjectStat.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="V4Authenticator.cs" />
+    <Compile Include="Xml\CreateBucketConfiguration.cs" />
+    <Compile Include="Xml\Grant.cs" />
+    <Compile Include="Xml\GranteeUser.cs" />
+    <Compile Include="Xml\InitiateMultipartUploadResult.cs" />
+    <Compile Include="Xml\Item.cs" />
+    <Compile Include="Xml\ListAllMyBucketsResult.cs" />
+    <Compile Include="Xml\ListBucketResult.cs" />
+    <Compile Include="Xml\ListMultipartUploadsResult.cs" />
+    <Compile Include="Xml\ListPartsResult.cs" />
+    <Compile Include="Xml\Part.cs" />
+    <Compile Include="Xml\Prefix.cs" />
+    <Compile Include="Xml\Upload.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,9 +1,9 @@
 language: csharp
-solution: Minio.Client.sln
+solution: Minio.sln
 
 script:
   - xbuild
-  - mono ./packages/NUnit.Runners.2.6.4/tools/nunit-console.exe ./Minio.ClientTests/bin/Debug/Minio.ClientTests.dll
+  - mono ./packages/NUnit.Runners.2.6.4/tools/nunit-console.exe ./Minio.Tests/bin/Debug/Minio.Tests.dll
 
 notifications:
   slack:
