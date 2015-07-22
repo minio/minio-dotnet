@@ -1,6 +1,6 @@
 # Minimal object storage library for the .NET Platform [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Minio/minio?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-## Install from NuGet
+## Install from NuGet [![Build Status](https://travis-ci.org/minio/minio-dotnet.svg?branch=master)](https://travis-ci.org/minio/minio-dotnet)
 
 ```powershell
 To install Json.NET, run the following command in the Package Manager Console
