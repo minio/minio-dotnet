@@ -1,5 +1,13 @@
 language: csharp
-solution: Minio.Client.sln
+
+before_install:
+  - nuget restore Minio.Client.sln
+  - nuget install Nunit.Runners -Version 2.6.4 -OutputDirectory testrunner
+
+script:
+  - xbuild
+  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./Minio.ClientTests/bin/Debug/Minio.ClientTests.dll
+
 notifications:
   slack:
     secure: ay5X9Yxw/Qhl/PLYdzniFD2zpwa3IzbFZi0EZmZOAlIuh1U9jN+Jpn+w7CvQJoXG553n32fNgejcUmADT/tZlhbV//fOMrLdEltp4EmnZ1O4PgPQEpm22CILyySIU2fg6/M8LE4fPt4qIJvcQDcTXYNl/fAr7UcI00e/JDmTo2V3iVJoawJ0nk2KDDNXoCuKFtpdM+5Q1VfqtrZDLEfcRTpEE0Q88mY0BLJ5LSZxrmG+oSHncDlT6hyrR8tTrv4CaBKJEczEzOXmlqDuVe5IGY9U65rUUekwCcN0y1MqdvSGRV+ET9J+dMVUFq25BzsjvSpsK/p9G5fvKwXLC1O4Qa9jPYeor/WyV6pQ56vry5TpuagI2kekdWcxtL/BixPIdAg9JhQQxPZkooiBzIp6cdXAVNhamkV5ayEn91EkNuyXq7su+weDRM6EUddh9xB2AeipL3mN1tjsdbenmOZPAaUHTeBWa6Ha8GrI+tbFbdwVZubusdFj12Idrh3duUwd50jGPAREsHBrPM9KZSnam/tn1Q53EBdYP3799mHIroJNehZwE+Muxz5rFvL+Z73XBXa+T3L30E9cKSoORdKgg2y7Krg6UkqMhhYhSj4rsBpKLPaq3naIYTkpHWrIOT+DQw7ti46LhasjJeAD3BaSrVGuyDco1BYFCJYjzB8xhZU=

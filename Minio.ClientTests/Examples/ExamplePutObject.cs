@@ -28,7 +28,7 @@ namespace Minio.ClientTests.Examples
     {
         static int Main(string[] args)
         {
-            var client = ObjectStorageClient.GetClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+            var client = Client.GetClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
             byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");
             client.PutObject("bucket", "smallobj", 11, "application/octet-stream", new MemoryStream(data));

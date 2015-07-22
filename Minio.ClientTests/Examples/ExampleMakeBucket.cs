@@ -26,7 +26,7 @@ namespace Minio.ClientTests.Examples
     class ExampleMakeBucket {
         static int Main(string[] args)
         {
-            var client = ObjectStorageClient.GetClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+            var client = Client.GetClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
             client.MakeBucket("bucket");
 

@@ -15,51 +15,51 @@
  */
 
 using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Minio.Client;
 
 namespace Minio.ClientTests
 {
-    [TestClass]
+    [TestFixture]
     public class UnitTest1
     {
-        [TestMethod]
+        [Test]
         public void TestWithUrl()
         {
-            ObjectStorageClient.GetClient("http://localhost:9000");
+            Client.GetClient("http://localhost:9000");
         }
 
-        [TestMethod]
+        [Test]
         public void TestWithoutPort()
         {
-            ObjectStorageClient.GetClient("http://localhost:9000");
+            Client.GetClient("http://localhost:9000");
         }
 
-        [TestMethod]
+        [Test]
         public void TestWithTrailingSlash()
         {
-            ObjectStorageClient.GetClient("http://localhost:9000/");
+            Client.GetClient("http://localhost:9000/");
         }
 
-        [TestMethod]
+        [Test]
         [ExpectedException(typeof(UriFormatException))]
         public void TestUrlFailsWithMalformedScheme()
         {
-            ObjectStorageClient.GetClient("htp://localhost:9000");
+            Client.GetClient("htp://localhost:9000");
         }
 
-        [TestMethod]
+        [Test]
         [ExpectedException(typeof(UriFormatException))]
         public void TestUrlFailsWithPath()
         {
-            ObjectStorageClient.GetClient("http://localhost:9000/foo");
+            Client.GetClient("http://localhost:9000/foo");
         }
 
-        [TestMethod]
+        [Test]
         [ExpectedException(typeof(UriFormatException))]
         public void TestUrlFailsWithQuery()
         {
-            ObjectStorageClient.GetClient("http://localhost:9000/?foo=bar");
+            Client.GetClient("http://localhost:9000/?foo=bar");
         }
     }
 }

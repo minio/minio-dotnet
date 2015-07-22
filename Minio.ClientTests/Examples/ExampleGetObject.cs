@@ -29,7 +29,7 @@ namespace Minio.ClientTests.Examples
     {
         static int Main(string[] args)
         {
-            var client = ObjectStorageClient.GetClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+            var client = Client.GetClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
             client.GetObject("bucket", "object", (stream) =>
             {
