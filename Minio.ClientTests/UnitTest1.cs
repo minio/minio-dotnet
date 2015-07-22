@@ -26,40 +26,40 @@ namespace Minio.ClientTests
         [Test]
         public void TestWithUrl()
         {
-            Client.GetClient("http://localhost:9000");
+            MinioClient.GetClient("http://localhost:9000");
         }
 
         [Test]
         public void TestWithoutPort()
         {
-            Client.GetClient("http://localhost:9000");
+            MinioClient.GetClient("http://localhost:9000");
         }
 
         [Test]
         public void TestWithTrailingSlash()
         {
-            Client.GetClient("http://localhost:9000/");
+            MinioClient.GetClient("http://localhost:9000/");
         }
 
         [Test]
         [ExpectedException(typeof(UriFormatException))]
         public void TestUrlFailsWithMalformedScheme()
         {
-            Client.GetClient("htp://localhost:9000");
+            MinioClient.GetClient("htp://localhost:9000");
         }
 
         [Test]
         [ExpectedException(typeof(UriFormatException))]
         public void TestUrlFailsWithPath()
         {
-            Client.GetClient("http://localhost:9000/foo");
+            MinioClient.GetClient("http://localhost:9000/foo");
         }
 
         [Test]
         [ExpectedException(typeof(UriFormatException))]
         public void TestUrlFailsWithQuery()
         {
-            Client.GetClient("http://localhost:9000/?foo=bar");
+            MinioClient.GetClient("http://localhost:9000/?foo=bar");
         }
     }
 }

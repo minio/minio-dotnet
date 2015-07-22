@@ -27,7 +27,7 @@ using Minio.Client.Errors;
 
 namespace Minio.Client
 {
-    public class Client
+    public class MinioClient
     {
         private static int PART_SIZE = 5 * 1024 * 1024;
 
@@ -46,7 +46,7 @@ namespace Minio.Client
         }
 
 
-        internal Client(Uri uri, string accessKey, string secretKey)
+        internal MinioClient(Uri uri, string accessKey, string secretKey)
         {
             this.client = new RestClient(uri);
             this.region = Regions.GetRegion(uri.Host);
@@ -61,7 +61,7 @@ namespace Minio.Client
         /// </summary>
         /// <param name="uri">Location of the server, supports HTTP and HTTPS.</param>
         /// <returns>Object Storage Client with the uri set as the server location.</returns>
-        public static Client GetClient(Uri uri)
+        public static MinioClient GetClient(Uri uri)
         {
             return GetClient(uri, null, null);
         }
@@ -72,7 +72,7 @@ namespace Minio.Client
         /// <param name="accessKey">Access Key for authenticated requests</param>
         /// <param name="secretKey">Secret Key for authenticated requests</param>
         /// <returns>Object Storage Client with the uri set as the server location and authentication parameters set.</returns>
-        public static Client GetClient(Uri uri, string accessKey, string secretKey)
+        public static MinioClient GetClient(Uri uri, string accessKey, string secretKey)
         {
             if (uri == null)
             {
@@ -92,7 +92,7 @@ namespace Minio.Client
             if (uri.AbsolutePath.Length == 0 || (uri.AbsolutePath.Length == 1 && uri.AbsolutePath[0] == '/'))
             {
                 String path = uri.Scheme + "://" + uri.Host + ":" + uri.Port + "/";
-                return new Client(new Uri(path), accessKey, secretKey);
+                return new MinioClient(new Uri(path), accessKey, secretKey);
             }
             throw new UriFormatException("Expecting AbsolutePath to be empty");
         }
@@ -102,7 +102,7 @@ namespace Minio.Client
         /// </summary>
         /// <param name="uri">Location of the server, supports HTTP and HTTPS</param>
         /// <returns>Object Storage Client with the uri set as the server location and authentication parameters set.</returns>
-        public static Client GetClient(string url)
+        public static MinioClient GetClient(string url)
         {
             return GetClient(url, null, null);
         }
@@ -114,7 +114,7 @@ namespace Minio.Client
         /// <param name="accessKey">Access Key for authenticated requests</param>
         /// <param name="secretKey">Secret Key for authenticated requests</param>
         /// <returns>Object Storage Client with the uri set as the server location and authentication parameters set.</returns>
-        public static Client GetClient(string url, string accessKey, string secretKey)
+        public static MinioClient GetClient(string url, string accessKey, string secretKey)
         {
             Uri uri = new Uri(url);
             return GetClient(uri, accessKey, secretKey);
@@ -434,7 +434,7 @@ namespace Minio.Client
         /// <param name="data">Stream of bytes to send</param>
         public void PutObject(string bucket, string key, long size, string contentType, Stream data)
         {
-            if (size <= Client.PART_SIZE)
+            if (size <= MinioClient.PART_SIZE)
             {
                 var bytes = ReadFull(data, (int)size);
                 if (data.ReadByte() > 0)

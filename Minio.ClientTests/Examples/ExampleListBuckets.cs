@@ -29,7 +29,7 @@ namespace Minio.ClientTests.Examples
     {
         static int Main(string[] args)
         {
-            var client = Client.GetClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+            var client = MinioClient.GetClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
             var buckets = client.ListBuckets();
             foreach (Bucket bucket in buckets)
