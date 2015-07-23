@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>$id$</id>
+    <id>Minio</id>
     <version>0.1.0</version>
     <title>Minio</title>
     <authors>Minio, Inc.</authors>
@@ -13,5 +13,11 @@
     <releaseNotes>Initial Release</releaseNotes>
     <copyright>Copyright 2015</copyright>
     <tags>minio object storage</tags>
+    <dependencies>
+      <group targetFramework="net45">
+        <dependency id="RestSharp" version="105.1.0" />
+        <dependency id="NUnit" version="2.6.4" />
+      </group>
+    </dependencies>
   </metadata>
 </package>
