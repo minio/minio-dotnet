@@ -1,5 +1,5 @@
 ﻿/*
- * Minimal Object Storage Library, (C) 2015 Minio, Inc.
+ * Minio .NET Library for Amazon S3 compatible cloud storage, (C) 2015 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,21 +74,21 @@ namespace Minio
             }
         }
         /// <summary>
-        /// Creates and returns an object storage client.
+        /// Creates and returns an cloud storage client.
         /// </summary>
         /// <param name="uri">Location of the server, supports HTTP and HTTPS.</param>
-        /// <returns>Object Storage Client with the uri set as the server location.</returns>
+        /// <returns>Client with the uri set as the server location.</returns>
         public static Client Create(Uri uri)
         {
             return Create(uri, null, null);
         }
         /// <summary>
-        /// Creates and returns an object storage client
+        /// Creates and returns an cloud storage client
         /// </summary>
         /// <param name="uri">Location of the server, supports HTTP and HTTPS</param>
         /// <param name="accessKey">Access Key for authenticated requests</param>
         /// <param name="secretKey">Secret Key for authenticated requests</param>
-        /// <returns>Object Storage Client with the uri set as the server location and authentication parameters set.</returns>
+        /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
         public static Client Create(Uri uri, string accessKey, string secretKey)
         {
             if (uri == null)
@@ -115,22 +115,22 @@ namespace Minio
         }
 
         /// <summary>
-        /// Creates and returns an object storage client
+        /// Creates and returns an cloud storage client
         /// </summary>
         /// <param name="uri">Location of the server, supports HTTP and HTTPS</param>
-        /// <returns>Object Storage Client with the uri set as the server location and authentication parameters set.</returns>
+        /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
         public static Client Create(string url)
         {
             return Create(url, null, null);
         }
 
         /// <summary>
-        /// Creates and returns an object storage client
+        /// Creates and returns an cloud storage client
         /// </summary>
         /// <param name="uri">Location of the server, supports HTTP and HTTPS</param>
         /// <param name="accessKey">Access Key for authenticated requests</param>
         /// <param name="secretKey">Secret Key for authenticated requests</param>
-        /// <returns>Object Storage Client with the uri set as the server location and authentication parameters set.</returns>
+        /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
         public static Client Create(string url, string accessKey, string secretKey)
         {
             Uri uri = new Uri(url);

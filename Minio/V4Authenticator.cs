@@ -1,5 +1,5 @@
 ﻿/*
-1;3803;0c * Minimal Object Storage Library, (C) 2015 Minio, Inc.
+1;3803;0c * Minio .NET Library for Amazon S3 compatible cloud storage, (C) 2015 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
