@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Minio")]
-[assembly: AssemblyDescription("Minio .NET Library for Amazon S3 compatible cloud storage")]
+[assembly: AssemblyDescription("Minio .NET Library for Amazon S3 Compatible Cloud Storage")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Minio, Inc.")]
 [assembly: AssemblyProduct("Minio")]
