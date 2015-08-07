@@ -9,7 +9,7 @@
     <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
     <projectUrl>https://github.com/minio/minio-dotnet</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Minio .NET Library for Amazon S3 compatible cloud storage</description>
+    <description>Minio .NET Library for Amazon S3 Compatible Cloud Storage</description>
     <releaseNotes>Initial Release</releaseNotes>
     <copyright>Copyright 2015</copyright>
     <tags>minio cloud storage</tags>
