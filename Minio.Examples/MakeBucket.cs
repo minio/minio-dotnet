@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,22 +20,15 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Minio;
-using Minio.Xml;
 
-namespace Minio.Tests.Examples
+namespace Minio.Examples
 {
-    class ExampleListObjects
-    {
+    class ExampleMakeBucket {
         static int Main(string[] args)
         {
             var client = Client.Create("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
-            var items = client.ListObjects("bucket");
-
-            foreach (Item item in items)
-            {
-                Console.Out.WriteLine("{0} {1} {2} {3}", item.Key, item.LastModifiedDateTime, item.Size, item.ETag);
-            }
+            client.MakeBucket("bucket");
 
             return 0;
         }

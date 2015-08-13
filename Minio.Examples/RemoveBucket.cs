@@ -15,23 +15,21 @@
  */
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 using Minio;
 
-namespace Minio.Tests.Examples
+namespace Minio.Examples
 {
-    class ExamplePutObject
+    class ExampleRemoveBucket
     {
         static int Main(string[] args)
         {
             var client = Client.Create("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
-            byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");
-            client.PutObject("bucket", "smallobj", 11, "application/octet-stream", new MemoryStream(data));
+            client.RemoveBucket("bucket");
 
             return 0;
         }

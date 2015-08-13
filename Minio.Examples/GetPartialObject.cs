@@ -21,21 +21,20 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Minio;
-using Minio.Xml;
 
-namespace Minio.Tests.Examples
+namespace Minio.Examples
 {
-    class ExampleListBuckets
+    class ExampleGetPartialObject
     {
         static int Main(string[] args)
         {
             var client = Client.Create("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
-            var buckets = client.ListBuckets();
-            foreach (Bucket bucket in buckets)
+            client.GetPartialObject("bucket", "object", 5, 10, (stream) =>
             {
-                Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
-            }
+                byte[] buffer = new byte[10];
+                stream.Read(buffer, 0, 10);
+            });
 
             return 0;
         }

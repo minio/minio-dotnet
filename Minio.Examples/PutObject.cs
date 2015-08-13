@@ -13,28 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 using Minio;
 
-namespace Minio.Tests.Examples
+namespace Minio.Examples
 {
-    class ExampleGetPartialObject
+    class ExamplePutObject
     {
         static int Main(string[] args)
         {
             var client = Client.Create("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
-            client.GetPartialObject("bucket", "object", 5, 10, (stream) =>
-            {
-                byte[] buffer = new byte[10];
-                stream.Read(buffer, 0, 10);
-            });
+            byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");
+            client.PutObject("bucket", "smallobj", 11, "application/octet-stream", new MemoryStream(data));
 
             return 0;
         }
