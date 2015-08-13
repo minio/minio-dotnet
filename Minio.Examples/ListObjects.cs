@@ -16,26 +16,27 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 using Minio;
+using Minio.Xml;
 
-namespace Minio.Tests.Examples
+namespace Minio.Examples
 {
-    class ExampleGetObject
+    class ExampleListObjects
     {
         static int Main(string[] args)
         {
             var client = Client.Create("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
-            client.GetObject("bucket", "object", (stream) =>
+            var items = client.ListObjects("bucket");
+
+            foreach (Item item in items)
             {
-                byte[] buffer = new byte[10];
-                stream.Read(buffer, 0, 10);
-            });
+                Console.Out.WriteLine("{0} {1} {2} {3}", item.Key, item.LastModifiedDateTime, item.Size, item.ETag);
+            }
 
             return 0;
         }

@@ -24,13 +24,13 @@ foreach (Bucket bucket in buckets)
 
 ### Additional Examples
 
-* [ExamplePutObject.cs](./Minio.Tests/Examples/ExamplePutObject.cs)
-* [ExampleGetObject.cs](./Minio.Tests/Examples/ExampleGetObject.cs)
-* [ExampleGetPartialObject.cs](./Minio.Tests/Examples/ExampleGetPartialObject.cs)
-* [ExampleListBuckets.cs](./Minio.Tests/Examples/ExampleListBuckets.cs)
-* [ExampleListObjects.cs](./Minio.Tests/Examples/ExampleListObjects.cs)
-* [ExampleMakeBucket.cs](./Minio.Tests/Examples/ExampleMakeBucket.cs)
-* [ExampleRemoveBucket.cs](./Minio.Tests/Examples/ExampleRemoveBucket.cs)
+* [PutObject.cs](./Minio.Examples/PutObject.cs)
+* [GetObject.cs](./Minio.Examples/GetObject.cs)
+* [GetPartialObject.cs](./Minio.Examples/GetPartialObject.cs)
+* [ListBuckets.cs](./Minio.Examples/ListBuckets.cs)
+* [ListObjects.cs](./Minio.Examples/ListObjects.cs)
+* [MakeBucket.cs](./Minio.Examples/MakeBucket.cs)
+* [RemoveBucket.cs](./Minio.Examples/RemoveBucket.cs)
 
 ## Contribute
 
