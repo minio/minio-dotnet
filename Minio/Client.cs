@@ -478,11 +478,18 @@ namespace Minio
                 Dictionary<int, string> etags = new Dictionary<int, string>();
                 if (uploads.Count() > 0)
                 {
-                    uploadId = uploads.Last().UploadId;
-                    var parts = this.ListParts(bucket, key, uploadId);
-                    foreach (Part part in parts)
+                    foreach (Upload upload in uploads)
                     {
-                        etags[part.PartNumber] = part.ETag;
+                        if (key == upload.Key)
+                        {
+                            uploadId = uploads.Last().UploadId;
+                            var parts = this.ListParts(bucket, key, uploadId);
+                            foreach (Part part in parts)
+                            {
+                                etags[part.PartNumber] = part.ETag;
+                            }
+                            break;
+                        }
                     }
                 }
                 if (uploadId == null)
@@ -691,8 +698,6 @@ namespace Minio
             {
                 contentType = "application/octet-stream";
             }
-
-
 
             request.AddHeader("Content-Type", contentType);
             request.AddParameter(contentType, data, RestSharp.ParameterType.RequestBody);
@@ -984,7 +989,7 @@ namespace Minio
         /// </summary>
         /// <param name="bucket">Bucket to list all incomplepte uploads from</param>
         /// <returns>A lazily populated list of incomplete uploads</returns>
-        public IEnumerable<Upload> ListAllIncompleteUploads(string bucket)
+        private IEnumerable<Upload> ListAllIncompleteUploads(string bucket)
         {
             return this.ListAllIncompleteUploads(bucket, null);
         }
@@ -995,7 +1000,7 @@ namespace Minio
         /// <param name="bucket">Bucket to list incomplete uploads from</param>
         /// <param name="key">Key of object to list incomplete uploads from</param>
         /// <returns></returns>
-        public IEnumerable<Upload> ListAllIncompleteUploads(string bucket, string key)
+        private IEnumerable<Upload> ListAllIncompleteUploads(string bucket, string key)
         {
             string nextKeyMarker = null;
             string nextUploadIdMarker = null;
@@ -1027,7 +1032,10 @@ namespace Minio
             var uploads = this.ListAllIncompleteUploads(bucket, key);
             foreach (Upload upload in uploads)
             {
-                this.DropUpload(bucket, key, upload.UploadId);
+                if (key == upload.Key)
+                {
+                    this.DropUpload(bucket, key, upload.UploadId);
+                }
             }
         }
 
