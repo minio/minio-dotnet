@@ -25,11 +25,11 @@ using Minio;
 
 namespace Minio.Examples
 {
-    class ExampleGetObject
+    class GetObject
     {
         static int Main(string[] args)
         {
-            var client = Client.Create("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+            var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
             client.GetObject("bucket", "object", (stream) =>
             {

@@ -15,7 +15,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,14 +23,15 @@ using Minio;
 
 namespace Minio.Examples
 {
-    class PutObject
+    class StatObject
     {
         static int Main(string[] args)
         {
             var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
-            byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");
-            client.PutObject("bucket", "smallobj", 11, "application/octet-stream", new MemoryStream(data));
+            var statObject = client.StatObject("bucket", "object");
+
+            Console.Out.WriteLine("{0} {1} {2} {3} {4}", statObject.Key, statObject.Size, statObject.LastModified, statObject.ETag, statObject.ContentType)
 
             return 0;
         }

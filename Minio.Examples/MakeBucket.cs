@@ -23,10 +23,11 @@ using Minio;
 
 namespace Minio.Examples
 {
-    class ExampleMakeBucket {
+    class MakeBucket
+    {
         static int Main(string[] args)
         {
-            var client = Client.Create("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+            var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
             client.MakeBucket("bucket");
 
