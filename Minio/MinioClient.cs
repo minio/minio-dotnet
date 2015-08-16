@@ -109,7 +109,7 @@ namespace Minio
         /// <param name="uri">Location of the server, supports HTTP and HTTPS.</param>
         /// <returns>Client with the uri set as the server location.</returns>
         public MinioClient(Uri uri)
-        : this(uri, null, null)
+            : this(uri, null, null)
         {
         }
 
@@ -121,7 +121,7 @@ namespace Minio
         /// <param name="secretKey">Secret Key for authenticated requests</param>
         /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
         public MinioClient(string url, string accessKey, string secretKey)
-        : this(new Uri(url), accessKey, secretKey)
+            : this(new Uri(url), accessKey, secretKey)
         {
         }
 
@@ -131,7 +131,7 @@ namespace Minio
         /// <param name="url">Location of the server, supports HTTP and HTTPS</param>
         /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
         public MinioClient(string url)
-        : this(new Uri(url), null, null)
+            : this(new Uri(url), null, null)
         {
         }
 
@@ -480,7 +480,7 @@ namespace Minio
                     {
                         if (key == upload.Key)
                         {
-                            uploadId = uploads.Last().UploadId;
+                            uploadId = upload.UploadId;
                             var parts = this.ListParts(bucket, key, uploadId);
                             foreach (Part part in parts)
                             {
