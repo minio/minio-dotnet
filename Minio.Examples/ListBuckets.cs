@@ -25,11 +25,11 @@ using Minio.Xml;
 
 namespace Minio.Examples
 {
-    class ExampleListBuckets
+    class ListBuckets
     {
         static int Main(string[] args)
         {
-            var client = Client.Create("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+            var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
             var buckets = client.ListBuckets();
             foreach (Bucket bucket in buckets)

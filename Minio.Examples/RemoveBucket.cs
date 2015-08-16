@@ -23,11 +23,11 @@ using Minio;
 
 namespace Minio.Examples
 {
-    class ExampleRemoveBucket
+    class RemoveBucket
     {
         static int Main(string[] args)
         {
-            var client = Client.Create("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+            var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
             client.RemoveBucket("bucket");
 

@@ -24,11 +24,11 @@ using Minio;
 
 namespace Minio.Examples
 {
-    class ExampleGetPartialObject
+    class GetPartialObject
     {
         static int Main(string[] args)
         {
-            var client = Client.Create("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+            var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
             client.GetPartialObject("bucket", "object", 5, 10, (stream) =>
             {
