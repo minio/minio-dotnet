@@ -23,7 +23,8 @@ namespace Minio
 {
     public class ObjectStat
     {
-        public ObjectStat(string key, long size, DateTime lastModified, string etag, string contentType) {
+        public ObjectStat(string key, long size, DateTime lastModified, string etag, string contentType)
+        {
             this.Key = key;
             this.Size = size;
             this.LastModified = lastModified;

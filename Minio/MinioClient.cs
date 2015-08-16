@@ -190,11 +190,7 @@ namespace Minio
         {
             var request = new RestRequest("/" + bucket, Method.PUT);
 
-            CreateBucketConfiguration config = new CreateBucketConfiguration()
-            {
-                LocationConstraint = this.region
-            };
-
+            CreateBucketConfiguration config = new CreateBucketConfiguration(this.region);
             request.AddHeader("x-amz-acl", acl.ToString());
 
             request.AddBody(config);
@@ -458,13 +454,7 @@ namespace Minio
                 }
                 if (bytes.Length != (int)size)
                 {
-                    throw new DataSizeMismatchException()
-                    {
-                        Bucket = bucket,
-                        Key = key,
-                        UserSpecifiedSize = size,
-                        ActualReadSize = bytes.Length
-                    };
+                    throw new DataSizeMismatchException(bucket, key, size, bytes.Length);
                 }
                 this.DoPutObject(bucket, key, null, 0, contentType, bytes);
             }
@@ -519,24 +509,12 @@ namespace Minio
                 // test if any more data is on the stream
                 if (data.ReadByte() != -1)
                 {
-                    throw new DataSizeMismatchException()
-                    {
-                        Bucket = bucket,
-                        Key = key,
-                        UserSpecifiedSize = size,
-                        ActualReadSize = totalWritten + 1
-                    };
+                    throw new DataSizeMismatchException(bucket, key, size, totalWritten+1);
                 }
 
                 if (totalWritten != size)
                 {
-                    throw new DataSizeMismatchException()
-                    {
-                        Bucket = bucket,
-                        Key = key,
-                        UserSpecifiedSize = size,
-                        ActualReadSize = totalWritten
-                    };
+                    throw new DataSizeMismatchException(bucket, key, size, totalWritten);
                 }
 
                 foreach (int curPartNumber in etags.Keys)
@@ -592,8 +570,8 @@ namespace Minio
             for (int i = 1; i <= etags.Count; i++)
             {
                 parts.Add(new XElement("Part",
-                    new XElement("PartNumber", i),
-                    new XElement("ETag", etags[i])));
+                                       new XElement("PartNumber", i),
+                                       new XElement("ETag", etags[i])));
             }
 
             var completeMultipartUploadXml = new XElement("CompleteMultipartUpload", parts);
@@ -738,7 +716,7 @@ namespace Minio
                     {
                         if (parameter.Name.Equals("x-amz-id-2", StringComparison.CurrentCultureIgnoreCase))
                         {
-                            errorResponse.XAmzID2 = parameter.Value.ToString();
+                            errorResponse.HostID = parameter.Value.ToString();
                         }
                         if (parameter.Name.Equals("x-amz-request-id", StringComparison.CurrentCultureIgnoreCase))
                         {

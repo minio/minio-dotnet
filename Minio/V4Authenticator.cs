@@ -164,13 +164,6 @@ namespace Minio
             // METHOD
             canonicalStringList.AddLast(request.Method.ToString());
 
-            //// PATH
-            //var pathParameter = request.Parameters.Where(p => p.Type.Equals(ParameterType.UrlSegment)).FirstOrDefault();
-            //if (pathParameter == null)
-            //{
-            //    throw new NullReferenceException();
-            //}
-            //var path = pathParameter.Value.ToString();
             string[] path = request.Resource.Split(new char[] { '?' }, 2);
             if (!path[0].StartsWith("/"))
             {
