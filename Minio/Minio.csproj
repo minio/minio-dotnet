@@ -64,7 +64,6 @@
     <Compile Include="Errors\BucketNotFoundException.cs" />
     <Compile Include="Errors\BucketExistsException.cs" />
     <Compile Include="Errors\DataSizeMismatchException.cs" />
-    <Compile Include="ItemEnumerable.cs" />
     <Compile Include="Regions.cs" />
     <Compile Include="Errors\ClientException.cs" />
     <Compile Include="Xml\AccessControlPolicy.cs" />

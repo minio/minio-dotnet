@@ -26,7 +26,11 @@ namespace Minio.Xml
     [Serializable]
     public class CreateBucketConfiguration
     {
+        public CreateBucketConfiguration(string location)
+        {
+            this.LocationConstraint = location;
+        }
         [XmlAttribute]
-        public string LocationConstraint { get; set; }
+        public string LocationConstraint { get; private set; }
     }
 }
