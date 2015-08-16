@@ -27,7 +27,7 @@ using Minio.Errors;
 
 namespace Minio
 {
-    public class Client
+    public class MinioClient
     {
         private static int PART_SIZE = 5 * 1024 * 1024;
 
@@ -62,34 +62,14 @@ namespace Minio
             }
         }
 
-
-        internal Client(Uri uri, string accessKey, string secretKey)
-        {
-            this.client = new RestClient(uri);
-            this.region = Regions.GetRegion(uri.Host);
-            this.client.UserAgent = this.FullUserAgent;
-            if (accessKey != null && secretKey != null)
-            {
-                this.client.Authenticator = new V4Authenticator(accessKey, secretKey);
-            }
-        }
         /// <summary>
-        /// Creates and returns an cloud storage client.
-        /// </summary>
-        /// <param name="uri">Location of the server, supports HTTP and HTTPS.</param>
-        /// <returns>Client with the uri set as the server location.</returns>
-        public static Client Create(Uri uri)
-        {
-            return Create(uri, null, null);
-        }
-        /// <summary>
-        /// Creates and returns an cloud storage client
+        /// Creates and returns an Cloud Storage client
         /// </summary>
         /// <param name="uri">Location of the server, supports HTTP and HTTPS</param>
         /// <param name="accessKey">Access Key for authenticated requests</param>
         /// <param name="secretKey">Secret Key for authenticated requests</param>
         /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
-        public static Client Create(Uri uri, string accessKey, string secretKey)
+        public MinioClient(Uri uri, string accessKey, string secretKey)
         {
             if (uri == null)
             {
@@ -106,35 +86,53 @@ namespace Minio
                 throw new UriFormatException("Expecting no query");
             }
 
-            if (uri.AbsolutePath.Length == 0 || (uri.AbsolutePath.Length == 1 && uri.AbsolutePath[0] == '/'))
+            if (!(uri.AbsolutePath.Length == 0 || (uri.AbsolutePath.Length == 1 && uri.AbsolutePath[0] == '/')))
             {
-                String path = uri.Scheme + "://" + uri.Host + ":" + uri.Port + "/";
-                return new Client(new Uri(path), accessKey, secretKey);
+                throw new UriFormatException("Expecting AbsolutePath to be empty");
+
             }
-            throw new UriFormatException("Expecting AbsolutePath to be empty");
+
+            String path = uri.Scheme + "://" + uri.Host + ":" + uri.Port + "/";
+            uri = new Uri(path);
+            this.client = new RestClient(uri);
+            this.region = Regions.GetRegion(uri.Host);
+            this.client.UserAgent = this.FullUserAgent;
+            if (accessKey != null && secretKey != null)
+            {
+                this.client.Authenticator = new V4Authenticator(accessKey, secretKey);
+            }
         }
 
         /// <summary>
-        /// Creates and returns an cloud storage client
+        /// Creates and returns an Cloud Storage client.
         /// </summary>
-        /// <param name="uri">Location of the server, supports HTTP and HTTPS</param>
-        /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
-        public static Client Create(string url)
+        /// <param name="uri">Location of the server, supports HTTP and HTTPS.</param>
+        /// <returns>Client with the uri set as the server location.</returns>
+        public MinioClient(Uri uri)
+        : this(uri, null, null)
         {
-            return Create(url, null, null);
         }
 
         /// <summary>
-        /// Creates and returns an cloud storage client
+        /// Creates and returns an Cloud Storage client
         /// </summary>
-        /// <param name="uri">Location of the server, supports HTTP and HTTPS</param>
+        /// <param name="url">Location of the server, supports HTTP and HTTPS</param>
         /// <param name="accessKey">Access Key for authenticated requests</param>
         /// <param name="secretKey">Secret Key for authenticated requests</param>
         /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
-        public static Client Create(string url, string accessKey, string secretKey)
+        public MinioClient(string url, string accessKey, string secretKey)
+        : this(new Uri(url), accessKey, secretKey)
         {
-            Uri uri = new Uri(url);
-            return Create(uri, accessKey, secretKey);
+        }
+
+        /// <summary>
+        /// Creates and returns an Cloud Storage client
+        /// </summary>
+        /// <param name="url">Location of the server, supports HTTP and HTTPS</param>
+        /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
+        public MinioClient(string url)
+        : this(new Uri(url), null, null)
+        {
         }
 
         public void SetUserAgent(string product, string version, IEnumerable<string> attributes)
@@ -451,7 +449,7 @@ namespace Minio
         /// <param name="data">Stream of bytes to send</param>
         public void PutObject(string bucket, string key, long size, string contentType, Stream data)
         {
-            if (size <= Client.PART_SIZE)
+            if (size <= MinioClient.PART_SIZE)
             {
                 var bytes = ReadFull(data, (int)size);
                 if (data.ReadByte() > 0)
