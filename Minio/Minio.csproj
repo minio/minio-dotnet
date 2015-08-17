@@ -22,6 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,6 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="RestSharp">
@@ -61,7 +63,7 @@
     <Compile Include="Errors\InternalClientException.cs" />
     <Compile Include="Errors\BucketNotFoundException.cs" />
     <Compile Include="Errors\BucketExistsException.cs" />
-    <Compile Include="Errors\DataSizeMismatchException.cs" />
+    <Compile Include="Errors\UnexpectedShortReadException.cs" />
     <Compile Include="Regions.cs" />
     <Compile Include="Errors\ClientException.cs" />
     <Compile Include="Xml\AccessControlPolicy.cs" />

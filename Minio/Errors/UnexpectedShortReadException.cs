@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2015 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,16 +21,16 @@ using System.Text;
 
 namespace Minio.Errors
 {
-    public class DataSizeMismatchException : ClientException
+    public class UnexpectedShortReadException : ClientException
     {
-        public DataSizeMismatchException(string bucket, string key, long userSpecifiedSize, long actualReadSize)
+        public UnexpectedShortReadException(string bucket, string key, long userSpecifiedSize, long actualReadSize)
         {
             this.Bucket = bucket;
             this.Key = key;
             this.UserSpecifiedSize = userSpecifiedSize;
             this.ActualReadSize = actualReadSize;
         }
-        public DataSizeMismatchException()
+        public UnexpectedShortReadException()
             : this(null, null, 0, 0)
         {
 

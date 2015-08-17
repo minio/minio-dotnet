@@ -29,7 +29,8 @@ namespace Minio
 {
     public class MinioClient
     {
-        private static int PART_SIZE = 5 * 1024 * 1024;
+        private static long minimumPartSize = 5 * 1024L * 1024L;
+        private static long maximumPartSize = 5 * 1024L * 1024L * 1024L;
 
         private RestClient client;
         private string region;
@@ -445,16 +446,12 @@ namespace Minio
         /// <param name="data">Stream of bytes to send</param>
         public void PutObject(string bucket, string key, long size, string contentType, Stream data)
         {
-            if (size <= MinioClient.PART_SIZE)
+            if (size <= MinioClient.minimumPartSize)
             {
                 var bytes = ReadFull(data, (int)size);
-                if (data.ReadByte() > 0)
-                {
-                    throw new DataSizeMismatchException();
-                }
                 if (bytes.Length != (int)size)
                 {
-                    throw new DataSizeMismatchException(bucket, key, size, bytes.Length);
+                    throw new UnexpectedShortReadException(bucket, key, size, bytes.Length);
                 }
                 this.DoPutObject(bucket, key, null, 0, contentType, bytes);
             }
@@ -489,11 +486,18 @@ namespace Minio
                 while (totalWritten < size)
                 {
                     partNumber++;
-                    var currentPartSize = (int)Math.Min((long)partSize, (size - totalWritten));
-                    byte[] dataToCopy = ReadFull(data, currentPartSize);
+                    byte[] dataToCopy = ReadFull(data, (int)partSize);
                     if (dataToCopy == null)
                     {
                         break;
+                    }
+                    if (dataToCopy.Length < partSize)
+                    {
+                        var expectedSize = size - totalWritten;
+                        if (expectedSize != dataToCopy.Length)
+                        {
+                            throw new UnexpectedShortReadException(bucket, key, expectedSize, dataToCopy.Length);
+                        }
                     }
                     System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create();
                     byte[] hash = md5.ComputeHash(dataToCopy);
@@ -504,17 +508,6 @@ namespace Minio
                     }
                     etags[partNumber] = etag;
                     totalWritten += dataToCopy.Length;
-                }
-
-                // test if any more data is on the stream
-                if (data.ReadByte() != -1)
-                {
-                    throw new DataSizeMismatchException(bucket, key, size, totalWritten+1);
-                }
-
-                if (totalWritten != size)
-                {
-                    throw new DataSizeMismatchException(bucket, key, size, totalWritten);
                 }
 
                 foreach (int curPartNumber in etags.Keys)
@@ -590,11 +583,19 @@ namespace Minio
             throw ParseError(response);
         }
 
-        private int CalculatePartSize(long size)
+        private long CalculatePartSize(long size)
         {
-            int minimumPartSize = PART_SIZE; // 5MB
-            int partSize = (int)(size / 9999); // using 10000 may cause part size to become too small, and not fit the entire object in
-            return Math.Max(minimumPartSize, partSize);
+            // make sure to have enough buffer for last part, use 9999 instead of 10000
+            long partSize = (size / 9999);
+            if (partSize > MinioClient.minimumPartSize)
+            {
+                if (partSize > MinioClient.maximumPartSize)
+                {
+                    return MinioClient.maximumPartSize;
+                }
+                return partSize;
+            }
+            return MinioClient.minimumPartSize;
         }
 
         private IEnumerable<Part> ListParts(string bucket, string key, string uploadId)
