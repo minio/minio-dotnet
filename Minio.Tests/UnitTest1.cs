@@ -16,7 +16,6 @@
 
 using System;
 using NUnit.Framework;
-using Minio;
 
 namespace Minio.Tests
 {
