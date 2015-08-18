@@ -50,15 +50,13 @@
     <Compile Include="RemoveBucket.cs" />
     <Compile Include="GetObject.cs" />
     <Compile Include="PutObject.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Minio\Minio.csproj">
       <Project>{dcc0b399-5931-4ea8-9e19-1cf49e799f81}</Project>
       <Name>Minio</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
