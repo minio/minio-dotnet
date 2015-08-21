@@ -31,7 +31,7 @@ namespace Minio.Examples
 
             var statObject = client.StatObject("bucket", "object");
 
-            Console.Out.WriteLine("{0} {1} {2} {3} {4}", statObject.Key, statObject.Size, statObject.LastModified, statObject.ETag, statObject.ContentType)
+            Console.Out.WriteLine("{0} {1} {2} {3} {4}", statObject.Key, statObject.Size, statObject.LastModified, statObject.ETag, statObject.ContentType);
 
             return 0;
         }
