@@ -33,8 +33,7 @@ namespace Minio.Examples
 
             client.GetObject("bucket", "object", (stream) =>
             {
-                byte[] buffer = new byte[10];
-                stream.Read(buffer, 0, 10);
+                stream.CopyTo(Console.OpenStandardOutput());
             });
 
             return 0;
