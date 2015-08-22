@@ -55,7 +55,7 @@ $ wget http://www.nuget.org/nuget.exe
 $ mono nuget.exe restore
 $ xbuild
 [edit Minio.Examples/ListBuckets.cs]
-$ mc /r:Minio/bin/Debug/Minio.dll Minio.Examples/ListBuckets.cs
+$ mcs /r:Minio/bin/Debug/Minio.dll Minio.Examples/ListBuckets.cs
 $ export MONO_PATH=Minio/bin/Debug
 $ mono Minio.Examples/ListBuckets.exe
 ....
