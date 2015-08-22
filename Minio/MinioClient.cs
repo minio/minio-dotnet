@@ -34,6 +34,7 @@ namespace Minio
 
         private RestClient client;
         private string region;
+        private V4Authenticator authenticator;
 
         private string SystemUserAgent
         {
@@ -100,6 +101,7 @@ namespace Minio
             this.client.UserAgent = this.FullUserAgent;
             if (accessKey != null && secretKey != null)
             {
+                this.authenticator = new V4Authenticator(accessKey, secretKey);
                 this.client.Authenticator = new V4Authenticator(accessKey, secretKey);
             }
         }
@@ -331,6 +333,18 @@ namespace Minio
             }
 
             throw ParseError(response);
+        }
+
+        /// <summary>
+        /// Presign Get request.
+        /// </summary>
+        /// <param name="bucket">Bucket to retrieve object from</param>
+        /// <param name="key">Key of object to retrieve</param>
+        /// <param name="expiresInt">Expiration time in seconds</param>
+        public string PresignGetObject(string bucket, string key, int expiresInt)
+        {
+            RestRequest request = new RestRequest(bucket + "/" + UrlEncode(key), Method.GET);
+            return this.authenticator.PresignURL(this.client, request, expiresInt);
         }
 
         /// <summary>

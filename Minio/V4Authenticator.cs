@@ -155,6 +155,58 @@ namespace Minio
             return BitConverter.ToString(body).Replace("-", string.Empty).ToLower();
         }
 
+        public string PresignURL(IRestClient client, IRestRequest request, int expiresInt)
+        {
+            DateTime signingDate = DateTime.UtcNow;
+            string region = Regions.GetRegion(client.BaseUrl.Host);
+            string expires = expiresInt.ToString();
+            string requestQuery = "";
+            string path = request.Resource;
+
+            requestQuery = "X-Amz-Algorithm=AWS4-HMAC-SHA256&";
+            requestQuery += "X-Amz-Credential="
+                + this.accessKey
+                + Uri.EscapeDataString("/" + GetScope(region, signingDate))
+                + "&";
+            requestQuery += "X-Amz-Date="
+                + signingDate.ToString("yyyyMMddTHHmmssZ")
+                + "&";
+            requestQuery += "X-Amz-Expires="
+                + expires
+                + "&";
+            requestQuery += "X-Amz-SignedHeaders=host";
+            string canonicalRequest = GetPresignCanonicalRequest(client, request, requestQuery);
+            byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
+            string canonicalRequestHash = BytesToHex(ComputeSha256(canonicalRequestBytes));
+            string stringToSign = GetStringToSign(region, canonicalRequestHash, signingDate);
+            byte[] signingKey = GenerateSigningKey(region, signingDate);
+            byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(stringToSign);
+            byte[] signatureBytes = SignHmac(signingKey, stringToSignBytes);
+            string signature = BytesToHex(signatureBytes);
+            return client.BaseUrl + path + "?" + requestQuery + "&X-Amz-Signature=" + signature;
+        }
+
+        private string GetPresignCanonicalRequest(IRestClient client, IRestRequest request, string requestQuery)
+        {
+            LinkedList<string> canonicalStringList = new LinkedList<string>();
+            // METHOD
+            canonicalStringList.AddLast(request.Method.ToString());
+
+            string path = request.Resource;
+            if (!path.StartsWith("/"))
+            {
+                path = "/" + path;
+            }
+            canonicalStringList.AddLast(path);
+            canonicalStringList.AddLast(requestQuery);
+            canonicalStringList.AddLast("host:" + client.BaseUrl.Host);
+            canonicalStringList.AddLast("");
+            canonicalStringList.AddLast("host");
+            canonicalStringList.AddLast("UNSIGNED-PAYLOAD");
+
+            return string.Join("\n", canonicalStringList);
+        }
+
         private string GetCanonicalRequest(IRestClient client, IRestRequest request, SortedDictionary<string, string> headersToSign)
         {
             LinkedList<string> canonicalStringList = new LinkedList<string>();
