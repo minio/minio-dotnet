@@ -3,26 +3,16 @@
 ## Install from NuGet [![Build Status](https://travis-ci.org/minio/minio-dotnet.svg?branch=master)](https://travis-ci.org/minio/minio-dotnet)
 
 ```powershell
-To install Json.NET, run the following command in the Package Manager Console
+To install Minio .NET package, run the following command in Nuget Package Manager Console
 
 PM> Install-Package Minio
 ```
-
-### Compile Minio library using Mono Project
-* Install mono from [Mono Project](http://www.mono-project.com/)
-* Download http://www.nuget.org/nuget.exe
-* git clone https://github.com/minio/minio-dotnet && cd minio-dotnet
-* "mono nuget.exe restore" to install dependencies
-* Run "xbuild" to build the Minio.dll library at Minio/bin/Debug/
-* "mcs /r:Minio/bin/Debug/Minio.dll Minio.Examples/GetObject.cs"
-* "export MONO_PATH=Minio/bin/Debug"
-* "mono Minio.Examples/GetObject.exe"
 
 ## Example
 ```cs
 using Minio;
 
-private static MinioClient client = new MinioClient("https://s3-us-west-2.amazonaws.com", "Access Key", "Secret Key");
+private static MinioClient client = new MinioClient("https://s3.amazonaws.com", "Access Key", "Secret Key");
 
 var buckets = client.ListBuckets();
 foreach (Bucket bucket in buckets)
@@ -35,6 +25,7 @@ foreach (Bucket bucket in buckets)
 ### Additional Examples
 
 #### Bucket Operations
+
 * [ListBuckets.cs](./Minio.Examples/ListBuckets.cs)
 * [MakeBucket.cs](./Minio.Examples/MakeBucket.cs)
 * [RemoveBucket.cs](./Minio.Examples/RemoveBucket.cs)
@@ -43,12 +34,33 @@ foreach (Bucket bucket in buckets)
 * [DropAllIncompleteUploads.cs](./Minio.Examples/DropAllIncompleteUploads.cs)
 
 #### Object Operations
+
 * [PutObject.cs](./Minio.Examples/PutObject.cs)
 * [GetObject.cs](./Minio.Examples/GetObject.cs)
 * [GetPartialObject.cs](./Minio.Examples/GetPartialObject.cs)
 * [RemoveObject.cs](./Minio.Examples/RemoveObject.cs)
 * [StatObject.cs](./Minio.Examples/StatObject.cs)
 * [DropIncompleteUpload.cs](./Minio.Examples/DropIncompleteUpload.cs)
+
+### How to run these examples?
+
+#### On Linux
+
+Simply edit the example .Net program to include your access credentials and follow the steps below.
+
+```bash
+$ sudo apt-get install mono
+$ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet
+$ wget http://www.nuget.org/nuget.exe
+$ mono nuget.exe restore
+$ xbuild
+[edit Minio.Examples/ListBuckets.cs]
+$ mc /r:Minio/bin/Debug/Minio.dll Minio.Examples/ListBuckets.cs
+$ export MONO_PATH=Minio/bin/Debug
+$ mono Minio.Examples/ListBuckets.exe
+....
+
+```
 
 ## Contribute
 
