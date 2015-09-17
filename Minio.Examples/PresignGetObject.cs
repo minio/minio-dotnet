@@ -25,7 +25,7 @@ using Minio;
 
 namespace Minio.Examples
 {
-    class GetObject
+    class PresignedGetObject
     {
         static int Main(string[] args)
         {
