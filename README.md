@@ -31,7 +31,6 @@ foreach (Bucket bucket in buckets)
 * [RemoveBucket.cs](./Minio.Examples/RemoveBucket.cs)
 * [BucketExists.cs](./Minio.Examples/BucketExists.cs)
 * [ListObjects.cs](./Minio.Examples/ListObjects.cs)
-* [DropAllIncompleteUploads.cs](./Minio.Examples/DropAllIncompleteUploads.cs)
 
 #### Object Operations
 
@@ -40,7 +39,7 @@ foreach (Bucket bucket in buckets)
 * [GetPartialObject.cs](./Minio.Examples/GetPartialObject.cs)
 * [RemoveObject.cs](./Minio.Examples/RemoveObject.cs)
 * [StatObject.cs](./Minio.Examples/StatObject.cs)
-* [DropIncompleteUpload.cs](./Minio.Examples/DropIncompleteUpload.cs)
+* [RemoveIncompleteUpload.cs](./Minio.Examples/RemoveIncompleteUpload.cs)
 
 ### How to run these examples?
 
