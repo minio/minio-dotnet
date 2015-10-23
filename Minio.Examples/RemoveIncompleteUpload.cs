@@ -25,13 +25,13 @@ using Minio.Xml;
 
 namespace Minio.Examples
 {
-    class DropAllIncompleteUploads
+    class RemoveIncompleteUpload
     {
         static int Main(string[] args)
         {
             var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
-            client.DropAllIncompleteUploads("bucket");
+            client.RemoveIncompleteUpload("bucket", "key")
 
             return 0;
         }

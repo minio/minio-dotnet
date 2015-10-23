@@ -1014,36 +1014,23 @@ namespace Minio
         }
 
         /// <summary>
-        /// Drop incomplete uploads from a given bucket and key
+        /// Remove incomplete uploads from a given bucket and key
         /// </summary>
-        /// <param name="bucket">Bucket to drop incomplete uploads from</param>
-        /// <param name="key">Key to drop incomplete uploads from</param>
-        public void DropIncompleteUpload(string bucket, string key)
+        /// <param name="bucket">Bucket to remove incomplete uploads from</param>
+        /// <param name="key">Key to remove incomplete uploads from</param>
+        public void RemoveIncompleteUpload(string bucket, string key)
         {
             var uploads = this.ListAllIncompleteUploads(bucket, key);
             foreach (Upload upload in uploads)
             {
                 if (key == upload.Key)
                 {
-                    this.DropUpload(bucket, key, upload.UploadId);
+                    this.RemoveUpload(bucket, key, upload.UploadId);
                 }
             }
         }
 
-        /// <summary>
-        /// Drops all incomplete uploads from a given bucket
-        /// </summary>
-        /// <param name="bucket">Bucket to drop all incomplete uploads from</param>
-        public void DropAllIncompleteUploads(string bucket)
-        {
-            var uploads = this.ListAllIncompleteUploads(bucket);
-            foreach (Upload upload in uploads)
-            {
-                this.DropUpload(bucket, upload.Key, upload.UploadId);
-            }
-        }
-
-        private void DropUpload(string bucket, string key, string uploadId)
+        private void RemoveUpload(string bucket, string key, string uploadId)
         {
             var path = bucket + "/" + UrlEncode(key) + "?uploadId=" + uploadId;
             var request = new RestRequest(path, Method.DELETE);
