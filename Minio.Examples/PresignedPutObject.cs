@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2015 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,12 +25,12 @@ using Minio;
 
 namespace Minio.Examples
 {
-    class PresignedGetObject
+    class PresignedPutObject
     {
         static int Main(string[] args)
         {
             var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
-            Console.Out.WriteLine(client.PresignGetObject("bucket", "object", 1000));
+            Console.Out.WriteLine(client.PresignedPutObject("bucket", "object", 1000));
             return 0;
         }
     }
