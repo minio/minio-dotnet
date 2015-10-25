@@ -472,7 +472,7 @@ namespace Minio
             else
             {
                 var partSize = CalculatePartSize(size);
-                var uploads = this.ListAllIncompleteUploads(bucket, key);
+                var uploads = this.ListIncompleteUploads(bucket, key);
                 string uploadId = null;
                 Dictionary<int, string> etags = new Dictionary<int, string>();
                 if (uploads.Count() > 0)
@@ -929,7 +929,11 @@ namespace Minio
             throw ParseError(response);
         }
 
-        private Tuple<ListMultipartUploadsResult, List<Upload>> GetMultipartUploadsList(string bucket, string prefix, string keyMarker, string uploadIdMarker)
+        private Tuple<ListMultipartUploadsResult, List<Upload>> GetMultipartUploadsList(string bucket,
+                                                                                        string prefix,
+                                                                                        string keyMarker,
+                                                                                        string uploadIdMarker,
+                                                                                        string delimiter)
         {
             var queries = new List<string>();
             queries.Add("uploads");
@@ -945,6 +949,11 @@ namespace Minio
             {
                 queries.Add("upload-id-marker=" + uploadIdMarker);
             }
+            if (delimiter != null)
+            {
+                queries.Add("delimiter=" + delimiter);
+            }
+
             queries.Add("max-uploads=1000");
 
             string query = string.Join("&", queries);
@@ -980,9 +989,36 @@ namespace Minio
         /// </summary>
         /// <param name="bucket">Bucket to list all incomplepte uploads from</param>
         /// <returns>A lazily populated list of incomplete uploads</returns>
-        private IEnumerable<Upload> ListAllIncompleteUploads(string bucket)
+        public IEnumerable<Upload> ListIncompleteUploads(string bucket)
         {
-            return this.ListAllIncompleteUploads(bucket, null);
+            return this.ListIncompleteUploads(bucket, null);
+        }
+
+        /// <summary>
+        /// Lists all incomplete uploads in a given bucket and prefix
+        /// </summary>
+        /// <param name="bucket">Bucket to list all incomplepte uploads from</param>
+        /// <param name="prefix">prefix to list all incomplepte uploads</param>
+        /// <returns>A lazily populated list of incomplete uploads</returns>
+        public IEnumerable<Upload> ListIncompleteUploads(string bucket, string prefix)
+        {
+            return this.ListAllIncompleteUploads(bucket, prefix, null);
+        }
+
+        /// <summary>
+        /// Lists all incomplete uploads in a given bucket and prefix recursively
+        /// </summary>
+        /// <param name="bucket">Bucket to list all incomplepte uploads from</param>
+        /// <param name="prefix">prefix to list all incomplepte uploads</param>
+        /// <param name="recursive">option to list incomplete uploads recursively</param>
+        /// <returns>A lazily populated list of incomplete uploads</returns>
+        public IEnumerable<Upload> ListIncompleteUploads(string bucket, string prefix, bool recursive)
+        {
+            if (recursive)
+            {
+                return this.ListAllIncompleteUploads(bucket, prefix, null);
+            }
+            return this.ListAllIncompleteUploads(bucket, prefix, "%2F");
         }
 
         /// <summary>
@@ -990,21 +1026,18 @@ namespace Minio
         /// </summary>
         /// <param name="bucket">Bucket to list incomplete uploads from</param>
         /// <param name="key">Key of object to list incomplete uploads from</param>
+        /// <param name="delimiter">delimiter of object to list incomplete uploads</param>
         /// <returns></returns>
-        private IEnumerable<Upload> ListAllIncompleteUploads(string bucket, string key)
+        private IEnumerable<Upload> ListAllIncompleteUploads(string bucket, string prefix, string delimiter)
         {
             string nextKeyMarker = null;
             string nextUploadIdMarker = null;
             bool isRunning = true;
             while (isRunning)
             {
-                var uploads = GetMultipartUploadsList(bucket, key, nextKeyMarker, nextUploadIdMarker);
+                var uploads = GetMultipartUploadsList(bucket, prefix, nextKeyMarker, nextUploadIdMarker, delimiter);
                 foreach (Upload upload in uploads.Item2)
                 {
-                    if (key != null && !key.Equals(upload.Key))
-                    {
-                        continue;
-                    }
                     yield return upload;
                 }
                 nextKeyMarker = uploads.Item1.NextKeyMarker;
@@ -1020,7 +1053,7 @@ namespace Minio
         /// <param name="key">Key to remove incomplete uploads from</param>
         public void RemoveIncompleteUpload(string bucket, string key)
         {
-            var uploads = this.ListAllIncompleteUploads(bucket, key);
+            var uploads = this.ListIncompleteUploads(bucket, key);
             foreach (Upload upload in uploads)
             {
                 if (key == upload.Key)
