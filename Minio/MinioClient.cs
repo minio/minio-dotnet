@@ -336,14 +336,26 @@ namespace Minio
         }
 
         /// <summary>
-        /// Presign Get request.
+        /// Presigned Get url.
         /// </summary>
         /// <param name="bucket">Bucket to retrieve object from</param>
         /// <param name="key">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds</param>
-        public string PresignGetObject(string bucket, string key, int expiresInt)
+        public string PresignedGetObject(string bucket, string key, int expiresInt)
         {
             RestRequest request = new RestRequest(bucket + "/" + UrlEncode(key), Method.GET);
+            return this.authenticator.PresignURL(this.client, request, expiresInt);
+        }
+
+        /// <summary>
+        /// Presigned Put url.
+        /// </summary>
+        /// <param name="bucket">Bucket to retrieve object from</param>
+        /// <param name="key">Key of object to retrieve</param>
+        /// <param name="expiresInt">Expiration time in seconds</param>
+        public string PresignedPutObject(string bucket, string key, int expiresInt)
+        {
+            RestRequest request = new RestRequest(bucket + "/" + UrlEncode(key), Method.PUT);
             return this.authenticator.PresignURL(this.client, request, expiresInt);
         }
 

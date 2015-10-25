@@ -42,6 +42,11 @@ foreach (Bucket bucket in buckets)
 * [StatObject.cs](./Minio.Examples/StatObject.cs)
 * [RemoveIncompleteUpload.cs](./Minio.Examples/RemoveIncompleteUpload.cs)
 
+#### Pesigned Operations
+
+* [PresignedGetObject.cs](./Minio.Examples/PresignedGetObject.cs)
+* [PresignedPutObject.cs](./Minio.Examples/PresignedPutObject.cs)
+
 ### How to run these examples?
 
 #### On Linux
