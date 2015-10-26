@@ -44,12 +44,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GetPartialObject.cs" />
+    <Compile Include="BucketExists.cs" />
     <Compile Include="ListBuckets.cs" />
     <Compile Include="ListObjects.cs" />
     <Compile Include="MakeBucket.cs" />
     <Compile Include="RemoveBucket.cs" />
+    <Compile Include="RemoveObject.cs" />
     <Compile Include="GetObject.cs" />
     <Compile Include="PutObject.cs" />
+    <Compile Include="RemoveIncompleteUpload.cs" />
+    <Compile Include="ListIncompleteUploads.cs" />
+    <Compile Include="PresignedGetObject.cs" />
+    <Compile Include="PresignedPutObject.cs" />
+    <Compile Include="PresignedPostPolicy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

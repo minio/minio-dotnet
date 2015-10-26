@@ -71,6 +71,7 @@
     <Compile Include="Errors\ErrorResponse.cs" />
     <Compile Include="MinioClient.cs" />
     <Compile Include="ObjectStat.cs" />
+    <Compile Include="PostPolicy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="V4Authenticator.cs" />
     <Compile Include="Xml\CreateBucketConfiguration.cs" />
