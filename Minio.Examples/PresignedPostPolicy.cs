@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2015 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,21 +16,34 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 using Minio;
-using Minio.Xml;
 
 namespace Minio.Examples
 {
-    class RemoveIncompleteUpload
+    class PresignedPostPolicy
     {
         static int Main(string[] args)
         {
             var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
-            client.RemoveIncompleteUpload("bucket", "key");
+            PostPolicy form = new PostPolicy();
+            DateTime expiration = DateTime.UtcNow;
+            form.SetExpires(expiration.AddDays(10));
+            form.SetKey("myobject");
+            form.SetBucket("mybucket");
+
+            Dictionary <string, string> formData = client.PresignedPostPolicy(form);
+            string curlCommand = "curl ";
+            foreach (KeyValuePair<string, string> pair in formData)
+            {
+                    curlCommand = curlCommand + " -F " + pair.Key + "=" + pair.Value;
+            }
+            curlCommand = curlCommand + " -F file=@/etc/bashrc";
+            Console.Out.WriteLine(curlCommand);
             return 0;
         }
     }

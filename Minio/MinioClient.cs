@@ -142,19 +142,19 @@ namespace Minio
         {
             if (string.IsNullOrEmpty(product))
             {
-                throw new ArgumentException("product cannot be null or empty");
+                    throw new ArgumentException("product cannot be null or empty");
             }
             if (string.IsNullOrEmpty(version))
             {
-                throw new ArgumentException("version cannot be null or empty");
+                    throw new ArgumentException("version cannot be null or empty");
             }
             string customAgent = product + "/" + version;
             string[] attributesArray = attributes.ToArray();
             if (attributes.Count() > 0)
             {
-                customAgent += "(";
-                customAgent += string.Join("; ", attributesArray);
-                customAgent += ")";
+                    customAgent += "(";
+                    customAgent += string.Join("; ", attributesArray);
+                    customAgent += ")";
             }
             this.CustomUserAgent = customAgent;
             this.client.UserAgent = this.FullUserAgent;
@@ -168,22 +168,22 @@ namespace Minio
         /// <returns>true if exists and user has access</returns>
         public bool BucketExists(string bucket)
         {
-            var request = new RestRequest(bucket, Method.HEAD);
-            var response = client.Execute(request);
-
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                return true;
-            }
-
-            var ex = ParseError(response);
-            if (ex.GetType() == typeof(BucketNotFoundException))
-            {
-                return false;
-            }
-            throw ex;
+                var request = new RestRequest(bucket, Method.HEAD);
+                var response = client.Execute(request);
+                
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                        return true;
+                }
+                
+                var ex = ParseError(response);
+                if (ex.GetType() == typeof(BucketNotFoundException))
+                {
+                        return false;
+                }
+                throw ex;
         }
-
+            
         /// <summary>
         /// Create a bucket with a given name and canned ACL
         /// </summary>
@@ -357,6 +357,45 @@ namespace Minio
         {
             RestRequest request = new RestRequest(bucket + "/" + UrlEncode(key), Method.PUT);
             return this.authenticator.PresignURL(this.client, request, expiresInt);
+        }
+
+        /// <summary>
+        ///  Presigned post policy
+        /// </summary>
+        public Dictionary<string, string> PresignedPostPolicy(PostPolicy form)
+        {
+                if (!form.IsBucketSet())
+                {
+                        throw new ArgumentException("bucket should be set");
+                }
+
+                if (!form.IsKeySet())
+                {
+                        throw new ArgumentException("key should be set");
+                }
+
+                if (!form.IsExpirationSet())
+                {
+                        throw new ArgumentException("expiration should be set");
+                }
+
+                string region = Regions.GetRegion(this.client.BaseUrl.Host);
+                DateTime signingDate = DateTime.UtcNow;
+                string iso8601Date = signingDate.ToString("yyyyMMddTHHmmssZ");                
+                form.policies.Add(new Tuple<string, string, string>("eq", "$x-amz-date", iso8601Date));
+                form.policies.Add(new Tuple<string, string, string>("eq", "$x-amz-algorithm", "AWS4-HMAC-SHA256"));
+                form.policies.Add(new Tuple<string, string, string>("eq",
+                                                                    "$x-amz-credential",
+                                                                    this.authenticator.GetCredentialString(signingDate,
+                                                                                                           region)));
+
+                string policyBase64 = form.Base64();
+                form.formData.Add("policy", policyBase64);
+                form.formData.Add("x-amz-algorithm", "AWS4-HMAC-SHA256");
+                form.formData.Add("x-amz-credential", this.authenticator.GetCredentialString(signingDate, region));
+                form.formData.Add("x-amz-date", iso8601Date);
+                form.formData.Add("x-amz-signature", this.authenticator.PresignPostSignature(signingDate, region, policyBase64));
+                return form.formData;
         }
 
         /// <summary>

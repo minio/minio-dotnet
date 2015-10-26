@@ -95,6 +95,11 @@ namespace Minio
 
         }
 
+        public string GetCredentialString(DateTime signingDate, string region)
+        {
+                return this.accessKey + "/" + GetScope(region, signingDate);
+        }
+            
         private string GetAuthorizationHeader(string signedHeaders, string signature, DateTime signingDate, string region)
         {
             return "AWS4-HMAC-SHA256 Credential=" + this.accessKey + "/" + GetScope(region, signingDate) +
@@ -155,6 +160,17 @@ namespace Minio
             return BitConverter.ToString(body).Replace("-", string.Empty).ToLower();
         }
 
+        public string PresignPostSignature(DateTime signingDate, string region, string policyBase64)
+        {
+            byte[] signingKey = this.GenerateSigningKey(region, signingDate);
+            byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(policyBase64);
+
+            byte[] signatureBytes = SignHmac(signingKey, stringToSignBytes);
+            string signature = BytesToHex(signatureBytes);
+                
+            return signature;
+        }
+            
         public string PresignURL(IRestClient client, IRestRequest request, int expiresInt)
         {
             DateTime signingDate = DateTime.UtcNow;
@@ -259,11 +275,6 @@ namespace Minio
             }
 
             return string.Join("\n", canonicalStringList);
-        }
-
-        private string GetCanonicalRequest(IRestRequest request)
-        {
-            throw new NotImplementedException();
         }
 
         private void SetDateHeader(IRestRequest request, DateTime signingDate)
