@@ -24,9 +24,9 @@ namespace Minio
     public class PostPolicy
     {
             private DateTime expiration;
-            public List<Tuple<string, string, string>> policies =
+            private List<Tuple<string, string, string>> policies =
                     new List<Tuple<string, string, string>>();
-            public Dictionary<string, string> formData = new Dictionary<string, string>();
+            private Dictionary<string, string> formData = new Dictionary<string, string>();
             public string key { get; private set; }
             public string bucket { get; private set; }
 
@@ -77,33 +77,58 @@ namespace Minio
                     this.formData.Add("Content-Type", ContentType);
             }
 
+            public void SetAlgorithm(string algorithm)
+            {
+                if (string.IsNullOrEmpty(algorithm))
+                {
+                        throw new ArgumentException("algorithm argument cannot be null or empty");
+                }
+                this.policies.Add(new Tuple<string, string, string>("eq", "$x-amz-algorithm", algorithm));
+                this.formData.Add("x-amz-algorithm", algorithm);
+            }
+
+            public void SetCredential(string credential)
+            {
+                if (string.IsNullOrEmpty(credential))
+                {
+                        throw new ArgumentException("credential argument cannot be null or empty");
+                }
+                this.policies.Add(new Tuple<string, string, string>("eq", "$x-amz-credential", credential));
+                this.formData.Add("x-amz-credential", credential);
+            }
+
+            public void SetDate(DateTime date)
+            {
+                string dateStr = date.ToString("yyyyMMddTHHmmssZ");
+                this.policies.Add(new Tuple<string, string, string>("eq", "$x-amz-date", dateStr));
+                this.formData.Add("x-amz-date", dateStr);
+            }
+
+            public void SetPolicy(string policy)
+            {
+                this.formData.Add("policy", policy);
+            }
+
+            public void SetSignature(string signature)
+            {
+                this.formData.Add("x-amz-signature", signature);
+            }
+
             private string marshalJSON()
             {
-                    string returnStr;
-                    string expirationStr = "\"expiration\":\""+ this.expiration.ToString("yyyy-MM-ddTHH:mm:ss.000Z") + "\"";
                     List<string> policies = new List<string>();
+                    StringBuilder sb = new StringBuilder();
+
                     foreach (var policy in this.policies)
                     {
                             policies.Add("[\"" + policy.Item1 + "\",\"" + policy.Item2 + "\",\"" + policy.Item3+"\"]");
                     }
-                    StringBuilder policyFullStrBuilder = new StringBuilder();
-                    foreach (var policyStr in policies)
-                    {
-                            policyFullStrBuilder.Append(policyStr).Append(",");
-                    }
-                    string conditionsStr = "\"conditions\":["+ policyFullStrBuilder.ToString() + "]";
-
-                    returnStr = "{";
-                    if (expirationStr.Length > 0)
-                    {
-                            returnStr = returnStr + expirationStr + ",";
-                    }
-                    if (conditionsStr.Length > 0)
-                    {
-                            returnStr = returnStr + conditionsStr;
-                    }
-                    returnStr = returnStr + "}";
-                    return returnStr;
+                    // expiration and conditions will never be empty because of checks at PresignedPostPolicy()
+                    sb.Append("{");
+                    sb.Append("\"expiration\":\"").Append(this.expiration.ToString("yyyy-MM-ddTHH:mm:ss.000Z")).Append("\"").Append(",");
+                    sb.Append("\"conditions\":[").Append(String.Join(",", policies)).Append("]");
+                    sb.Append("}");
+                    return sb.ToString();
             }
 
             public string Base64()
@@ -146,6 +171,10 @@ namespace Minio
                             return true;
                     }
                     return false;
+            }
+
+            public Dictionary<string, string> getFormData() {
+                return this.formData;
             }
     }
 }

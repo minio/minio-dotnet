@@ -170,12 +170,12 @@ namespace Minio
         {
                 var request = new RestRequest(bucket, Method.HEAD);
                 var response = client.Execute(request);
-                
+
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                         return true;
                 }
-                
+
                 var ex = ParseError(response);
                 if (ex.GetType() == typeof(BucketNotFoundException))
                 {
@@ -183,7 +183,7 @@ namespace Minio
                 }
                 throw ex;
         }
-            
+
         /// <summary>
         /// Create a bucket with a given name and canned ACL
         /// </summary>
@@ -362,40 +362,37 @@ namespace Minio
         /// <summary>
         ///  Presigned post policy
         /// </summary>
-        public Dictionary<string, string> PresignedPostPolicy(PostPolicy form)
+        public Dictionary<string, string> PresignedPostPolicy(PostPolicy policy)
         {
-                if (!form.IsBucketSet())
+                if (!policy.IsBucketSet())
                 {
                         throw new ArgumentException("bucket should be set");
                 }
 
-                if (!form.IsKeySet())
+                if (!policy.IsKeySet())
                 {
                         throw new ArgumentException("key should be set");
                 }
 
-                if (!form.IsExpirationSet())
+                if (!policy.IsExpirationSet())
                 {
                         throw new ArgumentException("expiration should be set");
                 }
 
                 string region = Regions.GetRegion(this.client.BaseUrl.Host);
                 DateTime signingDate = DateTime.UtcNow;
-                string iso8601Date = signingDate.ToString("yyyyMMddTHHmmssZ");                
-                form.policies.Add(new Tuple<string, string, string>("eq", "$x-amz-date", iso8601Date));
-                form.policies.Add(new Tuple<string, string, string>("eq", "$x-amz-algorithm", "AWS4-HMAC-SHA256"));
-                form.policies.Add(new Tuple<string, string, string>("eq",
-                                                                    "$x-amz-credential",
-                                                                    this.authenticator.GetCredentialString(signingDate,
-                                                                                                           region)));
 
-                string policyBase64 = form.Base64();
-                form.formData.Add("policy", policyBase64);
-                form.formData.Add("x-amz-algorithm", "AWS4-HMAC-SHA256");
-                form.formData.Add("x-amz-credential", this.authenticator.GetCredentialString(signingDate, region));
-                form.formData.Add("x-amz-date", iso8601Date);
-                form.formData.Add("x-amz-signature", this.authenticator.PresignPostSignature(signingDate, region, policyBase64));
-                return form.formData;
+                policy.SetAlgorithm("AWS4-HMAC-SHA256");
+                policy.SetCredential(this.authenticator.GetCredentialString(signingDate, region));
+                policy.SetDate(signingDate);
+
+                string policyBase64 = policy.Base64();
+                string signature = this.authenticator.PresignPostSignature(signingDate, region, policyBase64);
+
+                policy.SetPolicy(policyBase64);
+                policy.SetSignature(signature);
+
+                return policy.getFormData();
         }
 
         /// <summary>
