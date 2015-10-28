@@ -42,7 +42,7 @@ namespace Minio.Examples
             {
                     curlCommand = curlCommand + " -F " + pair.Key + "=" + pair.Value;
             }
-            curlCommand = curlCommand + " -F file=@/etc/bashrc";
+            curlCommand = curlCommand + " -F file=@/etc/bashrc https://s3.amazonaws.com/mybucket";
             Console.Out.WriteLine(curlCommand);
             return 0;
         }
