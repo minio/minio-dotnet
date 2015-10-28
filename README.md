@@ -46,6 +46,7 @@ foreach (Bucket bucket in buckets)
 
 * [PresignedGetObject.cs](./Minio.Examples/PresignedGetObject.cs)
 * [PresignedPutObject.cs](./Minio.Examples/PresignedPutObject.cs)
+* [PresignedPostPolicy.cs](./Minio.Examples/PresignedPostPolicy.cs)
 
 ### How to run these examples?
 

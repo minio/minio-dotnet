@@ -103,7 +103,6 @@ namespace Minio
                             returnStr = returnStr + conditionsStr;
                     }
                     returnStr = returnStr + "}";
-                    Console.Out.WriteLine(returnStr);
                     return returnStr;
             }
 
