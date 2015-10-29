@@ -114,7 +114,7 @@ namespace Minio
                 this.formData.Add("x-amz-signature", signature);
             }
 
-            private string marshalJSON()
+            private byte[] marshalJSON()
             {
                     List<string> policies = new List<string>();
                     StringBuilder sb = new StringBuilder();
@@ -128,13 +128,12 @@ namespace Minio
                     sb.Append("\"expiration\":\"").Append(this.expiration.ToString("yyyy-MM-ddTHH:mm:ss.000Z")).Append("\"").Append(",");
                     sb.Append("\"conditions\":[").Append(String.Join(",", policies)).Append("]");
                     sb.Append("}");
-                    return sb.ToString();
+                    return System.Text.Encoding.UTF8.GetBytes(sb.ToString() as string);
             }
 
             public string Base64()
             {
-                    string policyStr = this.marshalJSON();
-                    byte[] policyStrBytes = System.Text.Encoding.UTF8.GetBytes(policyStr as string);
+                    byte[] policyStrBytes = this.marshalJSON();
                     return Convert.ToBase64String(policyStrBytes);
             }
 
