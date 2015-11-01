@@ -1050,7 +1050,7 @@ namespace Minio
         /// <returns>A lazily populated list of incomplete uploads</returns>
         public IEnumerable<Upload> ListIncompleteUploads(string bucket, string prefix)
         {
-            return this.ListAllIncompleteUploads(bucket, prefix, null);
+            return this.ListIncompleteUploads(bucket, prefix, true);
         }
 
         /// <summary>
@@ -1064,19 +1064,19 @@ namespace Minio
         {
             if (recursive)
             {
-                return this.ListAllIncompleteUploads(bucket, prefix, null);
+                return this.listIncompleteUploads(bucket, prefix, null);
             }
-            return this.ListAllIncompleteUploads(bucket, prefix, "%2F");
+            return this.listIncompleteUploads(bucket, prefix, "/");
         }
 
         /// <summary>
-        /// Lists all incomplete uploads in a given bucket with a given key
+        /// Lists all or delimited incomplete uploads in a given bucket with a given key
         /// </summary>
         /// <param name="bucket">Bucket to list incomplete uploads from</param>
         /// <param name="key">Key of object to list incomplete uploads from</param>
         /// <param name="delimiter">delimiter of object to list incomplete uploads</param>
         /// <returns></returns>
-        private IEnumerable<Upload> ListAllIncompleteUploads(string bucket, string prefix, string delimiter)
+        private IEnumerable<Upload> listIncompleteUploads(string bucket, string prefix, string delimiter)
         {
             string nextKeyMarker = null;
             string nextUploadIdMarker = null;
