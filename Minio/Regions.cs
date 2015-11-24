@@ -45,7 +45,7 @@ namespace Minio
                 case "s3-us-west-2.amazonaws.com":
                     return "us-west-2";
                 default:
-                    return "milkyway";
+                    return "us-east-1";
             }
         }
     }
