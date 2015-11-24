@@ -193,10 +193,15 @@ namespace Minio
         {
             var request = new RestRequest("/" + bucket, Method.PUT);
 
-            CreateBucketConfiguration config = new CreateBucketConfiguration(this.region);
             request.AddHeader("x-amz-acl", acl.ToString());
-
-            request.AddBody(config);
+            // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it
+            // Valid constraints are
+            // [ us-west-1 | us-west-2 | EU or eu-west-1 | eu-central-1 | ap-southeast-1 | ap-northeast-1 | ap-southeast-2 | sa-east-1 ]
+            if (this.region != "us-east-1")
+            {
+                    CreateBucketConfiguration config = new CreateBucketConfiguration(this.region);
+                    request.AddBody(config);
+            }
 
             var response = client.Execute(request);
             if (response.StatusCode == HttpStatusCode.OK)
