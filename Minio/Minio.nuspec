@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Minio</id>
-    <version>0.2.0</version>
+    <version>0.2.1</version>
     <title>Minio</title>
     <authors>Minio, Inc.</authors>
     <owners>Minio, Inc.</owners>

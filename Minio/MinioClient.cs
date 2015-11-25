@@ -40,7 +40,7 @@ namespace Minio
         {
             get
             {
-                string userAgent = "minio-dotnet/0.2.0";
+                string userAgent = "minio-dotnet/0.2.1";
                 userAgent += " (" + System.Environment.OSVersion.ToString() + "; ";
                 string arch = "";
                 if (System.Environment.Is64BitOperatingSystem)

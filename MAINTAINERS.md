@@ -3,10 +3,9 @@
 ### Setup your minio-dotnet Github Repository
 
 Fork [minio-dotnet upstream](https://github.com/minio/minio-dotnet/fork) source repository to your own personal repository.
-```bash
-$ sudo apt-get install nuget mono-devel xbuild
-$ git clone https://github.com/$USER_ID/minio-dotnet
-$ cd minio-dotnet
+```powershell
+> git clone https://github.com/$USER_ID/minio-dotnet
+> cd minio-dotnet
 ```
 
 Minio .NET Library uses nuget for its dependency management https://nuget.org/
@@ -15,16 +14,15 @@ Minio .NET Library uses nuget for its dependency management https://nuget.org/
 
 #### Setup your nuget and download all dependencies
 
-```bash
-$ wget https://www.nuget.org/nuget.exe
-$ mono nuget.exe restore
+```powershell
+> nuget restore
 ```
 
 #### Compile the project and build a package
 
-```bash
-$ xbuild
-$ mono nuget.exe pack Minio/Minio.csproj
+```powershell
+> .\packages\MSBuild.0.1.2\tools\Windows\MSBuild.exe /t:Rebuild /p:Configuration=Release
+> nuget pack Minio/Minio.csproj
 ... package built ...
 ```
 
