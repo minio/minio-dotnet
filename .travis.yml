@@ -2,8 +2,9 @@ language: csharp
 solution: Minio.sln
 
 script:
-  - xbuild
-  - mono ./packages/NUnit.Runners.2.6.4/tools/nunit-console.exe ./Minio.Tests/bin/Debug/Minio.Tests.dll
+  - mono ./packages/MSBuild.0.1.2/tools/Unix/MSBuild.exe /t:Clean
+  - mono ./packages/MSBuild.0.1.2/tools/Unix/MSBuild.exe /t:Rebuild /p:Configuration=Release
+  - mono ./packages/NUnit.Runners.2.6.4/tools/nunit-console.exe ./Minio.Tests/bin/Release/Minio.Tests.dll
 
 notifications:
   slack:
