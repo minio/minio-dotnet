@@ -55,14 +55,20 @@ foreach (Bucket bucket in buckets)
 Simply edit the example .Net program to include your access credentials and follow the steps below.
 
 ```bash
-$ sudo apt-get install mono
 $ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet
-$ wget http://www.nuget.org/nuget.exe
+$ sudo apt-get install mono-xbuild mono-devel mono-complete
+$ sudo mozroots --import --machine --sync 
+$ sudo certmgr -ssl -m https://go.microsoft.com
+$ sudo certmgr -ssl -m https://nugetgallery.blob.core.windows.net
+$ sudo certmgr -ssl -m https://nuget.org
+$ wget https://www.nuget.org/nuget.exe
+$ mono nuget.exe update -self
 $ mono nuget.exe restore
-$ xbuild
+$ xbuild /t:Clean
+$ xbuild /t:Rebuild /p:Configuration=Release
 [edit Minio.Examples/ListBuckets.cs]
-$ mcs /r:Minio/bin/Debug/Minio.dll Minio.Examples/ListBuckets.cs
-$ export MONO_PATH=Minio/bin/Debug
+$ mcs /r:Minio/bin/Release/Minio.dll Minio.Examples/ListBuckets.cs
+$ export MONO_PATH=Minio/bin/Release
 $ mono Minio.Examples/ListBuckets.exe
 ....
 
