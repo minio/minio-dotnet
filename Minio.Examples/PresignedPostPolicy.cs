@@ -33,8 +33,8 @@ namespace Minio.Examples
             PostPolicy form = new PostPolicy();
             DateTime expiration = DateTime.UtcNow;
             form.SetExpires(expiration.AddDays(10));
-            form.SetKey("myobject");
-            form.SetBucket("mybucket");
+            form.SetKey("objectName");
+            form.SetBucket("bucketName");
 
             Dictionary <string, string> formData = client.PresignedPostPolicy(form);
             string curlCommand = "curl ";
@@ -42,7 +42,7 @@ namespace Minio.Examples
             {
                     curlCommand = curlCommand + " -F " + pair.Key + "=" + pair.Value;
             }
-            curlCommand = curlCommand + " -F file=@/etc/bashrc https://s3.amazonaws.com/mybucket";
+            curlCommand = curlCommand + " -F file=@/etc/bashrc https://s3.amazonaws.com/bucketName";
             Console.Out.WriteLine(curlCommand);
             return 0;
         }

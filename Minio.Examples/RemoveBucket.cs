@@ -29,7 +29,7 @@ namespace Minio.Examples
         {
             var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
-            client.RemoveBucket("bucket");
+            client.RemoveBucket("bucketName");
 
             return 0;
         }

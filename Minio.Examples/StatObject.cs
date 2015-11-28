@@ -29,7 +29,7 @@ namespace Minio.Examples
         {
             var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
-            var statObject = client.StatObject("bucket", "object");
+            var statObject = client.StatObject("bucketName", "objectName");
 
             Console.Out.WriteLine("{0} {1} {2} {3} {4}", statObject.Key, statObject.Size, statObject.LastModified, statObject.ETag, statObject.ContentType);
 

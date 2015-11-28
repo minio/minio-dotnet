@@ -31,7 +31,7 @@ namespace Minio.Examples
         {
             var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
-            var items = client.ListIncompleteUploads("bucket", "prefix", true);
+            var items = client.ListIncompleteUploads("bucketName", "prefix", true);
 
             foreach (Upload item in items)
             {

@@ -31,8 +31,8 @@ namespace Minio.Examples
             var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
             byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");
-            client.PutObject("bucket", "smallobj", 11, "application/octet-stream", new MemoryStream(data));
-
+            client.PutObject("bucketName", "objectName", 11, "application/octet-stream", new MemoryStream(data));
+            
             return 0;
         }
     }
