@@ -29,15 +29,15 @@ namespace Minio.Examples
         {
             var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
-            var bucketExists = client.BucketExists("bucket");
+            var bucketExists = client.BucketExists("bucketName");
 
             if (bucketExists)
             {
-                Console.Out.WriteLine("Bucket: {0} exists..", "bucket");
+                Console.Out.WriteLine("Bucket: {0} exists..", "bucketName");
             }
             else
             {
-                Console.Out.WriteLine("Bucket: {0} does not exist..", "bucket");
+                Console.Out.WriteLine("Bucket: {0} does not exist..", "bucketName");
             }
 
             return 0;

@@ -31,7 +31,7 @@ namespace Minio.Examples
         {
             var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
-            client.GetObject("bucket", "object", (stream) =>
+            client.GetObject("bucketName", "objectName", (stream) =>
             {
                 stream.CopyTo(Console.OpenStandardOutput());
             });
