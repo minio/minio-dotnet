@@ -1,5 +1,14 @@
 # For maintainers only
 
+## Responsibilities
+
+Please go through this link [Maintainer Responsibility](https://gist.github.com/abperiasamy/f4d9b31d3186bbd26522)
+
+## Current Maintainers
+
+- Harshavardhana
+- Balamurugan Arumugam
+
 ### Setup your minio-dotnet Github Repository
 
 Fork [minio-dotnet upstream](https://github.com/minio/minio-dotnet/fork) source repository to your own personal repository.
