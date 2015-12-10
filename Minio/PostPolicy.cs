@@ -50,7 +50,7 @@ namespace Minio
             {
                     if (string.IsNullOrEmpty(KeyStartsWith))
                     {
-                            throw new ArgumentException("Object key cannot be null or empty");
+                            throw new ArgumentException("Object key prefix cannot be null or empty");
                     }
                     this.policies.Add(new Tuple<string, string, string>("starts-with", "$key", KeyStartsWith));
                     this.formData.Add("key", KeyStartsWith);
@@ -60,7 +60,7 @@ namespace Minio
             {
                     if (string.IsNullOrEmpty(Bucket))
                     {
-                            throw new ArgumentException("Bucket key cannot be null or empty");
+                            throw new ArgumentException("Bucket name cannot be null or empty");
                     }
                     this.policies.Add(new Tuple<string, string, string>("eq", "$bucket", Bucket));
                     this.formData.Add("bucket", Bucket);
@@ -81,7 +81,7 @@ namespace Minio
             {
                 if (string.IsNullOrEmpty(algorithm))
                 {
-                        throw new ArgumentException("algorithm argument cannot be null or empty");
+                        throw new ArgumentException("Algorithm argument cannot be null or empty");
                 }
                 this.policies.Add(new Tuple<string, string, string>("eq", "$x-amz-algorithm", algorithm));
                 this.formData.Add("x-amz-algorithm", algorithm);

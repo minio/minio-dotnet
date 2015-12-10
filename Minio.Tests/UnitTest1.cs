@@ -60,5 +60,28 @@ namespace Minio.Tests
         {
             new MinioClient("http://localhost:9000/?foo=bar");
         }
+
+        [Test]
+        [ExpectedException(typeof(ArgumentException))]
+        public void TestSetAppInfoFailsNullApp()
+        {
+            var client = new MinioClient("http://localhost:9000");
+            client.SetAppInfo(null, "1.2.2");
+        }
+
+        [Test]
+        [ExpectedException(typeof(ArgumentException))]
+        public void TestSetAppInfoFailsNullVersion()
+        {
+            var client = new MinioClient("http://localhost:9000");
+            client.SetAppInfo("Hello-App", null);
+        }
+
+        [Test]
+        public void TestSetAppInfoSuccess()
+        {
+            var client = new MinioClient("http://localhost:9000");
+            client.SetAppInfo("Hello-App", "1.2.1");
+        }
     }
 }

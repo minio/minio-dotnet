@@ -40,7 +40,7 @@ namespace Minio
         {
             get
             {
-                string userAgent = "minio-dotnet/0.2.1";
+                string userAgent = "Minio";
                 userAgent += " (" + System.Environment.OSVersion.ToString() + "; ";
                 string arch = "";
                 if (System.Environment.Is64BitOperatingSystem)
@@ -51,7 +51,7 @@ namespace Minio
                 {
                     arch = "x86";
                 }
-                return userAgent + arch + ") ";;
+                return userAgent + arch + ") minio-dotnet/0.2.1";;
             }
         }
         private string CustomUserAgent = "";
@@ -138,27 +138,19 @@ namespace Minio
         {
         }
 
-        public void SetUserAgent(string product, string version, IEnumerable<string> attributes)
+        public void SetAppInfo(string appname, string appversion)
         {
-            if (string.IsNullOrEmpty(product))
+            if (string.IsNullOrEmpty(appname))
             {
-                    throw new ArgumentException("product cannot be null or empty");
+                    throw new ArgumentException("appname cannot be null or empty");
             }
-            if (string.IsNullOrEmpty(version))
+            if (string.IsNullOrEmpty(appversion))
             {
-                    throw new ArgumentException("version cannot be null or empty");
+                    throw new ArgumentException("appversion cannot be null or empty");
             }
-            string customAgent = product + "/" + version;
-            string[] attributesArray = attributes.ToArray();
-            if (attributes.Count() > 0)
-            {
-                    customAgent += "(";
-                    customAgent += string.Join("; ", attributesArray);
-                    customAgent += ")";
-            }
+            string customAgent = appname + "/" + appversion;
             this.CustomUserAgent = customAgent;
             this.client.UserAgent = this.FullUserAgent;
-            this.client.FollowRedirects = false;
         }
 
         /// <summary>
