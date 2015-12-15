@@ -503,7 +503,7 @@ namespace Minio
         /// <param name="size">Total size of bytes to be written, must match with data's length</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
         /// <param name="data">Stream of bytes to send</param>
-        public void PutObject(string bucket, string key, long size, string contentType, Stream data)
+        public void PutObject(string bucket, string key, Stream data, long size, string contentType)
         {
             if (size <= MinioClient.minimumPartSize)
             {
