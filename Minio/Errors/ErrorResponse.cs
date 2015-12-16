@@ -31,5 +31,8 @@ namespace Minio.Errors
         public string RequestID { get; set; }
         public string HostID { get; set; }
         public string Resource { get; set; }
+        public string BucketName { get; set; }
+        public string Key { get; set; }
+        public string AmzBucketRegion { get; set; }
     }
 }

@@ -19,10 +19,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.Serialization;
 
 namespace Minio.Errors
 {
     public class AccessDeniedException : ClientException
     {
+        public AccessDeniedException()
+        {
+        }
+        public AccessDeniedException(string message) : base(message)
+        {
+        }
+
+        public override string ToString()
+        {
+            return base.ToString();
+        }
     }
 }

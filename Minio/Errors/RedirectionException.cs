@@ -24,5 +24,13 @@ namespace Minio.Errors
 {
     public class RedirectionException : ClientException
     {
+        public RedirectionException(string message) : base(message)
+        {
+        }
+
+        public override string ToString()
+        {
+            return base.ToString();
+        }
     }
 }

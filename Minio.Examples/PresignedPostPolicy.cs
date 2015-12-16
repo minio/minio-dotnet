@@ -29,7 +29,7 @@ namespace Minio.Examples
     {
         static int Main(string[] args)
         {
-            var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+            var client = new MinioClient("s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
             PostPolicy form = new PostPolicy();
             DateTime expiration = DateTime.UtcNow;
             form.SetExpires(expiration.AddDays(10));

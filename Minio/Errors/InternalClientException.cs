@@ -24,15 +24,8 @@ namespace Minio.Errors
 {
     public class InternalClientException : ClientException
     {
-        public string p
+        public InternalClientException(string message) : base(message)
         {
-            get;
-            private set;
-        }
-
-        public InternalClientException(string p)
-        {
-            this.p = p;
         }
     }
 }

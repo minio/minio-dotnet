@@ -24,5 +24,13 @@ namespace Minio.Errors
 {
     public class MethodNotAllowedException : ClientException
     {
+        public MethodNotAllowedException(string message) : base(message)
+        {
+        }
+
+        public override string ToString()
+        {
+            return base.ToString();
+        }
     }
 }

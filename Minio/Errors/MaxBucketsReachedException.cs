@@ -24,5 +24,13 @@ namespace Minio.Errors
 {
     public class MaxBucketsReachedException : ClientException
     {
+        public MaxBucketsReachedException(string message) : base(message)
+        {
+        }
+
+        public override string ToString()
+        {
+            return base.ToString();
+        }
     }
 }

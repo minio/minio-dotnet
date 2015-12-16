@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -23,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <Prefer32Bit>false</Prefer32Bit>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,6 +33,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>minio.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="RestSharp">
@@ -49,21 +56,30 @@
     <Compile Include="Acl.cs" />
     <Compile Include="Errors\ConnectionException.cs" />
     <Compile Include="Errors\AccessDeniedException.cs" />
+    <Compile Include="Errors\InvalidEndpointException.cs" />
+    <Compile Include="Errors\InvalidPortException.cs" />
     <Compile Include="Errors\MethodNotAllowedException.cs" />
     <Compile Include="Errors\ForbiddenException.cs" />
     <Compile Include="Errors\InternalServerException.cs" />
     <Compile Include="Errors\RedirectionException.cs" />
     <Compile Include="Errors\ObjectNotFoundException.cs" />
-    <Compile Include="Errors\ObjectExistsException.cs" />
     <Compile Include="Errors\MaxBucketsReachedException.cs" />
-    <Compile Include="Errors\InvalidRangeException.cs" />
     <Compile Include="Errors\InvalidKeyNameException.cs" />
     <Compile Include="Errors\InvalidBucketNameException.cs" />
     <Compile Include="Errors\InvalidAclNameException.cs" />
     <Compile Include="Errors\InternalClientException.cs" />
     <Compile Include="Errors\BucketNotFoundException.cs" />
-    <Compile Include="Errors\BucketExistsException.cs" />
     <Compile Include="Errors\UnexpectedShortReadException.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
     <Compile Include="Regions.cs" />
     <Compile Include="Errors\ClientException.cs" />
     <Compile Include="Xml\AccessControlPolicy.cs" />
@@ -88,7 +104,19 @@
     <Compile Include="Xml\Upload.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
+    <None Include="minio.pfx" />
     <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

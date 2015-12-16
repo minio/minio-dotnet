@@ -24,6 +24,18 @@ namespace Minio.Errors
 {
     public class ClientException : Exception
     {
+        private string message;
+
+        public ClientException()
+        {
+            this.message = "ClientException";
+        }
+
+        public ClientException(string message)
+        {
+            this.message = message;
+        }
+
         public ErrorResponse Response { get; set; }
         public string XmlError { get; set; }
     }

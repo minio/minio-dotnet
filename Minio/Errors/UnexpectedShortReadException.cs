@@ -23,21 +23,14 @@ namespace Minio.Errors
 {
     public class UnexpectedShortReadException : ClientException
     {
-        public UnexpectedShortReadException(string bucket, string key, long userSpecifiedSize, long actualReadSize)
-        {
-            this.Bucket = bucket;
-            this.Key = key;
-            this.UserSpecifiedSize = userSpecifiedSize;
-            this.ActualReadSize = actualReadSize;
-        }
-        public UnexpectedShortReadException()
-            : this(null, null, 0, 0)
-        {
 
+        public UnexpectedShortReadException(string message) : base(message)
+        {
         }
-        public string Bucket { get; private set; }
-        public string Key { get; private set; }
-        public long UserSpecifiedSize { get; private set; }
-        public long ActualReadSize { get; private set; }
+
+        public override string ToString()
+        {
+            return base.ToString();
+        }
     }
 }

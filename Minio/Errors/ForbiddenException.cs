@@ -24,5 +24,13 @@ namespace Minio.Errors
 {
     public class ForbiddenException : ClientException
     {
+        public ForbiddenException(string message) : base(message)
+        {
+        }
+
+        public override string ToString()
+        {
+            return base.ToString();
+        }
     }
 }

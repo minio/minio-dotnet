@@ -24,5 +24,8 @@ namespace Minio.Errors
 {
     public class ConnectionException : ClientException
     {
+        public ConnectionException(string message) : base(message)
+        {
+        }
     }
 }

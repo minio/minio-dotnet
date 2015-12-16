@@ -28,7 +28,7 @@ namespace Minio.Examples
     {
         static int Main(string[] args)
         {
-            var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+            var client = new MinioClient("s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
             client.GetPartialObject("bucketName", "objectName", 5, 10, (stream) =>
             {

@@ -24,5 +24,16 @@ namespace Minio.Errors
 {
     public class InvalidBucketNameException : ClientException
     {
+        private string bucketName;
+
+        public InvalidBucketNameException(string bucketName, string message) : base(message)
+        {
+            this.bucketName = bucketName;
+        }
+
+        public override string ToString()
+        {
+            return this.bucketName + ": " + base.ToString();
+        }
     }
 }

@@ -13,16 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+ 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Minio.Errors
 {
-    public class ObjectExistsException : ClientException
+    public class InvalidEndpointException : ClientException
     {
+        private string endpoint;
+
+        public InvalidEndpointException(string endpoint, string message) : base(message)
+        {
+            this.endpoint = endpoint;
+        }
+
+        public InvalidEndpointException(string message) : base(message)
+        {
+        }
+
+        public override string ToString()
+        {
+            if (string.IsNullOrEmpty(this.endpoint))
+            {
+                return base.ToString();
+            }
+            else
+            {
+                return this.endpoint + ": " + base.ToString();
+            }
+        }
     }
 }

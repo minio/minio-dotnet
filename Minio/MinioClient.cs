@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Net;
 using System.Linq;
 using RestSharp;
@@ -67,52 +68,19 @@ namespace Minio
         /// <summary>
         /// Creates and returns an Cloud Storage client
         /// </summary>
-        /// <param name="uri">Location of the server, supports HTTP and HTTPS</param>
-        /// <param name="accessKey">Access Key for authenticated requests</param>
-        /// <param name="secretKey">Secret Key for authenticated requests</param>
+        /// <param name="url">Location of the server, supports HTTP and HTTPS</param>
         /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
-        public MinioClient(Uri uri, string accessKey, string secretKey)
+        public MinioClient(string endpoint)
+            : this(endpoint, 0, null, null, false)
         {
-            if (uri == null)
-            {
-                throw new NullReferenceException();
-            }
-
-            if (!(uri.Scheme == "http" || uri.Scheme == "https"))
-            {
-                throw new UriFormatException("Expecting http or https");
-            }
-
-            if (uri.Query.Length != 0)
-            {
-                throw new UriFormatException("Expecting no query");
-            }
-
-            if (!(uri.AbsolutePath.Length == 0 || (uri.AbsolutePath.Length == 1 && uri.AbsolutePath[0] == '/')))
-            {
-                throw new UriFormatException("Expecting AbsolutePath to be empty");
-
-            }
-
-            String path = uri.Scheme + "://" + uri.Host + ":" + uri.Port + "/";
-            uri = new Uri(path);
-            this.client = new RestClient(uri);
-            this.region = Regions.GetRegion(uri.Host);
-            this.client.UserAgent = this.FullUserAgent;
-            if (accessKey != null && secretKey != null)
-            {
-                this.authenticator = new V4Authenticator(accessKey, secretKey);
-                this.client.Authenticator = new V4Authenticator(accessKey, secretKey);
-            }
         }
-
         /// <summary>
         /// Creates and returns an Cloud Storage client.
         /// </summary>
         /// <param name="uri">Location of the server, supports HTTP and HTTPS.</param>
         /// <returns>Client with the uri set as the server location.</returns>
         public MinioClient(Uri uri)
-            : this(uri, null, null)
+            : this(uri.ToString(), 0, null, null, false)
         {
         }
 
@@ -124,20 +92,141 @@ namespace Minio
         /// <param name="secretKey">Secret Key for authenticated requests</param>
         /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
         public MinioClient(string url, string accessKey, string secretKey)
-            : this(new Uri(url), accessKey, secretKey)
+            : this(url, 0, accessKey, secretKey, false)
+        {
+        }
+
+        public MinioClient(Uri uri, string accessKey, string secretKey)
+            : this(uri.ToString(), 0, accessKey, secretKey, false)
+        {
+        }
+
+        public MinioClient(string endpoint, int port, string accessKey, string secretKey)
+            : this(endpoint, port, accessKey, secretKey, false)
+        {
+        }
+
+        public MinioClient(string endpoint, string accessKey, string secretKey, bool insecure)
+            : this(endpoint, 0, accessKey, secretKey, insecure)
         {
         }
 
         /// <summary>
         /// Creates and returns an Cloud Storage client
         /// </summary>
-        /// <param name="url">Location of the server, supports HTTP and HTTPS</param>
+        /// <param name="uri">Location of the server, supports HTTP and HTTPS</param>
+        /// <param name="accessKey">Access Key for authenticated requests</param>
+        /// <param name="secretKey">Secret Key for authenticated requests</param>
         /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
-        public MinioClient(string url)
-            : this(new Uri(url), null, null)
+        public MinioClient(string endpoint, int port, string accessKey, string secretKey, bool insecure)
         {
+            if (string.IsNullOrEmpty(endpoint))
+            {
+                throw new InvalidEndpointException("Endpoint cannot be empty.");
+            }
+
+            try
+            {
+                var uri = new Uri(endpoint);
+                if (uri != null)
+                {
+                    if (uri.AbsolutePath.Length > 0 && !uri.AbsolutePath.Equals("/"))
+                    {
+                         throw new InvalidEndpointException(endpoint, "No path allowed in endpoint.");
+                    }
+                    if (uri.Query.Length > 0)
+                    {
+                         throw new InvalidEndpointException(endpoint, "No query parameter allowed in endpoint.");
+                    }
+                    if (!uri.Scheme.Equals("http") && !uri.Scheme.Equals("https"))
+                    {
+                         throw new InvalidEndpointException(endpoint, "Invalid scheme detected in endpoint.");
+                    }
+                    string amzHost = uri.Host;
+                    if (amzHost.EndsWith(".amazonaws.com") && !amzHost.Equals("s3.amazonaws.com"))
+                    {
+                         throw new InvalidEndpointException(endpoint, "For Amazon S3, host should be 's3.amazonaws.com' in endpoint.");
+                    }
+                    this.client = new RestClient(uri);
+                    this.region = Regions.GetRegion(uri.Host);
+                    this.client.UserAgent = this.FullUserAgent;
+                    if (accessKey != null && secretKey != null)
+                    {
+                         this.authenticator = new V4Authenticator(accessKey, secretKey);
+                         this.client.Authenticator = new V4Authenticator(accessKey, secretKey);
+                    }
+                    return;
+                }
+            }
+            catch (UriFormatException e)
+            {
+                if (!this.isValidEndpoint(endpoint))
+                {
+                    throw new InvalidEndpointException(endpoint, "Invalid endpoint.");
+                }
+
+                if (endpoint.EndsWith(".amazonaws.com") && !endpoint.Equals("s3.amazonaws.com"))
+                {
+                    throw new InvalidEndpointException(endpoint, "For Amazon S3, endpoint should be 's3.amazonaws.com'");
+                }
+
+                if (port < 0 || port > 65535)
+                {
+                    throw new InvalidPortException(port, "port must be in range of 1 to 65535.");
+                }
+
+                // TODO use a typed scheme.
+                string scheme = "https";
+                if (insecure)
+                {
+                    scheme = "http";
+                }
+
+                String path = scheme + "://" + endpoint + "/";
+                if (port > 0)
+                {
+                    path = scheme + "://" + endpoint + ":" + port + "/";
+                }
+                var uri = new Uri(path);
+                this.client = new RestClient(uri);
+                this.region = Regions.GetRegion(uri.Host);
+                this.client.UserAgent = this.FullUserAgent;
+                if (accessKey != null && secretKey != null)
+                {
+                    this.authenticator = new V4Authenticator(accessKey, secretKey);
+                    this.client.Authenticator = new V4Authenticator(accessKey, secretKey);
+                }
+            }
         }
 
+        private bool isValidEndpoint(string endpoint)
+        {
+            // endpoint may be a hostname
+            // refer https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_host_names
+            // why checks are as shown below.
+            if (endpoint.Length < 1 || endpoint.Length > 253)
+            {
+                return false;
+            }
+
+            foreach (var label in endpoint.Split('.'))
+            {
+                if (label.Length < 1 || label.Length > 63)
+                {
+                    return false;
+                }
+
+                Regex validLabel = new Regex("^[a-zA-Z0-9][a-zA-Z0-9-]*");
+                Regex validEndpoint = new Regex(".*[a-zA-Z0-9]$");
+
+                if (!(validLabel.IsMatch(label) && validEndpoint.IsMatch(endpoint)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
         public void SetAppInfo(string appname, string appversion)
         {
             if (string.IsNullOrEmpty(appname))
@@ -487,9 +576,9 @@ namespace Minio
             {
                 if (!this.BucketExists(bucket))
                 {
-                    var bnfe = new BucketNotFoundException();
-                    bnfe.Response = ex.Response;
-                    throw bnfe;
+                    var err = new BucketNotFoundException(bucket, "Bucket name does not exist.");
+                    err.Response = ex.Response;
+                    throw err;
                 }
             }
             throw ex;
@@ -510,7 +599,7 @@ namespace Minio
                 var bytes = ReadFull(data, (int)size);
                 if (bytes.Length != (int)size)
                 {
-                    throw new UnexpectedShortReadException(bucket, key, size, bytes.Length);
+                    throw new UnexpectedShortReadException("Unexpected short read. Read only "+ bytes.Length + " out of " + size + "bytes");
                 }
                 this.DoPutObject(bucket, key, null, 0, contentType, bytes);
             }
@@ -555,7 +644,7 @@ namespace Minio
                         var expectedSize = size - totalWritten;
                         if (expectedSize != dataToCopy.Length)
                         {
-                            throw new UnexpectedShortReadException(bucket, key, expectedSize, dataToCopy.Length);
+                            throw new UnexpectedShortReadException("Unexpected short read. Read only " + dataToCopy.Length + " out of " + expectedSize + "bytes");
                         }
                     }
                     System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create();
@@ -757,11 +846,11 @@ namespace Minio
         {
             if (response == null)
             {
-                return new ConnectionException();
+                return new ConnectionException("Response is nil. Please report this issue https://github.com/minio/minio-dotnet/issues");
             }
             if (HttpStatusCode.Redirect.Equals(response.StatusCode) || HttpStatusCode.TemporaryRedirect.Equals(response.StatusCode) || HttpStatusCode.MovedPermanently.Equals(response.StatusCode))
             {
-                return new RedirectionException();
+                return new RedirectionException("Redirection detected. Please report this issue https://github.com/minio/minio-dotnet/issues");
             }
 
             if (string.IsNullOrWhiteSpace(response.Content))
@@ -782,6 +871,10 @@ namespace Minio
                         {
                             errorResponse.RequestID = parameter.Value.ToString();
                         }
+                        if (parameter.Name.Equals("x-amz-bucket-region", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            errorResponse.AmzBucketRegion = parameter.Value.ToString();
+                        }
                     }
 
                     errorResponse.Resource = response.Request.Resource;
@@ -792,12 +885,14 @@ namespace Minio
                         if (pathLength > 1)
                         {
                             errorResponse.Code = "NoSuchKey";
-                            e = new ObjectNotFoundException();
+                            var objectName = response.Request.Resource.Split('/')[1];
+                            e = new ObjectNotFoundException(objectName, "Not found.");
                         }
                         else if (pathLength == 1)
                         {
                             errorResponse.Code = "NoSuchBucket";
-                            e = new BucketNotFoundException();
+                            var bucketName = response.Request.Resource.Split('/')[0];
+                            e = new BucketNotFoundException(bucketName, "Not found.");
                         }
                         else
                         {
@@ -807,17 +902,7 @@ namespace Minio
                     else if (HttpStatusCode.Forbidden.Equals(response.StatusCode))
                     {
                         errorResponse.Code = "Forbidden";
-                        e = new AccessDeniedException();
-                    }
-                    else if (HttpStatusCode.MethodNotAllowed.Equals(response.StatusCode))
-                    {
-                        errorResponse.Code = "MethodNotAllowed";
-                        e = new MethodNotAllowedException();
-                    }
-                    else
-                    {
-                        errorResponse.Code = "MethodNotAllowed";
-                        e = new MethodNotAllowedException();
+                        e = new AccessDeniedException("Access denied on the resource: " + response.Request.Resource);
                     }
                     e.Response = errorResponse;
                     return e;
@@ -830,25 +915,7 @@ namespace Minio
             ErrorResponse errResponse = (ErrorResponse)(new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream));
             string code = errResponse.Code;
 
-            ClientException clientException;
-
-            if ("NoSuchBucket".Equals(code)) clientException = new BucketNotFoundException();
-            else if ("NoSuchKey".Equals(code)) clientException = new ObjectNotFoundException();
-            else if ("InvalidBucketName".Equals(code)) clientException = new InvalidKeyNameException();
-            else if ("InvalidObjectName".Equals(code)) clientException = new InvalidKeyNameException();
-            else if ("AccessDenied".Equals(code)) clientException = new AccessDeniedException();
-            else if ("InvalidAccessKeyId".Equals(code)) clientException = new AccessDeniedException();
-            else if ("BucketAlreadyExists".Equals(code)) clientException = new BucketExistsException();
-            else if ("ObjectAlreadyExists".Equals(code)) clientException = new ObjectExistsException();
-            else if ("InternalError".Equals(code)) clientException = new InternalServerException();
-            else if ("KeyTooLong".Equals(code)) clientException = new InvalidKeyNameException();
-            else if ("TooManyBuckets".Equals(code)) clientException = new MaxBucketsReachedException();
-            else if ("PermanentRedirect".Equals(code)) clientException = new RedirectionException();
-            else if ("MethodNotAllowed".Equals(code)) clientException = new ObjectExistsException();
-            else if ("BucketAlreadyOwnedByYou".Equals(code)) clientException = new BucketExistsException();
-            else clientException = new InternalClientException(errResponse.ToString());
-
-
+            ClientException clientException = new ClientException(errResponse.Message);
             clientException.Response = errResponse;
             clientException.XmlError = response.Content;
             return clientException;

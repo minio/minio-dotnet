@@ -41,21 +41,21 @@ namespace Minio.Tests
         }
 
         [Test]
-        [ExpectedException(typeof(UriFormatException))]
+        [ExpectedException(typeof(Errors.InvalidEndpointException))]
         public void TestUrlFailsWithMalformedScheme()
         {
             new MinioClient("htp://localhost:9000");
         }
 
         [Test]
-        [ExpectedException(typeof(UriFormatException))]
+        [ExpectedException(typeof(Errors.InvalidEndpointException))]
         public void TestUrlFailsWithPath()
         {
             new MinioClient("http://localhost:9000/foo");
         }
 
         [Test]
-        [ExpectedException(typeof(UriFormatException))]
+        [ExpectedException(typeof(Errors.InvalidEndpointException))]
         public void TestUrlFailsWithQuery()
         {
             new MinioClient("http://localhost:9000/?foo=bar");
@@ -82,6 +82,19 @@ namespace Minio.Tests
         {
             var client = new MinioClient("http://localhost:9000");
             client.SetAppInfo("Hello-App", "1.2.1");
+        }
+
+        [Test]
+        public void TestEndpointSuccess()
+        {
+            new MinioClient("s3.amazonaws.com");
+        }
+
+        [Test]
+        [ExpectedException(typeof(Errors.InvalidEndpointException))]
+        public void TestEndpointFailure()
+        {
+            new MinioClient("s3-us-west-1.amazonaws.com");
         }
     }
 }
