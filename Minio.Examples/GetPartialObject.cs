@@ -26,7 +26,7 @@ namespace Minio.Examples
 {
     class GetPartialObject
     {
-        static int Main(string[] args)
+        static int Main()
         {
             var client = new MinioClient("s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 

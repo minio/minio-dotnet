@@ -28,11 +28,11 @@ namespace Minio.Errors
     {
         public string Code { get; set; }
         public string Message { get; set; }
-        public string RequestID { get; set; }
-        public string HostID { get; set; }
+        public string RequestId { get; set; }
+        public string HostId { get; set; }
         public string Resource { get; set; }
         public string BucketName { get; set; }
         public string Key { get; set; }
-        public string AmzBucketRegion { get; set; }
+        public string BucketRegion { get; set; }
     }
 }

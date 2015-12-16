@@ -18,18 +18,29 @@ using System;
 
 namespace Minio
 {
-    public sealed class Acl
+    public class Acl
     {
-        private readonly String value;
+        private String value;
 
-        public static readonly Acl Private = new Acl("private");
-        public static readonly Acl PublicReadWrite = new Acl("public-read-write");
-        public static readonly Acl PublicRead = new Acl("public-read");
-        public static readonly Acl AuthenticatedRead = new Acl("authenticated-read");
+        public static Acl Private = new Acl("private");
+        public static Acl PublicRead = new Acl("public-read");
+        public static Acl PublicReadWrite = new Acl("public-read-write");
+        public static Acl AuthenticatedRead = new Acl("authenticated-read");
 
-        private Acl(string value)
+        public Acl(string value)
         {
-            this.value = value;
+            if (string.IsNullOrEmpty(value))
+            {
+                throw new Errors.InvalidAclNameException("", "Acl is empty.");
+            }
+            if (value.Equals("private") &&
+                value.Equals("public-read") &&
+                value.Equals("public-read-write") &&
+                value.Equals("authenticated-read"))
+            {
+                this.value = value;
+            }
+            throw new Errors.InvalidAclNameException(value, "Invalid acl value.");
         }
 
         public override string ToString()

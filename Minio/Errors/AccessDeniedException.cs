@@ -23,6 +23,7 @@ using System.Runtime.Serialization;
 
 namespace Minio.Errors
 {
+    [Serializable]
     public class AccessDeniedException : ClientException
     {
         public AccessDeniedException()

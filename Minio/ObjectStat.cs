@@ -20,15 +20,23 @@ namespace Minio
 {
     public class ObjectStat
     {
-        public ObjectStat(string key, long size, DateTime lastModified, string etag, string contentType)
+        /// <summary>
+        /// Object metadata information.
+        /// </summary>
+        /// <param name="objectName">Object name</param>
+        /// <param name="size">Object size</param>
+        /// <param name="lastModified">Last when object was modified</param>
+        /// <param name="etag">Unique entity tag for the object</param>
+        /// <param name="contentType">Object content type</param>
+        public ObjectStat(string objectName, long size, DateTime lastModified, string etag, string contentType)
         {
-            this.Key = key;
+            this.ObjectName = objectName;
             this.Size = size;
             this.LastModified = lastModified;
             this.ETag = etag;
             this.ContentType = contentType;
         }
-        public string Key { get; private set; }
+        public string ObjectName { get; private set; }
         public long Size { get; private set; }
         public DateTime LastModified { get; private set;  }
         public string ETag { get; private set; }

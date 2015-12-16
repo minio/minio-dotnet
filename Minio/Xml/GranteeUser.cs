@@ -21,7 +21,7 @@ namespace Minio.Xml
     [Serializable]
     public class GranteeUser
     {
-        public string ID { get; set; }
+        public string Id { get; set; }
 
         public string DisplayName { get; set; }
 
@@ -29,6 +29,6 @@ namespace Minio.Xml
 
         public string Type { get; set; }
 
-        public string URI { get; set; }
+        public string Uri { get; set; }
     }
 }

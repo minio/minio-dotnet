@@ -25,6 +25,7 @@ using Minio.Xml;
 using System.Xml.Serialization;
 using System.Xml.Linq;
 using Minio.Errors;
+using System.Globalization;
 
 namespace Minio
 {
@@ -35,9 +36,9 @@ namespace Minio
 
         private RestClient client;
         private string region;
-        private V4Authenticator authenticator;
+        private Minio.V4Authenticator authenticator;
 
-        private string SystemUserAgent
+        private static string SystemUserAgent
         {
             get
             {
@@ -130,7 +131,7 @@ namespace Minio
                 var uri = new Uri(endpoint);
                 if (uri != null)
                 {
-                    if (uri.AbsolutePath.Length > 0 && !uri.AbsolutePath.Equals("/"))
+                    if (uri.AbsolutePath.Length > 0 && !uri.AbsolutePath.Equals("/", StringComparison.CurrentCultureIgnoreCase))
                     {
                          throw new InvalidEndpointException(endpoint, "No path allowed in endpoint.");
                     }
@@ -143,31 +144,33 @@ namespace Minio
                          throw new InvalidEndpointException(endpoint, "Invalid scheme detected in endpoint.");
                     }
                     string amzHost = uri.Host;
-                    if (amzHost.EndsWith(".amazonaws.com") && !amzHost.Equals("s3.amazonaws.com"))
+                    if ((amzHost.EndsWith(".amazonaws.com", StringComparison.CurrentCultureIgnoreCase))
+                        && !(amzHost.Equals("s3.amazonaws.com", StringComparison.CurrentCultureIgnoreCase)))
                     {
-                         throw new InvalidEndpointException(endpoint, "For Amazon S3, host should be 's3.amazonaws.com' in endpoint.");
+                         throw new InvalidEndpointException(endpoint, "For Amazon S3, host should be \'s3.amazonaws.com\' in endpoint.");
                     }
                     this.client = new RestClient(uri);
-                    this.region = Regions.GetRegion(uri.Host);
+                    this.region = Minio.Regions.GetRegion(uri.Host);
                     this.client.UserAgent = this.FullUserAgent;
                     if (accessKey != null && secretKey != null)
                     {
-                         this.authenticator = new V4Authenticator(accessKey, secretKey);
-                         this.client.Authenticator = new V4Authenticator(accessKey, secretKey);
+                         this.authenticator = new Minio.V4Authenticator(accessKey, secretKey);
+                         this.client.Authenticator = new Minio.V4Authenticator(accessKey, secretKey);
                     }
                     return;
                 }
             }
-            catch (UriFormatException e)
+            catch (UriFormatException)
             {
                 if (!this.isValidEndpoint(endpoint))
                 {
                     throw new InvalidEndpointException(endpoint, "Invalid endpoint.");
                 }
 
-                if (endpoint.EndsWith(".amazonaws.com") && !endpoint.Equals("s3.amazonaws.com"))
+                if (endpoint.EndsWith(".amazonaws.com", StringComparison.CurrentCultureIgnoreCase)
+                    && !endpoint.Equals("s3.amazonaws.com", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    throw new InvalidEndpointException(endpoint, "For Amazon S3, endpoint should be 's3.amazonaws.com'");
+                    throw new InvalidEndpointException(endpoint, "For Amazon S3, endpoint should be \'s3.amazonaws.com\'");
                 }
 
                 if (port < 0 || port > 65535)
@@ -227,29 +230,29 @@ namespace Minio
 
             return true;
         }
-        public void SetAppInfo(string appname, string appversion)
+        public void SetAppInfo(string appName, string appVersion)
         {
-            if (string.IsNullOrEmpty(appname))
+            if (string.IsNullOrEmpty(appName))
             {
-                    throw new ArgumentException("appname cannot be null or empty");
+                    throw new ArgumentException("Appname cannot be null or empty");
             }
-            if (string.IsNullOrEmpty(appversion))
+            if (string.IsNullOrEmpty(appVersion))
             {
-                    throw new ArgumentException("appversion cannot be null or empty");
+                    throw new ArgumentException("Appversion cannot be null or empty");
             }
-            string customAgent = appname + "/" + appversion;
+            string customAgent = appName + "/" + appVersion;
             this.CustomUserAgent = customAgent;
             this.client.UserAgent = this.FullUserAgent;
         }
 
         /// <summary>
-        /// Returns true if the specified bucket exists, otherwise returns false.
+        /// Returns true if the specified bucketName exists, otherwise returns false.
         /// </summary>
-        /// <param name="bucket">Bucket to test existence of</param>
+        /// <param name="bucketName">Bucket to test existence of</param>
         /// <returns>true if exists and user has access</returns>
-        public bool BucketExists(string bucket)
+        public bool BucketExists(string bucketName)
         {
-                var request = new RestRequest(bucket, Method.HEAD);
+                var request = new RestRequest(bucketName, Method.HEAD);
                 var response = client.Execute(request);
 
                 if (response.StatusCode == HttpStatusCode.OK)
@@ -265,23 +268,51 @@ namespace Minio
                 throw ex;
         }
 
+
         /// <summary>
-        /// Create a bucket with a given name and canned ACL
+        /// Create a private bucket with a give name.
         /// </summary>
-        /// <param name="bucket">Name of the new bucket</param>
-        /// <param name="acl">Canned ACL to set</param>
-        public void MakeBucket(string bucket, Acl acl)
+        /// <param name="bucketName">Name of the new bucket</param>
+        public void MakeBucket(string bucketName)
         {
-            var request = new RestRequest("/" + bucket, Method.PUT);
+            this.MakeBucket(bucketName, Acl.Private, "us-east-1");
+        }
+
+        /// <summary>
+        /// Create a private bucket with a give name at a location.
+        /// </summary>
+        /// <param name="bucketName">Name of the new bucket</param>
+        /// <param name="location">Name of the location</param>
+        public void MakeBucket(string bucketName, string location)
+        {
+            this.MakeBucket(bucketName, Acl.Private, location);
+        }
+
+        /// <summary>
+        /// Create a private bucket with a give name and canned Acl.
+        /// </summary>
+        /// <param name="bucketName">Name of the new bucket</param>
+        /// <param name="acl">Canned Acl to set</param>
+        public void MakeBucket(string bucketName, Acl acl)
+        {
+            this.MakeBucket(bucketName, acl, "us-east-1");
+        }
+
+        /// <summary>
+        /// Create a bucket with a given name, canned Acl and location.
+        /// </summary>
+        /// <param name="bucketName">Name of the new bucket</param>
+        /// <param name="acl">Canned Acl to set</param>
+        public void MakeBucket(string bucketName, Acl acl, string location)
+        {
+            var request = new RestRequest("/" + bucketName, Method.PUT);
 
             request.AddHeader("x-amz-acl", acl.ToString());
-            // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it
-            // Valid constraints are
-            // [ us-west-1 | us-west-2 | EU or eu-west-1 | eu-central-1 | ap-southeast-1 | ap-northeast-1 | ap-southeast-2 | sa-east-1 ]
-            if (this.region != "us-east-1")
+            // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
+            if (location != "us-east-1")
             {
-                    CreateBucketConfiguration config = new CreateBucketConfiguration(this.region);
-                    request.AddBody(config);
+                CreateBucketConfiguration config = new CreateBucketConfiguration(location);
+                request.AddBody(config);
             }
 
             var response = client.Execute(request);
@@ -294,21 +325,12 @@ namespace Minio
         }
 
         /// <summary>
-        /// Create a private bucket with a give name.
-        /// </summary>
-        /// <param name="bucket">Name of the new bucket</param>
-        public void MakeBucket(string bucket)
-        {
-            this.MakeBucket(bucket, Acl.Private);
-        }
-
-        /// <summary>
         /// Remove a bucket
         /// </summary>
-        /// <param name="bucket">Name of bucket to remove</param>
-        public void RemoveBucket(string bucket)
+        /// <param name="bucketName">Name of bucket to remove</param>
+        public void RemoveBucket(string bucketName)
         {
-            var request = new RestRequest(bucket, Method.DELETE);
+            var request = new RestRequest(bucketName, Method.DELETE);
             var response = client.Execute(request);
 
             if (!response.StatusCode.Equals(HttpStatusCode.NoContent))
@@ -320,11 +342,11 @@ namespace Minio
         /// <summary>
         /// Remove an object
         /// </summary>
-        /// <param name="bucket">Name of bucket to remove</param>
-        /// <param name="key">Name of object to remove</param>
-        public void RemoveObject(string bucket, string key)
+        /// <param name="bucketName">Name of bucket to remove</param>
+        /// <param name="objectName">Name of object to remove</param>
+        public void RemoveObject(string bucketName, string objectName)
         {
-            var request = new RestRequest(bucket + "/" + UrlEncode(key), Method.DELETE);
+            var request = new RestRequest(bucketName + "/" + UrlEncode(objectName), Method.DELETE);
             var response = client.Execute(request);
 
             if (!response.StatusCode.Equals(HttpStatusCode.NoContent))
@@ -334,13 +356,13 @@ namespace Minio
         }
 
         /// <summary>
-        /// Get bucket ACL
+        /// Get bucket Acl
         /// </summary>
-        /// <param name="bucket">NAme of bucket to retrieve canned ACL</param>
-        /// <returns>Canned ACL</returns>
-        public Acl GetBucketAcl(string bucket)
+        /// <param name="bucketName">Name of bucket to retrieve canned Acl</param>
+        /// <returns>Canned Acl</returns>
+        public Acl GetBucketAcl(string bucketName)
         {
-            var request = new RestRequest(bucket + "?acl", Method.GET);
+            var request = new RestRequest(bucketName + "?acl", Method.GET);
             var response = client.Execute(request);
 
             if (response.StatusCode == HttpStatusCode.OK)
@@ -355,15 +377,18 @@ namespace Minio
                 bool authenticatedRead = false;
                 foreach (var x in bucketList.Grants)
                 {
-                    if ("http://acs.amazonaws.com/groups/global/AllUsers".Equals(x.Grantee.URI) && x.Permission.Equals("READ"))
+                    if ("http://acs.amazonaws.com/groups/global/AllUsers".Equals(x.Grantee.Uri)
+                        && x.Permission.Equals("READ"))
                     {
                         publicRead = true;
                     }
-                    if ("http://acs.amazonaws.com/groups/global/AllUsers".Equals(x.Grantee.URI) && x.Permission.Equals("WRITE"))
+                    if ("http://acs.amazonaws.com/groups/global/AllUsers".Equals(x.Grantee.Uri)
+                        && x.Permission.Equals("WRITE"))
                     {
                         publicWrite = true;
                     }
-                    if ("http://acs.amazonaws.com/groups/global/AuthenticatedUsers".Equals(x.Grantee.URI) && x.Permission.Equals("READ"))
+                    if ("http://acs.amazonaws.com/groups/global/AuthenticatedUsers".Equals(x.Grantee.Uri)
+                        && x.Permission.Equals("READ"))
                     {
                         authenticatedRead = true;
                     }
@@ -386,13 +411,13 @@ namespace Minio
         }
 
         /// <summary>
-        /// Set a bucket's canned ACL
+        /// Set a bucket's canned Acl
         /// </summary>
-        /// <param name="bucket">Name of bucket to set canned ACL</param>
-        /// <param name="acl">Canned ACL to set</param>
-        public void SetBucketAcl(string bucket, Acl acl)
+        /// <param name="bucketName">Name of bucket to set canned Acl</param>
+        /// <param name="acl">Canned Acl to set</param>
+        public void SetBucketAcl(string bucketName, Acl acl)
         {
-            var request = new RestRequest(bucket + "?acl", Method.PUT);
+            var request = new RestRequest(bucketName + "?acl", Method.PUT);
             request.AddHeader("x-amz-acl", acl.ToString());
             var response = client.Execute(request);
             if (!HttpStatusCode.OK.Equals(response.StatusCode))
@@ -405,7 +430,7 @@ namespace Minio
         /// Lists all buckets owned by the user
         /// </summary>
         /// <returns>A list of all buckets owned by the user.</returns>
-        public List<Bucket> ListBuckets()
+        public IReadOnlyCollection<Bucket> ListBuckets()
         {
             var request = new RestRequest("/", Method.GET);
             var response = client.Execute(request);
@@ -424,24 +449,24 @@ namespace Minio
         /// <summary>
         /// Presigned Get url.
         /// </summary>
-        /// <param name="bucket">Bucket to retrieve object from</param>
-        /// <param name="key">Key of object to retrieve</param>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds</param>
-        public string PresignedGetObject(string bucket, string key, int expiresInt)
+        public string PresignedGetObject(string bucketName, string objectName, int expiresInt)
         {
-            RestRequest request = new RestRequest(bucket + "/" + UrlEncode(key), Method.GET);
+            RestRequest request = new RestRequest(bucketName + "/" + UrlEncode(objectName), Method.GET);
             return this.authenticator.PresignURL(this.client, request, expiresInt);
         }
 
         /// <summary>
         /// Presigned Put url.
         /// </summary>
-        /// <param name="bucket">Bucket to retrieve object from</param>
-        /// <param name="key">Key of object to retrieve</param>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds</param>
-        public string PresignedPutObject(string bucket, string key, int expiresInt)
+        public string PresignedPutObject(string bucketName, string objectName, int expiresInt)
         {
-            RestRequest request = new RestRequest(bucket + "/" + UrlEncode(key), Method.PUT);
+            RestRequest request = new RestRequest(bucketName + "/" + UrlEncode(objectName), Method.PUT);
             return this.authenticator.PresignURL(this.client, request, expiresInt);
         }
 
@@ -473,23 +498,23 @@ namespace Minio
                 policy.SetDate(signingDate);
 
                 string policyBase64 = policy.Base64();
-                string signature = this.authenticator.PresignPostSignature(signingDate, region, policyBase64);
+                string signature = this.authenticator.PresignPostSignature(region, signingDate, policyBase64);
 
                 policy.SetPolicy(policyBase64);
                 policy.SetSignature(signature);
 
-                return policy.getFormData();
+                return policy.GetFormData();
         }
 
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
-        /// <param name="bucket">Bucket to retrieve object from</param>
-        /// <param name="key">Key of object to retrieve</param>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Name of object to retrieve</param>
         /// <param name="callback">A stream will be passed to the callback</param>
-        public void GetObject(string bucket, string key, Action<Stream> callback)
+        public void GetObject(string bucketName, string objectName, Action<Stream> callback)
         {
-            RestRequest request = new RestRequest(bucket + "/" + UrlEncode(key), Method.GET);
+            RestRequest request = new RestRequest(bucketName + "/" + UrlEncode(objectName), Method.GET);
             request.ResponseWriter = callback;
             var response = client.Execute(request);
             if (response.StatusCode == HttpStatusCode.OK)
@@ -502,14 +527,14 @@ namespace Minio
         /// <summary>
         /// Get an object starting with the byte specified in offset. The object will be streamed to the callback given by the user
         /// </summary>
-        /// <param name="bucket">Bucket to retrieve object from</param>
-        /// <param name="key">Key of object to retrieve</param>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Name of object to retrieve</param>
         /// <param name="offset">Number of bytes to skip</param>
         /// <param name="callback">A stream will be passed to the callback</param>
-        public void GetPartialObject(string bucket, string key, ulong offset, Action<Stream> callback)
+        public void GetPartialObject(string bucketName, string objectName, ulong offset, Action<Stream> callback)
         {
-            var stat = this.StatObject(bucket, key);
-            RestRequest request = new RestRequest(bucket + "/" + UrlEncode(key), Method.GET);
+            var stat = this.StatObject(bucketName, objectName);
+            RestRequest request = new RestRequest(bucketName + "/" + UrlEncode(objectName), Method.GET);
             request.AddHeader("Range", "bytes=" + offset + "-" + (stat.Size - 1));
             request.ResponseWriter = callback;
             client.Execute(request);
@@ -519,14 +544,14 @@ namespace Minio
         /// <summary>
         /// Get a byte range of an object given by the offset and length. The object will be streamed to the callback given by the user
         /// </summary>
-        /// <param name="bucket">Bucket to retrieve object from</param>
-        /// <param name="key">Key of object to retrieve</param>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="offset">Number of bytes to skip</param>
         /// <param name="length">Length of requested byte range</param>
         /// <param name="callback">A stream will be passed to the callback</param>
-        public void GetPartialObject(string bucket, string key, ulong offset, ulong length, Action<Stream> callback)
+        public void GetPartialObject(string bucketName, string objectName, ulong offset, ulong length, Action<Stream> callback)
         {
-            RestRequest request = new RestRequest(bucket + "/" + UrlEncode(key), Method.GET);
+            RestRequest request = new RestRequest(bucketName + "/" + UrlEncode(objectName), Method.GET);
             request.AddHeader("Range", "bytes=" + offset + "-" + (offset + length - 1));
             request.ResponseWriter = callback;
             client.Execute(request);
@@ -536,12 +561,12 @@ namespace Minio
         /// <summary>
         /// Tests the object's existence and returns metadata about existing objects.
         /// </summary>
-        /// <param name="bucket">Bucket to test object in</param>
-        /// <param name="key">Key of object to stat</param>
+        /// <param name="bucketName">Bucket to test object in</param>
+        /// <param name="objectName">Name of the object to stat</param>
         /// <returns>Facts about the object</returns>
-        public ObjectStat StatObject(string bucket, string key)
+        public ObjectStat StatObject(string bucketName, string objectName)
         {
-            var request = new RestRequest(bucket + "/" + UrlEncode(key), Method.HEAD);
+            var request = new RestRequest(bucketName + "/" + UrlEncode(objectName), Method.HEAD);
             var response = client.Execute(request);
 
             if (response.StatusCode == HttpStatusCode.OK)
@@ -569,54 +594,44 @@ namespace Minio
                         contentType = parameter.Value.ToString();
                     }
                 }
-                return new ObjectStat(key, size, lastModified, etag, contentType);
+                return new ObjectStat(objectName, size, lastModified, etag, contentType);
             }
-            ClientException ex = ParseError(response);
-            if (ex.GetType() == typeof(ObjectNotFoundException))
-            {
-                if (!this.BucketExists(bucket))
-                {
-                    var err = new BucketNotFoundException(bucket, "Bucket name does not exist.");
-                    err.Response = ex.Response;
-                    throw err;
-                }
-            }
-            throw ex;
+            throw ParseError(response);
         }
 
         /// <summary>
         /// Creates an object
         /// </summary>
-        /// <param name="bucket">Bucket to create object in</param>
-        /// <param name="key">Key of the new object</param>
+        /// <param name="bucketName">Bucket to create object in</param>
+        /// <param name="objectName">Key of the new object</param>
         /// <param name="size">Total size of bytes to be written, must match with data's length</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
         /// <param name="data">Stream of bytes to send</param>
-        public void PutObject(string bucket, string key, Stream data, long size, string contentType)
+        public void PutObject(string bucketName, string objectName, Stream data, long size, string contentType)
         {
             if (size <= MinioClient.minimumPartSize)
             {
                 var bytes = ReadFull(data, (int)size);
                 if (bytes.Length != (int)size)
                 {
-                    throw new UnexpectedShortReadException("Unexpected short read. Read only "+ bytes.Length + " out of " + size + "bytes");
+                    throw new UnexpectedShortReadException("Data read "+ bytes.Length + " is shorter than the size " + size + " of input buffer.");
                 }
-                this.DoPutObject(bucket, key, null, 0, contentType, bytes);
+                this.PutObject(bucketName, objectName, null, 0, bytes, contentType);
             }
             else
             {
                 var partSize = CalculatePartSize(size);
-                var uploads = this.ListIncompleteUploads(bucket, key);
+                var uploads = this.ListIncompleteUploads(bucketName, objectName);
                 string uploadId = null;
                 Dictionary<int, string> etags = new Dictionary<int, string>();
                 if (uploads.Count() > 0)
                 {
                     foreach (Upload upload in uploads)
                     {
-                        if (key == upload.Key)
+                        if (objectName == upload.Key)
                         {
                             uploadId = upload.UploadId;
-                            var parts = this.ListParts(bucket, key, uploadId);
+                            var parts = this.ListParts(bucketName, objectName, uploadId);
                             foreach (Part part in parts)
                             {
                                 etags[part.PartNumber] = part.ETag;
@@ -627,7 +642,7 @@ namespace Minio
                 }
                 if (uploadId == null)
                 {
-                    uploadId = this.NewMultipartUpload(bucket, key, contentType);
+                    uploadId = this.NewMultipartUpload(bucketName, objectName, contentType);
                 }
                 int partNumber = 0;
                 long totalWritten = 0;
@@ -652,7 +667,7 @@ namespace Minio
                     string etag = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
                     if (!etags.ContainsKey(partNumber) || !etags[partNumber].Equals(etag))
                     {
-                        etag = DoPutObject(bucket, key, uploadId, partNumber, contentType, dataToCopy);
+                        etag = this.PutObject(bucketName, objectName, uploadId, partNumber, dataToCopy, contentType);
                     }
                     etags[partNumber] = etag;
                     totalWritten += dataToCopy.Length;
@@ -666,7 +681,7 @@ namespace Minio
                     }
                 }
 
-                this.CompleteMultipartUpload(bucket, key, uploadId, etags);
+                this.CompleteMultipartUpload(bucketName, objectName, uploadId, etags);
             }
         }
 
@@ -701,9 +716,9 @@ namespace Minio
             return truncatedResult;
         }
 
-        private void CompleteMultipartUpload(string bucket, string key, string uploadId, Dictionary<int, string> etags)
+        private void CompleteMultipartUpload(string bucketName, string objectName, string uploadId, Dictionary<int, string> etags)
         {
-            var path = bucket + "/" + UrlEncode(key) + "?uploadId=" + uploadId;
+            var path = bucketName + "/" + UrlEncode(objectName) + "?uploadId=" + uploadId;
             var request = new RestRequest(path, Method.POST);
 
             List<XElement> parts = new List<XElement>();
@@ -746,13 +761,13 @@ namespace Minio
             return MinioClient.minimumPartSize;
         }
 
-        private IEnumerable<Part> ListParts(string bucket, string key, string uploadId)
+        private IEnumerable<Part> ListParts(string bucketName, string objectName, string uploadId)
         {
             int nextPartNumberMarker = 0;
             bool isRunning = true;
             while (isRunning)
             {
-                var uploads = GetListParts(bucket, key, uploadId, nextPartNumberMarker);
+                var uploads = GetListParts(bucketName, objectName, uploadId, nextPartNumberMarker);
                 foreach (Part part in uploads.Item2)
                 {
                     yield return part;
@@ -762,9 +777,9 @@ namespace Minio
             }
         }
 
-        private Tuple<ListPartsResult, List<Part>> GetListParts(string bucket, string key, string uploadId, int partNumberMarker)
+        private Tuple<ListPartsResult, List<Part>> GetListParts(string bucketName, string objectName, string uploadId, int partNumberMarker)
         {
-            var path = bucket + "/" + UrlEncode(key) + "?uploadId=" + uploadId;
+            var path = bucketName + "/" + UrlEncode(objectName) + "?uploadId=" + uploadId;
             if(partNumberMarker > 0) {
                 path += "&part-number-marker=" + partNumberMarker;
             }
@@ -782,7 +797,7 @@ namespace Minio
                 var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Part")
                                select new Part()
                                {
-                                   PartNumber = int.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}PartNumber").Value),
+                                   PartNumber = int.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}PartNumber").Value, CultureInfo.CurrentCulture),
                                    ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value.Replace("\"", "")
                                });
 
@@ -791,9 +806,9 @@ namespace Minio
             throw ParseError(response);
         }
 
-        private string NewMultipartUpload(string bucket, string key, string contentType)
+        private string NewMultipartUpload(string bucketName, string objectName, string contentType)
         {
-            var path = bucket + "/" + UrlEncode(key) + "?uploads";
+            var path = bucketName + "/" + UrlEncode(objectName) + "?uploads";
             var request = new RestRequest(path, Method.POST);
             if (string.IsNullOrWhiteSpace(contentType))
             {
@@ -811,15 +826,15 @@ namespace Minio
             throw ParseError(response);
         }
 
-        private string DoPutObject(string bucket, string key, string uploadId, int partNumber, string contentType, byte[] data)
+        private string PutObject(string bucketName, string objectName, string uploadId, int partNumber, byte[] data, string contentType)
         {
-            var path = bucket + "/" + UrlEncode(key);
-            if (uploadId != null)
+            var path = bucketName + "/" + UrlEncode(objectName);
+            if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
             {
                 path += "?uploadId=" + uploadId + "&partNumber=" + partNumber;
             }
             var request = new RestRequest(path, Method.PUT);
-            if (contentType == null)
+            if (string.IsNullOrWhiteSpace(contentType))
             {
                 contentType = "application/octet-stream";
             }
@@ -865,15 +880,15 @@ namespace Minio
                     {
                         if (parameter.Name.Equals("x-amz-id-2", StringComparison.CurrentCultureIgnoreCase))
                         {
-                            errorResponse.HostID = parameter.Value.ToString();
+                            errorResponse.HostId = parameter.Value.ToString();
                         }
                         if (parameter.Name.Equals("x-amz-request-id", StringComparison.CurrentCultureIgnoreCase))
                         {
-                            errorResponse.RequestID = parameter.Value.ToString();
+                            errorResponse.RequestId = parameter.Value.ToString();
                         }
                         if (parameter.Name.Equals("x-amz-bucket-region", StringComparison.CurrentCultureIgnoreCase))
                         {
-                            errorResponse.AmzBucketRegion = parameter.Value.ToString();
+                            errorResponse.BucketRegion = parameter.Value.ToString();
                         }
                     }
 
@@ -913,7 +928,6 @@ namespace Minio
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
             ErrorResponse errResponse = (ErrorResponse)(new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream));
-            string code = errResponse.Code;
 
             ClientException clientException = new ClientException(errResponse.Message);
             clientException.Response = errResponse;
@@ -931,32 +945,32 @@ namespace Minio
         /// <summary>
         /// List all objects in a bucket
         /// </summary>
-        /// <param name="bucket">Bucket to list objects from</param>
+        /// <param name="bucketName">Bucket to list objects from</param>
         /// <returns>An iterator lazily populated with objects</returns>
-        public IEnumerable<Item> ListObjects(string bucket)
+        public IEnumerable<Item> ListObjects(string bucketName)
         {
-            return this.ListObjects(bucket, null, true);
+            return this.ListObjects(bucketName, null, true);
         }
 
         /// <summary>
         /// List all objects in a bucket with a given prefix
         /// </summary>
-        /// <param name="bucket">BUcket to list objects from</param>
+        /// <param name="bucketName">Bucket to list objects from</param>
         /// <param name="prefix">Filters all objects not beginning with a given prefix</param>
         /// <returns>An iterator lazily populated with objects</returns>
-        public IEnumerable<Item> ListObjects(string bucket, string prefix)
+        public IEnumerable<Item> ListObjects(string bucketName, string prefix)
         {
-            return this.ListObjects(bucket, prefix, true);
+            return this.ListObjects(bucketName, prefix, true);
         }
 
         /// <summary>
         /// List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
         /// </summary>
-        /// <param name="bucket">Bucket to list objects from</param>
+        /// <param name="bucketName">Bucket to list objects from</param>
         /// <param name="prefix">Filters all objects not beginning with a given prefix</param>
         /// <param name="recursive">Set to false to emulate a directory</param>
         /// <returns>A iterator lazily populated with objects</returns>
-        public IEnumerable<Item> ListObjects(string bucket, string prefix, bool recursive)
+        public IEnumerable<Item> ListObjects(string bucketName, string prefix, bool recursive)
         {
             bool isRunning = true;
 
@@ -964,7 +978,7 @@ namespace Minio
 
             while (isRunning)
             {
-                Tuple<ListBucketResult, List<Item>> result = GetObjectList(bucket, prefix, recursive, marker);
+                Tuple<ListBucketResult, List<Item>> result = GetObjectList(bucketName, prefix, recursive, marker);
                 Item lastItem = null;
                 foreach (Item item in result.Item2)
                 {
@@ -983,7 +997,7 @@ namespace Minio
             }
         }
 
-        private Tuple<ListBucketResult, List<Item>> GetObjectList(string bucket, string prefix, bool recursive, string marker)
+        private Tuple<ListBucketResult, List<Item>> GetObjectList(string bucketName, string prefix, bool recursive, string marker)
         {
             var queries = new List<string>();
             if (!recursive)
@@ -1001,7 +1015,7 @@ namespace Minio
             queries.Add("max-keys=1000");
             string query = string.Join("&", queries);
 
-            string path = bucket;
+            string path = bucketName;
             if (query.Length > 0)
             {
                 path += "?" + query;
@@ -1023,7 +1037,7 @@ namespace Minio
                                  Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
                                  LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
                                  ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value,
-                                 Size = UInt64.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value),
+                                 Size = UInt64.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture),
                                  IsDir = false
                              });
 
@@ -1041,7 +1055,7 @@ namespace Minio
             throw ParseError(response);
         }
 
-        private Tuple<ListMultipartUploadsResult, List<Upload>> GetMultipartUploadsList(string bucket,
+        private Tuple<ListMultipartUploadsResult, List<Upload>> GetMultipartUploadsList(string bucketName,
                                                                                         string prefix,
                                                                                         string keyMarker,
                                                                                         string uploadIdMarker,
@@ -1069,7 +1083,7 @@ namespace Minio
             queries.Add("max-uploads=1000");
 
             string query = string.Join("&", queries);
-            string path = bucket;
+            string path = bucketName;
             path += "?" + query;
 
             var request = new RestRequest(path, Method.GET);
@@ -1099,55 +1113,55 @@ namespace Minio
         /// <summary>
         /// Lists all incomplete uploads in a given bucket
         /// </summary>
-        /// <param name="bucket">Bucket to list all incomplepte uploads from</param>
+        /// <param name="bucketName">Bucket to list all incomplepte uploads from</param>
         /// <returns>A lazily populated list of incomplete uploads</returns>
-        public IEnumerable<Upload> ListIncompleteUploads(string bucket)
+        public IEnumerable<Upload> ListIncompleteUploads(string bucketName)
         {
-            return this.ListIncompleteUploads(bucket, null);
+            return this.ListIncompleteUploads(bucketName, null);
         }
 
         /// <summary>
         /// Lists all incomplete uploads in a given bucket and prefix
         /// </summary>
-        /// <param name="bucket">Bucket to list all incomplepte uploads from</param>
+        /// <param name="bucketName">Bucket to list all incomplepte uploads from</param>
         /// <param name="prefix">prefix to list all incomplepte uploads</param>
         /// <returns>A lazily populated list of incomplete uploads</returns>
-        public IEnumerable<Upload> ListIncompleteUploads(string bucket, string prefix)
+        public IEnumerable<Upload> ListIncompleteUploads(string bucketName, string prefix)
         {
-            return this.ListIncompleteUploads(bucket, prefix, true);
+            return this.ListIncompleteUploads(bucketName, prefix, true);
         }
 
         /// <summary>
         /// Lists all incomplete uploads in a given bucket and prefix recursively
         /// </summary>
-        /// <param name="bucket">Bucket to list all incomplepte uploads from</param>
+        /// <param name="bucketName">Bucket to list all incomplepte uploads from</param>
         /// <param name="prefix">prefix to list all incomplepte uploads</param>
         /// <param name="recursive">option to list incomplete uploads recursively</param>
         /// <returns>A lazily populated list of incomplete uploads</returns>
-        public IEnumerable<Upload> ListIncompleteUploads(string bucket, string prefix, bool recursive)
+        public IEnumerable<Upload> ListIncompleteUploads(string bucketName, string prefix, bool recursive)
         {
             if (recursive)
             {
-                return this.listIncompleteUploads(bucket, prefix, null);
+                return this.listIncompleteUploads(bucketName, prefix, null);
             }
-            return this.listIncompleteUploads(bucket, prefix, "/");
+            return this.listIncompleteUploads(bucketName, prefix, "/");
         }
 
         /// <summary>
-        /// Lists all or delimited incomplete uploads in a given bucket with a given key
+        /// Lists all or delimited incomplete uploads in a given bucket with a given objectName
         /// </summary>
-        /// <param name="bucket">Bucket to list incomplete uploads from</param>
-        /// <param name="key">Key of object to list incomplete uploads from</param>
+        /// <param name="bucketName">Bucket to list incomplete uploads from</param>
+        /// <param name="objectName">Key of object to list incomplete uploads from</param>
         /// <param name="delimiter">delimiter of object to list incomplete uploads</param>
         /// <returns></returns>
-        private IEnumerable<Upload> listIncompleteUploads(string bucket, string prefix, string delimiter)
+        private IEnumerable<Upload> listIncompleteUploads(string bucketName, string prefix, string delimiter)
         {
             string nextKeyMarker = null;
             string nextUploadIdMarker = null;
             bool isRunning = true;
             while (isRunning)
             {
-                var uploads = GetMultipartUploadsList(bucket, prefix, nextKeyMarker, nextUploadIdMarker, delimiter);
+                var uploads = GetMultipartUploadsList(bucketName, prefix, nextKeyMarker, nextUploadIdMarker, delimiter);
                 foreach (Upload upload in uploads.Item2)
                 {
                     yield return upload;
@@ -1159,25 +1173,25 @@ namespace Minio
         }
 
         /// <summary>
-        /// Remove incomplete uploads from a given bucket and key
+        /// Remove incomplete uploads from a given bucket and objectName
         /// </summary>
-        /// <param name="bucket">Bucket to remove incomplete uploads from</param>
-        /// <param name="key">Key to remove incomplete uploads from</param>
-        public void RemoveIncompleteUpload(string bucket, string key)
+        /// <param name="bucketName">Bucket to remove incomplete uploads from</param>
+        /// <param name="objectName">Key to remove incomplete uploads from</param>
+        public void RemoveIncompleteUpload(string bucketName, string objectName)
         {
-            var uploads = this.ListIncompleteUploads(bucket, key);
+            var uploads = this.ListIncompleteUploads(bucketName, objectName);
             foreach (Upload upload in uploads)
             {
-                if (key == upload.Key)
+                if (objectName == upload.Key)
                 {
-                    this.RemoveUpload(bucket, key, upload.UploadId);
+                    this.RemoveUpload(bucketName, objectName, upload.UploadId);
                 }
             }
         }
 
-        private void RemoveUpload(string bucket, string key, string uploadId)
+        private void RemoveUpload(string bucketName, string objectName, string uploadId)
         {
-            var path = bucket + "/" + UrlEncode(key) + "?uploadId=" + uploadId;
+            var path = bucketName + "/" + UrlEncode(objectName) + "?uploadId=" + uploadId;
             var request = new RestRequest(path, Method.DELETE);
             var response = client.Execute(request);
 
@@ -1188,7 +1202,7 @@ namespace Minio
             throw ParseError(response);
         }
 
-        private string UrlEncode(string input)
+        private static string UrlEncode(string input)
         {
             return Uri.EscapeDataString(input).Replace("%2F", "/");
         }

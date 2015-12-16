@@ -27,7 +27,7 @@ namespace Minio.Examples
 {
     class PresignedGetObject
     {
-        static int Main(string[] args)
+        static int Main()
         {
             var client = new MinioClient("s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
             Console.Out.WriteLine(client.PresignedGetObject("bucketName", "objectName", 1000));

@@ -27,7 +27,7 @@ namespace Minio.Examples
 {
     class PresignedPutObject
     {
-        static int Main(string[] args)
+        static int Main()
         {
             var client = new MinioClient("s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
             Console.Out.WriteLine(client.PresignedPutObject("bucketName", "objectName", 1000));

@@ -27,7 +27,7 @@ namespace Minio.Examples
 {
     class PresignedPostPolicy
     {
-        static int Main(string[] args)
+        static int Main()
         {
             var client = new MinioClient("s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
             PostPolicy form = new PostPolicy();

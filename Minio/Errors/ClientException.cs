@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 
 namespace Minio.Errors
 {
+    [Serializable]
     public class ClientException : Exception
     {
         private string message;
@@ -31,7 +32,7 @@ namespace Minio.Errors
             this.message = "ClientException";
         }
 
-        public ClientException(string message)
+        public ClientException(string message) : base(message)
         {
             this.message = message;
         }

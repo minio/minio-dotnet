@@ -22,14 +22,12 @@ using System.Threading.Tasks;
 
 namespace Minio.Errors
 {
+    [Serializable]
     public class BucketNotFoundException : ClientException
     {
         private string bucketName;
 
         public BucketNotFoundException()
-        {
-        }
-        public BucketNotFoundException(string message, Exception innerException)
         {
         }
         public BucketNotFoundException(string bucketName, string message) : base(message)
