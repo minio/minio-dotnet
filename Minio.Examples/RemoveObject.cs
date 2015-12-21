@@ -25,9 +25,13 @@ namespace Minio.Examples
 {
     class RemoveObject
     {
-        static int Main(string[] args)
+        private RemoveObject()
         {
-            var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+        }
+
+        static int Main()
+        {
+            var client = new MinioClient("s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
             client.RemoveObject("bucketName", "objectName");
             return 0;
         }

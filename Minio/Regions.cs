@@ -22,9 +22,14 @@ namespace Minio
         {
         }
 
-        internal static string GetRegion(string host)
+        /// <summary>
+        /// Get corresponding region for input host.
+        /// </summary>
+        /// <param name="endpoint">S3 API endpoint</param>
+        /// <returns>Region corresponding to the endpoint. Default is 'us-east-1'</returns>
+        internal static string GetRegion(string endpoint)
         {
-            switch (host)
+            switch (endpoint)
             {
                 case "s3-ap-northeast-1.amazonaws.com":
                     return "ap-northeast-1";

@@ -27,9 +27,9 @@ namespace Minio.Examples
 {
     class ListObjects
     {
-        static int Main(string[] args)
+        static int Main()
         {
-            var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+            var client = new MinioClient("s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
             var items = client.ListObjects("bucketName");
 

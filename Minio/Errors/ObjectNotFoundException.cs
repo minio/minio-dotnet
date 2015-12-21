@@ -24,5 +24,16 @@ namespace Minio.Errors
 {
     public class ObjectNotFoundException : ClientException
     {
+        private string objectName;
+
+        public ObjectNotFoundException(string objectName, string message) : base(message)
+        {
+            this.objectName = objectName;
+        }
+
+        public override string ToString()
+        {
+            return this.objectName + ": " + base.ToString();
+        }
     }
 }

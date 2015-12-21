@@ -24,5 +24,15 @@ namespace Minio.Errors
 {
     public class InvalidAclNameException : ClientException
     {
+        private string acl;
+
+        public InvalidAclNameException(string acl, string message) : base(message)
+        {
+            this.acl = acl;
+        }
+        public override string ToString()
+        {
+            return this.acl + ": " + base.ToString();
+        }
     }
 }

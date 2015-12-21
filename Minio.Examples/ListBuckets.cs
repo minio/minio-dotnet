@@ -27,9 +27,9 @@ namespace Minio.Examples
 {
     class ListBuckets
     {
-        static int Main(string[] args)
+        static int Main()
         {
-            var client = new MinioClient("https://s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+            var client = new MinioClient("s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
 
             var buckets = client.ListBuckets();
             foreach (Bucket bucket in buckets)

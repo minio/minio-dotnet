@@ -22,7 +22,17 @@ using System.Threading.Tasks;
 
 namespace Minio.Errors
 {
-    public class InvalidRangeException : ClientException
+    public class InvalidPortException : ClientException
     {
+        private int port;
+
+        public InvalidPortException(int port, string message) : base(message)
+        {
+            this.port = port;
+        }
+        public override string ToString()
+        {
+            return this.port + ": " + base.ToString();
+        }
     }
 }

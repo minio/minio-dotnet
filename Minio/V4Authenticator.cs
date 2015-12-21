@@ -1,5 +1,5 @@
 ﻿/*
-1;3803;0c * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2015 Minio, Inc.
+ * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2015 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,9 @@ using System.Security.Cryptography;
 
 namespace Minio
 {
+    /// <summary>
+    /// V4Authenticator implements IAuthenticator interface.
+    /// </summary>
     class V4Authenticator : IAuthenticator
     {
         private readonly string accessKey;
@@ -62,18 +65,28 @@ namespace Minio
             "user-agent"
         };
 
+        /// <summary>
+        /// Authenticator constructor.
+        /// </summary>
+        /// <param name="accessKey">Access key id</param>
+        /// <param name="secretKey">Secret access key</param>
         public V4Authenticator(string accessKey, string secretKey)
         {
             this.accessKey = accessKey;
             this.secretKey = secretKey;
         }
 
+        /// <summary>
+        /// Implements Authenticate interface method for IAuthenticator.
+        /// </summary>
+        /// <param name="client">Instantiated IRestClient object</param>
+        /// <param name="request">Instantiated IRestRequest object</param>
         public void Authenticate(IRestClient client, IRestRequest request)
         {
             DateTime signingDate = DateTime.UtcNow;
             SetContentMd5(request);
             SetContentSha256(request);
-            SetHostHeader(client, request);
+            SetHostHeader(request, client);
             SetDateHeader(request, signingDate);
             SortedDictionary<string, string> headersToSign = GetHeadersToSign(request);
             string signedHeaders = GetSignedHeaders(headersToSign);
@@ -81,7 +94,7 @@ namespace Minio
             string canonicalRequest = GetCanonicalRequest(client, request, headersToSign);
             byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = BytesToHex(ComputeSha256(canonicalRequestBytes));
-            string stringToSign = GetStringToSign(region, canonicalRequestHash, signingDate);
+            string stringToSign = GetStringToSign(region, signingDate, canonicalRequestHash);
             byte[] signingKey = GenerateSigningKey(region, signingDate);
 
             byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(stringToSign);
@@ -95,22 +108,47 @@ namespace Minio
 
         }
 
+        /// <summary>
+        /// Get credential string of form <ACCESSID>/date/region/s3/aws4_request. 
+        /// </summary>
+        /// <param name="signingDate">Signature initated date</param>
+        /// <param name="region">Region for the credential string</param>
+        /// <returns>Credential string for the authorization header</returns>
         public string GetCredentialString(DateTime signingDate, string region)
         {
                 return this.accessKey + "/" + GetScope(region, signingDate);
         }
-            
+        
+        /// <summary>
+        /// Constructs an authorization header.
+        /// </summary>
+        /// <param name="signedHeaders">All signed http headers</param>
+        /// <param name="signature">Hexadecimally encoded computed signature</param>
+        /// <param name="signingDate">Date for signature to be signed</param>
+        /// <param name="region">Requested region</param>
+        /// <returns>Fully formed authorization header</returns>              
         private string GetAuthorizationHeader(string signedHeaders, string signature, DateTime signingDate, string region)
         {
             return "AWS4-HMAC-SHA256 Credential=" + this.accessKey + "/" + GetScope(region, signingDate) +
                 ", SignedHeaders=" + signedHeaders + ", Signature=" + signature;
         }
 
+        /// <summary>
+        /// Concatenates sorted list of signed http headers.
+        /// </summary>
+        /// <param name="headersToSign">Sorted dictionary of headers to be signed</param>
+        /// <returns>All signed headers</returns>
         private string GetSignedHeaders(SortedDictionary<string, string> headersToSign)
         {
             return string.Join(";", headersToSign.Keys);
         }
 
+        /// <summary>
+        /// Generates signing key based on the region and date.
+        /// </summary>
+        /// <param name="region">Requested region</param>
+        /// <param name="signingDate">Date for signature to be signed</param>
+        /// <returns>bytes of computed hmac</returns>
         private byte[] GenerateSigningKey(string region, DateTime signingDate)
         {
             byte[] formattedDateBytes = System.Text.Encoding.UTF8.GetBytes(signingDate.ToString("yyyMMdd"));
@@ -127,6 +165,12 @@ namespace Minio
             return SignHmac(dateRegionServiceKey, requestBytes);
         }
 
+        /// <summary>
+        /// Compute hmac of input content with key.
+        /// </summary>
+        /// <param name="key">Hmac key</param>
+        /// <param name="content">Bytes to be hmac computed</param>
+        /// <returns>Computed hmac of input content</returns>
         private byte[] SignHmac(byte[] key, byte[] content)
         {
             HMACSHA256 hmac = new HMACSHA256(key);
@@ -134,7 +178,14 @@ namespace Minio
             return hmac.ComputeHash(content);
         }
 
-        private string GetStringToSign(string region, string canonicalRequestHash, DateTime signingDate)
+        /// <summary>
+        /// Get string to sign.
+        /// </summary>
+        /// <param name="region">Requested region</param>
+        /// <param name="signingDate">Date for signature to be signed</param>
+        /// <param name="canonicalRequestHash">Hexadecimal encoded sha256 checksum of canonicalRequest</param>
+        /// <returns>String to sign</returns>
+        private string GetStringToSign(string region, DateTime signingDate, string canonicalRequestHash)
         {
             return "AWS4-HMAC-SHA256\n" +
                 signingDate.ToString("yyyyMMddTHHmmssZ") + "\n" +
@@ -142,12 +193,23 @@ namespace Minio
                 canonicalRequestHash;
         }
 
+        /// <summary>
+        /// Get scope.
+        /// </summary>
+        /// <param name="region">Requested region</param>
+        /// <param name="signingDate">Date for signature to be signed</param>
+        /// <returns>Scope string</returns>
         private string GetScope(string region, DateTime signingDate)
         {
             string formattedDate = signingDate.ToString("yyyyMMdd");
             return formattedDate + "/" + region + "/s3/aws4_request";
         }
 
+        /// <summary>
+        /// Compute sha256 checksum.
+        /// </summary>
+        /// <param name="body">Bytes body</param>
+        /// <returns>Bytes of sha256 checksum</returns>
         private byte[] ComputeSha256(byte[] body)
         {
 
@@ -155,12 +217,24 @@ namespace Minio
             return sha256.ComputeHash(body);
         }
 
-        private string BytesToHex(byte[] body)
+        /// <summary>
+        /// Convert bytes to hexadecimal string.
+        /// </summary>
+        /// <param name="checkSum">Bytes of any checksum</param>
+        /// <returns>Hexlified string of input bytes</returns>
+        private string BytesToHex(byte[] checkSum)
         {
-            return BitConverter.ToString(body).Replace("-", string.Empty).ToLower();
+            return BitConverter.ToString(checkSum).Replace("-", string.Empty).ToLower();
         }
 
-        public string PresignPostSignature(DateTime signingDate, string region, string policyBase64)
+        /// <summary>
+        /// Generate signature for post policy.
+        /// </summary>
+        /// <param name="region">Requested region</param>
+        /// <param name="signingDate">Date for signature to be signed</param>
+        /// <param name="policyBase64">Base64 encoded policy JSON</param>
+        /// <returns>Computed signature</returns>
+        public string PresignPostSignature(string region, DateTime signingDate, string policyBase64)
         {
             byte[] signingKey = this.GenerateSigningKey(region, signingDate);
             byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(policyBase64);
@@ -170,12 +244,18 @@ namespace Minio
                 
             return signature;
         }
-            
-        public string PresignURL(IRestClient client, IRestRequest request, int expiresInt)
+        
+        /// <summary>
+        /// Presigns any input client object with a requested expiry.
+        /// </summary>
+        /// <param name="client">Instantiated client</param>
+        /// <param name="request">Instantiated request</param>
+        /// <param name="expires">Expiration in seconds</param>
+        /// <returns>Presigned url</returns>      
+        public string PresignURL(IRestClient client, IRestRequest request, int expires)
         {
             DateTime signingDate = DateTime.UtcNow;
             string region = Regions.GetRegion(client.BaseUrl.Host);
-            string expires = expiresInt.ToString();
             string requestQuery = "";
             string path = request.Resource;
 
@@ -191,17 +271,27 @@ namespace Minio
                 + expires
                 + "&";
             requestQuery += "X-Amz-SignedHeaders=host";
+
             string canonicalRequest = GetPresignCanonicalRequest(client, request, requestQuery);
             byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = BytesToHex(ComputeSha256(canonicalRequestBytes));
-            string stringToSign = GetStringToSign(region, canonicalRequestHash, signingDate);
+            string stringToSign = GetStringToSign(region, signingDate, canonicalRequestHash);
             byte[] signingKey = GenerateSigningKey(region, signingDate);
             byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(stringToSign);
             byte[] signatureBytes = SignHmac(signingKey, stringToSignBytes);
             string signature = BytesToHex(signatureBytes);
+
+            // Return presigned url.
             return client.BaseUrl + path + "?" + requestQuery + "&X-Amz-Signature=" + signature;
         }
 
+        /// <summary>
+        /// Get presign canonical request.
+        /// </summary>
+        /// <param name="client">Instantiated client object</param>
+        /// <param name="request">Instantiated request object</param>
+        /// <param name="requestQuery">Additional request query params</param>
+        /// <returns>Presigned canonical request</returns>
         private string GetPresignCanonicalRequest(IRestClient client, IRestRequest request, string requestQuery)
         {
             LinkedList<string> canonicalStringList = new LinkedList<string>();
@@ -223,7 +313,15 @@ namespace Minio
             return string.Join("\n", canonicalStringList);
         }
 
-        private string GetCanonicalRequest(IRestClient client, IRestRequest request, SortedDictionary<string, string> headersToSign)
+        /// <summary>
+        /// Get canonical request.
+        /// </summary>
+        /// <param name="client">Instantiated client object</param>
+        /// <param name="request">Instantiated request object</param>
+        /// <param name="headersToSign">Dictionary of http headers to be signed</param>
+        /// <returns>Canonical Request</returns>
+        private string GetCanonicalRequest(IRestClient client, IRestRequest request,
+            SortedDictionary<string, string> headersToSign)
         {
             LinkedList<string> canonicalStringList = new LinkedList<string>();
             // METHOD
@@ -277,16 +375,11 @@ namespace Minio
             return string.Join("\n", canonicalStringList);
         }
 
-        private void SetDateHeader(IRestRequest request, DateTime signingDate)
-        {
-            request.AddHeader("x-amz-date", signingDate.ToString("yyyyMMddTHHmmssZ"));
-        }
-
-        private void SetHostHeader(IRestClient client, IRestRequest request)
-        {
-            request.AddHeader("Host", client.BaseUrl.Host + ":" + client.BaseUrl.Port);
-        }
-
+        /// <summary>
+        /// Get headers to be signed.
+        /// </summary>
+        /// <param name="request">Instantiated requesst</param>
+        /// <returns>Sorted dictionary of headers to be signed</returns>
         private SortedDictionary<string, string> GetHeadersToSign(IRestRequest request)
         {
             var headers = request.Parameters.Where(p => p.Type.Equals(ParameterType.HttpHeader)).ToList();
@@ -303,7 +396,30 @@ namespace Minio
             }
             return sortedHeaders;
         }
+        /// <summary>
+        /// Sets 'x-amz-date' http header.
+        /// </summary>
+        /// <param name="request">Instantiated request object</param>
+        /// <param name="signingDate">Date for signature to be signed</param>
+        private void SetDateHeader(IRestRequest request, DateTime signingDate)
+        {
+            request.AddHeader("x-amz-date", signingDate.ToString("yyyyMMddTHHmmssZ"));
+        }
 
+        /// <summary>
+        /// Set 'Host' http header.
+        /// </summary>
+        /// <param name="request">Instantiated request object</param>
+        /// <param name="client">Instantiated client object</param>
+        private void SetHostHeader(IRestRequest request, IRestClient client)
+        {
+            request.AddHeader("Host", client.BaseUrl.Host + ":" + client.BaseUrl.Port);
+        }
+
+        /// <summary>
+        /// Set 'x-amz-content-sha256' http header.
+        /// </summary>
+        /// <param name="request">Instantiated request object</param>
         private void SetContentSha256(IRestRequest request)
         {
             if (request.Method == Method.PUT || request.Method.Equals(Method.POST))
@@ -338,6 +454,10 @@ namespace Minio
             }
         }
 
+        /// <summary>
+        /// Set 'Content-MD5' http header.
+        /// </summary>
+        /// <param name="request">Instantiated request object</param>
         private void SetContentMd5(IRestRequest request)
         {
             if (request.Method == Method.PUT || request.Method.Equals(Method.POST))

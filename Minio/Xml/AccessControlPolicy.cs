@@ -28,6 +28,6 @@ namespace Minio.Xml
     {
         [XmlArray("AccessControlList")]
         [XmlArrayItem(typeof(Grant))]
-        public List<Grant> Grants { get; set; }
+        public List<Grant> Grants { get; }
     }
 }

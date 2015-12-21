@@ -30,6 +30,6 @@ namespace Minio.Xml
 
         [XmlArray("Buckets")]
         [XmlArrayItem(typeof(Bucket))]
-        public List<Bucket> Buckets { get; set; }
+        public IReadOnlyCollection<Bucket> Buckets { get; set; }
     }
 }
