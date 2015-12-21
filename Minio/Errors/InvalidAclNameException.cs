@@ -30,6 +30,7 @@ namespace Minio.Errors
         {
             this.acl = acl;
         }
+
         public override string ToString()
         {
             return this.acl + ": " + base.ToString();

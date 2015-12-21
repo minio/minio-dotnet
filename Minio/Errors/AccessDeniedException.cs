@@ -29,6 +29,7 @@ namespace Minio.Errors
         public AccessDeniedException()
         {
         }
+
         public AccessDeniedException(string message) : base(message)
         {
         }

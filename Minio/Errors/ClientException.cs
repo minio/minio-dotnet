@@ -39,5 +39,10 @@ namespace Minio.Errors
 
         public ErrorResponse Response { get; set; }
         public string XmlError { get; set; }
+
+        public override string ToString()
+        {
+            return this.message + ": " + base.ToString();
+        }
     }
 }

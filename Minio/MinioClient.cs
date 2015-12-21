@@ -31,11 +31,16 @@ namespace Minio
 {
     public class MinioClient
     {
+        // Maximum number of parts.
+        private static int maxParts = 10000;
+        // Minimum part size.
         private static long minimumPartSize = 5 * 1024L * 1024L;
+        // Maximum part size.
         private static long maximumPartSize = 5 * 1024L * 1024L * 1024L;
+        // Maximum streaming object size.
+        private static long maximumStreamObjectSize = maxParts * minimumPartSize;
 
         private RestClient client;
-        private string region;
         private Minio.V4Authenticator authenticator;
 
         private static string SystemUserAgent
@@ -150,7 +155,6 @@ namespace Minio
                          throw new InvalidEndpointException(endpoint, "For Amazon S3, host should be \'s3.amazonaws.com\' in endpoint.");
                     }
                     this.client = new RestClient(uri);
-                    this.region = Minio.Regions.GetRegion(uri.Host);
                     this.client.UserAgent = this.FullUserAgent;
                     if (accessKey != null && secretKey != null)
                     {
@@ -192,7 +196,6 @@ namespace Minio
                 }
                 var uri = new Uri(path);
                 this.client = new RestClient(uri);
-                this.region = Regions.GetRegion(uri.Host);
                 this.client.UserAgent = this.FullUserAgent;
                 if (accessKey != null && secretKey != null)
                 {
@@ -447,66 +450,6 @@ namespace Minio
         }
 
         /// <summary>
-        /// Presigned Get url.
-        /// </summary>
-        /// <param name="bucketName">Bucket to retrieve object from</param>
-        /// <param name="objectName">Key of object to retrieve</param>
-        /// <param name="expiresInt">Expiration time in seconds</param>
-        public string PresignedGetObject(string bucketName, string objectName, int expiresInt)
-        {
-            RestRequest request = new RestRequest(bucketName + "/" + UrlEncode(objectName), Method.GET);
-            return this.authenticator.PresignURL(this.client, request, expiresInt);
-        }
-
-        /// <summary>
-        /// Presigned Put url.
-        /// </summary>
-        /// <param name="bucketName">Bucket to retrieve object from</param>
-        /// <param name="objectName">Key of object to retrieve</param>
-        /// <param name="expiresInt">Expiration time in seconds</param>
-        public string PresignedPutObject(string bucketName, string objectName, int expiresInt)
-        {
-            RestRequest request = new RestRequest(bucketName + "/" + UrlEncode(objectName), Method.PUT);
-            return this.authenticator.PresignURL(this.client, request, expiresInt);
-        }
-
-        /// <summary>
-        ///  Presigned post policy
-        /// </summary>
-        public Dictionary<string, string> PresignedPostPolicy(PostPolicy policy)
-        {
-                if (!policy.IsBucketSet())
-                {
-                        throw new ArgumentException("bucket should be set");
-                }
-
-                if (!policy.IsKeySet())
-                {
-                        throw new ArgumentException("key should be set");
-                }
-
-                if (!policy.IsExpirationSet())
-                {
-                        throw new ArgumentException("expiration should be set");
-                }
-
-                string region = Regions.GetRegion(this.client.BaseUrl.Host);
-                DateTime signingDate = DateTime.UtcNow;
-
-                policy.SetAlgorithm("AWS4-HMAC-SHA256");
-                policy.SetCredential(this.authenticator.GetCredentialString(signingDate, region));
-                policy.SetDate(signingDate);
-
-                string policyBase64 = policy.Base64();
-                string signature = this.authenticator.PresignPostSignature(region, signingDate, policyBase64);
-
-                policy.SetPolicy(policyBase64);
-                policy.SetSignature(signature);
-
-                return policy.GetFormData();
-        }
-
-        /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
@@ -609,6 +552,11 @@ namespace Minio
         /// <param name="data">Stream of bytes to send</param>
         public void PutObject(string bucketName, string objectName, Stream data, long size, string contentType)
         {
+            if (size >= MinioClient.maximumStreamObjectSize)
+            {
+                throw new ArgumentException("Input size is bigger than stipulated maximum of 50GB.");
+            }
+
             if (size <= MinioClient.minimumPartSize)
             {
                 var bytes = ReadFull(data, (int)size);
@@ -617,72 +565,129 @@ namespace Minio
                     throw new UnexpectedShortReadException("Data read "+ bytes.Length + " is shorter than the size " + size + " of input buffer.");
                 }
                 this.PutObject(bucketName, objectName, null, 0, bytes, contentType);
+                return;
             }
-            else
+            var partSize = MinioClient.minimumPartSize;
+            var uploads = this.ListIncompleteUploads(bucketName, objectName);
+            string uploadId = null;
+            Dictionary<int, string> etags = new Dictionary<int, string>();
+            if (uploads.Count() > 0)
             {
-                var partSize = CalculatePartSize(size);
-                var uploads = this.ListIncompleteUploads(bucketName, objectName);
-                string uploadId = null;
-                Dictionary<int, string> etags = new Dictionary<int, string>();
-                if (uploads.Count() > 0)
-                {
-                    foreach (Upload upload in uploads)
-                    {
-                        if (objectName == upload.Key)
-                        {
-                            uploadId = upload.UploadId;
-                            var parts = this.ListParts(bucketName, objectName, uploadId);
-                            foreach (Part part in parts)
-                            {
-                                etags[part.PartNumber] = part.ETag;
-                            }
-                            break;
-                        }
-                    }
-                }
-                if (uploadId == null)
-                {
-                    uploadId = this.NewMultipartUpload(bucketName, objectName, contentType);
-                }
-                int partNumber = 0;
-                long totalWritten = 0;
-                while (totalWritten < size)
-                {
-                    partNumber++;
-                    byte[] dataToCopy = ReadFull(data, (int)partSize);
-                    if (dataToCopy == null)
-                    {
-                        break;
-                    }
-                    if (dataToCopy.Length < partSize)
-                    {
-                        var expectedSize = size - totalWritten;
-                        if (expectedSize != dataToCopy.Length)
-                        {
-                            throw new UnexpectedShortReadException("Unexpected short read. Read only " + dataToCopy.Length + " out of " + expectedSize + "bytes");
-                        }
-                    }
-                    System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create();
-                    byte[] hash = md5.ComputeHash(dataToCopy);
-                    string etag = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
-                    if (!etags.ContainsKey(partNumber) || !etags[partNumber].Equals(etag))
-                    {
-                        etag = this.PutObject(bucketName, objectName, uploadId, partNumber, dataToCopy, contentType);
-                    }
-                    etags[partNumber] = etag;
-                    totalWritten += dataToCopy.Length;
-                }
-
-                foreach (int curPartNumber in etags.Keys)
-                {
-                    if (curPartNumber > partNumber)
-                    {
-                        etags.Remove(curPartNumber);
-                    }
-                }
-
-                this.CompleteMultipartUpload(bucketName, objectName, uploadId, etags);
+               foreach (Upload upload in uploads)
+               {
+                   if (objectName == upload.Key)
+                   {
+                      uploadId = upload.UploadId;
+                      var parts = this.ListParts(bucketName, objectName, uploadId);
+                      foreach (Part part in parts)
+                      {
+                          etags[part.PartNumber] = part.ETag;
+                      }
+                      break;
+                   }
+               }
             }
+            if (uploadId == null)
+            {
+                uploadId = this.NewMultipartUpload(bucketName, objectName, contentType);
+            }
+            int partNumber = 0;
+            long totalWritten = 0;
+            while (totalWritten < size)
+            {
+                partNumber++;
+                byte[] dataToCopy = ReadFull(data, (int)partSize);
+                if (dataToCopy == null)
+                {
+                    break;
+                }
+                if (dataToCopy.Length < partSize)
+                {
+                    var expectedSize = size - totalWritten;
+                    if (expectedSize != dataToCopy.Length)
+                    {
+                        throw new UnexpectedShortReadException("Unexpected short read. Read only " + dataToCopy.Length + " out of " + expectedSize + "bytes");
+                    }
+                }
+                System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create();
+                byte[] hash = md5.ComputeHash(dataToCopy);
+                string etag = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
+                if (!etags.ContainsKey(partNumber) || !etags[partNumber].Equals(etag))
+                {
+                   etag = this.PutObject(bucketName, objectName, uploadId, partNumber, dataToCopy, contentType);
+                }
+                etags[partNumber] = etag;
+                totalWritten += dataToCopy.Length;
+            }
+
+            foreach (int curPartNumber in etags.Keys)
+            {
+               if (curPartNumber > partNumber)
+               {
+                   etags.Remove(curPartNumber);
+               }
+            }
+            this.CompleteMultipartUpload(bucketName, objectName, uploadId, etags);
+        }
+
+        /// <summary>
+        /// Presigned Get url.
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Key of object to retrieve</param>
+        /// <param name="expiresInt">Expiration time in seconds</param>
+        public string PresignedGetObject(string bucketName, string objectName, int expiresInt)
+        {
+            RestRequest request = new RestRequest(bucketName + "/" + UrlEncode(objectName), Method.GET);
+            return this.authenticator.PresignURL(this.client, request, expiresInt);
+        }
+
+        /// <summary>
+        /// Presigned Put url.
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Key of object to retrieve</param>
+        /// <param name="expiresInt">Expiration time in seconds</param>
+        public string PresignedPutObject(string bucketName, string objectName, int expiresInt)
+        {
+            RestRequest request = new RestRequest(bucketName + "/" + UrlEncode(objectName), Method.PUT);
+            return this.authenticator.PresignURL(this.client, request, expiresInt);
+        }
+
+        /// <summary>
+        ///  Presigned post policy
+        /// </summary>
+        public Dictionary<string, string> PresignedPostPolicy(PostPolicy policy)
+        {
+                if (!policy.IsBucketSet())
+                {
+                        throw new ArgumentException("bucket should be set");
+                }
+
+                if (!policy.IsKeySet())
+                {
+                        throw new ArgumentException("key should be set");
+                }
+
+                if (!policy.IsExpirationSet())
+                {
+                        throw new ArgumentException("expiration should be set");
+                }
+
+                string region = Regions.GetRegion(this.client.BaseUrl.Host);
+                DateTime signingDate = DateTime.UtcNow;
+
+                policy.SetAlgorithm("AWS4-HMAC-SHA256");
+                policy.SetCredential(this.authenticator.GetCredentialString(signingDate, region));
+                policy.SetDate(signingDate);
+
+                string policyBase64 = policy.Base64();
+                string signature = this.authenticator.PresignPostSignature(region, signingDate, policyBase64);
+
+                policy.SetPolicy(policyBase64);
+                policy.SetSignature(signature);
+
+                return policy.GetFormData();
         }
 
         private byte[] ReadFull(Stream data, int currentPartSize)
