@@ -4,7 +4,7 @@ solution: Minio.sln
 script:
   - mono ./packages/MSBuild.0.1.2/tools/Unix/MSBuild.exe /t:Clean
   - mono ./packages/MSBuild.0.1.2/tools/Unix/MSBuild.exe /t:Rebuild /p:Configuration=Release
-  - mono ./packages/NUnit.Runners.2.6.4/tools/nunit-console.exe ./Minio.Tests/bin/Release/Minio.Tests.dll
+  - mono ./packages/NUnit.Console.3.0.1/tools/nunit3-console.exe ./Minio.Tests/bin/Release/Minio.Tests.dll
 
 notifications:
   slack:

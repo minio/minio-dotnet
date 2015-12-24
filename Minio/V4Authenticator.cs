@@ -15,6 +15,7 @@
  */
 
 using RestSharp;
+using RestSharp.Authenticators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
