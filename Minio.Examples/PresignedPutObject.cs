@@ -29,8 +29,10 @@ namespace Minio.Examples
     {
         static int Main()
         {
-            var client = new MinioClient("s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
-            Console.Out.WriteLine(client.PresignedPutObject("bucketName", "objectName", 1000));
+          /// Note: YOUR-ACCESSKEYID, YOUR-SECRETACCESSKEY, my-bucketname and
+          /// my-objectname are dummy values, please replace them with original values.
+            var client = new MinioClient("s3.amazonaws.com", "YOUR-ACCESSKEYID", "YOUR-SECRETACCESSKEY");
+            Console.Out.WriteLine(client.PresignedPutObject("my-bucketname", "my-objectname", 1000));
             return 0;
         }
     }

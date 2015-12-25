@@ -29,9 +29,11 @@ namespace Minio.Examples
     {
         static int Main()
         {
-            var client = new MinioClient("s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+          /// Note: YOUR-ACCESSKEYID, YOUR-SECRETACCESSKEY and my-bucketname
+          /// are dummy values, please replace them with original values.
+            var client = new MinioClient("s3.amazonaws.com", "YOUR-ACCESSKEYID", "YOUR-SECRETACCESSKEY");
 
-            var items = client.ListObjects("bucketName");
+            var items = client.ListObjects("my-bucketname");
 
             foreach (Item item in items)
             {

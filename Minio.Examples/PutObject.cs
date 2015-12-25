@@ -28,10 +28,12 @@ namespace Minio.Examples
     {
         static int Main()
         {
-            var client = new MinioClient("s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+          /// Note: YOUR-ACCESSKEYID, YOUR-SECRETACCESSKEY, my-bucketname and
+          /// my-objectname are dummy values, please replace them with original values.
+            var client = new MinioClient("s3.amazonaws.com", "YOUR-ACCESSKEYID", "YOUR-SECRETACCESSKEY");
 
             byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");
-            client.PutObject("bucketName", "objectName", new MemoryStream(data), 11, "application/octet-stream");
+            client.PutObject("my-bucketname", "my-objectname", new MemoryStream(data), 11, "application/octet-stream");
             return 0;
         }
     }
