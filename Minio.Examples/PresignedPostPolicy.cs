@@ -29,12 +29,14 @@ namespace Minio.Examples
     {
         static int Main()
         {
-            var client = new MinioClient("s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+          /// Note: YOUR-ACCESSKEYID, YOUR-SECRETACCESSKEY, my-bucketname and
+          /// my-objectname are dummy values, please replace them with original values.
+            var client = new MinioClient("s3.amazonaws.com", "YOUR-ACCESSKEYID", "YOUR-SECRETACCESSKEY");
             PostPolicy form = new PostPolicy();
             DateTime expiration = DateTime.UtcNow;
             form.SetExpires(expiration.AddDays(10));
-            form.SetKey("objectName");
-            form.SetBucket("bucketName");
+            form.SetKey("my-objectname");
+            form.SetBucket("my-bucketname");
 
             Dictionary <string, string> formData = client.PresignedPostPolicy(form);
             string curlCommand = "curl ";
@@ -42,7 +44,7 @@ namespace Minio.Examples
             {
                     curlCommand = curlCommand + " -F " + pair.Key + "=" + pair.Value;
             }
-            curlCommand = curlCommand + " -F file=@/etc/bashrc https://s3.amazonaws.com/bucketName";
+            curlCommand = curlCommand + " -F file=@/etc/bashrc https://s3.amazonaws.com/my-bucketname";
             Console.Out.WriteLine(curlCommand);
             return 0;
         }

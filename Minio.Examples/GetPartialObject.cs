@@ -28,9 +28,11 @@ namespace Minio.Examples
     {
         static int Main()
         {
-            var client = new MinioClient("s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+          /// Note: YOUR-ACCESSKEYID, YOUR-SECRETACCESSKEY, my-bucketname and my-objectname
+          /// are dummy values, please replace them with original values.
+            var client = new MinioClient("s3.amazonaws.com", "YOUR-ACCESSKEYID", "YOUR-SECRETACCESSKEY");
 
-            client.GetPartialObject("bucketName", "objectName", 5, 10, (stream) =>
+            client.GetPartialObject("my-bucketname", "my-objectname", 5, 10, (stream) =>
             {
                 stream.CopyTo(Console.OpenStandardOutput());
             });

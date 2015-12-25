@@ -27,17 +27,19 @@ namespace Minio.Examples
     {
         static int Main()
         {
-            var client = new MinioClient("s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
+          /// Note: YOUR-ACCESSKEYID, YOUR-SECRETACCESSKEY and my-bucketname are
+          /// dummy values, please replace them with original values.
+            var client = new MinioClient("s3.amazonaws.com", "YOUR-ACCESSKEYID", "YOUR-SECRETACCESSKEY");
 
-            var bucketExists = client.BucketExists("bucketName");
+            var bucketExists = client.BucketExists("my-bucketname");
 
             if (bucketExists)
             {
-                Console.Out.WriteLine("Bucket: {0} exists..", "bucketName");
+                Console.Out.WriteLine("Bucket: {0} exists..", "my-bucketname");
             }
             else
             {
-                Console.Out.WriteLine("Bucket: {0} does not exist..", "bucketName");
+                Console.Out.WriteLine("Bucket: {0} does not exist..", "my-bucketname");
             }
 
             return 0;

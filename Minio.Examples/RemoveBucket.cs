@@ -27,9 +27,11 @@ namespace Minio.Examples
     {
         static int Main()
         {
-            var client = new MinioClient("s3.amazonaws.com", "ACCESSKEY", "SECRETKEY");
-
-            client.RemoveBucket("bucketName");
+          /// Note: YOUR-ACCESSKEYID, YOUR-SECRETACCESSKEY and my-bucketname
+          /// are dummy values, please replace them with original values.
+            var client = new MinioClient("s3.amazonaws.com", "YOUR-ACCESSKEYID", "YOUR-SECRETACCESSKEY");
+          /// This operation will only work if your bucket is empty.
+            client.RemoveBucket("my-bucketname");
 
             return 0;
         }
