@@ -433,7 +433,7 @@ namespace Minio
         /// Lists all buckets owned by the user
         /// </summary>
         /// <returns>A list of all buckets owned by the user.</returns>
-        public IReadOnlyCollection<Bucket> ListBuckets()
+        public List<Bucket> ListBuckets()
         {
             var request = new RestRequest("/", Method.GET);
             var response = client.Execute(request);
