@@ -47,18 +47,9 @@ namespace Minio
         {
             get
             {
-                string userAgent = "Minio";
-                userAgent += " (" + System.Environment.OSVersion.ToString() + "; ";
-                string arch = "";
-                if (System.Environment.Is64BitOperatingSystem)
-                {
-                    arch = "x86_64";
-                }
-                else
-                {
-                    arch = "x86";
-                }
-                return userAgent + arch + ") minio-dotnet/0.2.1";;
+                string arch = System.Environment.Is64BitOperatingSystem ? "x86_64" : "x86";
+                string release = "minio-dotnet/0.2.1";
+                return String.Format("Minio ({0};{1}) {2}", System.Environment.OSVersion.ToString(), arch, release);
             }
         }
         private string CustomUserAgent = "";
@@ -131,78 +122,48 @@ namespace Minio
                 throw new InvalidEndpointException("Endpoint cannot be empty.");
             }
 
-            try
+            if(!(endpoint.StartsWith(Uri.UriSchemeHttp) || endpoint.StartsWith(Uri.UriSchemeHttps)))
             {
-                var uri = new Uri(endpoint);
-                if (uri != null)
-                {
-                    if (uri.AbsolutePath.Length > 0 && !uri.AbsolutePath.Equals("/", StringComparison.CurrentCultureIgnoreCase))
-                    {
-                         throw new InvalidEndpointException(endpoint, "No path allowed in endpoint.");
-                    }
-                    if (uri.Query.Length > 0)
-                    {
-                         throw new InvalidEndpointException(endpoint, "No query parameter allowed in endpoint.");
-                    }
-                    if (!uri.Scheme.Equals("http") && !uri.Scheme.Equals("https"))
-                    {
-                         throw new InvalidEndpointException(endpoint, "Invalid scheme detected in endpoint.");
-                    }
-                    string amzHost = uri.Host;
-                    if ((amzHost.EndsWith(".amazonaws.com", StringComparison.CurrentCultureIgnoreCase))
-                        && !(amzHost.Equals("s3.amazonaws.com", StringComparison.CurrentCultureIgnoreCase)))
-                    {
-                         throw new InvalidEndpointException(endpoint, "For Amazon S3, host should be \'s3.amazonaws.com\' in endpoint.");
-                    }
-                    this.client = new RestClient(uri);
-                    this.client.UserAgent = this.FullUserAgent;
-                    if (accessKey != null && secretKey != null)
-                    {
-                         this.authenticator = new Minio.V4Authenticator(accessKey, secretKey);
-                         this.client.Authenticator = new Minio.V4Authenticator(accessKey, secretKey);
-                    }
-                    return;
-                }
+                var scheme = insecure ? Uri.UriSchemeHttp : Uri.UriSchemeHttps;
+                endpoint = string.Format("{0}://{1}", scheme, endpoint);
             }
-            catch (UriFormatException)
+
+            var uri = new Uri(endpoint);
+            if (!this.isValidEndpoint(uri.Host))
             {
-                if (!this.isValidEndpoint(endpoint))
-                {
-                    throw new InvalidEndpointException(endpoint, "Invalid endpoint.");
-                }
-
-                if (endpoint.EndsWith(".amazonaws.com", StringComparison.CurrentCultureIgnoreCase)
-                    && !endpoint.Equals("s3.amazonaws.com", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    throw new InvalidEndpointException(endpoint, "For Amazon S3, endpoint should be \'s3.amazonaws.com\'");
-                }
-
-                if (port < 0 || port > 65535)
-                {
-                    throw new InvalidPortException(port, "port must be in range of 1 to 65535.");
-                }
-
-                // TODO use a typed scheme.
-                string scheme = "https";
-                if (insecure)
-                {
-                    scheme = "http";
-                }
-
-                String path = scheme + "://" + endpoint + "/";
-                if (port > 0)
-                {
-                    path = scheme + "://" + endpoint + ":" + port + "/";
-                }
-                var uri = new Uri(path);
-                this.client = new RestClient(uri);
-                this.client.UserAgent = this.FullUserAgent;
-                if (accessKey != null && secretKey != null)
-                {
-                    this.authenticator = new V4Authenticator(accessKey, secretKey);
-                    this.client.Authenticator = new V4Authenticator(accessKey, secretKey);
-                }
+                throw new InvalidEndpointException(endpoint, "Invalid endpoint.");
             }
+
+            if (!uri.AbsolutePath.Equals("/", StringComparison.CurrentCultureIgnoreCase))
+            {
+                 throw new InvalidEndpointException(endpoint, "No path allowed in endpoint.");
+            }
+
+            if (!string.IsNullOrEmpty(uri.Query))
+            {
+                 throw new InvalidEndpointException(endpoint, "No query parameter allowed in endpoint.");
+            }
+
+            if (!(uri.Scheme.Equals(Uri.UriSchemeHttp) || uri.Scheme.Equals(Uri.UriSchemeHttps)))
+            {
+                 throw new InvalidEndpointException(endpoint, "Invalid scheme detected in endpoint.");
+            }
+
+            string amzHost = uri.Host;
+            if ((amzHost.EndsWith(".amazonaws.com", StringComparison.CurrentCultureIgnoreCase))
+                && !(amzHost.Equals("s3.amazonaws.com", StringComparison.CurrentCultureIgnoreCase)))
+            {
+                 throw new InvalidEndpointException(endpoint, "For Amazon S3, host should be \'s3.amazonaws.com\' in endpoint.");
+            }
+
+            client = new RestClient(uri);
+            client.UserAgent = FullUserAgent;
+            if (!(string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(secretKey)))
+            {
+                authenticator = new V4Authenticator(accessKey, secretKey);
+                client.Authenticator = authenticator;
+            }
+            return;
         }
 
         private bool isValidEndpoint(string endpoint)
