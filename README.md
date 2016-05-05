@@ -80,6 +80,20 @@ $ mono Minio.Examples/ListBuckets.exe
 ....
 
 ```
+#### On Windows
+- Add your s3 credentials in `Minio.Examples/app.config` file
+
+- Build Minio solution
+
+- Move into `Minio.Examples/bin/Debug` directory (you could choose Release too, depending on which ones you build)
+
+- Compile the example as below:
+	`csc /r:Minio.dll /out:ListBuckets.exe "../../ListBuckets.cs"`
+
+- Copy `Minio.dll.config` to `ListBuckets.exe.config`
+
+- Run `ListBuckets.exe`
+
 
 ## Contribute
 
