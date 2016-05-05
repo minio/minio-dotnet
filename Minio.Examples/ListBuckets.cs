@@ -15,6 +15,7 @@
  */
 
 using System;
+using System.Configuration;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -31,7 +32,8 @@ namespace Minio.Examples
         {
           /// Note: YOUR-ACCESSKEYID and YOUR-SECRETACCESSKEY
           /// are dummy values, please replace them with original values.
-            var client = new MinioClient("s3.amazonaws.com", "YOUR-ACCESSKEYID", "YOUR-SECRETACCESSKEY");
+            var client = new MinioClient("s3.amazonaws.com", ConfigurationManager.AppSettings["s3AccessKey"],
+                                         ConfigurationManager.AppSettings["s3SecretKey"]);
 
             var buckets = client.ListBuckets();
             foreach (Bucket bucket in buckets)
