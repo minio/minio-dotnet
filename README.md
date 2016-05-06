@@ -97,14 +97,10 @@ changes to App.config.
 
 - Build Minio solution
 
-- Move into `Minio.Examples/bin/Debug` directory (you could choose Release too, depending on which ones you build)
+- Move into Minio.Examples directory
 
-- Compile the example as below:
-	`csc /r:Minio.dll /out:ListBuckets.exe "../../ListBuckets.cs"`
-
-- Copy `Minio.dll.config` to `ListBuckets.exe.config`
-
-- Run `ListBuckets.exe`
+- Run the following cmd script
+	`runsample <ExampleFilename>`
 
 
 ## Contribute
