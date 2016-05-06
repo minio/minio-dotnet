@@ -13,13 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Minio;
+using System;
+using System.Configuration;
 
 namespace Minio.Examples
 {
@@ -27,9 +24,10 @@ namespace Minio.Examples
     {
         static int Main()
         {
-          /// Note: YOUR-ACCESSKEYID, YOUR-SECRETACCESSKEY and my-bucketname are
-          /// dummy values, please replace them with original values.
-            var client = new MinioClient("s3.amazonaws.com", "YOUR-ACCESSKEYID", "YOUR-SECRETACCESSKEY");
+          /// Note: s3 AccessKey and SecretKey needs to be added in App.config file
+          /// See instructions in README.md on running examples for more information.
+            var client = new MinioClient("s3.amazonaws.com", ConfigurationManager.AppSettings["s3AccessKey"],
+                                         ConfigurationManager.AppSettings["s3SecretKey"]);
 
             var bucketExists = client.BucketExists("my-bucketname");
 
