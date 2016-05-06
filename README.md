@@ -73,7 +73,14 @@ $ mono nuget.exe update -self
 $ mono nuget.exe restore
 $ xbuild /t:Clean
 $ xbuild /t:Rebuild /p:Configuration=Release
-[edit Minio.Examples/ListBuckets.cs]
+
+[ Add your s3 credentials in `Minio.Examples/app.config` file
+N B - In case you send PRs to `minio-dotnet` remember to remove your s3 credentials from the above file.
+Alternately, you could execute the following command once in your local repo to inform git to stop tracking
+changes to App.config.
+	`git update-index --assume-unchanged Minio.Examples/App.config`
+]
+
 $ mcs /r:Minio/bin/Release/Minio.dll Minio.Examples/ListBuckets.cs
 $ export MONO_PATH=Minio/bin/Release
 $ mono Minio.Examples/ListBuckets.exe
@@ -82,6 +89,11 @@ $ mono Minio.Examples/ListBuckets.exe
 ```
 #### On Windows
 - Add your s3 credentials in `Minio.Examples/app.config` file
+N B - In case you send PRs to `minio-dotnet` remember to remove your s3 credentials from the above file.
+Alternately, you could execute the following command once in your local repo to inform git to stop tracking
+changes to App.config.
+	`git update-index --assume-unchanged Minio.Examples/App.config`
+
 
 - Build Minio solution
 
