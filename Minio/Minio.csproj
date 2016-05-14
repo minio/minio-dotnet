@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -53,7 +53,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Acl.cs" />
     <Compile Include="Errors\ConnectionException.cs" />
     <Compile Include="Errors\AccessDeniedException.cs" />
     <Compile Include="Errors\InvalidEndpointException.cs" />
@@ -66,7 +65,6 @@
     <Compile Include="Errors\MaxBucketsReachedException.cs" />
     <Compile Include="Errors\InvalidKeyNameException.cs" />
     <Compile Include="Errors\InvalidBucketNameException.cs" />
-    <Compile Include="Errors\InvalidAclNameException.cs" />
     <Compile Include="Errors\InternalClientException.cs" />
     <Compile Include="Errors\BucketNotFoundException.cs" />
     <Compile Include="Errors\UnexpectedShortReadException.cs" />
@@ -82,7 +80,6 @@
     </Compile>
     <Compile Include="Regions.cs" />
     <Compile Include="Errors\ClientException.cs" />
-    <Compile Include="Xml\AccessControlPolicy.cs" />
     <Compile Include="Xml\Bucket.cs" />
     <Compile Include="Errors\ErrorResponse.cs" />
     <Compile Include="MinioClient.cs" />
