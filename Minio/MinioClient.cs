@@ -68,7 +68,7 @@ namespace Minio
         /// <param name="url">Location of the server, supports HTTP and HTTPS</param>
         /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
         public MinioClient(string endpoint)
-            : this(endpoint, 0, null, null, false)
+            : this(endpoint, 0, null, null, true)
         {
         }
         /// <summary>
@@ -77,7 +77,7 @@ namespace Minio
         /// <param name="uri">Location of the server, supports HTTP and HTTPS.</param>
         /// <returns>Client with the uri set as the server location.</returns>
         public MinioClient(Uri uri)
-            : this(uri.ToString(), 0, null, null, false)
+            : this(uri.ToString(), 0, null, null, true)
         {
         }
 
@@ -89,22 +89,22 @@ namespace Minio
         /// <param name="secretKey">Secret Key for authenticated requests</param>
         /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
         public MinioClient(string url, string accessKey, string secretKey)
-            : this(url, 0, accessKey, secretKey, false)
+            : this(url, 0, accessKey, secretKey, true)
         {
         }
 
         public MinioClient(Uri uri, string accessKey, string secretKey)
-            : this(uri.ToString(), 0, accessKey, secretKey, false)
+            : this(uri.ToString(), 0, accessKey, secretKey, true)
         {
         }
 
         public MinioClient(string endpoint, int port, string accessKey, string secretKey)
-            : this(endpoint, port, accessKey, secretKey, false)
+            : this(endpoint, port, accessKey, secretKey, true)
         {
         }
 
-        public MinioClient(string endpoint, string accessKey, string secretKey, bool insecure)
-            : this(endpoint, 0, accessKey, secretKey, insecure)
+        public MinioClient(string endpoint, string accessKey, string secretKey, bool secure)
+            : this(endpoint, 0, accessKey, secretKey, secure)
         {
         }
 
@@ -114,8 +114,9 @@ namespace Minio
         /// <param name="uri">Location of the server, supports HTTP and HTTPS</param>
         /// <param name="accessKey">Access Key for authenticated requests</param>
         /// <param name="secretKey">Secret Key for authenticated requests</param>
+	/// <param name="secure">Boolean value set to true/false makes the request HTTPS/HTTP respectively</param>
         /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
-        public MinioClient(string endpoint, int port, string accessKey, string secretKey, bool insecure)
+        public MinioClient(string endpoint, int port, string accessKey, string secretKey, bool secure)
         {
             if (string.IsNullOrEmpty(endpoint))
             {
@@ -124,7 +125,7 @@ namespace Minio
 
             if(!(endpoint.StartsWith(Uri.UriSchemeHttp) || endpoint.StartsWith(Uri.UriSchemeHttps)))
             {
-                var scheme = insecure ? Uri.UriSchemeHttp : Uri.UriSchemeHttps;
+                var scheme = secure ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
                 endpoint = string.Format("{0}://{1}", scheme, endpoint);
             }
 
