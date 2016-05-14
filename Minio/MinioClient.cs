@@ -239,39 +239,18 @@ namespace Minio
         /// <param name="bucketName">Name of the new bucket</param>
         public void MakeBucket(string bucketName)
         {
-            this.MakeBucket(bucketName, Acl.Private, "us-east-1");
+            this.MakeBucket(bucketName, "us-east-1");
         }
 
         /// <summary>
-        /// Create a private bucket with a give name at a location.
+        /// Create a bucket with a given name and location.
         /// </summary>
         /// <param name="bucketName">Name of the new bucket</param>
-        /// <param name="location">Name of the location</param>
+        /// <param name="location">Name of the location</param>	    
         public void MakeBucket(string bucketName, string location)
-        {
-            this.MakeBucket(bucketName, Acl.Private, location);
-        }
-
-        /// <summary>
-        /// Create a private bucket with a give name and canned Acl.
-        /// </summary>
-        /// <param name="bucketName">Name of the new bucket</param>
-        /// <param name="acl">Canned Acl to set</param>
-        public void MakeBucket(string bucketName, Acl acl)
-        {
-            this.MakeBucket(bucketName, acl, "us-east-1");
-        }
-
-        /// <summary>
-        /// Create a bucket with a given name, canned Acl and location.
-        /// </summary>
-        /// <param name="bucketName">Name of the new bucket</param>
-        /// <param name="acl">Canned Acl to set</param>
-        public void MakeBucket(string bucketName, Acl acl, string location)
         {
             var request = new RestRequest("/" + bucketName, Method.PUT);
 
-            request.AddHeader("x-amz-acl", acl.ToString());
             // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
             if (location != "us-east-1")
             {
@@ -314,77 +293,6 @@ namespace Minio
             var response = client.Execute(request);
 
             if (!response.StatusCode.Equals(HttpStatusCode.NoContent))
-            {
-                throw ParseError(response);
-            }
-        }
-
-        /// <summary>
-        /// Get bucket Acl
-        /// </summary>
-        /// <param name="bucketName">Name of bucket to retrieve canned Acl</param>
-        /// <returns>Canned Acl</returns>
-        public Acl GetBucketAcl(string bucketName)
-        {
-            var request = new RestRequest(bucketName + "?acl", Method.GET);
-            var response = client.Execute(request);
-
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                var content = StripXmlnsXsi(response.Content);
-                var contentBytes = System.Text.Encoding.UTF8.GetBytes(content);
-                var stream = new MemoryStream(contentBytes);
-                AccessControlPolicy bucketList = (AccessControlPolicy)(new XmlSerializer(typeof(AccessControlPolicy)).Deserialize(stream));
-
-                bool publicRead = false;
-                bool publicWrite = false;
-                bool authenticatedRead = false;
-                foreach (var x in bucketList.Grants)
-                {
-                    if ("http://acs.amazonaws.com/groups/global/AllUsers".Equals(x.Grantee.Uri)
-                        && x.Permission.Equals("READ"))
-                    {
-                        publicRead = true;
-                    }
-                    if ("http://acs.amazonaws.com/groups/global/AllUsers".Equals(x.Grantee.Uri)
-                        && x.Permission.Equals("WRITE"))
-                    {
-                        publicWrite = true;
-                    }
-                    if ("http://acs.amazonaws.com/groups/global/AuthenticatedUsers".Equals(x.Grantee.Uri)
-                        && x.Permission.Equals("READ"))
-                    {
-                        authenticatedRead = true;
-                    }
-                }
-                if (publicRead && publicWrite && !authenticatedRead)
-                {
-                    return Acl.PublicReadWrite;
-                }
-                if (publicRead && !publicWrite && !authenticatedRead)
-                {
-                    return Acl.PublicRead;
-                }
-                if (!publicRead && !publicWrite && authenticatedRead)
-                {
-                    return Acl.AuthenticatedRead;
-                }
-                return Acl.Private;
-            }
-            throw ParseError(response);
-        }
-
-        /// <summary>
-        /// Set a bucket's canned Acl
-        /// </summary>
-        /// <param name="bucketName">Name of bucket to set canned Acl</param>
-        /// <param name="acl">Canned Acl to set</param>
-        public void SetBucketAcl(string bucketName, Acl acl)
-        {
-            var request = new RestRequest(bucketName + "?acl", Method.PUT);
-            request.AddHeader("x-amz-acl", acl.ToString());
-            var response = client.Execute(request);
-            if (!HttpStatusCode.OK.Equals(response.StatusCode))
             {
                 throw ParseError(response);
             }
