@@ -306,7 +306,14 @@ namespace Minio
             }
             canonicalStringList.AddLast(path);
             canonicalStringList.AddLast(requestQuery);
-            canonicalStringList.AddLast("host:" + client.BaseUrl.Host);
+            if (client.BaseUrl.Port > 0)
+            {
+                canonicalStringList.AddLast("host:" + client.BaseUrl.Host + ":" + client.BaseUrl.Port);
+            }
+            else
+            {
+                canonicalStringList.AddLast("host:" + client.BaseUrl.Host);
+            }
             canonicalStringList.AddLast("");
             canonicalStringList.AddLast("host");
             canonicalStringList.AddLast("UNSIGNED-PAYLOAD");
