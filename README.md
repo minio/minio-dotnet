@@ -81,7 +81,7 @@ changes to App.config.
 	`git update-index --assume-unchanged Minio.Examples/App.config`
 ]
 
-$ mcs /r:Minio/bin/Release/Minio.dll Minio.Examples/ListBuckets.cs
+$ mcs /r:System.Configuration /r:Minio/bin/Release/Minio.dll Minio.Examples/ListBuckets.cs
 $ export MONO_PATH=Minio/bin/Release
 $ mono Minio.Examples/ListBuckets.exe
 ....
