@@ -396,7 +396,7 @@ namespace Minio
                     }
                     if (parameter.Name == "Last-Modified")
                     {
-                        DateTime.Parse(parameter.Value.ToString());
+                        lastModified = DateTime.Parse(parameter.Value.ToString());
                     }
                     if (parameter.Name == "ETag")
                     {
