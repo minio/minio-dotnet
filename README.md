@@ -2,6 +2,8 @@
 
 ## Install from NuGet [![Build Status](https://travis-ci.org/minio/minio-dotnet.svg?branch=master)](https://travis-ci.org/minio/minio-dotnet)
 
+``Minio .Net Library is not yet ready for general purpose use``
+
 ```powershell
 To install Minio .NET package, run the following command in Nuget Package Manager Console
 
