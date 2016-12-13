@@ -4,7 +4,7 @@
 
 ## Install from NuGet [![Build Status](https://travis-ci.org/minio/minio-dotnet.svg?branch=master)](https://travis-ci.org/minio/minio-dotnet)
 
-```powershell
+```
 To install Minio .NET package, run the following command in Nuget Package Manager Console
 
 PM> Install-Package Minio
@@ -60,7 +60,7 @@ Simply edit the example .Net program to include your access credentials and foll
 NOTE: minio-dotnet requires mono 4.2 stable release to build on Linux.
 </blockquote>
 
-```bash
+```
 $ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet
 $ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
 $ echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
