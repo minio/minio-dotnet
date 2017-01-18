@@ -18,21 +18,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Xml.Serialization;
+using System.Threading.Tasks;
+using System.Runtime.Serialization;
 
 namespace Minio.Api.Exceptions
 {
     [Serializable]
-    [XmlRoot(ElementName="Exception", Namespace = "")]
-    public class ErrorResponse
+    public class AccessDeniedException : ClientException
     {
-        public string Code { get; set; }
-        public string Message { get; set; }
-        public string RequestId { get; set; }
-        public string HostId { get; set; }
-        public string Resource { get; set; }
-        public string BucketName { get; set; }
-        public string Key { get; set; }
-        public string BucketRegion { get; set; }
+        public AccessDeniedException()
+        {
+        }
+
+        public AccessDeniedException(string message) : base(message)
+        {
+        }
+
+        public override string ToString()
+        {
+            return base.ToString();
+        }
     }
 }

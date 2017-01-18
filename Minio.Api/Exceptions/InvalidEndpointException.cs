@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MinioApi.Exceptions
+namespace Minio.Api.Exceptions
 {
     public class InvalidEndpointException : ClientException
     {

@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using MinioApi.Exceptions;
+using Minio.Api.Exceptions;
 using System.Text.RegularExpressions;
 using RestSharp;
 using System.Net;
-using Minio.Api.Exceptions;
 using System.Linq;
 using System.Text;
 using RestSharp.Extensions;
 using System.IO;
-using Minio.Api.DataModel;
 using System.Xml.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,25 +64,26 @@ namespace Minio.Api
         }
         private void _constructUri()
         {
-         
+            
             var scheme = this.Secure ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
             this.Endpoint = string.Format("{0}://{1}", scheme, this.BaseUrl);
-               
-            this.uri = new Uri(this.Endpoint);
-
-        }
-        private void _validateEndPoint()
-        {
             if (string.IsNullOrEmpty(this.Endpoint))
             {
                 throw new InvalidEndpointException("Endpoint cannot be empty.");
             }
-            
+
+            this.uri = new Uri(this.Endpoint);
+
+            this._validateUri();
+          
+        }
+       
+        private void _validateUri()
+        {
             if (!this.isValidEndpoint(this.uri.Host))
             {
                 throw new InvalidEndpointException(this.Endpoint, "Invalid endpoint.");
             }
-
             if (!this.uri.AbsolutePath.Equals("/", StringComparison.CurrentCultureIgnoreCase))
             {
                 throw new InvalidEndpointException(this.Endpoint, "No path allowed in endpoint.");
@@ -148,13 +147,12 @@ namespace Minio.Api
            
             this.client.UserAgent = this.FullUserAgent;
         }
-        public MinioRestClient(string endpoint,string accessKey, string secretKey)
+        public MinioRestClient(string endpoint,string accessKey="", string secretKey="")
         {
             
             this.Secure = false;
             this.BaseUrl = endpoint;
             _constructUri();
-            _validateEndPoint();
             client = new RestSharp.RestClient(this.uri);
             client.UserAgent = this.FullUserAgent;
            
@@ -170,7 +168,6 @@ namespace Minio.Api
             this.Secure = true;
             _constructUri();
             this.client.BaseUrl = this.uri;
-           // Console.Out.WriteLine(this.uri.ToString(), this.client.BaseUrl);
             return this;
         }
 
@@ -186,7 +183,7 @@ namespace Minio.Api
             HandleIfErrorResponse(response, errorHandlers);
             return response;
         }
-
+        //old
         public void ExecuteAsync<T>(IRestRequest request, Action<T> callback) where T : new()
         {
             request.OnBeforeDeserialization = (resp) =>
@@ -209,7 +206,7 @@ namespace Minio.Api
 
             this.client.ExecuteAsync<T>(request, (response) => callback(response.Data));
         }
-
+        ///old 
         /// <summary>
         /// Execute a manual REST request
         /// </summary>
@@ -220,7 +217,11 @@ namespace Minio.Api
             
             this.client.ExecuteAsync(request, callback);
         }
-
+        /// <summary>
+        /// old - remove
+        /// </summary>
+        /// <param name="bucketName"></param>
+        /// <returns></returns>
         public bool BucketExists(string bucketName)
         {
             var request = new RestRequest(bucketName, Method.HEAD);
@@ -235,11 +236,84 @@ namespace Minio.Api
             
             throw ex;
         }
-        private ClientException ParseError(IRestResponse response)
+        internal ClientException ParseError(IRestResponse response)
         {
-            Console.Out.WriteLine("there was an exception");
-            return new ClientException("parseerror");
+            if (response == null)
+            {
+                return new ConnectionException("Response is nil. Please report this issue https://github.com/minio/minio-dotnet/issues");
+            }
+            if (HttpStatusCode.Redirect.Equals(response.StatusCode) || HttpStatusCode.TemporaryRedirect.Equals(response.StatusCode) || HttpStatusCode.MovedPermanently.Equals(response.StatusCode))
+            {
+                return new RedirectionException("Redirection detected. Please report this issue https://github.com/minio/minio-dotnet/issues");
+            }
+
+            if (string.IsNullOrWhiteSpace(response.Content))
+            {
+                if (HttpStatusCode.Forbidden.Equals(response.StatusCode) || HttpStatusCode.NotFound.Equals(response.StatusCode) ||
+                    HttpStatusCode.MethodNotAllowed.Equals(response.StatusCode) || HttpStatusCode.NotImplemented.Equals(response.StatusCode))
+                {
+                    ClientException e = null;
+                    ErrorResponse errorResponse = new ErrorResponse();
+
+                    foreach (Parameter parameter in response.Headers)
+                    {
+                        if (parameter.Name.Equals("x-amz-id-2", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            errorResponse.HostId = parameter.Value.ToString();
+                        }
+                        if (parameter.Name.Equals("x-amz-request-id", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            errorResponse.RequestId = parameter.Value.ToString();
+                        }
+                        if (parameter.Name.Equals("x-amz-bucket-region", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            errorResponse.BucketRegion = parameter.Value.ToString();
+                        }
+                    }
+
+                    errorResponse.Resource = response.Request.Resource;
+
+                    if (HttpStatusCode.NotFound.Equals(response.StatusCode))
+                    {
+                        int pathLength = response.Request.Resource.Split('/').Count();
+                        if (pathLength > 1)
+                        {
+                            errorResponse.Code = "NoSuchKey";
+                            var objectName = response.Request.Resource.Split('/')[1];
+                            e = new ObjectNotFoundException(objectName, "Not found.");
+                        }
+                        else if (pathLength == 1)
+                        {
+                            errorResponse.Code = "NoSuchBucket";
+                            var bucketName = response.Request.Resource.Split('/')[0];
+                            e = new BucketNotFoundException(bucketName, "Not found.");
+                        }
+                        else
+                        {
+                            e = new InternalClientException("404 without body resulted in path with less than two components");
+                        }
+                    }
+                    else if (HttpStatusCode.Forbidden.Equals(response.StatusCode))
+                    {
+                        errorResponse.Code = "Forbidden";
+                        e = new AccessDeniedException("Access denied on the resource: " + response.Request.Resource);
+                    }
+                    e.Response = errorResponse;
+                    return e;
+                }
+                throw new InternalClientException("Unsuccessful response from server without XML error: " + response.StatusCode);
+            }
+
+            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+            var stream = new MemoryStream(contentBytes);
+            ErrorResponse errResponse = (ErrorResponse)(new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream));
+
+            ClientException clientException = new ClientException(errResponse.Message);
+            clientException.Response = errResponse;
+            clientException.XmlError = response.Content;
+            return clientException;
         }
+
         private void HandleIfErrorResponse(IRestResponse response, IEnumerable<ApiResponseErrorHandlingDelegate> handlers)
         {
             if (handlers == null)

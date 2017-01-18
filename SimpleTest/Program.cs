@@ -1,6 +1,7 @@
 ﻿using System;
 using Minio;
 using Minio.Api.DataModel;
+using Minio.Xml;
 using System.Threading.Tasks;
 
 namespace SimpleTest
@@ -9,17 +10,17 @@ namespace SimpleTest
     {
         static void Main(string[] args)
         {
-            /*
-            var client = new MinioClient("play.minio.io:9000",
-                "Q3AM3UQ867SPQQA43P2F",
-                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG");
+            
+            //var client = new MinioClient("play.minio.io:9000",
+            //    "Q3AM3UQ867SPQQA43P2F",
+            //    "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG");
 
-            var buckets = client.ListBuckets();
-            foreach (Bucket bucket in buckets)
-            {
-                Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
-            }
-            */
+            //var buckets = client.ListBuckets();
+            //foreach (Minio.Xml.Bucket bucket in buckets)
+            //{
+            //    Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
+            //}
+            
             //return 0;
 
             var minio = new Minio.Api.MinioRestClient("play.minio.io:9000",
@@ -41,7 +42,7 @@ namespace SimpleTest
 
             var list = getListBucketsTask.Result;
 
-            foreach (Bucket bucket in list.Buckets)
+            foreach (Minio.Api.DataModel.Bucket bucket in list.Buckets)
             {
                 Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
             }
