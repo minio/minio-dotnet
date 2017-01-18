@@ -68,6 +68,7 @@
     <Compile Include="DataModel\Part.cs" />
     <Compile Include="DataModel\Prefix.cs" />
     <Compile Include="DataModel\RestExceptioncs.cs" />
+    <Compile Include="DataModel\Service.cs" />
     <Compile Include="DataModel\Upload.cs" />
     <Compile Include="Exceptions\ClientException.cs" />
     <Compile Include="Exceptions\ErrorResponse.cs" />

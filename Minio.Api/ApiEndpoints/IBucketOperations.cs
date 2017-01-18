@@ -7,7 +7,7 @@ namespace Minio.Api
 {
     public interface IBucketOperations
     {
-        void ListBucketsAsync(Action<ListAllMyBucketsResult> callback);
+        Task<ListAllMyBucketsResult> ListBucketsAsync();
    /*
         Task MakeBucketAsync(string bucketName, string location= "us-east-1");
 
