@@ -20,20 +20,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-namespace MinioApi.Exceptions
+using RestSharp;
+namespace Minio.Api.Exceptions
 {
     [Serializable]
     public class ClientException : Exception
     {
         public string message { get; private set; }
+        public ClientException()
+        {
 
+        }
         public ClientException(string message) : base($"Minio API responded with message={message}")
         {
             this.message = message;
         }
 
-        public ErrorResponse Response { get; private set; }
+        public ErrorResponse Response { get; set; }
         public string XmlError { get; set; }
 
         public override string ToString()
