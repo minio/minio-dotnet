@@ -11,6 +11,8 @@ using RestSharp.Extensions;
 using System.IO;
 using Minio.Api.DataModel;
 using System.Xml.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Minio.Api
 {
@@ -171,6 +173,20 @@ namespace Minio.Api
            // Console.Out.WriteLine(this.uri.ToString(), this.client.BaseUrl);
             return this;
         }
+
+        internal async Task<IRestResponse<T>> ExecuteTaskAsync<T>(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,IRestRequest request) where T: new()
+        {
+            var response = await this.client.ExecuteTaskAsync<T>(request, CancellationToken.None);
+            HandleIfErrorResponse(response, errorHandlers);
+            return response;
+        }
+        internal  async Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,IRestRequest request)
+        {
+            var response = await this.client.ExecuteTaskAsync(request, CancellationToken.None);
+            HandleIfErrorResponse(response, errorHandlers);
+            return response;
+        }
+
         public void ExecuteAsync<T>(IRestRequest request, Action<T> callback) where T : new()
         {
             request.OnBeforeDeserialization = (resp) =>
@@ -201,6 +217,7 @@ namespace Minio.Api
         /// <param name="callback">The callback function to execute when the async request completes</param>
         public void ExecuteAsync(IRestRequest request, Action<IRestResponse> callback)
         {
+            
             this.client.ExecuteAsync(request, callback);
         }
 
@@ -223,8 +240,22 @@ namespace Minio.Api
             Console.Out.WriteLine("there was an exception");
             return new ClientException("parseerror");
         }
-      
+        private void HandleIfErrorResponse(IRestResponse response, IEnumerable<ApiResponseErrorHandlingDelegate> handlers)
+        {
+            if (handlers == null)
+            {
+                throw new ArgumentNullException(nameof(handlers));
+            }
+
+            foreach (var handler in handlers)
+            {
+                handler(response);
+            }
+
+            _defaultErrorHandlingDelegate(response);
+        }
+
     }
-internal delegate void ApiResponseErrorHandlingDelegate(IRestResponse response);
+    internal delegate void ApiResponseErrorHandlingDelegate(IRestResponse response);
 
 }
