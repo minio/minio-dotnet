@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using Minio.Api.DataModel;
+using Minio.DataModel;
 using RestSharp;
 using System.IO;
+using System.Linq;
+using System.Xml.Linq;
 using System.Xml.Serialization;
-using Minio.Api.Exceptions;
-
-namespace Minio.Api
+using Minio.Exceptions;
+using System.Text.RegularExpressions;
+using System.Globalization;
+namespace Minio
 {
     internal class BucketOperations : IBucketOperations
     {
@@ -50,7 +53,7 @@ namespace Minio.Api
             return bucketList;
            
         }
-        public async Task MakeBucketAsync(string bucketName, string location = "us-east-1")
+        public async Task<bool> MakeBucketAsync(string bucketName, string location = "us-east-1")
         {
             var request = new RestRequest("/" + bucketName, Method.PUT);
             // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
@@ -61,11 +64,12 @@ namespace Minio.Api
             }
             var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
             
-            if (response.StatusCode != HttpStatusCode.OK)
+            if (response.StatusCode == HttpStatusCode.OK)
             {
-                this._client.ParseError(response);
+                return true;
             }
-       
+            this._client.ParseError(response);
+            return false;
         }
 
         public async Task<bool> BucketExistsAsync(string bucketName)
@@ -87,10 +91,129 @@ namespace Minio.Api
         }
 
 
+        public async Task RemoveBucketAsync(string bucketName)
+        {
+            var request = new RestRequest(bucketName, Method.DELETE);
+            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
 
+            if (!response.StatusCode.Equals(HttpStatusCode.NoContent))
+            {
+                throw this._client.ParseError(response);
+            }
+        }
 
+        /*
+        /// <summary>
+        /// List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
+        /// </summary>
+        /// <param name="bucketName">Bucket to list objects from</param>
+        /// <param name="prefix">Filters all objects not beginning with a given prefix</param>
+        /// <param name="recursive">Set to false to emulate a directory</param>
+        /// <returns>A iterator lazily populated with objects</returns>
+        public async Task<IEnumerable<Item>> ListObjectsAsync(string bucketName, string prefix=null, bool recursive=true)
+        {
+            bool isRunning = true;
 
+            string marker = null;
 
+            while (isRunning)
+            {
+                Tuple<ListBucketResult, List<Item>> result = await GetObjectListAsync(bucketName, prefix, recursive, marker);
+                Item lastItem = null;
+                foreach (Item item in result.Item2)
+                {
+                    lastItem = item;
+                    yield return item;
+                }
+                if (result.Item1.NextMarker != null)
+                {
+                    marker = result.Item1.NextMarker;
+                }
+                else
+                {
+                    marker = lastItem.Key;
+                }
+                isRunning = result.Item1.IsTruncated;
+            }
+        }
+
+        private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix, bool recursive, string marker)
+        {
+            var queries = new List<string>();
+            if (!recursive)
+            {
+                queries.Add("delimiter=%2F");
+            }
+            if (prefix != null)
+            {
+                queries.Add("prefix=" + Uri.EscapeDataString(prefix));
+            }
+            if (marker != null)
+            {
+                queries.Add("marker=" + Uri.EscapeDataString(marker));
+            }
+            queries.Add("max-keys=1000");
+            string query = string.Join("&", queries);
+
+            string path = bucketName;
+            if (query.Length > 0)
+            {
+                path += "?" + query;
+            }
+            var request = new RestRequest(path, Method.GET);
+            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+                var stream = new MemoryStream(contentBytes);
+                ListBucketResult listBucketResult = (ListBucketResult)(new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream));
+
+                XDocument root = XDocument.Parse(response.Content);
+
+                var items = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
+                             select new Item()
+                             {
+                                 Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
+                                 LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
+                                 ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value,
+                                 Size = UInt64.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture),
+                                 IsDir = false
+                             });
+
+                var prefixes = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}CommonPrefixes")
+                                select new Item()
+                                {
+                                    Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Prefix").Value,
+                                    IsDir = true
+                                });
+
+                items = items.Concat(prefixes);
+
+                return new Tuple<ListBucketResult, List<Item>>(listBucketResult, items.ToList());
+            }
+            throw this._client.ParseError(response);
+        }
+        
+        
+        /// <summary>
+        /// Get an object. The object will be streamed to the callback given by the user.
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Name of object to retrieve</param>
+        /// <param name="callback">A stream will be passed to the callback</param>
+        public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback)
+        {
+            RestRequest request = new RestRequest(bucketName + "/" + UrlEncode(objectName), Method.GET);
+            request.ResponseWriter = callback;
+            var response = client.Execute(request);
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                return;
+            }
+            throw this._client.ParseError(response);
+        }
+        */
     }
 
 

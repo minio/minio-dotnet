@@ -20,7 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Minio.Api.Exceptions
+namespace Minio.Exceptions
 {
     public class InvalidKeyNameException : ClientException
     {

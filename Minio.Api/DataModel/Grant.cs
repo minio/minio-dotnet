@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-using Minio.Api.DataModel;
+using Minio.DataModel;
 using System;
 using System.Xml.Serialization;
     
-namespace Minio.Api.Datamodel
+namespace Minio.Datamodel
 {
     [Serializable]
     [XmlInclude(typeof(GranteeUser))]

@@ -3,13 +3,20 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio", "..\..\Documents\GitHub\minio-dotnet\Minio\Minio.csproj", "{DCC0B399-5931-4EA8-9E19-1CF49E799F81}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Old", "..\..\Documents\GitHub\minio-dotnet\Minio\Minio.Old.csproj", "{DCC0B399-5931-4EA8-9E19-1CF49E799F81}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinioApi", "Minio.Api\MinioApi.csproj", "{CC30CADE-342A-4CED-858D-B60200C075B0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTest", "SimpleTest\SimpleTest.csproj", "{AF2DF297-402B-46B8-8954-C5A934967A51}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Examples", "Minio.Examples\Minio.Examples.csproj", "{736DCD60-9F86-457D-81D3-284D1A155ACB}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C8111804-63DA-4E74-9C1F-FEC46632A33B}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileUploader", "FileUploader\FileUploader.csproj", "{04E6286A-50DA-444B-B663-6D7386D4CC4A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Examples", "Minio.Examples\Minio.Examples.csproj", "{C126F2B3-50B0-448F-AB16-9CF80079D6AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +36,14 @@ Global
 		{AF2DF297-402B-46B8-8954-C5A934967A51}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF2DF297-402B-46B8-8954-C5A934967A51}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF2DF297-402B-46B8-8954-C5A934967A51}.Release|Any CPU.Build.0 = Release|Any CPU
-		{736DCD60-9F86-457D-81D3-284D1A155ACB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{736DCD60-9F86-457D-81D3-284D1A155ACB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{736DCD60-9F86-457D-81D3-284D1A155ACB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{736DCD60-9F86-457D-81D3-284D1A155ACB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C126F2B3-50B0-448F-AB16-9CF80079D6AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C126F2B3-50B0-448F-AB16-9CF80079D6AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C126F2B3-50B0-448F-AB16-9CF80079D6AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C126F2B3-50B0-448F-AB16-9CF80079D6AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

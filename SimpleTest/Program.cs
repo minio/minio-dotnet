@@ -1,4 +1,8 @@
 ﻿using System;
+
+using Minio;
+using Minio.DataModel;
+
 using System.Threading.Tasks;
 
 namespace SimpleTest
@@ -8,7 +12,7 @@ namespace SimpleTest
         static void Main(string[] args)
         { 
 
-            var minio = new Minio.Api.MinioRestClient("play.minio.io:9000",
+            var minio = new Minio.MinioRestClient("play.minio.io:9000",
                 "Q3AM3UQ867SPQQA43P2F",
                 "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
                 ).WithSSL();
@@ -24,7 +28,7 @@ namespace SimpleTest
             }
             var list = getListBucketsTask.Result;
 
-            foreach (Minio.Api.DataModel.Bucket bucket in list.Buckets)
+            foreach (Bucket bucket in list.Buckets)
             {
                 Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
             }

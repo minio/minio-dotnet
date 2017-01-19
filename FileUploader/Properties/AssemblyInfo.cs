@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Minio")]
+[assembly: AssemblyTitle("FileUploader")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Vagrant Inc.")]
-[assembly: AssemblyProduct("Minio")]
+[assembly: AssemblyProduct("FileUploader")]
 [assembly: AssemblyCopyright("Copyright © Vagrant Inc. 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("cc30cade-342a-4ced-858d-b60200c075b0")]
+[assembly: Guid("04e6286a-50da-444b-b663-6d7386d4cc4a")]
 
 // Version information for an assembly consists of the following four values:
 //

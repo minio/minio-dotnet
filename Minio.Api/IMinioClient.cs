@@ -1,8 +1,8 @@
-﻿using Minio.Api.ApiEndpoints;
+﻿using Minio.ApiEndpoints;
 using System;
 
 
-namespace Minio.Api
+namespace Minio
 {
     public interface IMinioClient 
     {

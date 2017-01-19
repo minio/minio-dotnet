@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Minio.Api.Exceptions
+namespace Minio.Exceptions
 {
     public class UnexpectedShortReadException : ClientException
     {

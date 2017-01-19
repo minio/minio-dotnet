@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Minio.Api
+namespace Minio
 {
     /// <summary>
     /// Exceptions returned in the HTTP response body when something goes wrong.

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace Minio.Api.DataModel
+namespace Minio.DataModel
 {
     public class Upload
     {

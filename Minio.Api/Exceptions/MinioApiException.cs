@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using RestSharp;
 using System.Net;
 
-namespace Minio.Api.Exceptions
+namespace Minio.Exceptions
 {
 
     public class MinioApiException : Exception

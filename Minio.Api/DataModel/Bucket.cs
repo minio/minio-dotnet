@@ -16,7 +16,7 @@
 
 using System;
 
-namespace Minio.Api.DataModel
+namespace Minio.DataModel
 {
     [Serializable]
     public class Bucket

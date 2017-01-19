@@ -1,4 +1,4 @@
-﻿namespace Minio.Api
+﻿namespace Minio
 {
     public class MinioListBase
     {
