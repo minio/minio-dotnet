@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-namespace Minio.Api
+namespace Minio
 {
  
     /// Minio API call result  

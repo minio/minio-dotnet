@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Minio.Api.Exceptions;
+using Minio.Exceptions;
 
-namespace Minio.Api.Exceptions
+namespace Minio.Exceptions
 {
     public class ForbiddenException : ClientException
     {

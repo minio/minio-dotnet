@@ -21,7 +21,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.Serialization;
 
-namespace Minio.Api.Exceptions
+namespace Minio.Exceptions
 {
     [Serializable]
     public class AccessDeniedException : ClientException

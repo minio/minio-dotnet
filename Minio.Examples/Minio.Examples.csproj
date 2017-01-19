@@ -4,15 +4,17 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{736DCD60-9F86-457D-81D3-284D1A155ACB}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{C126F2B3-50B0-448F-AB16-9CF80079D6AF}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Minio.Examples</RootNamespace>
     <AssemblyName>Minio.Examples</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,6 +24,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -40,13 +43,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MakeBucket.cs" />
-    <Compile Include="ListBuckets.cs" />
+    <Compile Include="Cases\BucketExists.cs" />
+    <Compile Include="Cases\ListBuckets.cs" />
+    <Compile Include="Cases\MakeBucket.cs" />
+    <Compile Include="Cases\RemoveBucket.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Minio.Api\MinioApi.csproj">
-      <Project>{CC30CADE-342A-4CED-858D-B60200C075B0}</Project>
+      <Project>{cc30cade-342a-4ced-858d-b60200c075b0}</Project>
       <Name>MinioApi</Name>
     </ProjectReference>
   </ItemGroup>

@@ -7,8 +7,8 @@
     <ProjectGuid>{CC30CADE-342A-4CED-858D-B60200C075B0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Minio.Api</RootNamespace>
-    <AssemblyName>Minio.Api</AssemblyName>
+    <RootNamespace>Minio</RootNamespace>
+    <AssemblyName>Minio</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

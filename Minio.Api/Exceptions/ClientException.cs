@@ -21,7 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using RestSharp;
-namespace Minio.Api.Exceptions
+namespace Minio.Exceptions
 {
     [Serializable]
     public class ClientException : Exception

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Minio.Api.Exceptions;
+using Minio.Exceptions;
 using System.Text.RegularExpressions;
 using RestSharp;
 using System.Net;
@@ -12,7 +12,7 @@ using System.Xml.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Minio.Api
+namespace Minio
 {
     public sealed class MinioRestClient : IMinioClient
     {
