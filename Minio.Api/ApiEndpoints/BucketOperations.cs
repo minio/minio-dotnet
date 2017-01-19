@@ -33,7 +33,10 @@ namespace Minio.Api
         {
             var request = new RestRequest("/", Method.GET);
             var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
-            this._client.ParseError(response);
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+               this._client.ParseError(response);
+            }
             ListAllMyBucketsResult bucketList = new ListAllMyBucketsResult();
             if (HttpStatusCode.OK.Equals(response.StatusCode))
             {
@@ -41,9 +44,11 @@ namespace Minio.Api
                 var stream = new MemoryStream(contentBytes);
                 bucketList = (ListAllMyBucketsResult)(new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream));
                 return bucketList;
-                   
-             }
+
+            }
+
             return bucketList;
+           
         }
 
 

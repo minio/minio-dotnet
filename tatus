@@ -1,0 +1,55 @@
+[33mcommit ad72a3c808ebdb7cb7d3a49cdcf3252b04f6c235[m
+Merge: 17ed023 1285ced
+Author: poornas <k.poorna@gmail.com>
+Date:   Wed Jan 18 16:45:52 2017 -0800
+
+    Merge branch 'asyncAndErrorHandling'
+
+[33mcommit 17ed0232ce93f97af41c8c1d875001c06dac736b[m
+Merge: 9ee0122 9c72c53
+Author: poornas <k.poorna@gmail.com>
+Date:   Wed Jan 18 16:42:08 2017 -0800
+
+    Merge branch 'master' of https://github.com/poornas/minio-csharp-sdk
+
+[33mcommit 9c72c532954fa39163f92c34f47f7068b6e2539e[m
+Author: poornas <poornas@users.noreply.github.com>
+Date:   Wed Jan 18 16:38:57 2017 -0800
+
+    Initial commit
+
+[33mcommit 1285cedb048f8177dee30451a7b58aebe48e3118[m
+Author: poornas <k.poorna@gmail.com>
+Date:   Wed Jan 18 14:52:26 2017 -0800
+
+    async with error handling
+
+[33mcommit ddd53c14fbf47154adb953ea3cb1d5e31d98b589[m
+Author: poornas <k.poorna@gmail.com>
+Date:   Wed Jan 18 11:51:39 2017 -0800
+
+    proper async listbuckets call
+
+[33mcommit 9ee0122ee62bee67ae9e69a6d4a8104f25d3faef[m
+Author: poornas <k.poorna@gmail.com>
+Date:   Wed Jan 18 09:48:36 2017 -0800
+
+    changed listbuckets method to return void
+
+[33mcommit 9baa0e281b715302c4fa9be1952387fa03aab43a[m
+Author: poornas <k.poorna@gmail.com>
+Date:   Tue Jan 17 23:57:23 2017 -0800
+
+    listbuckets with callback; lots of cleanup to do
+
+[33mcommit 9b0c639e1c08254868f640018c6f9ef7289ba4c7[m
+Author: poornas <k.poorna@gmail.com>
+Date:   Mon Jan 16 15:28:18 2017 -0800
+
+    Add project files.
+
+[33mcommit 3a89924eff533e90cbc509f4d786cf624462cffe[m
+Author: poornas <k.poorna@gmail.com>
+Date:   Mon Jan 16 15:28:17 2017 -0800
+
+    Add .gitignore and .gitattributes.

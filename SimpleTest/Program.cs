@@ -38,8 +38,13 @@ namespace SimpleTest
             //}
 
             var getListBucketsTask = minio.Buckets.ListBucketsAsync();
-            Task.WaitAll(getListBucketsTask); // block while the task completes
-
+            try
+            {
+                Task.WaitAll(getListBucketsTask); // block while the task completes
+            } catch(AggregateException aggEx)
+            {
+                aggEx.Handle(HandleBatchExceptions);
+            }
             var list = getListBucketsTask.Result;
 
             foreach (Minio.Api.DataModel.Bucket bucket in list.Buckets)
@@ -55,5 +60,23 @@ namespace SimpleTest
 
             Console.ReadLine();
         }
+        private static bool HandleBatchExceptions(Exception exceptionToHandle)
+      {
+         if (exceptionToHandle is ArgumentNullException)
+          {
+               //I'm handling the ArgumentNullException.
+               Console.WriteLine("Handling the ArgumentNullException.");
+               //I handled this Exception, return true.
+               return true;
+          }
+        else
+         {
+              //I'm only handling ArgumentNullExceptions.
+             Console.WriteLine(string.Format("I'm not handling the {0}.", exceptionToHandle.GetType()));
+              //I didn't handle this Exception, return false.
+              return false;
+         }          
+    }
+
     }
 }
