@@ -26,7 +26,9 @@ namespace Minio
         private RestClient client;
         private V4Authenticator authenticator;
 
-        public IBucketOperations Buckets { get; }
+        public IBucketOperations Buckets { get; } 
+
+        public IObjectOperations Objects { get; }
 
         internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers = Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
 
@@ -160,6 +162,7 @@ namespace Minio
             client.Authenticator = authenticator;
 
             this.Buckets = new BucketOperations(this);
+            this.Objects = new ObjectOperations(this);
             return;
 
         }

@@ -12,9 +12,9 @@ namespace SimpleTest
         static void Main(string[] args)
         { 
 
-            var minio = new Minio.MinioRestClient("play.minio.io:9000",
-                "Q3AM3UQ867SPQQA43P2F",
-                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+            var minio = new Minio.MinioRestClient(endpoint:"play.minio.io:9000",
+                accessKey:"Q3AM3UQ867SPQQA43P2F",
+                secretKey:"zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
                 ).WithSSL();
            
 

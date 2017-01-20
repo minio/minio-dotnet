@@ -31,9 +31,9 @@ namespace FileUploader
             var bucketName = "mymusic"; //<==== change this
             var location   = "us-east-1";
             // Upload the zip file
-            var objectName = "golden-oldies.zip";
-            var filePath = "/tmp/golden-oldies.zip";
-            var contentType = "application/zip";
+            //var objectName = "golden-oldies.zip";
+            //var filePath = "/tmp/golden-oldies.zip";
+           // var contentType = "application/zip";
 
             try
             {
