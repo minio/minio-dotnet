@@ -50,9 +50,11 @@
     <Compile Include="ApiEndpoints\CustomClientSettings.cs" />
     <Compile Include="ApiEndpoints\FileObjectOperationscs.cs" />
     <Compile Include="ApiEndpoints\IBucketOperations.cs" />
+    <Compile Include="ApiEndpoints\IObjectOperations.cs" />
     <Compile Include="ApiEndpoints\ObjectOperations.cs" />
     <Compile Include="ApiEndpoints\PresignedOperations.cs" />
     <Compile Include="DataModel\Bucket.cs" />
+    <Compile Include="DataModel\CopyConditions.cs" />
     <Compile Include="DataModel\CreateBucketConfiguration.cs" />
     <Compile Include="DataModel\Grant.cs" />
     <Compile Include="DataModel\GranteeUser.cs" />
@@ -88,6 +90,7 @@
     <Compile Include="Exceptions\UnexpectedShortReadException.cs" />
     <Compile Include="IMinioClient.cs" />
     <Compile Include="MinioRestClient.cs" />
+    <Compile Include="ObjectStat.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Regions.cs" />
     <Compile Include="V4Authenticator.cs" />

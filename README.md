@@ -125,7 +125,7 @@ Click on FileUploader project and Start
 #### Full Examples : File Object Operations
 
 #### Full Examples : Object Operations
-
+* [GetObject.cs] (./Minio.Examples/Cases/GetObject.cs)
 #### Full Examples : Presigned Operations
 
 ### How to run these examples?
