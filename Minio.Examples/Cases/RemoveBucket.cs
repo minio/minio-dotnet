@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases
 {
     class RemoveBucket
     {
         //Remove a bucket
-        public async static Task Run(Minio.MinioRestClient minio)
+        public async static Task Run(MinioRestClient minio)
         {
             try
             {

@@ -21,7 +21,7 @@ namespace Minio
         public string Endpoint { get; private set; }
         public string BaseUrl { get; private set; }
         public bool Secure { get; private set; }
-
+        private bool Anonymous { get;}
         private Uri uri;
         private RestClient client;
         private V4Authenticator authenticator;
@@ -160,7 +160,14 @@ namespace Minio
            
             authenticator = new V4Authenticator(accessKey, secretKey);
             client.Authenticator = authenticator;
-
+            if (accessKey == "" || secretKey == "")
+            {
+                this.Anonymous = true;
+            } 
+            else
+            {
+                this.Anonymous = false;
+            }
             this.Buckets = new BucketOperations(this);
             this.Objects = new ObjectOperations(this);
             return;
@@ -230,24 +237,22 @@ namespace Minio
             var request = new RestRequest(bucketName, Method.HEAD);
             var response = client.Execute(request);
 
-            if (response.StatusCode == HttpStatusCode.OK)
+            if (response.StatusCode != HttpStatusCode.OK)
             {
-                return true;
+                ParseError(response);
             }
-
-            var ex = ParseError(response);
+            return true;
             
-            throw ex;
         }
-        internal ClientException ParseError(IRestResponse response)
+        internal void ParseError(IRestResponse response)
         {
             if (response == null)
             {
-                return new ConnectionException("Response is nil. Please report this issue https://github.com/minio/minio-dotnet/issues");
+                throw new ConnectionException("Response is nil. Please report this issue https://github.com/minio/minio-dotnet/issues");
             }
             if (HttpStatusCode.Redirect.Equals(response.StatusCode) || HttpStatusCode.TemporaryRedirect.Equals(response.StatusCode) || HttpStatusCode.MovedPermanently.Equals(response.StatusCode))
             {
-                return new RedirectionException("Redirection detected. Please report this issue https://github.com/minio/minio-dotnet/issues");
+                throw new RedirectionException("Redirection detected. Please report this issue https://github.com/minio/minio-dotnet/issues");
             }
 
             if (string.IsNullOrWhiteSpace(response.Content))
@@ -302,7 +307,7 @@ namespace Minio
                         e = new AccessDeniedException("Access denied on the resource: " + response.Request.Resource);
                     }
                     e.Response = errorResponse;
-                    return e;
+                    throw e;
                 }
                 throw new InternalClientException("Unsuccessful response from server without XML error: " + response.StatusCode);
             }
@@ -314,7 +319,7 @@ namespace Minio
             ClientException clientException = new ClientException(errResponse.Message);
             clientException.Response = errResponse;
             clientException.XmlError = response.Content;
-            return clientException;
+            throw clientException;
         }
 
         private void HandleIfErrorResponse(IRestResponse response, IEnumerable<ApiResponseErrorHandlingDelegate> handlers)

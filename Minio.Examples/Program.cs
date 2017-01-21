@@ -13,11 +13,12 @@ namespace Minio.Examples
               "Q3AM3UQ867SPQQA43P2F",
               "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
               ).WithSSL();
-           // Cases.ListBuckets.Run(minioClient).Wait();
-           // Cases.MakeBucket.Run(minioClient).Wait();
-           // Cases.BucketExists.Run(minioClient).Wait();
-           // Cases.RemoveBucket.Run(minioClient).Wait();
-            Cases.GetObject.Run(minioClient).Wait();
+            // Cases.ListBuckets.Run(minioClient).Wait();
+            // Cases.MakeBucket.Run(minioClient).Wait();
+            // Cases.BucketExists.Run(minioClient).Wait();
+            // Cases.RemoveBucket.Run(minioClient).Wait();
+            //Cases.GetObject.Run(minioClient).Wait();
+            Cases.StatObject.Run(minioClient).Wait();
             Console.ReadLine();
         }
 
