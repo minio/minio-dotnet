@@ -81,6 +81,8 @@
     <Compile Include="Exceptions\InvalidBucketNameException.cs" />
     <Compile Include="Exceptions\InvalidEndpointException.cs" />
     <Compile Include="Exceptions\InvalidKeyNameException.cs" />
+    <Compile Include="Exceptions\InvalidObjectNameException.cs" />
+    <Compile Include="Exceptions\InvalidObjectPrefixException.cs" />
     <Compile Include="Exceptions\InvalidPortException.cs" />
     <Compile Include="Exceptions\MaxBucketsReachedException.cs" />
     <Compile Include="Exceptions\MethodNotAllowedException.cs" />
@@ -88,6 +90,9 @@
     <Compile Include="Exceptions\ObjectNotFoundException.cs" />
     <Compile Include="Exceptions\RedirectionException.cs" />
     <Compile Include="Exceptions\UnexpectedShortReadException.cs" />
+    <Compile Include="Helper\Constants.cs" />
+    <Compile Include="Helper\s3utils.cs.cs" />
+    <Compile Include="Helper\utils.cs" />
     <Compile Include="IMinioClient.cs" />
     <Compile Include="MinioRestClient.cs" />
     <Compile Include="ObjectStat.cs" />

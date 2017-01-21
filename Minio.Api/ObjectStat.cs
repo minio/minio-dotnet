@@ -41,5 +41,10 @@ namespace Minio
         public DateTime LastModified { get; private set;  }
         public string ETag { get; private set; }
         public string ContentType { get; private set; }
+
+        public override string ToString()
+        {
+            return string.Format("{0} : Size({1}) LastModified({2}) ETag({3}) Content-Type({4})",this.ObjectName, this.Size, this.LastModified, this.ETag, this.ContentType);
+        }
     }
 }

@@ -77,17 +77,23 @@ namespace Minio
             var request = new RestRequest(bucketName, Method.HEAD);
             var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers,request);
 
-            if (response.StatusCode == HttpStatusCode.OK)
+            if (response.StatusCode != HttpStatusCode.OK)
             {
-                return true;
+                try
+                {
+                    this._client.ParseError(response);
+                }
+                catch (Exception ex)
+                {
+                    if (ex.GetType() == typeof(BucketNotFoundException))
+                    {
+                        return false;
+                    }
+                    throw ex;
+                }
             }
 
-            var ex = this._client.ParseError(response);
-            if (ex.GetType() == typeof(BucketNotFoundException))
-            {
-                return false;
-            }
-            throw ex;
+            return true;
         }
 
 
@@ -98,7 +104,7 @@ namespace Minio
 
             if (!response.StatusCode.Equals(HttpStatusCode.NoContent))
             {
-                throw this._client.ParseError(response);
+                this._client.ParseError(response);
             }
         }
 
