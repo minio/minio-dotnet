@@ -116,7 +116,7 @@ Click on FileUploader project and Start
 * [BucketExists.cs](./Minio.Examples/Cases/BucketExists.cs)
 * [RemoveBucket.cs](./Minio.Examples/Cases/RemoveBucket.cs)
 * [Listobjects.cs]()
-* [ListIncompleteUploads.cs]()
+* [ListIncompleteUploads.cs](./Minio.Examples/Cases/ListIncompleteUploads.cs)
 
 #### Full Examples : Bucket policy Operations
 
@@ -126,6 +126,7 @@ Click on FileUploader project and Start
 
 #### Full Examples : Object Operations
 * [GetObject.cs] (./Minio.Examples/Cases/GetObject.cs)
+* [PutObject.cs] (./Minio.Examples/Cases/PutObject.cs)
 * [StatObject.cs](./Minio.Examples/Cases/StatObject.cs)
 #### Full Examples : Presigned Operations
 

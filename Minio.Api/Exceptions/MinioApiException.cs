@@ -12,7 +12,7 @@ namespace Minio.Exceptions
         public IRestResponse response { get; private set; }
         public string message { get; private set; }
         public MinioApiException(IRestResponse response)
-            : base($"Minio API responded with status code={response.StatusCode}, response={response.Content}")
+            : base($"Minio API responded with status code={response.StatusCode}, response={response.ErrorMessage}, content={response.Content}")
         {
             this.response = response;
 

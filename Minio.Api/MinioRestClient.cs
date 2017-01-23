@@ -20,9 +20,10 @@ namespace Minio
         public string SecretKey { get; private set; }
         public string Endpoint { get; private set; }
         public string BaseUrl { get; private set; }
-        public bool Secure { get; private set; }
-        private bool Anonymous { get;}
-        private Uri uri;
+        public bool Secure { get; private set; } 
+        internal bool Anonymous { get; }
+        public Uri uri;
+
         private RestClient client;
         private V4Authenticator authenticator;
 
@@ -154,10 +155,11 @@ namespace Minio
             
             this.Secure = false;
             this.BaseUrl = endpoint;
+            this.Anonymous = utils.isAnonymousClient(accessKey, secretKey);
             _constructUri();
             client = new RestSharp.RestClient(this.uri);
             client.UserAgent = this.FullUserAgent;
-           
+            
             authenticator = new V4Authenticator(accessKey, secretKey);
             client.Authenticator = authenticator;
             if (accessKey == "" || secretKey == "")
@@ -168,6 +170,7 @@ namespace Minio
             {
                 this.Anonymous = false;
             }
+
             this.Buckets = new BucketOperations(this);
             this.Objects = new ObjectOperations(this);
             return;

@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Threading.Tasks;
-using Minio.DataModel;
 using RestSharp;
-using System.IO;
+
+using System.Threading.Tasks;
 using System.Linq;
+
+using System.Reactive.Linq;
+using Minio.DataModel;
+using System.IO;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Minio.Exceptions;
-using System.Text.RegularExpressions;
 using System.Globalization;
 using Minio.Helper;
 
@@ -28,6 +30,7 @@ namespace Minio
         private const string RegistryAuthHeaderKey = "X-Registry-Auth";
 
         private readonly MinioRestClient _client;
+        
 
         internal ObjectOperations(MinioRestClient client)
         {
@@ -49,30 +52,6 @@ namespace Minio
             return;
         }
 
-        public async Task GetObjectAsync(string bucketName, string objectName, string filePath, string contentType)
-        {
-           if (!filePath.StartsWith("/")) filePath = "/" + filePath;
-           var request = new RestRequest(Method.GET);
-          // request.Resource = "{version}/files/{root}{path}";
-          // request.AddParameter("version", _version, ParameterType.UrlSegment);
-          // request.AddParameter("path", path, ParameterType.UrlSegment);
-          // request.AddParameter("root", root, ParameterType.UrlSegment);
-          //TBD
-           //try
-           // {
-           //     utils.validateBucketName(bucketName);
-           //     utils.validateObjectName(objectName);
-           // }
-            
-
-
-            //var request = _requestHelper.CreateGetFileRequest(path, Root);
-
-            //ExecuteAsync(ApiType.Content, request, success, failure);
-        }
-
-
-
         public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType)
         {
             utils.validateBucketName(bucketName);
@@ -81,69 +60,90 @@ namespace Minio
             {
                 throw new ArgumentNullException("Invalid input stream,cannot be null");
             }
-            var bytesRead = ReadFull(data, (int)size);
-
-            if ((bytesRead.Length >= Constants.MaximumStreamObjectSize) || 
-                    (size >= Constants.MaximumStreamObjectSize))
-            {
-                throw new ArgumentException("Input size is bigger than stipulated maximum of 50GB.");
-            }
+           
+            //for sizes less than 5Mb , put a single object
             if (size < Constants.MinimumPartSize && size >= 0)
             {
-                if (bytesRead.Length != (int)size)
+                var bytes = ReadFull(data, (int)size);
+                if (bytes.Length != (int)size)
                 {
-                    throw new UnexpectedShortReadException("Data read " + bytesRead.Length + " is shorter than the size " + size + " of input buffer.");
+                    throw new UnexpectedShortReadException("Data read " + bytes.Length + " is shorter than the size " + size + " of input buffer.");
                 }
-                await PutObjectByPartAsync(bucketName, objectName, null, 0, bytesRead, contentType);
+                await this.PutObjectAsync(bucketName, objectName, null, 0, bytes, contentType);
                 return;
             }
-            //TODO: skipping amazon s3 anonymous calls and google storage api overrides for now 
-            int nextPartNumberMarker = 0;
-            bool isRunning = true;
-            while (isRunning)
+            // For all sizes greater than 5MiB do multipart.
+      
+            dynamic multiPartInfo = CalculateMultiPartSize(size);
+            double partSize = multiPartInfo.partSize;
+            double partCount = multiPartInfo.partCount;
+            double lastPartSize = multiPartInfo.lastPartSize;
+            Part[] totalParts = new Part[(int)partCount];
+            Part part = null;
+            Part[] existingParts = null;
+
+            string uploadId = await this.getLatestIncompleteUploadIdAsync(bucketName, objectName);
+
+            if (uploadId == null)
             {
-                var uploads = GetListParts(bucketName, objectName, uploadId, nextPartNumberMarker);
-                foreach (Part part in uploads.Item2)
-                {
-                    yield return part;
-                }
-                nextPartNumberMarker = uploads.Item1.NextPartNumberMarker;
-                isRunning = uploads.Item1.IsTruncated;
+                uploadId = await this.NewMultipartUploadAsync(bucketName, objectName, contentType);
             }
-            ///rest
-        }
-        private async Task<string> PutObjectByPartAsync(string bucketName, string objectName, string uploadId, int partNumber, byte[] data, string contentType)
-        {
-            var path = bucketName + "/" + utils.UrlEncode(objectName);
-            if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
+            else
             {
-                path += "?uploadId=" + uploadId + "&partNumber=" + partNumber;
-            }
-            var request = new RestRequest(path, Method.PUT);
-            if (string.IsNullOrWhiteSpace(contentType))
-            {
-                contentType = "application/octet-stream";
+                existingParts = await this.ListParts(bucketName, objectName,uploadId).ToArray();
             }
 
-            request.AddHeader("Content-Type", contentType);
-            request.AddParameter(contentType, data, RestSharp.ParameterType.RequestBody);
-            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers,request);
-            if (response.StatusCode!= (HttpStatusCode.OK))
+            double expectedReadSize = partSize;
+            int partNumber;
+            bool skipUpload = false;
+            for (partNumber = 1; partNumber <= partCount; partNumber++)
             {
-                this._client.ParseError(response);
-            }
-            string etag = null;
-            foreach (Parameter parameter in response.Headers)
-            {
-                if (parameter.Name == "ETag")
-                {
-                    etag = parameter.Value.ToString();
-                }
-            }
-            return etag;
-        }
+                byte[] dataToCopy = ReadFull(data, (int)partSize);
 
-        private async Task CompleteMultipartUpload(string bucketName, string objectName, string uploadId, Dictionary<int, string> etags)
+                if (partNumber == partCount)
+                {
+                    expectedReadSize = lastPartSize;
+                }
+                if (existingParts != null && partNumber <= existingParts.Length)
+                {
+                    part = existingParts[partNumber - 1];
+                    if (part != null && partNumber == part.PartNumber && expectedReadSize == part.partSize())
+                    {
+                        System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create();
+                        byte[] hash = md5.ComputeHash(dataToCopy);
+                        string etag = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
+                        if (etag.Equals(part.ETag))
+                        {
+                            totalParts[partNumber - 1] = new Part() { PartNumber = part.PartNumber, ETag = part.ETag, size = part.partSize() };
+                            skipUpload = true;
+                          
+                        }
+
+                    }
+                } else
+                {
+                    skipUpload = false;
+                }
+        
+                if (!skipUpload)
+                {
+                    string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, contentType);
+                    totalParts[partNumber - 1] = new Part() { PartNumber = partNumber, ETag = etag, size = (long)expectedReadSize };
+                }
+
+            }
+           
+           
+            Dictionary<int, string> etags = new Dictionary<int, string>();
+            for (partNumber = 1; partNumber <= partCount; partNumber++)
+            {
+                etags[partNumber] = totalParts[partNumber-1].ETag;
+            }
+            await this.CompleteMultipartUploadAsync(bucketName, objectName, uploadId, etags);
+
+        }      
+
+        private async Task CompleteMultipartUploadAsync(string bucketName, string objectName, string uploadId, Dictionary<int, string> etags)
         {
             var path = bucketName + "/" + utils.UrlEncode(objectName) + "?uploadId=" + uploadId;
             var request = new RestRequest(path, Method.POST);
@@ -165,49 +165,58 @@ namespace Minio
 
             request.AddParameter("application/xml", body, RestSharp.ParameterType.RequestBody);
 
-            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
+            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers,request);
             if (response.StatusCode.Equals(HttpStatusCode.OK))
             {
                 return;
             }
             this._client.ParseError(response);
         }
-
-        private long CalculatePartSize(long size)
+        
+        private Object CalculateMultiPartSize(long size)
         {
             // make sure to have enough buffer for last part, use 9999 instead of 10000
-            long partSize = (size / 9999);
-            if (partSize > Constants.MinimumPartSize)
+            if (size == -1)
             {
-                if (partSize > Constants.MaximumPartSize)
-                {
-                    return Constants.MaximumPartSize;
-                }
-                return partSize;
+                size = Constants.MaximumStreamObjectSize;
             }
-            return Constants.MinimumPartSize;
+            if (size > Constants.MaxMultipartPutObjectSize)
+            {
+                throw new EntityTooLargeException("Your proposed upload size " + size + " exceeds the maximum allowed object size " + Constants.MaxMultipartPutObjectSize);
+            }
+            double partSize = (double) Math.Ceiling((decimal)size / Constants.MaxParts);
+            partSize = (double)Math.Ceiling((decimal)partSize / Constants.MinimumPartSize) * Constants.MinimumPartSize;
+            double partCount = (double)Math.Ceiling(size / partSize);
+            double lastPartSize = size - (partCount - 1) * partSize;
+            return new
+            {
+                partSize = partSize,
+                partCount =partCount ,
+                lastPartSize = lastPartSize
+            };
         }
 
-        private <IEnumerable<Part>> ListPartsAsync(string bucketName, string objectName, string uploadId)
+        private IObservable<Part> ListParts(string bucketName, string objectName, string uploadId)
         {
-            int nextPartNumberMarker = 0;
-            bool isRunning = true;
-            while (isRunning)
-            {
-                var uploads = await GetListPartsAsync(bucketName, objectName, uploadId, nextPartNumberMarker);
 
-                foreach (Part part in uploads.Item2)
-                {
-                    yield return part;
-                }
-
-
-                nextPartNumberMarker = uploads.Item1.NextPartNumberMarker;
-                isRunning = uploads.Item1.IsTruncated;
-            }
+            return Observable.Create<Part>(
+              async obs =>
+              {
+                  int nextPartNumberMarker = 0;
+                  bool isRunning = true;
+                  while (isRunning)
+                  {
+                      var uploads = await this.GetListPartsAsync(bucketName, objectName, uploadId, nextPartNumberMarker);
+                      foreach (Part part in uploads.Item2)
+                      {
+                          obs.OnNext(part);
+                      }
+                      nextPartNumberMarker = uploads.Item1.NextPartNumberMarker;
+                      isRunning = uploads.Item1.IsTruncated;
+                  }
+              });
+            
         }
-
-       
 
         private async Task<Tuple<ListPartsResult, List<Part>>> GetListPartsAsync(string bucketName, string objectName, string uploadId, int partNumberMarker)
         {
@@ -218,7 +227,9 @@ namespace Minio
             }
             path += "&max-parts=1000";
             var request = new RestRequest(path, Method.GET);
-            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
+            Console.Out.WriteLine(request.Resource);
+
+            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers,request);
             if (!response.StatusCode.Equals(HttpStatusCode.OK))
             {
                 this._client.ParseError(response);
@@ -228,18 +239,19 @@ namespace Minio
             ListPartsResult listPartsResult = (ListPartsResult)(new XmlSerializer(typeof(ListPartsResult)).Deserialize(stream));
 
             XDocument root = XDocument.Parse(response.Content);
-
-            var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Part")
+     
+          var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Part")
                             select new Part()
                             {
                                 PartNumber = int.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}PartNumber").Value, CultureInfo.CurrentCulture),
-                                ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value.Replace("\"", "")
+                                ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value.Replace("\"", ""), 
+                                size = long.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture)
                             });
-
+                           
             return new Tuple<ListPartsResult, List<Part>>(listPartsResult, uploads.ToList());
-            
-            
+             
         }
+        
 
         private async Task<string> NewMultipartUploadAsync(string bucketName, string objectName, string contentType)
         {
@@ -259,9 +271,166 @@ namespace Minio
             var stream = new MemoryStream(contentBytes);
             InitiateMultipartUploadResult newUpload = (InitiateMultipartUploadResult)(new XmlSerializer(typeof(InitiateMultipartUploadResult)).Deserialize(stream));
             return newUpload.UploadId;
+        }
+        
+        private async Task<string> PutObjectAsync(string bucketName, string objectName, string uploadId, int partNumber, byte[] data, string contentType)
+        {
+            var path = bucketName + "/" + utils.UrlEncode(objectName);
+            if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
+            {
+                path += "?uploadId=" + uploadId + "&partNumber=" + partNumber;
+            }
+            var request = new RestRequest(path, Method.PUT);
+            if (string.IsNullOrWhiteSpace(contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+
+            request.AddHeader("Content-Type", contentType);
+            request.AddParameter(contentType, data, RestSharp.ParameterType.RequestBody);
+            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers,request);
+            if (!response.StatusCode.Equals(HttpStatusCode.OK))
+            {
+                this._client.ParseError(response);
+            }
+            string etag = null;
+            foreach (Parameter parameter in response.Headers)
+            {
+                if (parameter.Name == "ETag")
+                {
+                    etag = parameter.Value.ToString();
+                }
+            }
+            return etag;
             
            
         }
+        
+        private async Task<Tuple<ListMultipartUploadsResult, List<Upload>>> GetMultipartUploadsListAsync(string bucketName,
+                                                                                     string prefix,
+                                                                                     string keyMarker,
+                                                                                     string uploadIdMarker,
+                                                                                     string delimiter)
+        {
+            var queries = new List<string>();
+            queries.Add("uploads");
+            if (prefix != null)
+            {
+                queries.Add("prefix=" + Uri.EscapeDataString(prefix));
+            }
+            if (keyMarker != null)
+            {
+                queries.Add("key-marker=" + Uri.EscapeDataString(keyMarker));
+            }
+            if (uploadIdMarker != null)
+            {
+                queries.Add("upload-id-marker=" + uploadIdMarker);
+            }
+            if (delimiter != null)
+            {
+                queries.Add("delimiter=" + delimiter);
+            }
+
+            queries.Add("max-uploads=1000");
+
+            string query = string.Join("&", queries);
+            string path = bucketName;
+            path += "?" + query;
+
+            var request = new RestRequest(path, Method.GET);
+            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers,request);
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                this._client.ParseError(response);
+            }
+            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+            var stream = new MemoryStream(contentBytes);
+            ListMultipartUploadsResult listBucketResult = (ListMultipartUploadsResult)(new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(stream));
+
+            XDocument root = XDocument.Parse(response.Content);
+
+            var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
+                            select new Upload()
+                            {
+                                Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
+                                UploadId = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}UploadId").Value,
+                                Initiated = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Initiated").Value
+                            });
+
+            return new Tuple<ListMultipartUploadsResult, List<Upload>>(listBucketResult, uploads.ToList());
+            
+        }
+
+        /// <summary>
+        /// Lists all incomplete uploads in a given bucket and prefix recursively
+        /// </summary>
+        /// <param name="bucketName">Bucket to list all incomplepte uploads from</param>
+        /// <param name="prefix">prefix to list all incomplepte uploads</param>
+        /// <param name="recursive">option to list incomplete uploads recursively</param>
+        /// <returns>A lazily populated list of incomplete uploads</returns>
+        public  IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix="", bool recursive=true)
+        {
+            if (recursive)
+            {
+                return this.listIncompleteUploads(bucketName, prefix, null);
+            }
+            return this.listIncompleteUploads(bucketName, prefix, "/");
+        }
+
+    
+        /// <summary>
+        /// Lists all or delimited incomplete uploads in a given bucket with a given objectName
+        /// </summary>
+        /// <param name="bucketName">Bucket to list incomplete uploads from</param>
+        /// <param name="objectName">Key of object to list incomplete uploads from</param>
+        /// <param name="delimiter">delimiter of object to list incomplete uploads</param>
+        /// <returns></returns>
+        private IObservable<Upload> listIncompleteUploads(string bucketName, string prefix, string delimiter)
+        {
+            return Observable.Create<Upload>(
+              async obs =>
+              {
+                  string nextKeyMarker = null;
+                  string nextUploadIdMarker = null;
+                  bool isRunning = true;
+
+                  while (isRunning)
+                  {
+                      var uploads = await this.GetMultipartUploadsListAsync(bucketName, prefix, nextKeyMarker, nextUploadIdMarker, delimiter);
+                      foreach (Upload upload in uploads.Item2)
+                      {
+                          obs.OnNext(upload);
+                      }
+                      nextKeyMarker = uploads.Item1.NextKeyMarker;
+                      nextUploadIdMarker = uploads.Item1.NextUploadIdMarker;
+                      isRunning = uploads.Item1.IsTruncated;
+                  }
+              });
+          
+        }
+        private async Task<string> getLatestIncompleteUploadIdAsync(string bucketName, string objectName)
+        {
+            Upload latestUpload = null;
+            var uploads  = await this.ListIncompleteUploads(bucketName, objectName).ToArray();
+            foreach (Upload upload in uploads)
+            {
+                if (objectName == upload.Key && (latestUpload == null || latestUpload.Initiated.CompareTo(upload.Initiated) < 0))
+                {
+                    latestUpload = upload;
+
+                }
+            }
+            if (latestUpload != null)
+            {
+                return latestUpload.UploadId;
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+
         public async Task RemoveObjectAsync(string bucketName, string objectName)
         {
             var request = new RestRequest(bucketName + "/" + utils.UrlEncode(objectName), Method.DELETE);
