@@ -13,7 +13,7 @@ namespace Minio
     {
         // We support '.' with bucket names but we fallback to using path
         // style requests instead for such buckets.
-        static Regex validBucketName = new Regex("^[a - z0 - 9][a - z0 - 9/./-]{1, 61}[a-z0-9]$");
+        static Regex validBucketName = new Regex("^[a-z0-9][a-z0-9\\.\\-]{1,61}[a-z0-9]$");
      
         // Invalid bucket name with double dot.
         static Regex invalidDotBucketName = new Regex("`/./.");
@@ -31,7 +31,7 @@ namespace Minio
            {
                 throw new InvalidBucketNameException(bucketName,"Bucket name cannot be smaller than 3 characters.");
            }
-           if (bucketName.Length < 3)
+           if (bucketName.Length > 63)
            {
                throw new InvalidBucketNameException(bucketName,"Bucket name cannot be greater than 63 characters.");
            }
@@ -80,6 +80,11 @@ namespace Minio
         internal static string UrlEncode(string input)
         {
             return Uri.EscapeDataString(input).Replace("%2F", "/");
+        }
+
+        internal static bool isAnonymousClient(string accessKey, string secretKey)
+        {
+            return (secretKey == "" || accessKey == "");
         }
     }
 }

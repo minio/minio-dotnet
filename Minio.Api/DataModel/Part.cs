@@ -23,7 +23,19 @@ namespace Minio.DataModel
     {
         private string etag;
         public int PartNumber { get; set; }
-
+        public long size { get; set; }
+        public DateTime lastModified { get; set; } 
+        //public Part(int partNumber, string etag,long size)
+        //{
+        //    this.etag = etag;
+        //    this.PartNumber = partNumber;
+        //    this.size = size;
+        //}
+        //public Part(int partNumber, string etag)
+        //{
+        //    this.etag = etag;
+        //    this.PartNumber = partNumber;
+        //}
         public string ETag
         {
             get
@@ -42,5 +54,10 @@ namespace Minio.DataModel
                 }
             }
         }
+        public long partSize()
+        {
+            return size;
+        }
+        
     }
 }
