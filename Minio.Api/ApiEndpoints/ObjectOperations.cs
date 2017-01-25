@@ -445,6 +445,33 @@ namespace Minio
 
         }
         /// <summary>
+        /// Remove incomplete uploads from a given bucket and objectName
+        /// </summary>
+        /// <param name="bucketName">Bucket to remove incomplete uploads from</param>
+        /// <param name="objectName">Key to remove incomplete uploads from</param>
+        public async Task RemoveIncompleteUploadAsync(string bucketName, string objectName)
+        {
+            var uploads = await this.ListIncompleteUploads(bucketName, objectName).ToArray();
+            foreach (Upload upload in uploads)
+            {
+                if (objectName == upload.Key)
+                {
+                   await this.RemoveUploadAsync(bucketName, objectName, upload.UploadId);
+                }
+            }
+        }
+        private async Task RemoveUploadAsync(string bucketName, string objectName, string uploadId)
+        {
+            var path = bucketName + "/" + utils.UrlEncode(objectName) + "?uploadId=" + uploadId;
+            var request = new RestRequest(path, Method.DELETE);
+            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers,request);
+
+            if (response.StatusCode != HttpStatusCode.NoContent)
+            {
+                this._client.ParseError(response);
+            }
+        }
+        /// <summary>
         /// Removes an object with given name in specific bucket
         /// </summary>
         /// <param name="bucketName">Bucket to list incomplete uploads from</param>
@@ -462,10 +489,11 @@ namespace Minio
             }
         }
         /// <summary>
-        /// Gets stats on a specific object in a bucket
-        /// <param name="bucketName">Bucket to list incomplete uploads from</param>
-        /// <param name="objectName">Key of object to list incomplete uploads from</param>
-        /// <returns>Status object </returns>
+        /// Tests the object's existence and returns metadata about existing objects.
+        /// </summary>
+        /// <param name="bucketName">Bucket to test object in</param>
+        /// <param name="objectName">Name of the object to stat</param>
+        /// <returns>Facts about the object</returns>
         public async Task<ObjectStat> StatObjectAsync(string bucketName, string objectName)
         {
             var request = new RestRequest(bucketName + "/" + utils.UrlEncode(objectName), Method.HEAD);

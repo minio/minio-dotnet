@@ -128,8 +128,14 @@ Click on FileUploader project and Start
 * [GetObject.cs] (./Minio.Examples/Cases/GetObject.cs)
 * [PutObject.cs] (./Minio.Examples/Cases/PutObject.cs)
 * [StatObject.cs](./Minio.Examples/Cases/StatObject.cs)
+* [RemoveObject.cs](./Minio.Examples/Cases/RemoveObject.cs)
+* [RemoveIncompleteUpload.cs](./Minio.Examples/Cases/RemoveIncompleteUpload.cs)
+
+
 #### Full Examples : Presigned Operations
 
+#### Full Examples : Client Custom Settings
+* [SetAppInfo] (./Minio.Examples/Program.cs)
 ### How to run these examples?
 ### On Windows
 

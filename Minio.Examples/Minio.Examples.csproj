@@ -62,6 +62,7 @@
     <Compile Include="Cases\MakeBucket.cs" />
     <Compile Include="Cases\PutObject.cs" />
     <Compile Include="Cases\RemoveBucket.cs" />
+    <Compile Include="Cases\RemoveIncompleteUpload.cs" />
     <Compile Include="Cases\RemoveObject.cs" />
     <Compile Include="Cases\StatObject.cs" />
     <Compile Include="Program.cs" />

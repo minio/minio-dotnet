@@ -15,6 +15,7 @@ namespace Minio
         Task RemoveObjectAsync(string bucketName, string objectName);
         Task<ObjectStat> StatObjectAsync(string bucketName, string objectName);
         IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix, bool recursive);
+        Task RemoveIncompleteUploadAsync(string bucketName, string objectName);
 
         /*
          * To be implemented
@@ -26,7 +27,6 @@ namespace Minio
         //accepts file instead of stream
         Task CopyObjectAsync(string bucketName, string objectName, string objectSource, CopyConditions conditions);
         //task RemoveObjects(string bucketName, Stream objectsList );
-        Task RemoveIncompleteUpload(string bucketName, string objectName);
         */
     }
 }
