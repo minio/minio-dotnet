@@ -14,16 +14,26 @@ namespace Minio.Examples.Cases
         {
             try
             {
+                //TODO uncomment later
                 //test1- simple upload 
-               // byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");
+                // byte[] data = System.Text.Encoding.UTF8.GetBytes("hello world");
+                //await minio.Objects.PutObjectAsync("bucket-name", "object-name", data, data.Length, "application/octet-stream");
 
                 //await minio.Objects.PutObjectAsync("asiatrip", "hellotext", new MemoryStream(data), 11, "application/octet-stream");
                 //test2 - multipart upload
-               // String fileName = "C:\\Users\\vagrant\\Downloads\\go1.7.4.windows-amd64.msi";
+                //String fileName = "path-to-a-file-larger-than-5mb-less-than-5gb";
+                //byte[] bs = File.ReadAllBytes(fileName);
+                //System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
+                //await minio.Objects.PutObjectAsync("bucket-name", "object-name", filestream, filestream.Length, "application/octet-stream");
+                //TODO end uncomment
+
+                //TODO comment out for release
+                // String fileName = "C:\\Users\\vagrant\\Downloads\\go1.7.4.windows-amd64.msi";
                 String fileName = "C:\\Users\\vagrant\\Downloads\\multipart-2parts";
                 byte[] bs = File.ReadAllBytes(fileName);
                 System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
                 await minio.Objects.PutObjectAsync("mountshasta", "full-upload-multi", filestream, filestream.Length, "application/octet-stream");
+                //TODO end comment out for release
                 Console.Out.WriteLine("done uploading");
             }
             catch (Exception e)
