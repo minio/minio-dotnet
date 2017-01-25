@@ -36,6 +36,12 @@ namespace Minio
         {
             this._client = client;
         }
+        /// <summary>
+        /// Get an object. The object will be streamed to the callback given by the user.
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Name of object to retrieve</param>
+        /// <param name="callback">A stream will be passed to the callback</param>
         public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb)
         {
 
@@ -51,7 +57,14 @@ namespace Minio
          
             return;
         }
-
+        /// <summary>
+        /// Creates an object
+        /// </summary>
+        /// <param name="bucketName">Bucket to create object in</param>
+        /// <param name="objectName">Key of the new object</param>
+        /// <param name="size">Total size of bytes to be written, must match with data's length</param>
+        /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
+        /// <param name="data">Stream of bytes to send</param>
         public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType)
         {
             utils.validateBucketName(bucketName);
@@ -172,7 +185,7 @@ namespace Minio
             }
             this._client.ParseError(response);
         }
-        
+        // Calculate part size and number of parts required
         private Object CalculateMultiPartSize(long size)
         {
             // make sure to have enough buffer for last part, use 9999 instead of 10000
@@ -195,7 +208,7 @@ namespace Minio
                 lastPartSize = lastPartSize
             };
         }
-
+        //Returns an async observable of parts corresponding to a uploadId for a specific bucket and objectName   
         private IObservable<Part> ListParts(string bucketName, string objectName, string uploadId)
         {
 
@@ -252,7 +265,7 @@ namespace Minio
              
         }
         
-
+        //starts a multi-part upload request
         private async Task<string> NewMultipartUploadAsync(string bucketName, string objectName, string contentType)
         {
             var path = bucketName + "/" + utils.UrlEncode(objectName) + "?uploads";
@@ -272,7 +285,7 @@ namespace Minio
             InitiateMultipartUploadResult newUpload = (InitiateMultipartUploadResult)(new XmlSerializer(typeof(InitiateMultipartUploadResult)).Deserialize(stream));
             return newUpload.UploadId;
         }
-        
+        //Actual doer
         private async Task<string> PutObjectAsync(string bucketName, string objectName, string uploadId, int partNumber, byte[] data, string contentType)
         {
             var path = bucketName + "/" + utils.UrlEncode(objectName);
@@ -408,6 +421,7 @@ namespace Minio
               });
           
         }
+        // find uploadId of most recent unsuccessful attempt to put object
         private async Task<string> getLatestIncompleteUploadIdAsync(string bucketName, string objectName)
         {
             Upload latestUpload = null;
@@ -430,7 +444,12 @@ namespace Minio
             }
 
         }
-
+        /// <summary>
+        /// Removes an object with given name in specific bucket
+        /// </summary>
+        /// <param name="bucketName">Bucket to list incomplete uploads from</param>
+        /// <param name="objectName">Key of object to list incomplete uploads from</param>
+        /// <returns></returns>
         public async Task RemoveObjectAsync(string bucketName, string objectName)
         {
             var request = new RestRequest(bucketName + "/" + utils.UrlEncode(objectName), Method.DELETE);
@@ -442,7 +461,11 @@ namespace Minio
                 this._client.ParseError(response);
             }
         }
-
+        /// <summary>
+        /// Gets stats on a specific object in a bucket
+        /// <param name="bucketName">Bucket to list incomplete uploads from</param>
+        /// <param name="objectName">Key of object to list incomplete uploads from</param>
+        /// <returns>Status object </returns>
         public async Task<ObjectStat> StatObjectAsync(string bucketName, string objectName)
         {
             var request = new RestRequest(bucketName + "/" + utils.UrlEncode(objectName), Method.HEAD);
