@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Minio.ApiEndpoints
+namespace Minio
 {
     class CustomClientSettings
     {
+
     }
 }

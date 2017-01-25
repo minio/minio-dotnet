@@ -31,17 +31,19 @@ namespace Minio.Examples
             var minioClient = new MinioRestClient(endPoint,
                                     accessKey: accessKey, 
                                     secretKey: secretKey).WithSSL();
-                                    
-            Cases.MakeBucket.Run(minioClient).Wait();
-            Cases.ListBuckets.Run(minioClient).Wait();
+            //Set app Info 
+            minioClient.SetAppInfo("app-name", "app-version");
 
-             Cases.BucketExists.Run(minioClient).Wait();
-             Cases.RemoveBucket.Run(minioClient).Wait();
-            Cases.GetObject.Run(minioClient).Wait();
-            Cases.StatObject.Run(minioClient).Wait();
-            Cases.PutObject.Run(minioClient).Wait();
-            Cases.ListIncompleteUploads.Run(minioClient);
+            // Cases.MakeBucket.Run(minioClient).Wait();
+            // Cases.ListBuckets.Run(minioClient).Wait();
 
+            // Cases.BucketExists.Run(minioClient).Wait();
+            // Cases.RemoveBucket.Run(minioClient).Wait();
+            //Cases.GetObject.Run(minioClient).Wait();
+            //Cases.StatObject.Run(minioClient).Wait();
+            //Cases.PutObject.Run(minioClient).Wait();
+            //Cases.ListIncompleteUploads.Run(minioClient);
+            Cases.RemoveIncompleteUpload.Run(minioClient).Wait();
             Console.ReadLine();
          
         }

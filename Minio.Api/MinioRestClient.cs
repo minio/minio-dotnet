@@ -49,7 +49,7 @@ namespace Minio
                 return String.Format("Minio ({0};{1}) {2}", System.Environment.OSVersion.ToString(), arch, release);
             }
         }
-        private static string CustomUserAgent = "";
+        private string CustomUserAgent = "";
         private string FullUserAgent
         {
             get
@@ -136,6 +136,12 @@ namespace Minio
 
             return true;
         }
+        /// <summary>
+        ///Sets app version and name
+        /// </summary>
+        /// <param name="appName"></param>
+        /// <param name="appVersion"></param>
+        /// <returns></returns>
         public void SetAppInfo(string appName, string appVersion)
         {
             if (string.IsNullOrEmpty(appName))
@@ -230,23 +236,7 @@ namespace Minio
             
             this.client.ExecuteAsync(request, callback);
         }
-        /// <summary>
-        /// old - remove
-        /// </summary>
-        /// <param name="bucketName"></param>
-        /// <returns></returns>
-        public bool BucketExists(string bucketName)
-        {
-            var request = new RestRequest(bucketName, Method.HEAD);
-            var response = client.Execute(request);
-
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                ParseError(response);
-            }
-            return true;
-            
-        }
+      
         internal void ParseError(IRestResponse response)
         {
             if (response == null)
@@ -340,7 +330,9 @@ namespace Minio
             _defaultErrorHandlingDelegate(response);
         }
 
+  
     }
+
     internal delegate void ApiResponseErrorHandlingDelegate(IRestResponse response);
 
 }
