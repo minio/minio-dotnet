@@ -14,7 +14,11 @@ namespace Minio
         Task<bool> BucketExistsAsync(string bucketName);
 
         Task RemoveBucketAsync(string bucketName);
-        IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true);
+       // IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true);
 
+        Task<PolicyType> GetPolicyAsync(String bucketName, String objectPrefix);
+
+        Task SetPolicyAsync(String bucketName, String objectPrefix, PolicyType policyType);
+        
     }
 }

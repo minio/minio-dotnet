@@ -25,6 +25,9 @@ namespace Minio
         //accepts file instead of stream
 
 
+         Task GetObjectAsync(string bucketName, string objectName, string filePath, string contentType);
+         Task<IEnumerable<Item>> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true);
+
         //accepts file instead of stream
         Task CopyObjectAsync(string bucketName, string objectName, string objectSource, CopyConditions conditions);
         //task RemoveObjects(string bucketName, Stream objectsList );

@@ -24,10 +24,10 @@ namespace Minio.Examples
                                      | SecurityProtocolType.Tls12;
             
             var endPoint = Environment.GetEnvironmentVariable("AWS_ENDPOINT");
-            var accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY");
-            var secretKey = Environment.GetEnvironmentVariable("AWS_SECRET_KEY");
-         
+            var accessKey = Environment.GetEnvironmentVariable("MY_AWS_ACCESS_KEY");
+            var secretKey = Environment.GetEnvironmentVariable("MY_AWS_SECRET_KEY");
 
+            endPoint = "s3-us-west-1.amazonaws.com";
             var minioClient = new MinioRestClient(endPoint,
                                     accessKey: accessKey, 
                                     secretKey: secretKey).WithSSL();
@@ -38,7 +38,6 @@ namespace Minio.Examples
 
                 Cases.MakeBucket.Run(minioClient).Wait();
                 Cases.ListBuckets.Run(minioClient).Wait();
-
                 Cases.BucketExists.Run(minioClient).Wait();
                 Cases.RemoveBucket.Run(minioClient).Wait();
                 Cases.GetObject.Run(minioClient).Wait();
@@ -57,7 +56,7 @@ namespace Minio.Examples
                 Console.Out.WriteLine(ex.Message);
             }
            
-         
+       
         }
 
     }

@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C126F2B3-50B0-448F-AB16-9CF80079D6AF}</ProjectGuid>
+    <ProjectGuid>{7ACCDECD-7269-4FF1-8DFC-B5E4CAEB9637}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Minio.Examples</RootNamespace>
-    <AssemblyName>Minio.Examples</AssemblyName>
+    <RootNamespace>testpolicy</RootNamespace>
+    <AssemblyName>testpolicy</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -33,24 +33,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AutoMapper, Version=5.2.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
-      <HintPath>..\packages\AutoMapper.5.2.0\lib\net45\AutoMapper.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.2-beta2\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Reactive.Core, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.Core.3.1.1\lib\net45\System.Reactive.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Interfaces, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.Interfaces.3.1.1\lib\net45\System.Reactive.Interfaces.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Linq, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.Linq.3.1.1\lib\net45\System.Reactive.Linq.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -59,22 +47,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cases\BucketExists.cs" />
-    <Compile Include="Cases\CopyObject.cs" />
-    <Compile Include="Cases\FGetObject.cs" />
-    <Compile Include="Cases\FPutObject.cs" />
-    <Compile Include="Cases\GetBucketPolicy.cs" />
-    <Compile Include="Cases\GetObject.cs" />
-    <Compile Include="Cases\ListBuckets.cs" />
-    <Compile Include="Cases\ListIncompleteUploads.cs" />
-    <Compile Include="Cases\ListObjects.cs" />
-    <Compile Include="Cases\MakeBucket.cs" />
-    <Compile Include="Cases\PutObject.cs" />
-    <Compile Include="Cases\RemoveBucket.cs" />
-    <Compile Include="Cases\RemoveIncompleteUpload.cs" />
-    <Compile Include="Cases\RemoveObject.cs" />
-    <Compile Include="Cases\SetBucketPolicy.cs" />
-    <Compile Include="Cases\StatObject.cs" />
+    <Compile Include="MyPolicy\BucketPolicy.cs" />
+    <Compile Include="MyPolicy\BucketPolicyConverter.cs" />
+    <Compile Include="MyPolicy\ConditionKeyMap.cs" />
+    <Compile Include="MyPolicy\ConditionMap.cs" />
+    <Compile Include="MyPolicy\Principal.cs" />
+    <Compile Include="MyPolicy\Resource.cs" />
+    <Compile Include="MyPolicy\Statement.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

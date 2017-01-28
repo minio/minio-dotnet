@@ -80,7 +80,7 @@ namespace Minio
             this._validateUri();
           
         }
-       
+      
         private void _validateUri()
         {
             if (!this.isValidEndpoint(this.uri.Host))
@@ -102,11 +102,12 @@ namespace Minio
                 throw new InvalidEndpointException(this.Endpoint, "Invalid scheme detected in endpoint.");
             }
             string amzHost = this.uri.Host;
-            if ((amzHost.EndsWith(".amazonaws.com", StringComparison.CurrentCultureIgnoreCase))
+           /* if ((amzHost.EndsWith(".amazonaws.com", StringComparison.CurrentCultureIgnoreCase))
                 && !(amzHost.Equals("s3.amazonaws.com", StringComparison.CurrentCultureIgnoreCase)))
             {
                 throw new InvalidEndpointException(this.Endpoint, "For Amazon S3, host should be \'s3.amazonaws.com\' in endpoint.");
             }
+            */
         }
         private bool isValidEndpoint(string endpoint)
         {
@@ -199,10 +200,50 @@ namespace Minio
         internal  async Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,IRestRequest request)
         {
             var response = await this.client.ExecuteTaskAsync(request, CancellationToken.None);
+            Console.Out.WriteLine("===> " + response.ResponseUri);
             HandleIfErrorResponse(response, errorHandlers);
             return response;
         }
+<<<<<<< HEAD
        
+=======
+  
+        //old
+        public void ExecuteAsync<T>(IRestRequest request, Action<T> callback) where T : new()
+        {
+            request.OnBeforeDeserialization = (resp) =>
+            {
+                // for individual resources when there's an error to make
+                // sure that RestException props are populated
+                if (((int)resp.StatusCode) >= 400)
+                {
+                    // have to read the bytes so .Content doesn't get populated
+                    var restException = "{{ \"RestException\" : {0} }}";
+                    var content = resp.RawBytes.AsString(); //get the response content
+                    var newJson = string.Format(restException, content);
+
+                    resp.Content = null;
+                    resp.RawBytes = Encoding.UTF8.GetBytes(newJson.ToString());
+                }
+            };
+
+            request.DateFormat = "ddd, dd MMM yyyy HH:mm:ss '+0000'";
+
+            this.client.ExecuteAsync<T>(request, (response) => callback(response.Data));
+        }
+        ///old 
+        /// <summary>
+        /// Execute a manual REST request
+        /// </summary>
+        /// <param name="request">The RestRequest to execute (will use client credentials)</param>
+        /// <param name="callback">The callback function to execute when the async request completes</param>
+        public void ExecuteAsync(IRestRequest request, Action<IRestResponse> callback)
+        {
+            
+            this.client.ExecuteAsync(request, callback);
+        }
+      
+>>>>>>> 30b5244... policy changes
         internal void ParseError(IRestResponse response)
         {
             if (response == null)
