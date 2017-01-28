@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Minio.Endpoints
+namespace testpolicy.MyPolicy
 {
-    class BucketPolicyOperations
+    internal class ConditionMap : Dictionary<string, ConditionKeyMap>
+
     {
     }
 }

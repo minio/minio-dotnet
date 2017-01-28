@@ -21,7 +21,7 @@ namespace Minio
         {
             if (response.StatusCode != HttpStatusCode.OK)
             {
-               throw new BucketNotFoundException();
+                throw new BucketNotFoundException();
             }
         };
 
@@ -33,14 +33,14 @@ namespace Minio
         {
             this._client = client;
         }
-      
-        public async Task<ListAllMyBucketsResult>  ListBucketsAsync()
+
+        public async Task<ListAllMyBucketsResult> ListBucketsAsync()
         {
             var request = new RestRequest("/", Method.GET);
             var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
             if (response.StatusCode != HttpStatusCode.OK)
             {
-               this._client.ParseError(response);
+                this._client.ParseError(response);
             }
             ListAllMyBucketsResult bucketList = new ListAllMyBucketsResult();
             if (HttpStatusCode.OK.Equals(response.StatusCode))
@@ -53,7 +53,7 @@ namespace Minio
             }
 
             return bucketList;
-           
+
         }
         public async Task<bool> MakeBucketAsync(string bucketName, string location = "us-east-1")
         {
@@ -65,7 +65,7 @@ namespace Minio
                 request.AddBody(config);
             }
             var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
-            
+
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 return true;
@@ -77,7 +77,7 @@ namespace Minio
         public async Task<bool> BucketExistsAsync(string bucketName)
         {
             var request = new RestRequest(bucketName, Method.HEAD);
-            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers,request);
+            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
@@ -109,99 +109,96 @@ namespace Minio
                 this._client.ParseError(response);
             }
         }
-        /// <summary>
-        /// List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
-        /// </summary>
-        /// <param name="bucketName">Bucket to list objects from</param>
-        /// <param name="prefix">Filters all objects not beginning with a given prefix</param>
-        /// <param name="recursive">Set to false to emulate a directory</param>
-        /// <returns>A iterator lazily populated with objects</returns>
-        public IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true)
-        {
-            return Observable.Create<Item>(
-              async obs =>
-              {
-                  bool isRunning = true;
-                  string marker = null;
-                  while (isRunning)
-                  {
-                      Tuple<ListBucketResult, List<Item>> result = await GetObjectListAsync(bucketName, prefix, recursive, marker);
-                      Item lastItem = null;
-                      foreach (Item item in result.Item2)
-                      {
-                          lastItem = item;
-                          obs.OnNext(item);
-                      }
-                      if (result.Item1.NextMarker != null)
-                      {
-                          marker = result.Item1.NextMarker;
-                      }
-                      else
-                      {
-                          marker = lastItem.Key;
-                      }
-                      isRunning = result.Item1.IsTruncated;
-                  }
-              });
-        }
-        private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix, bool recursive, string marker)
-        {
-            var queries = new List<string>();
-            if (!recursive)
-            {
-                queries.Add("delimiter=%2F");
-            }
-            if (prefix != null)
-            {
-                queries.Add("prefix=" + Uri.EscapeDataString(prefix));
-            }
-            if (marker != null)
-            {
-                queries.Add("marker=" + Uri.EscapeDataString(marker));
-            }
-            queries.Add("max-keys=1000");
-            string query = string.Join("&", queries);
 
-            string path = bucketName;
-            if (query.Length > 0)
-            {
-                path += "?" + query;
-            }
+        /**
+         * Returns the parsed current bucket access policy.
+         */
+        private async Task<BucketPolicy> GetPolicyAsync(string bucketName)
+        {
+            BucketPolicy policy = null;
+            IRestResponse response = null;
+            var path =bucketName + "?policy";
+
             var request = new RestRequest(path, Method.GET);
-            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
-
+            response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
+            Console.Out.WriteLine(response.ResponseUri);
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 this._client.ParseError(response);
             }
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
-            ListBucketResult listBucketResult = (ListBucketResult)(new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream));
+            policy = BucketPolicy.parseJson(stream, bucketName);
+            if (policy == null)
+            {
+                policy = new BucketPolicy(bucketName);
+            }
 
-            XDocument root = XDocument.Parse(response.Content);
-
-            var items = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
-                         select new Item()
-                         {
-                             Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
-                             LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
-                             ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value,
-                             Size = UInt64.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture),
-                             IsDir = false
-                         });
-
-            var prefixes = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}CommonPrefixes")
-                            select new Item()
-                            {
-                                Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Prefix").Value,
-                                IsDir = true
-                            });
-
-            items = items.Concat(prefixes);
-
-            return new Tuple<ListBucketResult, List<Item>>(listBucketResult, items.ToList());
+            return policy;
         }
-       
+
+        /**
+         * Get bucket policy at given objectPrefix
+         *
+         * @param bucketName   Bucket name.
+         * @param objectPrefix name of the object prefix
+         *
+         * </p><b>Example:</b><br>
+         * <pre>{@code String policy = minioClient.getBucketPolicy("my-bucketname", "my-objectname");
+         * System.out.println(policy); }</pre>
+         */
+        public async Task<PolicyType> GetPolicyAsync(String bucketName, String objectPrefix)
+        {
+            BucketPolicy policy = await GetPolicyAsync(bucketName);
+            return policy.getPolicy(objectPrefix);
+        }
+        /**
+         * Sets the bucket access policy.
+         */
+        private async Task setPolicyAsync(String bucketName, BucketPolicy policy)
+        {
+            var request = new RestRequest(bucketName, Method.PUT);
+            request.AddHeader("Content-Type", "application/json");
+            request.AddQueryParameter("policy", "");
+            String policyJson = policy.getJson();
+            request.AddJsonBody(policyJson);
+            IRestResponse response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
+        }
+
+        /**
+         * Set policy on bucket and object prefix.
+         *
+         * @param bucketName   Bucket name.
+         * @param objectPrefix Name of the object prefix.
+         * @param policyType   Enum of {@link PolicyType}.
+         *
+         * </p><b>Example:</b><br>
+         * <pre>{@code setBucketPolicy("my-bucketname", "my-objectname", BucketPolicy.ReadOnly); }</pre>
+         */
+        public async Task SetPolicyAsync(String bucketName, String objectPrefix, PolicyType policyType)
+        {
+            utils.validateObjectPrefix(objectPrefix);
+            BucketPolicy policy = await GetPolicyAsync(bucketName);
+            if (policyType == PolicyType.NONE && policy.Statements() == null)
+            {
+                // As the request is for removing policy and the bucket
+                // has empty policy statements, just return success.
+                return;
+            }
+
+            policy.setPolicy(policyType, objectPrefix);
+
+            await setPolicyAsync(bucketName, policy);
+        }
     }
 }
+   
+
+
+
+    
+  
+
+   
+
 

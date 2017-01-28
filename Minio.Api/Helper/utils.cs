@@ -73,11 +73,9 @@ namespace Minio
             {
                 throw new InvalidObjectPrefixException(objectPrefix, "Object prefix cannot be greater than 1024 characters.");
             }
-            // if !utf8.ValidString(objectPrefix)
-            //     return ErrInvalidObjectPrefix("Object prefix with non UTF-8 strings are not supported.")
             return;
-    
         }
+
         internal static string UrlEncode(string input)
         {
             return Uri.EscapeDataString(input).Replace("%2F", "/");

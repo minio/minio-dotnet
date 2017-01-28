@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.2-beta2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="RestSharp, Version=105.2.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.2\lib\net452\RestSharp.dll</HintPath>
       <Private>True</Private>
@@ -56,6 +60,7 @@
       <HintPath>..\packages\System.Reactive.Windows.Threading.3.1.1\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -68,7 +73,6 @@
   <ItemGroup>
     <Compile Include="ApiEndpoints\BucketNotificationOperations.cs" />
     <Compile Include="ApiEndpoints\BucketOperations.cs" />
-    <Compile Include="ApiEndpoints\BucketPolicyOperations.cs" />
     <Compile Include="ApiEndpoints\CustomClientSettings.cs" />
     <Compile Include="ApiEndpoints\FileObjectOperationscs.cs" />
     <Compile Include="ApiEndpoints\IBucketOperations.cs" />
@@ -76,6 +80,7 @@
     <Compile Include="ApiEndpoints\ObjectOperations.cs" />
     <Compile Include="ApiEndpoints\PresignedOperations.cs" />
     <Compile Include="DataModel\Bucket.cs" />
+    <Compile Include="DataModel\Policy\BucketPolicy.cs" />
     <Compile Include="DataModel\CopyConditions.cs" />
     <Compile Include="DataModel\CopyObjectResult.cs" />
     <Compile Include="DataModel\CreateBucketConfiguration.cs" />
@@ -89,8 +94,14 @@
     <Compile Include="DataModel\ListMultipartUploadsResult.cs" />
     <Compile Include="DataModel\ListPartsResult.cs" />
     <Compile Include="DataModel\MinioBase.cs" />
-    <Compile Include="DataModel\MinioListBase.cs" />
     <Compile Include="DataModel\Part.cs" />
+    <Compile Include="DataModel\Policy\ConditionMap.cs" />
+    <Compile Include="DataModel\Policy\ConditionKeyMap.cs" />
+    <Compile Include="DataModel\Policy\Constants.cs" />
+    <Compile Include="DataModel\Policy\PolicyType.cs" />
+    <Compile Include="DataModel\Policy\Principal.cs" />
+    <Compile Include="DataModel\Policy\Resources.cs" />
+    <Compile Include="DataModel\Policy\Statement.cs" />
     <Compile Include="DataModel\Prefix.cs" />
     <Compile Include="DataModel\RestExceptioncs.cs" />
     <Compile Include="DataModel\Upload.cs" />
