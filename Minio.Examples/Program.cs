@@ -43,7 +43,8 @@ namespace Minio.Examples
             //Cases.StatObject.Run(minioClient).Wait();
             //Cases.PutObject.Run(minioClient).Wait();
             //Cases.ListIncompleteUploads.Run(minioClient);
-            Cases.RemoveIncompleteUpload.Run(minioClient).Wait();
+            // Cases.RemoveIncompleteUpload.Run(minioClient).Wait();
+            Cases.ListObjects.Run(minioClient).Wait();
             Console.ReadLine();
          
         }

@@ -4,33 +4,32 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Minio.DataModel;
-
 namespace Minio.Examples.Cases
 {
-    class ListBuckets
+    class ListObjects
     {
         public async static Task Run(Minio.MinioRestClient minio)
         {
             try
             {
                 var bucketName = "bucket-name";
-                var bucketObject = "bucket-object";
-
+                var prefix = "object-prefix";
+                var recursive = false;
                 bucketName = "mountshasta";
-                IObservable<Upload> observable = minio.Objects.ListIncompleteUploads(bucketName, bucketObject, true);
+                prefix = "full";
+                IObservable<Item> observable = minio.Buckets.ListObjectsAsync(bucketName, prefix, recursive);
 
                 IDisposable subscription = observable.Subscribe(
                     item => Console.WriteLine("OnNext: {0}", item.Key),
                     ex => Console.WriteLine("OnError: {0}", ex.Message),
                     () => Console.WriteLine("OnComplete: {0}"));
 
+                // subscription.Dispose();
             }
             catch (Exception e)
             {
                 Console.WriteLine("[Bucket]  Exception: {0}", e);
             }
         }
-
-       
     }
 }
