@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Minio.DataModel;
-using RestSharp;
+
 namespace Minio
 {
     public interface IBucketOperations
@@ -15,12 +14,7 @@ namespace Minio
         Task<bool> BucketExistsAsync(string bucketName);
 
         Task RemoveBucketAsync(string bucketName);
-
-        /*        Task<IEnumerable<Item>> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true);
-
-
-
-                Task<IEnumerable<Upload>> ListIncompleteUploadsAsync(string bucketName,string prefix,bool recursive);*/
+        IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true);
 
     }
 }

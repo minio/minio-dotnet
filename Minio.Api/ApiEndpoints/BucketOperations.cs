@@ -11,6 +11,8 @@ using System.Xml.Serialization;
 using Minio.Exceptions;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using System.Reactive.Linq;
+
 namespace Minio
 {
     internal class BucketOperations : IBucketOperations
@@ -107,8 +109,6 @@ namespace Minio
                 this._client.ParseError(response);
             }
         }
-
-        /*
         /// <summary>
         /// List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
         /// </summary>
@@ -116,33 +116,34 @@ namespace Minio
         /// <param name="prefix">Filters all objects not beginning with a given prefix</param>
         /// <param name="recursive">Set to false to emulate a directory</param>
         /// <returns>A iterator lazily populated with objects</returns>
-        public async Task<IEnumerable<Item>> ListObjectsAsync(string bucketName, string prefix=null, bool recursive=true)
+        public IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true)
         {
-            bool isRunning = true;
-
-            string marker = null;
-
-            while (isRunning)
-            {
-                Tuple<ListBucketResult, List<Item>> result = await GetObjectListAsync(bucketName, prefix, recursive, marker);
-                Item lastItem = null;
-                foreach (Item item in result.Item2)
-                {
-                    lastItem = item;
-                    yield return item;
-                }
-                if (result.Item1.NextMarker != null)
-                {
-                    marker = result.Item1.NextMarker;
-                }
-                else
-                {
-                    marker = lastItem.Key;
-                }
-                isRunning = result.Item1.IsTruncated;
-            }
+            return Observable.Create<Item>(
+              async obs =>
+              {
+                  bool isRunning = true;
+                  string marker = null;
+                  while (isRunning)
+                  {
+                      Tuple<ListBucketResult, List<Item>> result = await GetObjectListAsync(bucketName, prefix, recursive, marker);
+                      Item lastItem = null;
+                      foreach (Item item in result.Item2)
+                      {
+                          lastItem = item;
+                          obs.OnNext(item);
+                      }
+                      if (result.Item1.NextMarker != null)
+                      {
+                          marker = result.Item1.NextMarker;
+                      }
+                      else
+                      {
+                          marker = lastItem.Key;
+                      }
+                      isRunning = result.Item1.IsTruncated;
+                  }
+              });
         }
-
         private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix, bool recursive, string marker)
         {
             var queries = new List<string>();
@@ -169,74 +170,38 @@ namespace Minio
             var request = new RestRequest(path, Method.GET);
             var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
 
-            if (response.StatusCode == HttpStatusCode.OK)
+            if (response.StatusCode != HttpStatusCode.OK)
             {
-                var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-                var stream = new MemoryStream(contentBytes);
-                ListBucketResult listBucketResult = (ListBucketResult)(new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream));
-
-                XDocument root = XDocument.Parse(response.Content);
-
-                var items = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
-                             select new Item()
-                             {
-                                 Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
-                                 LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
-                                 ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value,
-                                 Size = UInt64.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture),
-                                 IsDir = false
-                             });
-
-                var prefixes = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}CommonPrefixes")
-                                select new Item()
-                                {
-                                    Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Prefix").Value,
-                                    IsDir = true
-                                });
-
-                items = items.Concat(prefixes);
-
-                return new Tuple<ListBucketResult, List<Item>>(listBucketResult, items.ToList());
+                this._client.ParseError(response);
             }
-            throw this._client.ParseError(response);
+            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+            var stream = new MemoryStream(contentBytes);
+            ListBucketResult listBucketResult = (ListBucketResult)(new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream));
+
+            XDocument root = XDocument.Parse(response.Content);
+
+            var items = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
+                         select new Item()
+                         {
+                             Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
+                             LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
+                             ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value,
+                             Size = UInt64.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture),
+                             IsDir = false
+                         });
+
+            var prefixes = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}CommonPrefixes")
+                            select new Item()
+                            {
+                                Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Prefix").Value,
+                                IsDir = true
+                            });
+
+            items = items.Concat(prefixes);
+
+            return new Tuple<ListBucketResult, List<Item>>(listBucketResult, items.ToList());
         }
-        
-        
-        /// <summary>
-        /// Get an object. The object will be streamed to the callback given by the user.
-        /// </summary>
-        /// <param name="bucketName">Bucket to retrieve object from</param>
-        /// <param name="objectName">Name of object to retrieve</param>
-        /// <param name="callback">A stream will be passed to the callback</param>
-        public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback)
-        {
-            RestRequest request = new RestRequest(bucketName + "/" + UrlEncode(objectName), Method.GET);
-            request.ResponseWriter = callback;
-            var response = client.Execute(request);
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                return;
-            }
-            throw this._client.ParseError(response);
-        }
-        */
+       
     }
-
-
-
-
-    /*
-    Task MakeBucketAsync(string bucketName, string location = "us-east-1");
-
-    Task<bool> BucketExistsAsync(string bucketName);
-
-    Task RemoveBucketAsync(string bucketName); //returns err in go-sdk <===
-
-    Task<IEnumerable<Item>> ListObjectsAsync(string bucketName, string prefix, bool recursive);
-
-    Task<IEnumerable<Upload>> ListIncompleteUploadsAsync(string bucketName, string prefix, bool recursive);
-    */
-
-
 }
 
