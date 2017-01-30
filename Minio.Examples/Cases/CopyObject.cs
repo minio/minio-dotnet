@@ -3,22 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
-    class ListBuckets
+    class CopyObject
     {
+        //copy object from one bucket to another
         public async static Task Run(Minio.MinioRestClient minio)
         {
             try
             {
-                var list = await minio.Buckets.ListBucketsAsync();
-                foreach (Bucket bucket in list.Buckets)
-                {
-                    Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
-                }
-
+                await minio.Objects.CopyObjectAsync("mountshasta", "testobject", "bobcat2t", "copi2dobj", null);
+                Console.Out.WriteLine("done copying");
             }
             catch (Exception e)
             {
@@ -26,6 +22,5 @@ namespace Minio.Examples.Cases
             }
         }
 
-       
     }
 }

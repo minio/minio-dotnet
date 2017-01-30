@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Minio.Helper
 {
     class s3utils
     {
-  
+
         internal static bool isAmazonEndPoint(Uri uri)
         {
-            if (isAmazonChinaEndPoint(uri) )
+            if (isAmazonChinaEndPoint(uri))
             {
                 return true;
             }
@@ -25,7 +27,7 @@ namespace Minio.Helper
         // For more info https://aws.amazon.com/about-aws/whats-new/2013/12/18/announcing-the-aws-china-beijing-region/
         internal static bool isAmazonChinaEndPoint(Uri uri)
         {
-          
+
             return uri.Host == "s3.cn-north-1.amazonaws.com.cn";
         }
         // IsGoogleEndpoint - Match if it is exactly Google cloud storage endpoint.
@@ -33,6 +35,19 @@ namespace Minio.Helper
         {
             return endpointUri.Host == "storage.googleapis.com";
         }
+        internal static string GetPath(string p1, string p2)
+        {
+            try
+            {
+                string combination = Path.Combine(p1, p2);
+                combination = Uri.EscapeUriString(combination);
+                return combination;
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
 
+        }
     }
 }
