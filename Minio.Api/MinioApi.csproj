@@ -77,7 +77,9 @@
     <Compile Include="ApiEndpoints\PresignedOperations.cs" />
     <Compile Include="DataModel\Bucket.cs" />
     <Compile Include="DataModel\CopyConditions.cs" />
+    <Compile Include="DataModel\CopyObjectResult.cs" />
     <Compile Include="DataModel\CreateBucketConfiguration.cs" />
+    <Compile Include="DataModel\DateFormat.cs" />
     <Compile Include="DataModel\Grant.cs" />
     <Compile Include="DataModel\GranteeUser.cs" />
     <Compile Include="DataModel\InitiateMultipartUploadResult.cs" />

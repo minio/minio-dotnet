@@ -563,8 +563,75 @@ namespace Minio
             }
             return truncatedResult;
         }
-      
-    
+        /**
+         * Copy a source object into a new destination object.
+         *
+         * @param bucketName
+         *          Bucket name where the object to be copied exists.
+         * @param objectName
+         *          Object name source to be copied.
+         * @param destBucketName
+         *          Bucket name where the object will be copied to.
+         * @param destObjectName
+         *          Object name to be created, if not provided uses source object name
+         *          as destination object name.
+         * @param optionally can take a key value CopyConditions as well for conditionally attempting
+         * copyObject.
+         */
+        public async Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName,string destObjectName=null,CopyConditions copyConditions=null)
+        {
+            if (bucketName == null)
+            {
+                throw new ArgumentException("Source bucket name cannot be empty");
+            }
+            if (objectName == null)
+            {
+                throw new ArgumentException("Source object name cannot be empty");
+            }
+            if (destBucketName == null)
+            {
+                throw new ArgumentException("Destination bucket name cannot be empty");
+            }
+            // Escape source object path.
+            string sourceObjectPath = bucketName + "/" + utils.UrlEncode(objectName);
 
+            // Destination object name is optional, if empty default to source object name.
+            if (destObjectName == null)
+            {
+                destObjectName = objectName;
+            }
+
+
+
+            var path = destBucketName  + "/" + utils.UrlEncode(destObjectName);
+            var request = new RestRequest(path, Method.PUT);
+            // Set the object source
+            request.AddHeader("x-amz-copy-source", sourceObjectPath);
+
+            // If no conditions available, skip addition else add the conditions to the header
+            if (copyConditions != null)
+            {
+                foreach (var item in copyConditions.GetConditions())
+                {
+                    request.AddHeader(item.Key, item.Value);
+                }
+            }
+
+            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
+            if (!response.StatusCode.Equals(HttpStatusCode.OK))
+            {
+                this._client.ParseError(response);
+            }
+
+
+            // For now ignore the copyObjectResult, just read and parse it.
+            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+            var stream = new MemoryStream(contentBytes);
+
+            CopyObjectResult copyObjectResult = (CopyObjectResult)(new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream));       
+            return copyObjectResult;
+        }
+   
+   
     }
 }

@@ -35,7 +35,7 @@ namespace Minio.Examples
             minioClient.SetAppInfo("app-name", "app-version");
 
             // Cases.MakeBucket.Run(minioClient).Wait();
-            // Cases.ListBuckets.Run(minioClient).Wait();
+             Cases.ListBuckets.Run(minioClient).Wait();
 
             // Cases.BucketExists.Run(minioClient).Wait();
             // Cases.RemoveBucket.Run(minioClient).Wait();
@@ -45,6 +45,7 @@ namespace Minio.Examples
             //Cases.ListIncompleteUploads.Run(minioClient);
             // Cases.RemoveIncompleteUpload.Run(minioClient).Wait();
             Cases.ListObjects.Run(minioClient).Wait();
+            Cases.CopyObject.Run(minioClient).Wait();
             Console.ReadLine();
          
         }

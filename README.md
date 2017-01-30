@@ -130,7 +130,7 @@ Click on FileUploader project and Start
 * [StatObject.cs](./Minio.Examples/Cases/StatObject.cs)
 * [RemoveObject.cs](./Minio.Examples/Cases/RemoveObject.cs)
 * [RemoveIncompleteUpload.cs](./Minio.Examples/Cases/RemoveIncompleteUpload.cs)
-
+* [CopyObject.cs] (./Minio.Examples/Cases/CopyObject.cs)
 
 #### Full Examples : Presigned Operations
 
