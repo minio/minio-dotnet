@@ -7,6 +7,8 @@ using Newtonsoft.Json;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Minio.Policy;
+using Minio.DataModel.Policy;
+
 namespace Minio.DataModel
 {
     public class BucketPolicy
@@ -55,7 +57,10 @@ namespace Minio.DataModel
     //JsonIgnore
       public string getJson()  
       {
-          return  JsonConvert.SerializeObject(this);
+          return  JsonConvert.SerializeObject(this,Formatting.None, 
+                            new JsonSerializerSettings { 
+                                NullValueHandling = NullValueHandling.Ignore
+            });
       }
 
 
@@ -136,16 +141,15 @@ namespace Minio.DataModel
         statement.principal = new Principal("*");
         statement.resources = resources;
         statement.sid = "";
-
-        if (policy == PolicyType.READ_ONLY)
+        if (policy.Equals(PolicyType.READ_ONLY))
         {
             statement.actions = Constants.READ_ONLY_OBJECT_ACTIONS;
         }
-        else if (policy == PolicyType.WRITE_ONLY)
+        else if (policy.Equals(PolicyType.WRITE_ONLY))
         {
             statement.actions = Constants.WRITE_ONLY_OBJECT_ACTIONS;
         }
-        else if (policy == PolicyType.READ_WRITE)
+        else if (policy.Equals(PolicyType.READ_WRITE))
         {
             statement.actions = Constants.READ_WRITE_OBJECT_ACTIONS();
         }
@@ -186,13 +190,11 @@ namespace Minio.DataModel
             if (!statement.resources.Contains(objectResource)
                 && statement.resources.startsWith(resourcePrefix).Count() != 0)
             {
-
-                if (statement.actions.IsProperSupersetOf(Constants.READ_ONLY_OBJECT_ACTIONS))
+                if (utils.isSupersetOf(statement.actions,Constants.READ_ONLY_OBJECT_ACTIONS))
                 {
                     readOnlyInUse = true;
                 }
-
-                if (statement.actions.IsProperSupersetOf(Constants.WRITE_ONLY_OBJECT_ACTIONS))
+                if (utils.isSupersetOf(statement.actions,Constants.WRITE_ONLY_OBJECT_ACTIONS))
                 {
                     writeOnlyInUse = true;
                 }
@@ -251,7 +253,7 @@ namespace Minio.DataModel
                 if (statement.actions.Count != 0)
             {
                 if (statement.resources.Contains(bucketResource)
-                    && statement.actions.IsProperSupersetOf(Constants.READ_ONLY_BUCKET_ACTIONS)
+                    && (utils.isSupersetOf(statement.actions,Constants.READ_ONLY_BUCKET_ACTIONS))
                     && statement.effect.Equals("Allow")
                     && statement.principal.aws().Contains("*"))
                 {
@@ -301,7 +303,7 @@ namespace Minio.DataModel
 
         foreach (Statement statement in readOnlyBucketStatements)
         {
-            ISet<string> aws = statement.principal.aws();
+            IList<string> aws = statement.principal.aws();
             if (skipBucketStatement
                 && statement.resources.Contains(bucketResource)
                 && statement.effect.Equals("Allow")
@@ -316,9 +318,9 @@ namespace Minio.DataModel
 
         if (outList.Count() == 1) {
             Statement statement = outList[0];
-            ISet<string> aws = statement.principal.aws();
+            IList<string> aws = statement.principal.aws();
             if (statement.resources.Contains(bucketResource)
-                && statement.actions.IsSupersetOf(Constants.COMMON_BUCKET_ACTIONS)
+                && (utils.isSupersetOf(statement.actions,Constants.COMMON_BUCKET_ACTIONS))
                 && statement.effect.Equals("Allow")
                 && aws != null && aws.Contains("*")
                 && statement.conditions == null)
@@ -341,13 +343,13 @@ namespace Minio.DataModel
     {
         foreach (Statement s in statements)
         {
-            ISet<string> aws = s.principal.aws();
+            IList<string> aws = s.principal.aws();
             ConditionMap conditions = s.conditions;
 
-            if (s.actions.IsSupersetOf(statement.actions)
+            if ((utils.isSupersetOf(s.actions,statement.actions)
                 && s.effect.Equals(statement.effect)
-                && aws != null && aws.IsSupersetOf(statement.principal.aws())
-                && conditions != null && conditions.Equals(statement.conditions))
+                && aws != null && (utils.isSupersetOf(aws,statement.principal.aws()))
+                && conditions != null && conditions.Equals(statement.conditions)))
             {
                 s.resources.UnionWith(statement.resources);
                 return;
@@ -355,17 +357,17 @@ namespace Minio.DataModel
 
             if (s.resources.IsSupersetOf(statement.resources)
                 && s.effect.Equals(statement.effect)
-                && aws != null && aws.IsSupersetOf(statement.principal.aws())
+                && aws != null && (utils.isSupersetOf(aws,statement.principal.aws()))
                 && conditions != null && conditions.Equals(statement.conditions))
             {
-                s.actions.UnionWith(statement.actions);
+                s.actions.Union(statement.actions);
                 return;
             }
 
             if (s.resources.IsSupersetOf(statement.resources)
-                && s.actions.IsSupersetOf(statement.actions)
+                && (utils.isSupersetOf(s.actions,statement.actions)
                 && s.effect.Equals(statement.effect)
-                && aws != null && aws.IsSupersetOf(statement.principal.aws()))
+                && aws != null && utils.isSupersetOf(aws,statement.principal.aws())))
             {
                 if (conditions != null && conditions.Equals(statement.conditions))
                 {
@@ -379,8 +381,7 @@ namespace Minio.DataModel
                 }
             }
         }
-
-        if (statement.actions.Count() != 0 && statement.resources.Count() != 0)
+        if (statement.actions != null && statement.resources != null && statement.actions.Count() != 0 && statement.resources.Count() != 0)
         {
             statements.Add(statement);
         }

@@ -56,7 +56,6 @@ namespace Minio.Examples
                 Console.Out.WriteLine(ex.Message);
             }
            
-       
         }
 
     }
