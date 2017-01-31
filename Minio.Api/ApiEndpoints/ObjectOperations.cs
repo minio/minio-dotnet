@@ -58,7 +58,29 @@ namespace Minio
             return;
         }
         /// <summary>
-        /// Creates an object
+        /// Creates an object from file
+        /// </summary>
+        /// <param name="bucketName">Bucket to create object in</param>
+        /// <param name="objectName">Key of the new object</param>
+        /// <param name="fileName">Path of file to upload</param>
+        /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
+
+        public async Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null)
+        {
+            utils.ValidateFile(filePath, contentType);
+            FileInfo file = new FileInfo(filePath);
+            long size = file.Length;
+            byte[] bs = File.ReadAllBytes(filePath);
+            using (MemoryStream filestream = new System.IO.MemoryStream(bs))
+
+            {
+               await PutObjectAsync(bucketName, objectName, filestream, size, contentType);
+            }
+           
+
+        }
+        /// <summary>
+        /// Creates an object from inputstream
         /// </summary>
         /// <param name="bucketName">Bucket to create object in</param>
         /// <param name="objectName">Key of the new object</param>

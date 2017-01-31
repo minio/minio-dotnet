@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="Cases\BucketExists.cs" />
     <Compile Include="Cases\CopyObject.cs" />
+    <Compile Include="Cases\FPutObject.cs" />
     <Compile Include="Cases\GetObject.cs" />
     <Compile Include="Cases\ListBuckets.cs" />
     <Compile Include="Cases\ListIncompleteUploads.cs" />

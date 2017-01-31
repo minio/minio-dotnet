@@ -15,7 +15,7 @@ namespace Minio.Examples.Cases
                 var bucketName = "bucket-name";
                 var prefix = "object-prefix";
                 var recursive = false;
-                bucketName = "bobcat2t";
+                bucketName = "mountshasta";
                 prefix = null;
                 IObservable<Item> observable = minio.Buckets.ListObjectsAsync(bucketName, prefix, recursive);
 

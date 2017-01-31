@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Minio.Exceptions;
 using System.IO;
+using Microsoft.Win32;
 
 namespace Minio
 {
@@ -85,6 +86,47 @@ namespace Minio
         internal static bool isAnonymousClient(string accessKey, string secretKey)
         {
             return (secretKey == "" || accessKey == "");
+        }
+        internal static void ValidateFile(string fileName,string contentType)
+        {
+            if (fileName == null || fileName == "")
+            {
+                throw new ArgumentException("empty file name is not allowed");
+            }
+
+            string filePath = Path.GetFileName(fileName);
+            FileAttributes attr = File.GetAttributes(fileName);
+
+
+            if (attr.HasFlag(FileAttributes.Directory))
+
+            {
+                throw new ArgumentException("'" + fileName + "': not a regular file");
+            }
+
+            if (contentType == null)
+            {
+                contentType = GetContentType(filePath);
+            }
+
+        }
+        internal static string GetContentType(string fileName)
+        {
+            // set a default mimetype if not found.
+            string contentType = "application/octet-stream";
+
+            try
+            {
+                // get the registry classes root
+                RegistryKey classes = Registry.ClassesRoot;
+
+                // find the sub key based on the file extension
+                RegistryKey fileClass = classes.OpenSubKey(Path.GetExtension(fileName));
+                contentType = fileClass.GetValue("Content Type").ToString();
+            }
+            catch { }
+
+            return contentType;
         }
     }
 }
