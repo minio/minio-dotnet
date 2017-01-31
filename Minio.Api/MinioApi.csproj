@@ -100,8 +100,13 @@
     <Compile Include="DataModel\Policy\Constants.cs" />
     <Compile Include="DataModel\Policy\PolicyType.cs" />
     <Compile Include="DataModel\Policy\Principal.cs" />
+    <Compile Include="DataModel\Policy\ActionJsonConverter.cs" />
+    <Compile Include="DataModel\Policy\ResourceJsonConverter.cs" />
+    <Compile Include="DataModel\Policy\PrincipalJsonConverter.cs" />
     <Compile Include="DataModel\Policy\Resources.cs" />
+    <Compile Include="DataModel\Policy\SingleOrArrayConverter.cs" />
     <Compile Include="DataModel\Policy\Statement.cs" />
+    <Compile Include="DataModel\Policy\StatementJsonConverter.cs" />
     <Compile Include="DataModel\Prefix.cs" />
     <Compile Include="DataModel\RestExceptioncs.cs" />
     <Compile Include="DataModel\Upload.cs" />

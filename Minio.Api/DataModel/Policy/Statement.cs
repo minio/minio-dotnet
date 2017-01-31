@@ -6,13 +6,16 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Minio.Policy;
+using Minio.DataModel.Policy;
+
 namespace Minio.DataModel
 {
-    [DataContract]
+
     internal class Statement
     {
         [JsonProperty("Action")]
-        public ISet<string> actions { get;  set; }
+        [JsonConverter(typeof(SingleOrArrayConverter<string>))]
+        public IList<string> actions { get;  set; }
         [JsonProperty("Condition")]
         public ConditionMap conditions { get;  set; }
 
@@ -20,9 +23,11 @@ namespace Minio.DataModel
         public string effect { get;  set; }
 
        [JsonProperty("Principal")]
+       [JsonConverter(typeof(PrincipalJsonConverter))]
         public Principal principal { get;  set; }
 
         [JsonProperty("Resource")]
+        [JsonConverter(typeof(ResourceJsonConverter))]
         public Resources resources { get;  set; }
 
         [JsonProperty("Sid")]
@@ -43,7 +48,7 @@ namespace Minio.DataModel
                 return false;
             }
 
-            ISet<string> aws = this.principal.aws();
+            IList<string> aws = this.principal.aws();
             if (aws == null || !aws.Contains("*"))
             {
                 return false;
@@ -85,7 +90,7 @@ namespace Minio.DataModel
         }
         private void removeReadOnlyBucketActions(string prefix)
         {
-            if (!this.actions.IsProperSupersetOf(Constants.READ_ONLY_BUCKET_ACTIONS))
+            if (!utils.isSupersetOf(this.actions,Constants.READ_ONLY_BUCKET_ACTIONS))
             {
                 return;
             }
@@ -175,23 +180,23 @@ namespace Minio.DataModel
             bool readOnly = false;
             bool writeOnly = false;
 
-            ISet<string> aws = this.principal.aws();
+            IList<string> aws = this.principal.aws();
             if (!(this.effect.Equals("Allow") && aws != null && aws.Contains("*")))
             {
                 return new bool[] { commonFound, readOnly, writeOnly };
             }
 
-            if (this.actions.IsProperSupersetOf(Constants.COMMON_BUCKET_ACTIONS) && this.conditions == null)
+            if (utils.isSupersetOf(this.actions,Constants.COMMON_BUCKET_ACTIONS) && this.conditions == null)
             {
                 commonFound = true;
             }
 
-            if (this.actions.IsProperSupersetOf(Constants.WRITE_ONLY_BUCKET_ACTIONS) && this.conditions == null)
+            if (utils.isSupersetOf(this.actions,Constants.WRITE_ONLY_BUCKET_ACTIONS) && this.conditions == null)
             {
                 writeOnly = true;
             }
 
-            if (this.actions.IsProperSupersetOf(Constants.READ_ONLY_BUCKET_ACTIONS))
+            if (utils.isSupersetOf(this.actions,Constants.READ_ONLY_BUCKET_ACTIONS))
             {
                 if (prefix != null && prefix.Count() != 0 && this.conditions != null)
                 {
@@ -243,7 +248,7 @@ namespace Minio.DataModel
             bool readOnly = false;
             bool writeOnly = false;
 
-            ISet<string> aws = null;
+            IList<string> aws = null;
             if (this.principal != null)
             {
                 aws = this.principal.aws();
@@ -253,11 +258,11 @@ namespace Minio.DataModel
                 && aws != null && aws.Contains("*")
                 && this.conditions == null)
             {
-                if (this.actions.IsProperSupersetOf(Constants.READ_ONLY_OBJECT_ACTIONS))
+                if (utils.isSupersetOf(this.actions,Constants.READ_ONLY_OBJECT_ACTIONS))
                 {
                     readOnly = true;
                 }
-                if (this.actions.IsProperSupersetOf(Constants.WRITE_ONLY_OBJECT_ACTIONS))
+                if (utils.isSupersetOf(this.actions,Constants.WRITE_ONLY_OBJECT_ACTIONS))
                 {
                     writeOnly = true;
                 }

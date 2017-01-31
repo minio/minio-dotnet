@@ -12,42 +12,42 @@ namespace Minio.Policy
         public static readonly String AWS_RESOURCE_PREFIX = "arn:aws:s3:::";
 
         // Common bucket actions for both read and write policies.
-        public static readonly ISet<String> COMMON_BUCKET_ACTIONS = new HashSet<String>() { "s3:GetBucketLocation" };
+        public static readonly List<String> COMMON_BUCKET_ACTIONS = new List<String>() { "s3:GetBucketLocation" };
 
         // Read only bucket actions.
-        public static readonly ISet<String> READ_ONLY_BUCKET_ACTIONS = new HashSet<String>() { "s3:ListBucket"};
+        public static readonly List<String> READ_ONLY_BUCKET_ACTIONS = new List<String>() { "s3:ListBucket"};
 
         // Write only bucket actions.
-        public static readonly ISet<String> WRITE_ONLY_BUCKET_ACTIONS =
-            new HashSet<String>() { "s3:ListBucketMultipartUploads" };
+        public static readonly List<String> WRITE_ONLY_BUCKET_ACTIONS =
+            new List<String>() { "s3:ListBucketMultipartUploads" };
 
         // Read only object actions.
-        public static readonly ISet<String> READ_ONLY_OBJECT_ACTIONS = new HashSet<String>() { "s3:GetObject" };
+        public static readonly List<String> READ_ONLY_OBJECT_ACTIONS = new List<String>() { "s3:GetObject" };
 
         // Write only object actions.
-        public static readonly ISet<String> WRITE_ONLY_OBJECT_ACTIONS =
-            new HashSet<String>() { "s3:AbortMultipartUpload",
+        public static readonly List<String> WRITE_ONLY_OBJECT_ACTIONS =
+            new List<String>() { "s3:AbortMultipartUpload",
                                               "s3:DeleteObject",
                                               "s3:ListMultipartUploadParts",
                                               "s3:PutObject" };
 
         // Read and write object actions.
-        public static HashSet<string> READ_WRITE_OBJECT_ACTIONS()
+        public static IList<string> READ_WRITE_OBJECT_ACTIONS()
         {
-            HashSet<string> res = new HashSet<string>();
-            res.UnionWith(READ_ONLY_OBJECT_ACTIONS);
-            res.UnionWith(WRITE_ONLY_OBJECT_ACTIONS);
+            IList<string> res = new List<string>();
+            res.Union(READ_ONLY_OBJECT_ACTIONS);
+            res.Union(WRITE_ONLY_OBJECT_ACTIONS);
             return res;
         }
         // All valid bucket and object actions.
 
-        public static HashSet<string> VALID_ACTIONS()
+        public static List<string> VALID_ACTIONS()
         {
-            HashSet<string> res = new HashSet<string>();
-            res.UnionWith(COMMON_BUCKET_ACTIONS);
-            res.UnionWith(READ_ONLY_BUCKET_ACTIONS);
-            res.UnionWith(WRITE_ONLY_BUCKET_ACTIONS);
-            res.UnionWith(READ_WRITE_OBJECT_ACTIONS());
+            List<string> res = new List<string>();
+            res.Union(COMMON_BUCKET_ACTIONS);
+            res.Union(READ_ONLY_BUCKET_ACTIONS);
+            res.Union(WRITE_ONLY_BUCKET_ACTIONS);
+            res.Union(READ_WRITE_OBJECT_ACTIONS());
             return res;
         }
 

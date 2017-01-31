@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Minio.DataModel.Policy;
+using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
@@ -13,7 +15,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                //await minio.Buckets.SetPolicyAsync("mountshasta", objectPrefix: "mult");
+                await minio.Buckets.SetPolicyAsync("testminiopolicy", "bobcat",PolicyType.READ_ONLY);
 
             }
             catch (Exception e)

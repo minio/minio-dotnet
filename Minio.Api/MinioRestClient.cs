@@ -204,9 +204,7 @@ namespace Minio
             HandleIfErrorResponse(response, errorHandlers);
             return response;
         }
-<<<<<<< HEAD
-       
-=======
+
   
         //old
         public void ExecuteAsync<T>(IRestRequest request, Action<T> callback) where T : new()
@@ -243,7 +241,6 @@ namespace Minio
             this.client.ExecuteAsync(request, callback);
         }
       
->>>>>>> 30b5244... policy changes
         internal void ParseError(IRestResponse response)
         {
             if (response == null)
