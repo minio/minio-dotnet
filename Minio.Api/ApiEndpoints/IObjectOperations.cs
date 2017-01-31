@@ -17,11 +17,11 @@ namespace Minio
         IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix, bool recursive);
         Task RemoveIncompleteUploadAsync(string bucketName, string objectName);
         Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null);
+        Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null);
 
         /*
          * To be implemented
         //accepts file instead of stream
-       //  Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType);
 
          Task GetObjectAsync(string bucketName, string objectName, string filePath, string contentType);
 
