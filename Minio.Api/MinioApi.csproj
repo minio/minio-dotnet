@@ -112,7 +112,6 @@
     <Compile Include="Exceptions\InvalidPortException.cs" />
     <Compile Include="Exceptions\MaxBucketsReachedException.cs" />
     <Compile Include="Exceptions\MethodNotAllowedException.cs" />
-    <Compile Include="Exceptions\MinioApiException.cs" />
     <Compile Include="Exceptions\ObjectNotFoundException.cs" />
     <Compile Include="Exceptions\RedirectionException.cs" />
     <Compile Include="Exceptions\UnexpectedShortReadException.cs" />

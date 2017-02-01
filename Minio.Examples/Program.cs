@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Minio;
 using System.Net;
-
+using Minio.Exceptions;
 namespace Minio.Examples
 {
     class Program
@@ -31,24 +31,32 @@ namespace Minio.Examples
             var minioClient = new MinioRestClient(endPoint,
                                     accessKey: accessKey, 
                                     secretKey: secretKey).WithSSL();
-            //Set app Info 
-            minioClient.SetAppInfo("app-name", "app-version");
+            try
+            {
+                //Set app Info 
+                minioClient.SetAppInfo("app-name", "app-version");
 
-            // Cases.MakeBucket.Run(minioClient).Wait();
-             Cases.ListBuckets.Run(minioClient).Wait();
+                Cases.MakeBucket.Run(minioClient).Wait();
+                Cases.ListBuckets.Run(minioClient).Wait();
 
-            // Cases.BucketExists.Run(minioClient).Wait();
-            // Cases.RemoveBucket.Run(minioClient).Wait();
-            //Cases.GetObject.Run(minioClient).Wait();
-            //Cases.StatObject.Run(minioClient).Wait();
-            //Cases.PutObject.Run(minioClient).Wait();
-            //Cases.ListIncompleteUploads.Run(minioClient);
-            // Cases.RemoveIncompleteUpload.Run(minioClient).Wait();
-            // Cases.CopyObject.Run(minioClient).Wait();
-            // Cases.FPutObject.Run(minioClient).Wait();
-            Cases.ListObjects.Run(minioClient).Wait();
-            Cases.FGetObject.Run(minioClient).Wait();
-            Console.ReadLine();
+                Cases.BucketExists.Run(minioClient).Wait();
+                Cases.RemoveBucket.Run(minioClient).Wait();
+                Cases.GetObject.Run(minioClient).Wait();
+                Cases.StatObject.Run(minioClient).Wait();
+                Cases.PutObject.Run(minioClient).Wait();
+                Cases.ListIncompleteUploads.Run(minioClient);
+                Cases.RemoveIncompleteUpload.Run(minioClient).Wait();
+                Cases.CopyObject.Run(minioClient).Wait();
+                Cases.FPutObject.Run(minioClient).Wait();
+                Cases.ListObjects.Run(minioClient).Wait();
+                Cases.FGetObject.Run(minioClient).Wait();
+                Console.ReadLine();
+            }
+            catch(ClientException ex)
+            {
+                Console.Out.WriteLine(ex.Message);
+            }
+           
          
         }
 
