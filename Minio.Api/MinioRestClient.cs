@@ -200,7 +200,6 @@ namespace Minio
         internal  async Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,IRestRequest request)
         {
             var response = await this.client.ExecuteTaskAsync(request, CancellationToken.None);
-            Console.Out.WriteLine("===> " + response.ResponseUri);
             HandleIfErrorResponse(response, errorHandlers);
             return response;
         }

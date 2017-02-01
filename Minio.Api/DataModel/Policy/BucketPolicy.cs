@@ -38,9 +38,7 @@ namespace Minio.DataModel
         {
             string toparse = new StreamReader(reader).ReadToEnd();
             JObject jsonData = JObject.Parse(toparse);
-      
 
-            Console.Out.WriteLine(toparse);
             BucketPolicy bucketPolicy = JsonConvert.DeserializeObject<BucketPolicy>(toparse);
             bucketPolicy.bucketName = bucketName;
 
