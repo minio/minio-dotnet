@@ -18,7 +18,7 @@ namespace Minio.Examples.Cases
 
                 bucketName = "mountshasta";
                 bucketObject = "multi1112";
-                IObservable<Upload> observable = minio.Objects.ListIncompleteUploads(bucketName, bucketObject, true);
+                IObservable<Upload> observable = minio.Api.ListIncompleteUploads(bucketName, bucketObject, true);
 
                 IDisposable subscription = observable.Subscribe(
                     item => Console.WriteLine("OnNext: {0}", item.Key),

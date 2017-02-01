@@ -15,7 +15,7 @@ namespace Minio.Examples.Cases
             {
                 string fileName = "C:\\Users\\vagrant\\Downloads\\sDownload3";
 
-                await minio.Objects.GetObjectAsync("mountshasta", "full-upload-multi", fileName);
+                await minio.Api.GetObjectAsync("mountshasta", "full-upload-multi", fileName);
 
             }
             catch (Exception e)

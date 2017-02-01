@@ -22,7 +22,7 @@ namespace Minio.Examples.Cases
                 //TODO comment out for release
                 // String fileName = "C:\\Users\\vagrant\\Downloads\\go1.7.4.windows-amd64.msi";
                 String fileName = "C:\\Users\\vagrant\\Downloads\\multipart-2parts";
-                await minio.Objects.PutObjectAsync("mountshasta", "full-upload-fromfile2", fileName,contentType: "application/octet-stream");
+                await minio.Api.PutObjectAsync("mountshasta", "full-upload-fromfile2", fileName,contentType: "application/octet-stream");
                 //TODO end comment out for release
                 Console.Out.WriteLine("done uploading");
             }

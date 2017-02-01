@@ -18,7 +18,7 @@ namespace SimpleTest
                 ).WithSSL();
            
 
-            var getListBucketsTask = minio.Buckets.ListBucketsAsync();
+            var getListBucketsTask = minio.Api.ListBucketsAsync();
             try
             {
                 Task.WaitAll(getListBucketsTask); // block while the task completes
@@ -32,10 +32,9 @@ namespace SimpleTest
             {
                 Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
             }
-          
-            Task.WaitAll(minio.Buckets.MakeBucketAsync("bucket2"));
 
-            var bucketExistTask = minio.Buckets.BucketExistsAsync("bucket2");
+
+            var bucketExistTask = minio.Api.BucketExistsAsync("bucky");
             Task.WaitAll(bucketExistTask);
             var found = bucketExistTask.Result;
             Console.Out.WriteLine("bucket was " + found);

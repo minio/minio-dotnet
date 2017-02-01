@@ -73,6 +73,7 @@
   <ItemGroup>
     <Compile Include="ApiEndpoints\BucketNotificationOperations.cs" />
     <Compile Include="ApiEndpoints\BucketOperations.cs" />
+    <Compile Include="ApiEndpoints\ClientApiOperations.cs" />
     <Compile Include="ApiEndpoints\CustomClientSettings.cs" />
     <Compile Include="ApiEndpoints\FileObjectOperationscs.cs" />
     <Compile Include="ApiEndpoints\IBucketOperations.cs" />

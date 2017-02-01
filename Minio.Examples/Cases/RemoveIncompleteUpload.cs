@@ -19,7 +19,7 @@ namespace Minio.Examples.Cases
 
                 bucketName = "mountshasta";
                 bucketObject = "newmulti-225";
-                await minio.Objects.RemoveIncompleteUploadAsync(bucketName, bucketObject);
+                await minio.Api.RemoveIncompleteUploadAsync(bucketName, bucketObject);
                 Console.Out.WriteLine("object-name removed from bucket-name successfully");
             }
             catch (Exception e)

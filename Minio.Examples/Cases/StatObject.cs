@@ -18,7 +18,7 @@ namespace Minio.Examples.Cases
            // bucketObject = "asiaphotos.jpg";
             try
             {
-                ObjectStat statObject = await minio.Objects.StatObjectAsync(bucketName, bucketObject);
+                ObjectStat statObject = await minio.Api.StatObjectAsync(bucketName, bucketObject);
                 Console.Out.WriteLine(statObject);
             }
             catch (Exception e)

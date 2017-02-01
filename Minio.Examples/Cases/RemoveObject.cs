@@ -13,7 +13,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                await minio.Objects.RemoveObjectAsync("bucket-name","object-name");
+                await minio.Api.RemoveObjectAsync("bucket-name","object-name");
                 Console.Out.WriteLine("object-name removed from bucket-name successfully");
             }
             catch (Exception e)

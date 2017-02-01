@@ -17,25 +17,12 @@ using Minio.Helper;
 
 namespace Minio
 {
-    class ObjectOperations : IObjectOperations
+    public partial class ClientApiOperations : IObjectOperations
     {
-        internal static readonly ApiResponseErrorHandlingDelegate NoSuchBucketHandler = (response) =>
-        {
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                throw new BucketNotFoundException();
-            }
-        };
+     
 
-        private const string RegistryAuthHeaderKey = "X-Registry-Auth";
 
-        private readonly MinioRestClient _client;
-        
-
-        internal ObjectOperations(MinioRestClient client)
-        {
-            this._client = client;
-        }
+       
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
@@ -47,12 +34,12 @@ namespace Minio
 
             RestRequest request = new RestRequest(bucketName + "/" + utils.UrlEncode(objectName), Method.GET);
             request.ResponseWriter = cb;
-            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
+            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
               
-                this._client.ParseError(response);
+                this.client.ParseError(response);
             }
          
             return;
@@ -272,12 +259,12 @@ namespace Minio
 
             request.AddParameter("application/xml", body, RestSharp.ParameterType.RequestBody);
 
-            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers,request);
+            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
             if (response.StatusCode.Equals(HttpStatusCode.OK))
             {
                 return;
             }
-            this._client.ParseError(response);
+            this.client.ParseError(response);
         }
         // Calculate part size and number of parts required
         private Object CalculateMultiPartSize(long size)
@@ -336,10 +323,10 @@ namespace Minio
             var request = new RestRequest(path, Method.GET);
             Console.Out.WriteLine(request.Resource);
 
-            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers,request);
+            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
             if (!response.StatusCode.Equals(HttpStatusCode.OK))
             {
-                this._client.ParseError(response);
+                this.client.ParseError(response);
             }
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
@@ -369,10 +356,10 @@ namespace Minio
                 contentType = "application/octet-stream";
             }
             request.AddHeader("Content-Type", contentType);
-            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers,request);
+            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
             if (!response.StatusCode.Equals(HttpStatusCode.OK))
             {
-                this._client.ParseError(response);
+                this.client.ParseError(response);
             }
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
@@ -395,10 +382,10 @@ namespace Minio
 
             request.AddHeader("Content-Type", contentType);
             request.AddParameter(contentType, data, RestSharp.ParameterType.RequestBody);
-            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers,request);
+            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
             if (!response.StatusCode.Equals(HttpStatusCode.OK))
             {
-                this._client.ParseError(response);
+                this.client.ParseError(response);
             }
             string etag = null;
             foreach (Parameter parameter in response.Headers)
@@ -445,10 +432,10 @@ namespace Minio
             path += "?" + query;
 
             var request = new RestRequest(path, Method.GET);
-            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers,request);
+            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                this._client.ParseError(response);
+                this.client.ParseError(response);
             }
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
@@ -558,11 +545,11 @@ namespace Minio
         {
             var path = bucketName + "/" + utils.UrlEncode(objectName) + "?uploadId=" + uploadId;
             var request = new RestRequest(path, Method.DELETE);
-            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers,request);
+            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
 
             if (response.StatusCode != HttpStatusCode.NoContent)
             {
-                this._client.ParseError(response);
+                this.client.ParseError(response);
             }
         }
         /// <summary>
@@ -574,12 +561,12 @@ namespace Minio
         public async Task RemoveObjectAsync(string bucketName, string objectName)
         {
             var request = new RestRequest(bucketName + "/" + utils.UrlEncode(objectName), Method.DELETE);
-            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
+            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
 
 
             if (!response.StatusCode.Equals(HttpStatusCode.NoContent))
             {
-                this._client.ParseError(response);
+                this.client.ParseError(response);
             }
         }
         /// <summary>
@@ -591,11 +578,11 @@ namespace Minio
         public async Task<ObjectStat> StatObjectAsync(string bucketName, string objectName)
         {
             var request = new RestRequest(bucketName + "/" + utils.UrlEncode(objectName), Method.HEAD);
-            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
+            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                this._client.ParseError(response);
+                this.client.ParseError(response);
             }
          
             long size = 0;
@@ -711,10 +698,10 @@ namespace Minio
                 }
             }
 
-            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
+            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
             if (!response.StatusCode.Equals(HttpStatusCode.OK))
             {
-                this._client.ParseError(response);
+                this.client.ParseError(response);
             }
 
 

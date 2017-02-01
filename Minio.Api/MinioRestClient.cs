@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Minio
 {
-    public sealed class MinioRestClient : IMinioClient
+    public sealed class MinioRestClient 
     {
         public string AccessKey { get; private set; }
         public string SecretKey { get; private set; }
@@ -26,10 +26,7 @@ namespace Minio
 
         private RestClient client;
         private V4Authenticator authenticator;
-
-        public IBucketOperations Buckets { get; } 
-
-        public IObjectOperations Objects { get; }
+        public ClientApiOperations Api;
 
         internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers = Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
 
@@ -178,8 +175,7 @@ namespace Minio
                 this.Anonymous = false;
             }
 
-            this.Buckets = new BucketOperations(this);
-            this.Objects = new ObjectOperations(this);
+            this.Api = new ClientApiOperations(this);
             return;
 
         }

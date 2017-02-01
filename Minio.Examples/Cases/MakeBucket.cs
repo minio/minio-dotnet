@@ -13,7 +13,8 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                await minio.Buckets.MakeBucketAsync("bobcat2t");
+
+                await minio.Api.MakeBucketAsync("bobdst");
                 Console.Out.WriteLine("bucket-name created successfully");
             } 
             catch (Exception e)
