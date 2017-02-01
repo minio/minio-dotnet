@@ -27,6 +27,13 @@ namespace Minio.Exceptions
     public class ClientException : Exception
     {
         public string message { get; private set; }
+        public IRestResponse response { get; private set; }
+        public ClientException(IRestResponse response)
+            : base($"Minio API responded with status code={response.StatusCode}, response={response.ErrorMessage}, content={response.Content}")
+        {
+            this.response = response;
+
+        }
         public ClientException()
         {
 
