@@ -3,6 +3,7 @@ using Minio;
 using Minio.Exceptions;
 using Minio.DataModel;
 using System.Threading.Tasks;
+using System.Net;
 
 namespace FileUploader
 {
@@ -10,6 +11,9 @@ namespace FileUploader
     {
         static void Main(string[] args)
         {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+                                                 | SecurityProtocolType.Tls11
+                                                 | SecurityProtocolType.Tls12;
             var endpoint  = "play.minio.io:9000";
             var accessKey = "Q3AM3UQ867SPQQA43P2F";
             var secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
@@ -28,12 +32,12 @@ namespace FileUploader
         private async static Task Run(MinioRestClient minio)
         {
             // Make a new bucket called mymusic.
-            var bucketName = "mymusic"; //<==== change this
+            var bucketName = "mymusic-folder"; //<==== change this
             var location   = "us-east-1";
             // Upload the zip file
-            //var objectName = "golden-oldies.zip";
-            //var filePath = "/tmp/golden-oldies.zip";
-           // var contentType = "application/zip";
+            var objectName = "my-golden-oldies.mp3";
+            var filePath = "C:\\Users\\vagrant\\Downloads\\golden_oldies.mp3";
+            var contentType = "application/zip";
 
             try
             {
@@ -43,9 +47,8 @@ namespace FileUploader
                     Console.Out.WriteLine("bucket-name was " + ((found == true) ? "found" : "not found"));
                 }
                 else { 
-                    // to be implemented
-                    //var size =  await minio.Buckets.FPutObject(bucketName, objectName, filePath, contentType);  
-                    //Console.Out.WriteLine("Successfully uploaded " + objectName + " of size" + size);
+                    await minio.Objects.PutObjectAsync(bucketName, objectName, filePath, contentType);  
+                    Console.Out.WriteLine("Successfully uploaded " + objectName );
                 }
                
             }
