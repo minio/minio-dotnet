@@ -58,6 +58,78 @@ namespace Minio
             return;
         }
         /// <summary>
+        /// Get an object. The object will be streamed to the callback given by the user.
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Name of object to retrieve</param>
+        /// <param name="filePath">string with file path</param>
+        public async Task GetObjectAsync(string bucketName, string objectName, string fileName)
+        {
+           
+            bool fileExists = File.Exists(fileName);
+            utils.ValidateFile(fileName);
+
+            ObjectStat objectStat = await StatObjectAsync(bucketName, objectName);
+            long length = objectStat.Size;
+            string etag = objectStat.ETag;
+
+            string tempFileName = fileName + "." + etag + ".part.minio";
+            
+            bool tempFileExists = File.Exists(tempFileName);
+
+            utils.ValidateFile(tempFileName);
+            
+            FileInfo tempFileInfo = new FileInfo(tempFileName);
+            long tempFileSize = 0;
+            if (tempFileExists)
+            {
+                tempFileSize = tempFileInfo.Length;
+                if (tempFileSize > length)
+                {
+                    File.Delete(tempFileName);
+                    tempFileExists = false;
+                    tempFileSize = 0;
+                }
+            }
+
+            if (fileExists)
+            {
+                FileInfo fileInfo = new FileInfo(fileName);
+                long fileSize = fileInfo.Length;
+                if (fileSize == length)
+                {
+                    // already downloaded. nothing to do
+                    return;
+                }
+                else if (fileSize > length)
+                {
+                    throw new ArgumentException("'" + fileName + "': object size " + length + " is smaller than file size "
+                                                       + fileSize);
+                }
+                else if (!tempFileExists)
+                {
+                    // before resuming the download, copy filename to tempfilename
+                    File.Copy(fileName, tempFileName);
+                    tempFileSize = fileSize;
+                    tempFileExists = true;
+                }
+            }
+            await GetObjectAsync(bucketName, objectName, (stream) => {
+                var fileStream = File.Create(tempFileName);
+                stream.CopyTo(fileStream);
+                fileStream.Close();
+                FileInfo writtenInfo = new FileInfo(tempFileName);
+                long writtenSize = writtenInfo.Length;
+                if (writtenSize != length - tempFileSize)
+                {
+                    new IOException(tempFileName + ": unexpected data written.  expected = " + (length - tempFileSize)
+                                           + ", written = " + writtenSize);
+                }
+                utils.MoveWithReplace(tempFileName, fileName);
+            });
+           
+        }
+        /// <summary>
         /// Creates an object from file
         /// </summary>
         /// <param name="bucketName">Bucket to create object in</param>

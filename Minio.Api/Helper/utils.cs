@@ -87,21 +87,22 @@ namespace Minio
         {
             return (secretKey == "" || accessKey == "");
         }
-        internal static void ValidateFile(string fileName,string contentType)
+        internal static void ValidateFile(string filePath,string contentType=null)
         {
-            if (fileName == null || fileName == "")
+            if (filePath == null || filePath == "")
             {
                 throw new ArgumentException("empty file name is not allowed");
             }
 
-            string filePath = Path.GetFileName(fileName);
-            FileAttributes attr = File.GetAttributes(fileName);
-
-
-            if (attr.HasFlag(FileAttributes.Directory))
-
+            string fileName = Path.GetFileName(filePath);
+            bool fileExists = File.Exists(filePath);
+            if (fileExists)
             {
-                throw new ArgumentException("'" + fileName + "': not a regular file");
+                FileAttributes attr = File.GetAttributes(filePath);
+                if (attr.HasFlag(FileAttributes.Directory))
+                {
+                    throw new ArgumentException("'" + fileName + "': not a regular file");
+                }
             }
 
             if (contentType == null)
@@ -127,6 +128,18 @@ namespace Minio
             catch { }
 
             return contentType;
+        }
+        public static void MoveWithReplace(string sourceFileName, string destFileName)
+        {
+
+            //first, delete target file if exists, as File.Move() does not support overwrite
+            if (File.Exists(destFileName))
+            {
+                File.Delete(destFileName);
+            }
+
+            File.Move(sourceFileName, destFileName);
+
         }
     }
 }

@@ -45,9 +45,9 @@ namespace Minio.Examples
             //Cases.ListIncompleteUploads.Run(minioClient);
             // Cases.RemoveIncompleteUpload.Run(minioClient).Wait();
             // Cases.CopyObject.Run(minioClient).Wait();
-            Cases.FPutObject.Run(minioClient).Wait();
+            // Cases.FPutObject.Run(minioClient).Wait();
             Cases.ListObjects.Run(minioClient).Wait();
-
+            Cases.FGetObject.Run(minioClient).Wait();
             Console.ReadLine();
          
         }

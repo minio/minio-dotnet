@@ -87,9 +87,8 @@ namespace FileUploader
                     Console.Out.WriteLine("bucket-name was " + ((found == true) ? "found" : "not found"));
                 }
                 else { 
-                    // to be implemented
-                    //var size =  await minio.Buckets.FPutObject(bucketName, objectName, filePath, contentType);  
-                    //Console.Out.WriteLine("Successfully uploaded " + objectName + " of size" + size);
+                    await minio.Buckets.PutObjectAsync(bucketName, objectName, filePath, contentType);  
+                    Console.Out.WriteLine("Successfully uploaded " + objectName);
                 }
                
             }
@@ -123,6 +122,8 @@ Click on FileUploader project and Start
 #### Full Examples : Bucket notification Operations
 
 #### Full Examples : File Object Operations
+* [FGetObject.cs] (./Minio.Examples/Cases/FGetObject.cs)
+* [FPutObject.cs] (./Minio.Examples/Cases/FPutObject.cs)
 
 #### Full Examples : Object Operations
 * [GetObject.cs] (./Minio.Examples/Cases/GetObject.cs)

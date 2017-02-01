@@ -18,12 +18,12 @@ namespace Minio
         Task RemoveIncompleteUploadAsync(string bucketName, string objectName);
         Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null);
         Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null);
+        Task GetObjectAsync(string bucketName, string objectName, string filePath);
 
         /*
          * To be implemented
         //accepts file instead of stream
 
-         Task GetObjectAsync(string bucketName, string objectName, string filePath, string contentType);
 
         //accepts file instead of stream
         Task CopyObjectAsync(string bucketName, string objectName, string objectSource, CopyConditions conditions);
