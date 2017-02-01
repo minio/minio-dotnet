@@ -13,7 +13,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                await minio.Objects.CopyObjectAsync("mountshasta", "testobject", "bobcat2t", "copi2dobj", null);
+                await minio.Api.CopyObjectAsync("mountshasta", "testobject", "bobcat2t", "copi2dobj", null);
                 Console.Out.WriteLine("done copying");
             }
             catch (Exception e)

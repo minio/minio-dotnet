@@ -13,7 +13,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                var list = await minio.Buckets.ListBucketsAsync();
+                var list = await minio.Api.ListBucketsAsync();
                 foreach (Bucket bucket in list.Buckets)
                 {
                     Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);

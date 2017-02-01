@@ -15,7 +15,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                await minio.Buckets.SetPolicyAsync("testminiopolicy", "bobcat",PolicyType.READ_ONLY);
+                await minio.Api.SetPolicyAsync("testminiopolicy", "bobcat",PolicyType.READ_ONLY);
 
             }
             catch (Exception e)

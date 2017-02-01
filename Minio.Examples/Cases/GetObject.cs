@@ -14,7 +14,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                await minio.Objects.GetObjectAsync("asiatrip", "asiaphotos.jpg", (stream) =>
+                await minio.Api.GetObjectAsync("asiatrip", "asiaphotos.jpg", (stream) =>
                 {
                     stream.CopyTo(Console.OpenStandardOutput());
                 });

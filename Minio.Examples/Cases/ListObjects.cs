@@ -17,7 +17,11 @@ namespace Minio.Examples.Cases
                 var recursive = false;
                 bucketName = "mountshasta";
                 prefix = null;
+
                /* IObservable<Item> observable = minio.Buckets.ListObjectsAsync(bucketName, prefix, recursive);
+
+                IObservable<Item> observable = minio.Api.ListObjectsAsync(bucketName, prefix, recursive);
+
 
                 IDisposable subscription = observable.Subscribe(
                     item => Console.WriteLine("OnNext: {0}", item.Key),
