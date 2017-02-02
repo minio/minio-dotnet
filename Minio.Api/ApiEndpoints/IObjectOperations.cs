@@ -34,7 +34,7 @@ namespace Minio
         Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null);
         Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null);
         Task GetObjectAsync(string bucketName, string objectName, string filePath);
-
+ 
         /*
          * To be implemented
         //accepts file instead of stream
@@ -47,5 +47,6 @@ namespace Minio
         Task CopyObjectAsync(string bucketName, string objectName, string objectSource, CopyConditions conditions);
         //task RemoveObjects(string bucketName, Stream objectsList );
         */
+ 
     }
 }

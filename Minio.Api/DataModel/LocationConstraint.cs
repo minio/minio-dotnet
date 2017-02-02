@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+using System;
+using System.Xml.Serialization;
+
+
+namespace Minio.DataModel
 {
-    class InvalidObjectNameException : ClientException
+    [Serializable]
+    [XmlRoot(ElementName = "LocationConstraint", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+
+    public class LocationConstraint
     {
-        private string objectName;
-
-        public InvalidObjectNameException(string objectName, string message) : base(message)
-        {
-            this.objectName = objectName;
-        }
-
-        public override string ToString()
-        {
-            return this.objectName + ": " + base.ToString();
-        }
+        internal string location { get; set; }
     }
 }
+

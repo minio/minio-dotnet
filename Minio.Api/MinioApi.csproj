@@ -76,7 +76,10 @@
     <Compile Include="ApiEndpoints\IBucketOperations.cs" />
     <Compile Include="ApiEndpoints\IObjectOperations.cs" />
     <Compile Include="ApiEndpoints\ObjectOperations.cs" />
+    <Compile Include="AWSS3Endpoints.cs" />
+    <Compile Include="BucketRegionCache.cs" />
     <Compile Include="DataModel\Bucket.cs" />
+    <Compile Include="DataModel\LocationConstraint.cs" />
     <Compile Include="DataModel\Policy\BucketPolicy.cs" />
     <Compile Include="DataModel\CopyConditions.cs" />
     <Compile Include="DataModel\CopyObjectResult.cs" />
@@ -103,6 +106,7 @@
     <Compile Include="DataModel\Policy\SingleOrArrayConverter.cs" />
     <Compile Include="DataModel\Policy\Statement.cs" />
     <Compile Include="DataModel\Policy\StatementJsonConverter.cs" />
+    <Compile Include="DataModel\PostPolicy.cs" />
     <Compile Include="DataModel\Prefix.cs" />
     <Compile Include="DataModel\Upload.cs" />
     <Compile Include="Exceptions\AccessDeniedException.cs" />
@@ -129,8 +133,9 @@
     <Compile Include="Helper\Constants.cs" />
     <Compile Include="Helper\s3utils.cs" />
     <Compile Include="Helper\utils.cs" />
+    <Compile Include="Exceptions\InvalidTransferAccelerationBucketException.cs" />
     <Compile Include="MinioRestClient.cs" />
-    <Compile Include="ObjectStat.cs" />
+    <Compile Include="DataModel\ObjectStat.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Regions.cs" />
     <Compile Include="V4Authenticator.cs" />

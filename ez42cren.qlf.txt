@@ -1,0 +1,48 @@
+﻿add presigned operations
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+# interactive rebase in progress; onto ad72a3c
+# Last commands done (44 commands done):
+#    pick bfe67f6 add Apache License header for Minio Dotnet API
+#    pick 43e21f7 add presigned operations
+# Next commands to do (5 remaining commands):
+#    f 5391fc1 add presigned operations
+#    pick 8fd47ea modified target url for aws requests
+# You are currently rebasing branch 'master' on 'ad72a3c'.
+#
+# Changes to be committed:
+#	modified:   Minio-csharp-sdk.sln
+#	modified:   Minio.Api/ApiEndpoints/BucketOperations.cs
+#	modified:   Minio.Api/ApiEndpoints/ObjectOperations.cs
+#	modified:   Minio.Api/DataModel/CopyConditions.cs
+#	modified:   Minio.Api/DataModel/DateFormat.cs
+#	renamed:    Minio.Api/ObjectStat.cs -> Minio.Api/DataModel/ObjectStat.cs
+#	modified:   Minio.Api/Exceptions/AccessDeniedException.cs
+#	modified:   Minio.Api/Exceptions/BucketNotFoundException.cs
+#	modified:   Minio.Api/Exceptions/ClientException.cs
+#	modified:   Minio.Api/Exceptions/ConnectionException.cs
+#	modified:   Minio.Api/Exceptions/EntityTooLargeException.cs
+#	modified:   Minio.Api/Exceptions/ErrorResponse.cs
+#	modified:   Minio.Api/Exceptions/ForbiddenException.cs
+#	modified:   Minio.Api/Exceptions/InternalClientException.cs
+#	modified:   Minio.Api/Exceptions/InternalServerException.cs
+#	modified:   Minio.Api/Exceptions/InvalidBucketNameException.cs
+#	modified:   Minio.Api/Exceptions/InvalidContentLengthException.cs
+#	modified:   Minio.Api/Exceptions/InvalidEndpointException.cs
+#	modified:   Minio.Api/Exceptions/InvalidKeyNameException.cs
+#	modified:   Minio.Api/Exceptions/InvalidObjectNameException.cs
+#	modified:   Minio.Api/Exceptions/InvalidObjectPrefixException.cs
+#	modified:   Minio.Api/Exceptions/InvalidPortException.cs
+#	modified:   Minio.Api/Exceptions/MaxBucketsReachedException.cs
+#	modified:   Minio.Api/Exceptions/MethodNotAllowedException.cs
+#	modified:   Minio.Api/Exceptions/ObjectNotFoundException.cs
+#	modified:   Minio.Api/Exceptions/RedirectionException.cs
+#	modified:   Minio.Api/Exceptions/UnexpectedShortReadException.cs
+#	modified:   Minio.Api/Helper/s3utils.cs
+#	modified:   Minio.Api/Helper/utils.cs
+#	modified:   Minio.Api/MinioApi.csproj
+#	modified:   Minio.Examples/Cases/MakeBucket.cs
+#	modified:   SimpleTest/Program.cs
+#
+

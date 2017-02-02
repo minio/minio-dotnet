@@ -22,7 +22,7 @@ namespace Minio.DataModel
     [Serializable]
     public class CreateBucketConfiguration
     {
-        public CreateBucketConfiguration(string location)
+        public CreateBucketConfiguration(string location=null)
         {
             this.LocationConstraint = location;
         }

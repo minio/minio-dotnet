@@ -16,7 +16,7 @@
 
 using System;
 
-namespace Minio
+namespace Minio.DataModel
 {
     public class ObjectStat
     {

@@ -24,7 +24,7 @@ Minio client requires the following four parameters specified to connect to an A
 ```cs
 using Minio;
 
-private static MinioClient client = var minio = new MinioRestClient("play.minio.io:9000",
+private static MinioRestClient minio = new MinioRestClient("play.minio.io:9000",
                 "Q3AM3UQ867SPQQA43P2F",
                 "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
                 ).WithSSL();

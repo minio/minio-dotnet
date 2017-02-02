@@ -9,7 +9,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                await minio.Api.RemoveBucketAsync("bucket-name");
+                await minio.Api.RemoveBucketAsync("dminio");
                 Console.Out.WriteLine("bucket-name removed successfully");
             }
             catch (Exception e)

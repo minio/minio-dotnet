@@ -26,6 +26,7 @@ using System.IO;
 using System.Xml.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Minio.Helper;
 
 namespace Minio
 {
@@ -37,12 +38,12 @@ namespace Minio
         public string SecretKey { get; private set; }
         public string Endpoint { get; private set; }
         internal string BaseUrl { get; private set; }
-        internal bool Secure { get; private set; } 
+        internal bool Secure { get; private set; }
         internal bool Anonymous { get; }
         internal Uri uri;
-
-        private RestClient client;
-        private V4Authenticator authenticator;
+        internal string s3AccelerateEndpoint;
+        internal RestClient restClient;
+        internal V4Authenticator authenticator;
         public ClientApiOperations Api;
 
         internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers = Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
@@ -87,27 +88,149 @@ namespace Minio
             uripath.Path += methodPath;
             return uripath;
         }
+     
+        internal void ModifyAWSEndpointFor(string region,string bucketName=null)
+        {
+            if (region != null)
+            {
+                _constructUri(region,bucketName);
+                this.restClient.BaseUrl = this.uri;
+
+            }
+        }
+        internal string MakeTargetURL(string region=null,string bucketName=null)
+        {
+            string targetUrl = null;
+            string host = this.BaseUrl;
+            // For Amazon S3 endpoint, try to fetch location based endpoint.
+            if (s3utils.IsAmazonEndPoint(this.BaseUrl))
+            {
+                if (this.s3AccelerateEndpoint != null && bucketName != null)
+                {
+                    // http://docs.aws.amazon.com/AmazonS3/latest/dev/transfer-acceleration.html
+                    // Disable transfer acceleration for non-compliant bucket names.
+                    if (bucketName.Contains("."))
+                    {
+                        throw new InvalidTransferAccelerationBucketException(bucketName);
+                    }
+                    // If transfer acceleration is requested set new host.
+                    // For more details about enabling transfer acceleration read here.
+                    // http://docs.aws.amazon.com/AmazonS3/latest/dev/transfer-acceleration.html
+                    host = s3AccelerateEndpoint;
+                }
+                else
+                {
+                    // Fetch new host based on the bucket location.
+                    host = AWSS3Endpoints.Instance.endpoint(region);
+
+                }
+            }
+            var scheme = this.Secure ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
+            //this.Endpoint = string.Format("{0}://{1}", scheme, AWSS3Endpoints.Instance.endpoint(region));
+            // Make URL only if bucketName is available, otherwise use the
+            // endpoint URL.
+            if (bucketName != null && s3utils.IsAmazonEndPoint(this.BaseUrl))
+            {
+                // Save if target url will have buckets which suppport virtual host.
+                bool isVirtualHostStyle = s3utils.IsVirtualHostSupported(uri, bucketName);
+
+                // If endpoint supports virtual host style use that always.
+                // Currently only S3 and Google Cloud Storage would support
+                // virtual host style.
+                string urlStr = null;
+                if (isVirtualHostStyle)
+                {
+                    targetUrl = scheme + "://" + bucketName + "." + host + "/";
+                }
+                else
+                {
+                    // If not fall back to using path style.
+                    targetUrl = urlStr + bucketName + "/";
+                }
+            }
+            else
+            {
+                targetUrl = string.Format("{0}://{1}", scheme, this.BaseUrl);
+            }
+
+
+            return targetUrl;
+
+        }
+ 
+
         /// <summary>
         /// helper to construct uri and validate it.
         /// </summary>
-        private void _constructUri()
+        private void _constructUri(string region=null,string bucketName=null)
         {
-            
-            var scheme = this.Secure ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
-            this.Endpoint = string.Format("{0}://{1}", scheme, this.BaseUrl);
-            if (string.IsNullOrEmpty(this.Endpoint))
+            if (string.IsNullOrEmpty(this.BaseUrl))
             {
                 throw new InvalidEndpointException("Endpoint cannot be empty.");
             }
+            string host = this.BaseUrl;
+             // For Amazon S3 endpoint, try to fetch location based endpoint.
+            if (s3utils.IsAmazonEndPoint(this.BaseUrl))
+            {
+                if (this.s3AccelerateEndpoint != null && bucketName != null)
+                {
+                    // http://docs.aws.amazon.com/AmazonS3/latest/dev/transfer-acceleration.html
+                    // Disable transfer acceleration for non-compliant bucket names.
+                    if (bucketName.Contains("."))
+                    {
+                        throw new InvalidTransferAccelerationBucketException(bucketName);
+                    }
+                    // If transfer acceleration is requested set new host.
+                    // For more details about enabling transfer acceleration read here.
+                    // http://docs.aws.amazon.com/AmazonS3/latest/dev/transfer-acceleration.html
+                    host = s3AccelerateEndpoint;
+                }
+                else
+                {
+                    // Fetch new host based on the bucket location.
+                    host = AWSS3Endpoints.Instance.endpoint(region);
+      
+                }
+            }
+           
+            var scheme = this.Secure ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
+           
+            this.Endpoint = string.Format("{0}://{1}", scheme, host);
+            this.uri = new Uri(string.Format("{0}://{1}", scheme, this.BaseUrl));
+            /*
+            // Make URL only if bucketName is available, otherwise use the
+            // endpoint URL.
+            if (bucketName != null && s3utils.IsAmazonEndPoint(this.BaseUrl))
+            {
+                // Save if target url will have buckets which suppport virtual host.
+                bool isVirtualHostStyle = s3utils.IsVirtualHostSupported(this.uri, bucketName);
 
-            this.uri = new Uri(this.Endpoint);
-
-            this._validateUri();
-          
+                // If endpoint supports virtual host style use that always.
+                // Currently only S3 and Google Cloud Storage would support
+                // virtual host style.
+                string urlStr = null;
+                if (isVirtualHostStyle)
+                {
+                    this.Endpoint = scheme + "://" + bucketName + "." + host + "/";
+                }
+                else
+                {
+                   // If not fall back to using path style.
+                   this.Endpoint = urlStr + bucketName + "/";
+                }
+             }
+             else
+            {
+                this.Endpoint = string.Format("{0}://{1}", scheme, this.BaseUrl);
+            }
+           
+            */
+           // this.uri = new Uri(this.Endpoint);
         }
-       /// <summary>
-       /// validates URI 
-       /// </summary>
+
+        /// <summary>
+        /// validates URI 
+        /// </summary>
         private void _validateUri()
         {
             if (!this.isValidEndpoint(this.uri.Host))
@@ -129,12 +252,13 @@ namespace Minio
                 throw new InvalidEndpointException(this.Endpoint, "Invalid scheme detected in endpoint.");
             }
             string amzHost = this.uri.Host;
-           /* if ((amzHost.EndsWith(".amazonaws.com", StringComparison.CurrentCultureIgnoreCase))
-                && !(amzHost.Equals("s3.amazonaws.com", StringComparison.CurrentCultureIgnoreCase)))
-            {
-                throw new InvalidEndpointException(this.Endpoint, "For Amazon S3, host should be \'s3.amazonaws.com\' in endpoint.");
-            }
-            */
+            if ((amzHost.EndsWith(".amazonaws.com", StringComparison.CurrentCultureIgnoreCase))
+                 && !(amzHost.Equals("s3.amazonaws.com", StringComparison.CurrentCultureIgnoreCase)))
+             {
+                 throw new InvalidEndpointException(this.Endpoint, "For Amazon S3, host should be \'s3.amazonaws.com\' in endpoint.");
+             }
+             
+
         }
         /// <summary>
         /// Validate Url endpoint 
@@ -186,8 +310,8 @@ namespace Minio
                 throw new ArgumentException("Appversion cannot be null or empty");
             }
             string customAgent = appName + "/" + appVersion;
-           
-            this.client.UserAgent = this.FullUserAgent;
+
+            this.restClient.UserAgent = this.FullUserAgent;
         }
         /// <summary>
         ///  Creates and returns an Cloud Storage client
@@ -197,22 +321,27 @@ namespace Minio
         /// <param name="secretKey">Secret Key for authenticated requests</param>
         /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
 
-        public MinioRestClient(string endpoint,string accessKey="", string secretKey="")
+        public MinioRestClient(string endpoint, string accessKey = "", string secretKey = "")
         {
-            
+
             this.Secure = false;
             this.BaseUrl = endpoint;
+            this.AccessKey = accessKey;
+            this.SecretKey = secretKey;
+            this.s3AccelerateEndpoint = null;
             this.Anonymous = utils.isAnonymousClient(accessKey, secretKey);
             _constructUri();
-            client = new RestSharp.RestClient(this.uri);
-            client.UserAgent = this.FullUserAgent;
-            
+            _validateUri();
+
+            restClient = new RestSharp.RestClient(this.uri);
+            restClient.UserAgent = this.FullUserAgent;
+
             authenticator = new V4Authenticator(accessKey, secretKey);
-            client.Authenticator = authenticator;
+            restClient.Authenticator = authenticator;
             if (accessKey == "" || secretKey == "")
             {
                 this.Anonymous = true;
-            } 
+            }
             else
             {
                 this.Anonymous = false;
@@ -230,58 +359,30 @@ namespace Minio
         {
             this.Secure = true;
             _constructUri();
-            this.client.BaseUrl = this.uri;
+            this.restClient.BaseUrl = this.uri;
             return this;
         }
 
-        internal async Task<IRestResponse<T>> ExecuteTaskAsync<T>(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,IRestRequest request) where T: new()
+        internal async Task<IRestResponse<T>> ExecuteTaskAsync<T>(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request) where T : new()
         {
-            var response = await this.client.ExecuteTaskAsync<T>(request, CancellationToken.None);
+            var response = await this.restClient.ExecuteTaskAsync<T>(request, CancellationToken.None);
             HandleIfErrorResponse(response, errorHandlers);
             return response;
         }
-        internal  async Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,IRestRequest request)
+        internal async Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request)
         {
-            var response = await this.client.ExecuteTaskAsync(request, CancellationToken.None);
+            var response = await this.restClient.ExecuteTaskAsync(request, CancellationToken.None);
+
+            var fullUrl = this.restClient.BuildUri(request);
+            Console.Out.WriteLine(fullUrl);
             HandleIfErrorResponse(response, errorHandlers);
             return response;
         }
+
 
   
-        //old
-        public void ExecuteAsync<T>(IRestRequest request, Action<T> callback) where T : new()
-        {
-            request.OnBeforeDeserialization = (resp) =>
-            {
-                // for individual resources when there's an error to make
-                // sure that RestException props are populated
-                if (((int)resp.StatusCode) >= 400)
-                {
-                    // have to read the bytes so .Content doesn't get populated
-                    var restException = "{{ \"RestException\" : {0} }}";
-                    var content = resp.RawBytes.AsString(); //get the response content
-                    var newJson = string.Format(restException, content);
-
-                    resp.Content = null;
-                    resp.RawBytes = Encoding.UTF8.GetBytes(newJson.ToString());
-                }
-            };
-
-            request.DateFormat = "ddd, dd MMM yyyy HH:mm:ss '+0000'";
-
-            this.client.ExecuteAsync<T>(request, (response) => callback(response.Data));
-        }
-        ///old 
-        /// <summary>
-        /// Execute a manual REST request
-        /// </summary>
-        /// <param name="request">The RestRequest to execute (will use client credentials)</param>
-        /// <param name="callback">The callback function to execute when the async request completes</param>
-        public void ExecuteAsync(IRestRequest request, Action<IRestResponse> callback)
-        {
-            
-            this.client.ExecuteAsync(request, callback);
-        }
+  
+     
       
         /// <summary>
         /// Parse response errors if any and return relevant error messages
@@ -338,6 +439,7 @@ namespace Minio
                         {
                             errorResponse.Code = "NoSuchBucket";
                             var bucketName = response.Request.Resource.Split('/')[0];
+                            BucketRegionCache.Instance.Remove(bucketName);
                             e = new BucketNotFoundException(bucketName, "Not found.");
                         }
                         else
@@ -385,9 +487,7 @@ namespace Minio
             _defaultErrorHandlingDelegate(response);
         }
 
-  
     }
-
     internal delegate void ApiResponseErrorHandlingDelegate(IRestResponse response);
-
+ 
 }
