@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -62,6 +63,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Name of object to retrieve</param>
         /// <param name="filePath">string with file path</param>
+        /// <returns></returns>
         public async Task GetObjectAsync(string bucketName, string objectName, string fileName)
         {
            
@@ -135,7 +137,6 @@ namespace Minio
         /// <param name="objectName">Key of the new object</param>
         /// <param name="fileName">Path of file to upload</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
-
         public async Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null)
         {
             utils.ValidateFile(filePath, contentType);
@@ -148,6 +149,7 @@ namespace Minio
             }       
 
         }
+
         /// <summary>
         /// Creates an object from inputstream
         /// </summary>
@@ -236,8 +238,6 @@ namespace Minio
                 }
 
             }
-           
-           
             Dictionary<int, string> etags = new Dictionary<int, string>();
             for (partNumber = 1; partNumber <= partCount; partNumber++)
             {
@@ -246,7 +246,14 @@ namespace Minio
             await this.CompleteMultipartUploadAsync(bucketName, objectName, uploadId, etags);
 
         }      
-
+        /// <summary>
+        /// internal method to complete multi part upload of object to server
+        /// </summary>
+        /// <param name="bucketName">Bucket Name</param>
+        /// <param name="objectName">Object to be uploaded</param>
+        /// <param name="uploadId">Upload Id</param>
+        /// <param name="etags">Etags</param>
+        /// <returns></returns>
         private async Task CompleteMultipartUploadAsync(string bucketName, string objectName, string uploadId, Dictionary<int, string> etags)
         {
             var path = bucketName + "/" + utils.UrlEncode(objectName) + "?uploadId=" + uploadId;
@@ -276,7 +283,12 @@ namespace Minio
             }
             this.client.ParseError(response);
         }
-        // Calculate part size and number of parts required
+
+        /// <summary>
+        /// Calculate part size and number of parts required
+        /// </summary>
+        /// <param name="size"></param>
+        /// <returns></returns>
         private Object CalculateMultiPartSize(long size)
         {
             // make sure to have enough buffer for last part, use 9999 instead of 10000
@@ -321,7 +333,14 @@ namespace Minio
               });
             
         }
-
+        /// <summary>
+        /// Gets the list of parts corresponding to a uploadId for given bucket and object
+        /// </summary>
+        /// <param name="bucketName"></param>
+        /// <param name="objectName"></param>
+        /// <param name="uploadId"></param>
+        /// <param name="partNumberMarker"></param>
+        /// <returns></returns>
         private async Task<Tuple<ListPartsResult, List<Part>>> GetListPartsAsync(string bucketName, string objectName, string uploadId, int partNumberMarker)
         {
             var path = bucketName + "/" + utils.UrlEncode(objectName) + "?uploadId=" + uploadId;
@@ -331,7 +350,6 @@ namespace Minio
             }
             path += "&max-parts=1000";
             var request = new RestRequest(path, Method.GET);
-            Console.Out.WriteLine(request.Resource);
 
             var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
             if (!response.StatusCode.Equals(HttpStatusCode.OK))
@@ -623,7 +641,12 @@ namespace Minio
            
         }
 
-       
+       /// <summary>
+       /// Advances in the stream upto currentPartSize or End of Stream
+       /// </summary>
+       /// <param name="data"></param>
+       /// <param name="currentPartSize"></param>
+       /// <returns>bytes read in a byte array</returns>
         internal byte[] ReadFull(Stream data, int currentPartSize)
         {
             byte[] result = new byte[currentPartSize];
@@ -654,21 +677,16 @@ namespace Minio
             }
             return truncatedResult;
         }
-        /**
-         * Copy a source object into a new destination object.
-         *
-         * @param bucketName
-         *          Bucket name where the object to be copied exists.
-         * @param objectName
-         *          Object name source to be copied.
-         * @param destBucketName
-         *          Bucket name where the object will be copied to.
-         * @param destObjectName
-         *          Object name to be created, if not provided uses source object name
-         *          as destination object name.
-         * @param optionally can take a key value CopyConditions as well for conditionally attempting
-         * copyObject.
-         */
+
+        /// <summary>
+        ///  Copy a source object into a new destination object.
+        /// </summary>
+        /// <param name="bucketName"> Bucket name where the object to be copied exists.</param>
+        /// <param name="objectName">Object name source to be copied.</param>
+        /// <param name="destBucketName">Bucket name where the object will be copied to.</param>
+        /// <param name="destObjectName">Object name to be created, if not provided uses source object name as destination object name.</param>
+        /// <param name="copyConditions">optionally can take a key value CopyConditions as well for conditionally attempting copyObject.</param>
+        /// <returns></returns>
         public async Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName,string destObjectName=null,CopyConditions copyConditions=null)
         {
             if (bucketName == null)
@@ -691,8 +709,6 @@ namespace Minio
             {
                 destObjectName = objectName;
             }
-
-
 
             var path = destBucketName  + "/" + utils.UrlEncode(destObjectName);
             var request = new RestRequest(path, Method.PUT);
@@ -722,7 +738,67 @@ namespace Minio
             CopyObjectResult copyObjectResult = (CopyObjectResult)(new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream));       
             return copyObjectResult;
         }
-   
-   
+
+
+        /// <summary>
+        /// Presigned Get url.
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Key of object to retrieve</param>
+        /// <param name="expiresInt">Expiration time in seconds</param>
+        public string PresignedGetObject(string bucketName, string objectName, int expiresInt)
+        {
+            RestRequest request = new RestRequest(bucketName + "/" + utils.UrlEncode(objectName), Method.GET);
+            return this.client.authenticator.PresignURL(this.client.restClient, request, expiresInt);
+        }
+
+        /// <summary>
+        /// Presigned Put url.
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Key of object to retrieve</param>
+        /// <param name="expiresInt">Expiration time in seconds</param>
+        public string PresignedPutObject(string bucketName, string objectName, int expiresInt)
+        {
+            RestRequest request = new RestRequest(bucketName + "/" + utils.UrlEncode(objectName), Method.PUT);
+            return this.client.authenticator.PresignURL(this.client.restClient, request, expiresInt);
+        }
+
+        /// <summary>
+        ///  Presigned post policy
+        /// </summary>
+        public Dictionary<string, string> PresignedPostPolicy(PostPolicy policy)
+        {
+            if (!policy.IsBucketSet())
+            {
+                throw new ArgumentException("bucket should be set");
+            }
+
+            if (!policy.IsKeySet())
+            {
+                throw new ArgumentException("key should be set");
+            }
+
+            if (!policy.IsExpirationSet())
+            {
+                throw new ArgumentException("expiration should be set");
+            }
+
+            string region = Regions.GetRegion(this.client.restClient.BaseUrl.Host);
+            DateTime signingDate = DateTime.UtcNow;
+
+            policy.SetAlgorithm("AWS4-HMAC-SHA256");
+            policy.SetCredential(this.client.authenticator.GetCredentialString(signingDate, region));
+            policy.SetDate(signingDate);
+
+            string policyBase64 = policy.Base64();
+            string signature = this.client.authenticator.PresignPostSignature(region, signingDate, policyBase64);
+
+            policy.SetPolicy(policyBase64);
+            policy.SetSignature(signature);
+
+            return policy.GetFormData();
+        }
     }
 }
+

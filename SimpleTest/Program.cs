@@ -1,9 +1,17 @@
-﻿using System;
-
+﻿
+using System;
 using Minio;
 using Minio.DataModel;
+<<<<<<< HEAD
 
+=======
+using System.Configuration;
+>>>>>>> 5391fusing System.Net;
 using System.Threading.Tasks;
+
+c1... add presigned operations
+using System.Threading.Tasks;
+using System.Net;
 
 namespace SimpleTest
 {
@@ -12,12 +20,17 @@ namespace SimpleTest
         static void Main(string[] args)
         { 
 
-            var minio = new Minio.MinioRestClient(endpoint:"play.minio.io:9000",
-                accessKey:"Q3AM3UQ867SPQQA43P2F",
-                secretKey:"zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
-                ).WithSSL();
-           
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+                                    | SecurityProtocolType.Tls11
+                                    | SecurityProtocolType.Tls12;
 
+
+            /// Note: s3 AccessKey and SecretKey needs to be added in App.config file
+            /// See instructions in README.md on running examples for more information.
+            var minio = new MinioRestClient(ConfigurationManager.AppSettings["Endpoint"],
+                                             ConfigurationManager.AppSettings["AccessKey"],
+                                             ConfigurationManager.AppSettings["SecretKey"]).WithSSL();
+           
             var getListBucketsTask = minio.Api.ListBucketsAsync();
             try
             {
@@ -32,6 +45,7 @@ namespace SimpleTest
             {
                 Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
             }
+
 
 
             var bucketExistTask = minio.Api.BucketExistsAsync("bucky");

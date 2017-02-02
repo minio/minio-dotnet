@@ -35,15 +35,19 @@ namespace Minio.Examples
             {
                 //Set app Info 
                 minioClient.SetAppInfo("app-name", "app-version");
+                Cases.RemoveBucket.Run(minioClient).Wait();
+
+                //Cases.BucketExists.Run(minioClient).Wait();
+                //Cases.ListBuckets.Run(minioClient).Wait();
+
 
                 Cases.MakeBucket.Run(minioClient).Wait();
                 Cases.ListBuckets.Run(minioClient).Wait();
 
                 Cases.FPutObject.Run(minioClient).Wait();
-
-                /*
-                Cases.BucketExists.Run(minioClient).Wait();
-                Cases.RemoveBucket.Run(minioClient).Wait();
+ 
+               // Cases.GetObject.Run(minioClient).Wait();
+  
                 Cases.GetObject.Run(minioClient).Wait();
                 Cases.StatObject.Run(minioClient).Wait();
                 Cases.PutObject.Run(minioClient).Wait();
@@ -52,7 +56,7 @@ namespace Minio.Examples
                 Cases.CopyObject.Run(minioClient).Wait();
                 Cases.ListObjects.Run(minioClient).Wait();
                 Cases.FGetObject.Run(minioClient).Wait();
-                */
+              
                 Console.ReadLine();
             }
             catch(ClientException ex)

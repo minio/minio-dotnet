@@ -27,11 +27,17 @@ using Minio.Exceptions;
 using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Reactive.Linq;
+using Minio.Helper;
 
 namespace Minio
 {
     public partial class ClientApiOperations : IBucketOperations
-    {     
+    {
+        /// <summary>
+        /// List all objects in a bucket
+        /// </summary>
+        /// <param name="bucketName">Bucket to list objects from</param>
+        /// <returns>An iterator lazily populated with objects</returns>
         public async Task<ListAllMyBucketsResult> ListBucketsAsync()
         {
             var request = new RestRequest("/", Method.GET);
@@ -53,15 +59,22 @@ namespace Minio
             return bucketList;
 
         }
+
+        /// <summary>
+        /// Create a private bucket with a give name.
+        /// </summary>
+        /// <param name="bucketName">Name of the new bucket</param>
         public async Task<bool> MakeBucketAsync(string bucketName, string location = "us-east-1")
         {
             var request = new RestRequest("/" + bucketName, Method.PUT);
+
             // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
             if (location != "us-east-1")
             {
                 CreateBucketConfiguration config = new CreateBucketConfiguration(location);
                 request.AddBody(config);
             }
+            
             var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
 
             if (response.StatusCode == HttpStatusCode.OK)
@@ -72,9 +85,80 @@ namespace Minio
             return false;
         }
 
+        /// <summary>
+        /// Updates Region cache for given bucket.
+        /// </summary>
+        /// <param name="bucketName"></param>
+        internal async Task<string> updateRegionCache(string bucketName)
+        {
+            string region = BucketRegionCache.Instance.Region(bucketName);
+            if (bucketName != null && s3utils.IsAmazonEndPoint(this.client.BaseUrl) && this.client.AccessKey != null
+            && this.client.SecretKey != null && !BucketRegionCache.Instance.Exists(bucketName))
+            {
+                string location = null;
+                var path = bucketName + "?location";
+                var request = new RestRequest(path, Method.GET);
+                var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
+
+                if (HttpStatusCode.OK.Equals(response.StatusCode))
+                {
+                    var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+                    var stream = new MemoryStream(contentBytes);
+                    XDocument root = XDocument.Parse(response.Content);
+                    location = root.Root.Value;
+
+                }
+                if (location == null)
+                {
+                    region = "us-east-1";
+                }
+                else
+                {
+                    // eu-west-1 can be sometimes 'EU'.
+                    if ("EU".Equals(location))
+                    {
+                        region = "eu-west-1";
+                    }
+                    else
+                    {
+                        region = location;
+                    }
+                }
+
+                // Add the new location.
+                BucketRegionCache.Instance.Add(bucketName, region);
+            }
+            return region;
+
+        }
+        private async Task<string> ModifyTargetURL(RestRequest request, string bucketName)
+        {
+            var resource_url = this.client.Endpoint;
+
+            if (s3utils.IsAmazonEndPoint(this.client.BaseUrl))
+            {
+                // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
+                string location = await updateRegionCache(bucketName);
+                if (location != "us-east-1")
+                {
+                    this.client.ModifyAWSEndpointFor(location,bucketName);
+                    resource_url = this.client.MakeTargetURL(location, bucketName);
+                }
+            }
+            return resource_url;
+         
+        }
+        /// <summary>
+        /// Returns true if the specified bucketName exists, otherwise returns false.
+        /// </summary>
+        /// <param name="bucketName">Bucket to test existence of</param>
+        /// <returns>true if exists and user has access</returns>
         public async Task<bool> BucketExistsAsync(string bucketName)
         {
-            var request = new RestRequest(bucketName, Method.HEAD);
+            //request.Resource = bucketName;
+            string resource_url = await ModifyTargetURL(null, bucketName);
+            var request = new RestRequest(resource_url, Method.HEAD);
+            //request = new RestRequest("/");
             var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
 
             if (response.StatusCode != HttpStatusCode.OK)
@@ -96,10 +180,16 @@ namespace Minio
             return true;
         }
 
-
+        /// <summary>
+        /// Remove a bucket
+        /// </summary>
+        /// <param name="bucketName">Name of bucket to remove</param>
         public async Task RemoveBucketAsync(string bucketName)
         {
             var request = new RestRequest(bucketName, Method.DELETE);
+            await ModifyTargetURL(request, bucketName);
+
+
             var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
 
             if (!response.StatusCode.Equals(HttpStatusCode.NoContent))
@@ -114,7 +204,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to list objects from</param>
         /// <param name="prefix">Filters all objects not beginning with a given prefix</param>
         /// <param name="recursive">Set to false to emulate a directory</param>
-        /// <returns>A iterator lazily populated with objects</returns>
+        /// <returns>An observable of items that client can subscribe to</returns>
         public IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true)
         {
             return Observable.Create<Item>(
@@ -143,6 +233,15 @@ namespace Minio
                   }
               });
         }
+      
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bucketName">Bucket to list objects from</param>
+        /// <param name="prefix">Filters all objects not beginning with a given prefix</param>
+        /// <param name="recursive">Set to false to emulate a directory</param>
+        /// <param name="marker">marks location in the iterator sequence</param>
+        /// <returns>A tuple populated with objects</returns>
         private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix, bool recursive, string marker)
         {
             var queries = new List<string>();
@@ -167,6 +266,9 @@ namespace Minio
                 path += "?" + query;
             }
             var request = new RestRequest(path, Method.GET);
+            await ModifyTargetURL(request, bucketName);
+
+
             var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
 
             if (response.StatusCode != HttpStatusCode.OK)
@@ -200,9 +302,11 @@ namespace Minio
 
             return new Tuple<ListBucketResult, List<Item>>(listBucketResult, items.ToList());
         }
-        /**
-         * Returns the parsed current bucket access policy.
-         */
+        /// <summary>
+        /// Returns current policy stored on the server for this bucket
+        /// </summary>
+        /// <param name="bucketName">Bucket name.</param>
+        /// <returns>Returns the Bucket policy</returns>
         private async Task<BucketPolicy> GetPolicyAsync(string bucketName)
         {
             BucketPolicy policy = null;
@@ -211,6 +315,7 @@ namespace Minio
 
             var request = new RestRequest(path, Method.GET);
             request.AddHeader("Content-Type", "application/json");
+            await ModifyTargetURL(request, bucketName);
 
             response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
             if (response.StatusCode != HttpStatusCode.OK)
@@ -228,45 +333,46 @@ namespace Minio
             return policy;
         }
 
-        /**
-         * Get bucket policy at given objectPrefix
-         *
-         * @param bucketName   Bucket name.
-         * @param objectPrefix name of the object prefix
-         *
-         * </p><b>Example:</b><br>
-         * <pre>{@code String policy = minioClient.getBucketPolicy("my-bucketname", "my-objectname");
-         * System.out.println(policy); }</pre>
-         */
-        public async Task<PolicyType> GetPolicyAsync(String bucketName, String objectPrefix=null)
+    
+   
+        /// <summary>
+        /// Get bucket policy at given objectPrefix
+        /// </summary>
+        /// <param name="bucketName">Bucket name.</param>
+        /// <param name="objectPrefix">Name of the object prefix</param>
+        /// <returns>Returns the PolicyType </returns>
+        public async Task<PolicyType> GetPolicyAsync(String bucketName, String objectPrefix = null)
         {
             BucketPolicy policy = await GetPolicyAsync(bucketName);
             return policy.getPolicy(objectPrefix);
         }
-        /**
-         * Sets the bucket access policy.
-         */
+
+        /// <summary>
+        /// Internal method that sets the bucket access policy
+        /// </summary>
+        /// <param name="bucketName">Bucket Name.</param>
+        /// <param name="policy">Valid Json policy object</param>
+        /// <returns></returns>
         private async Task setPolicyAsync(String bucketName, BucketPolicy policy)
         {
             var path = bucketName + "?policy";
             var request = new RestRequest(path, Method.PUT);
             request.AddHeader("Content-Type", "application/json");
-            String policyJson = policy.getJson();
+            await ModifyTargetURL(request, bucketName);
+
+            string policyJson = policy.getJson();
             request.AddParameter("application/json", policyJson, ParameterType.RequestBody);
 
             IRestResponse response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
         }
 
-        /**
-         * Set policy on bucket and object prefix.
-         *
-         * @param bucketName   Bucket name.
-         * @param objectPrefix Name of the object prefix.
-         * @param policyType   Enum of {@link PolicyType}.
-         *
-         * </p><b>Example:</b><br>
-         * <pre>{@code setBucketPolicy("my-bucketname", "my-objectname", BucketPolicy.ReadOnly); }</pre>
-         */
+        /// <summary>
+        /// Sets the current bucket policy
+        /// </summary>
+        /// <param name="bucketName">Bucket Name</param>
+        /// <param name="objectPrefix">Name of the object prefix.</param>
+        /// <param name="policyType">Desired Policy type change </param>
+        /// <returns></returns>
         public async Task SetPolicyAsync(String bucketName, String objectPrefix, PolicyType policyType)
         {
             utils.validateObjectPrefix(objectPrefix);

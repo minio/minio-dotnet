@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
  * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2015 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,11 +15,8 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using RestSharp;
+
 namespace Minio.Exceptions
 {
     [Serializable]
