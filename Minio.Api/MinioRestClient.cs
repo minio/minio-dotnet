@@ -1,4 +1,19 @@
-﻿using System;
+﻿/*
+ * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2015 Minio, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+using System;
 using System.Collections.Generic;
 using Minio.Exceptions;
 using System.Text.RegularExpressions;
@@ -14,15 +29,17 @@ using System.Threading.Tasks;
 
 namespace Minio
 {
-    public sealed class MinioRestClient 
+ 
+    public sealed class MinioRestClient
+ 
     {
         public string AccessKey { get; private set; }
         public string SecretKey { get; private set; }
         public string Endpoint { get; private set; }
-        public string BaseUrl { get; private set; }
-        public bool Secure { get; private set; } 
+        internal string BaseUrl { get; private set; }
+        internal bool Secure { get; private set; } 
         internal bool Anonymous { get; }
-        public Uri uri;
+        internal Uri uri;
 
         private RestClient client;
         private V4Authenticator authenticator;
@@ -30,6 +47,7 @@ namespace Minio
 
         internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers = Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
 
+        // Default error handling delegate
         private readonly ApiResponseErrorHandlingDelegate _defaultErrorHandlingDelegate = (response) =>
         {
             if (response.StatusCode < HttpStatusCode.OK || response.StatusCode >= HttpStatusCode.BadRequest)
@@ -37,6 +55,7 @@ namespace Minio
                 throw new ClientException(response);
             }
         };
+
         private static string SystemUserAgent
         {
             get
@@ -46,7 +65,9 @@ namespace Minio
                 return String.Format("Minio ({0};{1}) {2}", System.Environment.OSVersion.ToString(), arch, release);
             }
         }
+
         private string CustomUserAgent = "";
+
         private string FullUserAgent
         {
             get
@@ -55,13 +76,20 @@ namespace Minio
             }
 
         }
-
+        /// <summary>
+        /// Constructs a new URI from the endpoint and method path
+        /// </summary>
+        /// <param name="methodPath"></param>
+        /// <returns></returns>
         internal UriBuilder GetUriBuilder(string methodPath)
         {
             var uripath = new UriBuilder(this.Endpoint);
             uripath.Path += methodPath;
             return uripath;
         }
+        /// <summary>
+        /// helper to construct uri and validate it.
+        /// </summary>
         private void _constructUri()
         {
             
@@ -77,7 +105,9 @@ namespace Minio
             this._validateUri();
           
         }
-      
+       /// <summary>
+       /// validates URI 
+       /// </summary>
         private void _validateUri()
         {
             if (!this.isValidEndpoint(this.uri.Host))
@@ -106,6 +136,11 @@ namespace Minio
             }
             */
         }
+        /// <summary>
+        /// Validate Url endpoint 
+        /// </summary>
+        /// <param name="endpoint"></param>
+        /// <returns></returns>
         private bool isValidEndpoint(string endpoint)
         {
             // endpoint may be a hostname
@@ -154,6 +189,14 @@ namespace Minio
            
             this.client.UserAgent = this.FullUserAgent;
         }
+        /// <summary>
+        ///  Creates and returns an Cloud Storage client
+        /// </summary>
+        /// <param name="endpoint">Location of the server, supports HTTP and HTTPS</param>
+        /// <param name="accessKey">Access Key for authenticated requests</param>
+        /// <param name="secretKey">Secret Key for authenticated requests</param>
+        /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
+
         public MinioRestClient(string endpoint,string accessKey="", string secretKey="")
         {
             
@@ -179,6 +222,10 @@ namespace Minio
             return;
 
         }
+        /// <summary>
+        /// Connects to Cloud Storage with HTTPS if this method is invoked on client object
+        /// </summary>
+        /// <returns></returns>
         public MinioRestClient WithSSL()
         {
             this.Secure = true;
@@ -236,6 +283,11 @@ namespace Minio
             this.client.ExecuteAsync(request, callback);
         }
       
+        /// <summary>
+        /// Parse response errors if any and return relevant error messages
+        /// </summary>
+        /// <param name="response"></param>
+
         internal void ParseError(IRestResponse response)
         {
             if (response == null)
@@ -313,7 +365,11 @@ namespace Minio
             clientException.XmlError = response.Content;
             throw clientException;
         }
-
+        /// <summary>
+        /// Delegate errors to handlers
+        /// </summary>
+        /// <param name="response"></param>
+        /// <param name="handlers"></param>
         private void HandleIfErrorResponse(IRestResponse response, IEnumerable<ApiResponseErrorHandlingDelegate> handlers)
         {
             if (handlers == null)
