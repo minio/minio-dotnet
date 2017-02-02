@@ -19,10 +19,7 @@ namespace Minio
 {
     public partial class ClientApiOperations : IObjectOperations
     {
-     
-
-
-       
+   
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
@@ -127,15 +124,13 @@ namespace Minio
         public async Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null)
         {
             utils.ValidateFile(filePath, contentType);
-            FileInfo file = new FileInfo(filePath);
-            long size = file.Length;
-            byte[] bs = File.ReadAllBytes(filePath);
-            using (MemoryStream filestream = new System.IO.MemoryStream(bs))
-
+            FileInfo fileInfo = new FileInfo(filePath);
+            long size = fileInfo.Length;
+            using (MemoryStream ms = new MemoryStream())
+            using (FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
-               await PutObjectAsync(bucketName, objectName, filestream, size, contentType);
-            }
-           
+                await PutObjectAsync(bucketName, objectName, file, size, contentType);
+            }       
 
         }
         /// <summary>

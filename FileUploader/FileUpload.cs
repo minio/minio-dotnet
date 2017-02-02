@@ -7,6 +7,9 @@ using System.Net;
 
 namespace FileUploader
 {
+    /// <summary>
+    /// 
+    /// </summary>
     class FileUpload
     {
         static void Main(string[] args)
