@@ -13,7 +13,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                PolicyType policy = await minio.Api.GetPolicyAsync("testminiopolicy",objectPrefix:"bnds");
+                PolicyType policy = await minio.Api.GetPolicyAsync("mountshasta2",objectPrefix:"bnds");
                 Console.Out.WriteLine("POLICY: " + policy.GetType().ToString());
             }
             catch (Exception e)

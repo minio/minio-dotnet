@@ -14,7 +14,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                await minio.Api.GetObjectAsync("testminiopolicy", "copyright.txt", (stream) =>
+                await minio.Api.GetObjectAsync("mountshasta", "copyright.txt", (stream) =>
                 {
                     stream.CopyTo(Console.OpenStandardOutput());
                 });

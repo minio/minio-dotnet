@@ -91,7 +91,8 @@ namespace Minio
         /// <param name="bucketName"></param>
         internal async Task<string> updateRegionCache(string bucketName)
         {
-            string region = BucketRegionCache.Instance.Region(bucketName);
+            string region = null;
+        
             if (bucketName != null && s3utils.IsAmazonEndPoint(this.client.BaseUrl) && this.client.AccessKey != null
             && this.client.SecretKey != null && !BucketRegionCache.Instance.Exists(bucketName))
             {
@@ -108,7 +109,7 @@ namespace Minio
                     location = root.Root.Value;
 
                 }
-                if (location == null)
+                if (location == null || location == "")
                 {
                     region = "us-east-1";
                 }
@@ -139,11 +140,15 @@ namespace Minio
             {
                 // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
                 string location = await updateRegionCache(bucketName);
-                if (location != "us-east-1")
+               // if (location != "us-east-1")
                 {
-                    this.client.ModifyAWSEndpointFor(location,bucketName);
+                    this.client.ModifyAWSEndpointFor(location, bucketName);
                     resource_url = this.client.MakeTargetURL(location, bucketName);
                 }
+                //else
+                //{  // use default request
+                //    resource_url = "";
+               // }
             }
             return resource_url;
          
@@ -157,8 +162,16 @@ namespace Minio
         {
             //request.Resource = bucketName;
             string resource_url = await ModifyTargetURL(null, bucketName);
-            var request = new RestRequest(resource_url, Method.HEAD);
-            //request = new RestRequest("/");
+ 
+            RestRequest request;
+            if (BucketRegionCache.Instance.Region(bucketName) == "us-east-1")
+            {
+                request = new RestRequest(bucketName, Method.HEAD);
+            }
+            else
+            {
+                request = new RestRequest(resource_url, Method.HEAD);
+            }
             var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
 
             if (response.StatusCode != HttpStatusCode.OK)

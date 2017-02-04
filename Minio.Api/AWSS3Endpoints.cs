@@ -70,7 +70,6 @@ namespace Minio
             }
             return endpoint;
         }
-
+       
     }
 }
-
