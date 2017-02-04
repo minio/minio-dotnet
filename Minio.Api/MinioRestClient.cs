@@ -27,6 +27,8 @@ using System.Xml.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Minio.Helper;
+using System.Diagnostics;
+using Newtonsoft.Json; 
 
 namespace Minio
 {
@@ -88,17 +90,17 @@ namespace Minio
             uripath.Path += methodPath;
             return uripath;
         }
-     
-        internal void ModifyAWSEndpointFor(string region,string bucketName=null)
+
+        internal void ModifyAWSEndpointFor(string region, string bucketName = null)
         {
             if (region != null)
             {
-                _constructUri(region,bucketName);
+                _constructUri(region, bucketName);
                 this.restClient.BaseUrl = this.uri;
 
             }
         }
-        internal string MakeTargetURL(string region=null,string bucketName=null)
+        internal string MakeTargetURL(string region = null, string bucketName = null)
         {
             string targetUrl = null;
             string host = this.BaseUrl;
@@ -126,7 +128,6 @@ namespace Minio
                 }
             }
             var scheme = this.Secure ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
-            //this.Endpoint = string.Format("{0}://{1}", scheme, AWSS3Endpoints.Instance.endpoint(region));
             // Make URL only if bucketName is available, otherwise use the
             // endpoint URL.
             if (bucketName != null && s3utils.IsAmazonEndPoint(this.BaseUrl))
@@ -157,46 +158,30 @@ namespace Minio
             return targetUrl;
 
         }
- 
+
 
         /// <summary>
         /// helper to construct uri and validate it.
         /// </summary>
-        private void _constructUri(string region=null,string bucketName=null)
+        private void _constructUri(string region = null, string bucketName = null)
         {
             if (string.IsNullOrEmpty(this.BaseUrl))
             {
                 throw new InvalidEndpointException("Endpoint cannot be empty.");
             }
             string host = this.BaseUrl;
-             // For Amazon S3 endpoint, try to fetch location based endpoint.
+            // For Amazon S3 endpoint, try to fetch location based endpoint.
             if (s3utils.IsAmazonEndPoint(this.BaseUrl))
             {
-                if (this.s3AccelerateEndpoint != null && bucketName != null)
-                {
-                    // http://docs.aws.amazon.com/AmazonS3/latest/dev/transfer-acceleration.html
-                    // Disable transfer acceleration for non-compliant bucket names.
-                    if (bucketName.Contains("."))
-                    {
-                        throw new InvalidTransferAccelerationBucketException(bucketName);
-                    }
-                    // If transfer acceleration is requested set new host.
-                    // For more details about enabling transfer acceleration read here.
-                    // http://docs.aws.amazon.com/AmazonS3/latest/dev/transfer-acceleration.html
-                    host = s3AccelerateEndpoint;
-                }
-                else
-                {
-                    // Fetch new host based on the bucket location.
-                    host = AWSS3Endpoints.Instance.endpoint(region);
-      
-                }
+                // Fetch new host based on the bucket location.
+                host = AWSS3Endpoints.Instance.endpoint(region);
             }
-           
-            var scheme = this.Secure ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
+
+            var scheme = Secure ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
            
             this.Endpoint = string.Format("{0}://{1}", scheme, host);
-            this.uri = new Uri(string.Format("{0}://{1}", scheme, this.BaseUrl));
+            this.uri = new Uri(this.Endpoint);
+        }
             /*
             // Make URL only if bucketName is available, otherwise use the
             // endpoint URL.
@@ -226,7 +211,7 @@ namespace Minio
            
             */
            // this.uri = new Uri(this.Endpoint);
-        }
+       
 
         /// <summary>
         /// validates URI 
@@ -474,6 +459,7 @@ namespace Minio
         /// <param name="handlers"></param>
         private void HandleIfErrorResponse(IRestResponse response, IEnumerable<ApiResponseErrorHandlingDelegate> handlers)
         {
+            LogRequest(response.Request, response, 10);
             if (handlers == null)
             {
                 throw new ArgumentNullException(nameof(handlers));
@@ -485,6 +471,41 @@ namespace Minio
             }
 
             _defaultErrorHandlingDelegate(response);
+        }
+
+        private void LogRequest(IRestRequest request, IRestResponse response, long durationMs)
+        {
+            var requestToLog = new
+            {
+                resource = request.Resource,
+                // Parameters are custom anonymous objects in order to have the parameter type as a nice string
+                // otherwise it will just show the enum value
+                parameters = request.Parameters.Select(parameter => new
+                {
+                    name = parameter.Name,
+                    value = parameter.Value,
+                    type = parameter.Type.ToString()
+                }),
+                // ToString() here to have the method as a nice string otherwise it will just show the enum value
+                method = request.Method.ToString(),
+                // This will generate the actual Uri used in the request
+                uri = restClient.BuildUri(request),
+            };
+
+            var responseToLog = new
+            {
+                statusCode = response.StatusCode,
+                content = response.Content,
+                headers = response.Headers,
+                // The Uri that actually responded (could be different from the requestUri if a redirection occurred)
+                responseUri = response.ResponseUri,
+                errorMessage = response.ErrorMessage,
+            };
+
+            Console.Out.WriteLine(string.Format("Request completed in {0} ms, Request: {1}, Response: {2}",
+                    durationMs,
+                    JsonConvert.SerializeObject(requestToLog,Formatting.Indented),
+                    JsonConvert.SerializeObject(responseToLog,Formatting.Indented)));
         }
 
     }

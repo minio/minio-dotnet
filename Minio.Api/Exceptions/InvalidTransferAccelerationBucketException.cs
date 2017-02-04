@@ -14,6 +14,7 @@ namespace Minio.Exceptions
 
         }
         public InvalidTransferAccelerationBucketException(string bucketName, string message = null) : base(message)
+
         {
             this.bucketName = bucketName;
         }
@@ -23,4 +24,3 @@ namespace Minio.Exceptions
         }
     }
 }
-

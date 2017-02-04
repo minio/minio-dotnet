@@ -13,7 +13,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                bool found = await minio.Api.BucketExistsAsync("testminiopolicy");
+                bool found = await minio.Api.BucketExistsAsync("mountshasta");
                 Console.Out.WriteLine("bucket-name was " + ((found == true) ? "found" : "not found"));
             }
             catch (Exception e)

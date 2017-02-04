@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+
 using Minio.Helper;
 using RestSharp;
 using System;
@@ -69,7 +70,6 @@ namespace Minio
         {
             string value;
             this.regionMap.TryRemove(bucketName, out value);
-
         }
 
 
@@ -81,7 +81,6 @@ namespace Minio
             string value = null;
             this.regionMap.TryGetValue(bucketName, out value);
             return value != null;
-
         }
 
         /// <summary>
@@ -134,5 +133,3 @@ namespace Minio
         }
     }
 }
-
-
