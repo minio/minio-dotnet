@@ -10,11 +10,14 @@ namespace Minio.Examples.Cases
     class GetObject
     {
         //get object in a bucket
-        public async static Task Run(Minio.MinioRestClient minio)
+        public async static Task Run(Minio.MinioRestClient minio,
+                                     string bucketName="my-bucket-name",
+                                     string objectName="my-object-name")
         {
             try
             {
-                await minio.Api.GetObjectAsync("mountshasta", "copyright.txt", (stream) =>
+                await minio.Api.GetObjectAsync(bucketName, objectName, 
+                (stream) =>
                 {
                     stream.CopyTo(Console.OpenStandardOutput());
                 });

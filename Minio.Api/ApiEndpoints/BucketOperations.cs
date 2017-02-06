@@ -85,74 +85,7 @@ namespace Minio
             return false;
         }
 
-        /// <summary>
-        /// Updates Region cache for given bucket.
-        /// </summary>
-        /// <param name="bucketName"></param>
-        internal async Task<string> updateRegionCache(string bucketName)
-        {
-            string region = null;
-        
-            if (bucketName != null && s3utils.IsAmazonEndPoint(this.client.BaseUrl) && this.client.AccessKey != null
-            && this.client.SecretKey != null && !BucketRegionCache.Instance.Exists(bucketName))
-            {
-                string location = null;
-                var path = bucketName + "?location";
-                var request = new RestRequest(path, Method.GET);
-                var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
-
-                if (HttpStatusCode.OK.Equals(response.StatusCode))
-                {
-                    var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-                    var stream = new MemoryStream(contentBytes);
-                    XDocument root = XDocument.Parse(response.Content);
-                    location = root.Root.Value;
-
-                }
-                if (location == null || location == "")
-                {
-                    region = "us-east-1";
-                }
-                else
-                {
-                    // eu-west-1 can be sometimes 'EU'.
-                    if ("EU".Equals(location))
-                    {
-                        region = "eu-west-1";
-                    }
-                    else
-                    {
-                        region = location;
-                    }
-                }
-
-                // Add the new location.
-                BucketRegionCache.Instance.Add(bucketName, region);
-            }
-            return region;
-
-        }
-        private async Task<string> ModifyTargetURL(RestRequest request, string bucketName)
-        {
-            var resource_url = this.client.Endpoint;
-
-            if (s3utils.IsAmazonEndPoint(this.client.BaseUrl))
-            {
-                // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
-                string location = await updateRegionCache(bucketName);
-               // if (location != "us-east-1")
-                {
-                    this.client.ModifyAWSEndpointFor(location, bucketName);
-                    resource_url = this.client.MakeTargetURL(location, bucketName);
-                }
-                //else
-                //{  // use default request
-                //    resource_url = "";
-               // }
-            }
-            return resource_url;
-         
-        }
+   
         /// <summary>
         /// Returns true if the specified bucketName exists, otherwise returns false.
         /// </summary>
@@ -160,18 +93,11 @@ namespace Minio
         /// <returns>true if exists and user has access</returns>
         public async Task<bool> BucketExistsAsync(string bucketName)
         {
-            //request.Resource = bucketName;
-            string resource_url = await ModifyTargetURL(null, bucketName);
- 
-            RestRequest request;
-            if (BucketRegionCache.Instance.Region(bucketName) == "us-east-1")
-            {
-                request = new RestRequest(bucketName, Method.HEAD);
-            }
-            else
-            {
-                request = new RestRequest(resource_url, Method.HEAD);
-            }
+       
+            var request = await client.CreateRequest(Method.HEAD, 
+                                                     bucketName, 
+                                                     region: BucketRegionCache.Instance.Region(bucketName));
+
             var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
 
             if (response.StatusCode != HttpStatusCode.OK)
@@ -199,9 +125,9 @@ namespace Minio
         /// <param name="bucketName">Name of bucket to remove</param>
         public async Task RemoveBucketAsync(string bucketName)
         {
-            var request = new RestRequest(bucketName, Method.DELETE);
-            await ModifyTargetURL(request, bucketName);
-
+            var request =await  client.CreateRequest(Method.DELETE, bucketName, 
+                            region: BucketRegionCache.Instance.Region(bucketName),
+                            resourcePath:"/");
 
             var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
 
@@ -238,7 +164,7 @@ namespace Minio
                       {
                           marker = result.Item1.NextMarker;
                       }
-                      else
+                      else if (lastItem != null)
                       {
                           marker = lastItem.Key;
                       }
@@ -278,9 +204,13 @@ namespace Minio
             {
                 path += "?" + query;
             }
-            var request = new RestRequest(path, Method.GET);
-            await ModifyTargetURL(request, bucketName);
+ 
+            var request = await client.CreateRequest(Method.GET, 
+                                                     bucketName, 
+                                                     region: BucketRegionCache.Instance.Region(bucketName),
+                                                     resourcePath:"?" + query);
 
+ 
 
             var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
 
@@ -324,12 +254,17 @@ namespace Minio
         {
             BucketPolicy policy = null;
             IRestResponse response = null;
+
             var path =bucketName + "?policy";
 
             var request = new RestRequest(path, Method.GET);
             request.AddHeader("Content-Type", "application/json");
-            await ModifyTargetURL(request, bucketName);
+            await this.client.ModifyTargetURL(request, bucketName);
 
+            request = await client.CreateRequest(Method.GET, bucketName, 
+                                 region: BucketRegionCache.Instance.Region(bucketName),
+                                 contentType:"application/json",
+                                 resourcePath:"?policy");
             response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
             if (response.StatusCode != HttpStatusCode.OK)
             {
@@ -354,7 +289,7 @@ namespace Minio
         /// <param name="bucketName">Bucket name.</param>
         /// <param name="objectPrefix">Name of the object prefix</param>
         /// <returns>Returns the PolicyType </returns>
-        public async Task<PolicyType> GetPolicyAsync(String bucketName, String objectPrefix = null)
+        public async Task<PolicyType> GetPolicyAsync(string bucketName, string objectPrefix ="")
         {
             BucketPolicy policy = await GetPolicyAsync(bucketName);
             return policy.getPolicy(objectPrefix);
@@ -366,15 +301,15 @@ namespace Minio
         /// <param name="bucketName">Bucket Name.</param>
         /// <param name="policy">Valid Json policy object</param>
         /// <returns></returns>
-        private async Task setPolicyAsync(String bucketName, BucketPolicy policy)
+        private async Task setPolicyAsync(string bucketName, BucketPolicy policy)
         {
-            var path = bucketName + "?policy";
-            var request = new RestRequest(path, Method.PUT);
-            request.AddHeader("Content-Type", "application/json");
-            await ModifyTargetURL(request, bucketName);
-
+     
             string policyJson = policy.getJson();
-            request.AddParameter("application/json", policyJson, ParameterType.RequestBody);
+            var request = await client.CreateRequest(Method.PUT, bucketName, 
+                                           resourcePath:"?policy",
+                                           region: BucketRegionCache.Instance.Region(bucketName), 
+                                           contentType: "application/json",
+                                           body:policyJson);
 
             IRestResponse response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
         }

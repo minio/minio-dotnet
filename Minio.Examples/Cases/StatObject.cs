@@ -1,21 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Minio.DataModel;
+
 namespace Minio.Examples.Cases
 {
     class StatObject
     {
         //get stats on a object
-        public async static Task Run(Minio.MinioRestClient minio)
+        public async static Task Run(Minio.MinioRestClient minio, 
+                                     string bucketName = "my-bucket-name",
+                                     string bucketObject="my-object-name")
         {
-            var bucketName   = "bucket-name";
-            var bucketObject = "bucket-object";
-
-           // bucketName = "asiatrip";
-           // bucketObject = "asiaphotos.jpg";
             try
             {
                 ObjectStat statObject = await minio.Api.StatObjectAsync(bucketName, bucketObject);

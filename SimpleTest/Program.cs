@@ -2,15 +2,10 @@
 using System;
 using Minio;
 using Minio.DataModel;
-<<<<<<< HEAD
-
-=======
+ 
 using System.Configuration;
->>>>>>> 5391fusing System.Net;
 using System.Threading.Tasks;
 
-c1... add presigned operations
-using System.Threading.Tasks;
 using System.Net;
 
 namespace SimpleTest
@@ -45,10 +40,11 @@ namespace SimpleTest
             {
                 Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
             }
+ 
+            //Supply a new bucket name
+            Task.WaitAll(minio.Api.MakeBucketAsync("MyNewBucket"));
 
-
-
-            var bucketExistTask = minio.Api.BucketExistsAsync("bucky");
+            var bucketExistTask = minio.Api.BucketExistsAsync("MyNewBucket");
             Task.WaitAll(bucketExistTask);
             var found = bucketExistTask.Result;
             Console.Out.WriteLine("bucket was " + found);

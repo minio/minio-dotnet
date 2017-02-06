@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Minio.DataModel;
 
@@ -9,6 +6,7 @@ namespace Minio.Examples.Cases
 {
     class ListBuckets
     {
+        // List all buckets on host
         public async static Task Run(Minio.MinioRestClient minio)
         {
             try

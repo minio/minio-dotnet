@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
+using System;
+using System.Text.RegularExpressions;
 namespace Minio
 {
-    class Regions
+    public class Regions
     {
         private Regions()
         {
@@ -29,29 +31,45 @@ namespace Minio
         /// <returns>Region corresponding to the endpoint. Default is 'us-east-1'</returns>
         internal static string GetRegion(string endpoint)
         {
-            switch (endpoint)
+            if (endpoint.EndsWith("s3 - ap - northeast - 1.amazonaws.com"))
             {
-                case "s3-ap-northeast-1.amazonaws.com":
-                    return "ap-northeast-1";
-                case "s3-ap-southeast-1.amazonaws.com":
-                    return "ap-southeast-1";
-                case "s3-ap-southeast-2.amazonaws.com":
-                    return "ap-southeast-2";
-                case "s3-eu-central-1.amazonaws.com":
-                    return "eu-central-1";
-                case "s3-eu-west-1.amazonaws.com":
-                    return "eu-west-1";
-                case "s3-sa-east-1.amazonaws.com":
-                    return "sa-east-1";
-                case "s3.amazonaws.com":
-                    return "us-east-1";
-                case "s3-us-west-1.amazonaws.com":
-                    return "us-west-1";
-                case "s3-us-west-2.amazonaws.com":
-                    return "us-west-2";
-                default:
-                    return "us-east-1";
+                return "ap-northeast-1";
             }
+            if (endpoint.EndsWith("s3-ap-southeast-1.amazonaws.com"))
+            {
+                return "ap-southeast-1";
+            }
+            if (endpoint.EndsWith("s3-ap-southeast-2.amazonaws.com"))
+            {
+                return "ap-southeast-2";
+
+            }
+            if (endpoint.EndsWith("s3-eu-central-1.amazonaws.com"))
+            {
+                return "eu-central-1";
+            }
+            if (endpoint.EndsWith("s3-eu-west-1.amazonaws.com"))
+            {
+                return "eu-west-1";
+            }
+            if (endpoint.EndsWith("s3-sa-east-1.amazonaws.com"))
+            {
+                return "sa-east-1";
+            }
+            if (endpoint.EndsWith("s3.amazonaws.com"))
+            {
+                return "us-east-1";
+            }
+            if (endpoint.EndsWith("s3-us-west-1.amazonaws.com"))
+            {
+                return "us-west-1";
+            }
+            if (endpoint.EndsWith("s3-us-west-2.amazonaws.com"))
+            {
+                return "us-west-2";
+            }
+            return "us-east-1";
         }
+       
     }
 }

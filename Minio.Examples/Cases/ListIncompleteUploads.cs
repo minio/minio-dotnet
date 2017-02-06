@@ -1,31 +1,25 @@
 ﻿using Minio.DataModel;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Minio.Examples.Cases
 {
     class ListIncompleteUploads
     {
-        public static void Run(Minio.MinioRestClient minio)
+        //List incomplete uploads on the bucket matching specified prefix
+        public static void Run(Minio.MinioRestClient minio,
+                               string bucketName = "my-bucket-name", 
+                                   string prefix = "my-object-name",
+                                  bool recursive = true)
         {
             try
             {
-                var bucketName = "bucket-name";
-                var bucketObject = "bucket-object";
-
-                bucketName = "mountshasta";
-                bucketObject = "multi1112";
-                IObservable<Upload> observable = minio.Api.ListIncompleteUploads(bucketName, bucketObject, true);
+                IObservable<Upload> observable = minio.Api.ListIncompleteUploads(bucketName, prefix, recursive);
 
                 IDisposable subscription = observable.Subscribe(
                     item => Console.WriteLine("OnNext: {0}", item.Key),
                     ex => Console.WriteLine("OnError: {0}", ex.Message),
                     () => Console.WriteLine("OnComplete: {0}"));
-
-               // subscription.Dispose();
 
             }
             catch (Exception e)

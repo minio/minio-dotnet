@@ -20,14 +20,11 @@ using System.Text.RegularExpressions;
 using RestSharp;
 using System.Net;
 using System.Linq;
-using System.Text;
-using RestSharp.Extensions;
 using System.IO;
 using System.Xml.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Minio.Helper;
-using System.Diagnostics;
 using Newtonsoft.Json; 
 
 namespace Minio
@@ -46,6 +43,7 @@ namespace Minio
         internal string s3AccelerateEndpoint;
         internal RestClient restClient;
         internal V4Authenticator authenticator;
+        internal BucketRegionCache regionCache;
         public ClientApiOperations Api;
 
         internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers = Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
@@ -80,16 +78,150 @@ namespace Minio
 
         }
         /// <summary>
-        /// Constructs a new URI from the endpoint and method path
+        /// Constructs a RestRequest. For AWS, this function overrides the baseUrl in the RestClient
+        /// with region specific host path or virtual style path.
         /// </summary>
-        /// <param name="methodPath"></param>
+        /// <param name="method">HTTP method</param>
+        /// <param name="bucketName">Bucket Name</param>
+        /// <param name="objectName">Object Name</param>
+        /// <param name="region">Region - applies only to AWS</param>
+        /// <param name="headerMap">unused headerMap</param>
+        /// <param name="queryParamMap">unused queryParamMap</param>
+        /// <param name="contentType">Content Type</param>
+        /// <param name="body">request body</param>
+        /// <param name="resourcePath">query string</param>
         /// <returns></returns>
-        internal UriBuilder GetUriBuilder(string methodPath)
+        internal async Task<RestRequest> CreateRequest(Method method, string bucketName, string objectName = null,
+                                string region = null, Dictionary<string, string> headerMap = null,
+                                string contentType = "application/xml",
+                                Object body = null, string resourcePath=null)
         {
-            var uripath = new UriBuilder(this.Endpoint);
-            uripath.Path += methodPath;
-            return uripath;
+            if (bucketName == null && objectName == null)
+            {
+                throw new InvalidBucketNameException(bucketName, "null bucket name for object '" + objectName + "'");
+            }
+            utils.validateBucketName(bucketName);
+            if (objectName != null)
+            {
+                utils.validateObjectName(objectName);
+
+            }
+            string host = this.BaseUrl;
+
+            //Fetch correct region for bucket
+            if (!BucketRegionCache.Instance.Exists(bucketName))
+            {
+                region = await BucketRegionCache.Instance.Update(this, bucketName);
+            }
+           
+            string baseUrl = null;               //Base url path
+            string resource = null;              //Resource being requested  
+            bool usePathStyle = false;
+            if (s3utils.IsAmazonEndPoint(this.BaseUrl))
+            {
+                if (this.s3AccelerateEndpoint != null && bucketName != null)
+                {
+                    // http://docs.aws.amazon.com/AmazonS3/latest/dev/transfer-acceleration.html
+                    // Disable transfer acceleration for non-compliant bucket names.
+                    if (bucketName.Contains("."))
+                    {
+                        throw new InvalidTransferAccelerationBucketException(bucketName);
+                    }
+                    // If transfer acceleration is requested set new host.
+                    // For more details about enabling transfer acceleration read here.
+                    // http://docs.aws.amazon.com/AmazonS3/latest/dev/transfer-acceleration.html
+                    host = s3AccelerateEndpoint;
+                }
+                else
+                {
+                    // Fetch new host based on the bucket location.
+                    host = AWSS3Endpoints.Instance.endpoint(region);
+
+                }
+
+                usePathStyle = false;
+                var scheme = this.Secure ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
+
+                if (method == Method.PUT && objectName == null && resourcePath == null)
+                {
+                    // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
+                    usePathStyle = true;
+                }
+                else if (resourcePath != null && resourcePath.Contains("location"))
+                {
+                    // use path style for location query
+                    usePathStyle = true;
+                }
+                else if (bucketName.Contains(".") && this.Secure)
+                {
+                    // use path style where '.' in bucketName causes SSL certificate validation error
+                    usePathStyle = true;
+                }
+                else if (method == Method.HEAD)
+                {
+                    usePathStyle = true;
+                }
+   
+                if (usePathStyle)
+                {
+                    resource = utils.UrlEncode(bucketName) + "/";
+                }
+                else
+                {
+                    baseUrl = scheme + "://" + utils.UrlEncode(bucketName) + "." + utils.UrlEncode(host) + "/";
+                    resource = "/";
+                }
+            }
+            else
+            {             
+                resource = utils.UrlEncode(bucketName) + "/";
+            }
+
+            if (s3utils.IsAmazonEndPoint(this.BaseUrl) && region != null)
+            {
+                //override the baseUrl in RestClient with virtual style path or region 
+                // specific deviation from AWS default url.
+                _constructUri(region, bucketName);
+                 this.restClient.BaseUrl = usePathStyle == true ? this.uri : new Uri(baseUrl);           
+
+            }
+            if (objectName != null)
+            {
+                // Limitation: OkHttp does not allow to add '.' and '..' as path segment.
+                foreach (String pathSegment in objectName.Split('/'))
+                {
+                    resource += utils.UrlEncode(pathSegment);
+                }
+
+            }
+            if (resourcePath != null)
+            {
+                resource += resourcePath;
+            }
+
+            RestRequest request = new RestRequest(resource,method);
+
+            if (body != null)
+            {
+                request.AddParameter(contentType, body, RestSharp.ParameterType.RequestBody);
+
+            }
+
+            if (contentType != null)
+            {
+                request.AddHeader("Content-Type", contentType);
+            }
+            if (headerMap != null)
+            {
+                foreach (KeyValuePair<string, string> entry in headerMap)
+                {
+                    request.AddHeader(entry.Key, entry.Value);
+                }
+            }
+
+            return request;
         }
+      
 
         internal void ModifyAWSEndpointFor(string region, string bucketName = null)
         {
@@ -97,10 +229,31 @@ namespace Minio
             {
                 _constructUri(region, bucketName);
                 this.restClient.BaseUrl = this.uri;
-
+           
             }
         }
-        internal string MakeTargetURL(string region = null, string bucketName = null)
+        internal async Task<string> ModifyTargetURL(IRestRequest request, string bucketName,bool usePathStyle=false)
+        {
+            var resource_url = this.Endpoint;
+
+            if (s3utils.IsAmazonEndPoint(this.BaseUrl))
+            {
+                // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
+                string location = await BucketRegionCache.Instance.Update(this,bucketName);
+                // if (location != "us-east-1")
+                {
+                    ModifyAWSEndpointFor(location, bucketName);
+                    resource_url = MakeTargetURL(location, bucketName,usePathStyle);
+                }
+                //else
+                //{  // use default request
+                //    resource_url = "";
+                // }
+            }
+            return resource_url;
+
+        }
+        internal string MakeTargetURL(string region = null, string bucketName = null,bool usePathStyle=false)
         {
             string targetUrl = null;
             string host = this.BaseUrl;
@@ -132,14 +285,21 @@ namespace Minio
             // endpoint URL.
             if (bucketName != null && s3utils.IsAmazonEndPoint(this.BaseUrl))
             {
+           
                 // Save if target url will have buckets which suppport virtual host.
                 bool isVirtualHostStyle = s3utils.IsVirtualHostSupported(uri, bucketName);
 
+                if (bucketName.Contains(".") && this.Secure)
+                {
+                    // use path style where '.' in bucketName causes SSL certificate validation error
+                    usePathStyle = true;
+                }
                 // If endpoint supports virtual host style use that always.
                 // Currently only S3 and Google Cloud Storage would support
                 // virtual host style.
                 string urlStr = null;
-                if (isVirtualHostStyle)
+
+                if (isVirtualHostStyle || !usePathStyle)
                 {
                     targetUrl = scheme + "://" + bucketName + "." + host + "/";
                 }
@@ -314,6 +474,7 @@ namespace Minio
             this.AccessKey = accessKey;
             this.SecretKey = secretKey;
             this.s3AccelerateEndpoint = null;
+            this.regionCache = BucketRegionCache.Instance;
             this.Anonymous = utils.isAnonymousClient(accessKey, secretKey);
             _constructUri();
             _validateUri();

@@ -9,11 +9,20 @@ namespace Minio.Examples.Cases
     class CopyObject
     {
         //copy object from one bucket to another
-        public async static Task Run(Minio.MinioRestClient minio)
+        public async static Task Run(Minio.MinioRestClient minio,
+                                     string fromBucketName="from-bucket-name",
+                                     string fromObjectName="from-object-name",
+                                     string destBucketName="dest-bucket",
+                                     string destObjectName="to-object-name")
         {
             try
             {
-                await minio.Api.CopyObjectAsync("mountshasta", "testobject", "bobcat2t", "copi2dobj", null);
+                //Optionally pass copy conditions
+                await minio.Api.CopyObjectAsync(fromBucketName, 
+                                                fromObjectName, 
+                                                destBucketName, 
+                                                destObjectName, 
+                                                copyConditions:null);
                 Console.Out.WriteLine("done copying");
             }
             catch (Exception e)

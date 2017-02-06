@@ -1,19 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Minio;
+
 namespace Minio.Examples.Cases
 {
     class RemoveObject
     {
         //Remove an object from a bucket
-        public async static Task Run(MinioRestClient minio)
+        public async static Task Run(MinioRestClient minio,
+                                     string bucketName = "my-bucket-name", 
+                                     string objectName = "my-object-name")
         {
             try
             {
-                await minio.Api.RemoveObjectAsync("bucket-name","object-name");
+                await minio.Api.RemoveObjectAsync(bucketName,objectName);
                 Console.Out.WriteLine("object-name removed from bucket-name successfully");
             }
             catch (Exception e)

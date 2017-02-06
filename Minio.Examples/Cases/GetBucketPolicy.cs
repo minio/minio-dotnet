@@ -8,12 +8,14 @@ namespace Minio.Examples.Cases
 {
     class GetBucketPolicy
     {
-        //get bucket policy
-        public async static Task Run(Minio.MinioRestClient minio)
+        //get bucket policy 
+        public async static Task Run(Minio.MinioRestClient minio, 
+                                     string bucketName = "my-bucket-name",
+                                     string prefix="")
         {
             try
             {
-                PolicyType policy = await minio.Api.GetPolicyAsync("mountshasta2",objectPrefix:"bnds");
+                PolicyType policy = await minio.Api.GetPolicyAsync(bucketName,objectPrefix:prefix);
                 Console.Out.WriteLine("POLICY: " + policy.GetType().ToString());
             }
             catch (Exception e)

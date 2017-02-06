@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 using Minio.Helper;
 using RestSharp;
 using System;
@@ -81,13 +80,14 @@ namespace Minio
             string value = null;
             this.regionMap.TryGetValue(bucketName, out value);
             return value != null;
+
         }
 
         /// <summary>
         /// Updates Region cache for given bucket.
         /// </summary>
         /// <param name="bucketName"></param>
-        internal async Task<string> Update(MinioRestClient client, string bucketName)
+        internal async Task<string> Update(MinioRestClient client,string bucketName)
         {
             string region = null;
 
@@ -97,7 +97,7 @@ namespace Minio
                 string location = null;
                 var path = bucketName + "?location";
                 var request = new RestRequest(path, Method.GET);
-
+                
                 var response = await client.ExecuteTaskAsync(client.NoErrorHandlers, request);
 
                 if (HttpStatusCode.OK.Equals(response.StatusCode))
@@ -131,5 +131,11 @@ namespace Minio
             return region;
 
         }
+
+        /// <summary>
+        /// Updates Region cache for given bucket.
+        /// </summary>
+        /// <param name="bucketName"></param>
+
     }
 }

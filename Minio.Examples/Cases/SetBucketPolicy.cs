@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Minio.DataModel.Policy;
 using Minio.DataModel;
 
 namespace Minio.Examples.Cases
@@ -11,11 +7,16 @@ namespace Minio.Examples.Cases
     class SetBucketPolicy
     {
         //set bucket policy
-        public async static Task Run(Minio.MinioRestClient minio)
+        public async static Task Run(Minio.MinioRestClient minio, 
+                                     string bucketName = "my-bucket-name",
+                                     string objectPrefix="")
         {
             try
             {
-                await minio.Api.SetPolicyAsync("mountshasta2", "bobcat",PolicyType.READ_ONLY);
+                //Change policy type parameter
+                await minio.Api.SetPolicyAsync(bucketName, 
+                                               objectPrefix,
+                                               PolicyType.READ_ONLY);
 
             }
             catch (Exception e)
