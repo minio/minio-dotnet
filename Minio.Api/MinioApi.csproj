@@ -131,6 +131,7 @@
     <Compile Include="Exceptions\RedirectionException.cs" />
     <Compile Include="Exceptions\UnexpectedShortReadException.cs" />
     <Compile Include="Helper\Constants.cs" />
+    <Compile Include="ApiEndpoints\RequestHelper.cs" />
     <Compile Include="Helper\s3utils.cs" />
     <Compile Include="Helper\utils.cs" />
     <Compile Include="Exceptions\InvalidTransferAccelerationBucketException.cs" />

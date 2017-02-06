@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
@@ -9,13 +6,13 @@ namespace Minio.Examples.Cases
     public class MakeBucket
     {
         //Make a bucket
-        public async static Task Run(Minio.MinioRestClient minio)
+        public async static Task Run(Minio.MinioRestClient minio,
+                                     string bucketName="my-bucket-name")
         {
             try
             {
-                await minio.Api.MakeBucketAsync("mybucket");
-                Console.Out.WriteLine("mybucket created successfully");
-
+                await minio.Api.MakeBucketAsync(bucketName);
+                Console.Out.WriteLine("bucket-name created successfully");
             } 
             catch (Exception e)
             {

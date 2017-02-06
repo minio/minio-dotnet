@@ -1,20 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Minio.DataModel;
+
 namespace Minio.Examples.Cases
 {
+    
     class ListObjects
     {
-        public async static Task Run(Minio.MinioRestClient minio)
+        //List objects matching optional prefix in a specified bucket.
+        public static void Run(Minio.MinioRestClient minio,
+                                     string bucketName = "my-bucket-name",
+                                     string prefix = null,
+                                     bool recursive = false)
         {
             try
             {
-                var bucketName = "bucket-name";
-                var prefix = "object-prefix";
-                var recursive = false;
                 bucketName = "mountshasta";
                 prefix = null;
 
@@ -27,6 +26,7 @@ namespace Minio.Examples.Cases
                     item => Console.WriteLine("OnNext: {0}", item.Key),
                     ex => Console.WriteLine("OnError: {0}", ex.Message),
                     () => Console.WriteLine("OnComplete: {0}"));
+
                     */
                 // subscription.Dispose();
             }

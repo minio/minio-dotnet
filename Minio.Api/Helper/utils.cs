@@ -55,6 +55,10 @@ namespace Minio
            {
                 throw new InvalidBucketNameException(bucketName,"Bucket name cannot start or end with a '.' dot.");
            }
+           if (bucketName.Any(c => char.IsUpper(c)))
+           {
+                throw new InvalidBucketNameException(bucketName, "Bucket name cannot have upper case characters");
+           }
            if (invalidDotBucketName.IsMatch(bucketName))
            {
                 throw new InvalidBucketNameException(bucketName,"Bucket name cannot have successive periods.");

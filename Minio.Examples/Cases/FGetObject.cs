@@ -8,14 +8,15 @@ namespace Minio.Examples.Cases
 {
     class FGetObject
     {
-        //get object in a bucket
-        public async static Task Run(Minio.MinioRestClient minio)
+        //Download object from bucket into local file
+        public async static Task Run(Minio.MinioRestClient minio, 
+                                     string bucketName = "my-bucket-name",
+                                     string objectName = "my-object-name",
+                                     string fileName="local-filename")
         {
             try
             {
-                string fileName = "C:\\Users\\vagrant\\Downloads\\sDownload3";
-
-                await minio.Api.GetObjectAsync("mountshasta", "full-upload-multi", fileName);
+                await minio.Api.GetObjectAsync(bucketName, objectName, fileName);
 
             }
             catch (Exception e)
