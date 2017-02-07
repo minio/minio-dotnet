@@ -257,11 +257,7 @@ namespace Minio
 
             var path =bucketName + "?policy";
 
-            var request = new RestRequest(path, Method.GET);
-            request.AddHeader("Content-Type", "application/json");
-            await this.client.ModifyTargetURL(request, bucketName);
-
-            request = await client.CreateRequest(Method.GET, bucketName, 
+            var request = await client.CreateRequest(Method.GET, bucketName, 
                                  region: BucketRegionCache.Instance.Region(bucketName),
                                  contentType:"application/json",
                                  resourcePath:"?policy");

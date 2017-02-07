@@ -69,6 +69,9 @@
     <Compile Include="Cases\ListIncompleteUploads.cs" />
     <Compile Include="Cases\ListObjects.cs" />
     <Compile Include="Cases\MakeBucket.cs" />
+    <Compile Include="Cases\PresignedGetObject.cs" />
+    <Compile Include="Cases\PresignedPostPolicy.cs" />
+    <Compile Include="Cases\PresignedPutObject.cs" />
     <Compile Include="Cases\PutObject.cs" />
     <Compile Include="Cases\RemoveBucket.cs" />
     <Compile Include="Cases\RemoveIncompleteUpload.cs" />
