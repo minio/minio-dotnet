@@ -16,7 +16,7 @@
 
 namespace Minio.Exceptions
 {
-    public class ObjectNotFoundException : ClientException
+    public class ObjectNotFoundException : MinioException
     {
         private string objectName;
 

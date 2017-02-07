@@ -16,7 +16,7 @@
 
 namespace Minio.Exceptions
 {
-    public class InternalClientException : ClientException
+    public class InternalClientException : MinioException
     {
         public InternalClientException(string message) : base(message)
         {

@@ -7,7 +7,7 @@ namespace Minio.Examples.Cases
     class ListBuckets
     {
         // List all buckets on host
-        public async static Task Run(Minio.MinioRestClient minio)
+        public async static Task Run(Minio.MinioClient minio)
         {
             try
             {

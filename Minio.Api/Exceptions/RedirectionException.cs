@@ -16,7 +16,7 @@
 
 namespace Minio.Exceptions
 {
-    public class RedirectionException : ClientException
+    public class RedirectionException : MinioException
     {
         public RedirectionException(string message) : base(message)
         {

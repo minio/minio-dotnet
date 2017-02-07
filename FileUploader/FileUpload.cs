@@ -22,7 +22,7 @@ namespace FileUploader
             var secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
             try
             { 
-                var minio = new MinioRestClient(endpoint, accessKey, secretKey).WithSSL();
+                var minio = new MinioClient(endpoint, accessKey, secretKey).WithSSL();
                 FileUpload.Run(minio).Wait();
             }
             catch (Exception ex)
@@ -32,7 +32,7 @@ namespace FileUploader
             Console.ReadLine();
         }
         //Check if a bucket exists
-        private async static Task Run(MinioRestClient minio)
+        private async static Task Run(MinioClient minio)
         {
             // Make a new bucket called mymusic.
             var bucketName = "mymusic-folder"; //<==== change this

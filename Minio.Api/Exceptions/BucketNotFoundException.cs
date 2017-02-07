@@ -19,7 +19,7 @@ using System;
 namespace Minio.Exceptions
 {
     [Serializable]
-    public class BucketNotFoundException : ClientException
+    public class BucketNotFoundException : MinioException
     {
         private string bucketName;
         public BucketNotFoundException()

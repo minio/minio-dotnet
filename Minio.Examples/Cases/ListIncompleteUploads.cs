@@ -7,7 +7,7 @@ namespace Minio.Examples.Cases
     class ListIncompleteUploads
     {
         //List incomplete uploads on the bucket matching specified prefix
-        public static void Run(Minio.MinioRestClient minio,
+        public static void Run(Minio.MinioClient minio,
                                string bucketName = "my-bucket-name", 
                                    string prefix = "my-object-name",
                                   bool recursive = true)

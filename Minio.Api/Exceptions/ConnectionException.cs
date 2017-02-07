@@ -16,7 +16,7 @@
 
 namespace Minio.Exceptions
 {
-    public class ConnectionException : ClientException
+    public class ConnectionException : MinioException
     {
         public ConnectionException(string message) : base(message)
         {

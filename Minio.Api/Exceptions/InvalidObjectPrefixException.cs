@@ -16,7 +16,7 @@
 
 namespace Minio.Exceptions
 {
-    class InvalidObjectPrefixException : ClientException
+    class InvalidObjectPrefixException : MinioException
     {
         private string objectPrefix;
 

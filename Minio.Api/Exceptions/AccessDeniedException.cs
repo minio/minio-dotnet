@@ -19,7 +19,7 @@ using System;
 namespace Minio.Exceptions
 {
     [Serializable]
-    public class AccessDeniedException : ClientException
+    public class AccessDeniedException : MinioException
     {
         public AccessDeniedException()
         {

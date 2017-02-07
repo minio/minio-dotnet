@@ -7,7 +7,7 @@ namespace Minio.Examples.Cases
     class SetBucketPolicy
     {
         //set bucket policy
-        public async static Task Run(Minio.MinioRestClient minio, 
+        public async static Task Run(Minio.MinioClient minio, 
                                      string bucketName = "my-bucket-name",
                                      string objectPrefix="")
         {

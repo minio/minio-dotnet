@@ -7,7 +7,7 @@ namespace Minio.Examples.Cases
     class PutObject
     {
         //Put an object from a local stream into bucket
-        public async static Task Run(Minio.MinioRestClient minio,
+        public async static Task Run(Minio.MinioClient minio,
                                      string bucketName = "my-bucket-name", 
                                      string objectName = "my-object-name",
                                      string fileName="location-of-file")

@@ -65,7 +65,7 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Name of object to retrieve</param>
-        /// <param name="filePath">string with file path</param>
+        /// <param name="fileName">string with file path</param>
         /// <returns></returns>
         public async Task GetObjectAsync(string bucketName, string objectName, string fileName)
         {
@@ -140,12 +140,12 @@ namespace Minio
         /// <param name="objectName">Key of the new object</param>
         /// <param name="fileName">Path of file to upload</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
-        public async Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null)
+        public async Task PutObjectAsync(string bucketName, string objectName, string fileName, string contentType=null)
         {
-            utils.ValidateFile(filePath, contentType);
-            FileInfo fileInfo = new FileInfo(filePath);
+            utils.ValidateFile(fileName, contentType);
+            FileInfo fileInfo = new FileInfo(fileName);
             long size = fileInfo.Length;
-            using (FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            using (FileStream file = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             {
                 await PutObjectAsync(bucketName, objectName, file, size, contentType);
             }       

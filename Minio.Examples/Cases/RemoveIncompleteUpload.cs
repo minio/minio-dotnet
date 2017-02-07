@@ -7,7 +7,7 @@ namespace Minio.Examples.Cases
     {
       
         //Remove incomplete upload object from a bucket
-        public async static Task Run(MinioRestClient minio, 
+        public async static Task Run(MinioClient minio, 
                                      string bucketName = "my-bucket-name",
                                      string objectName = "my-object-name")
         {

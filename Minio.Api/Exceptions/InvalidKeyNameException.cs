@@ -16,7 +16,7 @@
 
 namespace Minio.Exceptions
 {
-    public class InvalidKeyNameException : ClientException
+    public class InvalidKeyNameException : MinioException
     {
         public InvalidKeyNameException(string message) : base(message)
         {

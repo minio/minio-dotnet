@@ -1,11 +1,17 @@
 
-# Minio .NET Library for Amazon S3 Compatible Cloud Storage [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Minio/minio?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+# Minio .NET Library for Amazon S3 Compatible Cloud Storage [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io)
 
-<blockquote>Minio .Net Library is not yet ready for general purpose use</blockquote>
+This quickstart guide will show you how to install the Minio client SDK, connect to Minio, and provide a walkthrough for a simple file uploader. For a complete list of APIs and examples, please take a look at the [Dotnet Client API Reference](https://docs.minio.io/docs/dotnet-client-api-reference).
 
-This quickstart guide will show you how to install the Minio client SDK, connect to Minio, and provide a walkthrough for a simple file uploader. For a complete list of APIs and examples, please take a look at the [Go Client API Reference](https://docs.minio.io/docs/golang-client-api-reference).
+This document assumes that you have a working VisualStudio development environment.  
 
-This document assumes that you have a working VisualStudio development environment
+## Install from NuGet [![Build Status](https://travis-ci.org/minio/minio-dotnet.svg?branch=master)](https://travis-ci.org/minio/minio-dotnet)
+
+```powershell
+To install Minio .NET package, run the following command in Nuget Package Manager Console
+
+PM> Install-Package Minio
+```
 
 ## Initialize Minio Client
 
@@ -24,11 +30,11 @@ Minio client requires the following four parameters specified to connect to an A
 ```cs
 using Minio;
 
-private static MinioRestClient minio = new MinioRestClient("play.minio.io:9000",
+private static MinioClient minio = new MinioClient("play.minio.io:9000",
                 "Q3AM3UQ867SPQQA43P2F",
                 "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
                 ).WithSSL();
-var getListBucketsTask = minio.Buckets.ListBucketsAsync();
+var getListBucketsTask = minio.Api.ListBucketsAsync();
 Task.WaitAll(getListBucketsTask); // block while the task completes
 var list = getListBucketsTask.Result;
 
@@ -59,7 +65,7 @@ namespace FileUploader
             var secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
             try
             { 
-                var minio = new MinioRestClient(endpoint, accessKey, secretKey).WithSSL();
+                var minio = new MinioClient(endpoint, accessKey, secretKey).WithSSL();
                 FileUpload.Run(minio).Wait();
             }
             catch (Exception ex)
@@ -69,7 +75,7 @@ namespace FileUploader
             Console.ReadLine();
         }
         //Check if a bucket exists
-        private async static Task Run(MinioRestClient minio)
+        private async static Task Run(MinioClient minio)
         {
             // Make a new bucket called mymusic.
             var bucketName = "mymusic";
@@ -118,30 +124,30 @@ Click on FileUploader project and Start
 * [ListIncompleteUploads.cs](./Minio.Examples/Cases/ListIncompleteUploads.cs)
 
 #### Full Examples : Bucket policy Operations
-* [GetPolicy.cs] (./Minio.Examples/Cases/GetPolicy.cs)
-* [SetPolicy.cs] (./Minio.Examples/Cases/SetPolicy.cs)
+* [GetPolicy.cs](./Minio.Examples/Cases/GetPolicy.cs)
+* [SetPolicy.cs](./Minio.Examples/Cases/SetPolicy.cs)
 
 #### Full Examples : File Object Operations
-* [FGetObject.cs] (./Minio.Examples/Cases/FGetObject.cs)
-* [FPutObject.cs] (./Minio.Examples/Cases/FPutObject.cs)
+* [FGetObject.cs](./Minio.Examples/Cases/FGetObject.cs)
+* [FPutObject.cs](./Minio.Examples/Cases/FPutObject.cs)
 
 #### Full Examples : Object Operations
-* [GetObject.cs] (./Minio.Examples/Cases/GetObject.cs)
-* [PutObject.cs] (./Minio.Examples/Cases/PutObject.cs)
+* [GetObject.cs](./Minio.Examples/Cases/GetObject.cs)
+* [PutObject.cs](./Minio.Examples/Cases/PutObject.cs)
 * [StatObject.cs](./Minio.Examples/Cases/StatObject.cs)
 * [RemoveObject.cs](./Minio.Examples/Cases/RemoveObject.cs)
-* [CopyObject.cs] (./Minio.Examples/Cases/CopyObject.cs)
+* [CopyObject.cs](./Minio.Examples/Cases/CopyObject.cs)
 * [RemoveIncompleteUpload.cs](./Minio.Examples/Cases/RemoveIncompleteUpload.cs)
 
 #### Full Examples : Presigned Operations
-* [PresignedGetObject.cs] (./Minio.Examples/Cases/PresignedGetObject.cs)
-* [PresignedPutObject.cs] (./Minio.Examples/Cases/PresignedPutObject.cs)
-* [PresignedPostPolicy.cs] (./Minio.Examples/Cases/PresignedPostPolicy.cs)
+* [PresignedGetObject.cs](./Minio.Examples/Cases/PresignedGetObject.cs)
+* [PresignedPutObject.cs](./Minio.Examples/Cases/PresignedPutObject.cs)
+* [PresignedPostPolicy.cs](./Minio.Examples/Cases/PresignedPostPolicy.cs)
 
 #### Full Examples : Client Custom Settings
-* [SetAppInfo] (./Minio.Examples/Program.cs)
-* [SetTraceOn] (./Minio.Examples/Program.cs)
-* [SetTraceOff] (./Minio.Examples/Program.cs)
+* [SetAppInfo](./Minio.Examples/Program.cs)
+* [SetTraceOn](./Minio.Examples/Program.cs)
+* [SetTraceOff](./Minio.Examples/Program.cs)
 
 ### How to run these examples?
 ### On Windows
@@ -149,7 +155,7 @@ Click on FileUploader project and Start
 •Build Minio solution
 
 •Move into Minio.Examples directory and run the project. Uncomment cases that you want to run 
- to play with it.
+ in Program.cs to play with it.
 
 
 ## Explore Further

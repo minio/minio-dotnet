@@ -16,7 +16,7 @@
 
 namespace Minio.Exceptions
 {
-    public class MethodNotAllowedException : ClientException
+    public class MethodNotAllowedException : MinioException
     {
         public MethodNotAllowedException(string message) : base(message)
         {
