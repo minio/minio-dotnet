@@ -39,11 +39,15 @@ namespace Minio
         internal string BaseUrl { get; private set; }
         internal bool Secure { get; private set; }
         internal bool Anonymous { get; }
+
         internal Uri uri;
         internal string s3AccelerateEndpoint;
         internal RestClient restClient;
         internal V4Authenticator authenticator;
         internal BucketRegionCache regionCache;
+
+        private bool trace = false;
+
         public ClientApiOperations Api;
 
         internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers = Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
@@ -221,108 +225,12 @@ namespace Minio
 
             return request;
         }
-      
-
-        internal void ModifyAWSEndpointFor(string region, string bucketName = null)
-        {
-            if (region != null)
-            {
-                _constructUri(region, bucketName);
-                this.restClient.BaseUrl = this.uri;
-           
-            }
-        }
-        internal async Task<string> ModifyTargetURL(IRestRequest request, string bucketName,bool usePathStyle=false)
-        {
-            var resource_url = this.Endpoint;
-
-            if (s3utils.IsAmazonEndPoint(this.BaseUrl))
-            {
-                // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
-                string location = await BucketRegionCache.Instance.Update(this,bucketName);
-                // if (location != "us-east-1")
-                {
-                    ModifyAWSEndpointFor(location, bucketName);
-                    resource_url = MakeTargetURL(location, bucketName,usePathStyle);
-                }
-                //else
-                //{  // use default request
-                //    resource_url = "";
-                // }
-            }
-            return resource_url;
-
-        }
-        internal string MakeTargetURL(string region = null, string bucketName = null,bool usePathStyle=false)
-        {
-            string targetUrl = null;
-            string host = this.BaseUrl;
-            // For Amazon S3 endpoint, try to fetch location based endpoint.
-            if (s3utils.IsAmazonEndPoint(this.BaseUrl))
-            {
-                if (this.s3AccelerateEndpoint != null && bucketName != null)
-                {
-                    // http://docs.aws.amazon.com/AmazonS3/latest/dev/transfer-acceleration.html
-                    // Disable transfer acceleration for non-compliant bucket names.
-                    if (bucketName.Contains("."))
-                    {
-                        throw new InvalidTransferAccelerationBucketException(bucketName);
-                    }
-                    // If transfer acceleration is requested set new host.
-                    // For more details about enabling transfer acceleration read here.
-                    // http://docs.aws.amazon.com/AmazonS3/latest/dev/transfer-acceleration.html
-                    host = s3AccelerateEndpoint;
-                }
-                else
-                {
-                    // Fetch new host based on the bucket location.
-                    host = AWSS3Endpoints.Instance.endpoint(region);
-
-                }
-            }
-            var scheme = this.Secure ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
-            // Make URL only if bucketName is available, otherwise use the
-            // endpoint URL.
-            if (bucketName != null && s3utils.IsAmazonEndPoint(this.BaseUrl))
-            {
-           
-                // Save if target url will have buckets which suppport virtual host.
-                bool isVirtualHostStyle = s3utils.IsVirtualHostSupported(uri, bucketName);
-
-                if (bucketName.Contains(".") && this.Secure)
-                {
-                    // use path style where '.' in bucketName causes SSL certificate validation error
-                    usePathStyle = true;
-                }
-                // If endpoint supports virtual host style use that always.
-                // Currently only S3 and Google Cloud Storage would support
-                // virtual host style.
-                string urlStr = null;
-
-                if (isVirtualHostStyle || !usePathStyle)
-                {
-                    targetUrl = scheme + "://" + bucketName + "." + host + "/";
-                }
-                else
-                {
-                    // If not fall back to using path style.
-                    targetUrl = urlStr + bucketName + "/";
-                }
-            }
-            else
-            {
-                targetUrl = string.Format("{0}://{1}", scheme, this.BaseUrl);
-            }
-
-
-            return targetUrl;
-
-        }
-
-
-        /// <summary>
-        /// helper to construct uri and validate it.
-        /// </summary>
+  
+       /// <summary>
+       /// Helper function to construct URI and validate it
+       /// </summary>
+       /// <param name="region">Region - applies only to AWS</param>
+       /// <param name="bucketName">Bucket Name</param>
         private void _constructUri(string region = null, string bucketName = null)
         {
             if (string.IsNullOrEmpty(this.BaseUrl))
@@ -342,36 +250,7 @@ namespace Minio
             this.Endpoint = string.Format("{0}://{1}", scheme, host);
             this.uri = new Uri(this.Endpoint);
         }
-            /*
-            // Make URL only if bucketName is available, otherwise use the
-            // endpoint URL.
-            if (bucketName != null && s3utils.IsAmazonEndPoint(this.BaseUrl))
-            {
-                // Save if target url will have buckets which suppport virtual host.
-                bool isVirtualHostStyle = s3utils.IsVirtualHostSupported(this.uri, bucketName);
-
-                // If endpoint supports virtual host style use that always.
-                // Currently only S3 and Google Cloud Storage would support
-                // virtual host style.
-                string urlStr = null;
-                if (isVirtualHostStyle)
-                {
-                    this.Endpoint = scheme + "://" + bucketName + "." + host + "/";
-                }
-                else
-                {
-                   // If not fall back to using path style.
-                   this.Endpoint = urlStr + bucketName + "/";
-                }
-             }
-             else
-            {
-                this.Endpoint = string.Format("{0}://{1}", scheme, this.BaseUrl);
-            }
            
-            */
-           // this.uri = new Uri(this.Endpoint);
-       
 
         /// <summary>
         /// validates URI 
@@ -401,10 +280,9 @@ namespace Minio
                  && !(amzHost.Equals("s3.amazonaws.com", StringComparison.CurrentCultureIgnoreCase)))
              {
                  throw new InvalidEndpointException(this.Endpoint, "For Amazon S3, host should be \'s3.amazonaws.com\' in endpoint.");
-             }
-             
-
+             }           
         }
+
         /// <summary>
         /// Validate Url endpoint 
         /// </summary>
@@ -438,6 +316,7 @@ namespace Minio
 
             return true;
         }
+
         /// <summary>
         ///Sets app version and name
         /// </summary>
@@ -458,6 +337,7 @@ namespace Minio
 
             this.restClient.UserAgent = this.FullUserAgent;
         }
+
         /// <summary>
         ///  Creates and returns an Cloud Storage client
         /// </summary>
@@ -497,6 +377,7 @@ namespace Minio
             return;
 
         }
+
         /// <summary>
         /// Connects to Cloud Storage with HTTPS if this method is invoked on client object
         /// </summary>
@@ -525,16 +406,10 @@ namespace Minio
             return response;
         }
 
-
-  
-  
-     
-      
         /// <summary>
         /// Parse response errors if any and return relevant error messages
         /// </summary>
         /// <param name="response"></param>
-
         internal void ParseError(IRestResponse response)
         {
             if (response == null)
@@ -633,7 +508,20 @@ namespace Minio
 
             _defaultErrorHandlingDelegate(response);
         }
-
+        /// <summary>
+        /// Sets HTTP tracing On.Writes output to Console
+        /// </summary>
+        public void SetTraceOn()
+        {
+            this.trace = true;
+        }
+        /// <summary>
+        /// Sets HTTP tracing Off.
+        /// </summary>
+        public void SetTraceOff()
+        {
+            this.trace = false;
+        }
         private void LogRequest(IRestRequest request, IRestResponse response, long durationMs)
         {
             var requestToLog = new

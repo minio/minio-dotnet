@@ -81,13 +81,13 @@ namespace FileUploader
 
             try
             {
-                bool success = await minio.Buckets.MakeBucketAsync(bucketName, location);
+                bool success = await minio.Api.MakeBucketAsync(bucketName, location);
                 if (!success) {
-                    bool found = await minio.Buckets.BucketExistsAsync(bucketName);
+                    bool found = await minio.Api.BucketExistsAsync(bucketName);
                     Console.Out.WriteLine("bucket-name was " + ((found == true) ? "found" : "not found"));
                 }
                 else { 
-                    await minio.Objects.PutObjectAsync(bucketName, objectName, filePath, contentType);  
+                    await minio.Api.PutObjectAsync(bucketName, objectName, filePath, contentType);  
                     Console.Out.WriteLine("Successfully uploaded " + objectName);
                 }
                
@@ -114,14 +114,12 @@ Click on FileUploader project and Start
 * [ListBuckets.cs](./Minio.Examples/Cases/ListBuckets.cs)
 * [BucketExists.cs](./Minio.Examples/Cases/BucketExists.cs)
 * [RemoveBucket.cs](./Minio.Examples/Cases/RemoveBucket.cs)
-* [ListIncompleteUploads.cs](./Minio.Examples/Cases/ListIncompleteUploads.cs)
 * [Listobjects.cs](./Minio.Examples/Cases/Listobjects.cs)
+* [ListIncompleteUploads.cs](./Minio.Examples/Cases/ListIncompleteUploads.cs)
 
 #### Full Examples : Bucket policy Operations
 * [GetPolicy.cs] (./Minio.Examples/Cases/GetPolicy.cs)
 * [SetPolicy.cs] (./Minio.Examples/Cases/SetPolicy.cs)
-
-#### Full Examples : Bucket notification Operations
 
 #### Full Examples : File Object Operations
 * [FGetObject.cs] (./Minio.Examples/Cases/FGetObject.cs)
@@ -132,20 +130,23 @@ Click on FileUploader project and Start
 * [PutObject.cs] (./Minio.Examples/Cases/PutObject.cs)
 * [StatObject.cs](./Minio.Examples/Cases/StatObject.cs)
 * [RemoveObject.cs](./Minio.Examples/Cases/RemoveObject.cs)
-* [RemoveIncompleteUpload.cs](./Minio.Examples/Cases/RemoveIncompleteUpload.cs)
 * [CopyObject.cs] (./Minio.Examples/Cases/CopyObject.cs)
+* [RemoveIncompleteUpload.cs](./Minio.Examples/Cases/RemoveIncompleteUpload.cs)
 
 #### Full Examples : Presigned Operations
+* [PresignedGetObject.cs] (./Minio.Examples/Cases/PresignedGetObject.cs)
+* [PresignedPutObject.cs] (./Minio.Examples/Cases/PresignedPutObject.cs)
+* [PresignedPostPolicy.cs] (./Minio.Examples/Cases/PresignedPostPolicy.cs)
 
 #### Full Examples : Client Custom Settings
 * [SetAppInfo] (./Minio.Examples/Program.cs)
+* [SetTraceOn] (./Minio.Examples/Program.cs)
+* [SetTraceOff] (./Minio.Examples/Program.cs)
 
 ### How to run these examples?
 ### On Windows
 
-
 •Build Minio solution
-
 
 •Move into Minio.Examples directory and run the project. Uncomment cases that you want to run 
  to play with it.
