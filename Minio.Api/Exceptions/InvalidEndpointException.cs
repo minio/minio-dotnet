@@ -16,7 +16,7 @@
 
 namespace Minio.Exceptions
 {
-    public class InvalidEndpointException : ClientException
+    public class InvalidEndpointException : MinioException
     {
         private string endpoint;
 

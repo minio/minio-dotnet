@@ -35,7 +35,7 @@ namespace Minio.Tests
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                     | SecurityProtocolType.Tls11
                                     | SecurityProtocolType.Tls12;
-            var minio = new MinioRestClient(ConfigurationManager.AppSettings["Endpoint"],
+            var minio = new MinioClient(ConfigurationManager.AppSettings["Endpoint"],
                                    ConfigurationManager.AppSettings["AccessKey"],
                                    ConfigurationManager.AppSettings["SecretKey"]);
 
@@ -91,47 +91,47 @@ namespace Minio.Tests
         [TestMethod]
         public void TestWithUrl()
         {
-            new MinioRestClient(endpoint:"http://localhost:9000");
+            new MinioClient(endpoint:"http://localhost:9000");
         }
 
         [TestMethod]
         public void TestWithoutPort()
         {
-            new MinioRestClient("http://localhost");
+            new MinioClient("http://localhost");
         }
 
         [TestMethod]
         public void TestWithTrailingSlash()
         {
-            new MinioRestClient("http://localhost:9000/");
+            new MinioClient("http://localhost:9000/");
         }
 
         [TestMethod]
         [ExpectedException(typeof(InvalidEndpointException))]
         public void TestUrlFailsWithMalformedScheme()
         {
-            new MinioRestClient("htp://localhost:9000");
+            new MinioClient("htp://localhost:9000");
         }
 
         [TestMethod]
         [ExpectedException(typeof(InvalidEndpointException))]
         public void TestUrlFailsWithPath()
         {
-            new MinioRestClient("http://localhost:9000/foo");
+            new MinioClient("http://localhost:9000/foo");
         }
 
         [TestMethod]
         [ExpectedException(typeof(InvalidEndpointException))]
         public void TestUrlFailsWithQuery()
         {
-            new MinioRestClient("http://localhost:9000/?foo=bar");
+            new MinioClient("http://localhost:9000/?foo=bar");
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void TestSetAppInfoFailsNullApp()
         {
-            var client = new MinioRestClient("http://localhost:9000");
+            var client = new MinioClient("http://localhost:9000");
             client.SetAppInfo(null, "1.2.2");
         }
 
@@ -139,35 +139,35 @@ namespace Minio.Tests
         [ExpectedException(typeof(ArgumentException))]
         public void TestSetAppInfoFailsNullVersion()
         {
-            var client = new MinioRestClient("http://localhost:9000");
+            var client = new MinioClient("http://localhost:9000");
             client.SetAppInfo("Hello-App", null);
         }
 
         [TestMethod]
         public void TestSetAppInfoSuccess()
         {
-            var client = new MinioRestClient("http://localhost:9000");
+            var client = new MinioClient("http://localhost:9000");
             client.SetAppInfo("Hello-App", "1.2.1");
         }
 
         [TestMethod]
         public void TestEndpointSuccess()
         {
-            new MinioRestClient("s3.amazonaws.com");
+            new MinioClient("s3.amazonaws.com");
         }
 
         [TestMethod]
         [ExpectedException(typeof(InvalidEndpointException))]
         public void TestEndpointFailure()
         {
-            new MinioRestClient("s3-us-west-1.amazonaws.com");
+            new MinioClient("s3-us-west-1.amazonaws.com");
         }
 
         //[TestMethod]
         //[ExpectedException(typeof(ArgumentException))]
         //public void TestPutObject()
         //{
-        //    var client = new MinioRestClient("localhost", 9000,);
+        //    var client = new MinioClient("localhost", 9000,);
         //    await client.PutObjectAsync("bucket-name", "object-name", null, 5 * 1024L * 1024L * 11000, null);
         //}
     }

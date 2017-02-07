@@ -25,7 +25,7 @@ namespace Minio
 {
     public partial class ClientApiOperations
     {
-        internal MinioRestClient client;
+        internal MinioClient client;
         private const string RegistryAuthHeaderKey = "X-Registry-Auth";
         internal static readonly ApiResponseErrorHandlingDelegate NoSuchBucketHandler = (response) =>
         {
@@ -34,7 +34,7 @@ namespace Minio
                 throw new BucketNotFoundException();
             }
         };
-        public ClientApiOperations(MinioRestClient client)
+        public ClientApiOperations(MinioClient client)
         {
             this.client = client;
         }

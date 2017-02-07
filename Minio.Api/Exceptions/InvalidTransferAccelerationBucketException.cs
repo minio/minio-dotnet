@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Minio.Exceptions
 {
-    class InvalidTransferAccelerationBucketException : ClientException
+    class InvalidTransferAccelerationBucketException : MinioException
     {
         private string bucketName;
         public InvalidTransferAccelerationBucketException()

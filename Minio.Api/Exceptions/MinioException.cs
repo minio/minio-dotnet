@@ -20,21 +20,21 @@ using RestSharp;
 namespace Minio.Exceptions
 {
     [Serializable]
-    public class ClientException : Exception
+    public class MinioException : Exception
     {
         public string message { get; private set; }
         public IRestResponse response { get; private set; }
-        public ClientException(IRestResponse response)
+        public MinioException(IRestResponse response)
             : base($"Minio API responded with status code={response.StatusCode}, response={response.ErrorMessage}, content={response.Content}")
         {
             this.response = response;
 
         }
-        public ClientException()
+        public MinioException()
         {
 
         }
-        public ClientException(string message) : base($"Minio API responded with message={message}")
+        public MinioException(string message) : base($"Minio API responded with message={message}")
         {
             this.message = message;
         }

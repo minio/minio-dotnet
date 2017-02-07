@@ -29,9 +29,7 @@ using Newtonsoft.Json;
 
 namespace Minio
 {
- 
-    public sealed class MinioRestClient
- 
+    public sealed class MinioClient
     {
         public string AccessKey { get; private set; }
         public string SecretKey { get; private set; }
@@ -57,7 +55,7 @@ namespace Minio
         {
             if (response.StatusCode < HttpStatusCode.OK || response.StatusCode >= HttpStatusCode.BadRequest)
             {
-                throw new ClientException(response);
+                throw new MinioException(response);
             }
         };
 
@@ -346,7 +344,7 @@ namespace Minio
         /// <param name="secretKey">Secret Key for authenticated requests</param>
         /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
 
-        public MinioRestClient(string endpoint, string accessKey = "", string secretKey = "")
+        public MinioClient(string endpoint, string accessKey = "", string secretKey = "")
         {
 
             this.Secure = false;
@@ -382,7 +380,7 @@ namespace Minio
         /// Connects to Cloud Storage with HTTPS if this method is invoked on client object
         /// </summary>
         /// <returns></returns>
-        public MinioRestClient WithSSL()
+        public MinioClient WithSSL()
         {
             this.Secure = true;
             _constructUri();
@@ -426,7 +424,7 @@ namespace Minio
                 if (HttpStatusCode.Forbidden.Equals(response.StatusCode) || HttpStatusCode.NotFound.Equals(response.StatusCode) ||
                     HttpStatusCode.MethodNotAllowed.Equals(response.StatusCode) || HttpStatusCode.NotImplemented.Equals(response.StatusCode))
                 {
-                    ClientException e = null;
+                    MinioException e = null;
                     ErrorResponse errorResponse = new ErrorResponse();
 
                     foreach (Parameter parameter in response.Headers)
@@ -483,10 +481,10 @@ namespace Minio
             var stream = new MemoryStream(contentBytes);
             ErrorResponse errResponse = (ErrorResponse)(new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream));
 
-            ClientException clientException = new ClientException(errResponse.Message);
-            clientException.Response = errResponse;
-            clientException.XmlError = response.Content;
-            throw clientException;
+            MinioException MinioException = new MinioException(errResponse.Message);
+            MinioException.Response = errResponse;
+            MinioException.XmlError = response.Content;
+            throw MinioException;
         }
         /// <summary>
         /// Delegate errors to handlers

@@ -111,7 +111,7 @@
     <Compile Include="DataModel\Upload.cs" />
     <Compile Include="Exceptions\AccessDeniedException.cs" />
     <Compile Include="Exceptions\BucketNotFoundException.cs" />
-    <Compile Include="Exceptions\ClientException.cs" />
+    <Compile Include="Exceptions\MinioException.cs" />
     <Compile Include="Exceptions\ConnectionException.cs" />
     <Compile Include="Exceptions\EntityTooLargeException.cs" />
     <Compile Include="Exceptions\ErrorResponse.cs" />
@@ -135,7 +135,7 @@
     <Compile Include="Helper\s3utils.cs" />
     <Compile Include="Helper\utils.cs" />
     <Compile Include="Exceptions\InvalidTransferAccelerationBucketException.cs" />
-    <Compile Include="MinioRestClient.cs" />
+    <Compile Include="MinioClient.cs" />
     <Compile Include="DataModel\ObjectStat.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Regions.cs" />

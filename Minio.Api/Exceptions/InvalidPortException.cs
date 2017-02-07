@@ -16,7 +16,7 @@
 
 namespace Minio.Exceptions
 {
-    public class InvalidPortException : ClientException
+    public class InvalidPortException : MinioException
     {
         private int port;
 

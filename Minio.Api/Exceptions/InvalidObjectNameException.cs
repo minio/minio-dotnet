@@ -16,7 +16,7 @@
 
 namespace Minio.Exceptions
 {
-    class InvalidObjectNameException : ClientException
+    class InvalidObjectNameException : MinioException
     {
         private string objectName;
 

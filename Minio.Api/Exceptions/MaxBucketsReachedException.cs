@@ -16,7 +16,7 @@
 
 namespace Minio.Exceptions
 {
-    public class MaxBucketsReachedException : ClientException
+    public class MaxBucketsReachedException : MinioException
     {
         public MaxBucketsReachedException(string message) : base(message)
         {

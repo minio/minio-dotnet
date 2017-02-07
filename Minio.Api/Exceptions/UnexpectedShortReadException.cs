@@ -16,7 +16,7 @@
 
 namespace Minio.Exceptions
 {
-    public class UnexpectedShortReadException : ClientException
+    public class UnexpectedShortReadException : MinioException
     {
 
         public UnexpectedShortReadException(string message) : base(message)

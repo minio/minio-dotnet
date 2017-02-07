@@ -16,7 +16,7 @@
 
 namespace Minio.Exceptions
 {
-    public class InvalidBucketNameException : ClientException
+    public class InvalidBucketNameException : MinioException
     {
         private string bucketName;
 

@@ -16,7 +16,7 @@
 
 namespace Minio.Exceptions
 {
-    public class ForbiddenException : ClientException
+    public class ForbiddenException : MinioException
     {
         public ForbiddenException(string message) : base(message)
         {

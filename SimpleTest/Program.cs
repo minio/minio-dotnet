@@ -22,7 +22,7 @@ namespace SimpleTest
 
             /// Note: s3 AccessKey and SecretKey needs to be added in App.config file
             /// See instructions in README.md on running examples for more information.
-            var minio = new MinioRestClient(ConfigurationManager.AppSettings["Endpoint"],
+            var minio = new MinioClient(ConfigurationManager.AppSettings["Endpoint"],
                                              ConfigurationManager.AppSettings["AccessKey"],
                                              ConfigurationManager.AppSettings["SecretKey"]).WithSSL();
            
@@ -42,9 +42,9 @@ namespace SimpleTest
             }
  
             //Supply a new bucket name
-            Task.WaitAll(minio.Api.MakeBucketAsync("MyNewBucket"));
+            Task.WaitAll(minio.Api.MakeBucketAsync("mynewbucket"));
 
-            var bucketExistTask = minio.Api.BucketExistsAsync("MyNewBucket");
+            var bucketExistTask = minio.Api.BucketExistsAsync("mynewbucket");
             Task.WaitAll(bucketExistTask);
             var found = bucketExistTask.Result;
             Console.Out.WriteLine("bucket was " + found);

@@ -9,7 +9,7 @@ namespace Minio.Examples.Cases
     class CopyObject
     {
         //copy object from one bucket to another
-        public async static Task Run(Minio.MinioRestClient minio,
+        public async static Task Run(Minio.MinioClient minio,
                                      string fromBucketName="from-bucket-name",
                                      string fromObjectName="from-object-name",
                                      string destBucketName="dest-bucket",

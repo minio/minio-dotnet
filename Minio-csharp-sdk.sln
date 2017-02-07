@@ -18,6 +18,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Examples", "Minio.Exa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Tests", "Minio.Tests\Minio.Tests.csproj", "{040B2A3E-8003-4460-80CF-6262DDDAE89D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{30E4FEE3-BCF0-43AB-B3E0-6083D576D808}"
+	ProjectSection(SolutionItems) = preProject
+		API.md = API.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,5 +55,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{040B2A3E-8003-4460-80CF-6262DDDAE89D} = {C8111804-63DA-4E74-9C1F-FEC46632A33B}
+		{30E4FEE3-BCF0-43AB-B3E0-6083D576D808} = {C8111804-63DA-4E74-9C1F-FEC46632A33B}
 	EndGlobalSection
 EndGlobal
