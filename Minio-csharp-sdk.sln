@@ -1,0 +1,60 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinioApi", "Minio.Api\MinioApi.csproj", "{CC30CADE-342A-4CED-858D-B60200C075B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTest", "SimpleTest\SimpleTest.csproj", "{AF2DF297-402B-46B8-8954-C5A934967A51}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C8111804-63DA-4E74-9C1F-FEC46632A33B}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileUploader", "FileUploader\FileUploader.csproj", "{04E6286A-50DA-444B-B663-6D7386D4CC4A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Examples", "Minio.Examples\Minio.Examples.csproj", "{C126F2B3-50B0-448F-AB16-9CF80079D6AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Tests", "Minio.Tests\Minio.Tests.csproj", "{040B2A3E-8003-4460-80CF-6262DDDAE89D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{30E4FEE3-BCF0-43AB-B3E0-6083D576D808}"
+	ProjectSection(SolutionItems) = preProject
+		API.md = API.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CC30CADE-342A-4CED-858D-B60200C075B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC30CADE-342A-4CED-858D-B60200C075B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC30CADE-342A-4CED-858D-B60200C075B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC30CADE-342A-4CED-858D-B60200C075B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF2DF297-402B-46B8-8954-C5A934967A51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF2DF297-402B-46B8-8954-C5A934967A51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF2DF297-402B-46B8-8954-C5A934967A51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF2DF297-402B-46B8-8954-C5A934967A51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C126F2B3-50B0-448F-AB16-9CF80079D6AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C126F2B3-50B0-448F-AB16-9CF80079D6AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C126F2B3-50B0-448F-AB16-9CF80079D6AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C126F2B3-50B0-448F-AB16-9CF80079D6AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{040B2A3E-8003-4460-80CF-6262DDDAE89D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{040B2A3E-8003-4460-80CF-6262DDDAE89D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{040B2A3E-8003-4460-80CF-6262DDDAE89D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{040B2A3E-8003-4460-80CF-6262DDDAE89D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{040B2A3E-8003-4460-80CF-6262DDDAE89D} = {C8111804-63DA-4E74-9C1F-FEC46632A33B}
+		{30E4FEE3-BCF0-43AB-B3E0-6083D576D808} = {C8111804-63DA-4E74-9C1F-FEC46632A33B}
+	EndGlobalSection
+EndGlobal
