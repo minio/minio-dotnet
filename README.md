@@ -1,5 +1,4 @@
-
-# Minio Client SDK for .NET  [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io) [![Build Status](https://travis-ci.org/minio/minio-dotnet.svg?branch=master)](https://travis-ci.org/minio/minio-dotnet)
+# Minio Client SDK for .NET [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io)
 
 Minio Client SDK provides higher level APIs for Minio and Amazon S3 compatible cloud storage services. 
 
@@ -8,8 +7,9 @@ For a complete list of APIs and examples, please take a look at the [Dotnet Clie
 This document assumes that you have a working VisualStudio development environment.  
 
 ## Minimum Requirements
-  .NET 4.5 or higher
-  Visual Studio 10 or higher
+
+- .NET 4.5 or higher
+- Visual Studio 10 or higher
   
 ## Install from NuGet
 
@@ -129,14 +129,9 @@ namespace FileUploader
 }
 ```
 
+## Full Examples
 
-## Running Minio Client Examples
-
-* Download from Github.. Build Minio solution in Visual Studio
-
-* Move into Minio.Examples directory and run the project. Uncomment cases that you want to run 
- in Program.cs to play with it.
-#### Bucket Operations
+#### Full Examples:  Bucket Operations
 
 * [MakeBucket.cs](./Minio.Examples/Cases/MakeBucket.cs)
 * [ListBuckets.cs](./Minio.Examples/Cases/ListBuckets.cs)
@@ -145,15 +140,15 @@ namespace FileUploader
 * [Listobjects.cs](./Minio.Examples/Cases/Listobjects.cs)
 * [ListIncompleteUploads.cs](./Minio.Examples/Cases/ListIncompleteUploads.cs)
 
-#### Bucket policy Operations
+#### Full Examples: Bucket Policy Operations
 * [GetPolicy.cs](./Minio.Examples/Cases/GetPolicy.cs)
 * [SetPolicy.cs](./Minio.Examples/Cases/SetPolicy.cs)
 
-#### File Object Operations
+#### Full Examples: File Object Operations
 * [FGetObject.cs](./Minio.Examples/Cases/FGetObject.cs)
 * [FPutObject.cs](./Minio.Examples/Cases/FPutObject.cs)
 
-#### Object Operations
+#### Full Examples: Object Operations
 * [GetObject.cs](./Minio.Examples/Cases/GetObject.cs)
 * [PutObject.cs](./Minio.Examples/Cases/PutObject.cs)
 * [StatObject.cs](./Minio.Examples/Cases/StatObject.cs)
@@ -161,18 +156,10 @@ namespace FileUploader
 * [CopyObject.cs](./Minio.Examples/Cases/CopyObject.cs)
 * [RemoveIncompleteUpload.cs](./Minio.Examples/Cases/RemoveIncompleteUpload.cs)
 
-#### Presigned Operations
+#### Full Examples: Presigned Operations
 * [PresignedGetObject.cs](./Minio.Examples/Cases/PresignedGetObject.cs)
 * [PresignedPutObject.cs](./Minio.Examples/Cases/PresignedPutObject.cs)
 * [PresignedPostPolicy.cs](./Minio.Examples/Cases/PresignedPostPolicy.cs)
-
-#### Client Custom Settings
-* [SetAppInfo](./Minio.Examples/Program.cs)
-* [SetTraceOn](./Minio.Examples/Program.cs)
-* [SetTraceOff](./Minio.Examples/Program.cs)
-
-
-
 
 ## Explore Further
 * [Complete Documentation](https://docs.minio.io)
@@ -181,3 +168,4 @@ namespace FileUploader
 
 [Contributors Guide](https://github.com/minio/minio-go/blob/master/CONTRIBUTING.md)
 
+[![Build Status](https://travis-ci.org/minio/minio-dotnet.svg?branch=master)](https://travis-ci.org/minio/minio-dotnet)
