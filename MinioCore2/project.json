@@ -1,0 +1,41 @@
+{
+  "dependencies": {
+    "Newtonsoft.Json": "9.0.2-beta2",
+    "System.Reactive": "3.1.1",
+    "System.Reactive.Core": "3.1.1",
+    "System.Reactive.Interfaces": "3.1.1",
+    "System.Reactive.Linq": "3.1.1",
+    "System.Reactive.PlatformServices": "3.1.1",
+    "System.Runtime.InteropServices.RuntimeInformation": "4.3.0"
+  },
+  "frameworks": {
+    "netstandard1.6": {
+      "imports": "dnxcore50",
+      "dependencies": {
+        "Microsoft.Build.Utilities.Core": "14.3.0",
+        "Microsoft.Win32.Registry": "4.3.0",
+        "NETStandard.Library": "1.6.1",
+        "RestSharp.NetCore": "105.2.4-rc4-24214-01",
+     
+        "System.Runtime": "4.3.0",
+        "System.Runtime.Extensions": "4.3.0",
+        "System.Runtime.InteropServices": "4.3.0"
+      }
+    },
+    "net452": {
+      "dependencies": {
+        "RestSharp": "105.2.3",
+        "System.Reactive.Windows.Threading": "3.1.1",
+        "System.Xml.Linq": "3.5.21022.801"
+      },
+      "frameworkAssemblies": {
+        "System.Runtime.Serialization": "4.0.0.0",
+        "System.Xml": "4.0.0.0",
+        "System.Runtime": "4.0.10.0"
+
+      }
+
+    }
+    },
+  "version": "1.0.0-*"
+}

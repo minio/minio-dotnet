@@ -50,6 +50,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Minio.Api\MinioApi.csproj">
       <Project>{cc30cade-342a-4ced-858d-b60200c075b0}</Project>
       <Name>MinioApi</Name>

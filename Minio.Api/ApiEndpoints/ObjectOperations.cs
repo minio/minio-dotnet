@@ -1,5 +1,5 @@
 ﻿/*
- * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2015 Minio, Inc.
+ * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,9 +33,9 @@ using Minio.Helper;
 
 namespace Minio
 {
-    public partial class ClientApiOperations : IObjectOperations
+    public partial class MinioClient : IObjectOperations
     {
-   
+
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
@@ -45,21 +45,15 @@ namespace Minio
         public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb)
         {
 
-            var request = await client.CreateRequest(Method.GET, 
+            var request = await this.CreateRequest(Method.GET,
                                                      bucketName,
-                                                     objectName: objectName,
-                                                     region: BucketRegionCache.Instance.Region(bucketName)
-                                                     );
-            request.ResponseWriter = cb;
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
+                                                     objectName: objectName);
 
-            if (response.StatusCode != HttpStatusCode.OK)
-            {              
-                this.client.ParseError(response);
-            }
-         
-            return;
+            request.ResponseWriter = cb;
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
+
         }
+
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
@@ -69,7 +63,7 @@ namespace Minio
         /// <returns></returns>
         public async Task GetObjectAsync(string bucketName, string objectName, string fileName)
         {
-           
+
             bool fileExists = File.Exists(fileName);
             utils.ValidateFile(fileName);
 
@@ -78,11 +72,11 @@ namespace Minio
             string etag = objectStat.ETag;
 
             string tempFileName = fileName + "." + etag + ".part.minio";
-            
+
             bool tempFileExists = File.Exists(tempFileName);
 
             utils.ValidateFile(tempFileName);
-            
+
             FileInfo tempFileInfo = new FileInfo(tempFileName);
             long tempFileSize = 0;
             if (tempFileExists)
@@ -131,8 +125,9 @@ namespace Minio
                 }
                 utils.MoveWithReplace(tempFileName, fileName);
             });
-           
+
         }
+
         /// <summary>
         /// Creates an object from file
         /// </summary>
@@ -140,7 +135,7 @@ namespace Minio
         /// <param name="objectName">Key of the new object</param>
         /// <param name="fileName">Path of file to upload</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
-        public async Task PutObjectAsync(string bucketName, string objectName, string fileName, string contentType=null)
+        public async Task PutObjectAsync(string bucketName, string objectName, string fileName, string contentType = null)
         {
             utils.ValidateFile(fileName, contentType);
             FileInfo fileInfo = new FileInfo(fileName);
@@ -148,7 +143,7 @@ namespace Minio
             using (FileStream file = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             {
                 await PutObjectAsync(bucketName, objectName, file, size, contentType);
-            }       
+            }
 
         }
 
@@ -168,7 +163,7 @@ namespace Minio
             {
                 throw new ArgumentNullException("Invalid input stream,cannot be null");
             }
-           
+
             //for sizes less than 5Mb , put a single object
             if (size < Constants.MinimumPartSize && size >= 0)
             {
@@ -181,7 +176,7 @@ namespace Minio
                 return;
             }
             // For all sizes greater than 5MiB do multipart.
-      
+
             dynamic multiPartInfo = CalculateMultiPartSize(size);
             double partSize = multiPartInfo.partSize;
             double partCount = multiPartInfo.partCount;
@@ -198,7 +193,7 @@ namespace Minio
             }
             else
             {
-                existingParts = await this.ListParts(bucketName, objectName,uploadId).ToArray();
+                existingParts = await this.ListParts(bucketName, objectName, uploadId).ToArray();
             }
 
             double expectedReadSize = partSize;
@@ -224,15 +219,16 @@ namespace Minio
                         {
                             totalParts[partNumber - 1] = new Part() { PartNumber = part.PartNumber, ETag = part.ETag, size = part.partSize() };
                             skipUpload = true;
-                          
+
                         }
 
                     }
-                } else
+                }
+                else
                 {
                     skipUpload = false;
                 }
-        
+
                 if (!skipUpload)
                 {
                     string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, contentType);
@@ -243,13 +239,13 @@ namespace Minio
             Dictionary<int, string> etags = new Dictionary<int, string>();
             for (partNumber = 1; partNumber <= partCount; partNumber++)
             {
-                etags[partNumber] = totalParts[partNumber-1].ETag;
+                etags[partNumber] = totalParts[partNumber - 1].ETag;
             }
             await this.CompleteMultipartUploadAsync(bucketName, objectName, uploadId, etags);
 
-        }      
+        }
         /// <summary>
-        /// internal method to complete multi part upload of object to server
+        /// Internal method to complete multi part upload of object to server.
         /// </summary>
         /// <param name="bucketName">Bucket Name</param>
         /// <param name="objectName">Object to be uploaded</param>
@@ -260,12 +256,11 @@ namespace Minio
         {
 
             string resourcePath = "?uploadId=" + uploadId;
-            var request = await client.CreateRequest(Method.POST, bucketName,
+            var request = await this.CreateRequest(Method.POST, bucketName,
                                                      objectName: objectName,
-                                                     resourcePath:resourcePath,
-                                                     region: BucketRegionCache.Instance.Region(bucketName)
+                                                     resourcePath: resourcePath
                                            );
- 
+
             List<XElement> parts = new List<XElement>();
 
             for (int i = 1; i <= etags.Count; i++)
@@ -283,16 +278,12 @@ namespace Minio
 
             request.AddParameter("application/xml", body, RestSharp.ParameterType.RequestBody);
 
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
-            if (response.StatusCode.Equals(HttpStatusCode.OK))
-            {
-                return;
-            }
-            this.client.ParseError(response);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
+
         }
 
         /// <summary>
-        /// Calculate part size and number of parts required
+        /// Calculate part size and number of parts required.
         /// </summary>
         /// <param name="size"></param>
         /// <returns></returns>
@@ -307,18 +298,25 @@ namespace Minio
             {
                 throw new EntityTooLargeException("Your proposed upload size " + size + " exceeds the maximum allowed object size " + Constants.MaxMultipartPutObjectSize);
             }
-            double partSize = (double) Math.Ceiling((decimal)size / Constants.MaxParts);
+            double partSize = (double)Math.Ceiling((decimal)size / Constants.MaxParts);
             partSize = (double)Math.Ceiling((decimal)partSize / Constants.MinimumPartSize) * Constants.MinimumPartSize;
             double partCount = (double)Math.Ceiling(size / partSize);
             double lastPartSize = size - (partCount - 1) * partSize;
             return new
             {
                 partSize = partSize,
-                partCount =partCount ,
+                partCount = partCount,
                 lastPartSize = lastPartSize
             };
         }
-        //Returns an async observable of parts corresponding to a uploadId for a specific bucket and objectName   
+
+        /// <summary>
+        /// Returns an async observable of parts corresponding to a uploadId for a specific bucket and objectName   
+        /// </summary>
+        /// <param name="bucketName"></param>
+        /// <param name="objectName"></param>
+        /// <param name="uploadId"></param>
+        /// <returns></returns>
         private IObservable<Part> ListParts(string bucketName, string objectName, string uploadId)
         {
 
@@ -338,7 +336,7 @@ namespace Minio
                       isRunning = uploads.Item1.IsTruncated;
                   }
               });
-            
+
         }
         /// <summary>
         /// Gets the list of parts corresponding to a uploadId for given bucket and object
@@ -356,36 +354,39 @@ namespace Minio
                 resourcePath += "&part-number-marker=" + partNumberMarker;
             }
             resourcePath += "&max-parts=1000";
-            var request = await client.CreateRequest(Method.GET, bucketName,
+            var request = await this.CreateRequest(Method.GET, bucketName,
                                                      objectName: objectName,
-                                                     resourcePath: resourcePath,
-                                                     region: BucketRegionCache.Instance.Region(bucketName)
-                                           );
-     
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
-            if (!response.StatusCode.Equals(HttpStatusCode.OK))
-            {
-                this.client.ParseError(response);
-            }
+                                                     resourcePath: resourcePath
+                                                  );
+
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
+
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
             ListPartsResult listPartsResult = (ListPartsResult)(new XmlSerializer(typeof(ListPartsResult)).Deserialize(stream));
 
             XDocument root = XDocument.Parse(response.Content);
-     
+
             var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Part")
-                            select new Part()
-                            {
-                                PartNumber = int.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}PartNumber").Value, CultureInfo.CurrentCulture),
-                                ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value.Replace("\"", ""), 
-                                size = long.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture)
-                            });
-                           
+                           select new Part()
+                           {
+                               PartNumber = int.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}PartNumber").Value, CultureInfo.CurrentCulture),
+                               ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value.Replace("\"", ""),
+                               size = long.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture)
+                           });
+
             return new Tuple<ListPartsResult, List<Part>>(listPartsResult, uploads.ToList());
-             
+
         }
-        
-        //starts a multi-part upload request
+
+
+        /// <summary>
+        /// Start a new multi-part upload request
+        /// </summary>
+        /// <param name="bucketName"></param>
+        /// <param name="objectName"></param>
+        /// <param name="contentType"></param>
+        /// <returns></returns>
         private async Task<string> NewMultipartUploadAsync(string bucketName, string objectName, string contentType)
         {
             var resource = "?uploads";
@@ -394,22 +395,28 @@ namespace Minio
                 contentType = "application/octet-stream";
             }
 
-            var request = await client.CreateRequest(Method.POST, bucketName, objectName: objectName,
-                            contentType: contentType, resourcePath: resource,
-                            region: BucketRegionCache.Instance.Region(bucketName)
-                                           );
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
-            if (!response.StatusCode.Equals(HttpStatusCode.OK))
-            {
-                this.client.ParseError(response);
-            }
+            var request = await this.CreateRequest(Method.POST, bucketName, objectName: objectName,
+                            contentType: contentType, resourcePath: resource);
+
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
+
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
             InitiateMultipartUploadResult newUpload = (InitiateMultipartUploadResult)(new XmlSerializer(typeof(InitiateMultipartUploadResult)).Deserialize(stream));
             return newUpload.UploadId;
         }
 
-        //Actual doer
+
+        /// <summary>
+        /// Upload object part to bucket for particular uploadId
+        /// </summary>
+        /// <param name="bucketName"></param>
+        /// <param name="objectName"></param>
+        /// <param name="uploadId"></param>
+        /// <param name="partNumber"></param>
+        /// <param name="data"></param>
+        /// <param name="contentType"></param>
+        /// <returns></returns>
         private async Task<string> PutObjectAsync(string bucketName, string objectName, string uploadId, int partNumber, byte[] data, string contentType)
         {
             var resource = "";
@@ -417,19 +424,15 @@ namespace Minio
             {
                 resource += "?uploadId=" + uploadId + "&partNumber=" + partNumber;
             }
-            var request = await client.CreateRequest(Method.PUT, bucketName, 
+            var request = await this.CreateRequest(Method.PUT, bucketName,
                                                      objectName: objectName,
                                                      contentType: contentType,
-                                                     body: data, 
-                                                     resourcePath: resource,
-                                                     region: BucketRegionCache.Instance.Region(bucketName)
+                                                     body: data,
+                                                     resourcePath: resource
                                            );
-   
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
-            if (!response.StatusCode.Equals(HttpStatusCode.OK))
-            {
-                this.client.ParseError(response);
-            }
+
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
+
             string etag = null;
             foreach (Parameter parameter in response.Headers)
             {
@@ -439,10 +442,19 @@ namespace Minio
                 }
             }
             return etag;
-            
-           
+
+
         }
-        
+
+        /// <summary>
+        /// Get list of multi-part uploads matching particular uploadIdMarker
+        /// </summary>
+        /// <param name="bucketName">bucketName</param>
+        /// <param name="prefix">prefix</param>
+        /// <param name="keyMarker"></param>
+        /// <param name="uploadIdMarker"></param>
+        /// <param name="delimiter"></param>
+        /// <returns></returns>
         private async Task<Tuple<ListMultipartUploadsResult, List<Upload>>> GetMultipartUploadsListAsync(string bucketName,
                                                                                      string prefix,
                                                                                      string keyMarker,
@@ -472,15 +484,11 @@ namespace Minio
 
             string query = string.Join("&", queries);
 
-            var request = await client.CreateRequest(Method.GET, bucketName,
-                                                     region: BucketRegionCache.Instance.Region(bucketName),
-                                                     resourcePath:"?" + query);                      
-                     
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                this.client.ParseError(response);
-            }
+            var request = await this.CreateRequest(Method.GET, bucketName,
+                                                     resourcePath: "?" + query);
+
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
+
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
             ListMultipartUploadsResult listBucketResult = (ListMultipartUploadsResult)(new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(stream));
@@ -488,15 +496,15 @@ namespace Minio
             XDocument root = XDocument.Parse(response.Content);
 
             var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
-                            select new Upload()
-                            {
-                                Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
-                                UploadId = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}UploadId").Value,
-                                Initiated = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Initiated").Value
-                            });
+                           select new Upload()
+                           {
+                               Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
+                               UploadId = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}UploadId").Value,
+                               Initiated = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Initiated").Value
+                           });
 
             return new Tuple<ListMultipartUploadsResult, List<Upload>>(listBucketResult, uploads.ToList());
-            
+
         }
 
         /// <summary>
@@ -506,7 +514,7 @@ namespace Minio
         /// <param name="prefix">prefix to list all incomplete uploads</param>
         /// <param name="recursive">option to list incomplete uploads recursively</param>
         /// <returns>A lazily populated list of incomplete uploads</returns>
-        public  IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix="", bool recursive=true)
+        public IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix = "", bool recursive = true)
         {
             if (recursive)
             {
@@ -515,14 +523,14 @@ namespace Minio
             return this.listIncompleteUploads(bucketName, prefix, "/");
         }
 
-    
+
         /// <summary>
         /// Lists all or delimited incomplete uploads in a given bucket with a given objectName
         /// </summary>
         /// <param name="bucketName">Bucket to list incomplete uploads from</param>
         /// <param name="objectName">Key of object to list incomplete uploads from</param>
         /// <param name="delimiter">delimiter of object to list incomplete uploads</param>
-        /// <returns></returns>
+        /// <returns>Observable that notifies when next next upload becomes available</returns>
         private IObservable<Upload> listIncompleteUploads(string bucketName, string prefix, string delimiter)
         {
             return Observable.Create<Upload>(
@@ -544,13 +552,19 @@ namespace Minio
                       isRunning = uploads.Item1.IsTruncated;
                   }
               });
-          
+
         }
-        // find uploadId of most recent unsuccessful attempt to put object
+
+        /// <summary>
+        /// Find uploadId of most recent unsuccessful attempt to upload object to bucket.
+        /// </summary>
+        /// <param name="bucketName"></param>
+        /// <param name="objectName"></param>
+        /// <returns></returns>
         private async Task<string> getLatestIncompleteUploadIdAsync(string bucketName, string objectName)
         {
             Upload latestUpload = null;
-            var uploads  = await this.ListIncompleteUploads(bucketName, objectName).ToArray();
+            var uploads = await this.ListIncompleteUploads(bucketName, objectName).ToArray();
             foreach (Upload upload in uploads)
             {
                 if (objectName == upload.Key && (latestUpload == null || latestUpload.Initiated.CompareTo(upload.Initiated) < 0))
@@ -581,28 +595,32 @@ namespace Minio
             {
                 if (objectName == upload.Key)
                 {
-                   await this.RemoveUploadAsync(bucketName, objectName, upload.UploadId);
+                    await this.RemoveUploadAsync(bucketName, objectName, upload.UploadId);
                 }
             }
         }
+
+        /// <summary>
+        /// Remove object with matching uploadId from bucket
+        /// </summary>
+        /// <param name="bucketName"></param>
+        /// <param name="objectName"></param>
+        /// <param name="uploadId"></param>
+        /// <returns></returns>
         private async Task RemoveUploadAsync(string bucketName, string objectName, string uploadId)
         {
-           // var resourcePath = "/" + utils.UrlEncode(objectName) + "?uploadId=" + uploadId;
+            // var resourcePath = "/" + utils.UrlEncode(objectName) + "?uploadId=" + uploadId;
             var resourcePath = "?uploadId=" + uploadId;
 
-            var request = await client.CreateRequest(Method.DELETE, bucketName, 
+            var request = await this.CreateRequest(Method.DELETE, bucketName,
                                                      objectName: objectName,
-                                                     region: BucketRegionCache.Instance.Region(bucketName),
                                                      resourcePath: resourcePath
                                            );
-    
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
 
-            if (response.StatusCode != HttpStatusCode.NoContent)
-            {
-                this.client.ParseError(response);
-            }
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
+
         }
+
         /// <summary>
         /// Removes an object with given name in specific bucket
         /// </summary>
@@ -612,18 +630,14 @@ namespace Minio
         public async Task RemoveObjectAsync(string bucketName, string objectName)
         {
 
-            var request = await client.CreateRequest(Method.DELETE, bucketName,
-                                                     objectName: objectName,
-                                                     region: BucketRegionCache.Instance.Region(bucketName)
-                                           );
-            
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
+            var request = await this.CreateRequest(Method.DELETE, bucketName,
+                                                     objectName: objectName);
 
-            if (!response.StatusCode.Equals(HttpStatusCode.NoContent))
-            {
-                this.client.ParseError(response);
-            }
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
+
+
         }
+
         /// <summary>
         /// Tests the object's existence and returns metadata about existing objects.
         /// </summary>
@@ -632,17 +646,13 @@ namespace Minio
         /// <returns>Facts about the object</returns>
         public async Task<ObjectStat> StatObjectAsync(string bucketName, string objectName)
         {
-            var request = await client.CreateRequest(Method.HEAD, bucketName,
-                                                     objectName: objectName,
-                                                     region: BucketRegionCache.Instance.Region(bucketName)
-                                           );
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
+            var request = await this.CreateRequest(Method.HEAD, bucketName,
+                                                     objectName: objectName);
 
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                this.client.ParseError(response);
-            }
-         
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
+
+
+            //Extract stats from response
             long size = 0;
             DateTime lastModified = new DateTime();
             string etag = "";
@@ -668,15 +678,15 @@ namespace Minio
                 }
             }
             return new ObjectStat(objectName, size, lastModified, etag, contentType);
-           
+
         }
 
-       /// <summary>
-       /// Advances in the stream upto currentPartSize or End of Stream
-       /// </summary>
-       /// <param name="data"></param>
-       /// <param name="currentPartSize"></param>
-       /// <returns>bytes read in a byte array</returns>
+        /// <summary>
+        /// Advances in the stream upto currentPartSize or End of Stream
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="currentPartSize"></param>
+        /// <returns>bytes read in a byte array</returns>
         internal byte[] ReadFull(Stream data, int currentPartSize)
         {
             byte[] result = new byte[currentPartSize];
@@ -717,7 +727,7 @@ namespace Minio
         /// <param name="destObjectName">Object name to be created, if not provided uses source object name as destination object name.</param>
         /// <param name="copyConditions">optionally can take a key value CopyConditions as well for conditionally attempting copyObject.</param>
         /// <returns></returns>
-        public async Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName,string destObjectName=null,CopyConditions copyConditions=null)
+        public async Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null)
         {
             if (bucketName == null)
             {
@@ -740,11 +750,11 @@ namespace Minio
                 destObjectName = objectName;
             }
 
-            var path = destBucketName  + "/" + utils.UrlEncode(destObjectName);
-            var request = await client.CreateRequest(Method.PUT, bucketName, 
-                                                     objectName: objectName,
-                                                     region: BucketRegionCache.Instance.Region(bucketName), resourcePath:path
-                                           );
+            var path = destBucketName + "/" + utils.UrlEncode(destObjectName);
+            var request = await this.CreateRequest(Method.PUT, bucketName,
+                                                   objectName: objectName,
+                                                   resourcePath: path);
+
             // Set the object source
             request.AddHeader("x-amz-copy-source", sourceObjectPath);
 
@@ -757,21 +767,15 @@ namespace Minio
                 }
             }
 
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
-            if (!response.StatusCode.Equals(HttpStatusCode.OK))
-            {
-                this.client.ParseError(response);
-            }
-
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
 
             // For now ignore the copyObjectResult, just read and parse it.
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
 
-            CopyObjectResult copyObjectResult = (CopyObjectResult)(new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream));       
+            CopyObjectResult copyObjectResult = (CopyObjectResult)(new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream));
             return copyObjectResult;
         }
-
 
         /// <summary>
         /// Presigned Get url.
@@ -781,8 +785,11 @@ namespace Minio
         /// <param name="expiresInt">Expiration time in seconds</param>
         public string PresignedGetObject(string bucketName, string objectName, int expiresInt)
         {
+            // Initialize a new client.
+            PrepareClient(bucketName);
+
             RestRequest request = new RestRequest(bucketName + "/" + utils.UrlEncode(objectName), Method.GET);
-            return this.client.authenticator.PresignURL(this.client.restClient, request, expiresInt);
+            return this.authenticator.PresignURL(this.restClient, request, expiresInt);
         }
 
         /// <summary>
@@ -793,8 +800,10 @@ namespace Minio
         /// <param name="expiresInt">Expiration time in seconds</param>
         public string PresignedPutObject(string bucketName, string objectName, int expiresInt)
         {
+            //Initialize a new client.
+            PrepareClient(bucketName);
             RestRequest request = new RestRequest(bucketName + "/" + utils.UrlEncode(objectName), Method.PUT);
-            return this.client.authenticator.PresignURL(this.client.restClient, request, expiresInt);
+            return this.authenticator.PresignURL(this.restClient, request, expiresInt);
         }
 
         /// <summary>
@@ -802,6 +811,9 @@ namespace Minio
         /// </summary>
         public Dictionary<string, string> PresignedPostPolicy(PostPolicy policy)
         {
+            //Initialize a new client.
+            PrepareClient();
+
             if (!policy.IsBucketSet())
             {
                 throw new ArgumentException("bucket should be set");
@@ -817,15 +829,15 @@ namespace Minio
                 throw new ArgumentException("expiration should be set");
             }
 
-            string region = Regions.GetRegion(this.client.restClient.BaseUrl.Host);
+            string region = Regions.GetRegion(this.restClient.BaseUrl.Host);
             DateTime signingDate = DateTime.UtcNow;
 
             policy.SetAlgorithm("AWS4-HMAC-SHA256");
-            policy.SetCredential(this.client.authenticator.GetCredentialString(signingDate, region));
+            policy.SetCredential(this.authenticator.GetCredentialString(signingDate, region));
             policy.SetDate(signingDate);
 
             string policyBase64 = policy.Base64();
-            string signature = this.client.authenticator.PresignPostSignature(region, signingDate, policyBase64);
+            string signature = this.authenticator.PresignPostSignature(region, signingDate, policyBase64);
 
             policy.SetPolicy(policyBase64);
             policy.SetSignature(signature);
@@ -834,4 +846,3 @@ namespace Minio
         }
     }
 }
-

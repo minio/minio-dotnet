@@ -1,4 +1,4 @@
-# Minio Client SDK for .NET [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io)
+# Minio Client SDK for .NET  [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io) [![Build Status](https://travis-ci.org/minio/minio-dotnet.svg?branch=master)](https://travis-ci.org/minio/minio-dotnet)
 
 Minio Client SDK provides higher level APIs for Minio and Amazon S3 compatible cloud storage services. 
 
@@ -7,9 +7,8 @@ For a complete list of APIs and examples, please take a look at the [Dotnet Clie
 This document assumes that you have a working VisualStudio development environment.  
 
 ## Minimum Requirements
-
-- .NET 4.5 or higher
-- Visual Studio 10 or higher
+  .NET 4.5 or higher
+  Visual Studio 2015 
   
 ## Install from NuGet
 
@@ -30,25 +29,6 @@ To connect to an Amazon S3 compatible cloud storage service, you will need to sp
 | secure | Enable/Disable HTTPS support. |
 
 The following examples uses a freely hosted public Minio service 'play.minio.io' for development purposes.
-```cs
-using Minio;
-
-private static MinioClient minio = new MinioClient("play.minio.io:9000",
-                "Q3AM3UQ867SPQQA43P2F",
-                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
-                ).WithSSL();
-
-// List buckets on the play.minio.io server
-var getListBucketsTask = minio.Api.ListBucketsAsync();
-Task.WaitAll(getListBucketsTask); // block while the task completes
-var list = getListBucketsTask.Result;
-
-foreach (Bucket bucket in list.Buckets)          
-{                
-    Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDate.DateTime);
-}
-
-```
 
 ```cs
 using Minio;
@@ -60,7 +40,7 @@ private static MinioClient minio = new MinioClient("play.minio.io:9000",
                 ).WithSSL();
 
 // Create an async task for listing buckets.
-var getListBucketsTask = minio.Api.ListBucketsAsync();
+var getListBucketsTask = minio.ListBucketsAsync();
 
 // Iterate over the list of buckets.
 foreach (Bucket bucket in getListBucketsTask.Result.Buckets)          
@@ -112,13 +92,16 @@ namespace FileUploader
 
             try
             {
-                // Make a bucket on the server.
-                await minio.Api.MakeBucketAsync(bucketName, location);
-                
-                // Upload a file to bucket.
-                await minio.Api.PutObjectAsync(bucketName, objectName, filePath, contentType);  
-                
-                Console.Out.WriteLine("Successfully uploaded " + objectName);
+				// Make a bucket on the server, if not already present.
+                bool found = await minio.BucketExistsAsync(bucketName);
+                if (!found)
+                {
+                    await minio.MakeBucketAsync(bucketName, location);
+                }
+				
+				// Upload a file to bucket.
+                await minio.PutObjectAsync(bucketName, objectName, filePath, contentType);  
+                Console.Out.WriteLine("Successfully uploaded " + objectName );
             }
             catch (MinioException e)
             {
@@ -129,9 +112,17 @@ namespace FileUploader
 }
 ```
 
-## Full Examples
+## Running Minio Client Examples
+* Clone this repository.
 
-#### Full Examples:  Bucket Operations
+* Build the project to produce the Minio.Examples console app.
+
+* Move into Minio.Examples directory and enter your credentials and bucket name, object name etc.
+  Uncomment the example test cases such as below in Program.cs to run an example.
+```cs
+  //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
+```
+#### Bucket Operations
 
 * [MakeBucket.cs](./Minio.Examples/Cases/MakeBucket.cs)
 * [ListBuckets.cs](./Minio.Examples/Cases/ListBuckets.cs)
@@ -140,15 +131,15 @@ namespace FileUploader
 * [Listobjects.cs](./Minio.Examples/Cases/Listobjects.cs)
 * [ListIncompleteUploads.cs](./Minio.Examples/Cases/ListIncompleteUploads.cs)
 
-#### Full Examples: Bucket Policy Operations
+#### Bucket policy Operations
 * [GetPolicy.cs](./Minio.Examples/Cases/GetPolicy.cs)
 * [SetPolicy.cs](./Minio.Examples/Cases/SetPolicy.cs)
 
-#### Full Examples: File Object Operations
+#### File Object Operations
 * [FGetObject.cs](./Minio.Examples/Cases/FGetObject.cs)
 * [FPutObject.cs](./Minio.Examples/Cases/FPutObject.cs)
 
-#### Full Examples: Object Operations
+#### Object Operations
 * [GetObject.cs](./Minio.Examples/Cases/GetObject.cs)
 * [PutObject.cs](./Minio.Examples/Cases/PutObject.cs)
 * [StatObject.cs](./Minio.Examples/Cases/StatObject.cs)
@@ -156,10 +147,15 @@ namespace FileUploader
 * [CopyObject.cs](./Minio.Examples/Cases/CopyObject.cs)
 * [RemoveIncompleteUpload.cs](./Minio.Examples/Cases/RemoveIncompleteUpload.cs)
 
-#### Full Examples: Presigned Operations
+#### Presigned Operations
 * [PresignedGetObject.cs](./Minio.Examples/Cases/PresignedGetObject.cs)
 * [PresignedPutObject.cs](./Minio.Examples/Cases/PresignedPutObject.cs)
 * [PresignedPostPolicy.cs](./Minio.Examples/Cases/PresignedPostPolicy.cs)
+
+#### Client Custom Settings
+* [SetAppInfo](./Minio.Examples/Program.cs)
+* [SetTraceOn](./Minio.Examples/Program.cs)
+* [SetTraceOff](./Minio.Examples/Program.cs)
 
 ## Explore Further
 * [Complete Documentation](https://docs.minio.io)
@@ -167,5 +163,3 @@ namespace FileUploader
 ## Contribute
 
 [Contributors Guide](https://github.com/minio/minio-go/blob/master/CONTRIBUTING.md)
-
-[![Build Status](https://travis-ci.org/minio/minio-dotnet.svg?branch=master)](https://travis-ci.org/minio/minio-dotnet)
