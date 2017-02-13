@@ -1,5 +1,5 @@
 ﻿/*
- * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2015 Minio, Inc.
+ * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,11 @@
 
 using Minio.Helper;
 using RestSharp;
+
 using System;
 using System.Collections.Concurrent;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -32,6 +31,7 @@ namespace Minio
     {
         private static readonly Lazy<BucketRegionCache> lazy =
             new Lazy<BucketRegionCache>(() => new BucketRegionCache());
+
         private ConcurrentDictionary<string, string> regionMap;
 
         public static BucketRegionCache Instance
@@ -87,7 +87,7 @@ namespace Minio
         /// Updates Region cache for given bucket.
         /// </summary>
         /// <param name="bucketName"></param>
-        internal async Task<string> Update(MinioClient client,string bucketName)
+        internal async Task<string> Update(MinioClient client, string bucketName)
         {
             string region = null;
 
@@ -96,8 +96,11 @@ namespace Minio
             {
                 string location = null;
                 var path = bucketName + "?location";
+                //Initialize client
+                client.PrepareClient();
+
                 var request = new RestRequest(path, Method.GET);
-                
+
                 var response = await client.ExecuteTaskAsync(client.NoErrorHandlers, request);
 
                 if (HttpStatusCode.OK.Equals(response.StatusCode))
@@ -131,11 +134,6 @@ namespace Minio
             return region;
 
         }
-
-        /// <summary>
-        /// Updates Region cache for given bucket.
-        /// </summary>
-        /// <param name="bucketName"></param>
 
     }
 }

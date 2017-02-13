@@ -57,13 +57,13 @@
     <Compile Include="UnitTest1.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Minio.Api\MinioApi.csproj">
-      <Project>{cc30cade-342a-4ced-858d-b60200c075b0}</Project>
-      <Name>MinioApi</Name>
-    </ProjectReference>
+    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <ProjectReference Include="..\Minio.Api\MinioApi.csproj">
+      <Project>{CC30CADE-342A-4CED-858D-B60200C075B0}</Project>
+      <Name>MinioApi</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
