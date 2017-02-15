@@ -25,7 +25,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MinioCore2", "MinioCore2\Mi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinioApi", "Minio.Api\MinioApi.csproj", "{CC30CADE-342A-4CED-858D-B60200C075B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTest2", "SimpleTest2\SimpleTest2.csproj", "{1BC68272-97B9-4CFC-84AC-1C6365273A94}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTest", "SimpleTest\SimpleTest.csproj", "{DB799B77-2362-4D6E-B1EA-16111E78CEF5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,10 +57,10 @@ Global
 		{CC30CADE-342A-4CED-858D-B60200C075B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC30CADE-342A-4CED-858D-B60200C075B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC30CADE-342A-4CED-858D-B60200C075B0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1BC68272-97B9-4CFC-84AC-1C6365273A94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1BC68272-97B9-4CFC-84AC-1C6365273A94}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1BC68272-97B9-4CFC-84AC-1C6365273A94}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1BC68272-97B9-4CFC-84AC-1C6365273A94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
