@@ -19,7 +19,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MinioCore2.Helper
+namespace Minio.Helper
 {
    static class Constants
     {

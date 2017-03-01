@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace MinioCore2.DataModel
+namespace Minio.DataModel
 {
 
     public class  PolicyType

@@ -17,10 +17,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-using MinioCore2.Policy;
-using MinioCore2.DataModel.Policy;
+using Minio.Policy;
+using Minio.DataModel.Policy;
 
-namespace MinioCore2.DataModel
+namespace Minio.DataModel
 {
 
     internal class Statement
@@ -50,7 +50,7 @@ namespace MinioCore2.DataModel
         public bool isValid(string bucketName)
         {
             ISet<string> intersection = new HashSet<string>(this.actions);
-            intersection.IntersectWith(Constants.VALID_ACTIONS());
+            intersection.IntersectWith(PolicyConstants.VALID_ACTIONS());
             if (intersection.Count == 0)
             {
                 return false;
@@ -66,7 +66,7 @@ namespace MinioCore2.DataModel
                 return false;
             }
 
-            string bucketResource = Constants.AWS_RESOURCE_PREFIX + bucketName;
+            string bucketResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName;
 
             if (this.resources.Contains(bucketResource))
             {
@@ -97,17 +97,17 @@ namespace MinioCore2.DataModel
             }
             else
             {
-                this.actions.Except(Constants.READ_WRITE_OBJECT_ACTIONS());
+                this.actions.Except(PolicyConstants.READ_WRITE_OBJECT_ACTIONS());
             }
         }
         private void removeReadOnlyBucketActions(string prefix)
         {
-            if (!utils.isSupersetOf(this.actions,Constants.READ_ONLY_BUCKET_ACTIONS))
+            if (!utils.isSupersetOf(this.actions,PolicyConstants.READ_ONLY_BUCKET_ACTIONS))
             {
                 return;
             }
 
-            this.actions.Except(Constants.READ_ONLY_BUCKET_ACTIONS);
+            this.actions.Except(PolicyConstants.READ_ONLY_BUCKET_ACTIONS);
 
             if (this.conditions == null)
             {
@@ -153,7 +153,7 @@ namespace MinioCore2.DataModel
         {
             if (this.conditions == null)
             {
-                this.actions.Except(Constants.WRITE_ONLY_BUCKET_ACTIONS);
+                this.actions.Except(PolicyConstants.WRITE_ONLY_BUCKET_ACTIONS);
             }
         }
 
@@ -198,17 +198,17 @@ namespace MinioCore2.DataModel
                 return new bool[] { commonFound, readOnly, writeOnly };
             }
 
-            if (utils.isSupersetOf(this.actions,Constants.COMMON_BUCKET_ACTIONS) && this.conditions == null)
+            if (utils.isSupersetOf(this.actions,PolicyConstants.COMMON_BUCKET_ACTIONS) && this.conditions == null)
             {
                 commonFound = true;
             }
 
-            if (utils.isSupersetOf(this.actions,Constants.WRITE_ONLY_BUCKET_ACTIONS) && this.conditions == null)
+            if (utils.isSupersetOf(this.actions,PolicyConstants.WRITE_ONLY_BUCKET_ACTIONS) && this.conditions == null)
             {
                 writeOnly = true;
             }
 
-            if (utils.isSupersetOf(this.actions,Constants.READ_ONLY_BUCKET_ACTIONS))
+            if (utils.isSupersetOf(this.actions,PolicyConstants.READ_ONLY_BUCKET_ACTIONS))
             {
                 if (prefix != null && prefix.Count() != 0 && this.conditions != null)
                 {
@@ -270,11 +270,11 @@ namespace MinioCore2.DataModel
                 && aws != null && aws.Contains("*")
                 && this.conditions == null)
             {
-                if (utils.isSupersetOf(this.actions,Constants.READ_ONLY_OBJECT_ACTIONS))
+                if (utils.isSupersetOf(this.actions,PolicyConstants.READ_ONLY_OBJECT_ACTIONS))
                 {
                     readOnly = true;
                 }
-                if (utils.isSupersetOf(this.actions,Constants.WRITE_ONLY_OBJECT_ACTIONS))
+                if (utils.isSupersetOf(this.actions,PolicyConstants.WRITE_ONLY_OBJECT_ACTIONS))
                 {
                     writeOnly = true;
                 }

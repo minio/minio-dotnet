@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 
-namespace MinioCore2
+namespace Minio
 {
 
     /**

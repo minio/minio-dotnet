@@ -17,7 +17,7 @@
 using System;
 using RestSharp;
 
-namespace MinioCore2.Exceptions
+namespace Minio.Exceptions
 {
     [Serializable]
     public class MinioException : Exception

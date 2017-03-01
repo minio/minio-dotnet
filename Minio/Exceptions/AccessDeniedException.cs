@@ -16,7 +16,7 @@
 
 using System;
 
-namespace MinioCore2.Exceptions
+namespace Minio.Exceptions
 {
     [Serializable]
     public class AccessDeniedException : MinioException

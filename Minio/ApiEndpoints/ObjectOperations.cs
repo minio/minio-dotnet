@@ -23,15 +23,15 @@ using System.Threading.Tasks;
 using System.Linq;
 
 using System.Reactive.Linq;
-using MinioCore2.DataModel;
+using Minio.DataModel;
 using System.IO;
 using System.Xml.Linq;
 using System.Xml.Serialization;
-using MinioCore2.Exceptions;
+using Minio.Exceptions;
 using System.Globalization;
-using MinioCore2.Helper;
+using Minio.Helper;
 
-namespace MinioCore2
+namespace Minio
 {
     public partial class MinioClient : IObjectOperations
     {

@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
 using Minio.DataModel;
+using System;
+
+using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
     class ListBuckets
     {
         // List all buckets on host
-        public async static Task Run(Minio.MinioClient minio)
+        public async static Task Run(MinioClient minio)
         {
             try
             {

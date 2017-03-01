@@ -20,7 +20,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MinioCore2.DataModel.Policy
+namespace Minio.DataModel.Policy
 {
     class StatementJsonConverter : JsonConverter
     {

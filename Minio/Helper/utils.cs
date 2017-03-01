@@ -17,11 +17,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using MinioCore2.Exceptions;
+using Minio.Exceptions;
 using System.IO;
 using Microsoft.Win32;
 
-namespace MinioCore2
+namespace Minio
 {
     class utils
     {

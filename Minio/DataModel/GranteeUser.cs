@@ -16,7 +16,7 @@
 
 using System;
 
-namespace MinioCore2.DataModel
+namespace Minio.DataModel
 {
     [Serializable]
     public class GranteeUser

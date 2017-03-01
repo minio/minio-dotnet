@@ -17,7 +17,7 @@
 using System;
 using System.Xml.Serialization;
 
-namespace MinioCore2.DataModel
+namespace Minio.DataModel
 {
     [Serializable]
     public class CreateBucketConfiguration

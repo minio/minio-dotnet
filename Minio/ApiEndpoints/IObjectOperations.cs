@@ -17,9 +17,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using MinioCore2.DataModel;
+using Minio.DataModel;
 
-namespace MinioCore2
+namespace Minio
 {
     public interface IObjectOperations
     {

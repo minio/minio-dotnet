@@ -18,17 +18,17 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using MinioCore2.DataModel;
+using Minio.DataModel;
 using RestSharp;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.Serialization;
-using MinioCore2.Exceptions;
+using Minio.Exceptions;
 using System.Globalization;
 using System.Reactive.Linq;
 
-namespace MinioCore2
+namespace Minio
 {
     public partial class MinioClient : IBucketOperations
     {
@@ -92,7 +92,7 @@ namespace MinioCore2
             try
             {
                 var request = await this.CreateRequest(Method.HEAD,
-                                                   bucketName,region:"us-east-1");
+                                                   bucketName);
                 var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
             }
             catch (Exception ex)

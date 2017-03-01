@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26206.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C8111804-63DA-4E74-9C1F-FEC46632A33B}"
 	ProjectSection(SolutionItems) = preProject
@@ -10,8 +10,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileUploader", "FileUploader\FileUploader.csproj", "{04E6286A-50DA-444B-B663-6D7386D4CC4A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Examples", "Minio.Examples\Minio.Examples.csproj", "{C126F2B3-50B0-448F-AB16-9CF80079D6AF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Tests", "Minio.Tests\Minio.Tests.csproj", "{040B2A3E-8003-4460-80CF-6262DDDAE89D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{30E4FEE3-BCF0-43AB-B3E0-6083D576D808}"
@@ -19,48 +17,206 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{30E4FEE3-B
 		API.md = API.md
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MinioCoreTest", "MinioCoreTest\MinioCoreTest.xproj", "{64264A30-E6AB-49D8-8F84-3AE4FAC54E09}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MinioCore2", "MinioCore2\MinioCore2.xproj", "{C7579CAD-6D2A-45E0-8737-8E66C78EBE2F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinioApi", "Minio.Api\MinioApi.csproj", "{CC30CADE-342A-4CED-858D-B60200C075B0}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTest", "SimpleTest\SimpleTest.csproj", "{DB799B77-2362-4D6E-B1EA-16111E78CEF5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Minio", "Minio", "{FB166CF4-F05B-455A-B54B-E30CA3FC1978}"
+	ProjectSection(SolutionItems) = preProject
+		Minio\AWSS3Endpoints.cs = Minio\AWSS3Endpoints.cs
+		Minio\BucketRegionCache.cs = Minio\BucketRegionCache.cs
+		Minio\MinioClient.cs = Minio\MinioClient.cs
+		Minio\Regions.cs = Minio\Regions.cs
+		Minio\V4Authenticator.cs = Minio\V4Authenticator.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ApiEndpoints", "ApiEndpoints", "{F519F6EA-5AA4-4189-AA4A-A45365E09155}"
+	ProjectSection(SolutionItems) = preProject
+		Minio\ApiEndpoints\BucketOperations.cs = Minio\ApiEndpoints\BucketOperations.cs
+		Minio\ApiEndpoints\IBucketOperations.cs = Minio\ApiEndpoints\IBucketOperations.cs
+		Minio\ApiEndpoints\IObjectOperations.cs = Minio\ApiEndpoints\IObjectOperations.cs
+		Minio\ApiEndpoints\ObjectOperations.cs = Minio\ApiEndpoints\ObjectOperations.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataModel", "DataModel", "{C699CA5D-E171-487F-8C75-63A0542EE21F}"
+	ProjectSection(SolutionItems) = preProject
+		Minio\DataModel\Bucket.cs = Minio\DataModel\Bucket.cs
+		Minio\DataModel\CopyConditions.cs = Minio\DataModel\CopyConditions.cs
+		Minio\DataModel\CopyObjectResult.cs = Minio\DataModel\CopyObjectResult.cs
+		Minio\DataModel\CreateBucketConfiguration.cs = Minio\DataModel\CreateBucketConfiguration.cs
+		Minio\DataModel\DateFormat.cs = Minio\DataModel\DateFormat.cs
+		Minio\DataModel\Grant.cs = Minio\DataModel\Grant.cs
+		Minio\DataModel\GranteeUser.cs = Minio\DataModel\GranteeUser.cs
+		Minio\DataModel\InitiateMultipartUploadResult.cs = Minio\DataModel\InitiateMultipartUploadResult.cs
+		Minio\DataModel\Item.cs = Minio\DataModel\Item.cs
+		Minio\DataModel\ListAllMyBucketsResult.cs = Minio\DataModel\ListAllMyBucketsResult.cs
+		Minio\DataModel\ListBucketResult.cs = Minio\DataModel\ListBucketResult.cs
+		Minio\DataModel\ListMultipartUploadsResult.cs = Minio\DataModel\ListMultipartUploadsResult.cs
+		Minio\DataModel\ListPartsResult.cs = Minio\DataModel\ListPartsResult.cs
+		Minio\DataModel\LocationConstraint.cs = Minio\DataModel\LocationConstraint.cs
+		Minio\DataModel\ObjectStat.cs = Minio\DataModel\ObjectStat.cs
+		Minio\DataModel\Part.cs = Minio\DataModel\Part.cs
+		Minio\DataModel\PostPolicy.cs = Minio\DataModel\PostPolicy.cs
+		Minio\DataModel\Prefix.cs = Minio\DataModel\Prefix.cs
+		Minio\DataModel\Upload.cs = Minio\DataModel\Upload.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Exceptions", "Exceptions", "{3AA2A568-DB54-4C17-8F25-2DBF01FAA265}"
+	ProjectSection(SolutionItems) = preProject
+		Minio\Exceptions\AccessDeniedException.cs = Minio\Exceptions\AccessDeniedException.cs
+		Minio\Exceptions\BucketNotFoundException.cs = Minio\Exceptions\BucketNotFoundException.cs
+		Minio\Exceptions\ConnectionException.cs = Minio\Exceptions\ConnectionException.cs
+		Minio\Exceptions\EntityTooLargeException.cs = Minio\Exceptions\EntityTooLargeException.cs
+		Minio\Exceptions\ErrorResponse.cs = Minio\Exceptions\ErrorResponse.cs
+		Minio\Exceptions\ForbiddenException.cs = Minio\Exceptions\ForbiddenException.cs
+		Minio\Exceptions\InternalClientException.cs = Minio\Exceptions\InternalClientException.cs
+		Minio\Exceptions\InternalServerException.cs = Minio\Exceptions\InternalServerException.cs
+		Minio\Exceptions\InvalidBucketNameException.cs = Minio\Exceptions\InvalidBucketNameException.cs
+		Minio\Exceptions\InvalidContentLengthException.cs = Minio\Exceptions\InvalidContentLengthException.cs
+		Minio\Exceptions\InvalidEndpointException.cs = Minio\Exceptions\InvalidEndpointException.cs
+		Minio\Exceptions\InvalidKeyNameException.cs = Minio\Exceptions\InvalidKeyNameException.cs
+		Minio\Exceptions\InvalidObjectNameException.cs = Minio\Exceptions\InvalidObjectNameException.cs
+		Minio\Exceptions\InvalidObjectPrefixException.cs = Minio\Exceptions\InvalidObjectPrefixException.cs
+		Minio\Exceptions\MaxBucketsReachedException.cs = Minio\Exceptions\MaxBucketsReachedException.cs
+		Minio\Exceptions\MethodNotAllowedException.cs = Minio\Exceptions\MethodNotAllowedException.cs
+		Minio\Exceptions\MinioException.cs = Minio\Exceptions\MinioException.cs
+		Minio\Exceptions\ObjectNotFoundException.cs = Minio\Exceptions\ObjectNotFoundException.cs
+		Minio\Exceptions\RedirectionException.cs = Minio\Exceptions\RedirectionException.cs
+		Minio\Exceptions\UnexpectedShortReadException.cs = Minio\Exceptions\UnexpectedShortReadException.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Helper", "Helper", "{5289D159-F7B7-4601-A43B-46D99C751643}"
+	ProjectSection(SolutionItems) = preProject
+		Minio\Helper\Constants.cs = Minio\Helper\Constants.cs
+		Minio\Helper\Enum.cs = Minio\Helper\Enum.cs
+		Minio\Helper\s3utils.cs = Minio\Helper\s3utils.cs
+		Minio\Helper\utils.cs = Minio\Helper\utils.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Policy", "Policy", "{83F3648A-9A9E-4FA3-80B5-8B994E8F64A5}"
+	ProjectSection(SolutionItems) = preProject
+		Minio\DataModel\Policy\ActionJsonConverter.cs = Minio\DataModel\Policy\ActionJsonConverter.cs
+		Minio\DataModel\Policy\BucketPolicy.cs = Minio\DataModel\Policy\BucketPolicy.cs
+		Minio\DataModel\Policy\ConditionKeyMap.cs = Minio\DataModel\Policy\ConditionKeyMap.cs
+		Minio\DataModel\Policy\ConditionMap.cs = Minio\DataModel\Policy\ConditionMap.cs
+		Minio\DataModel\Policy\PolicyConstants.cs = Minio\DataModel\Policy\PolicyConstants.cs
+		Minio\DataModel\Policy\PolicyType.cs = Minio\DataModel\Policy\PolicyType.cs
+		Minio\DataModel\Policy\Principal.cs = Minio\DataModel\Policy\Principal.cs
+		Minio\DataModel\Policy\PrincipalJsonConverter.cs = Minio\DataModel\Policy\PrincipalJsonConverter.cs
+		Minio\DataModel\Policy\ResourceJsonConverter.cs = Minio\DataModel\Policy\ResourceJsonConverter.cs
+		Minio\DataModel\Policy\Resources.cs = Minio\DataModel\Policy\Resources.cs
+		Minio\DataModel\Policy\SingleOrArrayConverter.cs = Minio\DataModel\Policy\SingleOrArrayConverter.cs
+		Minio\DataModel\Policy\Statement.cs = Minio\DataModel\Policy\Statement.cs
+		Minio\DataModel\Policy\StatementJsonConverter.cs = Minio\DataModel\Policy\StatementJsonConverter.cs
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Core", "Minio.Core\Minio.Core.csproj", "{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Net452", "Minio.Net452\Minio.Net452.csproj", "{EB17557B-4797-4883-83FF-C9E11581E3F3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Minio.Examples", "Minio.Examples", "{6218E2A8-D5DE-4A54-AF64-614ADBFFF09F}"
+	ProjectSection(SolutionItems) = preProject
+		Minio.Examples\Program.cs = Minio.Examples\Program.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cases", "Cases", "{FD22BDF0-80C4-44C8-8A58-BB15FB6C591C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Client.Examples.Net452", "Minio.Examples\Minio.Client.Examples.Net452\Minio.Client.Examples.Net452.csproj", "{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Minio.Client.Examples.Core", "Minio.Examples\Minio.Client.Examples.Core\Minio.Client.Examples.Core.csproj", "{54F8F8A7-B4DA-49AE-831F-5C867E58C936}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Debug|x64.Build.0 = Debug|Any CPU
+		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Debug|x86.Build.0 = Debug|Any CPU
 		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C126F2B3-50B0-448F-AB16-9CF80079D6AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C126F2B3-50B0-448F-AB16-9CF80079D6AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C126F2B3-50B0-448F-AB16-9CF80079D6AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C126F2B3-50B0-448F-AB16-9CF80079D6AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Release|x64.ActiveCfg = Release|Any CPU
+		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Release|x64.Build.0 = Release|Any CPU
+		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Release|x86.ActiveCfg = Release|Any CPU
+		{04E6286A-50DA-444B-B663-6D7386D4CC4A}.Release|x86.Build.0 = Release|Any CPU
 		{040B2A3E-8003-4460-80CF-6262DDDAE89D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{040B2A3E-8003-4460-80CF-6262DDDAE89D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{040B2A3E-8003-4460-80CF-6262DDDAE89D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{040B2A3E-8003-4460-80CF-6262DDDAE89D}.Debug|x64.Build.0 = Debug|Any CPU
+		{040B2A3E-8003-4460-80CF-6262DDDAE89D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{040B2A3E-8003-4460-80CF-6262DDDAE89D}.Debug|x86.Build.0 = Debug|Any CPU
 		{040B2A3E-8003-4460-80CF-6262DDDAE89D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{040B2A3E-8003-4460-80CF-6262DDDAE89D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{64264A30-E6AB-49D8-8F84-3AE4FAC54E09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{64264A30-E6AB-49D8-8F84-3AE4FAC54E09}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{64264A30-E6AB-49D8-8F84-3AE4FAC54E09}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{64264A30-E6AB-49D8-8F84-3AE4FAC54E09}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C7579CAD-6D2A-45E0-8737-8E66C78EBE2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C7579CAD-6D2A-45E0-8737-8E66C78EBE2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C7579CAD-6D2A-45E0-8737-8E66C78EBE2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C7579CAD-6D2A-45E0-8737-8E66C78EBE2F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CC30CADE-342A-4CED-858D-B60200C075B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CC30CADE-342A-4CED-858D-B60200C075B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CC30CADE-342A-4CED-858D-B60200C075B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CC30CADE-342A-4CED-858D-B60200C075B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{040B2A3E-8003-4460-80CF-6262DDDAE89D}.Release|x64.ActiveCfg = Release|Any CPU
+		{040B2A3E-8003-4460-80CF-6262DDDAE89D}.Release|x64.Build.0 = Release|Any CPU
+		{040B2A3E-8003-4460-80CF-6262DDDAE89D}.Release|x86.ActiveCfg = Release|Any CPU
+		{040B2A3E-8003-4460-80CF-6262DDDAE89D}.Release|x86.Build.0 = Release|Any CPU
 		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Debug|x64.Build.0 = Debug|Any CPU
+		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Debug|x86.Build.0 = Debug|Any CPU
 		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Release|x64.ActiveCfg = Release|Any CPU
+		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Release|x64.Build.0 = Release|Any CPU
+		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Release|x86.ActiveCfg = Release|Any CPU
+		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Release|x86.Build.0 = Release|Any CPU
+		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Debug|x64.ActiveCfg = Debug|x64
+		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Debug|x64.Build.0 = Debug|x64
+		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Debug|x86.ActiveCfg = Debug|x86
+		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Debug|x86.Build.0 = Debug|x86
+		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Release|x64.ActiveCfg = Release|x64
+		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Release|x64.Build.0 = Release|x64
+		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Release|x86.ActiveCfg = Release|x86
+		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Release|x86.Build.0 = Release|x86
+		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Debug|x64.Build.0 = Debug|Any CPU
+		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Debug|x86.Build.0 = Debug|Any CPU
+		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Release|x64.ActiveCfg = Release|Any CPU
+		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Release|x64.Build.0 = Release|Any CPU
+		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Release|x86.ActiveCfg = Release|Any CPU
+		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Release|x86.Build.0 = Release|Any CPU
+		{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B}.Debug|x64.Build.0 = Debug|Any CPU
+		{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B}.Debug|x86.Build.0 = Debug|Any CPU
+		{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B}.Release|x64.ActiveCfg = Release|Any CPU
+		{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B}.Release|x64.Build.0 = Release|Any CPU
+		{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B}.Release|x86.ActiveCfg = Release|Any CPU
+		{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B}.Release|x86.Build.0 = Release|Any CPU
+		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.Debug|x64.ActiveCfg = Debug|x64
+		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.Debug|x64.Build.0 = Debug|x64
+		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.Debug|x86.ActiveCfg = Debug|x86
+		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.Debug|x86.Build.0 = Debug|x86
+		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.Release|x64.ActiveCfg = Release|x64
+		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.Release|x64.Build.0 = Release|x64
+		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.Release|x86.ActiveCfg = Release|x86
+		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -68,5 +224,13 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{040B2A3E-8003-4460-80CF-6262DDDAE89D} = {C8111804-63DA-4E74-9C1F-FEC46632A33B}
 		{30E4FEE3-BCF0-43AB-B3E0-6083D576D808} = {C8111804-63DA-4E74-9C1F-FEC46632A33B}
+		{F519F6EA-5AA4-4189-AA4A-A45365E09155} = {FB166CF4-F05B-455A-B54B-E30CA3FC1978}
+		{C699CA5D-E171-487F-8C75-63A0542EE21F} = {FB166CF4-F05B-455A-B54B-E30CA3FC1978}
+		{3AA2A568-DB54-4C17-8F25-2DBF01FAA265} = {FB166CF4-F05B-455A-B54B-E30CA3FC1978}
+		{5289D159-F7B7-4601-A43B-46D99C751643} = {FB166CF4-F05B-455A-B54B-E30CA3FC1978}
+		{83F3648A-9A9E-4FA3-80B5-8B994E8F64A5} = {C699CA5D-E171-487F-8C75-63A0542EE21F}
+		{FD22BDF0-80C4-44C8-8A58-BB15FB6C591C} = {6218E2A8-D5DE-4A54-AF64-614ADBFFF09F}
+		{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B} = {6218E2A8-D5DE-4A54-AF64-614ADBFFF09F}
+		{54F8F8A7-B4DA-49AE-831F-5C867E58C936} = {6218E2A8-D5DE-4A54-AF64-614ADBFFF09F}
 	EndGlobalSection
 EndGlobal

@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MinioCore2.DataModel.Policy
+namespace Minio.DataModel.Policy
 {
     class ResourceJsonConverter : JsonConverter
     {

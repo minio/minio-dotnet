@@ -16,7 +16,7 @@
 using System;
 using System.IO;
 
-namespace MinioCore2.Helper
+namespace Minio.Helper
 {
     class s3utils
     {

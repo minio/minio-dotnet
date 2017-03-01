@@ -15,7 +15,7 @@
  */
 using System;
 using System.Collections.Generic;
-using MinioCore2.Exceptions;
+using Minio.Exceptions;
 using System.Text.RegularExpressions;
 using RestSharp;
 using System.Net;
@@ -24,11 +24,11 @@ using System.IO;
 using System.Xml.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MinioCore2.Helper;
+using Minio.Helper;
 using Newtonsoft.Json;
 using System.Runtime.InteropServices;
 
-namespace MinioCore2
+namespace Minio
 {
     public partial class MinioClient
     {
@@ -74,13 +74,16 @@ namespace MinioCore2
         {
             get
             {
-#if net452
+                string release = "minio-dotnet/0.2.1";
+#if NET452
                 string arch = System.Environment.Is64BitOperatingSystem ? "x86_64" : "x86";
+                return String.Format("Minio ({0};{1}) {2}", System.Environment.OSVersion.ToString(), arch, release);
+
 #else
                 string arch = RuntimeInformation.OSArchitecture.ToString();
-#endif
-                string release = "minio-dotnet/0.2.1";
                 return String.Format("Minio ({0};{1}) {2}", RuntimeInformation.OSDescription, arch, release);
+
+#endif
             }
         }
 
@@ -164,10 +167,10 @@ namespace MinioCore2
                     // use path style where '.' in bucketName causes SSL certificate validation error
                     usePathStyle = true;
                 }
-                else if (method == Method.HEAD)
-                {
-                    usePathStyle = true;
-                }
+                //else if (method == Method.HEAD)
+                //{
+                //    usePathStyle = true;
+               // }
 
                 if (usePathStyle)
                 {
