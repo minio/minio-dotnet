@@ -15,9 +15,9 @@
  */
 using System;
 using System.Threading.Tasks;
-using MinioCore2.DataModel;
+using Minio.DataModel;
 
-namespace MinioCore2
+namespace Minio
 {
     public interface IBucketOperations
     {

@@ -17,9 +17,9 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
-using MinioCore2.DataModel.Policy;
+using Minio.DataModel.Policy;
 
-namespace MinioCore2.DataModel
+namespace Minio.DataModel
 {
     [DataContract]
     internal class Principal

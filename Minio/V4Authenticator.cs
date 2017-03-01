@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 
-namespace MinioCore2
+namespace Minio
 {
     /// <summary>
     /// V4Authenticator implements IAuthenticator interface.
@@ -283,7 +283,7 @@ namespace MinioCore2
             string signature = BytesToHex(signatureBytes);
 
             // Return presigned url.
-            return client.BaseUrl + path + "?" + requestQuery + "&X-Amz-Signature=" + signature;
+            return client.BaseUrl + path.Substring(1) + "?" + requestQuery + "&X-Amz-Signature=" + signature;
         }
 
         /// <summary>
@@ -306,7 +306,7 @@ namespace MinioCore2
             }
             canonicalStringList.AddLast(path);
             canonicalStringList.AddLast(requestQuery);
-            if (client.BaseUrl.Port > 0)
+            if (client.BaseUrl.Port > 0 && (client.BaseUrl.Port != 80 && client.BaseUrl.Port != 443))
             {
                 canonicalStringList.AddLast("host:" + client.BaseUrl.Host + ":" + client.BaseUrl.Port);
             }
@@ -314,6 +314,7 @@ namespace MinioCore2
             {
                 canonicalStringList.AddLast("host:" + client.BaseUrl.Host);
             }
+
             canonicalStringList.AddLast("");
             canonicalStringList.AddLast("host");
             canonicalStringList.AddLast("UNSIGNED-PAYLOAD");
@@ -397,25 +398,35 @@ namespace MinioCore2
             {
                 string headerName = header.Name.ToLower();
                 string headerValue = header.Value.ToString();
-                if (headerName.Equals("host"))
-                {
-                    var host = headerValue.Split(':')[0];
-                    var port = headerValue.Split(':')[1];
-                    if (port.Equals("80") || port.Equals("443"))
-                    {
-                        sortedHeaders.Add(headerName, host);
-                    }
-                    else
-                    {
-                        sortedHeaders.Add(headerName, headerValue);
-                    }
-                }
-                else if (!ignoredHeaders.Contains(headerName))
-                {
-                    sortedHeaders.Add(headerName, headerValue);
-                }
+            #if NET452
+                                if (!ignoredHeaders.Contains(headerName))
+                                {
+                                    sortedHeaders.Add(headerName, headerValue);
+                                }
+            #else
+                                 if (headerName.Equals("host"))
+                                {
+                                    var host = headerValue.Split(':')[0];
+                                    var port = headerValue.Split(':')[1];
+                                    if (port.Equals("80") || port.Equals("443"))
+                                    {
+                                        sortedHeaders.Add(headerName, host);
+                                    }
+                                    else
+                                    {
+                                        sortedHeaders.Add(headerName, headerValue);
+                                    }
+                                }
+                                else if (!ignoredHeaders.Contains(headerName))
+                                {
+                                    sortedHeaders.Add(headerName, headerValue);
+                                }
+
+#endif
+
             }
             return sortedHeaders;
+            
         }
         /// <summary>
         /// Sets 'x-amz-date' http header.

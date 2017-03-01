@@ -21,7 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MinioCore2.DataModel
+namespace Minio.DataModel
 {
  /**
  * A container class to hold all the Conditions to be checked

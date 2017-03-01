@@ -17,9 +17,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using MinioCore2.DataModel;
+using Minio.DataModel;
 
-namespace MinioCore2
+namespace Minio
 {
     public interface IObjectOperations
     {
@@ -102,7 +102,7 @@ namespace MinioCore2
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds</param>
-        string PresignedGetObject(string bucketName, string objectName, int expiresInt);
+        Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt);
 
         /// <summary>
         /// Presigned Put url.
@@ -111,7 +111,7 @@ namespace MinioCore2
         /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds</param>
 
-        string PresignedPutObject(string bucketName, string objectName, int expiresInt);
+        Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt);
 
         /// <summary>
         ///  Presigned post policy

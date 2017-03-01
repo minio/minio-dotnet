@@ -832,8 +832,8 @@ catch(MinioException e)
 ## 4. Presigned operations
 <a name="presignedGetObject"></a>
 
-### string PresignedGetObject(string bucketName, string objectName, int expiresInt);
-`string PresignedGetObject(string bucketName, string objectName, int expiresInt)`
+### PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt);
+`Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)`
 
 Generates a presigned URL for HTTP GET operations. Browsers/Mobile clients may point to this URL to directly download objects even if the bucket is private. This presigned URL can have an associated expiration time in seconds after which it is no longer operational. The default expiry is set to 7 days.
 
@@ -860,7 +860,7 @@ __Example__
 ```cs
 try 
 {
-	String url = minioClient.PresignedGetObject("mybucket", "myobject", 60 * 60 * 24);
+	String url = await minioClient.PresignedGetObjectAsync("mybucket", "myobject", 60 * 60 * 24);
 	Console.Out.WriteLine(url);
 } 
 catch(MinioException e) 
@@ -870,9 +870,9 @@ catch(MinioException e)
 ```
 
 <a name="presignedPutObject"></a>
-### PresignedPutObject(string bucketName, string objectName, int expiresInt)
+### PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
 
-`string PresignedPutObject(string bucketName, string objectName, int expiresInt)`
+`Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)`
 
 Generates a presigned URL for HTTP PUT operations. Browsers/Mobile clients may point to this URL to upload objects directly to a bucket even if it is private. This presigned URL can have an associated expiration time in seconds after which it is no longer operational. The default expiry is set to 7 days.
 
@@ -898,7 +898,7 @@ __Example__
 ```cs
 try 
 {
-	String url = minioClient.PresignedPutObject("mybucket", "myobject", 60 * 60 * 24);
+	String url = await minioClient.PresignedPutObjectAsync("mybucket", "myobject", 60 * 60 * 24);
 	Console.Out.WriteLine(url);
 }
 catch(MinioException e) 

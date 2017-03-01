@@ -15,7 +15,7 @@
  */
 using System;
 using System.Collections.Generic;
-using MinioCore2.Exceptions;
+using Minio.Exceptions;
 using System.Text.RegularExpressions;
 using RestSharp;
 using System.Net;
@@ -24,11 +24,11 @@ using System.IO;
 using System.Xml.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MinioCore2.Helper;
+using Minio.Helper;
 using Newtonsoft.Json;
 using System.Runtime.InteropServices;
 
-namespace MinioCore2
+namespace Minio
 {
     public partial class MinioClient
     {
@@ -74,13 +74,16 @@ namespace MinioCore2
         {
             get
             {
-#if net452
+                string release = "minio-dotnet/0.2.1";
+#if NET452
                 string arch = System.Environment.Is64BitOperatingSystem ? "x86_64" : "x86";
+                return String.Format("Minio ({0};{1}) {2}", System.Environment.OSVersion.ToString(), arch, release);
+
 #else
                 string arch = RuntimeInformation.OSArchitecture.ToString();
-#endif
-                string release = "minio-dotnet/0.2.1";
                 return String.Format("Minio ({0};{1}) {2}", RuntimeInformation.OSDescription, arch, release);
+
+#endif
             }
         }
 
@@ -164,10 +167,10 @@ namespace MinioCore2
                     // use path style where '.' in bucketName causes SSL certificate validation error
                     usePathStyle = true;
                 }
-                else if (method == Method.HEAD)
-                {
-                    usePathStyle = true;
-                }
+                //else if (method == Method.HEAD)
+                //{
+                //    usePathStyle = true;
+               // }
 
                 if (usePathStyle)
                 {
@@ -446,8 +449,6 @@ namespace MinioCore2
             IRestResponse response = await tcs.Task;
             HandleIfErrorResponse(response, errorHandlers, startTime);
             return response;
-            // var response = await this.restClient.ExecuteTaskAsync(request, CancellationToken.None);
-
         }
 
 
@@ -468,12 +469,13 @@ namespace MinioCore2
 
             if (string.IsNullOrWhiteSpace(response.Content))
             {
+                ErrorResponse errorResponse = new ErrorResponse();
+
                 if (HttpStatusCode.Forbidden.Equals(response.StatusCode) || HttpStatusCode.NotFound.Equals(response.StatusCode) ||
                     HttpStatusCode.MethodNotAllowed.Equals(response.StatusCode) || HttpStatusCode.NotImplemented.Equals(response.StatusCode))
                 {
                     MinioException e = null;
-                    ErrorResponse errorResponse = new ErrorResponse();
-
+                    
                     foreach (Parameter parameter in response.Headers)
                     {
                         if (parameter.Name.Equals("x-amz-id-2", StringComparison.CurrentCultureIgnoreCase))
@@ -540,10 +542,19 @@ namespace MinioCore2
                 throw new BucketNotFoundException(bucketName, "Not found.");
             }
 
-
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
             ErrorResponse errResponse = (ErrorResponse)(new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream));
+
+            // Handle XML response for Bucket Policy not found case
+            if (response.StatusCode.Equals(HttpStatusCode.NotFound) && response.Request.Resource.EndsWith("?policy")
+                && response.Request.Method.Equals(Method.GET) && errResponse.Code.Equals("NoSuchBucketPolicy"))
+            {
+                ErrorResponseException ErrorException = new ErrorResponseException(errResponse.Message);
+                ErrorException.Response = errResponse;
+                ErrorException.XmlError = response.Content;
+                throw ErrorException;
+            }
 
             MinioException MinioException = new MinioException(errResponse.Message);
             MinioException.Response = errResponse;
@@ -567,14 +578,15 @@ namespace MinioCore2
             {
                 throw new ArgumentNullException(nameof(handlers));
             }
-            // Runs through handlers passed to take up error handling
+            // Run through handlers passed to take up error handling
             foreach (var handler in handlers)
             {
                 handler(response);
             }
-
+            
             //Fall back default error handler
             _defaultErrorHandlingDelegate(response);
+            
         }
         /// <summary>
         /// Sets HTTP tracing On.Writes output to Console

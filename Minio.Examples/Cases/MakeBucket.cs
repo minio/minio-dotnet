@@ -27,8 +27,10 @@ namespace Minio.Examples.Cases
         {
             try
             {
+                Console.Out.WriteLine("Running example for API: MakeBucketAsync");
                 await minio.MakeBucketAsync(bucketName);
-                Console.Out.WriteLine("bucket-name created successfully");
+                Console.Out.WriteLine("Created bucket " + bucketName);
+                Console.Out.WriteLine();
             } 
             catch (Exception e)
             {

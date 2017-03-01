@@ -20,9 +20,9 @@ using System.Linq;
 using Newtonsoft.Json;
 using System.IO;
 using Newtonsoft.Json.Linq;
-using MinioCore2.Policy;
+using Minio.Policy;
 
-namespace MinioCore2.DataModel
+namespace Minio.DataModel
 {
     public class BucketPolicy
     {
@@ -87,10 +87,10 @@ namespace MinioCore2.DataModel
             return statements;
         }
 
-        Resources resources = new Resources(Constants.AWS_RESOURCE_PREFIX + bucketName);
+        Resources resources = new Resources(PolicyConstants.AWS_RESOURCE_PREFIX + bucketName);
 
         Statement statement = new Statement();
-        statement.actions = Constants.COMMON_BUCKET_ACTIONS;
+        statement.actions = PolicyConstants.COMMON_BUCKET_ACTIONS;
         statement.effect = "Allow";
         statement.principal= new Principal("*");
         statement.resources = resources;
@@ -98,10 +98,10 @@ namespace MinioCore2.DataModel
 
         statements.Add(statement);
 
-        if (policy == PolicyType.READ_ONLY || policy == PolicyType.READ_WRITE)
+        if (policy.ToString().Equals(PolicyType.READ_ONLY.ToString()) || policy.ToString().Equals(PolicyType.READ_WRITE.ToString()))
         {
             statement = new Statement();
-            statement.actions = Constants.READ_ONLY_BUCKET_ACTIONS;
+            statement.actions = PolicyConstants.READ_ONLY_BUCKET_ACTIONS;
             statement.effect =  "Allow";
             statement.principal = new Principal("*");
             statement.resources = resources;
@@ -117,10 +117,10 @@ namespace MinioCore2.DataModel
             statements.Add(statement);
         }
 
-        if (policy == PolicyType.WRITE_ONLY || policy == PolicyType.READ_WRITE)
+        if (policy.ToString().Equals(PolicyType.WRITE_ONLY.ToString()) || policy.ToString().Equals(PolicyType.READ_WRITE.ToString()))
         {
             statement = new Statement();
-            statement.actions = Constants.WRITE_ONLY_BUCKET_ACTIONS;
+            statement.actions = PolicyConstants.WRITE_ONLY_BUCKET_ACTIONS;
             statement.effect = "Allow";
             statement.principal = new Principal("*");
             statement.resources = resources;
@@ -145,24 +145,24 @@ namespace MinioCore2.DataModel
             return statements;
         }
 
-        Resources resources = new Resources(Constants.AWS_RESOURCE_PREFIX + bucketName + "/" + prefix + "*");
+        Resources resources = new Resources(PolicyConstants.AWS_RESOURCE_PREFIX + bucketName + "/" + prefix + "*");
 
         Statement statement = new Statement();
         statement.effect = "Allow";
         statement.principal = new Principal("*");
         statement.resources = resources;
         statement.sid = "";
-        if (policy.Equals(PolicyType.READ_ONLY))
+        if (policy.ToString().Equals(PolicyType.READ_ONLY.ToString()))
         {
-            statement.actions = Constants.READ_ONLY_OBJECT_ACTIONS;
+            statement.actions = PolicyConstants.READ_ONLY_OBJECT_ACTIONS;
         }
-        else if (policy.Equals(PolicyType.WRITE_ONLY))
+        else if (policy.ToString().Equals(PolicyType.WRITE_ONLY.ToString()))
         {
-            statement.actions = Constants.WRITE_ONLY_OBJECT_ACTIONS;
+            statement.actions = PolicyConstants.WRITE_ONLY_OBJECT_ACTIONS;
         }
-        else if (policy.Equals(PolicyType.READ_WRITE))
+        else if (policy.ToString().Equals(PolicyType.READ_WRITE.ToString()))
         {
-            statement.actions = Constants.READ_WRITE_OBJECT_ACTIONS();
+            statement.actions = PolicyConstants.READ_WRITE_OBJECT_ACTIONS();
         }
 
         statements.Add(statement);
@@ -190,8 +190,8 @@ namespace MinioCore2.DataModel
     //@JsonIgnore
     private bool[] getInUsePolicy(string prefix)
     {
-        string resourcePrefix = Constants.AWS_RESOURCE_PREFIX + bucketName + "/";
-        string objectResource = Constants.AWS_RESOURCE_PREFIX + bucketName + "/" + prefix + "*";
+        string resourcePrefix = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName + "/";
+        string objectResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName + "/" + prefix + "*";
 
         bool readOnlyInUse = false;
         bool writeOnlyInUse = false;
@@ -201,11 +201,11 @@ namespace MinioCore2.DataModel
             if (!statement.resources.Contains(objectResource)
                 && statement.resources.startsWith(resourcePrefix).Count() != 0)
             {
-                if (utils.isSupersetOf(statement.actions,Constants.READ_ONLY_OBJECT_ACTIONS))
+                if (utils.isSupersetOf(statement.actions,PolicyConstants.READ_ONLY_OBJECT_ACTIONS))
                 {
                     readOnlyInUse = true;
                 }
-                if (utils.isSupersetOf(statement.actions,Constants.WRITE_ONLY_OBJECT_ACTIONS))
+                if (utils.isSupersetOf(statement.actions,PolicyConstants.WRITE_ONLY_OBJECT_ACTIONS))
                 {
                     writeOnlyInUse = true;
                 }
@@ -227,8 +227,8 @@ namespace MinioCore2.DataModel
      */
     private void removeStatements(String prefix)
     {
-        String bucketResource = Constants.AWS_RESOURCE_PREFIX + bucketName;
-        String objectResource = Constants.AWS_RESOURCE_PREFIX + bucketName + "/" + prefix + "*";
+        String bucketResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName;
+        String objectResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName + "/" + prefix + "*";
         bool[] inUse = getInUsePolicy(prefix);
         bool readOnlyInUse = inUse[0];
         bool writeOnlyInUse = inUse[1];
@@ -264,7 +264,7 @@ namespace MinioCore2.DataModel
                 if (statement.actions.Count != 0)
             {
                 if (statement.resources.Contains(bucketResource)
-                    && (utils.isSupersetOf(statement.actions,Constants.READ_ONLY_BUCKET_ACTIONS))
+                    && (utils.isSupersetOf(statement.actions,PolicyConstants.READ_ONLY_BUCKET_ACTIONS))
                     && statement.effect.Equals("Allow")
                     && statement.principal.aws().Contains("*"))
                 {
@@ -298,7 +298,7 @@ namespace MinioCore2.DataModel
         }
 
         bool skipBucketStatement = true;
-        String resourcePrefix = Constants.AWS_RESOURCE_PREFIX + bucketName + "/";
+        String resourcePrefix = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName + "/";
         foreach (Statement statement in outList)
         {
             ISet<string> intersection = new HashSet<string>(s3PrefixValues);
@@ -331,7 +331,7 @@ namespace MinioCore2.DataModel
             Statement statement = outList[0];
             IList<string> aws = statement.principal.aws();
             if (statement.resources.Contains(bucketResource)
-                && (utils.isSupersetOf(statement.actions,Constants.COMMON_BUCKET_ACTIONS))
+                && (utils.isSupersetOf(statement.actions,PolicyConstants.COMMON_BUCKET_ACTIONS))
                 && statement.effect.Equals("Allow")
                 && aws != null && aws.Contains("*")
                 && statement.conditions == null)
@@ -418,8 +418,8 @@ namespace MinioCore2.DataModel
    // @JsonIgnore
   public PolicyType getPolicy(string prefix)
     {
-        string bucketResource = Constants.AWS_RESOURCE_PREFIX + bucketName;
-        string objectResource = Constants.AWS_RESOURCE_PREFIX + bucketName + "/" + prefix + "*";
+        string bucketResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName;
+        string objectResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName + "/" + prefix + "*";
 
         bool bucketCommonFound = false;
         bool bucketReadOnly = false;
@@ -503,7 +503,7 @@ namespace MinioCore2.DataModel
         Dictionary<String, PolicyType> policyRules = new Dictionary<string, PolicyType>();
         ISet<String> objResources = new HashSet<String>();
 
-        String bucketResource = Constants.AWS_RESOURCE_PREFIX + bucketName;
+        String bucketResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName;
 
         // Search all resources related to objects policy
         foreach (Statement s in statements)

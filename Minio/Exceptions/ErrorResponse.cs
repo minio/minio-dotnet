@@ -17,7 +17,7 @@
 using System;
 using System.Xml.Serialization;
 
-namespace MinioCore2.Exceptions
+namespace Minio.Exceptions
 {
     [Serializable]
     [XmlRoot(ElementName="Error", Namespace = "")]

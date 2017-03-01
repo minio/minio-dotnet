@@ -23,15 +23,15 @@ using System.Threading.Tasks;
 using System.Linq;
 
 using System.Reactive.Linq;
-using MinioCore2.DataModel;
+using Minio.DataModel;
 using System.IO;
 using System.Xml.Linq;
 using System.Xml.Serialization;
-using MinioCore2.Exceptions;
+using Minio.Exceptions;
 using System.Globalization;
-using MinioCore2.Helper;
+using Minio.Helper;
 
-namespace MinioCore2
+namespace Minio
 {
     public partial class MinioClient : IObjectOperations
     {
@@ -783,12 +783,11 @@ namespace MinioCore2
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds</param>
-        public string PresignedGetObject(string bucketName, string objectName, int expiresInt)
+        public async Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)
         {
-            // Initialize a new client.
-            PrepareClient(bucketName);
-
-            RestRequest request = new RestRequest(bucketName + "/" + utils.UrlEncode(objectName), Method.GET);
+            var request = await this.CreateRequest(Method.GET, bucketName,
+                                                    objectName: objectName);
+    
             return this.authenticator.PresignURL(this.restClient, request, expiresInt);
         }
 
@@ -798,11 +797,10 @@ namespace MinioCore2
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds</param>
-        public string PresignedPutObject(string bucketName, string objectName, int expiresInt)
+        public async Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
         {
-            //Initialize a new client.
-            PrepareClient(bucketName);
-            RestRequest request = new RestRequest(bucketName + "/" + utils.UrlEncode(objectName), Method.PUT);
+            var request = await this.CreateRequest(Method.PUT, bucketName,
+                                                    objectName: objectName);
             return this.authenticator.PresignURL(this.restClient, request, expiresInt);
         }
 

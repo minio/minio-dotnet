@@ -19,7 +19,7 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 
-namespace MinioCore2.DataModel
+namespace Minio.DataModel
 {
     public class PostPolicy
     {

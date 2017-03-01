@@ -16,7 +16,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MinioCore2.DataModel
+namespace Minio.DataModel
 {
     internal class ConditionKeyMap:Dictionary<string,ISet<string>>
     {

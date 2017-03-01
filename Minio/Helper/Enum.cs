@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MinioCore2
+namespace Minio
 {
     class Enum
     {

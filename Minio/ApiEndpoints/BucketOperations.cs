@@ -18,17 +18,17 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using MinioCore2.DataModel;
+using Minio.DataModel;
 using RestSharp;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.Serialization;
-using MinioCore2.Exceptions;
+using Minio.Exceptions;
 using System.Globalization;
 using System.Reactive.Linq;
 
-namespace MinioCore2
+namespace Minio
 {
     public partial class MinioClient : IBucketOperations
     {
@@ -46,18 +46,15 @@ namespace MinioCore2
             var request = new RestRequest("/", Method.GET);
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
 
-            ListAllMyBucketsResult bucketList = new ListAllMyBucketsResult();
+            ListAllMyBucketsResult bucketList = new ListAllMyBucketsResult ();
             if (HttpStatusCode.OK.Equals(response.StatusCode))
             {
                 var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
                 var stream = new MemoryStream(contentBytes);
                 bucketList = (ListAllMyBucketsResult)(new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream));
                 return bucketList;
-
             }
-
             return bucketList;
-
         }
 
         /// <summary>
@@ -92,7 +89,7 @@ namespace MinioCore2
             try
             {
                 var request = await this.CreateRequest(Method.HEAD,
-                                                   bucketName,region:"us-east-1");
+                                                   bucketName);
                 var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
             }
             catch (Exception ex)
@@ -237,16 +234,30 @@ namespace MinioCore2
             var request = await this.CreateRequest(Method.GET, bucketName,
                                  contentType: "application/json",
                                  resourcePath: "?policy");
-            response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
-
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-            var stream = new MemoryStream(contentBytes);
-            policy = BucketPolicy.parseJson(stream, bucketName);
-            if (policy == null)
+            try
             {
-                policy = new BucketPolicy(bucketName);
-            }
+                response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
+                var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
 
+                var stream = new MemoryStream(contentBytes);
+                policy = BucketPolicy.parseJson(stream, bucketName);
+
+            }
+            catch (ErrorResponseException e)
+            {
+                // Ignore if there is 
+                if (!e.Response.Code.Equals("NoSuchBucketPolicy"))
+                {
+                    throw e;
+                }
+            }
+            finally
+            {
+                if (policy == null)
+                {
+                    policy = new BucketPolicy(bucketName);
+                }
+            }
             return policy;
         }
 

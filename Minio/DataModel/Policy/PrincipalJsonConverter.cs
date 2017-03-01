@@ -17,7 +17,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace MinioCore2.DataModel.Policy
+namespace Minio.DataModel.Policy
 {
     class PrincipalJsonConverter : JsonConverter
     {

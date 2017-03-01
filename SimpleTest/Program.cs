@@ -30,16 +30,14 @@ namespace SimpleTest
         static void Main(string[] args)
         {
 
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
-                                    | SecurityProtocolType.Tls11
-                                    | SecurityProtocolType.Tls12;
-
-
             /// Note: s3 AccessKey and SecretKey needs to be added in App.config file
             /// See instructions in README.md on running examples for more information.
             var minio = new MinioClient(ConfigurationManager.AppSettings["Endpoint"],
                                              ConfigurationManager.AppSettings["AccessKey"],
                                              ConfigurationManager.AppSettings["SecretKey"]).WithSSL();
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+                                                  | SecurityProtocolType.Tls11
+                                                  | SecurityProtocolType.Tls12;
 
             var getListBucketsTask = minio.ListBucketsAsync();
             try
@@ -57,12 +55,14 @@ namespace SimpleTest
                 Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
             }
 
-            //Supply a new bucket name
-            Task.WaitAll(minio.MakeBucketAsync("mynewbucket"));
-
             var bucketExistTask = minio.BucketExistsAsync("mynewbucket");
             Task.WaitAll(bucketExistTask);
             var found = bucketExistTask.Result;
+            if (!found)
+            {
+                //Supply a new bucket name
+                Task.WaitAll(minio.MakeBucketAsync("mynewbucket"));
+            }
             Console.Out.WriteLine("bucket was " + found);
             Console.ReadLine();
         }

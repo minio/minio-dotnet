@@ -16,24 +16,29 @@
 
 using System;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace Minio.Examples.Cases
 {
     class GetObject
     {
         //get object in a bucket
-        public async static Task Run(Minio.MinioClient minio,
+        public async static Task Run(MinioClient minio,
                                      string bucketName="my-bucket-name",
-                                     string objectName="my-object-name")
+                                     string objectName="my-object-name",
+                                     string fileName="my-file-name")
         {
             try
             {
+                Console.Out.WriteLine("Running example for API: GetObjectAsync");
                 await minio.GetObjectAsync(bucketName, objectName, 
                 (stream) =>
                 {
-                    stream.CopyTo(Console.OpenStandardOutput());
+                     // Uncommment to print the file on output console
+                    //stream.CopyTo(Console.OpenStandardOutput());
                 });
-                             
+                Console.WriteLine("Downloaded the file " + fileName + " in bucket " + bucketName);
+                Console.Out.WriteLine();
             }
             catch (Exception e)
             {
