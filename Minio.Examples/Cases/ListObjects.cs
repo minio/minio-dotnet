@@ -32,12 +32,11 @@ namespace Minio.Examples.Cases
             {
 
                 IObservable<Item> observable = minio.ListObjectsAsync(bucketName, prefix, recursive);
-
-
+                
                 IDisposable subscription = observable.Subscribe(
-                    item => Console.WriteLine("OnNext: {0}", item.Key),
+                    item => Console.WriteLine("Object: {0}", item.Key),
                     ex => Console.WriteLine("OnError: {0}", ex),
-                    () => Console.WriteLine("OnComplete: {0}"));
+                    () => Console.WriteLine("Listed all objects in bucket " + bucketName));
 
                  
                 // subscription.Dispose();

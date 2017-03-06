@@ -46,18 +46,15 @@ namespace Minio
             var request = new RestRequest("/", Method.GET);
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
 
-            ListAllMyBucketsResult bucketList = new ListAllMyBucketsResult();
+            ListAllMyBucketsResult bucketList = new ListAllMyBucketsResult ();
             if (HttpStatusCode.OK.Equals(response.StatusCode))
             {
                 var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
                 var stream = new MemoryStream(contentBytes);
                 bucketList = (ListAllMyBucketsResult)(new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream));
                 return bucketList;
-
             }
-
             return bucketList;
-
         }
 
         /// <summary>

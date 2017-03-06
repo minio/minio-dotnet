@@ -55,8 +55,6 @@ namespace SimpleTest
                 Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
             }
 
-          
-
             var bucketExistTask = minio.BucketExistsAsync("mynewbucket");
             Task.WaitAll(bucketExistTask);
             var found = bucketExistTask.Result;

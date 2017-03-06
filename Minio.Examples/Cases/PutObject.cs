@@ -39,7 +39,7 @@ namespace Minio.Examples.Cases
                                            filestream.Length,
                                            "application/octet-stream");
 
-                Console.Out.WriteLine("done uploading");
+                Console.Out.WriteLine("Uploaded object " + objectName + " to bucket " + bucketName);
             }
             catch (Exception e)
             {

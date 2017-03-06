@@ -28,7 +28,7 @@ namespace Minio.Examples.Cases
             try
             {
                 bool found = await minio.BucketExistsAsync(bucketName);
-                Console.Out.WriteLine("bucket-name was " + ((found == true) ? "found" : "not found"));
+                Console.Out.WriteLine(((found == true) ? "Found" : "Couldn't find ") + "bucket " + bucketName);
             }
             catch (Exception e)
             {

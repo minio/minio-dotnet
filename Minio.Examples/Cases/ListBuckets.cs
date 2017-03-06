@@ -29,6 +29,7 @@ namespace Minio.Examples.Cases
             try
             {
                 var list = await minio.ListBucketsAsync();
+                Console.Out.WriteLine("Listing all the buckets \n");
                 foreach (Bucket bucket in list.Buckets)
                 {
                     Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
