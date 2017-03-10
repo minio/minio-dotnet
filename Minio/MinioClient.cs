@@ -449,8 +449,6 @@ namespace Minio
             IRestResponse response = await tcs.Task;
             HandleIfErrorResponse(response, errorHandlers, startTime);
             return response;
-            // var response = await this.restClient.ExecuteTaskAsync(request, CancellationToken.None);
-
         }
 
 
@@ -471,12 +469,13 @@ namespace Minio
 
             if (string.IsNullOrWhiteSpace(response.Content))
             {
+                ErrorResponse errorResponse = new ErrorResponse();
+
                 if (HttpStatusCode.Forbidden.Equals(response.StatusCode) || HttpStatusCode.NotFound.Equals(response.StatusCode) ||
                     HttpStatusCode.MethodNotAllowed.Equals(response.StatusCode) || HttpStatusCode.NotImplemented.Equals(response.StatusCode))
                 {
                     MinioException e = null;
-                    ErrorResponse errorResponse = new ErrorResponse();
-
+                    
                     foreach (Parameter parameter in response.Headers)
                     {
                         if (parameter.Name.Equals("x-amz-id-2", StringComparison.CurrentCultureIgnoreCase))
@@ -543,10 +542,19 @@ namespace Minio
                 throw new BucketNotFoundException(bucketName, "Not found.");
             }
 
-
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
             ErrorResponse errResponse = (ErrorResponse)(new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream));
+
+            // Handle XML response for Bucket Policy not found case
+            if (response.StatusCode.Equals(HttpStatusCode.NotFound) && response.Request.Resource.EndsWith("?policy")
+                && response.Request.Method.Equals(Method.GET) && errResponse.Code.Equals("NoSuchBucketPolicy"))
+            {
+                ErrorResponseException ErrorException = new ErrorResponseException(errResponse.Message);
+                ErrorException.Response = errResponse;
+                ErrorException.XmlError = response.Content;
+                throw ErrorException;
+            }
 
             MinioException MinioException = new MinioException(errResponse.Message);
             MinioException.Response = errResponse;
@@ -570,14 +578,15 @@ namespace Minio
             {
                 throw new ArgumentNullException(nameof(handlers));
             }
-            // Runs through handlers passed to take up error handling
+            // Run through handlers passed to take up error handling
             foreach (var handler in handlers)
             {
                 handler(response);
             }
-
+            
             //Fall back default error handler
             _defaultErrorHandlingDelegate(response);
+            
         }
         /// <summary>
         /// Sets HTTP tracing On.Writes output to Console

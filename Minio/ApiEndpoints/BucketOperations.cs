@@ -234,16 +234,30 @@ namespace Minio
             var request = await this.CreateRequest(Method.GET, bucketName,
                                  contentType: "application/json",
                                  resourcePath: "?policy");
-            response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
-
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-            var stream = new MemoryStream(contentBytes);
-            policy = BucketPolicy.parseJson(stream, bucketName);
-            if (policy == null)
+            try
             {
-                policy = new BucketPolicy(bucketName);
-            }
+                response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
+                var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
 
+                var stream = new MemoryStream(contentBytes);
+                policy = BucketPolicy.parseJson(stream, bucketName);
+
+            }
+            catch (ErrorResponseException e)
+            {
+                // Ignore if there is 
+                if (!e.Response.Code.Equals("NoSuchBucketPolicy"))
+                {
+                    throw e;
+                }
+            }
+            finally
+            {
+                if (policy == null)
+                {
+                    policy = new BucketPolicy(bucketName);
+                }
+            }
             return policy;
         }
 

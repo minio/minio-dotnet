@@ -22,6 +22,8 @@ namespace Minio.Examples.Cases
 {
     class PutObject
     {
+        private static int MB = 1024 * 1024;
+
         //Put an object from a local stream into bucket
         public async static Task Run(Minio.MinioClient minio,
                                      string bucketName = "my-bucket-name", 
@@ -32,7 +34,13 @@ namespace Minio.Examples.Cases
             {
                 byte[] bs = File.ReadAllBytes(fileName);
                 System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
-
+                if (filestream.Length < (5 * MB))
+                {
+                    Console.Out.WriteLine("Running example for API: PutObjectAsync with Stream");
+                } else
+                {
+                    Console.Out.WriteLine("Running example for API: PutObjectAsync with Stream and MultiPartUpload");
+                }
                 await minio.PutObjectAsync(bucketName,
                                            objectName,
                                            filestream,
@@ -40,6 +48,7 @@ namespace Minio.Examples.Cases
                                            "application/octet-stream");
 
                 Console.Out.WriteLine("Uploaded object " + objectName + " to bucket " + bucketName);
+                Console.Out.WriteLine();
             }
             catch (Exception e)
             {

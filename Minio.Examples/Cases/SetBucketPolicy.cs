@@ -24,16 +24,19 @@ namespace Minio.Examples.Cases
     {
         //set bucket policy
         public async static Task Run(Minio.MinioClient minio, 
+                                     PolicyType policy,
                                      string bucketName = "my-bucket-name",
                                      string objectPrefix="")
         {
             try
             {
+                Console.Out.WriteLine("Running example for API: SetPolicyAsync");
                 //Change policy type parameter
                 await minio.SetPolicyAsync(bucketName, 
                                                objectPrefix,
-                                               PolicyType.READ_ONLY);
-
+                                               policy);
+                Console.Out.WriteLine("Policy " + policy.ToString() + " set for the bucket " + bucketName + " successfully");
+                Console.Out.WriteLine();
             }
             catch (Exception e)
             {

@@ -30,13 +30,15 @@ namespace Minio.Examples.Cases
         {
             try
             {
+                Console.Out.WriteLine("Running example for API: ListIncompleteUploads");
                 IObservable<Upload> observable = minio.ListIncompleteUploads(bucketName, prefix, recursive);
 
                 IDisposable subscription = observable.Subscribe(
                     item => Console.WriteLine("OnNext: {0}", item.Key),
                     ex => Console.WriteLine("OnError: {0}", ex.Message),
-                    () => Console.WriteLine("OnComplete: {0}"));
+                    () => Console.WriteLine("Listed the pending uploads to bucket " + bucketName));
 
+                Console.Out.WriteLine();
             }
             catch (Exception e)
             {

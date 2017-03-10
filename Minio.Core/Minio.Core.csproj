@@ -46,6 +46,7 @@
     <Compile Include="..\Minio\DataModel\Prefix.cs" Link="DataModel\Prefix.cs" />
     <Compile Include="..\Minio\DataModel\Upload.cs" Link="DataModel\Upload.cs" />
     <Compile Include="..\Minio\Exceptions\AccessDeniedException.cs" Link="Exceptions\AccessDeniedException.cs" />
+    <Compile Include="..\Minio\Exceptions\ErrorResponseException.cs" Link="Exceptions\ErrorResponseException.cs" />
     <Compile Include="..\Minio\Exceptions\BucketNotFoundException.cs" Link="Exceptions\BucketNotFoundException.cs" />
     <Compile Include="..\Minio\Exceptions\ConnectionException.cs" Link="Exceptions\ConnectionException.cs" />
     <Compile Include="..\Minio\Exceptions\EntityTooLargeException.cs" Link="Exceptions\EntityTooLargeException.cs" />

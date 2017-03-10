@@ -185,7 +185,10 @@
     <Compile Include="..\Minio\Exceptions\AccessDeniedException.cs">
       <Link>Exceptions\AccessDeniedException.cs</Link>
     </Compile>
-    <Compile Include="..\Minio\Exceptions\BucketNotFoundException.cs">
+    <Compile Include="..\Minio\Exceptions\ErrorResponseException.cs">
+      <Link>Exceptions\ErrorResponseException.cs</Link>
+    </Compile>
+	<Compile Include="..\Minio\Exceptions\BucketNotFoundException.cs">
       <Link>Exceptions\BucketNotFoundException.cs</Link>
     </Compile>
     <Compile Include="..\Minio\Exceptions\ConnectionException.cs">

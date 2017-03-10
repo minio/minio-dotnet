@@ -19,6 +19,7 @@ using System.Net;
 using Minio.Exceptions;
 using System.Text;
 using System.IO;
+using Minio.DataModel;
 #if NET452
 using System.Configuration;
 #endif
@@ -75,13 +76,15 @@ namespace Minio.Examples
             accessKey = "Q3AM3UQ867SPQQA43P2F";
             secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
 #endif
+            // WithSSL() enables SSL support in Minio client
             var minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey).WithSSL();
 
             try
             {
                 // Assign parameters before starting the test 
                 string bucketName = GetRandomName();
-                string fileName = CreateFile(1 * MB);
+                string smallFileName = CreateFile(1 * MB);
+                string bigFileName = CreateFile(6 * MB);
                 string objectName = GetRandomName();
                 string destBucketName = GetRandomName();
                 string destObjectName = GetRandomName();
@@ -105,33 +108,56 @@ namespace Minio.Examples
                 Cases.ListBuckets.Run(minioClient).Wait();
 
                 // Put an object to the new bucket
-                Cases.PutObject.Run(minioClient, bucketName, objectName, fileName).Wait();
+                Cases.PutObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
+
+                // Get object metadata
+                Cases.StatObject.Run(minioClient, bucketName, objectName).Wait();
 
                 // List the objects in the new bucket
                 Cases.ListObjects.Run(minioClient, bucketName);
 
                 // Delete the file and Download the object as file
-                File.Delete(fileName);
-                Cases.GetObject.Run(minioClient, bucketName, objectName, fileName).Wait();
-                
-                //Cases.FPutObject.Run(minioClient, bucketName, objectName, uploadFilePath).Wait();
+                Cases.GetObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
 
-                //Cases.FGetObject.Run(minioClient, bucketName, objectName, downloadFilePath).Wait();
+                // Server side copyObject
+                Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName).Wait();
 
-                //Cases.RemoveObject.Run(minioClient, bucketName, objectName).Wait();
-                //Cases.RemoveBucket.Run(minioClient, bucketName).Wait();
-                //Cases.ListIncompleteUploads.Run(minioClient, bucketName, prefix: objectPrefix);
-                //Cases.RemoveIncompleteUpload.Run(minioClient, bucketName, removeObject).Wait();
+                // Delete the object
+                Cases.RemoveObject.Run(minioClient, bucketName, objectName).Wait();
 
-                //Cases.GetBucketPolicy.Run(minioClient, bucketName).Wait();
+                // Upload a File with PutObject
+                Cases.FPutObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
 
-                //Cases.SetBucketPolicy.Run(minioClient, bucketName).Wait();
-                //Cases.StatObject.Run(minioClient, bucketName, objectName).Wait();
-                //Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, destObjectName).Wait();
+                // Delete the file and Download the object as file
+                Cases.FGetObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
+
+                // Automatic Multipart Upload with object more than 5Mb
+                Cases.PutObject.Run(minioClient, bucketName, objectName, bigFileName).Wait();
+
+                // List the incomplete uploads
+                Cases.ListIncompleteUploads.Run(minioClient, bucketName);
+
+                // Remove all the incomplete uploads
+                Cases.RemoveIncompleteUpload.Run(minioClient, bucketName, objectName).Wait();
+
+                // Set a policy for given bucket
+                Cases.SetBucketPolicy.Run(minioClient, PolicyType.READ_ONLY, bucketName).Wait();
+
+                // Get the policy for given bucket
+                Cases.GetBucketPolicy.Run(minioClient, bucketName).Wait(); 
 
                 //Cases.PresignedGetObject.Run(minioClient);
                 //Cases.PresignedPostPolicy.Run(minioClient);
                 //Cases.PresignedPutObject.Run(minioClient);
+
+                // Remove the buckets
+                Cases.RemoveBucket.Run(minioClient, bucketName).Wait();
+                Cases.RemoveBucket.Run(minioClient, destBucketName).Wait();
+
+                // Remove the binary files created for test
+                File.Delete(smallFileName);
+                File.Delete(bigFileName);
+
                 Console.ReadLine();
             }
             catch (MinioException ex)
