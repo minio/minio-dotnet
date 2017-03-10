@@ -15,8 +15,8 @@
  */
 
 using System;
-using System.IO;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace Minio.Examples.Cases
 {
@@ -30,15 +30,15 @@ namespace Minio.Examples.Cases
         {
             try
             {
+                Console.Out.WriteLine("Running example for API: GetObjectAsync");
                 await minio.GetObjectAsync(bucketName, objectName, 
                 (stream) =>
                 {
-                    MemoryStream ms = new MemoryStream();
-                    stream.CopyTo(ms);
-                    FileStream file = new FileStream(fileName, FileMode.Create, FileAccess.Write);
-                    ms.WriteTo(file);
+                     // Uncommment to print the file on output console
+                    //stream.CopyTo(Console.OpenStandardOutput());
                 });
                 Console.WriteLine("Downloaded the file " + fileName + " in bucket " + bucketName);
+                Console.Out.WriteLine();
             }
             catch (Exception e)
             {

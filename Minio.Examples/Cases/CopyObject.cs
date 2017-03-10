@@ -30,13 +30,15 @@ namespace Minio.Examples.Cases
         {
             try
             {
+                Console.Out.WriteLine("Running example for API: CopyObjectAsync");
                 //Optionally pass copy conditions
                 await minio.CopyObjectAsync(fromBucketName, 
                                                 fromObjectName, 
                                                 destBucketName, 
                                                 destObjectName, 
                                                 copyConditions:null);
-                Console.Out.WriteLine("done copying");
+                Console.Out.WriteLine("Copied object " + fromObjectName + " from bucket " + fromBucketName + " to bucket " + destBucketName);
+                Console.Out.WriteLine();    
             }
             catch (Exception e)
             {

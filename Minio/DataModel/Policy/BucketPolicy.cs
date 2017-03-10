@@ -98,7 +98,7 @@ namespace Minio.DataModel
 
         statements.Add(statement);
 
-        if (policy == PolicyType.READ_ONLY || policy == PolicyType.READ_WRITE)
+        if (policy.ToString().Equals(PolicyType.READ_ONLY.ToString()) || policy.ToString().Equals(PolicyType.READ_WRITE.ToString()))
         {
             statement = new Statement();
             statement.actions = PolicyConstants.READ_ONLY_BUCKET_ACTIONS;
@@ -117,7 +117,7 @@ namespace Minio.DataModel
             statements.Add(statement);
         }
 
-        if (policy == PolicyType.WRITE_ONLY || policy == PolicyType.READ_WRITE)
+        if (policy.ToString().Equals(PolicyType.WRITE_ONLY.ToString()) || policy.ToString().Equals(PolicyType.READ_WRITE.ToString()))
         {
             statement = new Statement();
             statement.actions = PolicyConstants.WRITE_ONLY_BUCKET_ACTIONS;
@@ -152,15 +152,15 @@ namespace Minio.DataModel
         statement.principal = new Principal("*");
         statement.resources = resources;
         statement.sid = "";
-        if (policy.Equals(PolicyType.READ_ONLY))
+        if (policy.ToString().Equals(PolicyType.READ_ONLY.ToString()))
         {
             statement.actions = PolicyConstants.READ_ONLY_OBJECT_ACTIONS;
         }
-        else if (policy.Equals(PolicyType.WRITE_ONLY))
+        else if (policy.ToString().Equals(PolicyType.WRITE_ONLY.ToString()))
         {
             statement.actions = PolicyConstants.WRITE_ONLY_OBJECT_ACTIONS;
         }
-        else if (policy.Equals(PolicyType.READ_WRITE))
+        else if (policy.ToString().Equals(PolicyType.READ_WRITE.ToString()))
         {
             statement.actions = PolicyConstants.READ_WRITE_OBJECT_ACTIONS();
         }
