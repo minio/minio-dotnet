@@ -102,7 +102,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds</param>
-        string PresignedGetObject(string bucketName, string objectName, int expiresInt);
+        Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt);
 
         /// <summary>
         /// Presigned Put url.
@@ -111,7 +111,7 @@ namespace Minio
         /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds</param>
 
-        string PresignedPutObject(string bucketName, string objectName, int expiresInt);
+        Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt);
 
         /// <summary>
         ///  Presigned post policy

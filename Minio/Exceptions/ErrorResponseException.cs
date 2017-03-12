@@ -20,7 +20,7 @@ namespace Minio.Exceptions
 {
     class ErrorResponseException : MinioException
     {
-        public string message { get; private set; }
+        internal string message { get; private set; }
         public IRestResponse response { get; private set; }
         public ErrorResponseException(IRestResponse response)
             : base($"Minio API responded with status code={response.StatusCode}, response={response.ErrorMessage}, content={response.Content}")

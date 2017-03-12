@@ -76,6 +76,7 @@ namespace Minio.Examples
             accessKey = "Q3AM3UQ867SPQQA43P2F";
             secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
 #endif
+     
             // WithSSL() enables SSL support in Minio client
             var minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey).WithSSL();
 
@@ -97,7 +98,7 @@ namespace Minio.Examples
 
                 // Set HTTP Tracing Off
                 // minioClient.SetTraceOff();
-
+                
                 // Check if bucket exists
                 Cases.BucketExists.Run(minioClient, bucketName).Wait();
 
@@ -144,12 +145,17 @@ namespace Minio.Examples
                 Cases.SetBucketPolicy.Run(minioClient, PolicyType.READ_ONLY, bucketName).Wait();
 
                 // Get the policy for given bucket
-                Cases.GetBucketPolicy.Run(minioClient, bucketName).Wait(); 
+                Cases.GetBucketPolicy.Run(minioClient, bucketName).Wait();
 
-                //Cases.PresignedGetObject.Run(minioClient);
-                //Cases.PresignedPostPolicy.Run(minioClient);
-                //Cases.PresignedPutObject.Run(minioClient);
+                // Get the presigned url for a GET object request
+                Cases.PresignedGetObject.Run(minioClient,bucketName,objectName).Wait();
 
+                // Get the presigned POST policy curl url
+                Cases.PresignedPostPolicy.Run(minioClient);
+
+                // Get the presigned url for a PUT object request
+                Cases.PresignedPutObject.Run(minioClient,bucketName,objectName).Wait();
+                
                 // Remove the buckets
                 Cases.RemoveBucket.Run(minioClient, bucketName).Wait();
                 Cases.RemoveBucket.Run(minioClient, destBucketName).Wait();
@@ -157,7 +163,7 @@ namespace Minio.Examples
                 // Remove the binary files created for test
                 File.Delete(smallFileName);
                 File.Delete(bigFileName);
-
+                
                 Console.ReadLine();
             }
             catch (MinioException ex)
