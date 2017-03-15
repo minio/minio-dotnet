@@ -76,7 +76,7 @@ namespace Minio.Examples
             accessKey = "Q3AM3UQ867SPQQA43P2F";
             secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
 #endif
-     
+
             // WithSSL() enables SSL support in Minio client
             var minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey).WithSSL();
 
@@ -151,7 +151,7 @@ namespace Minio.Examples
                 Cases.PresignedGetObject.Run(minioClient,bucketName,objectName).Wait();
 
                 // Get the presigned POST policy curl url
-                Cases.PresignedPostPolicy.Run(minioClient);
+                Cases.PresignedPostPolicy.Run(minioClient).Wait();
 
                 // Get the presigned url for a PUT object request
                 Cases.PresignedPutObject.Run(minioClient,bucketName,objectName).Wait();
