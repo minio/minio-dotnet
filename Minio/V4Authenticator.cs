@@ -283,7 +283,7 @@ namespace Minio
             string signature = BytesToHex(signatureBytes);
 
             // Return presigned url.
-            return client.BaseUrl + path.Substring(1) + "?" + requestQuery + "&X-Amz-Signature=" + signature;
+            return client.BaseUrl + path + "?" + requestQuery + "&X-Amz-Signature=" + signature;
         }
 
         /// <summary>

@@ -146,7 +146,7 @@ namespace Minio
 
             // This section reconstructs the url with scheme followed by location specific endpoint( s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
-            string resource = null;              //Resource being requested  
+            string resource = "";              //Resource being requested  
             bool usePathStyle = false;
             if (s3utils.IsAmazonEndPoint(this.BaseUrl))
             {
@@ -176,18 +176,16 @@ namespace Minio
                 {
                     resource = utils.UrlEncode(bucketName) + "/";
                 }
-                else
-                {
-                    resource = "/";
-                }
             }
             else
             {
                 resource = utils.UrlEncode(bucketName) + "/";
             }
 
-            // Prepare client state
-            PrepareClient(bucketName, region, usePathStyle);
+            // Set Target URL
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure,bucketName, region, usePathStyle);
+            SetTargetURL(requestUrl);
+            //PrepareClient(bucketName, region, usePathStyle);
 
             if (objectName != null)
             {
@@ -229,6 +227,36 @@ namespace Minio
             return request;
         }
 
+        /// <summary>
+        /// This method initializes a new RESTClient. The host URI for Amazon is set to virtual hosted style
+        /// if usePathStyle is false. Otherwise path style URL is constructed.
+        /// </summary>
+
+        internal void initClient()
+        {
+            if (string.IsNullOrEmpty(this.BaseUrl))
+            {
+                throw new InvalidEndpointException("Endpoint cannot be empty.");
+            }
+
+            string host = this.BaseUrl;
+
+            var scheme = this.Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
+
+            // This is the actual url pointed to for all HTTP requests
+            this.Endpoint = string.Format("{0}://{1}", scheme, host);
+            this.uri = RequestUtil.TryCreateUri(this.BaseUrl,this.Secure);
+            RequestUtil.ValidateEndpoint(this.uri,this.Endpoint);
+
+            // Initialize a new REST client. This uri will be modified if region specific endpoint/virtual style request
+            // is decided upon while constructing a request for Amazon.
+            restClient = new RestSharp.RestClient(this.uri);
+            restClient.UserAgent = this.FullUserAgent;
+
+            authenticator = new V4Authenticator(this.AccessKey, this.SecretKey);
+            restClient.Authenticator = authenticator;
+        }
+        /*
         /// <summary>
         /// This method initializes a new RESTClient. The host URI for Amazon is set to virtual hosted style
         /// if usePathStyle is false. Otherwise path style URL is constructed.
@@ -355,6 +383,7 @@ namespace Minio
 
             return true;
         }
+        */
 
         /// <summary>
         ///Sets app version and name. Used by RestSharp for constructing User-Agent header in all HTTP requests
@@ -394,7 +423,7 @@ namespace Minio
 
             //Instantiate a region cache 
             this.regionCache = BucketRegionCache.Instance;
-
+            initClient();
             return;
 
         }
@@ -406,7 +435,17 @@ namespace Minio
         public MinioClient WithSSL()
         {
             this.Secure = true;
+            Uri secureUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
+            SetTargetURL(secureUrl);
             return this;
+        }
+        /// <summary>
+        /// Sets endpoint URL on the client object that request will be made against
+        /// </summary>
+        /// <returns></returns>
+        internal void SetTargetURL(Uri uri)
+        {
+            this.restClient.BaseUrl = uri;
         }
 
         internal async Task<IRestResponse<T>> ExecuteTaskAsync<T>(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request) where T : new()

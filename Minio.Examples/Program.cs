@@ -76,7 +76,9 @@ namespace Minio.Examples
             accessKey = "Q3AM3UQ867SPQQA43P2F";
             secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
 #endif
-     
+            endPoint = Environment.GetEnvironmentVariable("AWS_ENDPOINT");
+            accessKey = Environment.GetEnvironmentVariable("MY_AWS_ACCESS_KEY");
+            secretKey = Environment.GetEnvironmentVariable("MY_AWS_SECRET_KEY");
             // WithSSL() enables SSL support in Minio client
             var minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey).WithSSL();
 
@@ -104,6 +106,8 @@ namespace Minio.Examples
 
                 // Create a new bucket
                 Cases.MakeBucket.Run(minioClient, bucketName).Wait();
+                Cases.MakeBucket.Run(minioClient, destBucketName).Wait();
+
 
                 // List all the buckets on the server
                 Cases.ListBuckets.Run(minioClient).Wait();
@@ -122,9 +126,6 @@ namespace Minio.Examples
 
                 // Server side copyObject
                 Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName).Wait();
-
-                // Delete the object
-                Cases.RemoveObject.Run(minioClient, bucketName, objectName).Wait();
 
                 // Upload a File with PutObject
                 Cases.FPutObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
@@ -151,11 +152,18 @@ namespace Minio.Examples
                 Cases.PresignedGetObject.Run(minioClient,bucketName,objectName).Wait();
 
                 // Get the presigned POST policy curl url
-                Cases.PresignedPostPolicy.Run(minioClient);
+                Cases.PresignedPostPolicy.Run(minioClient).Wait();
 
                 // Get the presigned url for a PUT object request
                 Cases.PresignedPutObject.Run(minioClient,bucketName,objectName).Wait();
-                
+
+
+                // Delete the object
+                Cases.RemoveObject.Run(minioClient, bucketName, objectName).Wait();
+
+                // Delete the object
+                Cases.RemoveObject.Run(minioClient, destBucketName, objectName).Wait();
+
                 // Remove the buckets
                 Cases.RemoveBucket.Run(minioClient, bucketName).Wait();
                 Cases.RemoveBucket.Run(minioClient, destBucketName).Wait();

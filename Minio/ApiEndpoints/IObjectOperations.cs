@@ -116,7 +116,7 @@ namespace Minio
         /// <summary>
         ///  Presigned post policy
         /// </summary>
-        Dictionary<string, string> PresignedPostPolicy(PostPolicy policy);
+        Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy);
 
     }
 }

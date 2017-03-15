@@ -157,7 +157,7 @@ namespace Minio
 
             File.Move(sourceFileName, destFileName);
         }
-
+        
         internal static bool isSupersetOf(IList<string> l1, IList<string> l2)
         {
             if (l2 == null)
@@ -169,6 +169,11 @@ namespace Minio
                 return false;
             }
             return (!l2.Except(l1).Any());
+        }
+        internal static bool CaseInsensitiveContains(string text, string value,
+    StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
+        {
+            return text.IndexOf(value, stringComparison) >= 0;
         }
     }
 }

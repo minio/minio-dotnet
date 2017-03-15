@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.26206.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C8111804-63DA-4E74-9C1F-FEC46632A33B}"
 	ProjectSection(SolutionItems) = preProject
@@ -88,6 +88,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Helper", "Helper", "{5289D1
 	ProjectSection(SolutionItems) = preProject
 		Minio\Helper\Constants.cs = Minio\Helper\Constants.cs
 		Minio\Helper\Enum.cs = Minio\Helper\Enum.cs
+		Minio\Helper\RequestUtil.cs = Minio\Helper\RequestUtil.cs
 		Minio\Helper\s3utils.cs = Minio\Helper\s3utils.cs
 		Minio\Helper\utils.cs = Minio\Helper\utils.cs
 	EndProjectSection
@@ -123,6 +124,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Client.Examples.Net452", "Minio.Examples\Minio.Client.Examples.Net452\Minio.Client.Examples.Net452.csproj", "{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Minio.Client.Examples.Core", "Minio.Examples\Minio.Client.Examples.Core\Minio.Client.Examples.Core.csproj", "{54F8F8A7-B4DA-49AE-831F-5C867E58C936}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{1C9527B7-1E76-465E-8727-6ACC6D902F55}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -218,6 +221,18 @@ Global
 		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.Release|x64.Build.0 = Release|Any CPU
 		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.Release|x86.ActiveCfg = Release|Any CPU
 		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.Release|x86.Build.0 = Release|Any CPU
+		{1C9527B7-1E76-465E-8727-6ACC6D902F55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C9527B7-1E76-465E-8727-6ACC6D902F55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C9527B7-1E76-465E-8727-6ACC6D902F55}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1C9527B7-1E76-465E-8727-6ACC6D902F55}.Debug|x64.Build.0 = Debug|Any CPU
+		{1C9527B7-1E76-465E-8727-6ACC6D902F55}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1C9527B7-1E76-465E-8727-6ACC6D902F55}.Debug|x86.Build.0 = Debug|Any CPU
+		{1C9527B7-1E76-465E-8727-6ACC6D902F55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C9527B7-1E76-465E-8727-6ACC6D902F55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C9527B7-1E76-465E-8727-6ACC6D902F55}.Release|x64.ActiveCfg = Release|Any CPU
+		{1C9527B7-1E76-465E-8727-6ACC6D902F55}.Release|x64.Build.0 = Release|Any CPU
+		{1C9527B7-1E76-465E-8727-6ACC6D902F55}.Release|x86.ActiveCfg = Release|Any CPU
+		{1C9527B7-1E76-465E-8727-6ACC6D902F55}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

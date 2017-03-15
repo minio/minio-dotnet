@@ -751,9 +751,9 @@ namespace Minio
             }
 
             var path = destBucketName + "/" + utils.UrlEncode(destObjectName);
-            var request = await this.CreateRequest(Method.PUT, bucketName,
-                                                   objectName: objectName,
-                                                   resourcePath: path);
+
+            var request = await this.CreateRequest(Method.PUT, destBucketName,
+                                                 objectName: destObjectName);
 
             // Set the object source
             request.AddHeader("x-amz-copy-source", sourceObjectPath);
@@ -807,10 +807,23 @@ namespace Minio
         /// <summary>
         ///  Presigned post policy
         /// </summary>
-        public Dictionary<string, string> PresignedPostPolicy(PostPolicy policy)
+        public async Task<Tuple<string,Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy)
         {
+            string region = null;
+
             //Initialize a new client.
-            PrepareClient();
+            if (!BucketRegionCache.Instance.Exists(policy.Bucket))
+            {
+                region = await BucketRegionCache.Instance.Update(this, policy.Bucket);
+            }
+            else
+            {
+                region = BucketRegionCache.Instance.Region(policy.Bucket);
+            }
+            // Set Target URL
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, bucketName:policy.Bucket, region:region, usePathStyle:false);
+            SetTargetURL(requestUrl);
+            //PrepareClient(region:region,bucketName:policy.Bucket,usePathStyle: false);
 
             if (!policy.IsBucketSet())
             {
@@ -826,8 +839,8 @@ namespace Minio
             {
                 throw new ArgumentException("expiration should be set");
             }
-
-            string region = Regions.GetRegion(this.restClient.BaseUrl.Host);
+            
+            //string region = Regions.GetRegion(this.restClient.BaseUrl.Host);
             DateTime signingDate = DateTime.UtcNow;
 
             policy.SetAlgorithm("AWS4-HMAC-SHA256");
@@ -840,7 +853,7 @@ namespace Minio
             policy.SetPolicy(policyBase64);
             policy.SetSignature(signature);
 
-            return policy.GetFormData();
+            return new Tuple<string,Dictionary<string,string>>(this.restClient.BaseUrl.Host, policy.GetFormData());
         }
     }
 }
