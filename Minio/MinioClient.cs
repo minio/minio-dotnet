@@ -182,7 +182,7 @@ namespace Minio
                 resource = utils.UrlEncode(bucketName) + "/";
             }
 
-            // Prepare client state
+            // Set Target URL
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure,bucketName, region, usePathStyle);
             SetTargetURL(requestUrl);
             //PrepareClient(bucketName, region, usePathStyle);

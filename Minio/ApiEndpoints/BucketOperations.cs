@@ -40,8 +40,11 @@ namespace Minio
         /// <returns>An iterator lazily populated with objects</returns>
         public async Task<ListAllMyBucketsResult> ListBucketsAsync()
         {
+            // Set Target URL
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
+            SetTargetURL(requestUrl);
             // Initialize a new client 
-            PrepareClient();
+            //PrepareClient();
 
             var request = new RestRequest("/", Method.GET);
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
@@ -63,8 +66,11 @@ namespace Minio
         /// <param name="bucketName">Name of the new bucket</param>
         public async Task MakeBucketAsync(string bucketName, string location = "us-east-1")
         {
+            // Set Target URL
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
+            SetTargetURL(requestUrl);
             // Initialize a new client
-            PrepareClient();
+            //PrepareClient();
 
             var request = new RestRequest("/" + bucketName, Method.PUT);
             // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.

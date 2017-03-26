@@ -751,9 +751,9 @@ namespace Minio
             }
 
             var path = destBucketName + "/" + utils.UrlEncode(destObjectName);
-            var request = await this.CreateRequest(Method.PUT, bucketName,
-                                                   objectName: objectName,
-                                                   resourcePath: path);
+
+            var request = await this.CreateRequest(Method.PUT, destBucketName,
+                                                 objectName: destObjectName);
 
             // Set the object source
             request.AddHeader("x-amz-copy-source", sourceObjectPath);
@@ -820,8 +820,10 @@ namespace Minio
             {
                 region = BucketRegionCache.Instance.Region(policy.Bucket);
             }
-
-            PrepareClient(region:region,bucketName:policy.Bucket,usePathStyle: false);
+            // Set Target URL
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, bucketName:policy.Bucket, region:region, usePathStyle:false);
+            SetTargetURL(requestUrl);
+            //PrepareClient(region:region,bucketName:policy.Bucket,usePathStyle: false);
 
             if (!policy.IsBucketSet())
             {

@@ -91,47 +91,47 @@ namespace Minio.Tests
         [TestMethod]
         public void TestWithUrl()
         {
-            new MinioClient(endpoint:"http://localhost:9000");
+            new MinioClient(endpoint:"localhost:9000");
         }
 
         [TestMethod]
         public void TestWithoutPort()
         {
-            new MinioClient("http://localhost");
+            new MinioClient("localhost");
         }
 
         [TestMethod]
         public void TestWithTrailingSlash()
         {
-            new MinioClient("http://localhost:9000/");
+            new MinioClient("localhost:9000/");
         }
 
         [TestMethod]
         [ExpectedException(typeof(InvalidEndpointException))]
         public void TestUrlFailsWithMalformedScheme()
         {
-            new MinioClient("htp://localhost:9000");
+            new MinioClient("http://localhost:9000");
         }
 
         [TestMethod]
         [ExpectedException(typeof(InvalidEndpointException))]
         public void TestUrlFailsWithPath()
         {
-            new MinioClient("http://localhost:9000/foo");
+            new MinioClient("localhost:9000/foo");
         }
 
         [TestMethod]
         [ExpectedException(typeof(InvalidEndpointException))]
         public void TestUrlFailsWithQuery()
         {
-            new MinioClient("http://localhost:9000/?foo=bar");
+            new MinioClient("localhost:9000/?foo=bar");
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void TestSetAppInfoFailsNullApp()
         {
-            var client = new MinioClient("http://localhost:9000");
+            var client = new MinioClient("localhost:9000");
             client.SetAppInfo(null, "1.2.2");
         }
 
@@ -139,14 +139,14 @@ namespace Minio.Tests
         [ExpectedException(typeof(ArgumentException))]
         public void TestSetAppInfoFailsNullVersion()
         {
-            var client = new MinioClient("http://localhost:9000");
+            var client = new MinioClient("localhost:9000");
             client.SetAppInfo("Hello-App", null);
         }
 
         [TestMethod]
         public void TestSetAppInfoSuccess()
         {
-            var client = new MinioClient("http://localhost:9000");
+            var client = new MinioClient("localhost:9000");
             client.SetAppInfo("Hello-App", "1.2.1");
         }
 
