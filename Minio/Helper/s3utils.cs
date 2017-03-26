@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 using System;
+using System.Net;
 using System.IO;
 
 namespace Minio.Helper
@@ -80,7 +81,49 @@ namespace Minio.Helper
 
         }
 
-      
+        // IsValidDomain validates if input string is a valid domain name.
+        internal static bool IsValidDomain(string host)
+        {
+            // See RFC 1035, RFC 3696.
+            host = host.Trim();
+	        if ((host.Length == 0) || (host.Length > 255)) 
+            {
+                return false;
+	        }
+	        // host cannot start or end with "-"
+	        if ((host.Substring(host.Length - 1) == "-") || (host.Substring(1) == "-"))
+            {
+                return false;
+	        }
+	        // host cannot start or end with "_"
+	        if ((host.Substring(host.Length - 1) == "_") || (host.Substring(1) == "_"))
+            {
+                return false;
+	        }
+	        // host cannot start or end with a "."
+	        if(( host.Substring(host.Length - 1) == ".") || (host.Substring(1) == "."))
+            {
+                return false;
+	        }
+            // All non alphanumeric characters are invalid.
+            char[] nonAlphas = "`~!@#$%^&*()+={}[]|\\\"';:><?/'".ToCharArray();
+
+            if (host.IndexOfAny(nonAlphas) > 0)
+            {
+                return false;
+	        }
+            // No need to regexp match, since the list is non-exhaustive.
+            // We let it valid and fail later.
+            return true;
+        }
+
+        // IsValidIP parses input string for ip address validity.
+        internal static bool IsValidIP(string ip) {
+            IPAddress result = null;
+            return
+                !String.IsNullOrEmpty(ip) &&
+                IPAddress.TryParse(ip, out result);
+        }
      
     }
 }

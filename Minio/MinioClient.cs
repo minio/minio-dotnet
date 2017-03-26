@@ -183,7 +183,9 @@ namespace Minio
             }
 
             // Prepare client state
-            PrepareClient(bucketName, region, usePathStyle);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure,bucketName, region, usePathStyle);
+            SetTargetURL(requestUrl);
+            //PrepareClient(bucketName, region, usePathStyle);
 
             if (objectName != null)
             {
@@ -225,6 +227,35 @@ namespace Minio
             return request;
         }
 
+        /// <summary>
+        /// This method initializes a new RESTClient. The host URI for Amazon is set to virtual hosted style
+        /// if usePathStyle is false. Otherwise path style URL is constructed.
+        /// </summary>
+
+        internal void initClient()
+        {
+            if (string.IsNullOrEmpty(this.BaseUrl))
+            {
+                throw new InvalidEndpointException("Endpoint cannot be empty.");
+            }
+
+            string host = this.BaseUrl;
+
+            var scheme = this.Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
+
+            // This is the actual url pointed to for all HTTP requests
+            this.Endpoint = string.Format("{0}://{1}", scheme, host);
+            this.uri = TryCreateUri(this.Endpoint);
+            _validateEndpoint();
+
+            // Initialize a new REST client. This uri will be modified if region specific endpoint/virtual style request
+            // is decided upon while constructing a request for Amazon.
+            restClient = new RestSharp.RestClient(this.uri);
+            restClient.UserAgent = this.FullUserAgent;
+
+            authenticator = new V4Authenticator(this.AccessKey, this.SecretKey);
+            restClient.Authenticator = authenticator;
+        }
         /// <summary>
         /// This method initializes a new RESTClient. The host URI for Amazon is set to virtual hosted style
         /// if usePathStyle is false. Otherwise path style URL is constructed.
@@ -390,7 +421,7 @@ namespace Minio
 
             //Instantiate a region cache 
             this.regionCache = BucketRegionCache.Instance;
-
+            initClient();
             return;
 
         }
@@ -402,7 +433,17 @@ namespace Minio
         public MinioClient WithSSL()
         {
             this.Secure = true;
+            Uri secureUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
+            SetTargetURL(secureUrl);
             return this;
+        }
+        /// <summary>
+        /// Sets endpoint URL on the client object that request will be made against
+        /// </summary>
+        /// <returns></returns>
+        internal void SetTargetURL(Uri uri)
+        {
+            this.restClient.BaseUrl = uri;
         }
 
         internal async Task<IRestResponse<T>> ExecuteTaskAsync<T>(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request) where T : new()

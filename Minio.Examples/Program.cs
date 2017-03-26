@@ -76,7 +76,9 @@ namespace Minio.Examples
             accessKey = "Q3AM3UQ867SPQQA43P2F";
             secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
 #endif
-
+            endPoint = Environment.GetEnvironmentVariable("AWS_ENDPOINT");
+            accessKey = Environment.GetEnvironmentVariable("MY_AWS_ACCESS_KEY");
+            secretKey = Environment.GetEnvironmentVariable("MY_AWS_SECRET_KEY");
             // WithSSL() enables SSL support in Minio client
             var minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey).WithSSL();
 
@@ -89,7 +91,7 @@ namespace Minio.Examples
                 string objectName = GetRandomName();
                 string destBucketName = GetRandomName();
                 string destObjectName = GetRandomName();
-
+        
                 // Set app Info 
                 minioClient.SetAppInfo("app-name", "app-version");
 

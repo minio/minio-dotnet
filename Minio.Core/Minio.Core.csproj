@@ -68,6 +68,7 @@
     <Compile Include="..\Minio\Exceptions\UnexpectedShortReadException.cs" Link="Exceptions\UnexpectedShortReadException.cs" />
     <Compile Include="..\Minio\Helper\Constants.cs" Link="Helper\Constants.cs" />
     <Compile Include="..\Minio\Helper\Enum.cs" Link="Helper\Enum.cs" />
+    <Compile Include="..\Minio\Helper\RequestUtil.cs" Link="Helper\RequestUtil.cs" />
     <Compile Include="..\Minio\Helper\s3utils.cs" Link="Helper\s3utils.cs" />
     <Compile Include="..\Minio\Helper\utils.cs" Link="Helper\utils.cs" />
     <Compile Include="..\Minio\MinioClient.cs" Link="MinioClient.cs" />

@@ -188,7 +188,7 @@
     <Compile Include="..\Minio\Exceptions\ErrorResponseException.cs">
       <Link>Exceptions\ErrorResponseException.cs</Link>
     </Compile>
-	<Compile Include="..\Minio\Exceptions\BucketNotFoundException.cs">
+    <Compile Include="..\Minio\Exceptions\BucketNotFoundException.cs">
       <Link>Exceptions\BucketNotFoundException.cs</Link>
     </Compile>
     <Compile Include="..\Minio\Exceptions\ConnectionException.cs">
@@ -250,6 +250,9 @@
     </Compile>
     <Compile Include="..\Minio\Helper\Enum.cs">
       <Link>Helper\Enum.cs</Link>
+    </Compile>
+    <Compile Include="..\Minio\Helper\RequestUtil.cs">
+      <Link>Helper\RequestUtil.cs</Link>
     </Compile>
     <Compile Include="..\Minio\Helper\s3utils.cs">
       <Link>Helper\s3utils.cs</Link>

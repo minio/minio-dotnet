@@ -88,6 +88,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Helper", "Helper", "{5289D1
 	ProjectSection(SolutionItems) = preProject
 		Minio\Helper\Constants.cs = Minio\Helper\Constants.cs
 		Minio\Helper\Enum.cs = Minio\Helper\Enum.cs
+		Minio\Helper\RequestHelper.cs = Minio\Helper\RequestHelper.cs
+		Minio\Helper\RequestUtil.cs = Minio\Helper\RequestUtil.cs
 		Minio\Helper\s3utils.cs = Minio\Helper\s3utils.cs
 		Minio\Helper\utils.cs = Minio\Helper\utils.cs
 	EndProjectSection
