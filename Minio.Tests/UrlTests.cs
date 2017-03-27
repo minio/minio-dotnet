@@ -28,9 +28,9 @@ namespace Minio.Tests
     /// Summary description for UnitTest1
     /// </summary>
     [TestClass]
-    public class UnitTest1
+    public class UrlTests
     {
-        public UnitTest1()
+        public UrlTests()
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                     | SecurityProtocolType.Tls11
@@ -81,13 +81,6 @@ namespace Minio.Tests
         //
         #endregion
 
-        [TestMethod]
-        public void TestMethod1()
-        {
-            //
-            // TODO: Add test logic here
-            //
-        }
         [TestMethod]
         public void TestWithUrl()
         {

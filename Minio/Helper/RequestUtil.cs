@@ -7,7 +7,7 @@ namespace Minio
 {
     public class RequestUtil
     {
-        public Uri getEndpointURL(string endPoint, bool secure)
+        public static Uri getEndpointURL(string endPoint, bool secure)
         {
             if (endPoint.Contains(":"))
             {
@@ -27,8 +27,9 @@ namespace Minio
                     throw new InvalidEndpointException("Endpoint: " + endPoint + " does not follow ip address or domain name standards.");
                 }
             }
-            Uri uri = MakeTargetURL(endPoint, secure);
-            _validateEndpoint(uri,endPoint);
+
+            Uri uri = TryCreateUri(endPoint, secure);
+            RequestUtil.ValidateEndpoint(uri,endPoint);
             return uri;
 
         }
@@ -47,20 +48,20 @@ namespace Minio
                     host = utils.UrlEncode(bucketName) + "." + utils.UrlEncode(host) + "/";
                 }
             }
-            var scheme = secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
-
-            // This is the actual url pointed to for all HTTP requests
-            string endpointURL = string.Format("{0}://{1}", scheme, host);
-            Uri uri = TryCreateUri(endpointURL);
+            Uri uri = TryCreateUri(host,secure);
             return uri;
         }
 
-        private static Uri TryCreateUri(string endpoint)
+        public static Uri TryCreateUri(string endpoint,bool secure)
         {
+            var scheme = secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
+
+            // This is the actual url pointed to for all HTTP requests
+            string endpointURL = string.Format("{0}://{1}", scheme, endpoint);
             Uri uri = null;
             try
             {
-                uri = new Uri(endpoint);
+                uri = new Uri(endpointURL);
             }
             catch (UriFormatException e)
             {
@@ -72,7 +73,7 @@ namespace Minio
         /// <summary>
         /// Validates URI to check if it is well formed. Otherwise cry foul.
         /// </summary>
-        private void _validateEndpoint(Uri uri,string Endpoint)
+        public static void ValidateEndpoint(Uri uri,string Endpoint)
         {
             if (string.IsNullOrEmpty(uri.OriginalString))
             {
@@ -80,7 +81,7 @@ namespace Minio
             }
             string host = uri.Host;
 
-            if (!this.isValidEndpoint(uri.Host))
+            if (!isValidEndpoint(uri.Host))
             {
                 throw new InvalidEndpointException(Endpoint, "Invalid endpoint.");
             }
@@ -99,19 +100,19 @@ namespace Minio
                 throw new InvalidEndpointException(Endpoint, "Invalid scheme detected in endpoint.");
             }
             string amzHost = uri.Host;
-            if ((amzHost.EndsWith(".amazonaws.com", StringComparison.CurrentCultureIgnoreCase))
-                 && !(amzHost.Equals("s3.amazonaws.com", StringComparison.CurrentCultureIgnoreCase)))
+            if ((utils.CaseInsensitiveContains(amzHost,".amazonaws.com"))
+                 && !s3utils.IsAmazonEndPoint(uri.Host))
             {
                 throw new InvalidEndpointException(amzHost, "For Amazon S3, host should be \'s3.amazonaws.com\' in endpoint.");
             }
         }
-
+       
         /// <summary>
         /// Validate Url endpoint 
         /// </summary>
         /// <param name="endpoint"></param>
         /// <returns>true/false</returns>
-        private bool isValidEndpoint(string endpoint)
+        public static bool isValidEndpoint(string endpoint)
         {
             // endpoint may be a hostname
             // refer https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_host_names
@@ -139,7 +140,7 @@ namespace Minio
 
             return true;
         }
-
+      
     }
 
 }

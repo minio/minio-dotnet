@@ -80,7 +80,7 @@ namespace Minio.Examples
             accessKey = Environment.GetEnvironmentVariable("MY_AWS_ACCESS_KEY");
             secretKey = Environment.GetEnvironmentVariable("MY_AWS_SECRET_KEY");
             // WithSSL() enables SSL support in Minio client
-            var minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey);
+            var minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey).WithSSL();
 
             try
             {

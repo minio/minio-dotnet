@@ -245,8 +245,8 @@ namespace Minio
 
             // This is the actual url pointed to for all HTTP requests
             this.Endpoint = string.Format("{0}://{1}", scheme, host);
-            this.uri = TryCreateUri(this.Endpoint);
-            _validateEndpoint();
+            this.uri = RequestUtil.TryCreateUri(this.BaseUrl,this.Secure);
+            RequestUtil.ValidateEndpoint(this.uri,this.Endpoint);
 
             // Initialize a new REST client. This uri will be modified if region specific endpoint/virtual style request
             // is decided upon while constructing a request for Amazon.
@@ -256,6 +256,7 @@ namespace Minio
             authenticator = new V4Authenticator(this.AccessKey, this.SecretKey);
             restClient.Authenticator = authenticator;
         }
+        /*
         /// <summary>
         /// This method initializes a new RESTClient. The host URI for Amazon is set to virtual hosted style
         /// if usePathStyle is false. Otherwise path style URL is constructed.
@@ -382,6 +383,7 @@ namespace Minio
 
             return true;
         }
+        */
 
         /// <summary>
         ///Sets app version and name. Used by RestSharp for constructing User-Agent header in all HTTP requests
