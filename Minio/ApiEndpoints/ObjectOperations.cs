@@ -424,6 +424,11 @@ namespace Minio
             {
                 resource += "?uploadId=" + uploadId + "&partNumber=" + partNumber;
             }
+            if (string.IsNullOrWhiteSpace(contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+
             var request = await this.CreateRequest(Method.PUT, bucketName,
                                                      objectName: objectName,
                                                      contentType: contentType,

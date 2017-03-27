@@ -38,7 +38,7 @@ namespace Minio.Tests
             var minio = new MinioClient(ConfigurationManager.AppSettings["Endpoint"],
                                    ConfigurationManager.AppSettings["AccessKey"],
                                    ConfigurationManager.AppSettings["SecretKey"]);
-
+            
         }
 
         private TestContext testContextInstance;

@@ -20,6 +20,7 @@ using System.Xml.Serialization;
 namespace Minio.DataModel
 {
     [Serializable]
+    [XmlRoot(ElementName = "CreateBucketConfiguration", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
     public class CreateBucketConfiguration
     {
         public CreateBucketConfiguration(string location=null)

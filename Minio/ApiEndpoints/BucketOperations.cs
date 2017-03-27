@@ -66,20 +66,21 @@ namespace Minio
         /// <param name="bucketName">Name of the new bucket</param>
         public async Task MakeBucketAsync(string bucketName, string location = "us-east-1")
         {
+            
             // Set Target URL
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
             SetTargetURL(requestUrl);
-            // Initialize a new client
-            //PrepareClient();
-
+           
             var request = new RestRequest("/" + bucketName, Method.PUT);
+
             // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
             if (location != "us-east-1")
             {
                 CreateBucketConfiguration config = new CreateBucketConfiguration(location);
-                request.AddBody(config);
+             
+                request.AddParameter("text/xml", config, RestSharp.ParameterType.RequestBody);
             }
-
+ 
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
 
         }
@@ -115,7 +116,7 @@ namespace Minio
         /// <param name="bucketName">Name of bucket to remove</param>
         public async Task RemoveBucketAsync(string bucketName)
         {
-            var request = await this.CreateRequest(Method.DELETE, bucketName, resourcePath: "/");
+            var request = await this.CreateRequest(Method.DELETE, bucketName, resourcePath:null);
 
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
 

@@ -16,13 +16,15 @@
 using System;
 using System.Net;
 using System.IO;
+using System.Net.Sockets;
+using System.Linq;
 
 namespace Minio.Helper
 {
-    class s3utils
+    public class s3utils
     {
 
-        internal static bool IsAmazonEndPoint(string endpoint)
+        public static bool IsAmazonEndPoint(string endpoint)
         {
             if (IsAmazonChinaEndPoint(endpoint))
             {
@@ -36,13 +38,13 @@ namespace Minio.Helper
         // the China (Beijing) Region. Customers with existing AWS credentials
         // will not be able to access resources in the new Region, and vice versa.
         // For more info https://aws.amazon.com/about-aws/whats-new/2013/12/18/announcing-the-aws-china-beijing-region/
-        internal static bool IsAmazonChinaEndPoint(string endpoint)
+        public static bool IsAmazonChinaEndPoint(string endpoint)
         {
 
             return endpoint == "s3.cn-north-1.amazonaws.com.cn";
         }
         // IsGoogleEndpoint - Match if it is exactly Google cloud storage endpoint.
-        internal static bool IsGoogleEndPoint(string endpoint)
+        public static bool IsGoogleEndPoint(string endpoint)
         {
             return endpoint == "storage.googleapis.com";
         }
@@ -51,7 +53,7 @@ namespace Minio.Helper
         // IsVirtualHostSupported - verifies if bucketName can be part of
         // virtual host. Currently only Amazon S3 and Google Cloud Storage
         // would support this.
-        internal static bool IsVirtualHostSupported(Uri endpointURL,string bucketName)
+        public static bool IsVirtualHostSupported(Uri endpointURL,string bucketName)
         {
             if (endpointURL == null)
             {
@@ -82,7 +84,7 @@ namespace Minio.Helper
         }
 
         // IsValidDomain validates if input string is a valid domain name.
-        internal static bool IsValidDomain(string host)
+        public static bool IsValidDomain(string host)
         {
             // See RFC 1035, RFC 3696.
             host = host.Trim();
@@ -105,24 +107,26 @@ namespace Minio.Helper
             {
                 return false;
 	        }
-            // All non alphanumeric characters are invalid.
-            char[] nonAlphas = "`~!@#$%^&*()+={}[]|\\\"';:><?/'".ToCharArray();
-
-            if (host.IndexOfAny(nonAlphas) > 0)
-            {
-                return false;
-	        }
+            return Uri.CheckHostName(host) != UriHostNameType.Unknown;
             // No need to regexp match, since the list is non-exhaustive.
             // We let it valid and fail later.
-            return true;
         }
 
         // IsValidIP parses input string for ip address validity.
-        internal static bool IsValidIP(string ip) {
-            IPAddress result = null;
-            return
-                !String.IsNullOrEmpty(ip) &&
-                IPAddress.TryParse(ip, out result);
+        public static bool IsValidIP(string ip) {
+            if (String.IsNullOrEmpty(ip))
+                return false;
+          
+            string[] splitValues = ip.Split('.');
+            if (splitValues.Length != 4)
+            {
+                return false;
+            }
+
+            byte tempForParsing;
+
+            return splitValues.All(r => byte.TryParse(r, out tempForParsing));
+           
         }
      
     }
