@@ -29,7 +29,7 @@ namespace Minio.DataModel
  */
     public class CopyConditions
     {
-        private Dictionary<string, string> copyConditions;
+        private Dictionary<string, string> copyConditions = new Dictionary<string, string>();
 
         /**
          * Set modified condition, copy object modified since given time.
@@ -44,7 +44,7 @@ namespace Minio.DataModel
             {
                 throw new ArgumentException("Date cannot be empty");
             }
-            copyConditions["x-amz-copy-source-if-modified-since"] = date.ToUniversalTime().ToString("r");
+            copyConditions.Add("x-amz-copy-source-if-modified-since", date.ToUniversalTime().ToString("r"));
         }
 
         /**
@@ -60,7 +60,7 @@ namespace Minio.DataModel
             {
                 throw new ArgumentException("Date cannot be empty");
             }
-            copyConditions["x-amz-copy-source-if-unmodified-since"] = date.ToUniversalTime().ToString("r");
+            copyConditions.Add("x-amz-copy-source-if-unmodified-since", date.ToUniversalTime().ToString("r"));
         }
         /**
          * Set matching ETag condition, copy object which matches
@@ -74,7 +74,7 @@ namespace Minio.DataModel
             {
                 throw new ArgumentException("ETag cannot be empty");
             }
-            copyConditions["x-amz-copy-source-if-match"] =  etag;
+            copyConditions.Add("x-amz-copy-source-if-match",etag);
         }
 
         /**
@@ -90,7 +90,7 @@ namespace Minio.DataModel
             {
                 throw new ArgumentException("ETag cannot be empty");
             }
-            copyConditions["x-amz-copy-source-if-none-match"] =  etag;
+            copyConditions.Add("x-amz-copy-source-if-none-match",etag);
         }
 
         /**

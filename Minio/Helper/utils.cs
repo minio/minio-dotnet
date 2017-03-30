@@ -20,10 +20,12 @@ using System.Text.RegularExpressions;
 using Minio.Exceptions;
 using System.IO;
 using Microsoft.Win32;
+using Minio.Helper;
+using System.Dynamic;
 
 namespace Minio
 {
-    class utils
+    public class utils
     {
         // We support '.' with bucket names but we fallback to using path
         // style requests instead for such buckets.
@@ -37,7 +39,7 @@ namespace Minio
         ///  - http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html
         /// </summary>
         /// <param name="bucketName">Bucket to test existence of</param>
-        internal static void validateBucketName(string bucketName)
+        public static void validateBucketName(string bucketName)
         {
            if (bucketName.Trim() == "")
            {
@@ -70,7 +72,7 @@ namespace Minio
         }
         // isValidObjectName - verify object name in accordance with
         //   - http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
-        internal static void validateObjectName(String objectName)
+        public static void validateObjectName(String objectName)
         {
            if (objectName.Trim() == "")
             {
@@ -86,7 +88,7 @@ namespace Minio
 
             return;
         }
-        internal static void validateObjectPrefix(string objectPrefix)
+        public static void validateObjectPrefix(string objectPrefix)
         {
             if (objectPrefix.Length > 1024)
             {
@@ -100,11 +102,11 @@ namespace Minio
             return Uri.EscapeDataString(input).Replace("%2F", "/");
         }
 
-        internal static bool isAnonymousClient(string accessKey, string secretKey)
+        public static bool isAnonymousClient(string accessKey, string secretKey)
         {
             return (secretKey == "" || accessKey == "");
         }
-        internal static void ValidateFile(string filePath,string contentType=null)
+        public static void ValidateFile(string filePath,string contentType=null)
         {
             if (filePath == null || filePath == "")
             {
@@ -128,7 +130,7 @@ namespace Minio
             }
 
         }
-        internal static string GetContentType(string fileName)
+        public static string GetContentType(string fileName)
         {
             // set a default mimetype if not found.
             string contentType = "application/octet-stream";
@@ -158,7 +160,7 @@ namespace Minio
             File.Move(sourceFileName, destFileName);
         }
         
-        internal static bool isSupersetOf(IList<string> l1, IList<string> l2)
+        public static bool isSupersetOf(IList<string> l1, IList<string> l2)
         {
             if (l2 == null)
             {
@@ -170,10 +172,37 @@ namespace Minio
             }
             return (!l2.Except(l1).Any());
         }
-        internal static bool CaseInsensitiveContains(string text, string value,
+        public static bool CaseInsensitiveContains(string text, string value,
     StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
         {
             return text.IndexOf(value, stringComparison) >= 0;
+        }
+
+        /// <summary>
+        /// Calculate part size and number of parts required.
+        /// </summary>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        public static Object CalculateMultiPartSize(long size)
+        {
+            // make sure to have enough buffer for last part, use 9999 instead of 10000
+            if (size == -1)
+            {
+                size = Constants.MaximumStreamObjectSize;
+            }
+            if (size > Constants.MaxMultipartPutObjectSize)
+            {
+                throw new EntityTooLargeException("Your proposed upload size " + size + " exceeds the maximum allowed object size " + Constants.MaxMultipartPutObjectSize);
+            }
+            double partSize = (double)Math.Ceiling((decimal)size / Constants.MaxParts);
+            partSize = (double)Math.Ceiling((decimal)partSize / Constants.MinimumPartSize) * Constants.MinimumPartSize;
+            double partCount = (double)Math.Ceiling(size / partSize);
+            double lastPartSize = size - (partCount - 1) * partSize;
+            dynamic obj = new ExpandoObject();
+            obj.partSize = partSize;
+            obj.partCount = partCount;
+            obj.lastPartSize = lastPartSize;
+            return obj;
         }
     }
 }

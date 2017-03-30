@@ -20,8 +20,14 @@ namespace Minio.DataModel
 {
     internal class ConditionKeyMap:Dictionary<string,ISet<string>>
     {
-        public ConditionKeyMap(ConditionKeyMap map=null):base(map)
+        public ConditionKeyMap() : base() {}
+        public ConditionKeyMap(ConditionKeyMap map = null) : base(map) {}
+
+        public ConditionKeyMap(string key, string value)
         {
+            ISet<string> values = new HashSet<string>();
+            values.Add(value);
+            this.Add(key, values);
         }
         public ConditionKeyMap(string key, ISet<string> value)
         {

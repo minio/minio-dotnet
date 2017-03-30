@@ -256,134 +256,6 @@ namespace Minio
             authenticator = new V4Authenticator(this.AccessKey, this.SecretKey);
             restClient.Authenticator = authenticator;
         }
-        /*
-        /// <summary>
-        /// This method initializes a new RESTClient. The host URI for Amazon is set to virtual hosted style
-        /// if usePathStyle is false. Otherwise path style URL is constructed.
-        /// </summary>
-        /// <param name="bucketName">bucketName</param>
-        /// <param name="region">Region bucket resides in.</param>
-        /// <param name="usePathStyle">bool controlling if pathstyle URL needs to be constructed or virtual hosted style URL</param>
-        internal void PrepareClient(string bucketName = null, string region = null, bool usePathStyle = true)
-        {
-            if (string.IsNullOrEmpty(this.BaseUrl))
-            {
-                throw new InvalidEndpointException("Endpoint cannot be empty.");
-            }
-
-            string host = this.BaseUrl;
-
-            // For Amazon S3 endpoint, try to fetch location based endpoint.
-            if (s3utils.IsAmazonEndPoint(this.BaseUrl))
-            {
-                // Fetch new host based on the bucket location.
-                host = AWSS3Endpoints.Instance.endpoint(region);
-                if (!usePathStyle)
-                {
-                    host = utils.UrlEncode(bucketName) + "." + utils.UrlEncode(host) + "/";
-                }
-            }
-            var scheme = Secure ? utils.UrlEncode("https") : utils.UrlEncode("http"); 
-
-            // This is the actual url pointed to for all HTTP requests
-            this.Endpoint = string.Format("{0}://{1}", scheme, host);
-            this.uri = TryCreateUri(this.Endpoint);  
-            _validateEndpoint();
-
-            // Initialize a new REST client. This uri will be modified if region specific endpoint/virtual style request
-            // is decided upon while constructing a request for Amazon.
-            restClient = new RestSharp.RestClient(this.uri);
-            restClient.UserAgent = this.FullUserAgent;
-
-            authenticator = new V4Authenticator(this.AccessKey, this.SecretKey);
-            restClient.Authenticator = authenticator;
-        }
-
-        private Uri TryCreateUri(string endpoint)
-        {
-            Uri uri = null;
-            try
-            {
-                uri =  new Uri(endpoint);
-            }
-            catch( UriFormatException e)
-            {
-                throw new InvalidEndpointException(e.Message);
-            }
-            return uri;
-        }
-
-        /// <summary>
-        /// Validates URI to check if it is well formed. Otherwise cry foul.
-        /// </summary>
-        private void _validateEndpoint()
-        {
-            if (string.IsNullOrEmpty(this.BaseUrl))
-            {
-                throw new InvalidEndpointException("Endpoint cannot be empty.");
-            }
-            string host = this.BaseUrl;
-
-            if (!this.isValidEndpoint(this.uri.Host))
-            {
-                throw new InvalidEndpointException(this.Endpoint, "Invalid endpoint.");
-            }
-            if (!this.uri.AbsolutePath.Equals("/", StringComparison.CurrentCultureIgnoreCase))
-            {
-                throw new InvalidEndpointException(this.Endpoint, "No path allowed in endpoint.");
-            }
-
-            if (!string.IsNullOrEmpty(this.uri.Query))
-            {
-                throw new InvalidEndpointException(this.Endpoint, "No query parameter allowed in endpoint.");
-            }
-            if ((!this.uri.Scheme.ToLowerInvariant().Equals("https")) && (!this.uri.Scheme.ToLowerInvariant().Equals("http")))
-           //kp if (!(this.uri.Scheme.Equals(Uri.UriSchemeHttp) || this.uri.Scheme.Equals(Uri.UriSchemeHttps)))
-            {
-                throw new InvalidEndpointException(this.Endpoint, "Invalid scheme detected in endpoint.");
-            }
-            string amzHost = this.BaseUrl;
-            if ((amzHost.EndsWith(".amazonaws.com", StringComparison.CurrentCultureIgnoreCase))
-                 && !(amzHost.Equals("s3.amazonaws.com", StringComparison.CurrentCultureIgnoreCase)))
-            {
-                throw new InvalidEndpointException(amzHost, "For Amazon S3, host should be \'s3.amazonaws.com\' in endpoint.");
-            }
-        }
-
-        /// <summary>
-        /// Validate Url endpoint 
-        /// </summary>
-        /// <param name="endpoint"></param>
-        /// <returns>true/false</returns>
-        private bool isValidEndpoint(string endpoint)
-        {
-            // endpoint may be a hostname
-            // refer https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_host_names
-            // why checks are as shown below.
-            if (endpoint.Length < 1 || endpoint.Length > 253)
-            {
-                return false;
-            }
-
-            foreach (var label in endpoint.Split('.'))
-            {
-                if (label.Length < 1 || label.Length > 63)
-                {
-                    return false;
-                }
-
-                Regex validLabel = new Regex("^[a-zA-Z0-9][a-zA-Z0-9-]*");
-                Regex validEndpoint = new Regex(".*[a-zA-Z0-9]$");
-
-                if (!(validLabel.IsMatch(label) && validEndpoint.IsMatch(endpoint)))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-        */
 
         /// <summary>
         ///Sets app version and name. Used by RestSharp for constructing User-Agent header in all HTTP requests
@@ -536,6 +408,8 @@ namespace Minio
                     if (HttpStatusCode.NotFound.Equals(response.StatusCode))
                     {
                         int pathLength = response.Request.Resource.Split('/').Count();
+                        bool isAWS = response.ResponseUri.Host.EndsWith("s3.amazonaws.com");
+                        bool isVirtual = isAWS  && !(response.ResponseUri.Host.StartsWith("s3.amazonaws.com"));
                         if (pathLength > 1)
                         {
                             errorResponse.Code = "NoSuchKey";
@@ -552,10 +426,20 @@ namespace Minio
                         }
                         else if (pathLength == 1)
                         {
-                            errorResponse.Code = "NoSuchBucket";
-                            var bucketName = response.Request.Resource.Split('/')[0];
-                            BucketRegionCache.Instance.Remove(bucketName);
-                            e = new BucketNotFoundException(bucketName, "Not found.");
+                            var resource = response.Request.Resource.Split('/')[0];
+
+                            if (isAWS && isVirtual)
+                            {
+                                errorResponse.Code = "NoSuchKey";
+                                e = new ObjectNotFoundException(resource, "Not found.");
+                            }
+                            else
+                            {
+                                errorResponse.Code = "NoSuchBucket";
+                                BucketRegionCache.Instance.Remove(resource);
+                                e = new BucketNotFoundException(resource, "Not found.");
+                            }
+                           
                         }
                         else
                         {

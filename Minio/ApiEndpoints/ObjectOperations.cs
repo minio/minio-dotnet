@@ -177,7 +177,7 @@ namespace Minio
             }
             // For all sizes greater than 5MiB do multipart.
 
-            dynamic multiPartInfo = CalculateMultiPartSize(size);
+            dynamic multiPartInfo = utils.CalculateMultiPartSize(size);
             double partSize = multiPartInfo.partSize;
             double partCount = multiPartInfo.partCount;
             double lastPartSize = multiPartInfo.lastPartSize;
@@ -282,33 +282,6 @@ namespace Minio
 
         }
 
-        /// <summary>
-        /// Calculate part size and number of parts required.
-        /// </summary>
-        /// <param name="size"></param>
-        /// <returns></returns>
-        private Object CalculateMultiPartSize(long size)
-        {
-            // make sure to have enough buffer for last part, use 9999 instead of 10000
-            if (size == -1)
-            {
-                size = Constants.MaximumStreamObjectSize;
-            }
-            if (size > Constants.MaxMultipartPutObjectSize)
-            {
-                throw new EntityTooLargeException("Your proposed upload size " + size + " exceeds the maximum allowed object size " + Constants.MaxMultipartPutObjectSize);
-            }
-            double partSize = (double)Math.Ceiling((decimal)size / Constants.MaxParts);
-            partSize = (double)Math.Ceiling((decimal)partSize / Constants.MinimumPartSize) * Constants.MinimumPartSize;
-            double partCount = (double)Math.Ceiling(size / partSize);
-            double lastPartSize = size - (partCount - 1) * partSize;
-            return new
-            {
-                partSize = partSize,
-                partCount = partCount,
-                lastPartSize = lastPartSize
-            };
-        }
 
         /// <summary>
         /// Returns an async observable of parts corresponding to a uploadId for a specific bucket and objectName   
@@ -858,7 +831,7 @@ namespace Minio
             policy.SetPolicy(policyBase64);
             policy.SetSignature(signature);
 
-            return new Tuple<string,Dictionary<string,string>>(this.restClient.BaseUrl.Host, policy.GetFormData());
+            return new Tuple<string,Dictionary<string,string>>(this.restClient.BaseUrl.AbsoluteUri, policy.GetFormData());
         }
     }
 }

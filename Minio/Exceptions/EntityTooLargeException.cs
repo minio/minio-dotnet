@@ -16,7 +16,7 @@
 
 namespace Minio.Exceptions
 {
-    class EntityTooLargeException : MinioException
+    public class EntityTooLargeException : MinioException
     {
 
         public EntityTooLargeException(string message) : base(message)

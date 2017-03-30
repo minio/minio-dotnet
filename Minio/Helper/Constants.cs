@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace Minio.Helper
 {
-   static class Constants
+   public static class Constants
     {
         // Maximum number of parts.
         public static int MaxParts = 10000;

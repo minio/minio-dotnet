@@ -43,8 +43,7 @@ namespace Minio.Tests
 
                         };
 
-            object[][] Jray = new object[][] { parameterValuesArray, parameterValuesArray1 };
-            object[][] jointList =
+            object[][] testCases =
             {
                 new Object[] {
                           new Object[]{ "s3.cn-north-1.amazonaws.com.cn", true},
@@ -87,9 +86,9 @@ namespace Minio.Tests
                           new object[] { "",new InvalidEndpointException("Endpoint:  does not follow ip address or domain name standards."),false}
                 },
             };
-            for (int i = 0; i < jointList.Length; i++)
+            for (int i = 0; i < testCases.Length; i++)
             {
-                Object[] testdata = jointList[i];
+                Object[] testdata = testCases[i];
                 Object[] testCase = (Object[])testdata[0];
                 Object[] expectedValues = (Object[])testdata[1];
                 try

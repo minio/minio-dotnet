@@ -72,13 +72,13 @@ namespace Minio
             SetTargetURL(requestUrl);
            
             var request = new RestRequest("/" + bucketName, Method.PUT);
-
+            request.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
+            request.RequestFormat = DataFormat.Xml;
             // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
             if (location != "us-east-1")
             {
                 CreateBucketConfiguration config = new CreateBucketConfiguration(location);
-             
-                request.AddParameter("text/xml", config, RestSharp.ParameterType.RequestBody);
+                request.AddBody(config);
             }
  
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);

@@ -156,13 +156,7 @@ namespace Minio.Tests
             new MinioClient("s3-us-west-1.amazonaws.com");
         }
 
-        //[TestMethod]
-        //[ExpectedException(typeof(ArgumentException))]
-        //public void TestPutObject()
-        //{
-        //    var client = new MinioClient("localhost", 9000,);
-        //    await client.PutObjectAsync("bucket-name", "object-name", null, 5 * 1024L * 1024L * 11000, null);
-        //}
+       
     }
 }
 

@@ -18,7 +18,7 @@ using RestSharp;
 
 namespace Minio.Exceptions
 {
-    class ErrorResponseException : MinioException
+    public class ErrorResponseException : MinioException
     {
         internal string message { get; private set; }
         public IRestResponse response { get; private set; }

@@ -20,6 +20,8 @@ namespace Minio.DataModel
 {
     internal class ConditionMap: Dictionary<string,ConditionKeyMap>
     {
+        public ConditionMap() : base() { }
+        public ConditionMap(ConditionMap map = null) : base(map) { }
         public ConditionMap(string key=null,ConditionKeyMap value=null): base()
         {
             if (key != null && value != null)

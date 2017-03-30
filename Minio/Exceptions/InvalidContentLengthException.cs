@@ -16,7 +16,7 @@
 
 namespace Minio.Exceptions
 {
-    class InvalidContentLengthException :MinioException
+    public class InvalidContentLengthException :MinioException
     {
         private string bucketName;
         private string objectName;
