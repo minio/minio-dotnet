@@ -143,6 +143,9 @@
     <Compile Include="..\Minio\DataModel\Policy\ConditionKeyMap.cs">
       <Link>DataModel\Policy\ConditionKeyMap.cs</Link>
     </Compile>
+    <Compile Include="..\Minio\DataModel\Policy\ConditionKeyMapConverter.cs">
+      <Link>DataModel\Policy\ConditionKeyMapConverter.cs</Link>
+    </Compile>
     <Compile Include="..\Minio\DataModel\Policy\ConditionMap.cs">
       <Link>DataModel\Policy\ConditionMap.cs</Link>
     </Compile>

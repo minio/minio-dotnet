@@ -21,7 +21,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Minio.DataModel.Policy
 {
-    class ResourceJsonConverter : JsonConverter
+    public class ResourceJsonConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {

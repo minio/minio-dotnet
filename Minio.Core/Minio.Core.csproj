@@ -32,6 +32,7 @@
     <Compile Include="..\Minio\DataModel\Policy\ActionJsonConverter.cs" Link="DataModel\Policy\ActionJsonConverter.cs" />
     <Compile Include="..\Minio\DataModel\Policy\BucketPolicy.cs" Link="DataModel\Policy\BucketPolicy.cs" />
     <Compile Include="..\Minio\DataModel\Policy\ConditionKeyMap.cs" Link="DataModel\Policy\ConditionKeyMap.cs" />
+    <Compile Include="..\Minio\DataModel\Policy\ConditionKeyMapConverter.cs" Link="DataModel\Policy\ConditionKeyMapConverter.cs" />
     <Compile Include="..\Minio\DataModel\Policy\ConditionMap.cs" Link="DataModel\Policy\ConditionMap.cs" />
     <Compile Include="..\Minio\DataModel\Policy\PolicyConstants.cs" Link="DataModel\Policy\PolicyConstants.cs" />
     <Compile Include="..\Minio\DataModel\Policy\PolicyType.cs" Link="DataModel\Policy\PolicyType.cs" />
@@ -78,7 +79,6 @@
 
   <ItemGroup>
     <Folder Include="ApiEndpoints\" />
-    <Folder Include="DataModel\Policy\" />
     <Folder Include="Helper\" />
     <Folder Include="Exceptions\" />
   </ItemGroup>

@@ -20,8 +20,8 @@ namespace Minio.Exceptions
 {
     public class ErrorResponseException : MinioException
     {
-        internal string message { get; private set; }
-        public IRestResponse response { get; private set; }
+        private string ErrorCode;
+
         public ErrorResponseException(IRestResponse response)
             : base($"Minio API responded with status code={response.StatusCode}, response={response.ErrorMessage}, content={response.Content}")
         {
@@ -31,13 +31,11 @@ namespace Minio.Exceptions
         {
 
         }
-        public ErrorResponseException(string message) : base($"Minio API responded with message={message}")
+        public ErrorResponseException(string message,string errorcode) : base($"Minio API responded with message={message}")
         {
             this.message = message;
+            this.ErrorCode = errorcode;
         }
-
-        public ErrorResponse Response { get; set; }
-        public string XmlError { get; set; }
 
         public override string ToString()
         {

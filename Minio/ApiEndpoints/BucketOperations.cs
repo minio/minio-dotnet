@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Minio.DataModel;
+using Minio.DataModel.Policy;
 using RestSharp;
 using System.IO;
 using System.Linq;
@@ -27,6 +28,7 @@ using System.Xml.Serialization;
 using Minio.Exceptions;
 using System.Globalization;
 using System.Reactive.Linq;
+using System.Threading;
 
 namespace Minio
 {
@@ -38,7 +40,7 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to list objects from</param>
         /// <returns>An iterator lazily populated with objects</returns>
-        public async Task<ListAllMyBucketsResult> ListBucketsAsync()
+        public async Task<ListAllMyBucketsResult> ListBucketsAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             // Set Target URL
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
@@ -47,9 +49,9 @@ namespace Minio
             //PrepareClient();
 
             var request = new RestRequest("/", Method.GET);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
 
-            ListAllMyBucketsResult bucketList = new ListAllMyBucketsResult ();
+            ListAllMyBucketsResult bucketList = new ListAllMyBucketsResult();
             if (HttpStatusCode.OK.Equals(response.StatusCode))
             {
                 var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
@@ -64,13 +66,13 @@ namespace Minio
         /// Create a private bucket with the given name.
         /// </summary>
         /// <param name="bucketName">Name of the new bucket</param>
-        public async Task MakeBucketAsync(string bucketName, string location = "us-east-1")
+        public async Task MakeBucketAsync(string bucketName, string location = "us-east-1", CancellationToken cancellationToken = default(CancellationToken))
         {
-            
+
             // Set Target URL
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
             SetTargetURL(requestUrl);
-           
+
             var request = new RestRequest("/" + bucketName, Method.PUT);
             request.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
             request.RequestFormat = DataFormat.Xml;
@@ -80,8 +82,8 @@ namespace Minio
                 CreateBucketConfiguration config = new CreateBucketConfiguration(location);
                 request.AddBody(config);
             }
- 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
+
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
 
         }
 
@@ -91,13 +93,13 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to test existence of</param>
         /// <returns>true if exists and user has access</returns>
-        public async Task<bool> BucketExistsAsync(string bucketName)
+        public async Task<bool> BucketExistsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
             try
             {
                 var request = await this.CreateRequest(Method.HEAD,
                                                    bucketName);
-                var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
+                var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -114,11 +116,11 @@ namespace Minio
         /// Remove a bucket
         /// </summary>
         /// <param name="bucketName">Name of bucket to remove</param>
-        public async Task RemoveBucketAsync(string bucketName)
+        public async Task RemoveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var request = await this.CreateRequest(Method.DELETE, bucketName, resourcePath:null);
+            var request = await this.CreateRequest(Method.DELETE, bucketName, resourcePath: null);
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
 
         }
 
@@ -129,7 +131,7 @@ namespace Minio
         /// <param name="prefix">Filters all objects not beginning with a given prefix</param>
         /// <param name="recursive">Set to false to emulate a directory</param>
         /// <returns>An observable of items that client can subscribe to</returns>
-        public IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true)
+        public IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Observable.Create<Item>(
               async obs =>
@@ -138,7 +140,7 @@ namespace Minio
                   string marker = null;
                   while (isRunning)
                   {
-                      Tuple<ListBucketResult, List<Item>> result = await GetObjectListAsync(bucketName, prefix, recursive, marker);
+                      Tuple<ListBucketResult, List<Item>> result = await GetObjectListAsync(bucketName, prefix, recursive, marker, cancellationToken);
                       Item lastItem = null;
                       foreach (Item item in result.Item2)
                       {
@@ -166,7 +168,7 @@ namespace Minio
         /// <param name="recursive">Set to false to emulate a directory</param>
         /// <param name="marker">marks location in the iterator sequence</param>
         /// <returns>A tuple populated with objects</returns>
-        private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix, bool recursive, string marker)
+        private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix, bool recursive, string marker, CancellationToken cancellationToken = default(CancellationToken))
         {
             var queries = new List<string>();
             if (!recursive)
@@ -196,7 +198,7 @@ namespace Minio
 
 
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
 
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
@@ -231,7 +233,7 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket name.</param>
         /// <returns>Returns the Bucket policy</returns>
-        private async Task<BucketPolicy> GetPolicyAsync(string bucketName)
+        private async Task<BucketPolicy> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
             BucketPolicy policy = null;
             IRestResponse response = null;
@@ -243,11 +245,11 @@ namespace Minio
                                  resourcePath: "?policy");
             try
             {
-                response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
+                response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
                 var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
 
                 var stream = new MemoryStream(contentBytes);
-                policy = BucketPolicy.parseJson(stream, bucketName);
+                policy = BucketPolicy.ParseJson(stream, bucketName);
 
             }
             catch (ErrorResponseException e)
@@ -275,10 +277,11 @@ namespace Minio
         /// <param name="bucketName">Bucket name.</param>
         /// <param name="objectPrefix">Name of the object prefix</param>
         /// <returns>Returns the PolicyType </returns>
-        public async Task<PolicyType> GetPolicyAsync(string bucketName, string objectPrefix = "")
+        public async Task<PolicyType> GetPolicyAsync(string bucketName, string objectPrefix = "", CancellationToken cancellationToken = default(CancellationToken))
         {
-            BucketPolicy policy = await GetPolicyAsync(bucketName);
-            return policy.getPolicy(objectPrefix);
+            BucketPolicy policy = await GetPolicyAsync(bucketName, cancellationToken);
+            Console.Out.WriteLine(policy.GetJson());
+            return policy.GetPolicy(objectPrefix);
         }
 
         /// <summary>
@@ -287,16 +290,16 @@ namespace Minio
         /// <param name="bucketName">Bucket Name.</param>
         /// <param name="policy">Valid Json policy object</param>
         /// <returns></returns>
-        private async Task setPolicyAsync(string bucketName, BucketPolicy policy)
+        private async Task setPolicyAsync(string bucketName, BucketPolicy policy, CancellationToken cancellationToken = default(CancellationToken))
         {
 
-            string policyJson = policy.getJson();
+            string policyJson = policy.GetJson();
             var request = await this.CreateRequest(Method.PUT, bucketName,
                                            resourcePath: "?policy",
                                            contentType: "application/json",
                                            body: policyJson);
 
-            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
+            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
         }
 
         /// <summary>
@@ -306,10 +309,10 @@ namespace Minio
         /// <param name="objectPrefix">Name of the object prefix.</param>
         /// <param name="policyType">Desired Policy type change </param>
         /// <returns></returns>
-        public async Task SetPolicyAsync(String bucketName, String objectPrefix, PolicyType policyType)
+        public async Task SetPolicyAsync(String bucketName, String objectPrefix, PolicyType policyType, CancellationToken cancellationToken = default(CancellationToken))
         {
             utils.validateObjectPrefix(objectPrefix);
-            BucketPolicy policy = await GetPolicyAsync(bucketName);
+            BucketPolicy policy = await GetPolicyAsync(bucketName, cancellationToken);
             if (policyType == PolicyType.NONE && policy.Statements() == null)
             {
                 // As the request is for removing policy and the bucket
@@ -317,9 +320,9 @@ namespace Minio
                 return;
             }
 
-            policy.setPolicy(policyType, objectPrefix);
+            policy.SetPolicy(policyType, objectPrefix);
 
-            await setPolicyAsync(bucketName, policy);
+            await setPolicyAsync(bucketName, policy, cancellationToken);
         }
     }
 }

@@ -32,7 +32,7 @@ namespace Minio.Examples
         private static int MB = 1024 * 1024;
 
         // Create a file of given size from random byte array
-        private static String CreateFile(int size) 
+        private static String CreateFile(int size)
         {
             String fileName = GetRandomName();
             byte[] data = new byte[size];
@@ -76,9 +76,7 @@ namespace Minio.Examples
             accessKey = "Q3AM3UQ867SPQQA43P2F";
             secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
 #endif
-            endPoint = Environment.GetEnvironmentVariable("AWS_ENDPOINT");
-            accessKey = Environment.GetEnvironmentVariable("MY_AWS_ACCESS_KEY");
-            secretKey = Environment.GetEnvironmentVariable("MY_AWS_SECRET_KEY");
+
             // WithSSL() enables SSL support in Minio client
             var minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey).WithSSL();
 
@@ -95,17 +93,19 @@ namespace Minio.Examples
                 // Set app Info 
                 minioClient.SetAppInfo("app-name", "app-version");
 
+                bucketName = "testminiopolicy";
                 // Set HTTP Tracing On
                 //minioClient.SetTraceOn();
 
                 // Set HTTP Tracing Off
                 // minioClient.SetTraceOff();
-                
+
                 // Check if bucket exists
                 Cases.BucketExists.Run(minioClient, bucketName).Wait();
 
                 // Create a new bucket
                 Cases.MakeBucket.Run(minioClient, bucketName).Wait();
+
                 Cases.MakeBucket.Run(minioClient, destBucketName).Wait();
 
 
@@ -149,13 +149,13 @@ namespace Minio.Examples
                 Cases.GetBucketPolicy.Run(minioClient, bucketName).Wait();
 
                 // Get the presigned url for a GET object request
-                Cases.PresignedGetObject.Run(minioClient,bucketName,objectName).Wait();
+                Cases.PresignedGetObject.Run(minioClient, bucketName, objectName).Wait();
 
                 // Get the presigned POST policy curl url
                 Cases.PresignedPostPolicy.Run(minioClient).Wait();
 
                 // Get the presigned url for a PUT object request
-                Cases.PresignedPutObject.Run(minioClient,bucketName,objectName).Wait();
+                Cases.PresignedPutObject.Run(minioClient, bucketName, objectName).Wait();
 
 
                 // Delete the object
@@ -171,7 +171,7 @@ namespace Minio.Examples
                 // Remove the binary files created for test
                 File.Delete(smallFileName);
                 File.Delete(bigFileName);
-                
+
                 Console.ReadLine();
             }
             catch (MinioException ex)

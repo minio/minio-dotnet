@@ -17,17 +17,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-using Minio.Policy;
-using Minio.DataModel.Policy;
 
-namespace Minio.DataModel
+namespace Minio.DataModel.Policy
 {
 
-    internal class Statement
+    public class Statement
     {
         [JsonProperty("Action")]
         [JsonConverter(typeof(SingleOrArrayConverter<string>))]
         public IList<string> actions { get;  set; }
+
         [JsonProperty("Condition")]
         public ConditionMap conditions { get;  set; }
 
@@ -49,7 +48,12 @@ namespace Minio.DataModel
          */
         public bool isValid(string bucketName)
         {
-            ISet<string> intersection = new HashSet<string>(this.actions);
+            ISet<string> intersection;
+            if (this.actions != null)
+                intersection = new HashSet<string>(this.actions);
+            else
+                intersection = new HashSet<string>();
+
             intersection.IntersectWith(PolicyConstants.VALID_ACTIONS());
             if (intersection.Count == 0)
             {
@@ -60,7 +64,7 @@ namespace Minio.DataModel
                 return false;
             }
 
-            IList<string> aws = this.principal.aws();
+            IList<string> aws = this.principal != null ? this.principal.aws() : null;
             if (aws == null || !aws.Contains("*"))
             {
                 return false;
@@ -68,6 +72,8 @@ namespace Minio.DataModel
 
             string bucketResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName;
 
+            if (this.resources is null)
+                return false;
             if (this.resources.Contains(bucketResource))
             {
                 return true;
@@ -80,6 +86,8 @@ namespace Minio.DataModel
 
             return true;
         }
+
+
 
         /**
          * Removes object actions for given object resource.

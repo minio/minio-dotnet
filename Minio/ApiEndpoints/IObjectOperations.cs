@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Minio.DataModel;
+using System.Threading;
 
 namespace Minio
 {
@@ -30,7 +31,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Name of object to retrieve</param>
         /// <param name="callback">A stream will be passed to the callback</param>
-        Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback);
+        Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Creates an object from file
@@ -39,7 +40,7 @@ namespace Minio
         /// <param name="objectName">Key of the new object</param>
         /// <param name="fileName">Path of file to upload</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
-        Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType);
+        Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType=null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Removes an object with given name in specific bucket
@@ -47,7 +48,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to list incomplete uploads from</param>
         /// <param name="objectName">Key of object to list incomplete uploads from</param>
         /// <returns></returns>
-        Task RemoveObjectAsync(string bucketName, string objectName);
+        Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Tests the object's existence and returns metadata about existing objects.
@@ -55,7 +56,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to test object in</param>
         /// <param name="objectName">Name of the object to stat</param>
         /// <returns>Facts about the object</returns>
-        Task<ObjectStat> StatObjectAsync(string bucketName, string objectName);
+        Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Lists all incomplete uploads in a given bucket and prefix recursively
@@ -64,14 +65,14 @@ namespace Minio
         /// <param name="prefix">prefix to list all incomplete uploads</param>
         /// <param name="recursive">option to list incomplete uploads recursively</param>
         /// <returns>A lazily populated list of incomplete uploads</returns>
-        IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix, bool recursive);
+        IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix, bool recursive, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Remove incomplete uploads from a given bucket and objectName
         /// </summary>
         /// <param name="bucketName">Bucket to remove incomplete uploads from</param>
         /// <param name="objectName">Key to remove incomplete uploads from</param>
-        Task RemoveIncompleteUploadAsync(string bucketName, string objectName);
+        Task RemoveIncompleteUploadAsync(string bucketName, string objectName,CancellationToken cancellationToken=default(CancellationToken));
 
         /// <summary>
         ///  Copy a source object into a new destination object.
@@ -83,9 +84,9 @@ namespace Minio
         /// <param name="copyConditions">optionally can take a key value CopyConditions as well for conditionally attempting copyObject.</param>
         /// <returns></returns>
 
-        Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null);
+        Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, CancellationToken cancellationToken = default(CancellationToken));
 
-        Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType = null);
+        Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
@@ -94,7 +95,7 @@ namespace Minio
         /// <param name="objectName">Name of object to retrieve</param>
         /// <param name="fileName">string with file path</param>
         /// <returns></returns>
-        Task GetObjectAsync(string bucketName, string objectName, string filePath);
+        Task GetObjectAsync(string bucketName, string objectName, string filePath, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Presigned Get url.
@@ -119,4 +120,4 @@ namespace Minio
         Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy);
 
     }
-}
+}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       

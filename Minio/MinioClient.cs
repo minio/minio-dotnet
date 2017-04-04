@@ -320,28 +320,13 @@ namespace Minio
             this.restClient.BaseUrl = uri;
         }
 
-        internal async Task<IRestResponse<T>> ExecuteTaskAsync<T>(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request) where T : new()
-        {
-            DateTime startTime = DateTime.Now;
-            TaskCompletionSource<IRestResponse<T>> tcs = new TaskCompletionSource<IRestResponse<T>>();
-            RestRequestAsyncHandle handle = this.restClient.ExecuteAsync<T>(
-                                            request, r =>
-                                            {
-                                                tcs.SetResult(r);
-
-                                            });
-            //var response = await this.restClient.ExecuteTaskAsync<T>(request, CancellationToken.None);
-            var response = await tcs.Task;
-            HandleIfErrorResponse(response, errorHandlers, startTime);
-            return response;
-        }
         /// <summary>
         /// Actual doer that executes the REST request to the server
         /// </summary>
         /// <param name="errorHandlers">List of handlers to override default handling</param>
         /// <param name="request">request</param>
         /// <returns>IRESTResponse</returns>
-        internal async Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request)
+        internal async Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request, CancellationToken cancellationToken=default(CancellationToken))
         {
             DateTime startTime = DateTime.Now;
             // Logs full url when HTTPtracing is enabled.
@@ -355,8 +340,9 @@ namespace Minio
                                             request, resp =>
                                             {
                                                 tcs.SetResult(resp);
-
                                             });
+            cancellationToken.ThrowIfCancellationRequested();
+
             IRestResponse response = await tcs.Task;
             HandleIfErrorResponse(response, errorHandlers, startTime);
             return response;
@@ -471,12 +457,15 @@ namespace Minio
 
             // Handle XML response for Bucket Policy not found case
             if (response.StatusCode.Equals(HttpStatusCode.NotFound) && response.Request.Resource.EndsWith("?policy")
-                && response.Request.Method.Equals(Method.GET) && errResponse.Code.Equals("NoSuchBucketPolicy"))
+                && response.Request.Method.Equals(Method.GET) && (errResponse.Code.Equals("NoSuchBucketPolicy")))
             {
-                ErrorResponseException ErrorException = new ErrorResponseException(errResponse.Message);
+                
+                ErrorResponseException ErrorException = new ErrorResponseException(errResponse.Message,errResponse.Code);
                 ErrorException.Response = errResponse;
                 ErrorException.XmlError = response.Content;
                 throw ErrorException;
+              
+             
             }
 
             MinioException MinioException = new MinioException(errResponse.Message);

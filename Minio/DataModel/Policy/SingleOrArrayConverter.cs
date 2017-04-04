@@ -22,7 +22,7 @@ using Newtonsoft.Json.Linq;
 namespace Minio.DataModel.Policy
 {
 
-    class SingleOrArrayConverter<T> : JsonConverter
+    public class SingleOrArrayConverter<T> : JsonConverter
         {
             public override bool CanConvert(Type objectType)
             {

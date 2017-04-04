@@ -32,7 +32,7 @@ namespace Minio.DataModel.Policy
             if (reader.TokenType == JsonToken.StartObject)
             {
                 Principal instance = (Principal)serializer.Deserialize(reader, typeof(Principal));
-                retVal =  instance ;
+                retVal = instance;
 
             }
             else if (reader.TokenType == JsonToken.String)

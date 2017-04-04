@@ -42,7 +42,7 @@ namespace Minio.Tests
                 {
                     Assert.AreEqual(ex.Message, expectedException.Message);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     Assert.Fail();
                 }
@@ -83,10 +83,15 @@ namespace Minio.Tests
             utils.validateObjectName(objName);
         }
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void TestEmptyFile()
         {
-            utils.ValidateFile("");
+            try
+            {
+                utils.ValidateFile("");
+            }
+            catch (ArgumentException)
+            {
+            }
         }
 
         [TestMethod]

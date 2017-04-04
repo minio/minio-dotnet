@@ -19,11 +19,13 @@ using Minio.Exceptions;
 using System.Text;
 using System.IO;
 using Minio.DataModel;
+using Minio.DataModel.Policy;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
 using System.Net.Http;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Minio.Functional.Tests
 
@@ -157,11 +159,13 @@ namespace Minio.Functional.Tests
                 PresignedGetObject_Test1(minioClient).Wait();
                 PresignedPutObject_Test1(minioClient).Wait();
 
+                //Test incomplete uploads
+                ListIncompleteUpload_Test1(minioClient).Wait();
+
                 END WORKING TESTS
 
                 */
-                MakeBucket_Test3(minioClient).Wait();
-
+                GetBucketPolicy_Test1(minioClient).Wait();
                 // TODO: 
                 //PresignedPostPolicy_Test1(minioClient);
                 //GetBucketPolicy_Test1(minioClient).Wait();
@@ -257,7 +261,7 @@ namespace Minio.Functional.Tests
 
                 }
             }
-            catch (MinioException ex)
+            catch (MinioException)
             {
                 Assert.Fail();
             }
@@ -288,7 +292,7 @@ namespace Minio.Functional.Tests
                     continue;
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Assert.Fail();
             }
@@ -370,7 +374,7 @@ namespace Minio.Functional.Tests
                                            size,
                                            contentType);
             } 
-            catch (UnexpectedShortReadException ex)
+            catch (UnexpectedShortReadException)
             { 
                 //PutObject failed as expected since the stream size is incorrect
                 //default to actual stream size and complete the upload
@@ -567,7 +571,7 @@ namespace Minio.Functional.Tests
                 await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName, conditions);
 
             }
-            catch (MinioException ex)
+            catch (MinioException)
             {
                 Assert.Fail();
             }
@@ -780,7 +784,7 @@ namespace Minio.Functional.Tests
             string bucketName = GetRandomName(15);
             await Setup_Test(minio, bucketName);
         
-            ListObjects_Test(minio, bucketName, null, 0).Wait();
+            await ListObjects_Test(minio, bucketName, null, 0);
            
             await TearDown(minio, bucketName);
              Console.Out.WriteLine("Test2: ListObjectsAsync Complete");
@@ -806,7 +810,6 @@ namespace Minio.Functional.Tests
 
                     });
 
-                //subscription.Dispose();
             }
             catch (Exception e)
             {
@@ -965,10 +968,50 @@ namespace Minio.Functional.Tests
             Console.Out.WriteLine("Test1: PresignedPostPolicyAsync Complete");
            
         }
-        private async static Task RemoveIncompleteUpload_Test1(MinioClient minio, string bucketName,string objectName)
+        private async static Task ListIncompleteUpload_Test1(MinioClient minio)
         {
+            Console.Out.WriteLine("Test1: ListIncompleteUploads");
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string fileName = CreateFile(10 * MB);
+            string contentType = "gzip";
+            await Setup_Test(minio, bucketName);
+            CancellationTokenSource cts = new CancellationTokenSource();
+            cts.CancelAfter(TimeSpan.FromSeconds(2));
+            try
+            {
+                byte[] bs = File.ReadAllBytes(fileName);
+                System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
+                long file_write_size = filestream.Length;
 
+                await minio.PutObjectAsync(bucketName,
+                                           objectName,
+                                           filestream,
+                                           filestream.Length,
+                                           contentType, cts.Token);
+
+            }
+            catch (OperationCanceledException)
+            {
+                IObservable<Upload> observable = minio.ListIncompleteUploads(bucketName);
+
+                IDisposable subscription = observable.Subscribe(
+                    item => Assert.AreEqual(item.Key, objectName),
+                    ex   => Assert.Fail(),
+                    ()   => Console.WriteLine("Listed the pending uploads to bucket " + bucketName));
+
+                await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[Bucket]  Exception: {0}", e);
+                Assert.Fail();
+            }
+            await TearDown(minio, bucketName);
+            File.Delete(fileName);
+            Console.Out.WriteLine("Test1: ListIncompleteUploads Complete");
         }
+
        
         // Set a policy for given bucket
         private async static Task SetBucketPolicy_Test1(MinioClient minio)

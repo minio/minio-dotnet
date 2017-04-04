@@ -19,10 +19,10 @@ using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 using Minio.DataModel.Policy;
 
-namespace Minio.DataModel
+namespace Minio.DataModel.Policy
 {
     [DataContract]
-    internal class Principal
+    public class Principal
     {
         [JsonProperty("AWS")]
         [JsonConverter(typeof(SingleOrArrayConverter<string>))]

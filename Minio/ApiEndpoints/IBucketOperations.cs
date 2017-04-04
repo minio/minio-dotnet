@@ -16,6 +16,8 @@
 using System;
 using System.Threading.Tasks;
 using Minio.DataModel;
+using Minio.DataModel.Policy;
+using System.Threading;
 
 namespace Minio
 {
@@ -25,27 +27,27 @@ namespace Minio
         /// Create a private bucket with the given name.
         /// </summary>
         /// <param name="bucketName">Name of the new bucket</param>
-        Task MakeBucketAsync(string bucketName, string location = "us-east-1");
+        Task MakeBucketAsync(string bucketName, string location = "us-east-1", CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// List all objects in a bucket
         /// </summary>
         /// <param name="bucketName">Bucket to list objects from</param>
         /// <returns>An iterator lazily populated with objects</returns>
-        Task<ListAllMyBucketsResult> ListBucketsAsync();
+        Task<ListAllMyBucketsResult> ListBucketsAsync(CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Returns true if the specified bucketName exists, otherwise returns false.
         /// </summary>
         /// <param name="bucketName">Bucket to test existence of</param>
         /// <returns>true if exists and user has access</returns>
-        Task<bool> BucketExistsAsync(string bucketName);
+        Task<bool> BucketExistsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Remove a bucket
         /// </summary>
         /// <param name="bucketName">Name of bucket to remove</param>
-        Task RemoveBucketAsync(string bucketName);
+        Task RemoveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
@@ -61,7 +63,7 @@ namespace Minio
         /// <param name="bucketName">Bucket name.</param>
         /// <param name="objectPrefix">Name of the object prefix</param>
         /// <returns>Returns the PolicyType </returns>
-        Task<PolicyType> GetPolicyAsync(String bucketName, String objectPrefix);
+        Task<PolicyType> GetPolicyAsync(String bucketName, String objectPrefix, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Sets the current bucket policy
@@ -70,7 +72,7 @@ namespace Minio
         /// <param name="objectPrefix">Name of the object prefix.</param>
         /// <param name="policyType">Desired Policy type change </param>
         /// <returns></returns>
-        Task SetPolicyAsync(String bucketName, String objectPrefix, PolicyType policyType);
+        Task SetPolicyAsync(String bucketName, String objectPrefix, PolicyType policyType, CancellationToken cancellationToken = default(CancellationToken));
 
     }
 }

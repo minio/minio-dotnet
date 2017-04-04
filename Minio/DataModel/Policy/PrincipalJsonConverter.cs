@@ -19,7 +19,7 @@ using Newtonsoft.Json;
 
 namespace Minio.DataModel.Policy
 {
-    class PrincipalJsonConverter : JsonConverter
+    public class PrincipalJsonConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {

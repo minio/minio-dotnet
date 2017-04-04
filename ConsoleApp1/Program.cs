@@ -19,10 +19,12 @@ namespace ConsoleApp1
             string accessKey = Environment.GetEnvironmentVariable("MY_AWS_ACCESS_KEY");
 
             string secretKey = Environment.GetEnvironmentVariable("MY_AWS_SECRET_KEY");
+            /*
             endPoint = "play.minio.io";
             accessKey = "Q3AM3UQ867SPQQA43P2F";
             secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
             ServicePointManager.Expect100Continue = true;
+            */
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                      | SecurityProtocolType.Tls11
                                      | SecurityProtocolType.Tls12;
@@ -33,7 +35,8 @@ namespace ConsoleApp1
             try
             {
                 // Assign parameters before starting the test 
-                string bucketName = "testminiopolicy";  //for eastern          
+                 string bucketName = "miniodotnetjlx2s";  //for eastern      
+                bucketName = "testminiopolicy";
                 string objectName = "testobject4000";
                 Program.Run(minioClient, bucketName, objectName).Wait();
                 Console.ReadLine();
@@ -43,15 +46,14 @@ namespace ConsoleApp1
             {
                 Console.Out.WriteLine(ex.Message);
             }
-
         }
 
         public static async Task Run(MinioClient client,string bucketName, string objectName)
         {
             try
             {
-                string existingObject = "copyrighted_copy.txt";
-
+                PolicyType policy = await client.GetPolicyAsync(bucketName);
+                /*
                 string presigned_get_url = await client.PresignedGetObjectAsync(bucketName, objectName, 1000);
                 Console.Out.WriteLine("PRESIGNED_GET_URL:" + presigned_get_url);
 
@@ -72,6 +74,7 @@ namespace ConsoleApp1
                 }
                 curlCommand = curlCommand + " -F file=@/etc/bashrc " + tuple.Item1;
                 Console.Out.WriteLine("PRESIGNED_POLICY_CURL_REQUEST:" + curlCommand);
+                */
 
             }
             catch (Exception e)

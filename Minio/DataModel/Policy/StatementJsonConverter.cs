@@ -19,34 +19,61 @@ using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Collections;
+using System.Text;
 
 namespace Minio.DataModel.Policy
 {
-    class StatementJsonConverter : JsonConverter
+    public class StatementJsonConverter : JsonConverter
     {
         
         public override bool CanConvert(Type objectType)
         {
             return typeof(Statement).GetTypeInfo().IsInstanceOfType(objectType);
-            
-           //KP return typeof(Statement).IsAssignableFrom(objectType);
+         
         }
-        
+        public override bool CanRead { get { return false; } }
+
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            JObject jsonObject = JObject.Load(reader);
-            var properties = jsonObject.Properties().ToList();
-            return new StatementJsonConverter
-            {
-                //Name = properties[0].Name.Replace("$", ""),
-                //Value = (string)properties[0].Value
-            };
-
+            throw new NotImplementedException();
         }
+
+        public override bool CanWrite {  get { return true; } }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            throw new NotImplementedException();
+           // throw new  NotImplementedException();
+            JArray array = new JArray();
+            IList<Statement> list = (IList<Statement>)value;
+            var grouped = list.GroupBy(x => new { x.resources , x.effect, x.sid, x.principal, x.conditions });
+            StringBuilder stmtstring = new StringBuilder();
+            string json = JsonConvert.SerializeObject(grouped);
+            
+            if (list.Count > 0)
+            {
+                JArray keys = new JArray();
+
+                JObject first = JObject.FromObject(list[0], serializer);
+                foreach (JProperty prop in first.Properties())
+                {
+                    keys.Add(new JValue(prop.Name));
+                }
+                array.Add(keys);
+
+                foreach (object item in list)
+                {
+                    JObject obj = JObject.FromObject(item, serializer);
+                    JArray itemValues = new JArray();
+                    foreach (JProperty prop in obj.Properties())
+                    {
+                        itemValues.Add(prop.Value);
+                    }
+                    array.Add(itemValues);
+                }
+            }
+            array.WriteTo(writer);
         }
     }
 }
