@@ -52,7 +52,7 @@ namespace ConsoleApp1
         {
             try
             {
-                PolicyType policy = await client.GetPolicyAsync(bucketName);
+               // PolicyType policy = await client.GetPolicyAsync(bucketName);
                 /*
                 string presigned_get_url = await client.PresignedGetObjectAsync(bucketName, objectName, 1000);
                 Console.Out.WriteLine("PRESIGNED_GET_URL:" + presigned_get_url);
@@ -60,11 +60,13 @@ namespace ConsoleApp1
                 string presigned_put_url = await client.PresignedPutObjectAsync(bucketName, objectName, 1000);
                 Console.Out.WriteLine(presigned_put_url);
                 UploadObject(presigned_put_url);
+                */
                 PostPolicy form = new PostPolicy();
                 DateTime expiration = DateTime.UtcNow;
                 form.SetExpires(expiration.AddDays(10));
                 form.SetKey(objectName);
                 form.SetBucket(bucketName);
+                form.SetContentRange(1, 10);
 
                 Tuple<string,Dictionary<string, string>> tuple = await client.PresignedPostPolicyAsync(form);
                 string curlCommand = "curl ";
@@ -74,7 +76,7 @@ namespace ConsoleApp1
                 }
                 curlCommand = curlCommand + " -F file=@/etc/bashrc " + tuple.Item1;
                 Console.Out.WriteLine("PRESIGNED_POLICY_CURL_REQUEST:" + curlCommand);
-                */
+               
 
             }
             catch (Exception e)

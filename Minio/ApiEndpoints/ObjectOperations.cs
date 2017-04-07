@@ -791,20 +791,6 @@ namespace Minio
         {
             string region = null;
 
-            //Initialize a new client.
-            if (!BucketRegionCache.Instance.Exists(policy.Bucket))
-            {
-                region = await BucketRegionCache.Instance.Update(this, policy.Bucket);
-            }
-            else
-            {
-                region = BucketRegionCache.Instance.Region(policy.Bucket);
-            }
-            // Set Target URL
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, bucketName:policy.Bucket, region:region, usePathStyle:false);
-            SetTargetURL(requestUrl);
-            //PrepareClient(region:region,bucketName:policy.Bucket,usePathStyle: false);
-
             if (!policy.IsBucketSet())
             {
                 throw new ArgumentException("bucket should be set");
@@ -819,8 +805,19 @@ namespace Minio
             {
                 throw new ArgumentException("expiration should be set");
             }
-            
-            //string region = Regions.GetRegion(this.restClient.BaseUrl.Host);
+
+            //Initialize a new client.
+            if (!BucketRegionCache.Instance.Exists(policy.Bucket))
+            {
+                region = await BucketRegionCache.Instance.Update(this, policy.Bucket);
+            }
+            else
+            {
+                region = BucketRegionCache.Instance.Region(policy.Bucket);
+            }
+            // Set Target URL
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, bucketName: policy.Bucket, region: region, usePathStyle: false);
+            SetTargetURL(requestUrl);
             DateTime signingDate = DateTime.UtcNow;
 
             policy.SetAlgorithm("AWS4-HMAC-SHA256");

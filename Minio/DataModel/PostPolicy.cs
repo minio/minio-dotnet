@@ -36,7 +36,7 @@ namespace Minio.DataModel
             /// <param name="expiration">Expiration time for the policy</param>
             public void SetExpires(DateTime expiration)
             {
-                    this.expiration = expiration;
+                this.expiration = expiration;
             }
 
             /// <summary>
@@ -97,11 +97,72 @@ namespace Minio.DataModel
                     this.formData.Add("Content-Type", contentType);
             }
 
-            /// <summary>
-            /// Set signature algorithm policy.
-            /// </summary>
-            /// <param name="algorithm">Set signature algorithm used for the policy</param>
-            public void SetAlgorithm(string algorithm)
+        /// <summary>
+        /// Set content encoding 
+        /// </summary>
+        /// <param name="ContentEncoding">ContentEncoding for the policy</param>
+
+        public void SetContentEncoding(string contentEncoding)
+        {
+            if (string.IsNullOrEmpty(contentEncoding))
+            {
+                throw new ArgumentException("Content-Encoding argument cannot be null or empty");
+            }
+            this.policies.Add(new Tuple<string, string, string>("eq", "$Content-Encoding", contentEncoding));
+            this.formData.Add("Content-Encoding", contentEncoding);
+        }
+
+        /// <summary>
+        /// Set content length
+        /// </summary>
+        /// <param name="ContentLength">ContentLength for the policy</param>
+
+        public void SetContentLength(long contentLength)
+        {
+            if (contentLength <= 0)
+            {
+                throw new ArgumentException("Negative Content length");
+            }
+            this.policies.Add(new Tuple<string, string, string>("content-length-range", contentLength.ToString(), contentLength.ToString()));
+        }
+       
+        /// <summary>
+        /// Set content range 
+        /// </summary>
+        /// <param name="ContentRange">ContentRange for the policy</param>
+
+        public void SetContentRange(long startRange, long endRange)
+        {
+            if ((startRange <= 0) || (endRange <= 0))
+            {
+                throw new ArgumentException("Negative start or end range");
+            }
+            if (startRange > endRange)
+            {
+                throw new ArgumentException("Start range is greater than end range");
+            }
+            this.policies.Add(new Tuple<string, string, string>("content-length-range", startRange.ToString(), endRange.ToString()));
+        }
+
+        /// <summary>
+        /// Set the success action status of the object for this policy based upload. 
+        /// </summary>
+        /// <param name="status">Success action status</param>
+
+        public void SetSuccessStatusAction(string status)
+        {
+            if (string.IsNullOrEmpty(status))
+                throw new ArgumentException("Status is Empty");
+
+            this.policies.Add(new Tuple<string, string, string>("eq", "$success_action_status", status));
+            this.formData.Add("success_action_status", status);
+        }
+
+        /// <summary>
+        /// Set signature algorithm policy.
+        /// </summary>
+        /// <param name="algorithm">Set signature algorithm used for the policy</param>
+        public void SetAlgorithm(string algorithm)
             {
                 if (string.IsNullOrEmpty(algorithm))
                 {
@@ -167,7 +228,7 @@ namespace Minio.DataModel
                     {
                             policyList.Add("[\"" + policy.Item1 + "\",\"" + policy.Item2 + "\",\"" + policy.Item3+"\"]");
                     }
-                    // expiration and conditions will never be empty because of checks at PresignedPostPolicy()
+                    // expiration and policies will never be empty because of checks at PresignedPostPolicy()
                     sb.Append("{");
                     sb.Append("\"expiration\":\"").Append(this.expiration.ToString("yyyy-MM-ddTHH:mm:ss.000Z")).Append("\"").Append(",");
                     sb.Append("\"conditions\":[").Append(String.Join(",", policyList)).Append("]");
