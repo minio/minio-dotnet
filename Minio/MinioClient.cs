@@ -16,7 +16,6 @@
 using System;
 using System.Collections.Generic;
 using Minio.Exceptions;
-using System.Text.RegularExpressions;
 using RestSharp;
 using System.Net;
 using System.Linq;
@@ -167,11 +166,7 @@ namespace Minio
                     // use path style where '.' in bucketName causes SSL certificate validation error
                     usePathStyle = true;
                 }
-                //else if (method == Method.HEAD)
-                //{
-                //    usePathStyle = true;
-               // }
-
+              
                 if (usePathStyle)
                 {
                     resource = utils.UrlEncode(bucketName) + "/";
@@ -185,7 +180,6 @@ namespace Minio
             // Set Target URL
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure,bucketName, region, usePathStyle);
             SetTargetURL(requestUrl);
-            //PrepareClient(bucketName, region, usePathStyle);
 
             if (objectName != null)
             {
@@ -414,7 +408,7 @@ namespace Minio
                         {
                             var resource = response.Request.Resource.Split('/')[0];
 
-                            if (isAWS && isVirtual)
+                            if (isAWS && isVirtual && response.Request.Resource != "")
                             {
                                 errorResponse.Code = "NoSuchKey";
                                 e = new ObjectNotFoundException(resource, "Not found.");
@@ -463,9 +457,7 @@ namespace Minio
                 ErrorResponseException ErrorException = new ErrorResponseException(errResponse.Message,errResponse.Code);
                 ErrorException.Response = errResponse;
                 ErrorException.XmlError = response.Content;
-                throw ErrorException;
-              
-             
+                throw ErrorException;          
             }
 
             MinioException MinioException = new MinioException(errResponse.Message);

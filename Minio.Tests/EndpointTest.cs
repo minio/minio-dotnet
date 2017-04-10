@@ -95,7 +95,6 @@ namespace Minio.Tests
                 {
                     Uri endPointURL = RequestUtil.getEndpointURL((string)testCase[0], (bool)testCase[1]);
                     Assert.AreEqual(endPointURL.OriginalString, expectedValues[0]);
-                    Console.Out.WriteLine(endPointURL.OriginalString);
                 }
                 catch (InvalidEndpointException ex)
                 {
@@ -162,7 +161,6 @@ namespace Minio.Tests
             foreach (KeyValuePair<string, bool> testCase in testAmazonDict)
             {
                 bool value = s3utils.IsAmazonEndPoint(testCase.Key);
-                Console.Out.WriteLine(testCase + value.ToString());
                 Assert.AreEqual(s3utils.IsAmazonEndPoint(testCase.Key), testCase.Value);
             }
         }
@@ -184,7 +182,6 @@ namespace Minio.Tests
             foreach (KeyValuePair<string, bool> testCase in testAmazonDict)
             {
                 bool value = s3utils.IsAmazonChinaEndPoint(testCase.Key);
-                Console.Out.WriteLine(testCase + value.ToString());
                 Assert.AreEqual(s3utils.IsAmazonChinaEndPoint(testCase.Key), testCase.Value);
             }
         }

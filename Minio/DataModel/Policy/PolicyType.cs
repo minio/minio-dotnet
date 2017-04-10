@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
+using System;
+
 namespace Minio.DataModel 
 {
 
-    public class  PolicyType
+    public class  PolicyType : object
     {
         private PolicyType(string value) { Value = value; }
         public string Value { get; set; }
@@ -27,14 +29,20 @@ namespace Minio.DataModel
         public static PolicyType READ_WRITE { get { return new PolicyType("readwrite"); } }
         public static PolicyType WRITE_ONLY { get { return new PolicyType("writeonly"); } }
 
-        public bool Equals(PolicyType other)
+        //   public override bool Equals(PolicyType other)
+        public override bool Equals(Object other)
         {
-            return Value.Equals(other.Value);
+            return Value.Equals(((PolicyType)other).Value);
         }
         public override string ToString()
         {
             return string.Format("{0}", this.Value);
         }
+        public override int GetHashCode()
+        {
+            return Value.GetHashCode();
+        }
+
     }
 
 }

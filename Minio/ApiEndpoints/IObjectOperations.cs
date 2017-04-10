@@ -31,15 +31,30 @@ namespace Minio
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Name of object to retrieve</param>
         /// <param name="callback">A stream will be passed to the callback</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// Creates an object from file
+        /// Get an object. The object will be streamed to the callback given by the user.
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Name of object to retrieve</param>
+        /// <param name="offset">offset of the object from where stream will start </param>
+        /// <param name="length"> length of object to read in from the stream</param>
+        /// <param name="callback">A stream will be passed to the callback</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Creates an object from file input stream
         /// </summary>
         /// <param name="bucketName">Bucket to create object in</param>
         /// <param name="objectName">Key of the new object</param>
-        /// <param name="fileName">Path of file to upload</param>
+        /// <param name="data">Stream of file to upload</param>
+        /// <param name="size">Size of stream</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+
         Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType=null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -47,6 +62,7 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to list incomplete uploads from</param>
         /// <param name="objectName">Key of object to list incomplete uploads from</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken));
 
@@ -55,6 +71,7 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to test object in</param>
         /// <param name="objectName">Name of the object to stat</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Facts about the object</returns>
         Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken));
 
@@ -64,6 +81,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to list all incomplepte uploads from</param>
         /// <param name="prefix">prefix to list all incomplete uploads</param>
         /// <param name="recursive">option to list incomplete uploads recursively</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>A lazily populated list of incomplete uploads</returns>
         IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix, bool recursive, CancellationToken cancellationToken = default(CancellationToken));
 
@@ -72,6 +90,8 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to remove incomplete uploads from</param>
         /// <param name="objectName">Key to remove incomplete uploads from</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+
         Task RemoveIncompleteUploadAsync(string bucketName, string objectName,CancellationToken cancellationToken=default(CancellationToken));
 
         /// <summary>
@@ -82,9 +102,19 @@ namespace Minio
         /// <param name="destBucketName">Bucket name where the object will be copied to.</param>
         /// <param name="destObjectName">Object name to be created, if not provided uses source object name as destination object name.</param>
         /// <param name="copyConditions">optionally can take a key value CopyConditions as well for conditionally attempting copyObject.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
 
         Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Creates an object from file
+        /// </summary>
+        /// <param name="bucketName">Bucket to create object in</param>
+        /// <param name="objectName">Key of the new object</param>
+        /// <param name="fileName">Path of file to upload</param>
+        /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
 
         Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType = null, CancellationToken cancellationToken = default(CancellationToken));
 
@@ -94,6 +124,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Name of object to retrieve</param>
         /// <param name="fileName">string with file path</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         Task GetObjectAsync(string bucketName, string objectName, string filePath, CancellationToken cancellationToken = default(CancellationToken));
 

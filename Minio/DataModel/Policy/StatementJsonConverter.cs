@@ -40,17 +40,56 @@ namespace Minio.DataModel.Policy
             throw new NotImplementedException();
         }
 
-        public override bool CanWrite {  get { return true; } }
+        public override bool CanWrite {  get { return false; } }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
            // throw new  NotImplementedException();
             JArray array = new JArray();
             IList<Statement> list = (IList<Statement>)value;
-            var grouped = list.GroupBy(x => new { x.resources , x.effect, x.sid, x.principal, x.conditions });
+            //var list = ilist.SelectMany(i => i);
+            /*
+            var grouped = list.GroupBy(x => new { x.resources, x.effect, x.principal, x.sid, x.conditions})
+                             .Select(grp => grp.ToList())
+                             .ToList();
             StringBuilder stmtstring = new StringBuilder();
             string json = JsonConvert.SerializeObject(grouped);
-            
+            writer.WriteValue(json);
+            */
+            var grouped1 = list.GroupBy(x => new { x.resources })
+                 .Select(grp => grp.ToList())
+                 .ToList();
+            StringBuilder stmtstring = new StringBuilder();
+            string json = JsonConvert.SerializeObject(grouped1);
+            writer.WriteValue(json);
+
+            var grouped2 = list.GroupBy(x => new { x.resources, x.effect })
+                 .Select(grp => grp.ToList())
+                 .ToList();
+            stmtstring = new StringBuilder();
+            json = JsonConvert.SerializeObject(grouped2);
+            writer.WriteValue(json);
+
+            var grouped3 = list.GroupBy(x => new { x.resources, x.effect, x.principal })
+                 .Select(grp => grp.ToList())
+                 .ToList();
+            stmtstring = new StringBuilder();
+            json = JsonConvert.SerializeObject(grouped3);
+            writer.WriteValue(json);
+
+            var grouped4 = list.GroupBy(x => new { x.resources, x.effect, x.principal, x.sid })
+                 .Select(grp => grp.ToList())
+                 .ToList();
+            stmtstring = new StringBuilder();
+            json = JsonConvert.SerializeObject(grouped4);
+
+            var grouped5 = list.GroupBy(x => new { x.resources, x.effect, x.principal, x.sid, x.conditions })
+                .Select(grp => grp.ToList())
+                .ToList();
+            stmtstring = new StringBuilder();
+            json = JsonConvert.SerializeObject(grouped5);
+            writer.WriteValue(json);
+            /*
             if (list.Count > 0)
             {
                 JArray keys = new JArray();
@@ -73,6 +112,7 @@ namespace Minio.DataModel.Policy
                     array.Add(itemValues);
                 }
             }
+            */
             array.WriteTo(writer);
         }
     }

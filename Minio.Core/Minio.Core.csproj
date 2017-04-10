@@ -42,7 +42,6 @@
     <Compile Include="..\Minio\DataModel\Policy\Resources.cs" Link="DataModel\Policy\Resources.cs" />
     <Compile Include="..\Minio\DataModel\Policy\SingleOrArrayConverter.cs" Link="DataModel\Policy\SingleOrArrayConverter.cs" />
     <Compile Include="..\Minio\DataModel\Policy\Statement.cs" Link="DataModel\Policy\Statement.cs" />
-    <Compile Include="..\Minio\DataModel\Policy\StatementJsonConverter.cs" Link="DataModel\Policy\StatementJsonConverter.cs" />
     <Compile Include="..\Minio\DataModel\PostPolicy.cs" Link="DataModel\PostPolicy.cs" />
     <Compile Include="..\Minio\DataModel\Prefix.cs" Link="DataModel\Prefix.cs" />
     <Compile Include="..\Minio\DataModel\Upload.cs" Link="DataModel\Upload.cs" />

@@ -76,7 +76,7 @@ namespace Minio.Examples
             accessKey = "Q3AM3UQ867SPQQA43P2F";
             secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
 #endif
-
+          
             // WithSSL() enables SSL support in Minio client
             var minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey).WithSSL();
 
@@ -93,7 +93,6 @@ namespace Minio.Examples
                 // Set app Info 
                 minioClient.SetAppInfo("app-name", "app-version");
 
-                bucketName = "testminiopolicy";
                 // Set HTTP Tracing On
                 //minioClient.SetTraceOn();
 
@@ -123,6 +122,9 @@ namespace Minio.Examples
 
                 // Delete the file and Download the object as file
                 Cases.GetObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
+               
+                // Delete the file and Download partial object as file
+                Cases.GetPartialObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
 
                 // Server side copyObject
                 Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName).Wait();

@@ -403,7 +403,7 @@ namespace Minio
                                 {
                                     sortedHeaders.Add(headerName, headerValue);
                                 }
-            #else
+            #else 
                                  if (headerName.Equals("host"))
                                 {
                                     var host = headerValue.Split(':')[0];
@@ -422,7 +422,7 @@ namespace Minio
                                     sortedHeaders.Add(headerName, headerValue);
                                 }
 
-#endif
+            #endif
 
             }
             return sortedHeaders;

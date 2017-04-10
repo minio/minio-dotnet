@@ -1,11 +1,25 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿/*
+ * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
 using Minio.DataModel.Policy;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Xml.Serialization;
 
 namespace Minio.Tests
 {
@@ -27,6 +41,7 @@ namespace Minio.Tests
             return result.ToString();
         }
 
+        // Generate an empty statement
         internal static Statement GenerateStatement(string resource)
         {
             Statement stmt = new Statement();
@@ -34,12 +49,14 @@ namespace Minio.Tests
             return stmt;
         }
 
+        // Generate a resource prefix
         internal static string GenerateResourcesPrefix(string bucketName, string objectName)
         {
             return PolicyConstants.AWS_RESOURCE_PREFIX + bucketName + "/" + objectName;
         }
 
-        internal static Statement GenerateStatement(List<string> actions,string resourcePrefix, string effect = "Allow", string aws = "*",bool withConditions=false)
+        // Generate a new statement
+        internal static Statement GenerateStatement(List<string> actions,string resourcePrefix, string effect = "Allow", string aws = "*",bool withConditions=false,string withStringSet="hello",string condition="StringEquals")
         {
             Statement stmt = new Statement();
             stmt.resources = new Resources(resourcePrefix);
@@ -50,13 +67,23 @@ namespace Minio.Tests
             {
                 stmt.conditions = new ConditionMap();
                 ConditionKeyMap ckmap = new ConditionKeyMap();
-                ckmap.Add("s3:prefix", new HashSet<string>() { "hello" });
-                stmt.conditions.Add("StringEquals", ckmap);
+                if (withStringSet != null)
+                    ckmap.Add("s3:prefix", new HashSet<string>() {withStringSet });
+                if (condition != null && ckmap != null)
+                    stmt.conditions.Add(condition, ckmap);
             }
             
             return stmt;
         }
-
+        // Get List with Read and Write bucket actions 
+        internal static List<string> GetReadAndWriteBucketActions()
+        {
+            List<string> res = new List<string>();
+            res.AddRange(PolicyConstants.READ_ONLY_BUCKET_ACTIONS);
+            res.AddRange(PolicyConstants.WRITE_ONLY_BUCKET_ACTIONS);
+            return res;
+        }
+        // Hydrate a bucket policy from JSON string 
         internal static BucketPolicy GenerateBucketPolicy(string policyString,string bucketName)
         {
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(policyString);
@@ -64,71 +91,6 @@ namespace Minio.Tests
             return BucketPolicy.ParseJson(stream, bucketName);
 
         }
-        [TestMethod]
-        public void GenPolicyForTest()
-        {
-            //List<string> actions, string resourcePrefix, string effect = "Allow", string aws = "*", bool withConditions = false)
-            
-            var testCases = new List<KeyValuePair<List<Object>, string>>()
-            {
-              
-             // BucketPolicy NONE - empty statements, bucketname and prefix
-             new KeyValuePair<List<Object>,string>(new List<Object>
-             { new Statement(),
-               PolicyType.NONE,"","" }, @"{""Version"":""2012-10-17"",""Statement"":[]}"),
-           
-                // BucketPolicy NONE - non empty statements, empty bucketname and prefix
-             new KeyValuePair<List<Object>,string>(new List<Object>
-             { TestHelper.GenerateStatement(PolicyConstants.READ_ONLY_BUCKET_ACTIONS,
-                                            resourcePrefix:"arn:aws:s3:::mybucket"),
-               PolicyType.NONE,"","" }, 
-               @"{""Version"":""2012-10-17"",""Statement"":[{""Action"":[""s3:ListBucket""],""Effect"":""Allow"",""Principal"":{""AWS"":[""*""]},""Resource"":[""arn:aws:s3:::mybucket""],""Sid"":""""}]}"),
-
-               // BucketPolicy NONE - empty statements, bucketname and prefix
-             new KeyValuePair<List<Object>,string>(new List<Object>
-             { new Statement(),
-               PolicyType.NONE,"","" }, @"{""Version"":""2012-10-17"",""Statement"":[]}"),
-
-               // BucketPolicy NONE - empty statements, bucketname and prefix
-             new KeyValuePair<List<Object>,string>(new List<Object>
-             { new Statement(),
-               PolicyType.NONE,"","" }, @"{""Version"":""2012-10-17"",""Statement"":[]}"),
-            
-            // Policy with resource ending with bucket /* allows access to all objects within given bucket.
-            new KeyValuePair<List<Object>,string>(new List<Object>
-            { TestHelper.GenerateStatement(PolicyConstants.READ_ONLY_BUCKET_ACTIONS,
-                                           effect:"Allow",
-                                           aws:"*",
-                                           withConditions:false,
-                                           resourcePrefix:"arn:aws:s3:::mybucket"
-                                           ),
-              PolicyType.NONE,"mybucket","" }, @""),
-         
-           
-            };
-            int index = 0;
-            foreach (KeyValuePair<List<Object>, string> testCase in testCases)
-            {
-                index += 1;
-                List<Object> data = testCase.Key;
-                Statement statement = (Statement)data[0];
-
-                PolicyType policyType = (PolicyType)data[1];
-                string policyJSON = null;
-
-                string bucketName = (string)data[2];
-                string prefix = (string)data[3];
-                string expectedResult = testCase.Value;
-                BucketPolicy policy = new BucketPolicy(bucketName);
-                policy.SetStatements(statement);
-                policyJSON = policy.GetJson();
-                Console.Out.WriteLine(@"before:""", policyJSON, @"""");
-
-                policy.SetPolicy(policyType, prefix);
-                policyJSON = policy.GetJson();
-                Console.Out.WriteLine(@"after:""", policyJSON, @"""");
-                Assert.AreEqual(expectedResult, policyJSON);
-            }
-        }
+     
     }
 }

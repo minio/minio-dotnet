@@ -74,6 +74,9 @@
     <Compile Include="..\Cases\GetObject.cs">
       <Link>Cases\GetObject.cs</Link>
     </Compile>
+    <Compile Include="..\Cases\GetPartialObject.cs">
+      <Link>Cases\GetPartialObject.cs</Link>
+    </Compile>
     <Compile Include="..\Cases\ListBuckets.cs">
       <Link>Cases\ListBuckets.cs</Link>
     </Compile>

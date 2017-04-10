@@ -173,9 +173,6 @@
     <Compile Include="..\Minio\DataModel\Policy\Statement.cs">
       <Link>DataModel\Policy\Statement.cs</Link>
     </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\StatementJsonConverter.cs">
-      <Link>DataModel\Policy\StatementJsonConverter.cs</Link>
-    </Compile>
     <Compile Include="..\Minio\DataModel\PostPolicy.cs">
       <Link>DataModel\PostPolicy.cs</Link>
     </Compile>

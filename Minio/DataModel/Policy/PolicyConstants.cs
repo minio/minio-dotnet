@@ -46,7 +46,7 @@ namespace Minio.DataModel.Policy
                                               "s3:PutObject" };
 
         // Read and write object actions.
-        public static IList<string> READ_WRITE_OBJECT_ACTIONS()
+        public static List<string> READ_WRITE_OBJECT_ACTIONS()
         {
             List<string> res = new List<string>();
             res.AddRange(READ_ONLY_OBJECT_ACTIONS);

@@ -60,6 +60,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="DictionaryExtensionMethods.cs" />
     <Compile Include="PolicyConditionTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EndpointTest.cs" />

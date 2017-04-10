@@ -20,6 +20,7 @@
     <Compile Include="..\Cases\FPutObject.cs" Link="Cases\FPutObject.cs" />
     <Compile Include="..\Cases\GetBucketPolicy.cs" Link="Cases\GetBucketPolicy.cs" />
     <Compile Include="..\Cases\GetObject.cs" Link="Cases\GetObject.cs" />
+    <Compile Include="..\Cases\GetPartialObject.cs" Link="Cases\GetPartialObject.cs" />
     <Compile Include="..\Cases\ListBuckets.cs" Link="Cases\ListBuckets.cs" />
     <Compile Include="..\Cases\ListIncompleteUploads.cs" Link="Cases\ListIncompleteUploads.cs" />
     <Compile Include="..\Cases\ListObjects.cs" Link="Cases\ListObjects.cs" />
