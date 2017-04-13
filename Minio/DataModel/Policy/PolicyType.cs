@@ -34,10 +34,12 @@ namespace Minio.DataModel
         {
             return Value.Equals(((PolicyType)other).Value);
         }
+
         public override string ToString()
         {
             return string.Format("{0}", this.Value);
         }
+
         public override int GetHashCode()
         {
             return Value.GetHashCode();

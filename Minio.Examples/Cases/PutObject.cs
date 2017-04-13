@@ -41,6 +41,7 @@ namespace Minio.Examples.Cases
                 {
                     Console.Out.WriteLine("Running example for API: PutObjectAsync with Stream and MultiPartUpload");
                 }
+
                 await minio.PutObjectAsync(bucketName,
                                            objectName,
                                            filestream,

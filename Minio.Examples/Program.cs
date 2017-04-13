@@ -66,6 +66,7 @@ namespace Minio.Examples
             accessKey = ConfigurationManager.AppSettings["AccessKey"];
             secretKey = ConfigurationManager.AppSettings["SecretKey"];
 
+
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                      | SecurityProtocolType.Tls11
@@ -95,6 +96,7 @@ namespace Minio.Examples
 
                 // Set HTTP Tracing On
                 //minioClient.SetTraceOn();
+
 
                 // Set HTTP Tracing Off
                 // minioClient.SetTraceOff();

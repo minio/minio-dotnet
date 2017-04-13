@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 using System;
-using System.Net;
 using System.IO;
-using System.Net.Sockets;
 using System.Linq;
 
 namespace Minio.Helper
@@ -25,6 +23,7 @@ namespace Minio.Helper
     {
 
         public static bool IsAmazonEndPoint(string endpoint)
+
         {
             if (IsAmazonChinaEndPoint(endpoint))
             {
@@ -39,6 +38,7 @@ namespace Minio.Helper
         // will not be able to access resources in the new Region, and vice versa.
         // For more info https://aws.amazon.com/about-aws/whats-new/2013/12/18/announcing-the-aws-china-beijing-region/
         public static bool IsAmazonChinaEndPoint(string endpoint)
+
         {
 
             return endpoint == "s3.cn-north-1.amazonaws.com.cn";

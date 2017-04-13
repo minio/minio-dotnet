@@ -203,7 +203,7 @@ __Parameters__
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  ``Task<bool>``: true if the bucket exists  | Listed Exceptions: |
+|  ``Task<bool>`` : true if the bucket exists  | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``ConnectionException`` : upon connection error.            |
 |        | ``AccessDeniedException`` : upon access denial            |
@@ -218,13 +218,13 @@ __Example__
 ```cs
 try
 {
-	// Check whether 'my-bucketname' exists or not.
-	bool found = await minioClient.BucketExistsAsync(bucketName);
-	Console.Out.WriteLine("bucket-name was " + ((found == true) ? "found" : "not found"));
+   // Check whether 'my-bucketname' exists or not.
+   bool found = await minioClient.BucketExistsAsync(bucketName);
+   Console.Out.WriteLine("bucket-name was " + ((found == true) ? "found" : "not found"));
 }
 catch (MinioException e) 
 {
-    Console.WriteLine("[Bucket]  Exception: {0}", e);
+   Console.WriteLine("[Bucket]  Exception: {0}", e);
 }
 ```
 
@@ -252,7 +252,7 @@ __Parameters__
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 |  Task  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
+|        | ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``ConnectionException`` : upon connection error.            |
 |        | ``AccessDeniedException`` : upon access denial            |
 |        | ``ErrorResponseException`` : upon unsuccessful execution.            |
@@ -267,13 +267,14 @@ __Example__
 try {
 	// Check if my-bucket exists before removing it.
 	bool found = await minioClient.BucketExistsAsync("mybucket");
-	if (found) {
-		// Remove bucket my-bucketname. This operation will succeed only if the bucket is empty.
-		await minioClient.RemoveBucketAsync("mybucket");
-		Console.Out.WriteLine("mybucket is removed successfully");
+	if (found) 
+    {
+        // Remove bucket my-bucketname. This operation will succeed only if the bucket is empty.
+        await minioClient.RemoveBucketAsync("mybucket");
+        Console.Out.WriteLine("mybucket is removed successfully");
     }
-	else 
-	{
+    else 
+    {
         Console.Out.WriteLine("mybucket does not exist");
     }
 } 
@@ -311,20 +312,21 @@ __Example__
 
 ```cs
 try {
-	// Check whether 'mybucket' exists or not.
-	bool found = minioClient.BucketExistsAsync("mybucket");
-	if (found) {
-		// List objects from 'my-bucketname'
-		IObservable<Item> observable = minioClient.ListObjectsAsync("mybucket", "prefix", true);
+    // Check whether 'mybucket' exists or not.
+    bool found = minioClient.BucketExistsAsync("mybucket");
+	if (found) 
+        {
+            // List objects from 'my-bucketname'
+            IObservable<Item> observable = minioClient.ListObjectsAsync("mybucket", "prefix", true);
 
-		IDisposable subscription = observable.Subscribe(
+            IDisposable subscription = observable.Subscribe(
 					item => Console.WriteLine("OnNext: {0}", item.Key),
 					ex => Console.WriteLine("OnError: {0}", ex.Message),
 					() => Console.WriteLine("OnComplete: {0}"));    
 	} 
 	else 
 	{
-		Console.Out.WriteLine("mybucket does not exist");
+	    Console.Out.WriteLine("mybucket does not exist");
 	}
 } 
 catch (MinioException e) 
@@ -362,22 +364,23 @@ __Example__
 
 
 ```cs
-try {
-	// Check whether 'mybucket' exist or not.
-	bool found = minioClient.BucketExistsAsync("mybucket");
-	if (found) 
-	{
-		// List all incomplete multipart upload of objects in 'mybucket'
-		IObservable<Upload> observable = miniClient.ListIncompleteUploads("mybucket", "prefix", true);
-		IDisposable subscription = observable.Subscribe(
+try 
+{
+    // Check whether 'mybucket' exist or not.
+    bool found = minioClient.BucketExistsAsync("mybucket");
+    if (found) 
+    {
+        // List all incomplete multipart upload of objects in 'mybucket'
+        IObservable<Upload> observable = miniClient.ListIncompleteUploads("mybucket", "prefix", true);
+        IDisposable subscription = observable.Subscribe(
 							item => Console.WriteLine("OnNext: {0}", item.Key),
 							ex => Console.WriteLine("OnError: {0}", ex.Message),
 							() => Console.WriteLine("OnComplete: {0}"));
-	} 
-	else 
-	{
-		Console.Out.WriteLine("mybucket does not exist");
-	}
+    } 
+    else 
+    {
+        Console.Out.WriteLine("mybucket does not exist");
+    }
 } 
 catch (MinioException e) 
 {
@@ -730,7 +733,7 @@ catch(MinioException e)
 <a name="statObject"></a>
 ### StatObjectAsync(string bucketName, string objectName)
 
-*`Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))`*
+`Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))`
 
 Gets metadata of an object.
 
@@ -856,7 +859,7 @@ try
 } 
 catch (MinioException e) 
 {
-      Console.Out.WriteLine("Error: " + e);
+    Console.Out.WriteLine("Error: " + e);
 }
 ```
 
@@ -892,8 +895,8 @@ __Example__
 try 
 {
     // Removes partially uploaded objects from buckets.
-	await minioClient.RemoveIncompleteUploadAsync("mybucket", "myobject");
-	Console.Out.WriteLine("successfully removed all incomplete upload session of my-bucketname/my-objectname");
+    await minioClient.RemoveIncompleteUploadAsync("mybucket", "myobject");
+    Console.Out.WriteLine("successfully removed all incomplete upload session of my-bucketname/my-objectname");
 } 
 catch(MinioException e) 
 {
@@ -917,8 +920,6 @@ __Parameters__
 | ``bucketName``  | _String_ | Name of the bucket.  |
 | ``objectName``  | _String_  | Object name in the bucket. |
 | ``expiresInt``  | _Integer_  | Expiry in seconds. Default expiry is set to 7 days. |
-| ``cancellationToken``| System.Threading.CancellationToken | Optional parameter. Defaults to default(CancellationToken) |
-
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
@@ -933,8 +934,8 @@ __Example__
 ```cs
 try 
 {
-	String url = await minioClient.PresignedGetObjectAsync("mybucket", "myobject", 60 * 60 * 24);
-	Console.Out.WriteLine(url);
+    String url = await minioClient.PresignedGetObjectAsync("mybucket", "myobject", 60 * 60 * 24);
+    Console.Out.WriteLine(url);
 } 
 catch(MinioException e) 
 {
@@ -971,8 +972,8 @@ __Example__
 ```cs
 try 
 {
-	String url = await minioClient.PresignedPutObjectAsync("mybucket", "myobject", 60 * 60 * 24);
-	Console.Out.WriteLine(url);
+    String url = await minioClient.PresignedPutObjectAsync("mybucket", "myobject", 60 * 60 * 24);
+    Console.Out.WriteLine(url);
 }
 catch(MinioException e) 
 {
@@ -983,7 +984,7 @@ catch(MinioException e)
 <a name="presignedPostPolicy"></a>
 ### PresignedPostPolicy(PostPolicy policy)
 
-`Dictionary<string, string> PresignedPostPolicy(PostPolicy policy)`
+`Task<Dictionary<string, string>> PresignedPostPolicyAsync(PostPolicy policy)`
 
 Allows setting policy conditions to a presigned URL for POST operations. Policies such as bucket name to receive object uploads, key name prefixes, expiry policy may be set.
 
@@ -992,12 +993,12 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``Task<PostPolicy>``  | _PostPolicy_  | Post policy of an object.  |
+| ``PostPolicy``  | _PostPolicy_  | Post policy of an object.  |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-| ``Dictionary``: Map of strings to construct form-data. | Listed Exceptions: |
+| ``Task<Dictionary<string,string>>``: Map of strings to construct form-data. | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``ConnectionException`` : upon connection error.            |
 |        | ``NoSuchAlgorithmException`` : upon requested algorithm was not found during signature calculation.           |

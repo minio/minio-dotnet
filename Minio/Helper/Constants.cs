@@ -13,15 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Minio.Helper
 {
-   public static class Constants
+   internal static class Constants
     {
         // Maximum number of parts.
         public static int MaxParts = 10000;

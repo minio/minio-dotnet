@@ -17,7 +17,6 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
-using Minio.DataModel.Policy;
 
 namespace Minio.DataModel.Policy
 {

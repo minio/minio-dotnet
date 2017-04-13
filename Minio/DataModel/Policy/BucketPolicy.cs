@@ -70,6 +70,7 @@ namespace Minio.DataModel
             this.statements.Add(stmt);
         }
 
+
         internal List<Statement> Statements()
         {
             return this.statements;
@@ -568,4 +569,4 @@ namespace Minio.DataModel
             appendStatements(policy, prefix);
         }
     }
-} 
+}

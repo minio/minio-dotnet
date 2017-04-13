@@ -166,11 +166,12 @@ namespace Minio
                     // use path style where '.' in bucketName causes SSL certificate validation error
                     usePathStyle = true;
                 }
-              
+
                 if (usePathStyle)
                 {
                     resource = utils.UrlEncode(bucketName) + "/";
                 }
+
             }
             else
             {
@@ -225,7 +226,6 @@ namespace Minio
         /// This method initializes a new RESTClient. The host URI for Amazon is set to virtual hosted style
         /// if usePathStyle is false. Otherwise path style URL is constructed.
         /// </summary>
-
         internal void initClient()
         {
             if (string.IsNullOrEmpty(this.BaseUrl))
@@ -289,6 +289,7 @@ namespace Minio
 
             //Instantiate a region cache 
             this.regionCache = BucketRegionCache.Instance;
+
             initClient();
             return;
 
@@ -366,7 +367,7 @@ namespace Minio
                     HttpStatusCode.MethodNotAllowed.Equals(response.StatusCode) || HttpStatusCode.NotImplemented.Equals(response.StatusCode))
                 {
                     MinioException e = null;
-                    
+
                     foreach (Parameter parameter in response.Headers)
                     {
                         if (parameter.Name.Equals("x-amz-id-2", StringComparison.CurrentCultureIgnoreCase))
@@ -390,6 +391,7 @@ namespace Minio
                         int pathLength = response.Request.Resource.Split('/').Count();
                         bool isAWS = response.ResponseUri.Host.EndsWith("s3.amazonaws.com");
                         bool isVirtual = isAWS  && !(response.ResponseUri.Host.StartsWith("s3.amazonaws.com"));
+
                         if (pathLength > 1)
                         {
                             errorResponse.Code = "NoSuchKey";
@@ -419,7 +421,7 @@ namespace Minio
                                 BucketRegionCache.Instance.Remove(resource);
                                 e = new BucketNotFoundException(resource, "Not found.");
                             }
-                           
+                    
                         }
                         else
                         {
@@ -486,11 +488,10 @@ namespace Minio
             foreach (var handler in handlers)
             {
                 handler(response);
-            }
-            
+            }            
             //Fall back default error handler
             _defaultErrorHandlingDelegate(response);
-            
+
         }
         /// <summary>
         /// Sets HTTP tracing On.Writes output to Console

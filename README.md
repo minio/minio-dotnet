@@ -142,7 +142,6 @@ namespace FileUploader
 #### Object Operations
 * [GetObject.cs](./Minio.Examples/Cases/GetObject.cs)
 * [GetPartialObject.cs](./Minio.Examples/Cases/GetPartialObject.cs)
-
 * [PutObject.cs](./Minio.Examples/Cases/PutObject.cs)
 * [StatObject.cs](./Minio.Examples/Cases/StatObject.cs)
 * [RemoveObject.cs](./Minio.Examples/Cases/RemoveObject.cs)

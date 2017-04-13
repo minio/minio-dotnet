@@ -16,7 +16,6 @@
 using Minio.DataModel.Policy;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Minio.DataModel
 {
@@ -32,10 +31,12 @@ namespace Minio.DataModel
             values.Add(value);
             this.Add(key, values);
         }
+
         public ConditionKeyMap(string key, ISet<string> value)
         {
             this.Add(key, value);
         }
+
         public ISet<string> Put(string key, string value)
         {
             ISet<string> existingValue;
@@ -60,6 +61,7 @@ namespace Minio.DataModel
             this[key] = existingValue;
             return existingValue;
         }
+
         public void remove(string key, ISet<string> value)
         {
             ISet<string> existingValue;

@@ -131,6 +131,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Minio.Client.Examples.Core"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Functional.Tests", "Minio.Functional.Tests\Minio.Functional.Tests.csproj", "{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinioApi", "Minio.Api\MinioApi.csproj", "{CC30CADE-342A-4CED-858D-B60200C075B0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -237,6 +239,14 @@ Global
 		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}.Release|x64.Build.0 = Release|x64
 		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}.Release|x86.ActiveCfg = Release|x86
 		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}.Release|x86.Build.0 = Release|x86
+		{CC30CADE-342A-4CED-858D-B60200C075B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC30CADE-342A-4CED-858D-B60200C075B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC30CADE-342A-4CED-858D-B60200C075B0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CC30CADE-342A-4CED-858D-B60200C075B0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CC30CADE-342A-4CED-858D-B60200C075B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC30CADE-342A-4CED-858D-B60200C075B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC30CADE-342A-4CED-858D-B60200C075B0}.Release|x64.ActiveCfg = Release|Any CPU
+		{CC30CADE-342A-4CED-858D-B60200C075B0}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

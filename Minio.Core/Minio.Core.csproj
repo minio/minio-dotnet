@@ -17,9 +17,6 @@
     <Compile Include="..\Minio\DataModel\CopyConditions.cs" Link="DataModel\CopyConditions.cs" />
     <Compile Include="..\Minio\DataModel\CopyObjectResult.cs" Link="DataModel\CopyObjectResult.cs" />
     <Compile Include="..\Minio\DataModel\CreateBucketConfiguration.cs" Link="DataModel\CreateBucketConfiguration.cs" />
-    <Compile Include="..\Minio\DataModel\DateFormat.cs" Link="DataModel\DateFormat.cs" />
-    <Compile Include="..\Minio\DataModel\Grant.cs" Link="DataModel\Grant.cs" />
-    <Compile Include="..\Minio\DataModel\GranteeUser.cs" Link="DataModel\GranteeUser.cs" />
     <Compile Include="..\Minio\DataModel\InitiateMultipartUploadResult.cs" Link="DataModel\InitiateMultipartUploadResult.cs" />
     <Compile Include="..\Minio\DataModel\Item.cs" Link="DataModel\Item.cs" />
     <Compile Include="..\Minio\DataModel\ListAllMyBucketsResult.cs" Link="DataModel\ListAllMyBucketsResult.cs" />

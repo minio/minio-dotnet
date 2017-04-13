@@ -53,6 +53,7 @@ namespace Minio.DataModel
             foreach (var item in cmap)
             {
                 this.Put(item.Key, item.Value);
+
             }
         }
 

@@ -94,6 +94,7 @@ namespace Minio
         /// Returns true if the specified bucketName exists, otherwise returns false.
         /// </summary>
         /// <param name="bucketName">Bucket to test existence of</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task that returns true if exists and user has access</returns>
         public async Task<bool> BucketExistsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -118,6 +119,7 @@ namespace Minio
         /// Remove a bucket
         /// </summary>
         /// <param name="bucketName">Name of bucket to remove</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task</returns>
         public async Task RemoveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -133,6 +135,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to list objects from</param>
         /// <param name="prefix">Filters all objects not beginning with a given prefix</param>
         /// <param name="recursive">Set to false to emulate a directory</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>An observable of items that client can subscribe to</returns>
         public IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -171,6 +174,8 @@ namespace Minio
         /// <param name="recursive">Set to false to emulate a directory</param>
         /// <param name="marker">marks location in the iterator sequence</param>
         /// <returns>Task with a tuple populated with objects</returns>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+
         private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix, bool recursive, string marker, CancellationToken cancellationToken = default(CancellationToken))
         {
             var queries = new List<string>();
@@ -235,6 +240,7 @@ namespace Minio
         /// Returns current policy stored on the server for this bucket
         /// </summary>
         /// <param name="bucketName">Bucket name.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task that returns the Bucket policy</returns>
         private async Task<BucketPolicy> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -279,6 +285,7 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket name.</param>
         /// <param name="objectPrefix">Name of the object prefix</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task that returns the PolicyType </returns>
         public async Task<PolicyType> GetPolicyAsync(string bucketName, string objectPrefix = "", CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -291,6 +298,7 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket Name.</param>
         /// <param name="policy">Valid Json policy object</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task that sets policy</returns>
         private async Task setPolicyAsync(string bucketName, BucketPolicy policy, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -310,6 +318,7 @@ namespace Minio
         /// <param name="bucketName">Bucket Name</param>
         /// <param name="objectPrefix">Name of the object prefix.</param>
         /// <param name="policyType">Desired Policy type change </param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task to set a policy</returns>
         public async Task SetPolicyAsync(String bucketName, String objectPrefix, PolicyType policyType, CancellationToken cancellationToken = default(CancellationToken))
         {

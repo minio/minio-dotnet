@@ -21,28 +21,29 @@ using Newtonsoft.Json;
 namespace Minio.DataModel.Policy
 {
 
-    public class Statement
+    internal class Statement
+
     {
         [JsonProperty("Action")]
         [JsonConverter(typeof(SingleOrArrayConverter<string>))]
-        public IList<string> actions { get;  set; }
+        public IList<string> actions { get; set; }
 
         [JsonProperty("Condition")]
-        public ConditionMap conditions { get;  set; }
+        public ConditionMap conditions { get; set; }
 
         [JsonProperty("Effect")]
-        public string effect { get;  set; }
+        public string effect { get; set; }
 
-       [JsonProperty("Principal")]
-       [JsonConverter(typeof(PrincipalJsonConverter))]
-        public Principal principal { get;  set; }
+        [JsonProperty("Principal")]
+        [JsonConverter(typeof(PrincipalJsonConverter))]
+        public Principal principal { get; set; }
 
         [JsonProperty("Resource")]
         [JsonConverter(typeof(ResourceJsonConverter))]
-        public Resources resources { get;  set; }
+        public Resources resources { get; set; }
 
         [JsonProperty("Sid")]
-        public string sid { get;  set; }
+        public string sid { get; set; }
         /**
         * Returns whether given statement is valid to process for given bucket name.
          */
@@ -55,6 +56,7 @@ namespace Minio.DataModel.Policy
                 intersection = new HashSet<string>();
 
             intersection.IntersectWith(PolicyConstants.VALID_ACTIONS());
+
             if (intersection.Count == 0)
             {
                 return false;
@@ -65,6 +67,7 @@ namespace Minio.DataModel.Policy
             }
 
             IList<string> aws = this.principal != null ? this.principal.aws() : null;
+
             if (aws == null || !aws.Contains("*"))
             {
                 return false;
@@ -74,6 +77,7 @@ namespace Minio.DataModel.Policy
 
             if (this.resources is null)
                 return false;
+
             if (this.resources.Contains(bucketResource))
             {
                 return true;
@@ -86,8 +90,6 @@ namespace Minio.DataModel.Policy
 
             return true;
         }
-
-
 
         /**
          * Removes object actions for given object resource.
@@ -110,7 +112,7 @@ namespace Minio.DataModel.Policy
         }
         private void removeReadOnlyBucketActions(string prefix)
         {
-            if (!utils.isSupersetOf(this.actions,PolicyConstants.READ_ONLY_BUCKET_ACTIONS))
+            if (!utils.isSupersetOf(this.actions, PolicyConstants.READ_ONLY_BUCKET_ACTIONS))
             {
                 return;
             }
@@ -206,17 +208,17 @@ namespace Minio.DataModel.Policy
                 return new bool[] { commonFound, readOnly, writeOnly };
             }
 
-            if (utils.isSupersetOf(this.actions,PolicyConstants.COMMON_BUCKET_ACTIONS) && this.conditions == null)
+            if (utils.isSupersetOf(this.actions, PolicyConstants.COMMON_BUCKET_ACTIONS) && this.conditions == null)
             {
                 commonFound = true;
             }
 
-            if (utils.isSupersetOf(this.actions,PolicyConstants.WRITE_ONLY_BUCKET_ACTIONS) && this.conditions == null)
+            if (utils.isSupersetOf(this.actions, PolicyConstants.WRITE_ONLY_BUCKET_ACTIONS) && this.conditions == null)
             {
                 writeOnly = true;
             }
 
-            if (utils.isSupersetOf(this.actions,PolicyConstants.READ_ONLY_BUCKET_ACTIONS))
+            if (utils.isSupersetOf(this.actions, PolicyConstants.READ_ONLY_BUCKET_ACTIONS))
             {
                 if (prefix != null && prefix.Count() != 0 && this.conditions != null)
                 {
@@ -262,7 +264,7 @@ namespace Minio.DataModel.Policy
         /**
         * Returns object policy types.
         */
-       // [JsonIgnore]
+        // [JsonIgnore]
         public bool[] getObjectPolicy()
         {
             bool readOnly = false;
@@ -278,11 +280,11 @@ namespace Minio.DataModel.Policy
                 && aws != null && aws.Contains("*")
                 && this.conditions == null)
             {
-                if (utils.isSupersetOf(this.actions,PolicyConstants.READ_ONLY_OBJECT_ACTIONS))
+                if (utils.isSupersetOf(this.actions, PolicyConstants.READ_ONLY_OBJECT_ACTIONS))
                 {
                     readOnly = true;
                 }
-                if (utils.isSupersetOf(this.actions,PolicyConstants.WRITE_ONLY_OBJECT_ACTIONS))
+                if (utils.isSupersetOf(this.actions, PolicyConstants.WRITE_ONLY_OBJECT_ACTIONS))
                 {
                     writeOnly = true;
                 }
@@ -290,6 +292,6 @@ namespace Minio.DataModel.Policy
 
             return new bool[] { readOnly, writeOnly };
         }
-        
+
     }
 }

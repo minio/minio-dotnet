@@ -155,7 +155,6 @@ namespace Minio
                 }
                 utils.MoveWithReplace(tempFileName, fileName);
             },cancellationToken);
-
         }
 
         /// <summary>
@@ -587,6 +586,7 @@ namespace Minio
         {
             Upload latestUpload = null;
             var uploads = await this.ListIncompleteUploads(bucketName, objectName, cancellationToken:cancellationToken).ToArray();
+
             foreach (Upload upload in uploads)
             {
                 if (objectName == upload.Key && (latestUpload == null || latestUpload.Initiated.CompareTo(upload.Initiated) < 0))

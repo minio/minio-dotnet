@@ -15,17 +15,18 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Minio.Exceptions;
 using System.IO;
 using Microsoft.Win32;
 using Minio.Helper;
 using System.Dynamic;
+using System.Linq;
 
 namespace Minio
 {
-    public class utils
+    internal class utils
+
     {
         // We support '.' with bucket names but we fallback to using path
         // style requests instead for such buckets.
@@ -39,7 +40,7 @@ namespace Minio
         ///  - http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html
         /// </summary>
         /// <param name="bucketName">Bucket to test existence of</param>
-        public static void validateBucketName(string bucketName)
+        internal static void validateBucketName(string bucketName)
         {
            if (bucketName.Trim() == "")
            {
@@ -72,7 +73,7 @@ namespace Minio
         }
         // isValidObjectName - verify object name in accordance with
         //   - http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
-        public static void validateObjectName(String objectName)
+        internal static void validateObjectName(String objectName)
         {
            if (objectName.Trim() == "")
             {
@@ -88,7 +89,8 @@ namespace Minio
 
             return;
         }
-        public static void validateObjectPrefix(string objectPrefix)
+
+        internal static void validateObjectPrefix(string objectPrefix)
         {
             if (objectPrefix.Length > 1024)
             {
@@ -102,11 +104,12 @@ namespace Minio
             return Uri.EscapeDataString(input).Replace("%2F", "/");
         }
 
-        public static bool isAnonymousClient(string accessKey, string secretKey)
+
+        internal static bool isAnonymousClient(string accessKey, string secretKey)
         {
             return (secretKey == "" || accessKey == "");
         }
-        public static void ValidateFile(string filePath,string contentType=null)
+        internal static void ValidateFile(string filePath,string contentType=null)
         {
             if (filePath == null || filePath == "")
             {
@@ -130,7 +133,8 @@ namespace Minio
             }
 
         }
-        public static string GetContentType(string fileName)
+
+        internal static string GetContentType(string fileName)
         {
             // set a default mimetype if not found.
             string contentType = "application/octet-stream";
@@ -160,7 +164,8 @@ namespace Minio
             File.Move(sourceFileName, destFileName);
         }
         
-        public static bool isSupersetOf(IList<string> l1, IList<string> l2)
+        internal static bool isSupersetOf(IList<string> l1, IList<string> l2)
+
         {
             if (l2 == null)
             {

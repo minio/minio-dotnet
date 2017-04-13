@@ -99,9 +99,7 @@ namespace Minio
                 //Initialize client
                 Uri requestUrl = RequestUtil.MakeTargetURL(client.BaseUrl, client.Secure);
                 client.SetTargetURL(requestUrl);
-               // client.PrepareClient(bucketName:bucketName,usePathStyle:true);
 
-                
                 var request = new RestRequest(path, Method.GET);
 
                 var response = await client.ExecuteTaskAsync(client.NoErrorHandlers, request);
