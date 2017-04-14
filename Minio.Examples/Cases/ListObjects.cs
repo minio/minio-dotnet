@@ -22,7 +22,7 @@ namespace Minio.Examples.Cases
     
     class ListObjects
     {
-        //List objects matching optional prefix in a specified bucket.
+        // List objects matching optional prefix in a specified bucket.
         public static void Run(Minio.MinioClient minio,
                                      string bucketName = "my-bucket-name",
                                      string prefix = null,
@@ -38,7 +38,7 @@ namespace Minio.Examples.Cases
                     ex => Console.WriteLine("OnError: {0}", ex),
                     () => Console.WriteLine("Listed all objects in bucket " + bucketName + "\n"));
 
-                //subscription.Dispose();
+                // subscription.Dispose();
             }
             catch (Exception e)
             {

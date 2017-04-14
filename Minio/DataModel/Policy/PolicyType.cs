@@ -29,7 +29,6 @@ namespace Minio.DataModel
         public static PolicyType READ_WRITE { get { return new PolicyType("readwrite"); } }
         public static PolicyType WRITE_ONLY { get { return new PolicyType("writeonly"); } }
 
-        //   public override bool Equals(PolicyType other)
         public override bool Equals(Object other)
         {
             return Value.Equals(((PolicyType)other).Value);

@@ -168,8 +168,8 @@ namespace Minio.DataModel.Policy
         }
 
         /**
-    * Removes bucket actions for given prefix and bucketResource.
-    */
+        * Removes bucket actions for given prefix and bucketResource.
+        */
         public void removeBucketActions(string prefix, string bucketResource,
                                     bool readOnlyInUse, bool writeOnlyInUse)
         {

@@ -85,6 +85,6 @@ namespace Minio
             }
             return endpoint;
         }
-       
+
     }
 }

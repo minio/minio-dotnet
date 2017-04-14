@@ -20,13 +20,32 @@ using System.Collections.ObjectModel;
 
 namespace Minio.DataModel
 {
- /**
- * A container class to hold all the Conditions to be checked
- * before copying an object.
- */
+    /**
+    * A container class to hold all the Conditions to be checked
+    * before copying an object.
+    */
     public class CopyConditions
     {
         private Dictionary<string, string> copyConditions = new Dictionary<string, string>();
+        internal long byteRangeStart = -1;
+        internal long byteRangeEnd = -1;
+
+        /// <summary>
+        /// Clone CopyConditions object
+        /// </summary>
+        /// <returns>new CopyConditions object</returns>
+        public CopyConditions Clone()
+        {
+            CopyConditions newcond = new CopyConditions();
+            foreach (KeyValuePair<string, string> item in this.copyConditions)
+            {
+                newcond.copyConditions.Add(item.Key, item.Value);
+            }
+            newcond.byteRangeStart = this.byteRangeStart;
+            newcond.byteRangeEnd = this.byteRangeEnd;
+            return newcond;
+        }
+
 
         /**
          * Set modified condition, copy object modified since given time.
@@ -71,7 +90,7 @@ namespace Minio.DataModel
             {
                 throw new ArgumentException("ETag cannot be empty");
             }
-            copyConditions.Add("x-amz-copy-source-if-match",etag);
+            copyConditions.Add("x-amz-copy-source-if-match", etag);
         }
 
         /**
@@ -81,13 +100,37 @@ namespace Minio.DataModel
          * @throws InvalidArgumentException
          *           When etag is null
          */
-        public void SetMatchETagNone(string etag)  
+        public void SetMatchETagNone(string etag)
         {
             if (etag == null)
             {
                 throw new ArgumentException("ETag cannot be empty");
             }
-            copyConditions.Add("x-amz-copy-source-if-none-match",etag);
+            copyConditions.Add("x-amz-copy-source-if-none-match", etag);
+        }
+
+        /**
+       * Set Byte Range condition, copy object which falls within the 
+       * start and end byte range specified by user
+       *
+       * @throws InvalidArgumentException
+       *           When firstByte is null or lastByte is null
+       */
+        public void SetByteRange(long firstByte, long lastByte)
+        {
+            if ((firstByte < 0) || (lastByte < firstByte))
+                throw new ArgumentException("Range start less than zero or range end less than range start");
+            if ((lastByte - firstByte + 1) < 1)
+                throw new ArgumentException("Offset must refer to a non zero range length.");
+            this.byteRangeStart = firstByte;
+            this.byteRangeEnd = lastByte;
+        }
+        /**
+         * Get range size
+         */
+        public long GetByteRange()
+        {
+            return (this.byteRangeStart == -1) ? 0 : (this.byteRangeEnd - this.byteRangeStart + 1);
         }
 
         /**

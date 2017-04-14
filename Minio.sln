@@ -41,8 +41,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataModel", "DataModel", "{
 		Minio\DataModel\Bucket.cs = Minio\DataModel\Bucket.cs
 		Minio\DataModel\CopyConditions.cs = Minio\DataModel\CopyConditions.cs
 		Minio\DataModel\CopyObjectResult.cs = Minio\DataModel\CopyObjectResult.cs
+		Minio\DataModel\CopyPartResult.cs = Minio\DataModel\CopyPartResult.cs
 		Minio\DataModel\CreateBucketConfiguration.cs = Minio\DataModel\CreateBucketConfiguration.cs
-		Minio\DataModel\DateFormat.cs = Minio\DataModel\DateFormat.cs
 		Minio\DataModel\Grant.cs = Minio\DataModel\Grant.cs
 		Minio\DataModel\GranteeUser.cs = Minio\DataModel\GranteeUser.cs
 		Minio\DataModel\InitiateMultipartUploadResult.cs = Minio\DataModel\InitiateMultipartUploadResult.cs
@@ -108,7 +108,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Policy", "Policy", "{83F364
 		Minio\DataModel\Policy\Resources.cs = Minio\DataModel\Policy\Resources.cs
 		Minio\DataModel\Policy\SingleOrArrayConverter.cs = Minio\DataModel\Policy\SingleOrArrayConverter.cs
 		Minio\DataModel\Policy\Statement.cs = Minio\DataModel\Policy\Statement.cs
-		StringSet.cs = StringSet.cs
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Minio.Core", "Minio.Core\Minio.Core.csproj", "{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}"

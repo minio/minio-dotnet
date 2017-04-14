@@ -30,6 +30,8 @@ namespace Minio.Helper
         // operation.
         public static long MaxSinglePutObjectSize = 1024L * 1024L * 1024L * 5;
 
+        // maxSingleCopyObjectSize - 5GiB 
+        public static long MaxSingleCopyObjectSize = 1024L * 1024L * 1024L * 5;
         // maxMultipartPutObjectSize - maximum size 5TiB of object for
         // Multipart operation.
         public static long MaxMultipartPutObjectSize = 1024L * 1024L * 1024L * 1024L * 5;

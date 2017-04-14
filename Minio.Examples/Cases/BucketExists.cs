@@ -21,7 +21,7 @@ namespace Minio.Examples.Cases
 {
     class BucketExists
     {
-        //Check if a bucket exists
+        // Check if a bucket exists
         public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name")
         {

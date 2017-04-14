@@ -22,7 +22,7 @@ namespace Minio.Examples.Cases
 {
     class StatObject
     {
-        //get stats on a object
+        // Get stats on a object
         public async static Task Run(Minio.MinioClient minio, 
                                      string bucketName = "my-bucket-name",
                                      string bucketObject="my-object-name")

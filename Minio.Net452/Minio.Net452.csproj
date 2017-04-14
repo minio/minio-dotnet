@@ -95,6 +95,9 @@
     <Compile Include="..\Minio\DataModel\CopyObjectResult.cs">
       <Link>DataModel\CopyObjectResult.cs</Link>
     </Compile>
+    <Compile Include="..\Minio\DataModel\CopyPartResult.cs">
+      <Link>DataModel\CopyPartResult.cs</Link>
+    </Compile>
     <Compile Include="..\Minio\DataModel\CreateBucketConfiguration.cs">
       <Link>DataModel\CreateBucketConfiguration.cs</Link>
     </Compile>

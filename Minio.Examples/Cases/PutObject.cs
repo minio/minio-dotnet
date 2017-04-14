@@ -24,7 +24,7 @@ namespace Minio.Examples.Cases
     {
         private static int MB = 1024 * 1024;
 
-        //Put an object from a local stream into bucket
+        // Put an object from a local stream into bucket
         public async static Task Run(Minio.MinioClient minio,
                                      string bucketName = "my-bucket-name", 
                                      string objectName = "my-object-name",

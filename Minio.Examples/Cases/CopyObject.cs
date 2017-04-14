@@ -21,7 +21,7 @@ namespace Minio.Examples.Cases
 {
     class CopyObject
     {
-        //copy object from one bucket to another
+        // Copy object from one bucket to another
         public async static Task Run(Minio.MinioClient minio,
                                      string fromBucketName="from-bucket-name",
                                      string fromObjectName="from-object-name",
@@ -31,7 +31,7 @@ namespace Minio.Examples.Cases
             try
             {
                 Console.Out.WriteLine("Running example for API: CopyObjectAsync");
-                //Optionally pass copy conditions
+                // Optionally pass copy conditions
                 await minio.CopyObjectAsync(fromBucketName, 
                                                 fromObjectName, 
                                                 destBucketName, 

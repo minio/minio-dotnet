@@ -38,7 +38,7 @@ namespace Minio.DataModel
 
         public BucketPolicy(string bucketName = null)
         {
-            
+
             this.bucketName = bucketName;
             version = "2012-10-17";
             this.statements = new List<Statement>();
@@ -53,20 +53,20 @@ namespace Minio.DataModel
             string toparse = new StreamReader(reader).ReadToEnd();
             JObject jsonData = JObject.Parse(toparse);
 
-            BucketPolicy bucketPolicy = JsonConvert.DeserializeObject<BucketPolicy>(toparse, 
+            BucketPolicy bucketPolicy = JsonConvert.DeserializeObject<BucketPolicy>(toparse,
                 new JsonSerializerSettings
                 {
                     NullValueHandling = NullValueHandling.Ignore,
                 });
             bucketPolicy.bucketName = bucketName;
-            
+
             return bucketPolicy;
         }
         // Helper method for unit testing
         internal void SetStatements(Statement stmt)
         {
             if (this.statements == null)
-                 this.statements = new List<Statement>();
+                this.statements = new List<Statement>();
             this.statements.Add(stmt);
         }
 
@@ -544,7 +544,7 @@ namespace Minio.DataModel
                 }
 
                 // String objectPath = resource.Substring(bucketResource.Length + 1, resource.Length);
-                String objectPath = resource.Substring(bucketResource.Length + 1,resource.Length - bucketResource.Length  - 1);
+                String objectPath = resource.Substring(bucketResource.Length + 1, resource.Length - bucketResource.Length - 1);
 
                 PolicyType policy = this.GetPolicy(objectPath);
                 policyRules.Add(bucketName + "/" + objectPath + asterisk, policy);

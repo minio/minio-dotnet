@@ -96,7 +96,7 @@ namespace Minio.Functional.Tests
 
                 // Set app Info 
                 minioClient.SetAppInfo("app-name", "app-version");
-
+               
                 // Set HTTP Tracing On
                 // minioClient.SetTraceOn();
 
@@ -151,6 +151,7 @@ namespace Minio.Functional.Tests
                 CopyObject_Test2(minioClient).Wait();
                 CopyObject_Test3(minioClient).Wait();
                 CopyObject_Test4(minioClient).Wait();
+                CopyObject_Test5(minioClient).Wait();
 
                 // Test SetPolicyAsync function
                 SetBucketPolicy_Test1(minioClient).Wait();
@@ -266,7 +267,7 @@ namespace Minio.Functional.Tests
                 var list = await minio.ListBucketsAsync();
                 foreach (Bucket bucket in list.Buckets)
                 {
-                    //Ignore
+                    // Ignore
                     continue;
                 }
             }
@@ -332,7 +333,7 @@ namespace Minio.Functional.Tests
         }
         private async static Task PutObject_Test4(MinioClient minio)
         {
-            //Putobject call with incorrect size of stream. See if PutObjectAsync call resumes 
+            // Putobject call with incorrect size of stream. See if PutObjectAsync call resumes 
             Console.Out.WriteLine("Test4: PutobjectAsync resume upload");
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
@@ -354,8 +355,8 @@ namespace Minio.Functional.Tests
             }
             catch (UnexpectedShortReadException)
             {
-                //PutObject failed as expected since the stream size is incorrect
-                //default to actual stream size and complete the upload
+                // PutObject failed as expected since the stream size is incorrect
+                // default to actual stream size and complete the upload
                 await PutObject_Tester(minio, bucketName, objectName, fileName, contentType);
 
             }
@@ -491,7 +492,7 @@ namespace Minio.Functional.Tests
         private async static Task CopyObject_Test2(MinioClient minio)
         {
             Console.Out.WriteLine("Test2: CopyObjectsAsync");
-            //Test CopyConditions where matching ETag is not found
+            // Test CopyConditions where matching ETag is not found
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
             string destBucketName = GetRandomName(15);
@@ -528,7 +529,7 @@ namespace Minio.Functional.Tests
         private async static Task CopyObject_Test3(MinioClient minio)
         {
             Console.Out.WriteLine("Test3: CopyObjectsAsync");
-            //Test CopyConditions where matching ETag is found
+            // Test CopyConditions where matching ETag is found
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
             string destBucketName = GetRandomName(15);
@@ -574,7 +575,7 @@ namespace Minio.Functional.Tests
         }
         private async static Task CopyObject_Test4(MinioClient minio)
         {
-            //Test if objectName is defaulted to source objectName
+            // Test if objectName is defaulted to source objectName
             Console.Out.WriteLine("Test4: CopyObjectsAsync");
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
@@ -589,7 +590,7 @@ namespace Minio.Functional.Tests
 
             CopyConditions conditions = new CopyConditions();
             conditions.SetMatchETag("TestETag");
-            //omit dest bucket name.
+            // omit dest bucket name.
             await minio.CopyObjectAsync(bucketName, objectName, destBucketName);
             string outFileName = "outFileName";
 
@@ -608,6 +609,50 @@ namespace Minio.Functional.Tests
             File.Delete(fileName);
             Console.Out.WriteLine("Test4: CopyObjectsAsync Complete");
         }
+        private async static Task CopyObject_Test5(MinioClient minio)
+        {
+            // Test if multi-part copy upload for large files works as expected.
+            Console.Out.WriteLine("Test5: CopyObjectsAsync");
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string destBucketName = GetRandomName(15);
+            string fileName = CreateFile(7 * MB);
+            await Setup_Test(minio, bucketName);
+            await Setup_Test(minio, destBucketName);
+
+            await minio.PutObjectAsync(bucketName,
+                                        objectName,
+                                        fileName);
+
+            CopyConditions conditions = new CopyConditions();
+            conditions.SetByteRange(1024, 6291456);
+<<<<<<< HEAD
+
+            // omit dest object name.
+=======
+            //omit dest object name.
+>>>>>>> 847e888... Support copy objects of all sizes
+            await minio.CopyObjectAsync(bucketName, objectName, destBucketName, copyConditions: conditions);
+            string outFileName = "outFileName";
+
+            await minio.GetObjectAsync(bucketName, objectName, outFileName);
+            File.Delete(outFileName);
+            ObjectStat stats = await minio.StatObjectAsync(destBucketName, objectName);
+            Assert.IsNotNull(stats);
+            Assert.AreEqual(stats.ObjectName, objectName);
+            Assert.AreEqual(stats.Size, 6291456 - 1024 + 1);
+            await minio.RemoveObjectAsync(bucketName, objectName);
+            await minio.RemoveObjectAsync(destBucketName, objectName);
+
+
+            await TearDown(minio, bucketName);
+            await TearDown(minio, destBucketName);
+
+            File.Delete(fileName);
+            Console.Out.WriteLine("Test4: CopyObjectsAsync Complete");
+        }
+
+
         private async static Task GetObject_Test1(MinioClient minio)
         {
             Console.Out.WriteLine("Test1: GetObjectAsync");
@@ -880,7 +925,7 @@ namespace Minio.Functional.Tests
             fileStream.Dispose();
             FileInfo writtenInfo = new FileInfo(downloadFile);
             long file_read_size = writtenInfo.Length;
-            //Compare size of file downloaded  with presigned curl request and actual object size on server
+            // Compare size of file downloaded  with presigned curl request and actual object size on server
             Assert.AreEqual(file_read_size, stats.Size);
 
             await minio.RemoveObjectAsync(bucketName, objectName);
@@ -898,12 +943,12 @@ namespace Minio.Functional.Tests
             string objectName = GetRandomName(10);
             string fileName = CreateFile(1 * MB);
             await Setup_Test(minio, bucketName);
-            //Upload with presigned url
+            // Upload with presigned url
             string presigned_url = await minio.PresignedPutObjectAsync(bucketName, objectName, 1000);
             await UploadObjectAsync(presigned_url, fileName);
-            //Get stats for object from server
+            // Get stats for object from server
             ObjectStat stats = await minio.StatObjectAsync(bucketName, objectName);
-            //Compare with file used for upload
+            // Compare with file used for upload
             FileInfo writtenInfo = new FileInfo(fileName);
             long file_written_size = writtenInfo.Length;
             Assert.AreEqual(file_written_size, stats.Size);

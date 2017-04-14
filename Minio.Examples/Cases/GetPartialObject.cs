@@ -36,7 +36,7 @@ namespace Minio.Examples.Cases
                 // StatObjectAsync() will throw an exception.
                 await minio.StatObjectAsync(bucketName, objectName);
 
-                //Get object content starting at byte position 1024 and length of 4096
+                // Get object content starting at byte position 1024 and length of 4096
                 await minio.GetObjectAsync(bucketName, objectName, 1024L, 4096L,
                 (stream) =>
                 {
@@ -46,7 +46,7 @@ namespace Minio.Examples.Cases
                     FileInfo writtenInfo = new FileInfo(fileName);
                     long file_read_size = writtenInfo.Length;
                     // Uncommment to print the file on output console
-                    //stream.CopyTo(Console.OpenStandardOutput());
+                    // stream.CopyTo(Console.OpenStandardOutput());
                 });
                 Console.WriteLine("Downloaded partial object into file " + fileName + " from bucket " + bucketName);
                 Console.Out.WriteLine();

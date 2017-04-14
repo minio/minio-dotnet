@@ -60,7 +60,7 @@ namespace SimpleTest
             var found = bucketExistTask.Result;
             if (!found)
             {
-                //Supply a new bucket name
+                // Supply a new bucket name
                 Task.WaitAll(minio.MakeBucketAsync("mynewbucket"));
             }
             Console.Out.WriteLine("bucket was " + found);
@@ -70,16 +70,16 @@ namespace SimpleTest
         {
             if (exceptionToHandle is ArgumentNullException)
             {
-                //I'm handling the ArgumentNullException.
+                // I'm handling the ArgumentNullException.
                 Console.Out.WriteLine("Handling the ArgumentNullException.");
-                //I handled this Exception, return true.
+                // I handled this Exception, return true.
                 return true;
             }
             else
             {
-                //I'm only handling ArgumentNullExceptions.
+                // I'm only handling ArgumentNullExceptions.
                 Console.Out.WriteLine(string.Format("I'm not handling the {0}.", exceptionToHandle.GetType()));
-                //I didn't handle this Exception, return false.
+                // I didn't handle this Exception, return false.
                 return false;
             }
         }

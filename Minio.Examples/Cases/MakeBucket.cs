@@ -21,7 +21,7 @@ namespace Minio.Examples.Cases
 {
     public class MakeBucket
     {
-        //Make a bucket
+        // Make a bucket
         public async static Task Run(Minio.MinioClient minio,
                                      string bucketName="my-bucket-name")
         {

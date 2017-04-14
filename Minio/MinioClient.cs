@@ -114,7 +114,7 @@ namespace Minio
                                 string contentType = "application/xml",
                                 Object body = null, string resourcePath = null, string region = null)
         {
-            //Validate bucket name and object name
+            // Validate bucket name and object name
             if (bucketName == null && objectName == null)
             {
                 throw new InvalidBucketNameException(bucketName, "null bucket name for object '" + objectName + "'");
@@ -129,7 +129,7 @@ namespace Minio
             // Start with user specified endpoint
             string host = this.BaseUrl;
 
-            //Fetch correct region for bucket
+            // Fetch correct region for bucket
             if (region == null)
             {
                 if (!BucketRegionCache.Instance.Exists(bucketName))
@@ -252,7 +252,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///Sets app version and name. Used by RestSharp for constructing User-Agent header in all HTTP requests
+        /// Sets app version and name. Used by RestSharp for constructing User-Agent header in all HTTP requests
         /// </summary>
         /// <param name="appName"></param>
         /// <param name="appVersion"></param>
@@ -287,7 +287,7 @@ namespace Minio
             this.AccessKey = accessKey;
             this.SecretKey = secretKey;
 
-            //Instantiate a region cache 
+            // Instantiate a region cache 
             this.regionCache = BucketRegionCache.Instance;
 
             initClient();
@@ -474,7 +474,7 @@ namespace Minio
         /// <param name="handlers"></param>
         private void HandleIfErrorResponse(IRestResponse response, IEnumerable<ApiResponseErrorHandlingDelegate> handlers, DateTime startTime)
         {
-            //Logs Response if HTTP tracing is enabled
+            // Logs Response if HTTP tracing is enabled
             if (this.trace)
             {
                 DateTime now = DateTime.Now;
@@ -489,7 +489,7 @@ namespace Minio
             {
                 handler(response);
             }            
-            //Fall back default error handler
+            // Fall back default error handler
             _defaultErrorHandlingDelegate(response);
 
         }

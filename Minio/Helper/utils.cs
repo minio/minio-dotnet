@@ -83,7 +83,7 @@ namespace Minio
             {
                 throw new InvalidObjectNameException(objectName, "Object name cannot be greater than 1024 characters.");
             }
-            //c# strings are in utf16 format. they are already in unicode format when they arrive here.
+            // c# strings are in utf16 format. they are already in unicode format when they arrive here.
             // if !utf8.ValidString(objectName) 
             //     return ErrInvalidBucketName("Object name with non UTF-8 strings are not supported.")
 

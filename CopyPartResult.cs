@@ -15,25 +15,20 @@
  */
 
 using System;
-using System.Threading.Tasks;
+using System.Xml.Serialization;
 
-namespace Minio.Examples.Cases
+namespace Minio.DataModel
 {
-    class RemoveBucket
+    [Serializable]
+    [XmlRoot(ElementName = "CopyPartResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+
+    // CopyPartResult container for CopyPartobject
+    public class CopyPartResult
     {
-        // Remove a bucket
-        public async static Task Run(MinioClient minio, 
-                                     string bucketName = "my-bucket-name")
-        {
-            try
-            {
-                await minio.RemoveBucketAsync(bucketName);
-                Console.Out.WriteLine("Removed the bucket " + bucketName + " successfully");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("[Bucket]  Exception: {0}", e);
-            }
-        }
+        public string ETag { get; set; }
+
+        public int partNumber { get; set; }
+
+        public string lastModified { get; set; }
     }
 }

@@ -111,7 +111,6 @@ namespace Minio
                 throw new InvalidEndpointException(Endpoint, "No query parameter allowed in endpoint.");
             }
             if ((!uri.Scheme.ToLowerInvariant().Equals("https")) && (!uri.Scheme.ToLowerInvariant().Equals("http")))
-            //kp if (!(this.uri.Scheme.Equals(Uri.UriSchemeHttp) || this.uri.Scheme.Equals(Uri.UriSchemeHttps)))
             {
                 throw new InvalidEndpointException(Endpoint, "Invalid scheme detected in endpoint.");
             }
