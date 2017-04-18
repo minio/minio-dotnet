@@ -120,8 +120,7 @@ namespace Minio.DataModel
         {
             if ((firstByte < 0) || (lastByte < firstByte))
                 throw new ArgumentException("Range start less than zero or range end less than range start");
-            if ((lastByte - firstByte + 1) < 1)
-                throw new ArgumentException("Offset must refer to a non zero range length.");
+
             this.byteRangeStart = firstByte;
             this.byteRangeEnd = lastByte;
         }

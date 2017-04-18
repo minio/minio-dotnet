@@ -29,7 +29,7 @@ namespace Minio.Examples
     class Program
     {
         private static Random rnd = new Random();
-        private static int MB = 1024 * 1024;
+        private static int UNIT_MB = 1024 * 1024;
 
         // Create a file of given size from random byte array
         private static String CreateFile(int size)
@@ -85,8 +85,8 @@ namespace Minio.Examples
             {
                 // Assign parameters before starting the test 
                 string bucketName = GetRandomName();
-                string smallFileName = CreateFile(1 * MB);
-                string bigFileName = CreateFile(6 * MB);
+                string smallFileName = CreateFile(1 * UNIT_MB);
+                string bigFileName = CreateFile(6 * UNIT_MB);
                 string objectName = GetRandomName();
                 string destBucketName = GetRandomName();
                 string destObjectName = GetRandomName();
@@ -95,7 +95,7 @@ namespace Minio.Examples
                 minioClient.SetAppInfo("app-name", "app-version");
 
                 // Set HTTP Tracing On
-                //minioClient.SetTraceOn();
+                // minioClient.SetTraceOn();
 
 
                 // Set HTTP Tracing Off

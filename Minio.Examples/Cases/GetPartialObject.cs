@@ -47,8 +47,9 @@ namespace Minio.Examples.Cases
                     long file_read_size = writtenInfo.Length;
                     // Uncommment to print the file on output console
                     // stream.CopyTo(Console.OpenStandardOutput());
+                    Console.WriteLine("Successfully downloaded object with requested offset and length {0} into file",writtenInfo.Length);
+                    stream.Dispose();
                 });
-                Console.WriteLine("Downloaded partial object into file " + fileName + " from bucket " + bucketName);
                 Console.Out.WriteLine();
             }
             catch (Exception e)

@@ -16,7 +16,7 @@
 
 namespace Minio.Helper
 {
-   internal static class Constants
+    internal static class Constants
     {
         // Maximum number of parts.
         public static int MaxParts = 10000;

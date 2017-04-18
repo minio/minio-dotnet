@@ -19,11 +19,9 @@ using System.Linq;
 
 namespace Minio.Helper
 {
-    public class s3utils
+    internal class s3utils
     {
-
-        public static bool IsAmazonEndPoint(string endpoint)
-
+        internal static bool IsAmazonEndPoint(string endpoint)
         {
             if (IsAmazonChinaEndPoint(endpoint))
             {
@@ -31,29 +29,22 @@ namespace Minio.Helper
             }
             return endpoint == "s3.amazonaws.com";
         }
+
         // IsAmazonChinaEndpoint - Match if it is exactly Amazon S3 China endpoint.
         // Customers who wish to use the new Beijing Region are required
         // to sign up for a separate set of account credentials unique to
         // the China (Beijing) Region. Customers with existing AWS credentials
         // will not be able to access resources in the new Region, and vice versa.
         // For more info https://aws.amazon.com/about-aws/whats-new/2013/12/18/announcing-the-aws-china-beijing-region/
-        public static bool IsAmazonChinaEndPoint(string endpoint)
-
+        internal static bool IsAmazonChinaEndPoint(string endpoint)
         {
-
             return endpoint == "s3.cn-north-1.amazonaws.com.cn";
         }
-        // IsGoogleEndpoint - Match if it is exactly Google cloud storage endpoint.
-        public static bool IsGoogleEndPoint(string endpoint)
-        {
-            return endpoint == "storage.googleapis.com";
-        }
-     
 
         // IsVirtualHostSupported - verifies if bucketName can be part of
         // virtual host. Currently only Amazon S3 and Google Cloud Storage
         // would support this.
-        public static bool IsVirtualHostSupported(Uri endpointURL,string bucketName)
+        internal static bool IsVirtualHostSupported(Uri endpointURL, string bucketName)
         {
             if (endpointURL == null)
             {
@@ -66,8 +57,9 @@ namespace Minio.Helper
                 return false;
             }
             // Return true for all other cases
-            return IsAmazonEndPoint(endpointURL.Host) || IsGoogleEndPoint(endpointURL.Host);
+            return IsAmazonEndPoint(endpointURL.Host);
         }
+
         internal static string GetPath(string p1, string p2)
         {
             try
@@ -83,40 +75,12 @@ namespace Minio.Helper
 
         }
 
-        // IsValidDomain validates if input string is a valid domain name.
-        public static bool IsValidDomain(string host)
-        {
-            // See RFC 1035, RFC 3696.
-            host = host.Trim();
-	        if ((host.Length == 0) || (host.Length > 255)) 
-            {
-                return false;
-	        }
-	        // host cannot start or end with "-"
-	        if ((host.Substring(host.Length - 1) == "-") || (host.Substring(1) == "-"))
-            {
-                return false;
-	        }
-	        // host cannot start or end with "_"
-	        if ((host.Substring(host.Length - 1) == "_") || (host.Substring(1) == "_"))
-            {
-                return false;
-	        }
-	        // host cannot start or end with a "."
-	        if(( host.Substring(host.Length - 1) == ".") || (host.Substring(1) == "."))
-            {
-                return false;
-	        }
-            return Uri.CheckHostName(host) != UriHostNameType.Unknown;
-            // No need to regexp match, since the list is non-exhaustive.
-            // We let it valid and fail later.
-        }
-
         // IsValidIP parses input string for ip address validity.
-        public static bool IsValidIP(string ip) {
+        internal static bool IsValidIP(string ip)
+        {
             if (String.IsNullOrEmpty(ip))
                 return false;
-          
+
             string[] splitValues = ip.Split('.');
             if (splitValues.Length != 4)
             {
@@ -126,8 +90,6 @@ namespace Minio.Helper
             byte tempForParsing;
 
             return splitValues.All(r => byte.TryParse(r, out tempForParsing));
-           
         }
-     
     }
 }

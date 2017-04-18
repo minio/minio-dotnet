@@ -55,8 +55,8 @@ namespace Minio
             if (HttpStatusCode.OK.Equals(response.StatusCode))
             {
                 var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-                var stream = new MemoryStream(contentBytes);
-                bucketList = (ListAllMyBucketsResult)(new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream));
+                using (var stream = new MemoryStream(contentBytes))
+                    bucketList = (ListAllMyBucketsResult)(new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream));
                 return bucketList;
             }
             return bucketList;
@@ -209,8 +209,11 @@ namespace Minio
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
 
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-            var stream = new MemoryStream(contentBytes);
-            ListBucketResult listBucketResult = (ListBucketResult)(new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream));
+            ListBucketResult listBucketResult = null;
+            using (var stream = new MemoryStream(contentBytes))
+            {
+                listBucketResult = (ListBucketResult)(new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream));
+            }
 
             XDocument root = XDocument.Parse(response.Content);
 
@@ -257,8 +260,10 @@ namespace Minio
                 response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
                 var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
 
-                var stream = new MemoryStream(contentBytes);
-                policy = BucketPolicy.ParseJson(stream, bucketName);
+                using (var stream = new MemoryStream(contentBytes))
+                {
+                    policy = BucketPolicy.ParseJson(stream, bucketName);
+                }
 
             }
             catch (ErrorResponseException e)

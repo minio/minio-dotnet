@@ -187,5 +187,17 @@ namespace Minio.Tests
             xs.Serialize(writer, config);
             Console.Out.WriteLine(writer.ToString());
         }
+        [TestMethod]
+        public void TestisValidEndpoint()
+        {
+            Assert.IsTrue(RequestUtil.IsValidEndpoint("a.b.c"));
+            Assert.IsFalse(RequestUtil.IsValidEndpoint("_a.b.c"));
+            Assert.IsFalse(RequestUtil.IsValidEndpoint("a.b_.c"));
+            Assert.IsFalse(RequestUtil.IsValidEndpoint("a.b.c."));
+            Assert.IsFalse(RequestUtil.IsValidEndpoint("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz12345678901234.b.com"));
+            Assert.IsTrue(RequestUtil.IsValidEndpoint("0some.domain.com"));
+            Assert.IsTrue(RequestUtil.IsValidEndpoint("A.domain.com"));
+            Assert.IsTrue(RequestUtil.IsValidEndpoint("A.domain1.com"));
+        }
     }
 }

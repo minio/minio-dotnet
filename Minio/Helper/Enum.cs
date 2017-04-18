@@ -22,7 +22,7 @@ namespace Minio
         /// <summary>
         /// HTTP method to use when making requests
         /// </summary>
-        public enum Method
+        internal enum Method
         {
             GET,
             POST,

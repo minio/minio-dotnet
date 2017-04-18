@@ -95,8 +95,8 @@ MinioClient s3Client = new MinioClient("s3.amazonaws.com:80",
 ## 2. Bucket operations
 
 <a name="makeBucket"></a>
-### MakeBucketAsync(string bucketName,string location="us-east-1")
-`Task MakeBucketAsync(string bucketName, string location = "us-east-1",CancellationToken cancellationToken = default(CancellationToken))`
+### MakeBucketAsync(string bucketName, string location="us-east-1")
+`Task MakeBucketAsync(string bucketName, string location = "us-east-1", CancellationToken cancellationToken = default(CancellationToken))`
 
 Creates a new bucket.
 
@@ -107,7 +107,7 @@ __Parameters__
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_ | Name of the bucket.  |
 | ``region``  | _string_| Optional parameter. Defaults to us-east-1 for AWS requests  |
-| ``cancellationToken``| System.Threading.CancellationToken | Optional parameter. Defaults to default(CancellationToken) |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
@@ -153,7 +153,7 @@ Lists all buckets.
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``cancellationToken``| System.Threading.CancellationToken | Optional parameter. Defaults to default(CancellationToken) |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 |Return Type	  | Exceptions	  |
 |:--- |:--- |
@@ -170,13 +170,14 @@ __Example__
 
 
 ```cs
-try {
-	// List buckets that have read access.
-	var list = await minioClient.ListBucketsAsync();
-	foreach (Bucket bucket in list.Buckets)
-	{
-		Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
-	}
+try 
+{
+    // List buckets that have read access.
+    var list = await minioClient.ListBucketsAsync();
+    foreach (Bucket bucket in list.Buckets)
+    {
+        Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
+    }
 } 
 catch (MinioException e) 
 {
@@ -187,7 +188,7 @@ catch (MinioException e)
 <a name="bucketExists"></a>
 ### BucketExistsAsync(string bucketName)
 
-`Task<bool> BucketExistsAsync(string bucketName,CancellationToken cancellationToken = default(CancellationToken))`
+`Task<bool> BucketExistsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))`
 
 Checks if a bucket exists.
 
@@ -198,7 +199,7 @@ __Parameters__
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_  | Name of the bucket.  |
-| ``cancellationToken``| System.Threading.CancellationToken | Optional parameter. Defaults to default(CancellationToken) |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
@@ -220,7 +221,7 @@ try
 {
    // Check whether 'my-bucketname' exists or not.
    bool found = await minioClient.BucketExistsAsync(bucketName);
-   Console.Out.WriteLine("bucket-name was " + ((found == true) ? "found" : "not found"));
+   Console.Out.WriteLine("bucket-name " + ((found == true) ? "exists" : "does not exist"));
 }
 catch (MinioException e) 
 {
@@ -246,7 +247,7 @@ __Parameters__
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_  | Name of the bucket.  |
-| ``cancellationToken``| System.Threading.CancellationToken | Optional parameter. Defaults to default(CancellationToken) |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
@@ -264,11 +265,12 @@ __Example__
 
 
 ```cs
-try {
-	// Check if my-bucket exists before removing it.
-	bool found = await minioClient.BucketExistsAsync("mybucket");
-	if (found) 
-    {
+try 
+{
+    // Check if my-bucket exists before removing it.
+    bool found = await minioClient.BucketExistsAsync("mybucket");
+    if (found) 
+    {	
         // Remove bucket my-bucketname. This operation will succeed only if the bucket is empty.
         await minioClient.RemoveBucketAsync("mybucket");
         Console.Out.WriteLine("mybucket is removed successfully");
@@ -299,7 +301,7 @@ __Parameters__
 | ``bucketName``  | _string_  | Name of the bucket.  |
 | ``prefix``  | _string_  | Prefix string. List objects whose name starts with ``prefix``. |
 | ``recursive``  | _bool_  | when false, emulates a directory structure where each listing returned is either a full object or part of the object's key up to the first '/'. All objects with the same prefix up to the first '/' will be merged into one entry. |
-| ``cancellationToken``| System.Threading.CancellationToken | Optional parameter. Defaults to default(CancellationToken) |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 |Return Type	  | Exceptions	  |
@@ -311,23 +313,23 @@ __Example__
 
 
 ```cs
-try {
+try 
+{
     // Check whether 'mybucket' exists or not.
     bool found = minioClient.BucketExistsAsync("mybucket");
-	if (found) 
-        {
-            // List objects from 'my-bucketname'
-            IObservable<Item> observable = minioClient.ListObjectsAsync("mybucket", "prefix", true);
-
-            IDisposable subscription = observable.Subscribe(
-					item => Console.WriteLine("OnNext: {0}", item.Key),
-					ex => Console.WriteLine("OnError: {0}", ex.Message),
-					() => Console.WriteLine("OnComplete: {0}"));    
-	} 
-	else 
-	{
-	    Console.Out.WriteLine("mybucket does not exist");
-	}
+    if (found) 
+    {
+        // List objects from 'my-bucketname'
+        IObservable<Item> observable = minioClient.ListObjectsAsync("mybucket", "prefix", true);
+        IDisposable subscription = observable.Subscribe(
+				item => Console.WriteLine("OnNext: {0}", item.Key),
+				ex => Console.WriteLine("OnError: {0}", ex.Message),
+				() => Console.WriteLine("OnComplete: {0}"));    
+    } 
+    else 
+    {
+        Console.Out.WriteLine("mybucket does not exist");
+    }
 } 
 catch (MinioException e) 
 {
@@ -352,7 +354,7 @@ __Parameters__
 | ``bucketName``  | _string_  | Name of the bucket.  |
 | ``prefix``  | _string_  | Prefix string. List objects whose name starts with ``prefix``. |
 | ``recursive``  | _bool_  | when false, emulates a directory structure where each listing returned is either a full object or part of the object's key up to the first '/'. All objects with the same prefix up to the first '/' will be merged into one entry. |
-| ``cancellationToken``| System.Threading.CancellationToken | Optional parameter. Defaults to default(CancellationToken) |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 |Return Type	  | Exceptions	  |
@@ -371,7 +373,7 @@ try
     if (found) 
     {
         // List all incomplete multipart upload of objects in 'mybucket'
-        IObservable<Upload> observable = miniClient.ListIncompleteUploads("mybucket", "prefix", true);
+        IObservable<Upload> observable = minioClient.ListIncompleteUploads("mybucket", "prefix", true);
         IDisposable subscription = observable.Subscribe(
 							item => Console.WriteLine("OnNext: {0}", item.Key),
 							ex => Console.WriteLine("OnError: {0}", ex.Message),
@@ -390,7 +392,7 @@ catch (MinioException e)
 
 <a name="getBucketPolicy"></a>
 ### GetPolicyAsync(string bucketName, string objectPrefix)
-`Task<PolicyType> GetPolicyAsync(string bucketName, string objectPrefix,CancellationToken cancellationToken = default(CancellationToken))`
+`Task<PolicyType> GetPolicyAsync(string bucketName, string objectPrefix, CancellationToken cancellationToken = default(CancellationToken))`
 
 Get bucket policy at given objectPrefix.
 
@@ -401,7 +403,7 @@ __Parameters__
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_  | Name of the bucket.  |
 | ``objectPrefix``  | _string_  | Policy applies to objects with prefix. |
-| ``cancellationToken``| System.Threading.CancellationToken | Optional parameter. Defaults to default(CancellationToken) |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
@@ -443,7 +445,7 @@ __Parameters__
 | ``bucketName``  | _string_  | Name of the bucket.  |
 | ``objectPrefix``  | _string_  | Policy applies to objects with prefix. |
 | ``PolicyType``  | _PolicyType_  | Policy to apply. |
-| ``cancellationToken``| System.Threading.CancellationToken | Optional parameter. Defaults to default(CancellationToken) |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
@@ -488,8 +490,8 @@ __Parameters__
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_ | Name of the bucket.  |
 | ``objectName``  | _string_  | Object name in the bucket. |
-| ``callback``    | Action<Stream> | Call back to process stream |
-| ``cancellationToken``| System.Threading.CancellationToken | Optional parameter. Defaults to default(CancellationToken) |
+| ``callback``    | _Action<Stream>_ | Call back to process stream |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
@@ -518,7 +520,6 @@ try
                                     {
                                         stream.CopyTo(Console.OpenStandardOutput());
                                     });
-  
   } 
   catch (MinioException e) 
   {
@@ -529,7 +530,7 @@ try
 <a name="getObject"></a>
 ### GetObjectAsync(string bucketName, string objectName, long offset,long length, Action<Stream> callback)
 
-`Task GetObjectAsync(string bucketName, string objectName, long offset,long length, Action<Stream> callback, CancellationToken cancellationToken = default(CancellationToken))`
+`Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> callback, CancellationToken cancellationToken = default(CancellationToken))`
 
 Downloads the specified range bytes of an object as a stream.Both offset and length are required.
 
@@ -543,8 +544,8 @@ __Parameters__
 | ``objectName``  | _string_  | Object name in the bucket. |
 | ``offset``| _long_ | Offset of the object from where stream will start |
 | ``length``| _long_| Length of the object to read in from the stream | 
-| ``callback``    | Action<Stream> | Call back to process stream |
-| ``cancellationToken``| System.Threading.CancellationToken | Optional parameter. Defaults to default(CancellationToken) |
+| ``callback``    | _Action<Stream>_ | Call back to process stream |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
@@ -573,7 +574,6 @@ try
                                     {
                                         stream.CopyTo(Console.OpenStandardOutput());
                                     });
-  
   } 
   catch (MinioException e) 
   {
@@ -597,7 +597,7 @@ __Parameters__
 | ``bucketName``  | _String_  | Name of the bucket.  |
 | ``objectName``  | _String_  | Object name in the bucket. |
 | ``fileName``  | _String_  | File name. |
-| ``cancellationToken``| System.Threading.CancellationToken | Optional parameter. Defaults to default(CancellationToken) |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
@@ -646,7 +646,7 @@ __Parameters__
 | ``data``  | _Stream_  | Stream to upload |
 | ``size``  | _long_    | size of stream   |
 | ``contentType``  | _string_ | Content type of the file. Defaults to "application/octet-stream" |
-| ``cancellationToken``| System.Threading.CancellationToken | Optional parameter. Defaults to default(CancellationToken) |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
@@ -702,7 +702,7 @@ __Parameters__
 | ``objectName``  | _string_  | Object name in the bucket. |
 | ``fileName``  | _string_  | File to upload |
 | ``contentType``  | _string_ | Content type of the file. Defaults to " |
-| ``cancellationToken``| System.Threading.CancellationToken | Optional parameter. Defaults to default(CancellationToken) |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
@@ -745,7 +745,7 @@ __Parameters__
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_  | Name of the bucket.  |
 | ``objectName``  | _string_  | Object name in the bucket. |
-| ``cancellationToken``| System.Threading.CancellationToken | Optional parameter. Defaults to default(CancellationToken) |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
@@ -791,7 +791,7 @@ __Parameters__
 | ``destBucketName``  | _string_  | Destination bucket name. |
 | ``destObjectName`` | _string_ | Destination object name to be created, if not provided defaults to source object name.|
 | ``copyConditions`` | _CopyConditions_ | Map of conditions useful for applying restrictions on copy operation.|
-| ``cancellationToken``| System.Threading.CancellationToken | Optional parameter. Defaults to default(CancellationToken) |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
@@ -836,7 +836,7 @@ __Parameters__
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_  | Name of the bucket.  |
 | ``objectName``  | _string_  | Object name in the bucket. |
-| ``cancellationToken``| System.Threading.CancellationToken | Optional parameter. Defaults to default(CancellationToken) |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
@@ -877,7 +877,7 @@ __Parameters__
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_  | Name of the bucket.  |
 | ``objectName``  | _string_  | Object name in the bucket. |
-| ``cancellationToken``| System.Threading.CancellationToken | Optional parameter. Defaults to default(CancellationToken) |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |

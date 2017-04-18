@@ -626,12 +626,8 @@ namespace Minio.Functional.Tests
 
             CopyConditions conditions = new CopyConditions();
             conditions.SetByteRange(1024, 6291456);
-<<<<<<< HEAD
-
+           
             // omit dest object name.
-=======
-            //omit dest object name.
->>>>>>> 847e888... Support copy objects of all sizes
             await minio.CopyObjectAsync(bucketName, objectName, destBucketName, copyConditions: conditions);
             string outFileName = "outFileName";
 
@@ -968,11 +964,7 @@ namespace Minio.Functional.Tests
                 byte[] buffer = new byte[8000];
                 using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
                 {
-                    int bytesRead = 0;
-                    while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) > 0)
-                    {
-                        dataStream.Write(buffer, 0, bytesRead);
-                    }
+                   fileStream.CopyTo(dataStream);
                 }
             }
 

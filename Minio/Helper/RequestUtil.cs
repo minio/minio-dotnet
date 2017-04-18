@@ -21,24 +21,23 @@ using System.Text.RegularExpressions;
 
 namespace Minio
 {
-    public class RequestUtil
+    internal class RequestUtil
     {
-        public static Uri getEndpointURL(string endPoint, bool secure)
+        internal static Uri GetEndpointURL(string endPoint, bool secure)
         {
             if (endPoint.Contains(":"))
             {
                 string[] parts = endPoint.Split(':');
                 string host = parts[0];
-                string port = (parts.Length > 1) ?  parts[1] : null; 
-                if (!s3utils.IsValidIP(host) && !s3utils.IsValidDomain(host))
+                string port = parts[1]; 
+                if (!s3utils.IsValidIP(host) && !IsValidEndpoint(host))
                 {
                     throw new InvalidEndpointException("Endpoint: " + endPoint + " does not follow ip address or domain name standards.");
                 }
-
             } 
             else
             {
-                if (!s3utils.IsValidIP(endPoint) && !s3utils.IsValidDomain(endPoint))
+                if (!s3utils.IsValidIP(endPoint) && !IsValidEndpoint(endPoint))
                 {
                     throw new InvalidEndpointException("Endpoint: " + endPoint + " does not follow ip address or domain name standards.");
                 }
@@ -47,11 +46,9 @@ namespace Minio
             Uri uri = TryCreateUri(endPoint, secure);
             RequestUtil.ValidateEndpoint(uri,endPoint);
             return uri;
-
         }
      
-
-        public static Uri MakeTargetURL(string endPoint, bool secure, string bucketName = null, string region = null, bool usePathStyle = true)
+        internal static Uri MakeTargetURL(string endPoint, bool secure, string bucketName = null, string region = null, bool usePathStyle = true)
         {
             // For Amazon S3 endpoint, try to fetch location based endpoint.
             string host = endPoint;
@@ -68,7 +65,7 @@ namespace Minio
             return uri;
         }
 
-        public static Uri TryCreateUri(string endpoint,bool secure)
+        internal static Uri TryCreateUri(string endpoint,bool secure)
         {
             var scheme = secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
 
@@ -89,7 +86,7 @@ namespace Minio
         /// <summary>
         /// Validates URI to check if it is well formed. Otherwise cry foul.
         /// </summary>
-        public static void ValidateEndpoint(Uri uri,string Endpoint)
+        internal static void ValidateEndpoint(Uri uri,string Endpoint)
         {
             if (string.IsNullOrEmpty(uri.OriginalString))
             {
@@ -97,7 +94,7 @@ namespace Minio
             }
             string host = uri.Host;
 
-            if (!isValidEndpoint(uri.Host))
+            if (!IsValidEndpoint(uri.Host))
             {
                 throw new InvalidEndpointException(Endpoint, "Invalid endpoint.");
             }
@@ -127,7 +124,7 @@ namespace Minio
         /// </summary>
         /// <param name="endpoint"></param>
         /// <returns>true/false</returns>
-        public static bool isValidEndpoint(string endpoint)
+        internal static bool IsValidEndpoint(string endpoint)
         {
             // endpoint may be a hostname
             // refer https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_host_names
@@ -136,7 +133,7 @@ namespace Minio
             {
                 return false;
             }
-
+           
             foreach (var label in endpoint.Split('.'))
             {
                 if (label.Length < 1 || label.Length > 63)
@@ -144,18 +141,14 @@ namespace Minio
                     return false;
                 }
 
-                Regex validLabel = new Regex("^[a-zA-Z0-9][a-zA-Z0-9-]*");
-                Regex validEndpoint = new Regex(".*[a-zA-Z0-9]$");
+                Regex validLabel = new Regex("^[a-zA-Z0-9]([A-Za-z0-9-]*[a-zA-Z0-9])?$");
 
-                if (!(validLabel.IsMatch(label) && validEndpoint.IsMatch(endpoint)))
+                if (!validLabel.IsMatch(label))
                 {
                     return false;
                 }
             }
-
             return true;
-        }
-      
+        }     
     }
-
 }

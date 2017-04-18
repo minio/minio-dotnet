@@ -75,8 +75,10 @@ namespace Minio.DataModel.Policy
 
             string bucketResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName;
 
-            if (this.resources is null)
+            if (this.resources == null)
+            {
                 return false;
+            }
 
             if (this.resources.Contains(bucketResource))
             {

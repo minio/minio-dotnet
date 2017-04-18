@@ -22,7 +22,7 @@ using System;
 namespace Minio.Tests
 {
     ///
-    /// <summary> Deep compares two dictionaries for ewquality</summary>
+    /// <summary> Deep compares two dictionaries for equality</summary>
     ///
     public static class DictionaryExtensionMethods
     {

@@ -239,7 +239,7 @@ namespace Minio
 
             // This is the actual url pointed to for all HTTP requests
             this.Endpoint = string.Format("{0}://{1}", scheme, host);
-            this.uri = RequestUtil.TryCreateUri(this.BaseUrl,this.Secure);
+            this.uri = RequestUtil.GetEndpointURL(this.BaseUrl,this.Secure);
             RequestUtil.ValidateEndpoint(this.uri,this.Endpoint);
 
             // Initialize a new REST client. This uri will be modified if region specific endpoint/virtual style request

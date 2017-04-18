@@ -372,8 +372,9 @@ namespace Minio
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
 
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-            var stream = new MemoryStream(contentBytes);
-            ListPartsResult listPartsResult = (ListPartsResult)(new XmlSerializer(typeof(ListPartsResult)).Deserialize(stream));
+            ListPartsResult listPartsResult = null;
+            using (var stream = new MemoryStream(contentBytes))
+                listPartsResult = (ListPartsResult)(new XmlSerializer(typeof(ListPartsResult)).Deserialize(stream));
 
             XDocument root = XDocument.Parse(response.Content);
 
@@ -412,8 +413,9 @@ namespace Minio
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
 
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-            var stream = new MemoryStream(contentBytes);
-            InitiateMultipartUploadResult newUpload = (InitiateMultipartUploadResult)(new XmlSerializer(typeof(InitiateMultipartUploadResult)).Deserialize(stream));
+            InitiateMultipartUploadResult newUpload = null;
+            using (var stream = new MemoryStream(contentBytes))
+                newUpload = (InitiateMultipartUploadResult)(new XmlSerializer(typeof(InitiateMultipartUploadResult)).Deserialize(stream));
             return newUpload.UploadId;
         }
 
@@ -509,8 +511,9 @@ namespace Minio
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
 
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-            var stream = new MemoryStream(contentBytes);
-            ListMultipartUploadsResult listBucketResult = (ListMultipartUploadsResult)(new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(stream));
+            ListMultipartUploadsResult listBucketResult = null;
+            using (var stream = new MemoryStream(contentBytes))
+                listBucketResult = (ListMultipartUploadsResult)(new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(stream));
 
             XDocument root = XDocument.Parse(response.Content);
 
@@ -794,9 +797,6 @@ namespace Minio
                 ((srcByteRangeSize > 0) && (copyConditions.byteRangeEnd >= srcStats.Size)))
                 throw new ArgumentException("Specified byte range (" + copyConditions.byteRangeStart.ToString() + "-" + copyConditions.byteRangeEnd.ToString() + ") does not fit within source object (size=" + srcStats.Size.ToString() + ")");
 
-            if ((srcByteRangeSize > 0) && (srcByteRangeSize < Constants.MinimumPartSize))
-                throw new ArgumentException("Copy Source Range invalid if range < 5 MB");
-
             if ((copySize > Constants.MaxSingleCopyObjectSize) ||
                     (srcByteRangeSize > 0 && (srcByteRangeSize != srcStats.Size)))
                 await MultipartCopyUploadAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, copySize, cancellationToken);
@@ -850,13 +850,16 @@ namespace Minio
 
             // Just read the result and parse content.
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-            var stream = new MemoryStream(contentBytes);
+            
             object copyResult = null;
-            if (type == typeof(CopyObjectResult))
-                copyResult = (CopyObjectResult)(new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream));
-            if (type == typeof(CopyPartResult))
-                copyResult = (CopyPartResult)(new XmlSerializer(typeof(CopyPartResult)).Deserialize(stream));
-
+            using (var stream = new MemoryStream(contentBytes))
+            {
+                if (type == typeof(CopyObjectResult))
+                    copyResult = (CopyObjectResult)(new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream));
+                if (type == typeof(CopyPartResult))
+                    copyResult = (CopyPartResult)(new XmlSerializer(typeof(CopyPartResult)).Deserialize(stream));
+            }
+     
             return copyResult;
         }
         /// <summary>

@@ -37,7 +37,7 @@ namespace Minio.Examples.Cases
                                                 destBucketName, 
                                                 destObjectName, 
                                                 copyConditions:null);
-                Console.Out.WriteLine("Copied object " + fromObjectName + " from bucket " + fromBucketName + " to bucket " + destBucketName);
+                Console.Out.WriteLine("Copied object {0} from bucket {1} to bucket {2}", fromObjectName, fromBucketName, destBucketName);
                 Console.Out.WriteLine();    
             }
             catch (Exception e)

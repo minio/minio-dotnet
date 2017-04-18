@@ -1,27 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp1.0</TargetFramework>
   </PropertyGroup>
-
+  
   <ItemGroup>
-    <Compile Remove="TestDataHelper.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="miniodotnet0ayic" />
-    <None Remove="miniodotnetdhv91" />
-    <None Remove="miniodotnetrow57" />
-    <None Remove="miniodotnetvc1w1" />
-    <None Remove="miniodotnetzya8k" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="MSTest.TestFramework" Version="1.1.13" />
+    <PackageReference Include="MSTest.TestFramework" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Minio.Core\Minio.Core.csproj" />
   </ItemGroup>
-
+ 
 </Project>

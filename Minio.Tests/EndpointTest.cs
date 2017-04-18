@@ -30,7 +30,7 @@ namespace Minio.Tests
         [TestMethod]
         public void TestGetEndpointURL()
         {
-            Minio.RequestUtil.getEndpointURL("s3.amazonaws.com", true);
+            Minio.RequestUtil.GetEndpointURL("s3.amazonaws.com", true);
             object[] parameterValuesArray =
                         {
                           new Object[]{ "s3.amazonaws.com",true,"testbucket",null,false },
@@ -93,7 +93,7 @@ namespace Minio.Tests
                 Object[] expectedValues = (Object[])testdata[1];
                 try
                 {
-                    Uri endPointURL = RequestUtil.getEndpointURL((string)testCase[0], (bool)testCase[1]);
+                    Uri endPointURL = RequestUtil.GetEndpointURL((string)testCase[0], (bool)testCase[1]);
                     Assert.AreEqual(endPointURL.OriginalString, expectedValues[0]);
                 }
                 catch (InvalidEndpointException ex)
@@ -140,7 +140,7 @@ namespace Minio.Tests
             };
             foreach (KeyValuePair<string, bool> testCase in testDomainDict)
             {
-                Assert.AreEqual(s3utils.IsValidDomain(testCase.Key), testCase.Value);
+                Assert.AreEqual(RequestUtil.IsValidEndpoint(testCase.Key), testCase.Value);
             }
         }
 

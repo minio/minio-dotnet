@@ -33,20 +33,24 @@ namespace Minio.Examples.Cases
             try
             {
                 byte[] bs = File.ReadAllBytes(fileName);
-                System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
-                if (filestream.Length < (5 * MB))
+                using (System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs))
                 {
-                    Console.Out.WriteLine("Running example for API: PutObjectAsync with Stream");
-                } else
-                {
-                    Console.Out.WriteLine("Running example for API: PutObjectAsync with Stream and MultiPartUpload");
-                }
+                    if (filestream.Length < (5 * MB))
+                    {
+                        Console.Out.WriteLine("Running example for API: PutObjectAsync with Stream");
+                    }
+                    else
+                    {
+                        Console.Out.WriteLine("Running example for API: PutObjectAsync with Stream and MultiPartUpload");
+                    }
 
-                await minio.PutObjectAsync(bucketName,
-                                           objectName,
-                                           filestream,
-                                           filestream.Length,
-                                           "application/octet-stream");
+                    await minio.PutObjectAsync(bucketName,
+                                               objectName,
+                                               filestream,
+                                               filestream.Length,
+                                               "application/octet-stream");
+                }
+            
 
                 Console.Out.WriteLine("Uploaded object " + objectName + " to bucket " + bucketName);
                 Console.Out.WriteLine();

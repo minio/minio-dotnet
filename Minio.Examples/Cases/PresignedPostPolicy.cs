@@ -37,7 +37,7 @@ namespace Minio.Examples.Cases
                 string curlCommand = "curl ";
                 foreach (KeyValuePair<string, string> pair in tuple.Item2)
                 {
-                    curlCommand = curlCommand + " -F " + pair.Key + "=" + pair.Value;
+                    curlCommand = curlCommand + String.Format("-F {0}={1}", pair.Key, pair.Value);
                 }
                 curlCommand = curlCommand + " -F file=@/etc/bashrc " + tuple.Item1; // https://s3.amazonaws.com/my-bucketname";
                 Console.Out.WriteLine(curlCommand);
