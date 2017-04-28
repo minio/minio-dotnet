@@ -35,8 +35,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -44,25 +52,26 @@
         <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
       </ItemGroup>
     </When>
-    <Otherwise>
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework">
-          <Private>False</Private>
-        </Reference>
-      </ItemGroup>
-    </Otherwise>
+    <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="DictionaryExtensionMethods.cs" />
+    <Compile Include="PolicyConditionTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UnitTest1.cs" />
+    <Compile Include="EndpointTest.cs" />
+    <Compile Include="TestHelper.cs" />
+    <Compile Include="PolicyTests.cs" />
+    <Compile Include="UtilsTest.cs" />
+    <Compile Include="UrlTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Minio.Api\MinioApi.csproj">
-      <Project>{CC30CADE-342A-4CED-858D-B60200C075B0}</Project>
-      <Name>MinioApi</Name>
+    <ProjectReference Include="..\Minio.Net452\Minio.Net452.csproj">
+      <Project>{eb17557b-4797-4883-83ff-c9e11581e3f3}</Project>
+      <Name>Minio.Net452</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

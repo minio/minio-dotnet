@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-namespace MinioCore2.Exceptions
+namespace Minio.Exceptions
 {
-    class InvalidContentLengthException :MinioException
+    public class InvalidContentLengthException : MinioException
     {
         private string bucketName;
         private string objectName;

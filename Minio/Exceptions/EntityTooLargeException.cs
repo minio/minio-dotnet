@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-namespace MinioCore2.Exceptions
+namespace Minio.Exceptions
 {
-    class EntityTooLargeException : MinioException
+    public class EntityTooLargeException : MinioException
     {
 
         public EntityTooLargeException(string message) : base(message)

@@ -17,19 +17,35 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace MinioCore2.DataModel
+namespace Minio.DataModel
 {
- /**
- * A container class to hold all the Conditions to be checked
- * before copying an object.
- */
+    /**
+    * A container class to hold all the Conditions to be checked
+    * before copying an object.
+    */
     public class CopyConditions
     {
-        private Dictionary<string, string> copyConditions;
+        private Dictionary<string, string> copyConditions = new Dictionary<string, string>();
+        internal long byteRangeStart = -1;
+        internal long byteRangeEnd = -1;
+
+        /// <summary>
+        /// Clone CopyConditions object
+        /// </summary>
+        /// <returns>new CopyConditions object</returns>
+        public CopyConditions Clone()
+        {
+            CopyConditions newcond = new CopyConditions();
+            foreach (KeyValuePair<string, string> item in this.copyConditions)
+            {
+                newcond.copyConditions.Add(item.Key, item.Value);
+            }
+            newcond.byteRangeStart = this.byteRangeStart;
+            newcond.byteRangeEnd = this.byteRangeEnd;
+            return newcond;
+        }
+
 
         /**
          * Set modified condition, copy object modified since given time.
@@ -44,7 +60,7 @@ namespace MinioCore2.DataModel
             {
                 throw new ArgumentException("Date cannot be empty");
             }
-            copyConditions["x-amz-copy-source-if-modified-since"] = date.ToUniversalTime().ToString("r");
+            copyConditions.Add("x-amz-copy-source-if-modified-since", date.ToUniversalTime().ToString("r"));
         }
 
         /**
@@ -60,7 +76,7 @@ namespace MinioCore2.DataModel
             {
                 throw new ArgumentException("Date cannot be empty");
             }
-            copyConditions["x-amz-copy-source-if-unmodified-since"] = date.ToUniversalTime().ToString("r");
+            copyConditions.Add("x-amz-copy-source-if-unmodified-since", date.ToUniversalTime().ToString("r"));
         }
         /**
          * Set matching ETag condition, copy object which matches
@@ -74,7 +90,7 @@ namespace MinioCore2.DataModel
             {
                 throw new ArgumentException("ETag cannot be empty");
             }
-            copyConditions["x-amz-copy-source-if-match"] =  etag;
+            copyConditions.Add("x-amz-copy-source-if-match", etag);
         }
 
         /**
@@ -84,13 +100,36 @@ namespace MinioCore2.DataModel
          * @throws InvalidArgumentException
          *           When etag is null
          */
-        public void SetMatchETagNone(string etag)  
+        public void SetMatchETagNone(string etag)
         {
             if (etag == null)
             {
                 throw new ArgumentException("ETag cannot be empty");
             }
-            copyConditions["x-amz-copy-source-if-none-match"] =  etag;
+            copyConditions.Add("x-amz-copy-source-if-none-match", etag);
+        }
+
+        /**
+       * Set Byte Range condition, copy object which falls within the 
+       * start and end byte range specified by user
+       *
+       * @throws InvalidArgumentException
+       *           When firstByte is null or lastByte is null
+       */
+        public void SetByteRange(long firstByte, long lastByte)
+        {
+            if ((firstByte < 0) || (lastByte < firstByte))
+                throw new ArgumentException("Range start less than zero or range end less than range start");
+
+            this.byteRangeStart = firstByte;
+            this.byteRangeEnd = lastByte;
+        }
+        /**
+         * Get range size
+         */
+        public long GetByteRange()
+        {
+            return (this.byteRangeStart == -1) ? 0 : (this.byteRangeEnd - this.byteRangeStart + 1);
         }
 
         /**

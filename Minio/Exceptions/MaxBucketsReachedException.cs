@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace MinioCore2.Exceptions
+namespace Minio.Exceptions
 {
     public class MaxBucketsReachedException : MinioException
     {

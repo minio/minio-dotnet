@@ -13,15 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace MinioCore2.Helper
+namespace Minio.Helper
 {
-   static class Constants
+    internal static class Constants
     {
         // Maximum number of parts.
         public static int MaxParts = 10000;
@@ -35,6 +30,8 @@ namespace MinioCore2.Helper
         // operation.
         public static long MaxSinglePutObjectSize = 1024L * 1024L * 1024L * 5;
 
+        // maxSingleCopyObjectSize - 5GiB 
+        public static long MaxSingleCopyObjectSize = 1024L * 1024L * 1024L * 5;
         // maxMultipartPutObjectSize - maximum size 5TiB of object for
         // Multipart operation.
         public static long MaxMultipartPutObjectSize = 1024L * 1024L * 1024L * 1024L * 5;

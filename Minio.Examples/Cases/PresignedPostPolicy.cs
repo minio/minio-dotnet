@@ -17,28 +17,36 @@
 using Minio.DataModel;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
     public class PresignedPostPolicy
     {
-        public static int Run(MinioClient client)
+        public async static Task Run(MinioClient client)
         {
-            PostPolicy form = new PostPolicy();
-            DateTime expiration = DateTime.UtcNow;
-            form.SetExpires(expiration.AddDays(10));
-            form.SetKey("my-objectname");
-            form.SetBucket("my-bucketname");
-
-            Dictionary<string, string> formData = client.PresignedPostPolicy(form);
-            string curlCommand = "curl ";
-            foreach (KeyValuePair<string, string> pair in formData)
+            try
             {
-                curlCommand = curlCommand + " -F " + pair.Key + "=" + pair.Value;
+                PostPolicy form = new PostPolicy();
+                DateTime expiration = DateTime.UtcNow;
+                form.SetExpires(expiration.AddDays(10));
+                form.SetKey("my-objectname");
+                form.SetBucket("my-bucketname");
+
+                Tuple<string, Dictionary<string, string>> tuple = await client.PresignedPostPolicyAsync(form);
+                string curlCommand = "curl ";
+                foreach (KeyValuePair<string, string> pair in tuple.Item2)
+                {
+                    curlCommand = curlCommand + String.Format("-F {0}={1}", pair.Key, pair.Value);
+                }
+                curlCommand = curlCommand + " -F file=@/etc/bashrc " + tuple.Item1; // https://s3.amazonaws.com/my-bucketname";
+                Console.Out.WriteLine(curlCommand);
             }
-            curlCommand = curlCommand + " -F file=@/etc/bashrc https://s3.amazonaws.com/my-bucketname";
-            Console.Out.WriteLine(curlCommand);
-            return 0;
+            catch (Exception e)
+            {
+                Console.Out.WriteLine("Exception ", e.Message);
+            }
+           
         }
     }
 }

@@ -21,14 +21,14 @@ namespace Minio.Examples.Cases
 {
     class RemoveBucket
     {
-        //Remove a bucket
+        // Remove a bucket
         public async static Task Run(MinioClient minio, 
                                      string bucketName = "my-bucket-name")
         {
             try
             {
                 await minio.RemoveBucketAsync(bucketName);
-                Console.Out.WriteLine("bucket-name removed successfully");
+                Console.Out.WriteLine("Removed the bucket " + bucketName + " successfully");
             }
             catch (Exception e)
             {

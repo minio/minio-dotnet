@@ -17,40 +17,46 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-using MinioCore2.Policy;
-using MinioCore2.DataModel.Policy;
 
-namespace MinioCore2.DataModel
+namespace Minio.DataModel.Policy
 {
 
     internal class Statement
+
     {
         [JsonProperty("Action")]
         [JsonConverter(typeof(SingleOrArrayConverter<string>))]
-        public IList<string> actions { get;  set; }
+        public IList<string> actions { get; set; }
+
         [JsonProperty("Condition")]
-        public ConditionMap conditions { get;  set; }
+        public ConditionMap conditions { get; set; }
 
         [JsonProperty("Effect")]
-        public string effect { get;  set; }
+        public string effect { get; set; }
 
-       [JsonProperty("Principal")]
-       [JsonConverter(typeof(PrincipalJsonConverter))]
-        public Principal principal { get;  set; }
+        [JsonProperty("Principal")]
+        [JsonConverter(typeof(PrincipalJsonConverter))]
+        public Principal principal { get; set; }
 
         [JsonProperty("Resource")]
         [JsonConverter(typeof(ResourceJsonConverter))]
-        public Resources resources { get;  set; }
+        public Resources resources { get; set; }
 
         [JsonProperty("Sid")]
-        public string sid { get;  set; }
+        public string sid { get; set; }
         /**
         * Returns whether given statement is valid to process for given bucket name.
          */
         public bool isValid(string bucketName)
         {
-            ISet<string> intersection = new HashSet<string>(this.actions);
-            intersection.IntersectWith(Constants.VALID_ACTIONS());
+            ISet<string> intersection;
+            if (this.actions != null)
+                intersection = new HashSet<string>(this.actions);
+            else
+                intersection = new HashSet<string>();
+
+            intersection.IntersectWith(PolicyConstants.VALID_ACTIONS());
+
             if (intersection.Count == 0)
             {
                 return false;
@@ -60,13 +66,19 @@ namespace MinioCore2.DataModel
                 return false;
             }
 
-            IList<string> aws = this.principal.aws();
+            IList<string> aws = this.principal != null ? this.principal.aws() : null;
+
             if (aws == null || !aws.Contains("*"))
             {
                 return false;
             }
 
-            string bucketResource = Constants.AWS_RESOURCE_PREFIX + bucketName;
+            string bucketResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName;
+
+            if (this.resources == null)
+            {
+                return false;
+            }
 
             if (this.resources.Contains(bucketResource))
             {
@@ -97,17 +109,17 @@ namespace MinioCore2.DataModel
             }
             else
             {
-                this.actions.Except(Constants.READ_WRITE_OBJECT_ACTIONS());
+                this.actions.Except(PolicyConstants.READ_WRITE_OBJECT_ACTIONS());
             }
         }
         private void removeReadOnlyBucketActions(string prefix)
         {
-            if (!utils.isSupersetOf(this.actions,Constants.READ_ONLY_BUCKET_ACTIONS))
+            if (!utils.isSupersetOf(this.actions, PolicyConstants.READ_ONLY_BUCKET_ACTIONS))
             {
                 return;
             }
 
-            this.actions.Except(Constants.READ_ONLY_BUCKET_ACTIONS);
+            this.actions.Except(PolicyConstants.READ_ONLY_BUCKET_ACTIONS);
 
             if (this.conditions == null)
             {
@@ -153,13 +165,13 @@ namespace MinioCore2.DataModel
         {
             if (this.conditions == null)
             {
-                this.actions.Except(Constants.WRITE_ONLY_BUCKET_ACTIONS);
+                this.actions.Except(PolicyConstants.WRITE_ONLY_BUCKET_ACTIONS);
             }
         }
 
         /**
-    * Removes bucket actions for given prefix and bucketResource.
-    */
+        * Removes bucket actions for given prefix and bucketResource.
+        */
         public void removeBucketActions(string prefix, string bucketResource,
                                     bool readOnlyInUse, bool writeOnlyInUse)
         {
@@ -198,17 +210,17 @@ namespace MinioCore2.DataModel
                 return new bool[] { commonFound, readOnly, writeOnly };
             }
 
-            if (utils.isSupersetOf(this.actions,Constants.COMMON_BUCKET_ACTIONS) && this.conditions == null)
+            if (utils.isSupersetOf(this.actions, PolicyConstants.COMMON_BUCKET_ACTIONS) && this.conditions == null)
             {
                 commonFound = true;
             }
 
-            if (utils.isSupersetOf(this.actions,Constants.WRITE_ONLY_BUCKET_ACTIONS) && this.conditions == null)
+            if (utils.isSupersetOf(this.actions, PolicyConstants.WRITE_ONLY_BUCKET_ACTIONS) && this.conditions == null)
             {
                 writeOnly = true;
             }
 
-            if (utils.isSupersetOf(this.actions,Constants.READ_ONLY_BUCKET_ACTIONS))
+            if (utils.isSupersetOf(this.actions, PolicyConstants.READ_ONLY_BUCKET_ACTIONS))
             {
                 if (prefix != null && prefix.Count() != 0 && this.conditions != null)
                 {
@@ -254,7 +266,7 @@ namespace MinioCore2.DataModel
         /**
         * Returns object policy types.
         */
-       // [JsonIgnore]
+        // [JsonIgnore]
         public bool[] getObjectPolicy()
         {
             bool readOnly = false;
@@ -270,11 +282,11 @@ namespace MinioCore2.DataModel
                 && aws != null && aws.Contains("*")
                 && this.conditions == null)
             {
-                if (utils.isSupersetOf(this.actions,Constants.READ_ONLY_OBJECT_ACTIONS))
+                if (utils.isSupersetOf(this.actions, PolicyConstants.READ_ONLY_OBJECT_ACTIONS))
                 {
                     readOnly = true;
                 }
-                if (utils.isSupersetOf(this.actions,Constants.WRITE_ONLY_OBJECT_ACTIONS))
+                if (utils.isSupersetOf(this.actions, PolicyConstants.WRITE_ONLY_OBJECT_ACTIONS))
                 {
                     writeOnly = true;
                 }
@@ -282,6 +294,6 @@ namespace MinioCore2.DataModel
 
             return new bool[] { readOnly, writeOnly };
         }
-        
+
     }
 }

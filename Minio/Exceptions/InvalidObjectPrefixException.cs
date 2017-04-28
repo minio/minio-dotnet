@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-namespace MinioCore2.Exceptions
+namespace Minio.Exceptions
 {
-    class InvalidObjectPrefixException : MinioException
+    public class InvalidObjectPrefixException : MinioException
     {
         private string objectPrefix;
 

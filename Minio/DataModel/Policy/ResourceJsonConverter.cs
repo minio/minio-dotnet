@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MinioCore2.DataModel.Policy
+namespace Minio.DataModel.Policy
 {
-    class ResourceJsonConverter : JsonConverter
+    public class ResourceJsonConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {

@@ -20,7 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MinioCore2.DataModel
+namespace Minio.DataModel
 {
     /**
     * Global constants for various date formats.  They are used to convert string to DateTime object and vise verse.

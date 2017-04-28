@@ -19,10 +19,10 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MinioCore2.DataModel.Policy
+namespace Minio.DataModel.Policy
 {
 
-    class SingleOrArrayConverter<T> : JsonConverter
+    public class SingleOrArrayConverter<T> : JsonConverter
         {
             public override bool CanConvert(Type objectType)
             {

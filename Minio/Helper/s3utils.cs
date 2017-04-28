@@ -15,12 +15,12 @@
  */
 using System;
 using System.IO;
+using System.Linq;
 
-namespace MinioCore2.Helper
+namespace Minio.Helper
 {
-    class s3utils
+    internal class s3utils
     {
-
         internal static bool IsAmazonEndPoint(string endpoint)
         {
             if (IsAmazonChinaEndPoint(endpoint))
@@ -29,6 +29,7 @@ namespace MinioCore2.Helper
             }
             return endpoint == "s3.amazonaws.com";
         }
+
         // IsAmazonChinaEndpoint - Match if it is exactly Amazon S3 China endpoint.
         // Customers who wish to use the new Beijing Region are required
         // to sign up for a separate set of account credentials unique to
@@ -37,20 +38,13 @@ namespace MinioCore2.Helper
         // For more info https://aws.amazon.com/about-aws/whats-new/2013/12/18/announcing-the-aws-china-beijing-region/
         internal static bool IsAmazonChinaEndPoint(string endpoint)
         {
-
             return endpoint == "s3.cn-north-1.amazonaws.com.cn";
         }
-        // IsGoogleEndpoint - Match if it is exactly Google cloud storage endpoint.
-        internal static bool IsGoogleEndPoint(string endpoint)
-        {
-            return endpoint == "storage.googleapis.com";
-        }
-     
 
         // IsVirtualHostSupported - verifies if bucketName can be part of
         // virtual host. Currently only Amazon S3 and Google Cloud Storage
         // would support this.
-        internal static bool IsVirtualHostSupported(Uri endpointURL,string bucketName)
+        internal static bool IsVirtualHostSupported(Uri endpointURL, string bucketName)
         {
             if (endpointURL == null)
             {
@@ -63,8 +57,9 @@ namespace MinioCore2.Helper
                 return false;
             }
             // Return true for all other cases
-            return IsAmazonEndPoint(endpointURL.Host) || IsGoogleEndPoint(endpointURL.Host);
+            return IsAmazonEndPoint(endpointURL.Host);
         }
+
         internal static string GetPath(string p1, string p2)
         {
             try
@@ -80,7 +75,21 @@ namespace MinioCore2.Helper
 
         }
 
-      
-     
+        // IsValidIP parses input string for ip address validity.
+        internal static bool IsValidIP(string ip)
+        {
+            if (String.IsNullOrEmpty(ip))
+                return false;
+
+            string[] splitValues = ip.Split('.');
+            if (splitValues.Length != 4)
+            {
+                return false;
+            }
+
+            byte tempForParsing;
+
+            return splitValues.All(r => byte.TryParse(r, out tempForParsing));
+        }
     }
 }

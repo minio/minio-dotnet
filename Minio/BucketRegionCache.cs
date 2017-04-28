@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-using MinioCore2.Helper;
+using Minio.Helper;
 using RestSharp;
 
 using System;
@@ -24,7 +24,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace MinioCore2
+namespace Minio
 {
     // A singleton bucket/region cache map.
     public sealed class BucketRegionCache
@@ -95,9 +95,10 @@ namespace MinioCore2
             && client.SecretKey != null && !Instance.Exists(bucketName))
             {
                 string location = null;
-                var path = bucketName + "?location";
-                //Initialize client
-                client.PrepareClient();
+                var path = utils.UrlEncode(bucketName) + "?location";
+                // Initialize client
+                Uri requestUrl = RequestUtil.MakeTargetURL(client.BaseUrl, client.Secure);
+                client.SetTargetURL(requestUrl);
 
                 var request = new RestRequest(path, Method.GET);
 

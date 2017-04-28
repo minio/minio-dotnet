@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Minio.Examples</RootNamespace>
+    <AssemblyName>Minio.Client.Examples.Net452</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NET452</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Reactive.Core, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Reactive.Core.3.1.1\lib\net45\System.Reactive.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Interfaces, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Reactive.Interfaces.3.1.1\lib\net45\System.Reactive.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Linq, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Reactive.Linq.3.1.1\lib\net45\System.Reactive.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq, Version=3.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Xml.Linq.3.5.21022.801\lib\net20\System.Xml.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Serialization" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Cases\BucketExists.cs">
+      <Link>Cases\BucketExists.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\CopyObject.cs">
+      <Link>Cases\CopyObject.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\FGetObject.cs">
+      <Link>Cases\FGetObject.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\FPutObject.cs">
+      <Link>Cases\FPutObject.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\GetBucketPolicy.cs">
+      <Link>Cases\GetBucketPolicy.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\GetObject.cs">
+      <Link>Cases\GetObject.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\GetPartialObject.cs">
+      <Link>Cases\GetPartialObject.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\ListBuckets.cs">
+      <Link>Cases\ListBuckets.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\ListIncompleteUploads.cs">
+      <Link>Cases\ListIncompleteUploads.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\ListObjects.cs">
+      <Link>Cases\ListObjects.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\MakeBucket.cs">
+      <Link>Cases\MakeBucket.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\PresignedGetObject.cs">
+      <Link>Cases\PresignedGetObject.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\PresignedPostPolicy.cs">
+      <Link>Cases\PresignedPostPolicy.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\PresignedPutObject.cs">
+      <Link>Cases\PresignedPutObject.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\PutObject.cs">
+      <Link>Cases\PutObject.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\RemoveBucket.cs">
+      <Link>Cases\RemoveBucket.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\RemoveIncompleteUpload.cs">
+      <Link>Cases\RemoveIncompleteUpload.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\RemoveObject.cs">
+      <Link>Cases\RemoveObject.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\SetBucketPolicy.cs">
+      <Link>Cases\SetBucketPolicy.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\StatObject.cs">
+      <Link>Cases\StatObject.cs</Link>
+    </Compile>
+    <Compile Include="..\Program.cs">
+      <Link>Program.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Minio.Net452\Minio.Net452.csproj">
+      <Project>{eb17557b-4797-4883-83ff-c9e11581e3f3}</Project>
+      <Name>Minio.Net452</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

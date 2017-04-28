@@ -17,12 +17,11 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
-using MinioCore2.DataModel.Policy;
 
-namespace MinioCore2.DataModel
+namespace Minio.DataModel.Policy
 {
     [DataContract]
-    internal class Principal
+    public class Principal
     {
         [JsonProperty("AWS")]
         [JsonConverter(typeof(SingleOrArrayConverter<string>))]

@@ -17,7 +17,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace MinioCore2.DataModel
+namespace Minio.DataModel.Policy
 {
     internal class Resources : HashSet<string>
     {
@@ -74,9 +74,9 @@ namespace MinioCore2.DataModel
             return tglob || resource.EndsWith(parts[end]);
 
         }
-        public ISet<string> match(string resource)
+        internal Resources Match(string resource)
         {
-            ISet<string> res = new HashSet<string>();
+            Resources res = new Resources();
             foreach (string pattern in this)
             {
                 if (matched(pattern,resource))

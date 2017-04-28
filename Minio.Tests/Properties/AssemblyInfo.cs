@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Minio.Tests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Vagrant Inc.")]
 [assembly: AssemblyProduct("Minio.Tests")]
 [assembly: AssemblyCopyright("Copyright © Vagrant Inc. 2017")]
 [assembly: AssemblyTrademark("")]

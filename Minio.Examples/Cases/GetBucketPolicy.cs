@@ -22,15 +22,17 @@ namespace Minio.Examples.Cases
 {
     class GetBucketPolicy
     {
-        //get bucket policy 
+        // Get bucket policy 
         public async static Task Run(Minio.MinioClient minio, 
                                      string bucketName = "my-bucket-name",
                                      string prefix="")
         {
             try
             {
-                PolicyType policy = await minio.GetPolicyAsync(bucketName,objectPrefix:prefix);
-                Console.Out.WriteLine("POLICY: " + policy.GetType().ToString());
+                Console.Out.WriteLine("Running example for API: GetPolicyAsync");
+                PolicyType policy = await minio.GetPolicyAsync(bucketName);
+                Console.Out.WriteLine("Current Policy is " + policy.ToString() + " for bucket " + bucketName);
+                Console.Out.WriteLine();
             }
             catch (Exception e)
             {

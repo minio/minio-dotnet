@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-using System;
-using System.Text.RegularExpressions;
-namespace MinioCore2
+namespace Minio
 {
     public class Regions
     {

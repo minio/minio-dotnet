@@ -22,15 +22,17 @@ namespace Minio.Examples.Cases
 {
     class StatObject
     {
-        //get stats on a object
+        // Get stats on a object
         public async static Task Run(Minio.MinioClient minio, 
                                      string bucketName = "my-bucket-name",
                                      string bucketObject="my-object-name")
         {
             try
             {
+                Console.Out.WriteLine("Running example for API: StatObjectAsync");
                 ObjectStat statObject = await minio.StatObjectAsync(bucketName, bucketObject);
-                Console.Out.WriteLine(statObject);
+                Console.Out.WriteLine("Details of the object " + bucketObject + " are " + statObject);
+                Console.Out.WriteLine();
             }
             catch (Exception e)
             {

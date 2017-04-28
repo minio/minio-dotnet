@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp1.0</TargetFramework>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="MSTest.TestFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Minio.Core\Minio.Core.csproj" />
+  </ItemGroup>
+ 
+</Project>

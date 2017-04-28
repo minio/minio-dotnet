@@ -15,15 +15,27 @@
  */
 
 using System;
+using System.Threading.Tasks;
+
 
 namespace Minio.Examples.Cases
 {
     public class PresignedGetObject
     {
-        public static int Run(MinioClient client)
+        public async static Task Run(MinioClient client,
+                                     string bucketName = "my-bucket-name",
+                                     string objectName = "my-object-name")
         {
-            Console.Out.WriteLine(client.PresignedGetObject("my-bucketname", "my-objectname", 1000));
-            return 0;
+            try
+            {
+                string presigned_url = await client.PresignedGetObjectAsync(bucketName, objectName, 1000);
+                Console.Out.WriteLine(presigned_url);
+            } 
+            catch (Exception e)
+            {
+                Console.Out.WriteLine("Exception ", e.Message);
+            }
+         
         }
     }
 }

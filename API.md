@@ -95,8 +95,8 @@ MinioClient s3Client = new MinioClient("s3.amazonaws.com:80",
 ## 2. Bucket operations
 
 <a name="makeBucket"></a>
-### MakeBucketAsync(string bucketName,string location="us-east-1")
-`Task MakeBucketAsync(string bucketName, string location = "us-east-1")`
+### MakeBucketAsync(string bucketName, string location="us-east-1")
+`Task MakeBucketAsync(string bucketName, string location = "us-east-1", CancellationToken cancellationToken = default(CancellationToken))`
 
 Creates a new bucket.
 
@@ -107,11 +107,11 @@ __Parameters__
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_ | Name of the bucket.  |
 | ``region``  | _string_| Optional parameter. Defaults to us-east-1 for AWS requests  |
-
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-| ``None``  | Listed Exceptions: |
+| ``Task``  | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``ConnectionException`` : upon connection error.            |
 |        | ``AccessDeniedException`` : upon access denial            |
@@ -147,14 +147,17 @@ catch (MinioException e)
 <a name="listBuckets"></a>
 ### ListBucketsAsync()
 
-`Task<ListAllMyBucketsResult> ListBucketsAsync()`
+`Task<ListAllMyBucketsResult> ListBucketsAsync(CancellationToken cancellationToken = default(CancellationToken))`
 
 Lists all buckets.
 
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 |Return Type	  | Exceptions	  |
 |:--- |:--- |
-| ``List Bucket`` : List of bucket type.  | Listed Exceptions: |
+| ``Task<ListAllMyBucketsResult>`` : Task with List of bucket type.  | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``ConnectionException`` : upon connection error.            |
 |        | ``AccessDeniedException`` : upon access denial            |
@@ -167,13 +170,14 @@ __Example__
 
 
 ```cs
-try {
-	// List buckets that have read access.
-	var list = await minioClient.ListBucketsAsync();
-	foreach (Bucket bucket in list.Buckets)
-	{
-		Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
-	}
+try 
+{
+    // List buckets that have read access.
+    var list = await minioClient.ListBucketsAsync();
+    foreach (Bucket bucket in list.Buckets)
+    {
+        Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
+    }
 } 
 catch (MinioException e) 
 {
@@ -184,7 +188,7 @@ catch (MinioException e)
 <a name="bucketExists"></a>
 ### BucketExistsAsync(string bucketName)
 
-`Task<bool> BucketExistsAsync(string bucketName)`
+`Task<bool> BucketExistsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))`
 
 Checks if a bucket exists.
 
@@ -195,11 +199,12 @@ __Parameters__
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_  | Name of the bucket.  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  ``bool``: true if the bucket exists  | Listed Exceptions: |
+|  ``Task<bool>`` : true if the bucket exists  | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``ConnectionException`` : upon connection error.            |
 |        | ``AccessDeniedException`` : upon access denial            |
@@ -214,13 +219,13 @@ __Example__
 ```cs
 try
 {
-	// Check whether 'my-bucketname' exists or not.
-	bool found = await minioClient.BucketExistsAsync(bucketName);
-	Console.Out.WriteLine("bucket-name was " + ((found == true) ? "found" : "not found"));
+   // Check whether 'my-bucketname' exists or not.
+   bool found = await minioClient.BucketExistsAsync(bucketName);
+   Console.Out.WriteLine("bucket-name " + ((found == true) ? "exists" : "does not exist"));
 }
 catch (MinioException e) 
 {
-    Console.WriteLine("[Bucket]  Exception: {0}", e);
+   Console.WriteLine("[Bucket]  Exception: {0}", e);
 }
 ```
 
@@ -228,7 +233,7 @@ catch (MinioException e)
 <a name="removeBucket"></a>
 ### RemoveBucketAsync(string bucketName)
 
-`Task RemoveBucketAsync(string bucketName)`
+`Task RemoveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))`
 
 Removes a bucket.
 
@@ -242,12 +247,13 @@ __Parameters__
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_  | Name of the bucket.  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  None  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
+|  Task  | Listed Exceptions: |
+|        | ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``ConnectionException`` : upon connection error.            |
 |        | ``AccessDeniedException`` : upon access denial            |
 |        | ``ErrorResponseException`` : upon unsuccessful execution.            |
@@ -259,16 +265,18 @@ __Example__
 
 
 ```cs
-try {
-	// Check if my-bucket exists before removing it.
-	bool found = await minioClient.BucketExistsAsync("mybucket");
-	if (found) {
-		// Remove bucket my-bucketname. This operation will succeed only if the bucket is empty.
-		await minioClient.RemoveBucketAsync("mybucket");
-		Console.Out.WriteLine("mybucket is removed successfully");
+try 
+{
+    // Check if my-bucket exists before removing it.
+    bool found = await minioClient.BucketExistsAsync("mybucket");
+    if (found) 
+    {	
+        // Remove bucket my-bucketname. This operation will succeed only if the bucket is empty.
+        await minioClient.RemoveBucketAsync("mybucket");
+        Console.Out.WriteLine("mybucket is removed successfully");
     }
-	else 
-	{
+    else 
+    {
         Console.Out.WriteLine("mybucket does not exist");
     }
 } 
@@ -281,7 +289,7 @@ catch(MinioException e)
 <a name="listObjects"></a>
 ### ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true)
 
-`IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true)`
+`IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true, CancellationToken cancellationToken = default(CancellationToken))`
 
 Lists all objects in a bucket. 
 
@@ -293,6 +301,7 @@ __Parameters__
 | ``bucketName``  | _string_  | Name of the bucket.  |
 | ``prefix``  | _string_  | Prefix string. List objects whose name starts with ``prefix``. |
 | ``recursive``  | _bool_  | when false, emulates a directory structure where each listing returned is either a full object or part of the object's key up to the first '/'. All objects with the same prefix up to the first '/' will be merged into one entry. |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 |Return Type	  | Exceptions	  |
@@ -304,22 +313,23 @@ __Example__
 
 
 ```cs
-try {
-	// Check whether 'mybucket' exists or not.
-	bool found = minioClient.BucketExistsAsync("mybucket");
-	if (found) {
-		// List objects from 'my-bucketname'
-		IObservable<Item> observable = minioClient.ListObjectsAsync("mybucket", "prefix", true);
-
-		IDisposable subscription = observable.Subscribe(
-					item => Console.WriteLine("OnNext: {0}", item.Key),
-					ex => Console.WriteLine("OnError: {0}", ex.Message),
-					() => Console.WriteLine("OnComplete: {0}"));    
-	} 
-	else 
-	{
-		Console.Out.WriteLine("mybucket does not exist");
-	}
+try 
+{
+    // Check whether 'mybucket' exists or not.
+    bool found = minioClient.BucketExistsAsync("mybucket");
+    if (found) 
+    {
+        // List objects from 'my-bucketname'
+        IObservable<Item> observable = minioClient.ListObjectsAsync("mybucket", "prefix", true);
+        IDisposable subscription = observable.Subscribe(
+				item => Console.WriteLine("OnNext: {0}", item.Key),
+				ex => Console.WriteLine("OnError: {0}", ex.Message),
+				() => Console.WriteLine("OnComplete: {0}"));    
+    } 
+    else 
+    {
+        Console.Out.WriteLine("mybucket does not exist");
+    }
 } 
 catch (MinioException e) 
 {
@@ -331,7 +341,7 @@ catch (MinioException e)
 <a name="listIncompleteUploads"></a>
 ### ListIncompleteUploads(string bucketName, string prefix, bool recursive)
 
-`IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix, bool recursive)`
+`IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix, bool recursive, CancellationToken cancellationToken = default(CancellationToken))`
 
 Lists partially uploaded objects in a bucket.
 
@@ -344,6 +354,7 @@ __Parameters__
 | ``bucketName``  | _string_  | Name of the bucket.  |
 | ``prefix``  | _string_  | Prefix string. List objects whose name starts with ``prefix``. |
 | ``recursive``  | _bool_  | when false, emulates a directory structure where each listing returned is either a full object or part of the object's key up to the first '/'. All objects with the same prefix up to the first '/' will be merged into one entry. |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 |Return Type	  | Exceptions	  |
@@ -355,22 +366,23 @@ __Example__
 
 
 ```cs
-try {
-	// Check whether 'mybucket' exist or not.
-	bool found = minioClient.BucketExistsAsync("mybucket");
-	if (found) 
-	{
-		// List all incomplete multipart upload of objects in 'mybucket'
-		IObservable<Upload> observable = miniClient.ListIncompleteUploads("mybucket", "prefix", true);
-		IDisposable subscription = observable.Subscribe(
+try 
+{
+    // Check whether 'mybucket' exist or not.
+    bool found = minioClient.BucketExistsAsync("mybucket");
+    if (found) 
+    {
+        // List all incomplete multipart upload of objects in 'mybucket'
+        IObservable<Upload> observable = minioClient.ListIncompleteUploads("mybucket", "prefix", true);
+        IDisposable subscription = observable.Subscribe(
 							item => Console.WriteLine("OnNext: {0}", item.Key),
 							ex => Console.WriteLine("OnError: {0}", ex.Message),
 							() => Console.WriteLine("OnComplete: {0}"));
-	} 
-	else 
-	{
-		Console.Out.WriteLine("mybucket does not exist");
-	}
+    } 
+    else 
+    {
+        Console.Out.WriteLine("mybucket does not exist");
+    }
 } 
 catch (MinioException e) 
 {
@@ -380,7 +392,7 @@ catch (MinioException e)
 
 <a name="getBucketPolicy"></a>
 ### GetPolicyAsync(string bucketName, string objectPrefix)
-`Task<PolicyType> GetPolicyAsync(string bucketName, string objectPrefix)`
+`Task<PolicyType> GetPolicyAsync(string bucketName, string objectPrefix, CancellationToken cancellationToken = default(CancellationToken))`
 
 Get bucket policy at given objectPrefix.
 
@@ -391,11 +403,12 @@ __Parameters__
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_  | Name of the bucket.  |
 | ``objectPrefix``  | _string_  | Policy applies to objects with prefix. |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  ``BucketPolicy``: The current bucket policy for given bucket and objectPrefix.  | Listed Exceptions: |
+|  ``Task<PolicyType>``: The current bucket policy for given bucket and objectPrefix.  | Listed Exceptions: |
 |        | ``InvalidBucketNameException `` : upon invalid bucket name.       |
 |        | ``InvalidObjectPrefixException`` : upon invalid object prefix.        |
 |        | ``ConnectionException`` : upon connection error.            |
@@ -421,7 +434,7 @@ catch (MinioException e)
 
 <a name="setBucketPolicy"></a>
 ### SetPolicyAsync(string bucketName, string objectPrefix, PolicyType policyType)
-`Task SetPolicyAsync(string bucketName, string objectPrefix, PolicyType policyType)`
+`Task SetPolicyAsync(string bucketName, string objectPrefix, PolicyType policyType, CancellationToken cancellationToken = default(CancellationToken))`
 
 Set policy on bucket and object prefix.
 
@@ -432,11 +445,12 @@ __Parameters__
 | ``bucketName``  | _string_  | Name of the bucket.  |
 | ``objectPrefix``  | _string_  | Policy applies to objects with prefix. |
 | ``PolicyType``  | _PolicyType_  | Policy to apply. |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  None  | Listed Exceptions: |
+|  Task  | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``ConnectionException`` : upon connection error.            |
 |        | ``InternalClientException`` : upon internal library error.        |
@@ -464,7 +478,7 @@ catch (MinioException e)
 <a name="getObject"></a>
 ### GetObjectAsync(string bucketName, string objectName, Action<Stream> callback)
 
-`Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback)`
+`Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, CancellationToken cancellationToken = default(CancellationToken))`
 
 Downloads an object as a stream.
 
@@ -476,12 +490,13 @@ __Parameters__
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_ | Name of the bucket.  |
 | ``objectName``  | _string_  | Object name in the bucket. |
-| ``callback``    | Action<Stream> | Call back to process stream |
+| ``callback``    | _Action<Stream>_ | Call back to process stream |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  ``InputStream``: InputStream containing the object data.  | Listed Exceptions: |
+|  ``Task``: Task callback returns an InputStream containing the object data.  | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``ConnectionException`` : upon connection error.            |
 |        | ``InternalClientException`` : upon internal library error.        |
@@ -501,11 +516,64 @@ try
 
    // Get input stream to have content of 'my-objectname' from 'my-bucketname'
    await minioClient.GetObjectAsync("mybucket", "myobject", 
-											(stream) =>
-											{
-												stream.CopyTo(Console.OpenStandardOutput());
-											});
-  
+                                    (stream) =>
+                                    {
+                                        stream.CopyTo(Console.OpenStandardOutput());
+                                    });
+  } 
+  catch (MinioException e) 
+  {
+      Console.Out.WriteLine("Error occurred: " + e);
+  }
+```
+
+<a name="getObject"></a>
+### GetObjectAsync(string bucketName, string objectName, long offset,long length, Action<Stream> callback)
+
+`Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> callback, CancellationToken cancellationToken = default(CancellationToken))`
+
+Downloads the specified range bytes of an object as a stream.Both offset and length are required.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``bucketName``  | _string_ | Name of the bucket.  |
+| ``objectName``  | _string_  | Object name in the bucket. |
+| ``offset``| _long_ | Offset of the object from where stream will start |
+| ``length``| _long_| Length of the object to read in from the stream | 
+| ``callback``    | _Action<Stream>_ | Call back to process stream |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task``: Task callback returns an InputStream containing the object data.  | Listed Exceptions: |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
+|        | ``ConnectionException`` : upon connection error.            |
+|        | ``InternalClientException`` : upon internal library error.        |
+
+
+__Example__
+
+
+```cs
+try 
+{
+   // Check whether the object exists using statObject().
+   // If the object is not found, statObject() throws an exception,
+   // else it means that the object exists.
+   // Execution is successful.
+   await minioClient.StatObjectAsync("mybucket", "myobject");
+
+   // Get input stream to have content of 'my-objectname' from 'my-bucketname'
+   await minioClient.GetObjectAsync("mybucket", "myobject", 1024L, 10L,
+                                    (stream) =>
+                                    {
+                                        stream.CopyTo(Console.OpenStandardOutput());
+                                    });
   } 
   catch (MinioException e) 
   {
@@ -516,7 +584,7 @@ try
 <a name="getObject"></a>
 ### GetObjectAsync(String bucketName, String objectName, String fileName)
 
-`Task GetObjectAsync(string bucketName, string objectName, string fileName)`
+`Task GetObjectAsync(string bucketName, string objectName, string fileName, CancellationToken cancellationToken = default(CancellationToken))`
 
 Downloads and saves the object as a file in the local filesystem.
 
@@ -529,11 +597,12 @@ __Parameters__
 | ``bucketName``  | _String_  | Name of the bucket.  |
 | ``objectName``  | _String_  | Object name in the bucket. |
 | ``fileName``  | _String_  | File name. |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  None  | Listed Exceptions: |
+|  ``Task `` | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``ConnectionException`` : upon connection error.            |
 |        | ``InternalClientException`` : upon internal library error.        |
@@ -561,7 +630,7 @@ catch (MinioException e)
 <a name="putObject"></a>
 ### PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType)
 
-` Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType)`
+` Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType, CancellationToken cancellationToken = default(CancellationToken))`
 
 
 Uploads contents from a stream to objectName.
@@ -577,11 +646,12 @@ __Parameters__
 | ``data``  | _Stream_  | Stream to upload |
 | ``size``  | _long_    | size of stream   |
 | ``contentType``  | _string_ | Content type of the file. Defaults to "application/octet-stream" |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  None  | Listed Exceptions: |
+|  ``Task``  | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``ConnectionException`` : upon connection error.            |
 |        | ``InternalClientException`` : upon internal library error.        |
@@ -617,7 +687,7 @@ catch(MinioException e)
 <a name="putObject"></a>
 ### PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null)
 
-` Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null)`
+` Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null, CancellationToken cancellationToken = default(CancellationToken))`
 
 
 Uploads contents from a file to objectName.
@@ -632,11 +702,12 @@ __Parameters__
 | ``objectName``  | _string_  | Object name in the bucket. |
 | ``fileName``  | _string_  | File to upload |
 | ``contentType``  | _string_ | Content type of the file. Defaults to " |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  None  | Listed Exceptions: |
+|  ``Task``  | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``ConnectionException`` : upon connection error.            |
 |        | ``InternalClientException`` : upon internal library error.        |
@@ -662,7 +733,7 @@ catch(MinioException e)
 <a name="statObject"></a>
 ### StatObjectAsync(string bucketName, string objectName)
 
-*`Task<ObjectStat> StatObjectAsync(string bucketName, string objectName)`*
+`Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))`
 
 Gets metadata of an object.
 
@@ -674,11 +745,12 @@ __Parameters__
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_  | Name of the bucket.  |
 | ``objectName``  | _string_  | Object name in the bucket. |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  ``ObjectStat``: Populated object meta data. | Listed Exceptions: |
+|  ``Task<ObjectStat>``: Populated object meta data. | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``ConnectionException`` : upon connection error.            |
 |        | ``InternalClientException`` : upon internal library error.        |
@@ -704,7 +776,7 @@ catch(MinioException e)
 <a name="copyObject"></a>
 ### CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null)
 
-*`Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null)`*
+*`Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, CancellationToken cancellationToken = default(CancellationToken))`*
 
 Copies content from objectName to destObjectName.
 
@@ -719,11 +791,12 @@ __Parameters__
 | ``destBucketName``  | _string_  | Destination bucket name. |
 | ``destObjectName`` | _string_ | Destination object name to be created, if not provided defaults to source object name.|
 | ``copyConditions`` | _CopyConditions_ | Map of conditions useful for applying restrictions on copy operation.|
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  None  | Listed Exceptions: |
+|  ``Task``  | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``ConnectionException`` : upon connection error.            |
 |        | ``InternalClientException`` : upon internal library error.        |
@@ -752,7 +825,7 @@ catch(MinioException e)
 <a name="removeObject"></a>
 ### removeObjectAsync(string bucketName, string objectName)
 
-`Task RemoveObjectAsync(string bucketName, string objectName)`
+`Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))`
 
 Removes an object.
 
@@ -763,10 +836,11 @@ __Parameters__
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_  | Name of the bucket.  |
 | ``objectName``  | _string_  | Object name in the bucket. |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  None  | Listed Exceptions: |
+|  ``Task``  | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``ConnectionException`` : upon connection error.            |
 |        | ``InternalClientException`` : upon internal library error.        |
@@ -785,14 +859,14 @@ try
 } 
 catch (MinioException e) 
 {
-      Console.Out.WriteLine("Error: " + e);
+    Console.Out.WriteLine("Error: " + e);
 }
 ```
 
 <a name="removeIncompleteUpload"></a>
 ### RemoveIncompleteUploadAsync(string bucketName, string objectName)
 
-`Task RemoveIncompleteUploadAsync(string bucketName, string objectName)`
+`Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))`
 
 Removes a partially uploaded object.
 
@@ -803,11 +877,12 @@ __Parameters__
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_  | Name of the bucket.  |
 | ``objectName``  | _string_  | Object name in the bucket. |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  None  | Listed Exceptions: |
+|  ``Task``  | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``ConnectionException`` : upon connection error.            |
 |        | ``InternalClientException`` : upon internal library error.        |
@@ -820,8 +895,8 @@ __Example__
 try 
 {
     // Removes partially uploaded objects from buckets.
-	await minioClient.RemoveIncompleteUploadAsync("mybucket", "myobject");
-	Console.Out.WriteLine("successfully removed all incomplete upload session of my-bucketname/my-objectname");
+    await minioClient.RemoveIncompleteUploadAsync("mybucket", "myobject");
+    Console.Out.WriteLine("successfully removed all incomplete upload session of my-bucketname/my-objectname");
 } 
 catch(MinioException e) 
 {
@@ -832,8 +907,8 @@ catch(MinioException e)
 ## 4. Presigned operations
 <a name="presignedGetObject"></a>
 
-### string PresignedGetObject(string bucketName, string objectName, int expiresInt);
-`string PresignedGetObject(string bucketName, string objectName, int expiresInt)`
+### PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt);
+`Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)`
 
 Generates a presigned URL for HTTP GET operations. Browsers/Mobile clients may point to this URL to directly download objects even if the bucket is private. This presigned URL can have an associated expiration time in seconds after which it is no longer operational. The default expiry is set to 7 days.
 
@@ -846,10 +921,9 @@ __Parameters__
 | ``objectName``  | _String_  | Object name in the bucket. |
 | ``expiresInt``  | _Integer_  | Expiry in seconds. Default expiry is set to 7 days. |
 
-
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  ``String`` : string contains URL to download the object. | Listed Exceptions: |
+|  ``Task<string>`` : string contains URL to download the object. | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``ConnectionException`` : upon connection error.            |
 
@@ -860,8 +934,8 @@ __Example__
 ```cs
 try 
 {
-	String url = minioClient.PresignedGetObject("mybucket", "myobject", 60 * 60 * 24);
-	Console.Out.WriteLine(url);
+    String url = await minioClient.PresignedGetObjectAsync("mybucket", "myobject", 60 * 60 * 24);
+    Console.Out.WriteLine(url);
 } 
 catch(MinioException e) 
 {
@@ -870,9 +944,9 @@ catch(MinioException e)
 ```
 
 <a name="presignedPutObject"></a>
-### PresignedPutObject(string bucketName, string objectName, int expiresInt)
+### PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
 
-`string PresignedPutObject(string bucketName, string objectName, int expiresInt)`
+`Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)`
 
 Generates a presigned URL for HTTP PUT operations. Browsers/Mobile clients may point to this URL to upload objects directly to a bucket even if it is private. This presigned URL can have an associated expiration time in seconds after which it is no longer operational. The default expiry is set to 7 days.
 
@@ -887,7 +961,7 @@ __Parameters__
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  ``string`` : string contains URL to download the object. | Listed Exceptions: |
+|  ``Task<string>`` : string contains URL to download the object. | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``InvalidKeyException`` : upon an invalid access key or secret key.           |
 |        | ``ConnectionException`` : upon connection error.            |
@@ -898,8 +972,8 @@ __Example__
 ```cs
 try 
 {
-	String url = minioClient.PresignedPutObject("mybucket", "myobject", 60 * 60 * 24);
-	Console.Out.WriteLine(url);
+    String url = await minioClient.PresignedPutObjectAsync("mybucket", "myobject", 60 * 60 * 24);
+    Console.Out.WriteLine(url);
 }
 catch(MinioException e) 
 {
@@ -910,7 +984,7 @@ catch(MinioException e)
 <a name="presignedPostPolicy"></a>
 ### PresignedPostPolicy(PostPolicy policy)
 
-`Dictionary<string, string> PresignedPostPolicy(PostPolicy policy)`
+`Task<Dictionary<string, string>> PresignedPostPolicyAsync(PostPolicy policy)`
 
 Allows setting policy conditions to a presigned URL for POST operations. Policies such as bucket name to receive object uploads, key name prefixes, expiry policy may be set.
 
@@ -919,12 +993,12 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``policy``  | _PostPolicy_  | Post policy of an object.  |
+| ``PostPolicy``  | _PostPolicy_  | Post policy of an object.  |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-| ``Dictionary``: Map of strings to construct form-data. | Listed Exceptions: |
+| ``Task<Dictionary<string,string>>``: Map of strings to construct form-data. | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
 |        | ``ConnectionException`` : upon connection error.            |
 |        | ``NoSuchAlgorithmException`` : upon requested algorithm was not found during signature calculation.           |

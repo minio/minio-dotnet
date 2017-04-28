@@ -1,0 +1,29 @@
+version: 0.{build}
+
+image: Visual Studio 2017
+
+pull_requests:
+  do_not_increment_build_number: true
+# scripts to run before build
+before_build: 
+ - nuget restore
+ - dotnet restore
+build:
+  project: Minio.sln
+  publish_nuget: true
+  publish_nuget_symbols: true
+
+test:
+  # only assemblies to test
+  assemblies:
+    only:
+      - '**\*.Tests.dll'
+
+assembly_info:
+  patch: true
+  file: AssemblyInfo.*
+  assembly_version: "{version}"
+  assembly_file_version: "{version}"
+  assembly_informational_version: "{version}"
+
+deploy: off

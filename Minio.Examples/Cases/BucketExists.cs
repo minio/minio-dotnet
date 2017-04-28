@@ -21,14 +21,16 @@ namespace Minio.Examples.Cases
 {
     class BucketExists
     {
-        //Check if a bucket exists
-        public async static Task Run(Minio.MinioClient minio,
+        // Check if a bucket exists
+        public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name")
         {
             try
             {
+                Console.Out.WriteLine("Running example for API: BucketExistsAsync");
                 bool found = await minio.BucketExistsAsync(bucketName);
-                Console.Out.WriteLine("bucket-name was " + ((found == true) ? "found" : "not found"));
+                Console.Out.WriteLine(((found == true) ? "Found" : "Couldn't find ") + "bucket " + bucketName);
+                Console.Out.WriteLine();
             }
             catch (Exception e)
             {

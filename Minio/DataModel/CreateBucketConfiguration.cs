@@ -17,16 +17,22 @@
 using System;
 using System.Xml.Serialization;
 
-namespace MinioCore2.DataModel
+namespace Minio.DataModel
 {
-    [Serializable]
+    [XmlRoot(ElementName = "CreateBucketConfiguration", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
     public class CreateBucketConfiguration
     {
+        public CreateBucketConfiguration()
+        {
+            this.LocationConstraint = null;
+        }
+
         public CreateBucketConfiguration(string location=null)
         {
             this.LocationConstraint = location;
         }
-        [XmlAttribute]
-        public string LocationConstraint { get; private set; }
+
+        [XmlElement]
+        public string LocationConstraint { get; set; }
     }
 }

@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace MinioCore2.DataModel
+namespace Minio.DataModel
 {
     [Serializable]
     [XmlRoot(ElementName = "ListAllMyBucketsResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
