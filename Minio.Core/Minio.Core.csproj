@@ -3,7 +3,16 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp1.0</TargetFramework>
     <AssemblyName>Minio</AssemblyName>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <RootNamespace>Minio</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\..\..\lib\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>..\..\..\lib\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -81,10 +90,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.1.0-preview-000545-01" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.1.548" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.3.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.1-beta1" />
-    <PackageReference Include="RestSharp.NetCore" Version="105.2.4-rc4-24214-01" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />
+    <PackageReference Include="RestSharp.NetCore" Version="105.2.3" />
     <PackageReference Include="System.Reactive.Linq" Version="3.1.1" />
     <PackageReference Include="System.Runtime.Serialization.Xml" Version="4.3.0" />
   </ItemGroup>
