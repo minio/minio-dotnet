@@ -32,9 +32,7 @@
         <dependency id="System.Runtime.Serialization.Xml" version="4.3.0" />
         <dependency id="Microsoft.Win32.Registry" version="4.3.0" />
         <dependency id="Microsoft.Build.Utilities.Core" version="15.1.548" />
-
       </group>
-
     </dependencies>
     
   </metadata>

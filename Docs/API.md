@@ -1,5 +1,5 @@
 # DotNet Client API Reference [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io)
-
+ 
 ## Initialize Minio Client object.
 
 ## Minio
@@ -823,7 +823,7 @@ catch(MinioException e)
 ```
 
 <a name="removeObject"></a>
-### removeObjectAsync(string bucketName, string objectName)
+### RemoveObjectAsync(string bucketName, string objectName)
 
 `Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))`
 
