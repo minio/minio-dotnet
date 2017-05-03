@@ -1,10 +1,10 @@
-# Minio Client SDK for .NET  [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io) [![Build Status](https://travis-ci.org/minio/minio-dotnet.svg?branch=master)](https://travis-ci.org/minio/minio-dotnet)
-
-Minio Client SDK provides higher level APIs for Minio and Amazon S3 compatible cloud storage services. For a complete list of APIs and examples, please take a look at the [Dotnet Client API Reference](https://docs.minio.io/docs/dotnet-client-api-reference). This document assumes that you have a working VisualStudio development environment.  
+# Minio Client SDK for .NET  [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io) [![Build status](https://ci.appveyor.com/api/projects/status/tvdpoypdmbuwg0me/branch/master?svg=true)](https://ci.appveyor.com/project/Harshavardhana/minio-dotnet/branch/master)
+ 
+Minio Client SDK provides higher level APIs for Minio and Amazon S3 compatible cloud storage services.For a complete list of APIs and examples, please take a look at the [Dotnet Client API Reference](https://docs.minio.io/docs/dotnet-client-api-reference).This document assumes that you have a working VisualStudio development environment.  
 
 ## Minimum Requirements
-  .NET 4.5 or higher
-  Visual Studio 2015 
+ * .NET 4.5.2, .NetCoreApp 1.0.0  or higher
+ * Visual Studio 2017 RC 
   
 ## Install from NuGet
 
@@ -20,8 +20,8 @@ To connect to an Amazon S3 compatible cloud storage service, you will need to sp
 | Parameter  | Description| 
 | :---         |     :---     |
 | endpoint   | URL to object storage service.   | 
-| accessKeyID | Access key is the user ID that uniquely identifies your account. |   
-| secretAccessKey | Secret key is the password to your account. |
+| accessKey | Access key is the user ID that uniquely identifies your account. |   
+| secretKey | Secret key is the password to your account. |
 | secure | Enable/Disable HTTPS support. |
 
 The following examples uses a freely hosted public Minio service 'play.minio.io' for development purposes.
@@ -88,14 +88,13 @@ namespace FileUploader
 
             try
             {
-				// Make a bucket on the server, if not already present.
+                // Make a bucket on the server, if not already present.
                 bool found = await minio.BucketExistsAsync(bucketName);
                 if (!found)
                 {
                     await minio.MakeBucketAsync(bucketName, location);
                 }
-				
-				// Upload a file to bucket.
+                // Upload a file to bucket.
                 await minio.PutObjectAsync(bucketName, objectName, filePath, contentType);  
                 Console.Out.WriteLine("Successfully uploaded " + objectName );
             }
@@ -156,7 +155,4 @@ namespace FileUploader
 
 ## Explore Further
 * [Complete Documentation](https://docs.minio.io)
-
-## Contribute
-
-[Contributors Guide](https://github.com/minio/minio-go/blob/master/CONTRIBUTING.md)
+* [Minio .NET SDK API Reference](https://docs.minio.io/docs/dotnet-client-api-reference)

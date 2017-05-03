@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Tests", "Minio.Tests\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{30E4FEE3-BCF0-43AB-B3E0-6083D576D808}"
 	ProjectSection(SolutionItems) = preProject
-		API.md = API.md
+		Docs\API.md = Docs\API.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTest", "SimpleTest\SimpleTest.csproj", "{DB799B77-2362-4D6E-B1EA-16111E78CEF5}"
@@ -131,8 +131,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Minio.Client.Examples.Core"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Functional.Tests", "Minio.Functional.Tests\Minio.Functional.Tests.csproj", "{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinioApi", "Minio.Api\MinioApi.csproj", "{CC30CADE-342A-4CED-858D-B60200C075B0}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -179,8 +177,8 @@ Global
 		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Release|x64.Build.0 = Release|Any CPU
 		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Release|x86.ActiveCfg = Release|Any CPU
 		{DB799B77-2362-4D6E-B1EA-16111E78CEF5}.Release|x86.Build.0 = Release|Any CPU
-		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Debug|Any CPU.Build.0 = Release|Any CPU
 		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Debug|x64.Build.0 = Debug|Any CPU
 		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -191,8 +189,9 @@ Global
 		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Release|x64.Build.0 = Release|Any CPU
 		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Release|x86.ActiveCfg = Release|Any CPU
 		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Release|x86.Build.0 = Release|Any CPU
-		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Debug|Any CPU.Build.0 = Release|Any CPU
+		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Debug|Any CPU.Deploy.0 = Release|Any CPU
 		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Debug|x64.Build.0 = Debug|Any CPU
 		{EB17557B-4797-4883-83FF-C9E11581E3F3}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -229,6 +228,7 @@ Global
 		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.Release|x86.Build.0 = Release|Any CPU
 		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}.Debug|x64.ActiveCfg = Debug|x64
 		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}.Debug|x64.Build.0 = Debug|x64
 		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}.Debug|x86.ActiveCfg = Debug|x86
@@ -239,14 +239,6 @@ Global
 		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}.Release|x64.Build.0 = Release|x64
 		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}.Release|x86.ActiveCfg = Release|x86
 		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}.Release|x86.Build.0 = Release|x86
-		{CC30CADE-342A-4CED-858D-B60200C075B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CC30CADE-342A-4CED-858D-B60200C075B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CC30CADE-342A-4CED-858D-B60200C075B0}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{CC30CADE-342A-4CED-858D-B60200C075B0}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{CC30CADE-342A-4CED-858D-B60200C075B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CC30CADE-342A-4CED-858D-B60200C075B0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CC30CADE-342A-4CED-858D-B60200C075B0}.Release|x64.ActiveCfg = Release|Any CPU
-		{CC30CADE-342A-4CED-858D-B60200C075B0}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

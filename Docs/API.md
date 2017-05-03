@@ -1,5 +1,5 @@
 # DotNet Client API Reference [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io)
-
+ 
 ## Initialize Minio Client object.
 
 ## Minio
@@ -86,7 +86,7 @@ MinioClient minioClient = new MinioClient("play.minio.io:9000",
 // 1. public MinioClient(String endpoint)
 MinioClient s3Client = new MinioClient("s3.amazonaws.com").WithSSL();
 
-// 4. public MinioClient(String endpoint, String accessKey, String secretKey)
+// 2. public MinioClient(String endpoint, String accessKey, String secretKey)
 MinioClient s3Client = new MinioClient("s3.amazonaws.com:80", 
                                        accessKey:"YOUR-ACCESSKEYID", 
                                        secretKey:"YOUR-SECRETACCESSKEY").WithSSL();
@@ -105,18 +105,18 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_ | Name of the bucket.  |
+| ``bucketName``  | _string_ | Name of the bucket  |
 | ``region``  | _string_| Optional parameter. Defaults to us-east-1 for AWS requests  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 | ``Task``  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
-|        | ``ConnectionException`` : upon connection error.            |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``ConnectionException`` : upon connection error            |
 |        | ``AccessDeniedException`` : upon access denial            |
 |        | ``RedirectionException`` : upon redirection by server |
-|        | ``InternalClientException`` : upon internal library error.        |
+|        | ``InternalClientException`` : upon internal library error        |
 
 
 __Example__
@@ -158,12 +158,12 @@ Lists all buckets.
 |Return Type	  | Exceptions	  |
 |:--- |:--- |
 | ``Task<ListAllMyBucketsResult>`` : Task with List of bucket type.  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
-|        | ``ConnectionException`` : upon connection error.            |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``ConnectionException`` : upon connection error            |
 |        | ``AccessDeniedException`` : upon access denial            |
-|        | ``InvalidOperationException``: upon unseuccessful deserialization of xml data |
-|        | ``ErrorResponseException`` : upon unsuccessful execution.            |
-|        | ``InternalClientException`` : upon internal library error.        |
+|        | ``InvalidOperationException``: upon unsuccessful deserialization of xml data |
+|        | ``ErrorResponseException`` : upon unsuccessful execution            |
+|        | ``InternalClientException`` : upon internal library error        |
 
 
 __Example__
@@ -205,11 +205,11 @@ __Parameters__
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 |  ``Task<bool>`` : true if the bucket exists  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
-|        | ``ConnectionException`` : upon connection error.            |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``ConnectionException`` : upon connection error            |
 |        | ``AccessDeniedException`` : upon access denial            |
-|        | ``ErrorResponseException`` : upon unsuccessful execution.            |
-|        | ``InternalClientException`` : upon internal library error.        |
+|        | ``ErrorResponseException`` : upon unsuccessful execution            |
+|        | ``InternalClientException`` : upon internal library error        |
 
 
 
@@ -246,18 +246,18 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket.  |
+| ``bucketName``  | _string_  | Name of the bucket  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 |  Task  | Listed Exceptions: |
-|        | ``InvalidBucketNameException`` : upon invalid bucket name. |
-|        | ``ConnectionException`` : upon connection error.            |
+|        | ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``ConnectionException`` : upon connection error            |
 |        | ``AccessDeniedException`` : upon access denial            |
-|        | ``ErrorResponseException`` : upon unsuccessful execution.            |
-|        | ``InternalClientException`` : upon internal library error.        |
+|        | ``ErrorResponseException`` : upon unsuccessful execution            |
+|        | ``InternalClientException`` : upon internal library error        |
 |        | ``BucketNotFoundException`` : upon missing bucket          |
 
 
@@ -298,9 +298,9 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket.  |
-| ``prefix``  | _string_  | Prefix string. List objects whose name starts with ``prefix``. |
-| ``recursive``  | _bool_  | when false, emulates a directory structure where each listing returned is either a full object or part of the object's key up to the first '/'. All objects with the same prefix up to the first '/' will be merged into one entry. |
+| ``bucketName``  | _string_  | Name of the bucket  |
+| ``prefix``  | _string_  | Prefix string. List objects whose name starts with ``prefix`` |
+| ``recursive``  | _bool_  | when false, emulates a directory structure where each listing returned is either a full object or part of the object's key up to the first '/'. All objects with the same prefix up to the first '/' will be merged into one entry |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -351,9 +351,9 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket.  |
-| ``prefix``  | _string_  | Prefix string. List objects whose name starts with ``prefix``. |
-| ``recursive``  | _bool_  | when false, emulates a directory structure where each listing returned is either a full object or part of the object's key up to the first '/'. All objects with the same prefix up to the first '/' will be merged into one entry. |
+| ``bucketName``  | _string_  | Name of the bucket  |
+| ``prefix``  | _string_  | Prefix string. List objects whose name starts with ``prefix`` |
+| ``recursive``  | _bool_  | when false, emulates a directory structure where each listing returned is either a full object or part of the object's key up to the first '/'. All objects with the same prefix up to the first '/' will be merged into one entry |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -402,7 +402,7 @@ __Parameters__
 |Param   | Type   | Description  |
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_  | Name of the bucket.  |
-| ``objectPrefix``  | _string_  | Policy applies to objects with prefix. |
+| ``objectPrefix``  | _string_  | Policy applies to objects with prefix |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -442,20 +442,20 @@ __Parameters__
 
 |Param   | Type   | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket.  |
-| ``objectPrefix``  | _string_  | Policy applies to objects with prefix. |
-| ``PolicyType``  | _PolicyType_  | Policy to apply. |
+| ``bucketName``  | _string_  | Name of the bucket  |
+| ``objectPrefix``  | _string_  | Policy applies to objects with prefix |
+| ``PolicyType``  | _PolicyType_  | Policy to apply |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 |  Task  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
-|        | ``ConnectionException`` : upon connection error.            |
-|        | ``InternalClientException`` : upon internal library error.        |
-|        | ``InvalidBucketNameException `` : upon invalid bucket name.       |
-|        | ``InvalidObjectPrefixException`` : upon invalid object prefix.        |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``ConnectionException`` : upon connection error            |
+|        | ``InternalClientException`` : upon internal library error        |
+|        | ``InvalidBucketNameException `` : upon invalid bucket name       |
+|        | ``InvalidObjectPrefixException`` : upon invalid object prefix        |
 
 
 
@@ -488,8 +488,8 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_ | Name of the bucket.  |
-| ``objectName``  | _string_  | Object name in the bucket. |
+| ``bucketName``  | _string_ | Name of the bucket  |
+| ``objectName``  | _string_  | Object name in the bucket |
 | ``callback``    | _Action<Stream>_ | Call back to process stream |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
@@ -594,18 +594,18 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _String_  | Name of the bucket.  |
-| ``objectName``  | _String_  | Object name in the bucket. |
-| ``fileName``  | _String_  | File name. |
+| ``bucketName``  | _String_  | Name of the bucket  |
+| ``objectName``  | _String_  | Object name in the bucket |
+| ``fileName``  | _String_  | File name |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 |  ``Task `` | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
-|        | ``ConnectionException`` : upon connection error.            |
-|        | ``InternalClientException`` : upon internal library error.        |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``ConnectionException`` : upon connection error            |
+|        | ``InternalClientException`` : upon internal library error        |
 
 __Example__
 
@@ -641,8 +641,8 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket.  |
-| ``objectName``  | _string_  | Object name in the bucket. |
+| ``bucketName``  | _string_  | Name of the bucket  |
+| ``objectName``  | _string_  | Object name in the bucket |
 | ``data``  | _Stream_  | Stream to upload |
 | ``size``  | _long_    | size of stream   |
 | ``contentType``  | _string_ | Content type of the file. Defaults to "application/octet-stream" |
@@ -652,9 +652,9 @@ __Parameters__
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 |  ``Task``  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
-|        | ``ConnectionException`` : upon connection error.            |
-|        | ``InternalClientException`` : upon internal library error.        |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``ConnectionException`` : upon connection error            |
+|        | ``InternalClientException`` : upon internal library error        |
 |        | ``EntityTooLargeException``: upon proposed upload size exceeding max allowed |
 |        | ``UnexpectedShortReadException``: data read was shorter than size of input buffer |
 |        | ``ArgumentNullException``: upon null input stream    |
@@ -698,8 +698,8 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket.  |
-| ``objectName``  | _string_  | Object name in the bucket. |
+| ``bucketName``  | _string_  | Name of the bucket  |
+| ``objectName``  | _string_  | Object name in the bucket |
 | ``fileName``  | _string_  | File to upload |
 | ``contentType``  | _string_ | Content type of the file. Defaults to " |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
@@ -708,9 +708,9 @@ __Parameters__
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 |  ``Task``  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
-|        | ``ConnectionException`` : upon connection error.            |
-|        | ``InternalClientException`` : upon internal library error.        |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``ConnectionException`` : upon connection error            |
+|        | ``InternalClientException`` : upon internal library error        |
 |        | ``EntityTooLargeException``: upon proposed upload size exceeding max allowed |
 
 __Example__
@@ -743,17 +743,17 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket.  |
-| ``objectName``  | _string_  | Object name in the bucket. |
+| ``bucketName``  | _string_  | Name of the bucket  |
+| ``objectName``  | _string_  | Object name in the bucket |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 |  ``Task<ObjectStat>``: Populated object meta data. | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
-|        | ``ConnectionException`` : upon connection error.            |
-|        | ``InternalClientException`` : upon internal library error.        |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``ConnectionException`` : upon connection error            |
+|        | ``InternalClientException`` : upon internal library error        |
 
 
 
@@ -786,20 +786,20 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the source bucket.  |
-| ``objectName``  | _string_  | Object name in the source bucket to be copied. |
-| ``destBucketName``  | _string_  | Destination bucket name. |
-| ``destObjectName`` | _string_ | Destination object name to be created, if not provided defaults to source object name.|
-| ``copyConditions`` | _CopyConditions_ | Map of conditions useful for applying restrictions on copy operation.|
+| ``bucketName``  | _string_  | Name of the source bucket  |
+| ``objectName``  | _string_  | Object name in the source bucket to be copied |
+| ``destBucketName``  | _string_  | Destination bucket name |
+| ``destObjectName`` | _string_ | Destination object name to be created, if not provided defaults to source object name|
+| ``copyConditions`` | _CopyConditions_ | Map of conditions useful for applying restrictions on copy operation|
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 |  ``Task``  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
-|        | ``ConnectionException`` : upon connection error.            |
-|        | ``InternalClientException`` : upon internal library error.        |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``ConnectionException`` : upon connection error            |
+|        | ``InternalClientException`` : upon internal library error        |
 |        | ``ArgumentException`` : upon missing bucket/object names |
 
 __Example__
@@ -823,7 +823,7 @@ catch(MinioException e)
 ```
 
 <a name="removeObject"></a>
-### removeObjectAsync(string bucketName, string objectName)
+### RemoveObjectAsync(string bucketName, string objectName)
 
 `Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))`
 
@@ -834,16 +834,16 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket.  |
-| ``objectName``  | _string_  | Object name in the bucket. |
+| ``bucketName``  | _string_  | Name of the bucket  |
+| ``objectName``  | _string_  | Object name in the bucket |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 |  ``Task``  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
-|        | ``ConnectionException`` : upon connection error.            |
-|        | ``InternalClientException`` : upon internal library error.        |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``ConnectionException`` : upon connection error            |
+|        | ``InternalClientException`` : upon internal library error        |
 
 
 
@@ -875,17 +875,17 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket.  |
-| ``objectName``  | _string_  | Object name in the bucket. |
+| ``bucketName``  | _string_  | Name of the bucket  |
+| ``objectName``  | _string_  | Object name in the bucket |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 |  ``Task``  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
-|        | ``ConnectionException`` : upon connection error.            |
-|        | ``InternalClientException`` : upon internal library error.        |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``ConnectionException`` : upon connection error            |
+|        | ``InternalClientException`` : upon internal library error        |
 
 
 __Example__
@@ -917,15 +917,15 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _String_ | Name of the bucket.  |
-| ``objectName``  | _String_  | Object name in the bucket. |
+| ``bucketName``  | _String_ | Name of the bucket  |
+| ``objectName``  | _String_  | Object name in the bucket |
 | ``expiresInt``  | _Integer_  | Expiry in seconds. Default expiry is set to 7 days. |
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  ``Task<string>`` : string contains URL to download the object. | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
-|        | ``ConnectionException`` : upon connection error.            |
+|  ``Task<string>`` : string contains URL to download the object | Listed Exceptions: |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``ConnectionException`` : upon connection error            |
 
 
 __Example__
@@ -955,16 +955,16 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket.  |
-| ``objectName``  | _string_  | Object name in the bucket. |
+| ``bucketName``  | _string_  | Name of the bucket  |
+| ``objectName``  | _string_  | Object name in the bucket |
 | ``expiresInt``  | _int_  | Expiry in seconds. Default expiry is set to 7 days. |
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  ``Task<string>`` : string contains URL to download the object. | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
-|        | ``InvalidKeyException`` : upon an invalid access key or secret key.           |
-|        | ``ConnectionException`` : upon connection error.            |
+|  ``Task<string>`` : string contains URL to download the object | Listed Exceptions: |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``InvalidKeyException`` : upon an invalid access key or secret key           |
+|        | ``ConnectionException`` : upon connection error            |
 
 
 __Example__
@@ -999,8 +999,8 @@ __Parameters__
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 | ``Task<Dictionary<string,string>>``: Map of strings to construct form-data. | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
-|        | ``ConnectionException`` : upon connection error.            |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``ConnectionException`` : upon connection error            |
 |        | ``NoSuchAlgorithmException`` : upon requested algorithm was not found during signature calculation.           |
 
 
@@ -1041,8 +1041,8 @@ __Parameters__
 
 | Param  | Type  | Description  |
 |---|---|---|
-|`appName`  | _string_  | Name of the application performing the API requests. |
-| `appVersion`| _string_ | Version of the application performing the API requests. |
+|`appName`  | _string_  | Name of the application performing the API requests |
+| `appVersion`| _string_ | Version of the application performing the API requests |
 
 
 __Example__
