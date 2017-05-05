@@ -3,17 +3,19 @@
 Minio Client SDK provides higher level APIs for Minio and Amazon S3 compatible cloud storage services.For a complete list of APIs and examples, please take a look at the [Dotnet Client API Reference](https://docs.minio.io/docs/dotnet-client-api-reference).This document assumes that you have a working VisualStudio development environment.  
 
 ## Minimum Requirements
- * .NET 4.5.2, .NetCoreApp 1.0.0  or higher
+ * .NET 4.5.2, .NetStandard1.6 or higher
  * Visual Studio 2017 RC 
   
 ## Install from NuGet
 
-To install Minio .NET package, run the following command in Nuget Package Manager Console.
+To install Minio .NET package for .NET Framework, run the following command in Nuget Package Manager Console.
 ```powershell
-
-PM> Install-Package Minio
+PM> Install-Package Minio 
 ```
-
+To install Minio .NET package for .NetCore, run the following command in Nuget Package Manager Console.
+```powershell
+PM> Install-Package Minio.NetCore
+```
 ## Minio Client Example
 To connect to an Amazon S3 compatible cloud storage service, you will need to specify the following parameters.
 
@@ -83,7 +85,7 @@ namespace FileUploader
             var bucketName = "mymusic";
             var location   = "us-east-1";
             var objectName = "golden-oldies.zip";
-            var filePath = "/tmp/golden-oldies.zip";
+            var filePath = "C:\\Users\\username\\Downloads\\golden_oldies.mp3";
             var contentType = "application/zip";
 
             try
