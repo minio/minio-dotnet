@@ -86,7 +86,7 @@ namespace Minio
         {
             DateTime signingDate = DateTime.UtcNow;
             SetContentMd5(request);
-            SetContentSha256(request);
+            SetContentSha256(request, client);
             SetHostHeader(request, client);
             SetDateHeader(request, signingDate);
             SortedDictionary<string, string> headersToSign = GetHeadersToSign(request);
@@ -452,8 +452,15 @@ namespace Minio
         /// Set 'x-amz-content-sha256' http header.
         /// </summary>
         /// <param name="request">Instantiated request object</param>
-        private void SetContentSha256(IRestRequest request)
+        private void SetContentSha256(IRestRequest request, IRestClient client)
         {
+            // No need to compute SHA256 if endpoint scheme is https
+            if (client.BaseUrl.Host.StartsWith("https"))
+            {
+                request.AddHeader("x-amz-content-sha256","UNSIGNED-PAYLOAD");
+                return;
+            }
+
             if (request.Method == Method.PUT || request.Method.Equals(Method.POST))
             {
                 var bodyParameter = request.Parameters.Where(p => p.Type.Equals(ParameterType.RequestBody)).FirstOrDefault();
