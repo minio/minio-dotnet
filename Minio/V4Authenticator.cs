@@ -30,7 +30,7 @@ namespace Minio
     {
         private readonly string accessKey;
         private readonly string secretKey;
-
+        private string scheme;
         //
         // Excerpts from @lsegal - https://github.com/aws/aws-sdk-js/issues/659#issuecomment-120477258
         //
@@ -78,6 +78,14 @@ namespace Minio
         }
 
         /// <summary>
+        /// Sets the url scheme of the client
+        /// </summary>
+        /// <param name="scheme">url scheme</param>
+        internal void SetScheme(string scheme)
+        {
+            this.scheme = scheme;
+        }
+        /// <summary>
         /// Implements Authenticate interface method for IAuthenticator.
         /// </summary>
         /// <param name="client">Instantiated IRestClient object</param>
@@ -86,8 +94,8 @@ namespace Minio
         {
             DateTime signingDate = DateTime.UtcNow;
             SetContentMd5(request);
-            SetContentSha256(request, client);
-            SetHostHeader(request, client);
+            SetContentSha256(request);
+            SetHostHeader(request, client.BaseUrl.Host + ":" + client.BaseUrl.Port);
             SetDateHeader(request, signingDate);
             SortedDictionary<string, string> headersToSign = GetHeadersToSign(request);
             string signedHeaders = GetSignedHeaders(headersToSign);
@@ -442,20 +450,20 @@ namespace Minio
         /// Set 'Host' http header.
         /// </summary>
         /// <param name="request">Instantiated request object</param>
-        /// <param name="client">Instantiated client object</param>
-        private void SetHostHeader(IRestRequest request, IRestClient client)
+        /// <param name="hostUrl">Host url</param>
+        private void SetHostHeader(IRestRequest request, string hostUrl)
         {
-            request.AddHeader("Host", client.BaseUrl.Host + ":" + client.BaseUrl.Port);
+            request.AddHeader("Host", hostUrl);
         }
 
         /// <summary>
         /// Set 'x-amz-content-sha256' http header.
         /// </summary>
         /// <param name="request">Instantiated request object</param>
-        private void SetContentSha256(IRestRequest request, IRestClient client)
+        private void SetContentSha256(IRestRequest request)
         {
             // No need to compute SHA256 if endpoint scheme is https
-            if (client.BaseUrl.Host.StartsWith("https"))
+            if (this.scheme.Equals("https"))
             {
                 request.AddHeader("x-amz-content-sha256","UNSIGNED-PAYLOAD");
                 return;
