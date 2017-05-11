@@ -81,6 +81,33 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns> Returns Task that sets the current bucket policy</returns>
         Task SetPolicyAsync(String bucketName, String objectPrefix, PolicyType policyType, CancellationToken cancellationToken = default(CancellationToken));
+       
+        /// <summary>
+        ///  Gets the notification configuration set for this bucket
+        /// </summary>
+        /// <param name="bucketName">bucketName</param>
+        /// <param name="cancellationToken">optional cancellation token</param>
+        /// <returns>BucketNotification object populated with the notification subresource</returns>
+        Task<BucketNotification> GetBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
 
+        /// <summary>
+        /// Sets bucket notification configuration
+        /// </summary>
+        /// <param name="bucketName">bucketName</param>
+        /// <param name="notification">BucketNotification object</param>
+        /// <param name="cancellationToken">optional task cancellation token</param>
+        /// <returns></returns>
+        Task SetBucketNotificationsAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Remove all bucket notifications
+        /// </summary>
+        /// <param name="bucketName">bucketName</param>
+        /// <param name="cancellationToken">optional cancellation token</param>
+        /// <returns></returns>
+        Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
+      
+        // Task ListenBucketNotificationsAsync(string bucketName, string prefix = "", string suffix = "", List<Notification> events,CancellationToken cancellationToken = default(CancellationToken));
+        
     }
 }

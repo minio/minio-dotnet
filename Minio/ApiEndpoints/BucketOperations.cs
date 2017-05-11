@@ -28,6 +28,7 @@ using Minio.Exceptions;
 using System.Globalization;
 using System.Reactive.Linq;
 using System.Threading;
+using System.Text;
 
 namespace Minio
 {
@@ -339,6 +340,61 @@ namespace Minio
             policy.SetPolicy(policyType, objectPrefix);
 
             await setPolicyAsync(bucketName, policy, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets notification configuration for this bucket
+        /// </summary>
+        /// <param name="bucketName"> bucket name</param>
+        /// <param name="cancellationToken"> Optional cancellation token</param>
+        /// <returns></returns>
+        public async Task<BucketNotification> GetBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            utils.validateBucketName(bucketName);
+            var request = await this.CreateRequest(Method.GET,
+                                               bucketName,
+                                               resourcePath: "?notification");
+            BucketNotification notification = null;
+           
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+            using (var stream = new MemoryStream(contentBytes))
+            {
+                notification = (BucketNotification)(new XmlSerializer(typeof(BucketNotification)).Deserialize(stream));
+                return notification;
+            }
+        }
+        /// <summary>
+        /// Sets the notification configuration for this bucket
+        /// </summary>
+        /// <param name="bucketName"> bucket name</param>
+        /// <param name="notification">notification object with configuration to be set on the server</param>
+        /// <param name="cancellationToken"> Optional cancellation token</param>
+        /// <returns></returns>
+        public async Task SetBucketNotificationsAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            utils.validateBucketName(bucketName);
+            var request = await this.CreateRequest(Method.PUT, bucketName,
+                                           resourcePath: "?notification");
+    
+            request.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
+            request.RequestFormat = DataFormat.Xml;
+            request.AddBody(notification);
+            
+            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+        }
+
+        /// <summary>
+        /// Removes all bucket notification configurations stored on the server.
+        /// </summary>
+        /// <param name="bucketName"> bucket name </param>
+        /// <param name="cancellationToken"> optional cancellation token</param>
+        /// <returns></returns>
+        public async Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            utils.validateBucketName(bucketName);
+            BucketNotification notification = new BucketNotification();
+            await SetBucketNotificationsAsync(bucketName, notification, cancellationToken);
         }
     }
 }

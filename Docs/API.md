@@ -25,9 +25,9 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 |:--- |:--- |:--- |:--- |
 | [`makeBucket`](#makeBucket)  |[`getObject`](#getObject)   |[`presignedGetObject`](#presignedGetObject)   | [`getBucketPolicy`](#getBucketPolicy)   |
 | [`listBuckets`](#listBuckets)  | [`putObject`](#putObject)  | [`presignedPutObject`](#presignedPutObject)  | [`setBucketPolicy`](#setBucketPolicy)   |
-| [`bucketExists`](#bucketExists)  | [`copyObject`](#copyObject)  | [`presignedPostPolicy`](#presignedPostPolicy)  |  |
-| [`removeBucket`](#removeBucket)  | [`statObject`](#statObject) |   |   |
-| [`listObjects`](#listObjects)  | [`removeObject`](#removeObject) |   |   |
+| [`bucketExists`](#bucketExists)  | [`copyObject`](#copyObject)  | [`presignedPostPolicy`](#presignedPostPolicy)  |[`setBucketNotification`](#setBucketNotification)  |
+| [`removeBucket`](#removeBucket)  | [`statObject`](#statObject) |   | [`getBucketNotification`](#getBucketNotification)  |
+| [`listObjects`](#listObjects)  | [`removeObject`](#removeObject) |   |  [`removeAllBucketNotification`](#removeAllBucketNotification) |
 | [`listIncompleteUploads`](#listIncompleteUploads)  | [`removeIncompleteUpload`](#removeIncompleteUpload) |   |   |
 
 
@@ -461,12 +461,148 @@ __Parameters__
 
 __Example__
 
-
 ```cs
 try 
 {
     await minioClient.SetPolicyAsync("myBucket", "uploads",PolicyType.WRITE_ONLY);
 }
+catch (MinioException e) 
+{
+    Console.Out.WriteLine("Error occurred: " + e);
+}
+```
+
+
+<a name="setBucketNotification"></a>
+### SetBucketNotificationAsync(string bucketName,BucketNotification notification)
+`Task SetBucketNotificationAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken))`
+
+Sets notification for a given bucket
+
+__Parameters__
+
+|Param   | Type   | Description  |
+|:--- |:--- |:--- |
+| ``bucketName``  | _string_  | Name of the bucket  |
+| ``notification``  | _BucketNotification_  | Notifications to apply |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  Task  | Listed Exceptions: |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``ConnectionException`` : upon connection error            |
+|        | ``InternalClientException`` : upon internal library error        |
+|        | ``InvalidBucketNameException `` : upon invalid bucket name       |
+|        | ``InvalidOperationException``: upon unsuccessful serialization of notification object |
+
+
+
+__Example__
+```cs
+try 
+{
+    BucketNotification notification = new BucketNotification();
+    Arn topicArn = new Arn("aws", "sns", "us-west-1", "412334153608", "topicminio");
+                
+    TopicConfig topicConfiguration = new TopicConfig(topicArn);
+    List<EventType> events = new List<EventType>(){ EventType.ObjectCreatedPut , EventType.ObjectCreatedCopy };
+    topicConfiguration.AddEvents(events);
+    topicConfiguration.AddFilterPrefix("images");
+    topicConfiguration.AddFilterSuffix("jpg");
+    notification.AddTopic(topicConfiguration);
+
+    QueueConfig queueConfiguration = new QueueConfig("arn:aws:sqs:us-west-1:482314153608:testminioqueue1");
+    queueConfiguration.AddEvents(new List<EventType>() { EventType.ObjectCreatedCompleteMultipartUpload });
+    notification.AddQueue(queueConfiguration);    
+        
+    await minio.SetBucketNotificationsAsync(bucketName, 
+                                        notification);
+    Console.Out.WriteLine("Notifications set for the bucket " + bucketName + " successfully");
+}
+catch (MinioException e) 
+{
+    Console.Out.WriteLine("Error occurred: " + e);
+}
+```
+
+<a name="getBucketNotification"></a>
+### GetBucketNotificationAsync(string bucketName)
+`Task<BucketNotification> GetBucketNotificationAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))`
+
+Get bucket notification configuration
+
+
+__Parameters__
+
+|Param   | Type   | Description  |
+|:--- |:--- |:--- |
+| ``bucketName``  | _string_  | Name of the bucket.  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task<BucketNotification>``: The current notification configuration for the bucket.  | Listed Exceptions: |
+|        | ``InvalidBucketNameException `` : upon invalid bucket name.       |
+|        | ``ConnectionException`` : upon connection error.            |
+|        | ``AccessDeniedException`` : upon access denial            |
+|        | ``InternalClientException`` : upon internal library error.        |
+|        | ``BucketNotFoundException`` : upon missing bucket          |
+|        | ``InvalidOperationException``: upon unsuccessful deserialization of xml data |
+
+
+__Example__
+
+
+```cs
+try 
+{
+    BucketNotification notifications = await minioClient.GetBucketNotificationAsync(bucketName);
+    Console.Out.WriteLine("Notifications is " + notifications.ToXML());
+} 
+catch (MinioException e) 
+{
+    Console.Out.WriteLine("Error occurred: " + e);
+}
+```
+
+<a name="removeAllBucketNotification"></a>
+### RemoveAllBucketNotificationsAsync(string bucketName)
+`Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))`
+
+Remove all notification configurations set on the bucket
+
+
+__Parameters__
+
+|Param   | Type   | Description  |
+|:--- |:--- |:--- |
+| ``bucketName``  | _string_  | Name of the bucket.  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task`:  | Listed Exceptions: |
+|        | ``InvalidBucketNameException `` : upon invalid bucket name.       |
+|        | ``ConnectionException`` : upon connection error.            |
+|        | ``AccessDeniedException`` : upon access denial            |
+|        | ``InternalClientException`` : upon internal library error.        |
+|        | ``BucketNotFoundException`` : upon missing bucket          |
+|        | ``InvalidOperationException``: upon unsuccessful serialization of xml data |
+
+
+__Example__
+
+
+```cs
+try 
+{
+    await minioClient.RemoveAllBucketNotificationsAsync(bucketName);
+    Console.Out.WriteLine("Notifications successfully removed from the bucket " + bucketName);
+} 
 catch (MinioException e) 
 {
     Console.Out.WriteLine("Error occurred: " + e);
