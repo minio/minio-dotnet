@@ -248,6 +248,7 @@ namespace Minio
             restClient.UserAgent = this.FullUserAgent;
 
             authenticator = new V4Authenticator(this.AccessKey, this.SecretKey);
+            authenticator.SetScheme(scheme);
             restClient.Authenticator = authenticator;
         }
 
