@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <TargetFramework>netstandard1.6</TargetFramework>
     <AssemblyName>Minio</AssemblyName>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <RootNamespace>Minio</RootNamespace>
@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <OutputPath>..\..\..\lib\</OutputPath>
+    <OutputPath>..\..\core\lib\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
