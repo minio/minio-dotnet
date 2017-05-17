@@ -121,39 +121,39 @@ namespace FileUploader
 ```
 #### Bucket Operations
 
-* [MakeBucket.cs](./Minio.Examples/Cases/MakeBucket.cs)
-* [ListBuckets.cs](./Minio.Examples/Cases/ListBuckets.cs)
-* [BucketExists.cs](./Minio.Examples/Cases/BucketExists.cs)
-* [RemoveBucket.cs](./Minio.Examples/Cases/RemoveBucket.cs)
-* [Listobjects.cs](./Minio.Examples/Cases/Listobjects.cs)
-* [ListIncompleteUploads.cs](./Minio.Examples/Cases/ListIncompleteUploads.cs)
+* [MakeBucket.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/MakeBucket.cs)
+* [ListBuckets.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/ListBuckets.cs)
+* [BucketExists.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/BucketExists.cs)
+* [RemoveBucket.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/RemoveBucket.cs)
+* [Listobjects.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/Listobjects.cs)
+* [ListIncompleteUploads.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/ListIncompleteUploads.cs)
 
 #### Bucket policy Operations
-* [GetPolicy.cs](./Minio.Examples/Cases/GetPolicy.cs)
-* [SetPolicy.cs](./Minio.Examples/Cases/SetPolicy.cs)
+* [GetPolicy.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/GetPolicy.cs)
+* [SetPolicy.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/SetPolicy.cs)
 
 #### File Object Operations
-* [FGetObject.cs](./Minio.Examples/Cases/FGetObject.cs)
-* [FPutObject.cs](./Minio.Examples/Cases/FPutObject.cs)
+* [FGetObject.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/FGetObject.cs)
+* [FPutObject.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/FPutObject.cs)
 
 #### Object Operations
-* [GetObject.cs](./Minio.Examples/Cases/GetObject.cs)
-* [GetPartialObject.cs](./Minio.Examples/Cases/GetPartialObject.cs)
-* [PutObject.cs](./Minio.Examples/Cases/PutObject.cs)
-* [StatObject.cs](./Minio.Examples/Cases/StatObject.cs)
-* [RemoveObject.cs](./Minio.Examples/Cases/RemoveObject.cs)
-* [CopyObject.cs](./Minio.Examples/Cases/CopyObject.cs)
-* [RemoveIncompleteUpload.cs](./Minio.Examples/Cases/RemoveIncompleteUpload.cs)
+* [GetObject.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/GetObject.cs)
+* [GetPartialObject.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/GetPartialObject.cs)
+* [PutObject.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/PutObject.cs)
+* [StatObject.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/StatObject.cs)
+* [RemoveObject.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/RemoveObject.cs)
+* [CopyObject.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/CopyObject.cs)
+* [RemoveIncompleteUpload.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/RemoveIncompleteUpload.cs)
 
 #### Presigned Operations
-* [PresignedGetObject.cs](./Minio.Examples/Cases/PresignedGetObject.cs)
-* [PresignedPutObject.cs](./Minio.Examples/Cases/PresignedPutObject.cs)
-* [PresignedPostPolicy.cs](./Minio.Examples/Cases/PresignedPostPolicy.cs)
+* [PresignedGetObject.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/PresignedGetObject.cs)
+* [PresignedPutObject.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/PresignedPutObject.cs)
+* [PresignedPostPolicy.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/PresignedPostPolicy.cs)
 
 #### Client Custom Settings
-* [SetAppInfo](./Minio.Examples/Program.cs)
-* [SetTraceOn](./Minio.Examples/Program.cs)
-* [SetTraceOff](./Minio.Examples/Program.cs)
+* [SetAppInfo](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Program.cs)
+* [SetTraceOn](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Program.cs)
+* [SetTraceOff](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Program.cs)
 
 ## Explore Further
 * [Complete Documentation](https://docs.minio.io)
