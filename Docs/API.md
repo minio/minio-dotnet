@@ -1,4 +1,4 @@
-# DotNet Client API Reference [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io)
+# .NET Client API Reference [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io)
  
 ## Initialize Minio Client object.
 
