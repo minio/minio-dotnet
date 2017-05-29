@@ -45,73 +45,53 @@ namespace Minio.DataModel
         // AddTopic adds a given topic config to the general bucket notification config
         public void AddTopic(TopicConfig topicConfig)
         {
-            for (int index = 0; index < this.TopicConfigs.Count; index++)
+            bool isTopicFound = this.TopicConfigs.Exists(t => t.Topic.Equals(topicConfig));
+            if (!isTopicFound)
             {
-                if (this.TopicConfigs[index].Equals(topicConfig))
-                    return;
+                this.TopicConfigs.Add(topicConfig);
+                return;
             }
-            this.TopicConfigs.Add(topicConfig);
         }
 
         // AddQueue adds a given queue config to the general bucket notification config
         public void AddQueue(QueueConfig queueConfig)
         {
-            for (int index = 0; index < this.QueueConfigs.Count; index++)
+
+            bool isQueueFound = this.QueueConfigs.Exists(t => t.Equals(queueConfig));
+            if (!isQueueFound)
             {
-                if (this.QueueConfigs[index].Equals(queueConfig))
-                    return;
+                this.QueueConfigs.Add(queueConfig);
+                return;
             }
-            this.QueueConfigs.Add(queueConfig);
         }
 
         // AddLambda adds a given lambda config to the general bucket notification config
         public void AddLambda(LambdaConfig lambdaConfig)
         {
-            for (int index = 0; index < this.LambdaConfigs.Count; index++)
+            bool isLambdaFound = this.LambdaConfigs.Exists(t => t.Lambda.Equals(lambdaConfig));
+            if (!isLambdaFound)
             {
-                if (this.LambdaConfigs[index].Equals(lambdaConfig))
-                    return;
+                this.LambdaConfigs.Add(lambdaConfig);
+                return;
             }
-            this.LambdaConfigs.Add(lambdaConfig);
         }
 
         // RemoveTopicByArn removes all topic configurations that match the exact specified ARN
         public void RemoveTopicByArn(Arn topicArn)
         {
-            for (int index = 0; index < this.TopicConfigs.Count; index++)
-            {
-                if (this.TopicConfigs[index].Topic.Equals(topicArn.ToString()))
-                {
-                    this.TopicConfigs.RemoveAt(index);
-                    return;
-                }
-            }
+            var numRemoved = this.TopicConfigs.RemoveAll(t => t.Topic.Equals(topicArn));
         }
 
         // RemoveQueueByArn removes all queue configurations that match the exact specified ARN
         public void RemoveQueueByArn(Arn queueArn)
         {
-            for (int index = 0; index < this.QueueConfigs.Count; index++)
-            {
-                if (this.QueueConfigs[index].Queue.Equals(queueArn.ToString()))
-                {
-                    this.QueueConfigs.RemoveAt(index);
-                    return;
-                }
-            }
+            var numRemoved = this.QueueConfigs.RemoveAll(t => t.Queue.Equals(queueArn));
         }
 
         // RemoveLambdaByArn removes all lambda configurations that match the exact specified ARN
         public void RemoveLambdaByArn(Arn lambdaArn)
         {
-            for (int index = 0; index < this.LambdaConfigs.Count; index++)
-            {
-                if (this.LambdaConfigs[index].Lambda.Equals(lambdaArn.ToString()))
-                {
-                    this.LambdaConfigs.RemoveAt(index);
-                    return;
-                }
-            }
+            var numRemoved = this.LambdaConfigs.RemoveAll(t => t.Lambda.Equals(lambdaArn));
         }
         // Helper methods to guide XMLSerializer
         public bool ShouldSerializeLambdaConfigs()
@@ -136,21 +116,24 @@ namespace Minio.DataModel
         {
             XmlWriterSettings settings = new XmlWriterSettings();
             settings.OmitXmlDeclaration = true;
-            MemoryStream ms = new MemoryStream();
-            XmlWriter writer = XmlWriter.Create(ms, settings);
+            using (MemoryStream ms = new MemoryStream())
+            {
+                XmlWriter writer = XmlWriter.Create(ms, settings);
 
-            XmlSerializerNamespaces names = new XmlSerializerNamespaces();
-            names.Add("", "http://s3.amazonaws.com/doc/2006-03-01/");
+                XmlSerializerNamespaces names = new XmlSerializerNamespaces();
+                names.Add("", "http://s3.amazonaws.com/doc/2006-03-01/");
 
-            XmlSerializer cs = new XmlSerializer(typeof(BucketNotification));
+                XmlSerializer cs = new XmlSerializer(typeof(BucketNotification));
 
-            cs.Serialize(writer, this, names);
+                cs.Serialize(writer, this, names);
 
-            ms.Flush();
-            ms.Seek(0, SeekOrigin.Begin);
-            StreamReader sr = new StreamReader(ms);
-            var xml = sr.ReadToEnd();
-            return xml;         
+                ms.Flush();
+                ms.Seek(0, SeekOrigin.Begin);
+                StreamReader sr = new StreamReader(ms);
+                var xml = sr.ReadToEnd();
+                return xml;
+            }
+          
         }
     }
 }

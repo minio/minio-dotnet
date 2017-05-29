@@ -477,7 +477,7 @@ catch (MinioException e)
 ### SetBucketNotificationAsync(string bucketName,BucketNotification notification)
 `Task SetBucketNotificationAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken))`
 
-Sets notification for a given bucket
+Sets notification configuration for a given bucket
 
 __Parameters__
 
@@ -491,7 +491,6 @@ __Parameters__
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 |  Task  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
 |        | ``ConnectionException`` : upon connection error            |
 |        | ``InternalClientException`` : upon internal library error        |
 |        | ``InvalidBucketNameException `` : upon invalid bucket name       |

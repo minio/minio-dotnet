@@ -40,5 +40,22 @@ namespace Minio.DataModel
         {
             this.Topic = arn.ToString();
         }
+        // Implement equality for this object
+        public override bool Equals(Object obj)
+        {
+            TopicConfig other = (TopicConfig)obj;
+            // If parameter is null return false.
+            if (other == null)
+            {
+                return false;
+            }
+            return other.Topic.Equals(this.Topic);
+
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Topic.GetHashCode();
+        }
     }
 }

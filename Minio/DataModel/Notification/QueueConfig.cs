@@ -39,5 +39,22 @@ namespace Minio.DataModel
         {
             this.Queue = arn.ToString();
         }
+        // Implement equality for this object
+        public override bool Equals(Object obj)
+        {         
+            QueueConfig other = (QueueConfig)obj;
+            // If parameter is null return false.
+            if (other == null)
+            {
+                return false;
+            }
+           return other.Queue.Equals(this.Queue);
+  
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Queue.GetHashCode();
+        }
     }
 }

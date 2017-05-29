@@ -37,5 +37,22 @@ namespace Minio.DataModel
         {
             this.Lambda = arn.ToString();
         }
-    }
+
+        // Implement equality for this object
+        public override bool Equals(Object obj)
+        {
+            LambdaConfig other = (LambdaConfig)obj;
+            // If parameter is null return false.
+            if ((obj == null) || ((LambdaConfig)obj == null))
+            {
+                return false;
+            }
+            return other.Lambda.Equals(this.Lambda);
+
+        }
+        public override int GetHashCode()
+        {
+            return this.Lambda.GetHashCode();
+        }
+     }
 }
