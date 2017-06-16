@@ -73,9 +73,9 @@ namespace Minio
         /// <param name="scheme">URL Scheme</param>
         /// <param name="accessKey">Access key id</param>
         /// <param name="secretKey">Secret access key</param>
-        public V4Authenticator(string scheme,string accessKey, string secretKey)
+        public V4Authenticator(bool secure,string accessKey, string secretKey)
         {
-            this.isSecure = (scheme == "https") ? true : false;
+            this.isSecure = secure;
             this.accessKey = accessKey;
             this.secretKey = secretKey;
             this.isAnonymous = String.IsNullOrEmpty(accessKey) && String.IsNullOrEmpty(secretKey);
@@ -459,14 +459,14 @@ namespace Minio
         /// <param name="request">Instantiated request object</param>
         private void SetContentSha256(IRestRequest request)
         {
+            if (this.isAnonymous)
+                return;
             // No need to compute SHA256 if endpoint scheme is https
-            if (isSecure && !isAnonymous)
+            if (isSecure)
             {
                 request.AddHeader("x-amz-content-sha256","UNSIGNED-PAYLOAD");
                 return;
             }
-            if (this.isAnonymous)
-                return;
 
             if (request.Method == Method.PUT || request.Method.Equals(Method.POST))
             {
@@ -513,7 +513,7 @@ namespace Minio
                 {
                     return;
                 }
-                // For insecure, authenticated requests calculate sha256 only
+                // For insecure, authenticated requests set sha256 header instead of MD5.
                 if (!isSecure && !isAnonymous)
                     return;
                 // All anonymous access requests get Content-MD5 header set.

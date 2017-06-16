@@ -32,23 +32,11 @@ namespace Minio.Tests
     [TestClass]
     public class AuthenticatorTest
     {
-
-        [TestMethod]
-        public void TestisAnonymous()
-        {
-            V4Authenticator authenticator = new V4Authenticator("http",null,null);
-            Assert.IsTrue(authenticator.isAnonymous);
-            authenticator = new V4Authenticator("https","", "");
-            Assert.IsTrue(authenticator.isAnonymous);
-            authenticator = new V4Authenticator("https", "saa", "");
-            Assert.IsFalse(authenticator.isAnonymous);
-        }
-
         [TestMethod]
         public void TestAnonymousInsecureRequestHeaders()
         {
             //test anonymous insecure request headers
-            V4Authenticator authenticator = new V4Authenticator("http", null, null);
+            V4Authenticator authenticator = new V4Authenticator(false, null, null);
             Assert.IsTrue(authenticator.isAnonymous);
           
             IRestClient restClient = new RestClient("http://localhost:9000");
@@ -63,7 +51,7 @@ namespace Minio.Tests
         public void TestAnonymousSecureRequestHeaders()
         {
             //test anonymous secure request headers
-            V4Authenticator authenticator = new V4Authenticator("https", null, null);
+            V4Authenticator authenticator = new V4Authenticator(true, null, null);
             Assert.IsTrue(authenticator.isAnonymous);
 
             IRestClient restClient = new RestClient("http://localhost:9000");
@@ -78,7 +66,7 @@ namespace Minio.Tests
         public void TestSecureRequestHeaders()
         {
             // secure authenticated requests
-            V4Authenticator authenticator = new V4Authenticator("https", "accesskey", "secretkey");
+            V4Authenticator authenticator = new V4Authenticator(true, "accesskey", "secretkey");
             Assert.IsTrue(authenticator.isSecure);
             Assert.IsFalse(authenticator.isAnonymous);
 
@@ -96,7 +84,7 @@ namespace Minio.Tests
         public void TestInsecureRequestHeaders()
         {
             // insecure authenticated requests
-            V4Authenticator authenticator = new V4Authenticator("http", "accesskey", "secretkey");
+            V4Authenticator authenticator = new V4Authenticator(false, "accesskey", "secretkey");
             Assert.IsFalse(authenticator.isSecure);
             Assert.IsFalse(authenticator.isAnonymous);
             IRestClient restClient = new RestClient("http://localhost:9000");

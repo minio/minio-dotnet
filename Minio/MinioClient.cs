@@ -247,7 +247,7 @@ namespace Minio
             restClient = new RestSharp.RestClient(this.uri);
             restClient.UserAgent = this.FullUserAgent;
 
-            authenticator = new V4Authenticator(scheme,this.AccessKey, this.SecretKey);
+            authenticator = new V4Authenticator(this.Secure,this.AccessKey, this.SecretKey);
             restClient.Authenticator = authenticator;
         }
 
