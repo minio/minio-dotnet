@@ -68,6 +68,9 @@
     <Compile Include="..\Cases\FPutObject.cs">
       <Link>Cases\FPutObject.cs</Link>
     </Compile>
+    <Compile Include="..\Cases\GetBucketNotification.cs">
+      <Link>Cases\GetBucketNotification.cs</Link>
+    </Compile>
     <Compile Include="..\Cases\GetBucketPolicy.cs">
       <Link>Cases\GetBucketPolicy.cs</Link>
     </Compile>
@@ -101,6 +104,9 @@
     <Compile Include="..\Cases\PutObject.cs">
       <Link>Cases\PutObject.cs</Link>
     </Compile>
+    <Compile Include="..\Cases\RemoveAllBucketNotifications.cs">
+      <Link>Cases\RemoveAllBucketNotifications.cs</Link>
+    </Compile>
     <Compile Include="..\Cases\RemoveBucket.cs">
       <Link>Cases\RemoveBucket.cs</Link>
     </Compile>
@@ -109,6 +115,9 @@
     </Compile>
     <Compile Include="..\Cases\RemoveObject.cs">
       <Link>Cases\RemoveObject.cs</Link>
+    </Compile>
+    <Compile Include="..\Cases\SetBucketNotification.cs">
+      <Link>Cases\SetBucketNotification.cs</Link>
     </Compile>
     <Compile Include="..\Cases\SetBucketPolicy.cs">
       <Link>Cases\SetBucketPolicy.cs</Link>

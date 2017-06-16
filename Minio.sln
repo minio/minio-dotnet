@@ -40,6 +40,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataModel", "DataModel", "{C699CA5D-E171-487F-8C75-63A0542EE21F}"
 	ProjectSection(SolutionItems) = preProject
 		Minio\DataModel\Bucket.cs = Minio\DataModel\Bucket.cs
+		Minio\DataModel\BucketNotification.cs = Minio\DataModel\BucketNotification.cs
 		Minio\DataModel\CopyConditions.cs = Minio\DataModel\CopyConditions.cs
 		Minio\DataModel\CopyObjectResult.cs = Minio\DataModel\CopyObjectResult.cs
 		Minio\DataModel\CopyPartResult.cs = Minio\DataModel\CopyPartResult.cs
@@ -53,6 +54,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataModel", "DataModel", "{
 		Minio\DataModel\ListMultipartUploadsResult.cs = Minio\DataModel\ListMultipartUploadsResult.cs
 		Minio\DataModel\ListPartsResult.cs = Minio\DataModel\ListPartsResult.cs
 		Minio\DataModel\LocationConstraint.cs = Minio\DataModel\LocationConstraint.cs
+		Minio\DataModel\NotificationConfig.cs = Minio\DataModel\NotificationConfig.cs
 		Minio\DataModel\ObjectStat.cs = Minio\DataModel\ObjectStat.cs
 		Minio\DataModel\Part.cs = Minio\DataModel\Part.cs
 		Minio\DataModel\PostPolicy.cs = Minio\DataModel\PostPolicy.cs
@@ -122,7 +124,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Minio.Examples", "Minio.Exa
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cases", "Cases", "{FD22BDF0-80C4-44C8-8A58-BB15FB6C591C}"
 	ProjectSection(SolutionItems) = preProject
+		Minio.Examples\Cases\GetBucketNotification.cs = Minio.Examples\Cases\GetBucketNotification.cs
 		Minio.Examples\Cases\GetPartialObject.cs = Minio.Examples\Cases\GetPartialObject.cs
+		Minio.Examples\Cases\RemoveAllBucketNotifications.cs = Minio.Examples\Cases\RemoveAllBucketNotifications.cs
+		Minio.Examples\Cases\SetBucketNotification.cs = Minio.Examples\Cases\SetBucketNotification.cs
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Client.Examples.Net452", "Minio.Examples\Minio.Client.Examples.Net452\Minio.Client.Examples.Net452.csproj", "{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B}"
@@ -130,6 +135,20 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Minio.Client.Examples.Core", "Minio.Examples\Minio.Client.Examples.Core\Minio.Client.Examples.Core.csproj", "{54F8F8A7-B4DA-49AE-831F-5C867E58C936}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Functional.Tests", "Minio.Functional.Tests\Minio.Functional.Tests.csproj", "{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notification", "Notification", "{EEA2902C-62E0-4A9A-BAEE-0E56343A0D5B}"
+	ProjectSection(SolutionItems) = preProject
+		Minio\DataModel\Notification\Arn.cs = Minio\DataModel\Notification\Arn.cs
+		Minio\DataModel\Notification\BucketNotification.cs = Minio\DataModel\Notification\BucketNotification.cs
+		Minio\DataModel\Notification\EventType.cs = Minio\DataModel\Notification\EventType.cs
+		Minio\DataModel\Notification\Filter.cs = Minio\DataModel\Notification\Filter.cs
+		Minio\DataModel\Notification\FilterRule.cs = Minio\DataModel\Notification\FilterRule.cs
+		Minio\DataModel\Notification\LambdaConfig.cs = Minio\DataModel\Notification\LambdaConfig.cs
+		Minio\DataModel\Notification\NotificationConfiguration.cs = Minio\DataModel\Notification\NotificationConfiguration.cs
+		Minio\DataModel\Notification\QueueConfig.cs = Minio\DataModel\Notification\QueueConfig.cs
+		Minio\DataModel\Notification\S3Key.cs = Minio\DataModel\Notification\S3Key.cs
+		Minio\DataModel\Notification\TopicConfig.cs = Minio\DataModel\Notification\TopicConfig.cs
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -254,5 +273,6 @@ Global
 		{FD22BDF0-80C4-44C8-8A58-BB15FB6C591C} = {6218E2A8-D5DE-4A54-AF64-614ADBFFF09F}
 		{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B} = {6218E2A8-D5DE-4A54-AF64-614ADBFFF09F}
 		{54F8F8A7-B4DA-49AE-831F-5C867E58C936} = {6218E2A8-D5DE-4A54-AF64-614ADBFFF09F}
+		{EEA2902C-62E0-4A9A-BAEE-0E56343A0D5B} = {C699CA5D-E171-487F-8C75-63A0542EE21F}
 	EndGlobalSection
 EndGlobal

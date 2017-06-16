@@ -18,6 +18,7 @@
     <Compile Include="..\Cases\CopyObject.cs" Link="Cases\CopyObject.cs" />
     <Compile Include="..\Cases\FGetObject.cs" Link="Cases\FGetObject.cs" />
     <Compile Include="..\Cases\FPutObject.cs" Link="Cases\FPutObject.cs" />
+    <Compile Include="..\Cases\GetBucketNotification.cs" Link="Cases\GetBucketNotification.cs" />
     <Compile Include="..\Cases\GetBucketPolicy.cs" Link="Cases\GetBucketPolicy.cs" />
     <Compile Include="..\Cases\GetObject.cs" Link="Cases\GetObject.cs" />
     <Compile Include="..\Cases\GetPartialObject.cs" Link="Cases\GetPartialObject.cs" />
@@ -29,9 +30,11 @@
     <Compile Include="..\Cases\PresignedPostPolicy.cs" Link="Cases\PresignedPostPolicy.cs" />
     <Compile Include="..\Cases\PresignedPutObject.cs" Link="Cases\PresignedPutObject.cs" />
     <Compile Include="..\Cases\PutObject.cs" Link="Cases\PutObject.cs" />
+    <Compile Include="..\Cases\RemoveAllBucketNotifications.cs" Link="Cases\RemoveAllBucketNotifications.cs" />
     <Compile Include="..\Cases\RemoveBucket.cs" Link="Cases\RemoveBucket.cs" />
     <Compile Include="..\Cases\RemoveIncompleteUpload.cs" Link="Cases\RemoveIncompleteUpload.cs" />
     <Compile Include="..\Cases\RemoveObject.cs" Link="Cases\RemoveObject.cs" />
+    <Compile Include="..\Cases\SetBucketNotification.cs" Link="Cases\SetBucketNotification.cs" />
     <Compile Include="..\Cases\SetBucketPolicy.cs" Link="Cases\SetBucketPolicy.cs" />
     <Compile Include="..\Cases\StatObject.cs" Link="Cases\StatObject.cs" />
     <Compile Include="..\Program.cs" Link="Program.cs" />

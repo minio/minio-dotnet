@@ -34,6 +34,16 @@
     <Compile Include="..\Minio\DataModel\ListMultipartUploadsResult.cs" Link="DataModel\ListMultipartUploadsResult.cs" />
     <Compile Include="..\Minio\DataModel\ListPartsResult.cs" Link="DataModel\ListPartsResult.cs" />
     <Compile Include="..\Minio\DataModel\LocationConstraint.cs" Link="DataModel\LocationConstraint.cs" />
+    <Compile Include="..\Minio\DataModel\Notification\Arn.cs" Link="DataModel\Notification\Arn.cs" />
+    <Compile Include="..\Minio\DataModel\Notification\BucketNotification.cs" Link="DataModel\Notification\BucketNotification.cs" />
+    <Compile Include="..\Minio\DataModel\Notification\EventType.cs" Link="DataModel\Notification\EventType.cs" />
+    <Compile Include="..\Minio\DataModel\Notification\Filter.cs" Link="DataModel\Notification\Filter.cs" />
+    <Compile Include="..\Minio\DataModel\Notification\FilterRule.cs" Link="DataModel\Notification\FilterRule.cs" />
+    <Compile Include="..\Minio\DataModel\Notification\LambdaConfig.cs" Link="DataModel\Notification\LambdaConfig.cs" />
+    <Compile Include="..\Minio\DataModel\Notification\NotificationConfiguration.cs" Link="DataModel\Notification\NotificationConfiguration.cs" />
+    <Compile Include="..\Minio\DataModel\Notification\QueueConfig.cs" Link="DataModel\Notification\QueueConfig.cs" />
+    <Compile Include="..\Minio\DataModel\Notification\S3Key.cs" Link="DataModel\Notification\S3Key.cs" />
+    <Compile Include="..\Minio\DataModel\Notification\TopicConfig.cs" Link="DataModel\Notification\TopicConfig.cs" />
     <Compile Include="..\Minio\DataModel\ObjectStat.cs" Link="DataModel\ObjectStat.cs" />
     <Compile Include="..\Minio\DataModel\Part.cs" Link="DataModel\Part.cs" />
     <Compile Include="..\Minio\DataModel\Policy\ActionJsonConverter.cs" Link="DataModel\Policy\ActionJsonConverter.cs" />
@@ -85,6 +95,7 @@
 
   <ItemGroup>
     <Folder Include="ApiEndpoints\" />
+    <Folder Include="DataModel\Notification\" />
     <Folder Include="Helper\" />
     <Folder Include="Exceptions\" />
   </ItemGroup>

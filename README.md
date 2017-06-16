@@ -132,6 +132,11 @@ namespace FileUploader
 * [GetPolicy.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/GetBucketPolicy.cs)
 * [SetPolicy.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/SetBucketPolicy.cs)
 
+#### Bucket notification Operations
+* [GetBucketNotification.cs](./Minio.Examples/Cases/GetBucketNotification.cs)
+* [SetBucketNotification.cs](./Minio.Examples/Cases/SetBucketNotification.cs)
+* [RemoveAllBucketNotifications.cs](./Minio.Examples/Cases/RemoveAllBucketNotifications.cs)
+
 #### File Object Operations
 * [FGetObject.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/FGetObject.cs)
 * [FPutObject.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/FPutObject.cs)
