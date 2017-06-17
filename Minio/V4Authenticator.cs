@@ -30,7 +30,8 @@ namespace Minio
     {
         private readonly string accessKey;
         private readonly string secretKey;
-        private string scheme;
+        internal bool isAnonymous { get; private set; }
+        internal bool isSecure { get; private set; }
         //
         // Excerpts from @lsegal - https://github.com/aws/aws-sdk-js/issues/659#issuecomment-120477258
         //
@@ -69,22 +70,18 @@ namespace Minio
         /// <summary>
         /// Authenticator constructor.
         /// </summary>
+        /// <param name="scheme">URL Scheme</param>
         /// <param name="accessKey">Access key id</param>
         /// <param name="secretKey">Secret access key</param>
-        public V4Authenticator(string accessKey, string secretKey)
+        public V4Authenticator(bool secure,string accessKey, string secretKey)
         {
+            this.isSecure = secure;
             this.accessKey = accessKey;
             this.secretKey = secretKey;
+            this.isAnonymous = String.IsNullOrEmpty(accessKey) && String.IsNullOrEmpty(secretKey);
         }
 
-        /// <summary>
-        /// Sets the url scheme of the client
-        /// </summary>
-        /// <param name="scheme">url scheme</param>
-        internal void SetScheme(string scheme)
-        {
-            this.scheme = scheme;
-        }
+      
         /// <summary>
         /// Implements Authenticate interface method for IAuthenticator.
         /// </summary>
@@ -462,8 +459,10 @@ namespace Minio
         /// <param name="request">Instantiated request object</param>
         private void SetContentSha256(IRestRequest request)
         {
+            if (this.isAnonymous)
+                return;
             // No need to compute SHA256 if endpoint scheme is https
-            if (this.scheme.Equals("https"))
+            if (isSecure)
             {
                 request.AddHeader("x-amz-content-sha256","UNSIGNED-PAYLOAD");
                 return;
@@ -514,6 +513,10 @@ namespace Minio
                 {
                     return;
                 }
+                // For insecure, authenticated requests set sha256 header instead of MD5.
+                if (!isSecure && !isAnonymous)
+                    return;
+                // All anonymous access requests get Content-MD5 header set.
                 byte[] body = null;
                 if (bodyParameter.Value is string)
                 {
