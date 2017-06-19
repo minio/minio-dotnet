@@ -167,14 +167,14 @@ namespace Minio
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
 
-        public async Task PutObjectAsync(string bucketName, string objectName, string fileName, string contentType = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task PutObjectAsync(string bucketName, string objectName, string fileName, string contentType = null, Dictionary<string, string> metaData=null, CancellationToken cancellationToken = default(CancellationToken))
         {
             utils.ValidateFile(fileName, contentType);
             FileInfo fileInfo = new FileInfo(fileName);
             long size = fileInfo.Length;
             using (FileStream file = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             {
-                await PutObjectAsync(bucketName, objectName, file, size, contentType, cancellationToken);
+                await PutObjectAsync(bucketName, objectName, file, size, contentType, metaData, cancellationToken);
             }
 
         }
@@ -189,10 +189,26 @@ namespace Minio
         /// <param name="data">Stream of bytes to send</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
 
-        public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null,  CancellationToken cancellationToken = default(CancellationToken))
         {
             utils.validateBucketName(bucketName);
             utils.validateObjectName(objectName);
+            if (metaData == null)
+            {
+                metaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            }
+            else
+            {
+                metaData = new Dictionary<string, string>(metaData, StringComparer.OrdinalIgnoreCase);
+            }
+            if (string.IsNullOrWhiteSpace(contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+            if (! metaData.ContainsKey("Content-Type"))
+            {
+                metaData["Content-Type"] = contentType;
+            }
             if (data == null)
             {
                 throw new ArgumentNullException("Invalid input stream,cannot be null");
@@ -206,7 +222,7 @@ namespace Minio
                 {
                     throw new UnexpectedShortReadException("Data read " + bytes.Length + " is shorter than the size " + size + " of input buffer.");
                 }
-                await this.PutObjectAsync(bucketName, objectName, null, 0, bytes, contentType, cancellationToken);
+                await this.PutObjectAsync(bucketName, objectName, null, 0, bytes, metaData, cancellationToken);
                 return;
             }
             // For all sizes greater than 5MiB do multipart.
@@ -223,7 +239,7 @@ namespace Minio
 
             if (uploadId == null)
             {
-                uploadId = await this.NewMultipartUploadAsync(bucketName, objectName, contentType, cancellationToken);
+                uploadId = await this.NewMultipartUploadAsync(bucketName, objectName, metaData, cancellationToken);
             }
             else
             {
@@ -265,7 +281,7 @@ namespace Minio
 
                 if (!skipUpload)
                 {
-                    string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, contentType, cancellationToken);
+                    string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, metaData, cancellationToken);
                     totalParts[partNumber - 1] = new Part() { PartNumber = partNumber, ETag = etag, size = (long)expectedReadSize };
                 }
 
@@ -399,16 +415,12 @@ namespace Minio
         /// <param name="contentType"></param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        private async Task<string> NewMultipartUploadAsync(string bucketName, string objectName, string contentType, CancellationToken cancellationToken)
+        private async Task<string> NewMultipartUploadAsync(string bucketName, string objectName, Dictionary<string,string> metaData, CancellationToken cancellationToken)
         {
             var resource = "?uploads";
-            if (string.IsNullOrWhiteSpace(contentType))
-            {
-                contentType = "application/octet-stream";
-            }
 
             var request = await this.CreateRequest(Method.POST, bucketName, objectName: objectName,
-                            contentType: contentType, resourcePath: resource);
+                            headerMap: metaData, resourcePath: resource);
 
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
 
@@ -431,21 +443,23 @@ namespace Minio
         /// <param name="contentType"></param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        private async Task<string> PutObjectAsync(string bucketName, string objectName, string uploadId, int partNumber, byte[] data, string contentType, CancellationToken cancellationToken)
+        private async Task<string> PutObjectAsync(string bucketName, string objectName, string uploadId, int partNumber, byte[] data, Dictionary<string,string> metaData, CancellationToken cancellationToken)
         {
             var resource = "";
             if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
             {
                 resource += "?uploadId=" + uploadId + "&partNumber=" + partNumber;
             }
-            if (string.IsNullOrWhiteSpace(contentType))
+            // For multi-part upload requests, metadata needs to be passed in the NewMultiPartUpload request
+            string contentType = metaData["Content-Type"];
+            if (uploadId != null)
             {
-                contentType = "application/octet-stream";
+                metaData = null;
             }
-
             var request = await this.CreateRequest(Method.PUT, bucketName,
                                                      objectName: objectName,
                                                      contentType: contentType,
+                                                     headerMap: metaData,
                                                      body: data,
                                                      resourcePath: resource
                                            );
@@ -688,27 +702,37 @@ namespace Minio
             DateTime lastModified = new DateTime();
             string etag = "";
             string contentType = null;
+            Dictionary<string,string> metaData = new Dictionary<string, string>();
+            
+            //Supported headers for object.
+            List<string> supportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type" };
+
             foreach (Parameter parameter in response.Headers)
             {
-                switch (parameter.Name)
+                if (parameter.Name.Equals("Content-Length"))
                 {
-                    case "Content-Length":
-                        size = long.Parse(parameter.Value.ToString());
-                        break;
-                    case "Last-Modified":
-                        lastModified = DateTime.Parse(parameter.Value.ToString());
-                        break;
-                    case "ETag":
-                        etag = parameter.Value.ToString().Replace("\"", "");
-                        break;
-                    case "Content-Type":
-                        contentType = parameter.Value.ToString();
-                        break;
-                    default:
-                        break;
+                    size = long.Parse(parameter.Value.ToString());
                 }
+                else if (parameter.Name.Equals("Last-Modified"))
+                {
+                    lastModified = DateTime.Parse(parameter.Value.ToString());
+                }
+                else if (parameter.Name.Equals("ETag"))
+                {
+                    etag = parameter.Value.ToString().Replace("\"", "");
+                }
+                else if (parameter.Name.Equals("Content-Type"))
+                {
+                    contentType = parameter.Value.ToString();
+                    metaData["Content-Type"] = contentType;
+                }
+                else if (supportedHeaders.Contains(parameter.Name.ToLower()) || parameter.Name.ToLower().StartsWith("x-amz-meta-"))
+                {
+                    metaData[parameter.Name] = parameter.Value.ToString();
+                }
+       
             }
-            return new ObjectStat(objectName, size, lastModified, etag, contentType);
+            return new ObjectStat(objectName, size, lastModified, etag, contentType, metaData);
 
         }
 

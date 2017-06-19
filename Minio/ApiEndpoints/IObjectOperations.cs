@@ -53,9 +53,10 @@ namespace Minio
         /// <param name="data">Stream of file to upload</param>
         /// <param name="size">Size of stream</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
+        /// <param name="metaData">Dictionary of metadata headers. Optional, defaults to null</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
 
-        Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metadata=null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Removes an object with given name in specific bucket
@@ -114,9 +115,10 @@ namespace Minio
         /// <param name="objectName">Key of the new object</param>
         /// <param name="fileName">Path of file to upload</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
+        /// <param name="metadata">Dictionary of metadata header k-v pairs.Defaults to null</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
 
-        Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType = null, Dictionary<string, string> metadata = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.

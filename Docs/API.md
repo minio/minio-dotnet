@@ -765,7 +765,7 @@ catch (MinioException e)
 <a name="putObject"></a>
 ### PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType)
 
-` Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType, CancellationToken cancellationToken = default(CancellationToken))`
+` Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType,Dictionary<string,string> metaData=null, CancellationToken cancellationToken = default(CancellationToken))`
 
 
 Uploads contents from a stream to objectName.
@@ -781,6 +781,8 @@ __Parameters__
 | ``data``  | _Stream_  | Stream to upload |
 | ``size``  | _long_    | size of stream   |
 | ``contentType``  | _string_ | Content type of the file. Defaults to "application/octet-stream" |
+| ``metaData``  | _Dictionary<string,string>_ | Dictionary of metadata headers. Defaults to null. |
+
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -822,7 +824,7 @@ catch(MinioException e)
 <a name="putObject"></a>
 ### PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null)
 
-` Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null, CancellationToken cancellationToken = default(CancellationToken))`
+` Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null,Dictionary<string,string> metaData=null, CancellationToken cancellationToken = default(CancellationToken))`
 
 
 Uploads contents from a file to objectName.
@@ -837,6 +839,8 @@ __Parameters__
 | ``objectName``  | _string_  | Object name in the bucket |
 | ``fileName``  | _string_  | File to upload |
 | ``contentType``  | _string_ | Content type of the file. Defaults to " |
+| ``metadata``  | _Dictionary<string,string>_ | Dictionary of meta data headers and their values.Defaults to null.|
+
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 

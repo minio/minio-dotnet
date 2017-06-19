@@ -111,7 +111,7 @@ namespace Minio
         /// <returns>A RestRequest</returns>
         internal async Task<RestRequest> CreateRequest(Method method, string bucketName, string objectName = null,
                                 Dictionary<string, string> headerMap = null,
-                                string contentType = "application/xml",
+                                string contentType = "application/octet-stream",
                                 Object body = null, string resourcePath = null, string region = null)
         {
             // Validate bucket name and object name
@@ -206,14 +206,14 @@ namespace Minio
 
             }
 
-            if (contentType != null)
-            {
-                request.AddHeader("Content-Type", contentType);
-            }
+            //if ((contentType != null) && (headerMap == null || !headerMap.ContainsKey("Content-Type")))
+            //{
+            //    request.AddHeader("Content-Type", contentType);
+            //}
 
             if (headerMap != null)
             {
-                foreach (KeyValuePair<string, string> entry in headerMap)
+                foreach (var entry in headerMap)
                 {
                     request.AddHeader(entry.Key, entry.Value);
                 }
