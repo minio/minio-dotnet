@@ -379,7 +379,9 @@ namespace Minio.Functional.Tests
             ObjectStat statObject = await PutObject_Tester(minio, bucketName, objectName, fileName, contentType:contentType, metaData:metaData);
             Assert.IsTrue(statObject != null);
             Assert.IsTrue(statObject.metaData != null);
-            Assert.IsTrue(statObject.metaData.ContainsKey("x-amz-meta-customheader"));
+            Dictionary<string, string> statMeta = new Dictionary<string, string>(statObject.metaData,StringComparer.OrdinalIgnoreCase);
+
+            Assert.IsTrue(statMeta.ContainsKey("x-amz-meta-customheader"));
             Assert.IsTrue(statObject.metaData.ContainsKey("Content-Type") && statObject.metaData["Content-Type"].Equals("custom/contenttype"));
             await TearDown(minio, bucketName);
             File.Delete(fileName);
@@ -412,7 +414,7 @@ namespace Minio.Functional.Tests
                                            filestream,
                                            size,
                                            contentType,
-                                           metaData);
+                                           metaData: metaData);
                 await minio.GetObjectAsync(bucketName, objectName,
                (stream) =>
                {
@@ -1073,7 +1075,7 @@ namespace Minio.Functional.Tests
                                            objectName,
                                            filestream,
                                            filestream.Length,
-                                           contentType,null, cts.Token);
+                                           contentType, cts.Token);
 
             }
             catch (OperationCanceledException)

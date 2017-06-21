@@ -166,15 +166,15 @@ namespace Minio
         /// <param name="fileName">Path of file to upload</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-
-        public async Task PutObjectAsync(string bucketName, string objectName, string fileName, string contentType = null, Dictionary<string, string> metaData=null, CancellationToken cancellationToken = default(CancellationToken))
+        /// <param name="metaData">Object metadata to be stored. Defaults to null.</param>
+        public async Task PutObjectAsync(string bucketName, string objectName, string fileName, string contentType = null, CancellationToken cancellationToken = default(CancellationToken), Dictionary<string, string> metaData = null)
         {
             utils.ValidateFile(fileName, contentType);
             FileInfo fileInfo = new FileInfo(fileName);
             long size = fileInfo.Length;
             using (FileStream file = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             {
-                await PutObjectAsync(bucketName, objectName, file, size, contentType, metaData, cancellationToken);
+                await PutObjectAsync(bucketName, objectName, file, size, contentType, cancellationToken, metaData);
             }
 
         }
@@ -188,8 +188,8 @@ namespace Minio
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
         /// <param name="data">Stream of bytes to send</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-
-        public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null,  CancellationToken cancellationToken = default(CancellationToken))
+        /// <param name="metaData">Object metadata to be stored. Defaults to null.</param>
+        public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, CancellationToken cancellationToken = default(CancellationToken), Dictionary<string, string> metaData = null)
         {
             utils.validateBucketName(bucketName);
             utils.validateObjectName(objectName);

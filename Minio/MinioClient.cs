@@ -206,11 +206,6 @@ namespace Minio
 
             }
 
-            //if ((contentType != null) && (headerMap == null || !headerMap.ContainsKey("Content-Type")))
-            //{
-            //    request.AddHeader("Content-Type", contentType);
-            //}
-
             if (headerMap != null)
             {
                 foreach (var entry in headerMap)
