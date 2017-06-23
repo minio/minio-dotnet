@@ -96,7 +96,6 @@ namespace Minio.Functional.Tests
 
                 // Set app Info 
                 minioClient.SetAppInfo("app-name", "app-version");
-               
                 // Set HTTP Tracing On
                 // minioClient.SetTraceOn();
 
@@ -124,6 +123,7 @@ namespace Minio.Functional.Tests
 
                 PutObject_Test3(minioClient).Wait();
                 PutObject_Test4(minioClient).Wait();
+                PutObject_Test5(minioClient).Wait();
 
                 // Test StatObject function
                 StatObject_Test1(minioClient).Wait();
@@ -364,8 +364,33 @@ namespace Minio.Functional.Tests
             File.Delete(fileName);
             Console.Out.WriteLine("Test4: PutobjectAsync with different content-type complete");
         }
-        private async static Task PutObject_Tester(MinioClient minio, string bucketName, string objectName, string fileName = null, string contentType = "application/octet-stream", long size = 0)
+
+        private async static Task PutObject_Test5(MinioClient minio)
         {
+            Console.Out.WriteLine("Test5: PutobjectAsync with custom metadata");
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string fileName = CreateFile(1 * MB);
+            string contentType = "custom/contenttype";
+            Dictionary<string, string> metaData = new Dictionary<string, string>(){
+                { "x-amz-meta-customheader", "minio-dotnet"}
+            };
+            await Setup_Test(minio, bucketName);
+            ObjectStat statObject = await PutObject_Tester(minio, bucketName, objectName, fileName, contentType:contentType, metaData:metaData);
+            Assert.IsTrue(statObject != null);
+            Assert.IsTrue(statObject.metaData != null);
+            Dictionary<string, string> statMeta = new Dictionary<string, string>(statObject.metaData,StringComparer.OrdinalIgnoreCase);
+
+            Assert.IsTrue(statMeta.ContainsKey("x-amz-meta-customheader"));
+            Assert.IsTrue(statObject.metaData.ContainsKey("Content-Type") && statObject.metaData["Content-Type"].Equals("custom/contenttype"));
+            await TearDown(minio, bucketName);
+            File.Delete(fileName);
+            Console.Out.WriteLine("Test5: PutobjectAsync with different content-type complete");
+        }
+
+        private async static Task<ObjectStat> PutObject_Tester(MinioClient minio, string bucketName, string objectName, string fileName = null, string contentType = "application/octet-stream", long size = 0, Dictionary<string, string> metaData=null)
+        {
+            ObjectStat statObject = null;
             try
             {
                 byte[] bs = File.ReadAllBytes(fileName);
@@ -388,8 +413,8 @@ namespace Minio.Functional.Tests
                                            objectName,
                                            filestream,
                                            size,
-                                           contentType);
-
+                                           contentType,
+                                           metaData: metaData);
                 await minio.GetObjectAsync(bucketName, objectName,
                (stream) =>
                {
@@ -402,7 +427,7 @@ namespace Minio.Functional.Tests
                    Assert.AreEqual(file_read_size, file_write_size);
                    File.Delete(tempFileName);
                });
-                ObjectStat statObject = await minio.StatObjectAsync(bucketName, objectName);
+                statObject = await minio.StatObjectAsync(bucketName, objectName);
                 Assert.IsNotNull(statObject);
                 Assert.AreEqual(statObject.ObjectName, objectName);
                 Assert.AreEqual(statObject.Size, file_read_size);
@@ -415,7 +440,7 @@ namespace Minio.Functional.Tests
                 Console.WriteLine("[Bucket]  Exception: {0}", e);
                 Assert.Fail();
             }
-
+            return statObject;
         }
 
         private async static Task StatObject_Test1(MinioClient minio)
