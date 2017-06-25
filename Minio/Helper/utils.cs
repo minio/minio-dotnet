@@ -22,6 +22,7 @@ using Microsoft.Win32;
 using Minio.Helper;
 using System.Dynamic;
 using System.Linq;
+using System.Text;
 
 namespace Minio
 {
@@ -99,10 +100,49 @@ namespace Minio
 
         internal static string UrlEncode(string input)
         {
-            return Uri.EscapeDataString(input).Replace("%2F", "/");
+            return Uri.EscapeDataString(input).Replace("\\!", "%21")
+                                              .Replace("\\$", "%24")
+                                              .Replace("\\&", "%26")
+                                              .Replace("\\'", "%27")
+                                              .Replace("\\(", "%28")
+                                              .Replace("\\)", "%29")
+                                              .Replace("\\*", "%2A")
+                                              .Replace("\\+", "%2B")
+                                              .Replace("\\,", "%2C")
+                                              .Replace("\\/", "%2F")
+                                              .Replace("\\:", "%3A")
+                                              .Replace("\\;", "%3B")
+                                              .Replace("\\=", "%3D")
+                                              .Replace("\\@", "%40")
+                                              .Replace("\\[", "%5B")
+                                              .Replace("\\]", "%5D"); 
         }
 
+        internal static string EncodePath(string path)
+        {
+            StringBuilder encodedPathBuf = new StringBuilder();
+            foreach (string pathSegment in path.Split('/'))
+            {
+                if (pathSegment.Length != 0)
+                {
+                    if (encodedPathBuf.Length > 0)
+                    {
+                        encodedPathBuf.Append("/");
+                    }
+                    encodedPathBuf.Append(utils.UrlEncode(pathSegment));
+                }
+            }
 
+            if (path.StartsWith("/"))
+            {
+                encodedPathBuf.Insert(0, "/");
+            }
+            if (path.EndsWith("/"))
+            {
+                encodedPathBuf.Append("/");
+            }
+            return encodedPathBuf.ToString();
+        }
         internal static bool isAnonymousClient(string accessKey, string secretKey)
         {
             return (secretKey == "" || accessKey == "");
