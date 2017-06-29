@@ -185,7 +185,6 @@ namespace Minio
 
             if (objectName != null)
             {
-                // Limitation: OkHttp does not allow to add '.' and '..' as path segment.
                 resource += utils.EncodePath(objectName);
             }
 

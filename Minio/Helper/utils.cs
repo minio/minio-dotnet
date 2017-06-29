@@ -97,7 +97,7 @@ namespace Minio
             }
             return;
         }
-
+        // Return url encoded string where reserved characters have been percent-encoded
         internal static string UrlEncode(string input)
         {
             return Uri.EscapeDataString(input).Replace("\\!", "%21")
@@ -117,7 +117,7 @@ namespace Minio
                                               .Replace("\\[", "%5B")
                                               .Replace("\\]", "%5D"); 
         }
-
+        // Return encoded path where extra "/" are trimmed off.
         internal static string EncodePath(string path)
         {
             StringBuilder encodedPathBuf = new StringBuilder();
@@ -143,10 +143,12 @@ namespace Minio
             }
             return encodedPathBuf.ToString();
         }
+
         internal static bool isAnonymousClient(string accessKey, string secretKey)
         {
             return (secretKey == "" || accessKey == "");
         }
+
         internal static void ValidateFile(string filePath, string contentType = null)
         {
             if (filePath == null || filePath == "")
