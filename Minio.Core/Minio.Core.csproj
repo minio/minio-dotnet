@@ -15,6 +15,20 @@
     <OutputPath>..\..\core\lib\</OutputPath>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='.net4.5.2|AnyCPU'">
+    <OutputPath>..\..\core\lib\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='.netcore|AnyCPU'">
+    <OutputPath>..\..\core\lib\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='net4.5.2|AnyCPU'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='net4.5.2|x64'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='net4.5.2|x86'" />
+
   <ItemGroup>
     <Compile Include="..\Minio\ApiEndpoints\BucketOperations.cs" Link="ApiEndpoints\BucketOperations.cs" />
     <Compile Include="..\Minio\ApiEndpoints\IBucketOperations.cs" Link="ApiEndpoints\IBucketOperations.cs" />
