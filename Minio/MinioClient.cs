@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using Minio.Helper;
 using Newtonsoft.Json;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Minio
 {
@@ -145,7 +146,7 @@ namespace Minio
 
             // This section reconstructs the url with scheme followed by location specific endpoint( s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
-            string resource = "";              //Resource being requested  
+            string resource = "";
             bool usePathStyle = false;
             if (s3utils.IsAmazonEndPoint(this.BaseUrl))
             {
@@ -169,13 +170,13 @@ namespace Minio
 
                 if (usePathStyle)
                 {
-                    resource = utils.UrlEncode(bucketName) + "/";
+                    resource += utils.UrlEncode(bucketName) + "/";
                 }
 
             }
             else
             {
-                resource = utils.UrlEncode(bucketName) + "/";
+                resource += utils.UrlEncode(bucketName) + "/";
             }
 
             // Set Target URL
@@ -184,12 +185,7 @@ namespace Minio
 
             if (objectName != null)
             {
-                // Limitation: OkHttp does not allow to add '.' and '..' as path segment.
-                foreach (String pathSegment in objectName.Split('/'))
-                {
-                    resource += utils.UrlEncode(pathSegment);
-                }
-
+                resource += utils.EncodePath(objectName);
             }
 
             // Append query string passed in 
