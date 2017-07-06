@@ -60,25 +60,34 @@ namespace Minio.Examples
             String endPoint = null;
             String accessKey = null;
             String secretKey = null;
-
+            String enableHTTPS = null;
+            if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
+            {
+                endPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");
+                accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
+                secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+                enableHTTPS = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
+            }
+            else
+            {
+                endPoint = "play.minio.io:9000";
+                accessKey = "Q3AM3UQ867SPQQA43P2F";
+                secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
+                enableHTTPS = "1";
+            }
 #if NET452
-            endPoint = ConfigurationManager.AppSettings["Endpoint"];
-            accessKey = ConfigurationManager.AppSettings["AccessKey"];
-            secretKey = ConfigurationManager.AppSettings["SecretKey"];
-
-
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                      | SecurityProtocolType.Tls11
                                      | SecurityProtocolType.Tls12;
 #endif
-#if NETCOREAPP1_0
-            endPoint = "play.minio.io:9000";
-            accessKey = "Q3AM3UQ867SPQQA43P2F";
-            secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
-#endif
+
             // WithSSL() enables SSL support in Minio client
-            var minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey).WithSSL();
+            MinioClient minioClient = null;
+            if (enableHTTPS.Equals("1"))
+                minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey).WithSSL();
+            else
+                minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey);
 
             try
             {

@@ -110,14 +110,48 @@ namespace FileUploader
 ```
 
 ## Running Minio Client Examples
+#### On Windows 
 * Clone this repository.
 
-* Build the project to produce the Minio.Examples console app.
+* Build the project in Visual Studio to produce the Minio.Examples console app.
 
 * Move into Minio.Examples directory and enter your credentials and bucket name, object name etc.
   Uncomment the example test cases such as below in Program.cs to run an example.
 ```cs
   //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
+```
+* Run the Minio.Client.Examples.NET452 or Minio.Client.Examples.NetCore project from Visual Studio
+#### On Linux (Ubuntu 16.04 and above)
+* Clone this repository.
+
+* Move into Minio.Examples directory and enter your credentials and bucket name, object name etc.
+  Uncomment the example test cases such as below in Program.cs to run an example.
+```cs
+  //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
+```
+<blockquote> NOTE: minio-dotnet requires mono 5.0.1 stable release and .NET Core 1.0 SDK to build on Linux. </blockquote>
+```
+bash $ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet 
+$ sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ yakkety main" > /etc/apt/sources.list.d/dotnetdev.list' 
+$ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893
+$ sudo apt-get update
+$ sudo apt-get install dotnet-dev-1.0.4
+$ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+$ echo "deb http://download.mono-project.com/repo/ubuntu xenial main" | sudo tee /etc/apt/sources.list.d/mono-official.list
+$ sudo apt-get update
+$ sudo apt-get install mono-complete 
+$ sudo apt-get install ca-certificates-mono
+$ sudo apt-get install mono-xsp4
+
+$ msbuild /t:Clean 
+$ msbuild /p:Configuration=.net4.5.2    # To compile .NET4.5.2 projects in the solution.
+$ dotnet msbuild /p:Configuration=.netcore  # To compile .NetCore projects in the solution.
+To run .NET4.5.2 example,
+$ ./Minio.Examples/Minio.Client.Examples.Net452/bin/Debug/Minio.Client.Examples.Net452.exe 
+To run .NetCore example,
+$ cd Minio.Examples/Minio.Client.Examples.Core
+$ dotnet restore
+$ dotnet run
 ```
 #### Bucket Operations
 
