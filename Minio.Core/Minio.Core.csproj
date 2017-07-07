@@ -28,6 +28,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='net4.5.2|x64'" />
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='net4.5.2|x86'" />
+<<<<<<< HEAD
+=======
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mint|AnyCPU'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mint|x64'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mint|x86'" />
+>>>>>>> Modify functional tests for Mint
 
   <ItemGroup>
     <Compile Include="..\Minio\ApiEndpoints\BucketOperations.cs" Link="ApiEndpoints\BucketOperations.cs" />

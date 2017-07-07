@@ -8,9 +8,7 @@ pull_requests:
 before_build: 
  - nuget restore
  - dotnet restore
-
 configuration: Release
-
 build:
   project: Minio.sln
   publish_nuget: true

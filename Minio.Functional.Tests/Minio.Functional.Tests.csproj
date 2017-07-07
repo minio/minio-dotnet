@@ -10,12 +10,35 @@
 
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mint|AnyCPU'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mint|x64'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mint|x86'" />
+
+  <Choose>
+    <When Condition=" '$(Configuration)'=='Debug' ">
+      <ItemGroup>
+        <ProjectReference Include="..\Minio.Core\Minio.Core.csproj" />
+
+      </ItemGroup>
+    </When>
+    <When Condition=" '$(Configuration)'=='Mint' ">
+    <ItemGroup>
+      <PackageReference Include="Minio.NetCore" Version="1.0.0" />
+    </ItemGroup>
+    </When>
+  </Choose>
+
   <ItemGroup>
     <PackageReference Include="MSTest.TestFramework" Version="1.1.11" />
     <PackageReference Include="System.Net.Primitives" Version="4.3.0" />
   </ItemGroup>
+<<<<<<< HEAD
 
   <ItemGroup>
     <ProjectReference Include="..\Minio.Core\Minio.Core.csproj" />
   </ItemGroup>
+=======
+>>>>>>> Modify functional tests for Mint
 </Project>

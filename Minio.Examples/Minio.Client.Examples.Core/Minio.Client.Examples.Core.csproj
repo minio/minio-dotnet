@@ -21,6 +21,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='.netcore|AnyCPU'" />
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='.net4.5.2|AnyCPU'" />
+<<<<<<< HEAD
+=======
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mint|AnyCPU'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mint|x64'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mint|x86'" />
+>>>>>>> Modify functional tests for Mint
 
   <ItemGroup>
     <Compile Include="..\Cases\BucketExists.cs" Link="Cases\BucketExists.cs" />
