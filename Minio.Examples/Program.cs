@@ -60,20 +60,21 @@ namespace Minio.Examples
             String endPoint = null;
             String accessKey = null;
             String secretKey = null;
-            String enableHTTPS = null;
+            bool enableHTTPS = false;
             if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
             {
                 endPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");
                 accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
                 secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
-                enableHTTPS = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
+                if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") != null)
+                    enableHTTPS = Environment.GetEnvironmentVariable("ENABLE_HTTPS").Equals("1"); 
             }
             else
             {
                 endPoint = "play.minio.io:9000";
                 accessKey = "Q3AM3UQ867SPQQA43P2F";
                 secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
-                enableHTTPS = "1";
+                enableHTTPS = true;
             }
 #if NET452
             ServicePointManager.Expect100Continue = true;
@@ -84,7 +85,7 @@ namespace Minio.Examples
 
             // WithSSL() enables SSL support in Minio client
             MinioClient minioClient = null;
-            if (enableHTTPS.Equals("1"))
+            if (enableHTTPS)
                 minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey).WithSSL();
             else
                 minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey);
