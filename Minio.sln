@@ -6,6 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C8111804-63DA-4E74-9C1F-FEC46632A33B}"
 	ProjectSection(SolutionItems) = preProject
 		appveyor.yml = appveyor.yml
+		mono_install.sh = mono_install.sh
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -371,8 +372,7 @@ Global
 		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.testexclude|x64.Build.0 = Release|x64
 		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.testexclude|x86.ActiveCfg = Release|x86
 		{54F8F8A7-B4DA-49AE-831F-5C867E58C936}.testexclude|x86.Build.0 = Release|x86
-		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}..net4.5.2|Any CPU.ActiveCfg = Release|Any CPU
-		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}..net4.5.2|Any CPU.Build.0 = Release|Any CPU
+		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}..net4.5.2|Any CPU.ActiveCfg = Debug|Any CPU
 		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}..net4.5.2|x64.ActiveCfg = Release|x64
 		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}..net4.5.2|x64.Build.0 = Release|x64
 		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}..net4.5.2|x86.ActiveCfg = Release|x86

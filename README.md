@@ -124,7 +124,7 @@ namespace FileUploader
 ##### Setting up Mono and .NETCore on Linux
 <blockquote> NOTE: minio-dotnet requires mono 5.0.1 stable release and .NET Core 1.0 SDK to build on Linux. </blockquote>
 
-* Install .NETCore and Mono by running [mono_install.sh](https://github.com/minio/minio-dotnet/blob/master/mono_install.sh)
+* Install [.NETCore](https://www.microsoft.com/net/core#linuxredhat) and [Mono](http://www.mono-project.com/download/#download-lin) for your distro. See sample script  to install .NETCore and Mono for Ubuntu Xenial [mono_install.sh](https://github.com/minio/minio-dotnet/blob/master/mono_install.sh)
 
 ```
 $ ./mono_install.sh    
@@ -143,13 +143,14 @@ $ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet
 ```
 * To run .NET4.5.2 example,
 ```
-$ msbuild /t:Clean 
-$ msbuild /p:Configuration=.net4.5.2    # To compile .NET4.5.2 projects in the solution.
-$ ./Minio.Examples/Minio.Client.Examples.Net452/bin/Debug/Minio.Client.Examples.Net452.exe 
+$ mono nuget.exe restore
+$ msbuild /p:Configuration=.net4.5.2 /t:Clean 
+$ msbuild /p:Configuration=.net4.5.2
+$ ./Minio.Examples/Minio.Client.Examples.Net452/bin/.net4.5.2/Minio.Client.Examples.Net452.exe 
 ```
 * To run .NetCore example,
 ```
-$ dotnet msbuild /p:Configuration=.netcore  # To compile .NetCore projects in the solution.
+$ dotnet msbuild /p:Configuration=.netcore
 $ cd Minio.Examples/Minio.Client.Examples.Core
 $ dotnet restore
 $ dotnet run
