@@ -110,14 +110,50 @@ namespace FileUploader
 ```
 
 ## Running Minio Client Examples
-* Clone this repository.
+#### On Windows 
+* Clone this repository and open the Minio.Sln in Visual Studio 2017.
 
-* Build the project to produce the Minio.Examples console app.
-
-* Move into Minio.Examples directory and enter your credentials and bucket name, object name etc.
+* Enter your credentials and bucket name, object name etc.in Minio.Examples/Program.cs
   Uncomment the example test cases such as below in Program.cs to run an example.
 ```cs
   //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
+```
+* Run the Minio.Client.Examples.NET452 or Minio.Client.Examples.NetCore project from Visual Studio
+#### On Linux (Ubuntu 16.04 and above)
+
+##### Setting up Mono and .NETCore on Linux
+<blockquote> NOTE: minio-dotnet requires mono 5.0.1 stable release and .NET Core 1.0 SDK to build on Linux. </blockquote>
+
+* Install [.NETCore](https://www.microsoft.com/net/core#linuxredhat) and [Mono](http://www.mono-project.com/download/#download-lin) for your distro. See sample script  to install .NETCore and Mono for Ubuntu Xenial [mono_install.sh](https://github.com/minio/minio-dotnet/blob/master/mono_install.sh)
+
+```
+$ ./mono_install.sh    
+```
+##### Running Minio.Examples 
+* Clone this project
+
+```
+$ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet 
+```
+
+* Enter your credentials and bucket name, object name etc. in Minio.Examples/Program.cs
+  Uncomment the example test cases such as below in Program.cs to run an example.
+```cs
+  //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
+```
+* To run .NET4.5.2 example,
+```
+$ mono nuget.exe restore
+$ msbuild /p:Configuration=.net4.5.2 /t:Clean 
+$ msbuild /p:Configuration=.net4.5.2
+$ ./Minio.Examples/Minio.Client.Examples.Net452/bin/.net4.5.2/Minio.Client.Examples.Net452.exe 
+```
+* To run .NetCore example,
+```
+$ dotnet msbuild /p:Configuration=.netcore
+$ cd Minio.Examples/Minio.Client.Examples.Core
+$ dotnet restore
+$ dotnet run
 ```
 #### Bucket Operations
 

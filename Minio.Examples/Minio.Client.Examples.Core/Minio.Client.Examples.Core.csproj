@@ -1,17 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
     <AssemblyName>MinioCoreTest</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>MinioCoreTest</PackageId>
-    <RuntimeIdentifiers>win10-x64</RuntimeIdentifiers>
-    <RuntimeFrameworkVersion>1.0.3</RuntimeFrameworkVersion>
+    <RuntimeIdentifiers>win10-x64;ubuntu.16.04-x64;linuxmint.17.3-x64</RuntimeIdentifiers>
     <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='net4.5.2|AnyCPU'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='net4.5.2|x64'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='net4.5.2|x86'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='.netcore|AnyCPU'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='.net4.5.2|AnyCPU'" />
 
   <ItemGroup>
     <Compile Include="..\Cases\BucketExists.cs" Link="Cases\BucketExists.cs" />
