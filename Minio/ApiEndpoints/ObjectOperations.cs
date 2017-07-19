@@ -469,7 +469,7 @@ namespace Minio
             string etag = null;
             foreach (Parameter parameter in response.Headers)
             {
-                if (parameter.Name == "ETag")
+                if (parameter.Name.Equals("ETag",StringComparison.OrdinalIgnoreCase))
                 {
                     etag = parameter.Value.ToString();
                 }
