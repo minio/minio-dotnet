@@ -101,6 +101,7 @@ namespace Minio.Functional.Tests
 
                 // Set HTTP Tracing Off
                 // minioClient.SetTraceOff();
+                PutObject_Test5(minioClient).Wait();
 
                 // Check if bucket exists
                 BucketExists_Test(minioClient).Wait();
@@ -414,7 +415,7 @@ namespace Minio.Functional.Tests
                                            filestream,
                                            size,
                                            contentType,
-                                           metaData: metaData);
+                                           metaData:metaData);
                 await minio.GetObjectAsync(bucketName, objectName,
                (stream) =>
                {
@@ -1070,12 +1071,13 @@ namespace Minio.Functional.Tests
                 byte[] bs = File.ReadAllBytes(fileName);
                 System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
                 long file_write_size = filestream.Length;
-
+               
+                
                 await minio.PutObjectAsync(bucketName,
                                            objectName,
                                            filestream,
                                            filestream.Length,
-                                           contentType, cts.Token);
+                                           contentType, cancellationToken:cts.Token);
 
             }
             catch (OperationCanceledException)

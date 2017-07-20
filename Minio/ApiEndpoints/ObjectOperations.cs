@@ -167,14 +167,14 @@ namespace Minio
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <param name="metaData">Object metadata to be stored. Defaults to null.</param>
-        public async Task PutObjectAsync(string bucketName, string objectName, string fileName, string contentType = null, CancellationToken cancellationToken = default(CancellationToken), Dictionary<string, string> metaData = null)
+        public async Task PutObjectAsync(string bucketName, string objectName, string fileName, string contentType = null, Dictionary<string, string> metaData = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             utils.ValidateFile(fileName, contentType);
             FileInfo fileInfo = new FileInfo(fileName);
             long size = fileInfo.Length;
             using (FileStream file = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             {
-                await PutObjectAsync(bucketName, objectName, file, size, contentType, cancellationToken, metaData);
+                await PutObjectAsync(bucketName, objectName, file, size, contentType, metaData, cancellationToken);
             }
 
         }
@@ -189,7 +189,7 @@ namespace Minio
         /// <param name="data">Stream of bytes to send</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <param name="metaData">Object metadata to be stored. Defaults to null.</param>
-        public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, CancellationToken cancellationToken = default(CancellationToken), Dictionary<string, string> metaData = null)
+        public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             utils.validateBucketName(bucketName);
             utils.validateObjectName(objectName);
