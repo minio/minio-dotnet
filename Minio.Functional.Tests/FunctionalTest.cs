@@ -66,8 +66,8 @@ namespace Minio.Functional.Tests
             String endPoint = null;
             String accessKey = null;
             String secretKey = null;
-            bool useAWS = true;
-            if (useAWS && Environment.GetEnvironmentVariable("AWS_ENDPOINT") != null)
+            bool useAWS = Environment.GetEnvironmentVariable("AWS_ENDPOINT") != null;
+            if (useAWS)
             {
                 endPoint = Environment.GetEnvironmentVariable("AWS_ENDPOINT");
                 accessKey = Environment.GetEnvironmentVariable("MY_AWS_ACCESS_KEY");
@@ -108,8 +108,12 @@ namespace Minio.Functional.Tests
                 // Create a new bucket
                 MakeBucket_Test1(minioClient).Wait();
                 MakeBucket_Test2(minioClient).Wait();
-                MakeBucket_Test3(minioClient).Wait();
-                MakeBucket_Test4(minioClient).Wait();
+                if (useAWS)
+                {
+                    MakeBucket_Test3(minioClient).Wait();
+                    MakeBucket_Test4(minioClient).Wait();
+                }
+               
 
                 // Test removal of bucket
                 RemoveBucket_Test1(minioClient).Wait();
