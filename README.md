@@ -119,7 +119,7 @@ namespace FileUploader
   //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
 ```
 * Run the Minio.Client.Examples.NET452 or Minio.Client.Examples.NetCore project from Visual Studio
-#### On Linux (Ubuntu 16.04 and above)
+#### On Linux (Ubuntu 16.04)
 
 ##### Setting up Mono and .NETCore on Linux
 <blockquote> NOTE: minio-dotnet requires mono 5.0.1 stable release and .NET Core 1.0 SDK to build on Linux. </blockquote>

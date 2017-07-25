@@ -84,13 +84,10 @@ namespace Minio.Functional.Tests
             String endPoint = null;
             String accessKey = null;
             String secretKey = null;
-<<<<<<< HEAD
+            String enableHttps = "0";
+
             bool useAWS = Environment.GetEnvironmentVariable("AWS_ENDPOINT") != null;
-            if (useAWS)
-=======
-            string enableHttps = "0";
             if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
->>>>>>> Modify functional tests for Mint
             {
                 endPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");
                 accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
@@ -105,7 +102,6 @@ namespace Minio.Functional.Tests
                 secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
                 enableHttps = "1";
             }
-            bool useAWS = endPoint.Contains("s3.amazonaws.com");
             MinioClient minioClient = null;
             if (enableHttps.Equals("1"))
                 // WithSSL() enables SSL support in Minio client
@@ -129,7 +125,6 @@ namespace Minio.Functional.Tests
 
                 // Set HTTP Tracing Off
                 // minioClient.SetTraceOff();
-                PutObject_Test5(minioClient).Wait();
 
                 // Check if bucket exists
                 BucketExists_Test(minioClient).Wait();
@@ -137,17 +132,11 @@ namespace Minio.Functional.Tests
                 // Create a new bucket
                 MakeBucket_Test1(minioClient).Wait();
                 MakeBucket_Test2(minioClient).Wait();
-<<<<<<< HEAD
                 if (useAWS)
                 {
                     MakeBucket_Test3(minioClient).Wait();
                     MakeBucket_Test4(minioClient).Wait();
                 }
-               
-=======
-                MakeBucket_Test3(minioClient, useAWS).Wait();
-                MakeBucket_Test4(minioClient, useAWS).Wait();
->>>>>>> Modify functional tests for Mint
 
                 // Test removal of bucket
                 RemoveBucket_Test1(minioClient).Wait();
@@ -442,35 +431,6 @@ namespace Minio.Functional.Tests
                 }
                 using (filestream)
                 {
-<<<<<<< HEAD
-                    Console.Out.WriteLine("Test1: PutobjectAsync: PutObjectAsync with Stream and MultiPartUpload");
-                }
-                await minio.PutObjectAsync(bucketName,
-                                           objectName,
-                                           filestream,
-                                           size,
-                                           contentType,
-                                           metaData:metaData);
-                await minio.GetObjectAsync(bucketName, objectName,
-               (stream) =>
-               {
-                   var fileStream = File.Create(tempFileName);
-                   stream.CopyTo(fileStream);
-                   fileStream.Dispose();
-                   FileInfo writtenInfo = new FileInfo(tempFileName);
-                   file_read_size = writtenInfo.Length;
-
-                   Assert.AreEqual(file_read_size, file_write_size);
-                   File.Delete(tempFileName);
-               });
-                statObject = await minio.StatObjectAsync(bucketName, objectName);
-                Assert.IsNotNull(statObject);
-                Assert.AreEqual(statObject.ObjectName, objectName);
-                Assert.AreEqual(statObject.Size, file_read_size);
-                Assert.AreEqual(statObject.ContentType, contentType);
-=======
->>>>>>> Modify functional tests for Mint
-
                     long file_write_size = filestream.Length;
                     long file_read_size = 0;
                     string tempFileName = "tempfiletosavestream";
@@ -1146,18 +1106,6 @@ namespace Minio.Functional.Tests
             cts.CancelAfter(TimeSpan.FromSeconds(2));
             try
             {
-<<<<<<< HEAD
-                byte[] bs = File.ReadAllBytes(fileName);
-                System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
-                long file_write_size = filestream.Length;
-               
-                
-                await minio.PutObjectAsync(bucketName,
-                                           objectName,
-                                           filestream,
-                                           filestream.Length,
-                                           contentType, cancellationToken:cts.Token);
-=======
                 using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(6 * MB))
                 {
                     long file_write_size = filestream.Length;
@@ -1166,10 +1114,8 @@ namespace Minio.Functional.Tests
                                                 objectName,
                                                 filestream,
                                                 filestream.Length,
-                                                contentType, cts.Token);
+                                                contentType, cancellationToken:cts.Token);
                 }
->>>>>>> Modify functional tests for Mint
-
             }
             catch (OperationCanceledException)
             {

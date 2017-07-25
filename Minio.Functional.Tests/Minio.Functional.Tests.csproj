@@ -12,18 +12,23 @@
 
   </PropertyGroup>
   
- <Choose>  
+  <Choose>  
         <When Condition=" '$(Configuration)'=='Debug' ">  
             <ItemGroup>  
                     <ProjectReference Include="..\Minio.Core\Minio.Core.csproj" />
             </ItemGroup>  
-        </When>  
+        </When>
+        <When Condition=" '$(Configuration)'=='.netcore' ">
+          <ItemGroup>
+            <ProjectReference Include="..\Minio.Core\Minio.Core.csproj" />
+          </ItemGroup>
+        </When>
         <When Condition=" '$(Configuration)'=='Mint' ">   
             <ItemGroup>  
               <PackageReference Include="Minio.Netcore" Version="1.0.0" />       
             </ItemGroup> 
         </When>  
-    </Choose>
+  </Choose>
 
   <ItemGroup>
     <PackageReference Include="MSTest.TestFramework" Version="1.1.11" />
