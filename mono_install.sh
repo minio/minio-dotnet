@@ -17,7 +17,7 @@
 
 # Download and install Mono and .NETCore for Ubuntu 16.04
 main() {
-	sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ xenial main"
+	sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ xenial main"'
 	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893
 	sudo apt-get update
 	sudo apt-get install -yq dotnet-dev-1.0.4
