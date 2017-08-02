@@ -22,6 +22,12 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='.net4.5.2|AnyCPU'" />
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mint|AnyCPU'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mint|x64'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mint|x86'" />
+
   <ItemGroup>
     <Compile Include="..\Cases\BucketExists.cs" Link="Cases\BucketExists.cs" />
     <Compile Include="..\Cases\CopyObject.cs" Link="Cases\CopyObject.cs" />

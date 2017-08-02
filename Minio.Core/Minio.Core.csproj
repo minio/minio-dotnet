@@ -29,6 +29,12 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='net4.5.2|x86'" />
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mint|AnyCPU'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mint|x64'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mint|x86'" />
+
   <ItemGroup>
     <Compile Include="..\Minio\ApiEndpoints\BucketOperations.cs" Link="ApiEndpoints\BucketOperations.cs" />
     <Compile Include="..\Minio\ApiEndpoints\IBucketOperations.cs" Link="ApiEndpoints\IBucketOperations.cs" />
