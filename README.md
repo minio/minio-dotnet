@@ -130,7 +130,7 @@ namespace FileUploader
 $ ./mono_install.sh    
 ```
 ##### Running Minio.Examples 
-* Clone this project
+* Clone this project.
 
 ```
 $ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet 
