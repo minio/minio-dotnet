@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{CA53C331-0092-413B-B2B2-E1C2303A15D5}</ProjectGuid>
+    <ProjectTypeGuids>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Minio.Tests</RootNamespace>
+    <AssemblyName>Minio.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.3.7.1\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Constants.cs" />
+    <Compile Include="Impl\CryptoProviderImpl.cs" />
+    <Compile Include="Impl\LogProviderImpl.cs" />
+    <Compile Include="Impl\MinioClientImpl.cs" />
+    <Compile Include="MinioFactory.cs" />
+    <Compile Include="Tests.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tests\AbstractMinioTests.cs" />
+    <Compile Include="Tests\BucketExistsTests.cs" />
+    <Compile Include="Tests\CopyObjectTests.cs" />
+    <Compile Include="Tests\GetObjectTests.cs" />
+    <Compile Include="Tests\PutObjectTests.cs" />
+    <Compile Include="Tests\GetBucketNotificationTests.cs" />
+    <Compile Include="Tests\GetBucketPolicyTests.cs" />
+    <Compile Include="Tests\GetPartialObjectTests.cs" />
+    <Compile Include="Tests\ListBucketsTests.cs" />
+    <Compile Include="Tests\ListIncompleteUploadsTests.cs" />
+    <Compile Include="Tests\ListObjectsTests.cs" />
+    <Compile Include="Tests\MakeBucketTests.cs" />
+    <Compile Include="Tests\PresignedGetObjectTests.cs" />
+    <Compile Include="Tests\PresignedPostPolicyTests.cs" />
+    <Compile Include="Tests\PresignedPutObjectTests.cs" />
+    <Compile Include="Tests\RemoveAllBucketNotificationsTests.cs" />
+    <Compile Include="Tests\RemoveBucketTests.cs" />
+    <Compile Include="Tests\RemoveIncompleteUploadTests.cs" />
+    <Compile Include="Tests\RemoveObjectTests.cs" />
+    <Compile Include="Tests\SetBucketNotificationTests.cs" />
+    <Compile Include="Tests\SetBucketPolicyTests.cs" />
+    <Compile Include="Tests\StatObjectTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Minio.Portable\Minio.Portable.csproj">
+      <Project>{bee0f773-e34e-4088-be2c-4cdc7bfcf608}</Project>
+      <Name>Minio.Portable</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

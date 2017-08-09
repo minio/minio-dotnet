@@ -1,0 +1,148 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{BEE0F773-E34E-4088-BE2C-4CDC7BFCF608}</ProjectGuid>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <UseMSBuildEngine>true</UseMSBuildEngine>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Minio</RootNamespace>
+    <AssemblyName>Minio.Portable</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Profile111</TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="CryptoProvider.cs" />
+    <Compile Include="IMinioClient.cs" />
+    <Compile Include="MinioSettings.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ApiEndpoints\BucketOperations.cs" />
+    <Compile Include="ApiEndpoints\IBucketOperations.cs" />
+    <Compile Include="ApiEndpoints\IObjectOperations.cs" />
+    <Compile Include="ApiEndpoints\ObjectOperations.cs" />
+    <Compile Include="DataModel\Bucket.cs" />
+    <Compile Include="DataModel\CopyConditions.cs" />
+    <Compile Include="DataModel\CopyObjectResult.cs" />
+    <Compile Include="DataModel\CopyPartResult.cs" />
+    <Compile Include="DataModel\CreateBucketConfiguration.cs" />
+    <Compile Include="DataModel\DateFormat.cs" />
+    <Compile Include="DataModel\Grant.cs" />
+    <Compile Include="DataModel\GranteeUser.cs" />
+    <Compile Include="DataModel\InitiateMultipartUploadResult.cs" />
+    <Compile Include="DataModel\Item.cs" />
+    <Compile Include="DataModel\ListAllMyBucketsResult.cs" />
+    <Compile Include="DataModel\ListBucketResult.cs" />
+    <Compile Include="DataModel\ListMultipartUploadsResult.cs" />
+    <Compile Include="DataModel\ListPartsResult.cs" />
+    <Compile Include="DataModel\LocationConstraint.cs" />
+    <Compile Include="DataModel\Notification\Arn.cs" />
+    <Compile Include="DataModel\Notification\BucketNotification.cs" />
+    <Compile Include="DataModel\Notification\EventType.cs" />
+    <Compile Include="DataModel\Notification\Filter.cs" />
+    <Compile Include="DataModel\Notification\FilterRule.cs" />
+    <Compile Include="DataModel\Notification\LambdaConfig.cs" />
+    <Compile Include="DataModel\Notification\NotificationConfiguration.cs" />
+    <Compile Include="DataModel\Notification\QueueConfig.cs" />
+    <Compile Include="DataModel\Notification\S3Key.cs" />
+    <Compile Include="DataModel\Notification\TopicConfig.cs" />
+    <Compile Include="DataModel\ObjectStat.cs" />
+    <Compile Include="DataModel\Part.cs" />
+    <Compile Include="DataModel\Policy\ActionJsonConverter.cs" />
+    <Compile Include="DataModel\Policy\BucketPolicy.cs" />
+    <Compile Include="DataModel\Policy\ConditionKeyMap.cs" />
+    <Compile Include="DataModel\Policy\ConditionKeyMapConverter.cs" />
+    <Compile Include="DataModel\Policy\ConditionMap.cs" />
+    <Compile Include="DataModel\Policy\Constants.cs" />
+    <Compile Include="DataModel\Policy\PolicyConstants.cs" />
+    <Compile Include="DataModel\Policy\PolicyType.cs" />
+    <Compile Include="DataModel\Policy\Principal.cs" />
+    <Compile Include="DataModel\Policy\PrincipalJsonConverter.cs" />
+    <Compile Include="DataModel\Policy\ResourceJsonConverter.cs" />
+    <Compile Include="DataModel\Policy\Resources.cs" />
+    <Compile Include="DataModel\Policy\SingleOrArrayConverter.cs" />
+    <Compile Include="DataModel\Policy\Statement.cs" />
+    <Compile Include="DataModel\PostPolicy.cs" />
+    <Compile Include="DataModel\Prefix.cs" />
+    <Compile Include="DataModel\Upload.cs" />
+    <Compile Include="Exceptions\AccessDeniedException.cs" />
+    <Compile Include="Exceptions\BucketNotFoundException.cs" />
+    <Compile Include="Exceptions\ConnectionException.cs" />
+    <Compile Include="Exceptions\EntityTooLargeException.cs" />
+    <Compile Include="Exceptions\ErrorResponse.cs" />
+    <Compile Include="Exceptions\ErrorResponseException.cs" />
+    <Compile Include="Exceptions\ForbiddenException.cs" />
+    <Compile Include="Exceptions\InternalClientException.cs" />
+    <Compile Include="Exceptions\InternalServerException.cs" />
+    <Compile Include="Exceptions\InvalidBucketNameException.cs" />
+    <Compile Include="Exceptions\InvalidContentLengthException.cs" />
+    <Compile Include="Exceptions\InvalidEndpointException.cs" />
+    <Compile Include="Exceptions\InvalidKeyNameException.cs" />
+    <Compile Include="Exceptions\InvalidObjectNameException.cs" />
+    <Compile Include="Exceptions\InvalidObjectPrefixException.cs" />
+    <Compile Include="Exceptions\MaxBucketsReachedException.cs" />
+    <Compile Include="Exceptions\MethodNotAllowedException.cs" />
+    <Compile Include="Exceptions\MinioException.cs" />
+    <Compile Include="Exceptions\ObjectNotFoundException.cs" />
+    <Compile Include="Exceptions\RedirectionException.cs" />
+    <Compile Include="Exceptions\UnexpectedShortReadException.cs" />
+    <Compile Include="Helper\Constants.cs" />
+    <Compile Include="Helper\RequestUtil.cs" />
+    <Compile Include="Helper\S3Utils.cs" />
+    <Compile Include="Helper\Utils.cs" />
+    <Compile Include="AWSS3Endpoints.cs" />
+    <Compile Include="BucketRegionCache.cs" />
+    <Compile Include="AbstractMinioClient.cs" />
+    <Compile Include="Regions.cs" />
+    <Compile Include="LogProvider.cs" />
+    <Compile Include="Rest\Extensions\HttpExtensions.cs" />
+    <Compile Include="Rest\Extensions\HttpMethodExtensions.cs" />
+    <Compile Include="Rest\Extensions\RestClientExtensions.cs" />
+    <Compile Include="Rest\Impl\HttpContentWrapper.cs" />
+    <Compile Include="Rest\Impl\MinioHttpResponseMessage.cs" />
+    <Compile Include="Rest\Impl\MinioHttpRequestMessage.cs" />
+    <Compile Include="Rest\Impl\MinioHttpHeaders.cs" />
+    <Compile Include="Rest\Impl\MinioHttpContent.cs" />
+    <Compile Include="Rest\MinioHttpClient.cs" />
+    <Compile Include="Rest\MinioHttpClientFactory.cs" />
+    <Compile Include="Rest\RestClient.cs" />
+    <Compile Include="V4Authenticator.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="FubarCoder.RestSharp.Portable.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=be81bb0f53eab22f">
+      <HintPath>..\packages\FubarCoder.RestSharp.Portable.Core.4.0.8\lib\portable45-net45+win8+wp8+wpa81\FubarCoder.RestSharp.Portable.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation">
+      <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\netstandard1.1\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\portable-net45+win8+wp8+wpa81\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ApiEndpoints\" />
+    <Folder Include="DataModel\" />
+    <Folder Include="Exceptions\" />
+    <Folder Include="Helper\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+</Project>

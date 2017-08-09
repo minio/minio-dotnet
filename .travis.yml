@@ -1,0 +1,7 @@
+language: csharp
+solution: "./Xamarin/Minio.Tests.sln"
+install:
+- travis_retry nuget restore -source "https://www.nuget.org/api/v2" ./Xamarin/Minio.Tests.sln
+script:
+- xbuild ./Xamarin/Minio.Tests.sln
+- mono ./Xamarin/packages/NUnit.ConsoleRunner*/tools/nunit3-console.exe ./Xamarin/Minio.Tests/bin/Debug/Minio.Tests.dll
