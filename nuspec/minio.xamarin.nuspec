@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>Minio.Xamarin</id>
+        <version>1.0.1</version>
+        <title>Minio client for Xamarin</title>
+        <summary>Minio client for Xamarin</summary>
+        <description>Minio client for Xamarin</description>
+        <authors>Aleksey Nikitin</authors>
+        <owners>Aleksey Nikitin</owners>
+        <licenseUrl>https://github.com/minio/minio-dotnet/blob/master/LICENSE</licenseUrl>
+        <releaseNotes>https://github.com/minio/minio-dotnet/blob/master/README.md</releaseNotes>
+        <projectUrl>https://github.com/minio/minio-dotnet</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <tags>ios android xamarin xam.pcl aws plugin</tags>
+        <dependencies>
+            <group>
+                <dependency id="FubarCoder.RestSharp.Portable.Core" version="4.0.8" />
+                <dependency id="Newtonsoft.Json" version="10.0.3" />
+            </group>
+<!--             <group targetFramework="Xamarin.Mac20">
+                <dependency id="FubarCoder.RestSharp.Portable.Core" version="4.0.8" />
+                <dependency id="Newtonsoft.Json" version="10.0.3" />
+            </group> -->
+            <group targetFramework="Xamarin.iOS10">
+                <dependency id="FubarCoder.RestSharp.Portable.Core" version="4.0.8" />
+                <dependency id="Newtonsoft.Json" version="10.0.3" />
+            </group>
+            <group targetFramework="MonoAndroid10">
+                <dependency id="FubarCoder.RestSharp.Portable.Core" version="4.0.8" />
+                <dependency id="Newtonsoft.Json" version="10.0.3" />
+            </group>
+        </dependencies>
+    </metadata>
+    <files>
+        <!-- netstandard -->
+        <file src="../Minio.Xamarin/bin/Release/netstandard1.1/Minio.*" target="lib/netstandard1.1" />
+
+        <!-- android -->
+        <file src="../Minio.Droid/bin/Release/Minio.*" target="lib/MonoAndroid10" />
+
+        <!-- ios -->
+        <file src="../Minio.iOS/bin/Release/Minio.*" target="lib/Xamarin.iOS10" />
+
+        <!-- macos -->
+        <!-- <file src="../Minio.Mac/bin/Release\Minio.dll" target="lib\Xamarin.Mac20" /> -->
+        <!-- <file src="../Minio.Mac/bin/Release\Minio.pdb" target="lib\Xamarin.Mac20" /> -->
+    </files>
+</package>
