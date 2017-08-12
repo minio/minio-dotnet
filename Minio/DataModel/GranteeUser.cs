@@ -18,7 +18,6 @@ using System;
 
 namespace Minio.DataModel
 {
-    [Serializable]
     public class GranteeUser
     {
         public string Id { get; set; }

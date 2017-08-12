@@ -18,7 +18,7 @@ namespace Minio.Exceptions
 {
     public class ObjectNotFoundException : MinioException
     {
-        private string objectName;
+        private readonly string objectName;
 
         public ObjectNotFoundException(string objectName, string message) : base(message)
         {

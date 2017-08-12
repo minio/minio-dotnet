@@ -14,18 +14,13 @@
  * limitations under the License.
  */
 
-using System;
-using System.Xml.Serialization;
-
-
 namespace Minio.DataModel
 {
-    [Serializable]
-    [XmlRoot(ElementName = "LocationConstraint", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+    using System.Xml.Serialization;
 
+    [XmlRoot(ElementName = "LocationConstraint", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
     public class LocationConstraint
     {
-        internal string location { get; set; }
+        internal string Location { get; set; }
     }
 }
-

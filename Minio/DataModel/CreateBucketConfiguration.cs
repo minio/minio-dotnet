@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-using System;
-using System.Xml.Serialization;
-
 namespace Minio.DataModel
 {
+    using System.Xml.Serialization;
+
     [XmlRoot(ElementName = "CreateBucketConfiguration", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
     public class CreateBucketConfiguration
     {
@@ -27,7 +26,7 @@ namespace Minio.DataModel
             this.LocationConstraint = null;
         }
 
-        public CreateBucketConfiguration(string location=null)
+        public CreateBucketConfiguration(string location = null)
         {
             this.LocationConstraint = location;
         }

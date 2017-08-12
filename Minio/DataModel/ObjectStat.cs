@@ -14,39 +14,43 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-
 namespace Minio.DataModel
 {
+    using System;
+    using System.Collections.Generic;
+
     public class ObjectStat
     {
         /// <summary>
-        /// Object metadata information.
+        ///     Object metadata information.
         /// </summary>
         /// <param name="objectName">Object name</param>
         /// <param name="size">Object size</param>
         /// <param name="lastModified">Last when object was modified</param>
         /// <param name="etag">Unique entity tag for the object</param>
         /// <param name="contentType">Object content type</param>
-        public ObjectStat(string objectName, long size, DateTime lastModified, string etag, string contentType, Dictionary<string, string> metadata)
+        public ObjectStat(string objectName, long size, DateTime lastModified, string etag, string contentType,
+            Dictionary<string, string> metadata)
         {
             this.ObjectName = objectName;
             this.Size = size;
             this.LastModified = lastModified;
             this.ETag = etag;
             this.ContentType = contentType;
-            this.metaData = metadata;
+            this.MetaData = metadata;
         }
-        public string ObjectName { get; private set; }
-        public long Size { get; private set; }
-        public DateTime LastModified { get; private set;  }
-        public string ETag { get; private set; }
-        public string ContentType { get; private set; }
-        public Dictionary<string, string> metaData { get; private set; }
+
+        public string ObjectName { get; }
+        public long Size { get; }
+        public DateTime LastModified { get; }
+        public string ETag { get; }
+        public string ContentType { get; }
+        public Dictionary<string, string> MetaData { get; }
+
         public override string ToString()
         {
-            return string.Format("{0} : Size({1}) LastModified({2}) ETag({3}) Content-Type({4})",this.ObjectName, this.Size, this.LastModified, this.ETag, this.ContentType);
+            return
+                $"{this.ObjectName} : Size({this.Size}) LastModified({this.LastModified}) ETag({this.ETag}) Content-Type({this.ContentType})";
         }
     }
 }

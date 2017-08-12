@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Minio.DataModel
 {
-    [Serializable]
+    using System;
+
     public class Bucket
     {
         public string Name { get; set; }
         public string CreationDate { get; set; }
 
-        public DateTime CreationDateDateTime {
-            get {
-                return DateTime.Parse(this.CreationDate);
-            }
-        }
+        public DateTime CreationDateDateTime => DateTime.Parse(this.CreationDate);
     }
 }

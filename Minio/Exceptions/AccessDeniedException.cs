@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Minio.Exceptions
 {
-    [Serializable]
     public class AccessDeniedException : MinioException
     {
         public AccessDeniedException()
@@ -27,11 +24,6 @@ namespace Minio.Exceptions
 
         public AccessDeniedException(string message) : base(message)
         {
-        }
-
-        public override string ToString()
-        {
-            return base.ToString();
         }
     }
 }

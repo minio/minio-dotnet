@@ -14,45 +14,27 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Minio.DataModel
 {
-    [Serializable]
+    using System;
+
     public class Item
     {
         private string etag;
 
         public string Key { get; set; }
         public string LastModified { get; set; }
+
         public string ETag
         {
-            get
-            {
-                return etag;
-            }
-            set
-            {
-                if (value != null)
-                {
-                    etag = value.Replace("\"", "");
-                }
-                else
-                {
-                    etag = null;
-                }
-            }
+            get => this.etag;
+            set => this.etag = value?.Replace("\"", "");
         }
-        public UInt64 Size { get; set; }
+
+        public ulong Size { get; set; }
 
         public bool IsDir { get; set; }
 
-        public DateTime LastModifiedDateTime
-        {
-            get
-            {
-                return DateTime.Parse(this.LastModified);
-            }
-        }
+        public DateTime LastModifiedDateTime => DateTime.Parse(this.LastModified);
     }
 }

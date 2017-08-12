@@ -14,36 +14,35 @@
  * limitations under the License.
  */
 
-using System;
-
-namespace Minio.DataModel 
+namespace Minio.DataModel.Policy
 {
-
-    public class  PolicyType : object
+    public class PolicyType : object
     {
-        private PolicyType(string value) { Value = value; }
-        public string Value { get; set; }
-
-        public static PolicyType NONE {  get { return new PolicyType("none"); } }
-        public static PolicyType READ_ONLY { get { return new PolicyType("readonly"); } }
-        public static PolicyType READ_WRITE { get { return new PolicyType("readwrite"); } }
-        public static PolicyType WRITE_ONLY { get { return new PolicyType("writeonly"); } }
-
-        public override bool Equals(Object other)
+        private PolicyType(string value)
         {
-            return Value.Equals(((PolicyType)other).Value);
+            this.Value = value;
+        }
+
+        public string Value { get; }
+
+        public static PolicyType None => new PolicyType("none");
+        public static PolicyType ReadOnly => new PolicyType("readonly");
+        public static PolicyType ReadWrite => new PolicyType("readwrite");
+        public static PolicyType WriteOnly => new PolicyType("writeonly");
+
+        public override bool Equals(object other)
+        {
+            return this.Value.Equals(((PolicyType) other).Value);
         }
 
         public override string ToString()
         {
-            return string.Format("{0}", this.Value);
+            return $"{this.Value}";
         }
 
         public override int GetHashCode()
         {
-            return Value.GetHashCode();
+            return this.Value.GetHashCode();
         }
-
     }
-
 }

@@ -14,212 +14,214 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Newtonsoft.Json;
-using System.IO;
-using Newtonsoft.Json.Linq;
-using Minio.DataModel.Policy;
-using Newtonsoft.Json.Serialization;
-
-namespace Minio.DataModel
+namespace Minio.DataModel.Policy
 {
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using Minio.Helper;
+    using Newtonsoft.Json;
+
     public class BucketPolicy
     {
-        [JsonIgnore]
-        private string bucketName;
-        [JsonProperty("Version")]
-        private static string version;
+        [JsonIgnore] private string bucketName;
 
-
-        [JsonProperty("Statement")]
-        internal List<Statement> statements { get; set; }
+        private List<Statement> statements;
 
         public BucketPolicy(string bucketName = null)
         {
-
             this.bucketName = bucketName;
-            version = "2012-10-17";
-            this.statements = new List<Statement>();
         }
 
-
-        /**
-         * Reads JSON from given {@link Reader} and returns new {@link BucketPolicy} of given bucket name.
-         */
-        public static BucketPolicy ParseJson(MemoryStream reader, String bucketName)
+        [JsonProperty("Statement")]
+        public List<Statement> Statements
         {
-            string toparse = new StreamReader(reader).ReadToEnd();
-            JObject jsonData = JObject.Parse(toparse);
+            get => this.statements ?? (this.statements = new List<Statement>());
+            set => this.statements = value;
+        }
 
-            BucketPolicy bucketPolicy = JsonConvert.DeserializeObject<BucketPolicy>(toparse,
+        [JsonProperty("Version")]
+        public string Version { get; set; } = "2012-10-17";
+
+        /// <summary>
+        ///     Reads JSON from given {@link Reader} and returns new {@link BucketPolicy} of given bucket name.
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="bucketName"></param>
+        /// <returns></returns>
+        public static BucketPolicy ParseJson(MemoryStream reader, string bucketName)
+        {
+            var toparse = new StreamReader(reader).ReadToEnd();
+            var bucketPolicy = JsonConvert.DeserializeObject<BucketPolicy>(toparse,
                 new JsonSerializerSettings
                 {
-                    NullValueHandling = NullValueHandling.Ignore,
+                    NullValueHandling = NullValueHandling.Ignore
                 });
             bucketPolicy.bucketName = bucketName;
 
             return bucketPolicy;
         }
-        // Helper method for unit testing
-        internal void SetStatements(Statement stmt)
-        {
-            if (this.statements == null)
-                this.statements = new List<Statement>();
-            this.statements.Add(stmt);
-        }
 
-
-        internal List<Statement> Statements()
-        {
-            return this.statements;
-        }
-        /**
-          * Generates JSON of this BucketPolicy object.
-          */
-        //JsonIgnore
+        /// <summary>
+        ///     Generates JSON of this BucketPolicy object.
+        /// </summary>
+        /// <returns></returns>
         public string GetJson()
         {
             return JsonConvert.SerializeObject(this, Formatting.None,
-                              new JsonSerializerSettings
-                              {
-                                  NullValueHandling = NullValueHandling.Ignore,
-                              });
+                new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore
+                });
         }
 
 
-        /**
-         * Returns new bucket statements for given policy type.
-         */
-        private List<Statement> newBucketStatement(PolicyType policy, String prefix)
+        /// <summary>
+        ///     Returns new bucket statements for given policy type.
+        /// </summary>
+        /// <param name="policy"></param>
+        /// <param name="prefix"></param>
+        /// <returns></returns>
+        private List<Statement> NewBucketStatement(PolicyType policy, string prefix)
         {
-            List<Statement> statements = new List<Statement>();
-
-            if (policy.Equals(PolicyType.NONE) || bucketName == null || bucketName.Length == 0)
+            var stms = new List<Statement>();
+            if (policy.Equals(PolicyType.None) || this.bucketName == null || this.bucketName.Length == 0)
             {
-                return statements;
+                return stms;
             }
 
-            Resources resources = new Resources(PolicyConstants.AWS_RESOURCE_PREFIX + bucketName);
-
-            Statement statement = new Statement();
-            statement.actions = PolicyConstants.COMMON_BUCKET_ACTIONS;
-            statement.effect = "Allow";
-            statement.principal = new Principal("*");
-            statement.resources = resources;
-            statement.sid = "";
-
-            statements.Add(statement);
-
-            if (policy.Equals(PolicyType.READ_ONLY) || policy.Equals(PolicyType.READ_WRITE))
+            var resources = new Resources(PolicyConstants.AwsResourcePrefix + this.bucketName);
+            var statement = new Statement
             {
-                statement = new Statement();
-                statement.actions = PolicyConstants.READ_ONLY_BUCKET_ACTIONS;
-                statement.effect = "Allow";
-                statement.principal = new Principal("*");
-                statement.resources = resources;
-                statement.sid = "";
+                Actions = PolicyConstants.CommonBucketActions,
+                Effect = "Allow",
+                Principal = new Principal("*"),
+                Resources = resources,
+                Sid = ""
+            };
 
-                if (prefix != null && prefix.Length != 0)
+            stms.Add(statement);
+
+            if (policy.Equals(PolicyType.ReadOnly) || policy.Equals(PolicyType.ReadWrite))
+            {
+                statement = new Statement
                 {
-                    ConditionKeyMap map = new ConditionKeyMap();
+                    Actions = PolicyConstants.ReadOnlyBucketActions,
+                    Effect = "Allow",
+                    Principal = new Principal("*"),
+                    Resources = resources,
+                    Sid = ""
+                };
+                if (!string.IsNullOrEmpty(prefix))
+                {
+                    var map = new ConditionKeyMap();
                     map.Put("s3:prefix", prefix);
-                    statement.conditions = new ConditionMap("StringEquals", map);
+                    statement.Conditions = new ConditionMap("StringEquals", map);
                 }
 
-                statements.Add(statement);
+                stms.Add(statement);
             }
 
-            if (policy.Equals(PolicyType.WRITE_ONLY) || policy.Equals(PolicyType.READ_WRITE))
+            if (policy.Equals(PolicyType.WriteOnly) || policy.Equals(PolicyType.ReadWrite))
             {
-                statement = new Statement();
-                statement.actions = PolicyConstants.WRITE_ONLY_BUCKET_ACTIONS;
-                statement.effect = "Allow";
-                statement.principal = new Principal("*");
-                statement.resources = resources;
-                statement.sid = "";
-
-                statements.Add(statement);
-            }
-
-            return statements;
-        }
-
-
-        /**
-         * Returns new object statements for given policy type.
-         */
-        private List<Statement> newObjectStatement(PolicyType policy, String prefix)
-        {
-            List<Statement> statements = new List<Statement>();
-
-            if (policy.Equals(PolicyType.NONE) || bucketName == null || bucketName.Length == 0)
-            {
-                return statements;
-            }
-
-            Resources resources = new Resources(PolicyConstants.AWS_RESOURCE_PREFIX + bucketName + "/" + prefix + "*");
-
-            Statement statement = new Statement();
-            statement.effect = "Allow";
-            statement.principal = new Principal("*");
-            statement.resources = resources;
-            statement.sid = "";
-            if (policy.Equals(PolicyType.READ_ONLY))
-            {
-                statement.actions = PolicyConstants.READ_ONLY_OBJECT_ACTIONS;
-            }
-            else if (policy.Equals(PolicyType.WRITE_ONLY))
-            {
-                statement.actions = PolicyConstants.WRITE_ONLY_OBJECT_ACTIONS;
-            }
-            else if (policy.Equals(PolicyType.READ_WRITE))
-            {
-                statement.actions = PolicyConstants.READ_WRITE_OBJECT_ACTIONS();
-            }
-
-            statements.Add(statement);
-            return statements;
-        }
-
-
-        /**
-         * Returns new statements for given policy type.
-         */
-        private List<Statement> newStatements(PolicyType policy, String prefix)
-        {
-            List<Statement> statements = this.newBucketStatement(policy, prefix);
-            List<Statement> objectStatements = this.newObjectStatement(policy, prefix);
-
-            statements.AddRange(objectStatements);
-
-            return statements;
-        }
-
-
-        /**
-         * Returns whether statements are used by other than given prefix statements.
-         */
-        //@JsonIgnore
-        private bool[] getInUsePolicy(string prefix)
-        {
-            string resourcePrefix = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName + "/";
-            string objectResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName + "/" + prefix + "*";
-
-            bool readOnlyInUse = false;
-            bool writeOnlyInUse = false;
-
-            foreach (Statement statement in statements)
-            {
-                if (!statement.resources.Contains(objectResource)
-                    && statement.resources.startsWith(resourcePrefix).Count() != 0)
+                statement = new Statement
                 {
-                    if (utils.isSupersetOf(statement.actions, PolicyConstants.READ_ONLY_OBJECT_ACTIONS))
+                    Actions = PolicyConstants.WriteOnlyBucketActions,
+                    Effect = "Allow",
+                    Principal = new Principal("*"),
+                    Resources = resources,
+                    Sid = ""
+                };
+
+                stms.Add(statement);
+            }
+
+            return stms;
+        }
+
+
+        /// <summary>
+        ///     Returns new object statements for given policy type.
+        /// </summary>
+        /// <param name="policy"></param>
+        /// <param name="prefix"></param>
+        /// <returns></returns>
+        private IEnumerable<Statement> NewObjectStatement(PolicyType policy, string prefix)
+        {
+            var stms = new List<Statement>();
+            if (policy.Equals(PolicyType.None) || this.bucketName == null || this.bucketName.Length == 0)
+            {
+                return stms;
+            }
+
+            var resources = new Resources(PolicyConstants.AwsResourcePrefix + this.bucketName + "/" + prefix + "*");
+
+            var statement = new Statement
+            {
+                Effect = "Allow",
+                Principal = new Principal("*"),
+                Resources = resources,
+                Sid = ""
+            };
+            
+            if (policy.Equals(PolicyType.ReadOnly))
+            {
+                statement.Actions = PolicyConstants.ReadOnlyObjectActions;
+            }
+            else if (policy.Equals(PolicyType.WriteOnly))
+            {
+                statement.Actions = PolicyConstants.WriteOnlyObjectActions;
+            }
+            else if (policy.Equals(PolicyType.ReadWrite))
+            {
+                statement.Actions = PolicyConstants.READ_WRITE_OBJECT_ACTIONS();
+            }
+
+            stms.Add(statement);
+            return stms;
+        }
+
+
+        /// <summary>
+        /// Returns new statements for given policy type.
+        /// </summary>
+        /// <param name="policy"></param>
+        /// <param name="prefix"></param>
+        /// <returns></returns>
+        private IEnumerable<Statement> NewStatements(PolicyType policy, string prefix)
+        {
+            var stms = this.NewBucketStatement(policy, prefix);
+            var objectStatements = this.NewObjectStatement(policy, prefix);
+
+            stms.AddRange(objectStatements);
+
+            return stms;
+        }
+
+
+        /// <summary>
+        /// Returns whether statements are used by other than given prefix statements.
+        /// </summary>
+        /// <param name="prefix"></param>
+        /// <returns></returns>
+        private bool[] GetInUsePolicy(string prefix)
+        {
+            var resourcePrefix = PolicyConstants.AwsResourcePrefix + this.bucketName + "/";
+            var objectResource = PolicyConstants.AwsResourcePrefix + this.bucketName + "/" + prefix + "*";
+
+            var readOnlyInUse = false;
+            var writeOnlyInUse = false;
+
+            foreach (var statement in this.Statements)
+            {
+                if (!statement.Resources.Contains(objectResource)
+                    && statement.Resources.StartsWith(resourcePrefix).Count != 0)
+                {
+                    if (Utils.IsSupersetOf(statement.Actions, PolicyConstants.ReadOnlyObjectActions))
                     {
                         readOnlyInUse = true;
                     }
-                    if (utils.isSupersetOf(statement.actions, PolicyConstants.WRITE_ONLY_OBJECT_ACTIONS))
+                    if (Utils.IsSupersetOf(statement.Actions, PolicyConstants.WriteOnlyObjectActions))
                     {
                         writeOnlyInUse = true;
                     }
@@ -231,109 +233,112 @@ namespace Minio.DataModel
                 }
             }
 
-            bool[] rv = { readOnlyInUse, writeOnlyInUse };
+            bool[] rv = {readOnlyInUse, writeOnlyInUse};
             return rv;
         }
 
 
-        /**
-         * Returns all statements of given prefix.
-         */
-        private void removeStatements(String prefix)
+        /// <summary>
+        /// Returns all statements of given prefix.
+        /// </summary>
+        /// <param name="prefix"></param>
+        private void RemoveStatements(string prefix)
         {
-            String bucketResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName;
-            String objectResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName + "/" + prefix + "*";
-            bool[] inUse = getInUsePolicy(prefix);
-            bool readOnlyInUse = inUse[0];
-            bool writeOnlyInUse = inUse[1];
+            var bucketResource = PolicyConstants.AwsResourcePrefix + this.bucketName;
+            var objectResource = PolicyConstants.AwsResourcePrefix + this.bucketName + "/" + prefix + "*";
+            var inUse = this.GetInUsePolicy(prefix);
+            var readOnlyInUse = inUse[0];
+            var writeOnlyInUse = inUse[1];
 
-            List<Statement> outList = new List<Statement>();
-            ISet<String> s3PrefixValues = new HashSet<String>();
-            List<Statement> readOnlyBucketStatements = new List<Statement>();
+            var outList = new List<Statement>();
+            ISet<string> s3PrefixValues = new HashSet<string>();
+            var readOnlyBucketStatements = new List<Statement>();
 
-            foreach (Statement statement in statements)
+            foreach (var statement in this.Statements)
             {
-                if (!statement.isValid(bucketName))
+                if (!statement.IsValid(this.bucketName))
                 {
                     outList.Add(statement);
                     continue;
                 }
 
-                if (statement.resources.Contains(bucketResource))
+                if (statement.Resources.Contains(bucketResource))
                 {
-                    if (statement.conditions != null)
+                    if (statement.Conditions != null)
                     {
-                        statement.removeBucketActions(prefix, bucketResource, false, false);
+                        statement.RemoveBucketActions(prefix, bucketResource, false, false);
                     }
                     else
                     {
-                        statement.removeBucketActions(prefix, bucketResource, readOnlyInUse, writeOnlyInUse);
+                        statement.RemoveBucketActions(prefix, bucketResource, readOnlyInUse, writeOnlyInUse);
                     }
                 }
-                else if (statement.resources.Contains(objectResource))
+                else if (statement.Resources.Contains(objectResource))
                 {
-                    statement.removeObjectActions(objectResource);
+                    statement.RemoveObjectActions(objectResource);
                 }
 
-                if (statement.actions.Count != 0)
+                if (statement.Actions.Count == 0)
                 {
-                    if (statement.resources.Contains(bucketResource)
-                        && (utils.isSupersetOf(statement.actions, PolicyConstants.READ_ONLY_BUCKET_ACTIONS))
-                        && statement.effect.Equals("Allow")
-                        && statement.principal.aws().Contains("*"))
+                    continue;
+                }
+                
+                if (statement.Resources.Contains(bucketResource)
+                    && Utils.IsSupersetOf(statement.Actions, PolicyConstants.ReadOnlyBucketActions)
+                    && statement.Effect.Equals("Allow")
+                    && statement.Principal.Aws().Contains("*"))
+                {
+                    if (statement.Conditions != null)
                     {
-
-                        if (statement.conditions != null)
+                        ConditionKeyMap stringEqualsValue;
+                        statement.Conditions.TryGetValue("StringEquals", out stringEqualsValue);
+                        if (stringEqualsValue != null)
                         {
-                            ConditionKeyMap stringEqualsValue;
-                            statement.conditions.TryGetValue("StringEquals", out stringEqualsValue);
-                            if (stringEqualsValue != null)
+                            ISet<string> values;
+                            stringEqualsValue.TryGetValue("s3:prefix", out values);
+                            if (values != null)
                             {
-                                ISet<string> values;
-                                stringEqualsValue.TryGetValue("s3:prefix", out values);
-                                if (values != null)
+                                foreach (var v in values)
                                 {
-                                    foreach (string v in values)
-                                    {
-                                        s3PrefixValues.Add(bucketResource + "/" + v + "*");
-                                    }
+                                    s3PrefixValues.Add(bucketResource + "/" + v + "*");
                                 }
                             }
                         }
-                        else if (s3PrefixValues.Count() != 0)
-                        {
-                            readOnlyBucketStatements.Add(statement);
-                            continue;
-                        }
                     }
-
-                    outList.Add(statement);
+                    else if (s3PrefixValues.Count != 0)
+                    {
+                        readOnlyBucketStatements.Add(statement);
+                        continue;
+                    }
                 }
+
+                outList.Add(statement);
             }
 
-            bool skipBucketStatement = true;
-            String resourcePrefix = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName + "/";
-            foreach (Statement statement in outList)
+            var skipBucketStatement = true;
+            var resourcePrefix = PolicyConstants.AwsResourcePrefix + this.bucketName + "/";
+            foreach (var statement in outList)
             {
                 ISet<string> intersection = new HashSet<string>(s3PrefixValues);
-                intersection.IntersectWith(statement.resources);
+                intersection.IntersectWith(statement.Resources);
 
-                if (statement.resources.startsWith(resourcePrefix).Count() != 0
-                    && intersection.Count() == 0)
+                if (!statement.Resources.StartsWith(resourcePrefix).Any() || intersection.Count != 0)
                 {
-                    skipBucketStatement = false;
-                    break;
+                    continue;
                 }
+                
+                skipBucketStatement = false;
+                break;
             }
 
-            foreach (Statement statement in readOnlyBucketStatements)
+            foreach (var statement in readOnlyBucketStatements)
             {
-                IList<string> aws = statement.principal.aws();
+                var aws = statement.Principal.Aws();
                 if (skipBucketStatement
-                    && statement.resources.Contains(bucketResource)
-                    && statement.effect.Equals("Allow")
+                    && statement.Resources.Contains(bucketResource)
+                    && statement.Effect.Equals("Allow")
                     && aws != null && aws.Contains("*")
-                    && statement.conditions == null)
+                    && statement.Conditions == null)
                 {
                     continue;
                 }
@@ -341,131 +346,136 @@ namespace Minio.DataModel
                 outList.Add(statement);
             }
 
-            if (outList.Count() == 1)
+            if (outList.Count == 1)
             {
-                Statement statement = outList[0];
-                IList<string> aws = statement.principal.aws();
-                if (statement.resources.Contains(bucketResource)
-                    && (utils.isSupersetOf(statement.actions, PolicyConstants.COMMON_BUCKET_ACTIONS))
-                    && statement.effect.Equals("Allow")
+                var statement = outList[0];
+                var aws = statement.Principal.Aws();
+                if (statement.Resources.Contains(bucketResource)
+                    && Utils.IsSupersetOf(statement.Actions, PolicyConstants.CommonBucketActions)
+                    && statement.Effect.Equals("Allow")
                     && aws != null && aws.Contains("*")
-                    && statement.conditions == null)
+                    && statement.Conditions == null)
                 {
                     outList = new List<Statement>();
                 }
             }
 
-            statements = outList;
+            this.Statements = outList;
         }
 
-
-        /**
-         * Appends given statement into statement list to have unique statements.
-         * - If statement already exists in statement list, it ignores.
-         * - If statement exists with different conditions, they are merged.
-         * - Else the statement is appended to statement list.
-         */
-        private void appendStatement(Statement statement)
+        /// <summary>
+        /// Appends given statement into statement list to have unique statements.
+        /// - If statement already exists in statement list, it ignores.
+        /// - If statement exists with different conditions, they are merged.
+        /// - Else the statement is appended to statement list.
+        /// </summary>
+        /// <param name="statement"></param>
+        private void AppendStatement(Statement statement)
         {
-            foreach (Statement s in statements)
+            foreach (var s in this.Statements)
             {
-                IList<string> aws = s.principal.aws();
-                ConditionMap conditions = s.conditions;
+                var aws = s.Principal.Aws();
+                var conditions = s.Conditions;
 
-                if ((utils.isSupersetOf(s.actions, statement.actions)
-                    && s.effect.Equals(statement.effect)
-                    && aws != null && (utils.isSupersetOf(aws, statement.principal.aws()))
-                    && conditions != null && conditions.Equals(statement.conditions)))
+                if (Utils.IsSupersetOf(s.Actions, statement.Actions)
+                    && s.Effect.Equals(statement.Effect)
+                    && aws != null && Utils.IsSupersetOf(aws, statement.Principal.Aws())
+                    && conditions != null && conditions.Equals(statement.Conditions))
                 {
-                    s.resources.UnionWith(statement.resources);
+                    s.Resources.UnionWith(statement.Resources);
                     return;
                 }
 
-                if (s.resources.IsSupersetOf(statement.resources)
-                    && s.effect.Equals(statement.effect)
-                    && aws != null && (utils.isSupersetOf(aws, statement.principal.aws()))
-                    && conditions != null && conditions.Equals(statement.conditions))
+                if (s.Resources.IsSupersetOf(statement.Resources)
+                    && s.Effect.Equals(statement.Effect)
+                    && aws != null && Utils.IsSupersetOf(aws, statement.Principal.Aws())
+                    && conditions != null && conditions.Equals(statement.Conditions))
                 {
-                    s.actions.Union(statement.actions);
+                    s.Actions = s.Actions.Union(statement.Actions).ToList();
                     return;
                 }
 
-                if (s.resources.IsSupersetOf(statement.resources)
-                    && (utils.isSupersetOf(s.actions, statement.actions)
-                    && s.effect.Equals(statement.effect)
-                    && aws != null && utils.isSupersetOf(aws, statement.principal.aws())))
+                if (s.Resources.IsSupersetOf(statement.Resources) && Utils.IsSupersetOf(s.Actions, statement.Actions) &&
+                    s.Effect.Equals(statement.Effect) && aws != null &&
+                    Utils.IsSupersetOf(aws, statement.Principal.Aws()))
                 {
-                    if (conditions != null && conditions.Equals(statement.conditions))
+                    if (conditions != null && conditions.Equals(statement.Conditions))
                     {
                         return;
                     }
 
-                    if (conditions != null && statement.conditions != null)
+                    if (conditions != null && statement.Conditions != null)
                     {
-                        conditions.PutAll(statement.conditions);
+                        conditions.PutAll(statement.Conditions);
                         return;
                     }
                 }
             }
-            if (statement.actions != null && statement.resources != null && statement.actions.Count() != 0 && statement.resources.Count() != 0)
+            if (statement.Actions != null && statement.Resources != null && statement.Actions.Count != 0 &&
+                statement.Resources.Count != 0)
             {
-                statements.Add(statement);
+                this.Statements.Add(statement);
             }
         }
 
 
-        /**
-         * Appends new statements for given policy type.
-         */
-        private void appendStatements(PolicyType policy, String prefix)
+        /// <summary>
+        ///     Appends new statements for given policy type.
+        /// </summary>
+        /// <param name="policy"></param>
+        /// <param name="prefix"></param>
+        private void AppendStatements(PolicyType policy, string prefix)
         {
-            List<Statement> appendStatements = newStatements(policy, prefix);
-            foreach (Statement statement in appendStatements)
+            var appendStatements = this.NewStatements(policy, prefix);
+            foreach (var statement in appendStatements)
             {
-                appendStatement(statement);
+                this.AppendStatement(statement);
             }
         }
 
 
-        /**
-         * Returns policy type of this bucket policy.
-         */
-        // @JsonIgnore
+        /// <summary>
+        ///     Returns policy type of this bucket policy.
+        /// </summary>
+        /// <param name="prefix"></param>
+        /// <returns></returns>
         public PolicyType GetPolicy(string prefix)
         {
-            string bucketResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName;
-            string objectResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName + "/" + prefix + "*";
+            var bucketResource = PolicyConstants.AwsResourcePrefix + this.bucketName;
+            var objectResource = PolicyConstants.AwsResourcePrefix + this.bucketName + "/" + prefix + "*";
 
-            bool bucketCommonFound = false;
-            bool bucketReadOnly = false;
-            bool bucketWriteOnly = false;
-            string matchedResource = "";
-            bool objReadOnly = false;
-            bool objWriteOnly = false;
+            var bucketCommonFound = false;
+            var bucketReadOnly = false;
+            var bucketWriteOnly = false;
+            var matchedResource = "";
+            var objReadOnly = false;
+            var objWriteOnly = false;
 
-            foreach (Statement s in statements ?? new List<Statement>())
+            foreach (var s in this.Statements ?? new List<Statement>())
             {
                 ISet<string> matchedObjResources = new HashSet<string>();
 
-                if (s.resources == null)
+                if (s.Resources == null)
+                {
                     continue;
+                }
 
-                if (s.resources.Contains(objectResource))
+                if (s.Resources.Contains(objectResource))
                 {
                     matchedObjResources.Add(objectResource);
                 }
                 else
                 {
-                    matchedObjResources = s.resources.Match(objectResource);
+                    matchedObjResources = s.Resources.Match(objectResource);
                 }
 
-                if (matchedObjResources.Count() != 0)
+                if (matchedObjResources.Count != 0)
                 {
-                    bool[] rv = s.getObjectPolicy();
-                    bool readOnly = rv[0];
-                    bool writeOnly = rv[1];
+                    var rv = s.GetObjectPolicy();
+                    var readOnly = rv[0];
+                    var writeOnly = rv[1];
 
-                    foreach (string resource in matchedObjResources)
+                    foreach (var resource in matchedObjResources)
                     {
                         if (matchedResource.Length < resource.Length)
                         {
@@ -481,62 +491,66 @@ namespace Minio.DataModel
                         }
                     }
                 }
-                else if (s.resources.Contains(bucketResource))
+                else if (s.Resources.Contains(bucketResource))
                 {
-                    bool[] rv = s.getBucketPolicy(prefix);
-                    bool commonFound = rv[0];
-                    bool readOnly = rv[1];
-                    bool writeOnly = rv[2];
+                    var rv = s.GetBucketPolicy(prefix);
+                    var commonFound = rv[0];
+                    var readOnly = rv[1];
+                    var writeOnly = rv[2];
                     bucketCommonFound = bucketCommonFound || commonFound;
                     bucketReadOnly = bucketReadOnly || readOnly;
                     bucketWriteOnly = bucketWriteOnly || writeOnly;
                 }
             }
 
-            if (bucketCommonFound)
+            if (!bucketCommonFound)
             {
-                if (bucketReadOnly && bucketWriteOnly && objReadOnly && objWriteOnly)
-                {
-                    return PolicyType.READ_WRITE;
-                }
-                else if (bucketReadOnly && objReadOnly)
-                {
-                    return PolicyType.READ_ONLY;
-                }
-                else if (bucketWriteOnly && objWriteOnly)
-                {
-                    return PolicyType.WRITE_ONLY;
-                }
+                return PolicyType.None;
+            }
+            
+            if (bucketReadOnly && bucketWriteOnly && objReadOnly && objWriteOnly)
+            {
+                return PolicyType.ReadWrite;
+            }
+            if (bucketReadOnly && objReadOnly)
+            {
+                return PolicyType.ReadOnly;
+            }
+            if (bucketWriteOnly && objWriteOnly)
+            {
+                return PolicyType.WriteOnly;
             }
 
-            return PolicyType.NONE;
+            return PolicyType.None;
         }
 
 
-        /**
-         * Returns policy type of all prefixes.
-         */
-        //@JsonIgnore
-        public Dictionary<String, PolicyType> GetPolicies()
+        /// <summary>
+        ///     Returns policy type of all prefixes.
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, PolicyType> GetPolicies()
         {
-            Dictionary<String, PolicyType> policyRules = new Dictionary<string, PolicyType>();
-            ISet<String> objResources = new HashSet<String>();
+            var policyRules = new Dictionary<string, PolicyType>();
+            ISet<string> objResources = new HashSet<string>();
 
-            String bucketResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName;
+            var bucketResource = PolicyConstants.AwsResourcePrefix + this.bucketName;
 
             // Search all resources related to objects policy
-            foreach (Statement s in statements)
+            foreach (var s in this.Statements)
             {
-                if (s.resources != null)
-                    objResources.UnionWith(s.resources.startsWith(bucketResource + "/"));
+                if (s.Resources != null)
+                {
+                    objResources.UnionWith(s.Resources.StartsWith(bucketResource + "/"));
+                }
             }
 
             // Pretend that policy resource as an actual object and fetch its policy
-            foreach (string r in objResources)
+            foreach (var r in objResources)
             {
                 // Put trailing * if exists in asterisk
-                string asterisk = "";
-                string resource = r;
+                var asterisk = "";
+                var resource = r;
                 if (r.EndsWith("*"))
                 {
                     resource = r.Substring(0, r.Length - 1);
@@ -544,29 +558,31 @@ namespace Minio.DataModel
                 }
 
                 // String objectPath = resource.Substring(bucketResource.Length + 1, resource.Length);
-                String objectPath = resource.Substring(bucketResource.Length + 1, resource.Length - bucketResource.Length - 1);
+                var objectPath =
+                    resource.Substring(bucketResource.Length + 1, resource.Length - bucketResource.Length - 1);
 
-                PolicyType policy = this.GetPolicy(objectPath);
-                policyRules.Add(bucketName + "/" + objectPath + asterisk, policy);
+                var policy = this.GetPolicy(objectPath);
+                policyRules.Add(this.bucketName + "/" + objectPath + asterisk, policy);
             }
 
             return policyRules;
         }
 
 
-        /**
-         * Sets policy type for given prefix.
-         */
-        // @JsonIgnore
-        public void SetPolicy(PolicyType policy, String prefix)
+        /// <summary>
+        ///     Sets policy type for given prefix.
+        /// </summary>
+        /// <param name="policy"></param>
+        /// <param name="prefix"></param>
+        public void SetPolicy(PolicyType policy, string prefix)
         {
-            if (statements == null)
+            if (this.Statements == null)
             {
-                statements = new List<Statement>();
+                this.Statements = new List<Statement>();
             }
 
-            removeStatements(prefix);
-            appendStatements(policy, prefix);
+            this.RemoveStatements(prefix);
+            this.AppendStatements(policy, prefix);
         }
     }
 }

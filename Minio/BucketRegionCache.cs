@@ -14,42 +14,39 @@
  * limitations under the License.
  */
 
-using Minio.Helper;
-using RestSharp;
-
-using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Net;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-
 namespace Minio
 {
+    using System;
+    using System.Collections.Concurrent;
+    using System.Net;
+    using System.Threading.Tasks;
+    using System.Xml.Linq;
+    using Helper;
+    using RestSharp.Portable;
+
     // A singleton bucket/region cache map.
-    public sealed class BucketRegionCache
+    internal sealed class BucketRegionCache
     {
-        private static readonly Lazy<BucketRegionCache> lazy =
+        private static readonly Lazy<BucketRegionCache> Lazy =
             new Lazy<BucketRegionCache>(() => new BucketRegionCache());
 
-        private ConcurrentDictionary<string, string> regionMap;
+        private readonly ConcurrentDictionary<string, string> regionMap;
 
-        public static BucketRegionCache Instance
-        {
-            get { return lazy.Value; }
-        }
         private BucketRegionCache()
         {
-            regionMap = new ConcurrentDictionary<string, string>();
+            this.regionMap = new ConcurrentDictionary<string, string>();
         }
+
+        public static BucketRegionCache Instance => Lazy.Value;
+
         /**
          * Returns AWS region for given bucket name.
         */
         public string Region(string bucketName)
         {
-            string value = null;
+            string value;
             this.regionMap.TryGetValue(bucketName, out value);
-            return value != null ? value : "us-east-1";
+            return value ?? "us-east-1";
         }
 
 
@@ -75,30 +72,30 @@ namespace Minio
         /**
          * Returns true if given bucket name is in the map else false.
          */
-        public bool Exists(String bucketName)
+        public bool Exists(string bucketName)
         {
-            string value = null;
+            string value;
             this.regionMap.TryGetValue(bucketName, out value);
             return value != null;
-
         }
 
         /// <summary>
-        /// Updates Region cache for given bucket.
+        ///     Updates Region cache for given bucket.
         /// </summary>
+        /// <param name="client">client</param>
         /// <param name="bucketName"></param>
-        internal async Task<string> Update(MinioClient client, string bucketName)
+        internal async Task<string> Update(DefaultMinioClient client, string bucketName)
         {
-            string region = null;
+			string region = string.Empty;
 
-            if (bucketName != null && s3utils.IsAmazonEndPoint(client.BaseUrl) && client.AccessKey != null
-            && client.SecretKey != null && !Instance.Exists(bucketName))
+            if (bucketName != null && S3Utils.IsAmazonEndPoint(client.BaseUrl) && client.AccessKey != null
+                && client.SecretKey != null && !Instance.Exists(bucketName))
             {
                 string location = null;
-                var path = utils.UrlEncode(bucketName) + "?location";
+                var path = Utils.UrlEncode(bucketName) + "?location";
                 // Initialize client
-                Uri requestUrl = RequestUtil.MakeTargetURL(client.BaseUrl, client.Secure);
-                client.SetTargetURL(requestUrl);
+                var requestUrl = RequestUtil.MakeTargetUrl(client.BaseUrl, client.Secure);
+                client.SetTargetUrl(requestUrl);
 
                 var request = new RestRequest(path, Method.GET);
 
@@ -106,35 +103,23 @@ namespace Minio
 
                 if (HttpStatusCode.OK.Equals(response.StatusCode))
                 {
-                    var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-                    var stream = new MemoryStream(contentBytes);
-                    XDocument root = XDocument.Parse(response.Content);
-                    location = root.Root.Value;
-
+                    var root = XDocument.Parse(response.Content);
+                    location = root.Root?.Value;
                 }
-                if (location == null || location == "")
+                if (string.IsNullOrEmpty(location))
                 {
                     region = "us-east-1";
                 }
                 else
                 {
                     // eu-west-1 can be sometimes 'EU'.
-                    if ("EU".Equals(location))
-                    {
-                        region = "eu-west-1";
-                    }
-                    else
-                    {
-                        region = location;
-                    }
+                    region = "EU".Equals(location) ? "eu-west-1" : location;
                 }
 
                 // Add the new location.
                 Instance.Add(bucketName, region);
             }
             return region;
-
         }
-
     }
 }

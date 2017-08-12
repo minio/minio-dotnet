@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.15
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Core", "Minio.Core\Minio.Core.csproj", "{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Minio.Shared", "Minio\Minio.Shared.shproj", "{6F34C613-708D-4C99-9278-B4D0612024FF}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Minio.Platform", "Minio.Platform\Minio.Platform.shproj", "{D0F01DEA-7696-49AF-8C11-6BF334BF738E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Tests", "Minio.Tests\Minio.Tests.csproj", "{1770F6DC-D37A-4EF2-A70E-12C450A6D059}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B75EC53-17EB-461C-A9DD-4823CF2A2E9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1770F6DC-D37A-4EF2-A70E-12C450A6D059}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1770F6DC-D37A-4EF2-A70E-12C450A6D059}.Debug|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+	EndGlobalSection
+EndGlobal

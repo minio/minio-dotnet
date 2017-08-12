@@ -19,7 +19,6 @@ using System.Xml.Serialization;
 
 namespace Minio.DataModel
 {
-    [Serializable]
     public class Prefix
     {
         [XmlAttribute("Prefix")]

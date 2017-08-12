@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-using System;
-using System.Xml.Serialization;
-
-namespace Minio.DataModel
+namespace Minio.DataModel.Notification
 {
+    using System.Xml.Serialization;
+
     // Filter - a tag in the notification xml structure which carries
     // suffix/prefix filters
-    [Serializable]
     public class Filter
     {
-        [XmlElement("S3Key")]
-        public S3Key S3Key { get;  set; }
-
-
         public Filter()
         {
             this.S3Key = new S3Key();
@@ -38,11 +32,13 @@ namespace Minio.DataModel
             this.S3Key = key;
         }
 
+        [XmlElement("S3Key")]
+        public S3Key S3Key { get; set; }
+
         // Helper to XMLSerializer which decides whether to serialize S3Key
         public bool ShouldSerializeS3Key()
         {
-            return S3Key.FilterRules.Count != 0;
+            return this.S3Key.FilterRules.Count != 0;
         }
-
     }
 }

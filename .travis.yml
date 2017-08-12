@@ -1,7 +1,9 @@
 language: csharp
-solution: "./Xamarin/Minio.Tests.sln"
+solution: "./Minio.Tests.sln"
+mono: none
+dotnet: 1.0.3
+dist: trusty
 install:
-- travis_retry nuget restore -source "https://www.nuget.org/api/v2" ./Xamarin/Minio.Tests.sln
+- dotnet restore ./Minio.Tests/Minio.Tests.csproj
 script:
-- xbuild ./Xamarin/Minio.Tests.sln
-- mono ./Xamarin/packages/NUnit.ConsoleRunner*/tools/nunit3-console.exe ./Xamarin/Minio.Tests/bin/Debug/Minio.Tests.dll
+- dotnet test -c Debug ./Minio.Tests/Minio.Tests.csproj

@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-using System;
-using System.Xml.Serialization;
-
 namespace Minio.DataModel
 {
-    [Serializable]
+    using System.Xml.Serialization;
+
     [XmlRoot(ElementName = "ListMultipartUploadsResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
     public class ListMultipartUploadsResult
     {

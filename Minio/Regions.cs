@@ -16,14 +16,10 @@
 
 namespace Minio
 {
-    public class Regions
+    internal static class Regions
     {
-        private Regions()
-        {
-        }
-
         /// <summary>
-        /// Get corresponding region for input host.
+        ///     Get corresponding region for input host.
         /// </summary>
         /// <param name="endpoint">S3 API endpoint</param>
         /// <returns>Region corresponding to the endpoint. Default is 'us-east-1'</returns>
@@ -40,7 +36,6 @@ namespace Minio
             if (endpoint.EndsWith("s3-ap-southeast-2.amazonaws.com"))
             {
                 return "ap-southeast-2";
-
             }
             if (endpoint.EndsWith("s3-eu-central-1.amazonaws.com"))
             {
@@ -68,6 +63,5 @@ namespace Minio
             }
             return "us-east-1";
         }
-       
     }
 }

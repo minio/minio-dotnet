@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-using System;
-using System.Xml.Serialization;
-
-namespace Minio.DataModel
+namespace Minio.DataModel.Notification
 {
+    using System.Xml.Serialization;
+
     // FilterRule - child of S3Key, a tag in the notification xml which
     // carries suffix/prefix filters
-    [Serializable]
     public class FilterRule
     {
-        [XmlElement]
-        public string Name { get; set; }
-        [XmlElement]
-        public string Value { get; set; }
-
         public FilterRule()
         {
             this.Name = null;
@@ -40,6 +33,12 @@ namespace Minio.DataModel
             this.Name = name;
             this.Value = value;
         }
+
+        [XmlElement]
+        public string Name { get; set; }
+
+        [XmlElement]
+        public string Value { get; set; }
 
         public bool ShouldSerializeName()
         {

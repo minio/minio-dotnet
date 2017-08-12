@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Xml.Serialization;
-
-namespace Minio.DataModel
+namespace Minio.DataModel.Notification
 {
+    using System.Xml.Serialization;
+
     // TopicConfig carries one single topic notification configuration
-    [Serializable]
     public class TopicConfig : NotificationConfiguration
     {
-        [XmlElement]
-        public string Topic { get; set; }
-
-        public TopicConfig() : base()
+        public TopicConfig()
         {
         }
 
@@ -40,17 +34,20 @@ namespace Minio.DataModel
         {
             this.Topic = arn.ToString();
         }
+
+        [XmlElement]
+        public string Topic { get; }
+
         // Implement equality for this object
-        public override bool Equals(Object obj)
+        public override bool Equals(object obj)
         {
-            TopicConfig other = (TopicConfig)obj;
+            var other = (TopicConfig) obj;
             // If parameter is null return false.
             if (other == null)
             {
                 return false;
             }
             return other.Topic.Equals(this.Topic);
-
         }
 
         public override int GetHashCode()

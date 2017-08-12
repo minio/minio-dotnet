@@ -14,23 +14,13 @@
  * limitations under the License.
  */
 
-using System.Xml.Serialization;
-
-namespace Minio.DataModel
+namespace Minio.DataModel.Notification
 {
+    using System.Xml.Serialization;
+
     // EventType is a S3 notification event associated to the bucket notification configuration
     public sealed class EventType
     {
-        [XmlText]
-        public string value;
-        private EventType()
-        {
-            this.value = null;
-        }
-        public EventType(string value)
-        {
-            this.value = value;
-        }
         // Valid Event types as described in:
         // http://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html#notification-how-to-event-types-and-destinations
 
@@ -38,14 +28,31 @@ namespace Minio.DataModel
         public static readonly EventType ObjectCreatedPut = new EventType("s3:ObjectCreated:Put");
         public static readonly EventType ObjectCreatedPost = new EventType("s3:ObjectCreated:Post");
         public static readonly EventType ObjectCreatedCopy = new EventType("s3:ObjectCreated:Copy");
-        public static readonly EventType ObjectCreatedCompleteMultipartUpload = new EventType("s3:ObjectCreated:CompleteMultipartUpload");
+
+        public static readonly EventType ObjectCreatedCompleteMultipartUpload =
+            new EventType("s3:ObjectCreated:CompleteMultipartUpload");
+
         public static readonly EventType ObjectAccessedGet = new EventType("s3:ObjectAccessed:Get");
         public static readonly EventType ObjectAccessedHead = new EventType("s3:ObjectAccessed:Head");
         public static readonly EventType ObjectAccessedAll = new EventType("s3:ObjectAccessed:*");
         public static readonly EventType ObjectRemovedAll = new EventType("s3:ObjectRemoved:*");
         public static readonly EventType ObjectRemovedDelete = new EventType("s3:ObjectRemoved:Delete");
-        public static readonly EventType ObjectRemovedDeleteMarkerCreated = new EventType("s3:ObjectRemoved:DeleteMarkerCreated");
+
+        public static readonly EventType ObjectRemovedDeleteMarkerCreated =
+            new EventType("s3:ObjectRemoved:DeleteMarkerCreated");
+
         public static readonly EventType ReducedRedundancyLostObject = new EventType("s3:ReducedRedundancyLostObject");
 
+        [XmlText] public string Value;
+
+        private EventType()
+        {
+            this.Value = null;
+        }
+
+        public EventType(string value)
+        {
+            this.Value = value;
+        }
     }
 }

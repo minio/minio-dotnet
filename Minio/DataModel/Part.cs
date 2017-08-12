@@ -14,40 +14,26 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Minio.DataModel
 {
-    [Serializable]
+    using System;
+
     public class Part
     {
         private string etag;
         public int PartNumber { get; set; }
-        public long size { get; set; }
-        public DateTime lastModified { get; set; } 
-        
+        public long Size { get; set; }
+        public DateTime LastModified { get; set; }
+
         public string ETag
         {
-            get
-            {
-                return etag;
-            }
-            set
-            {
-                if (value != null)
-                {
-                    etag = value.Replace("\"", "");
-                }
-                else
-                {
-                    etag = null;
-                }
-            }
+            get => this.etag;
+            set => this.etag = value?.Replace("\"", "");
         }
-        public long partSize()
+
+        public long PartSize()
         {
-            return size;
+            return this.Size;
         }
-        
     }
 }

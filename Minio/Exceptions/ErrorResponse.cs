@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-using System;
-using System.Xml.Serialization;
-
 namespace Minio.Exceptions
 {
-    [Serializable]
-    [XmlRoot(ElementName="Error", Namespace = "")]
+    using System.Xml.Serialization;
+
+    [XmlRoot(ElementName = "Error", Namespace = "")]
     public class ErrorResponse
     {
         public string Code { get; set; }
