@@ -10,7 +10,7 @@ before_build:
  - dotnet restore
 configuration: Release
 build:
-  project: Minio.sln
+  project: Minio.Core.sln
   publish_nuget: true
   publish_nuget_symbols: true
 
