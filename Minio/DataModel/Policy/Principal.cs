@@ -13,45 +13,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json;
 
 namespace Minio.DataModel.Policy
 {
+    using System.Collections.Generic;
+    using System.Runtime.Serialization;
+    using Newtonsoft.Json;
+
     [DataContract]
     public class Principal
     {
+        public Principal()
+        {
+        }
+
+        public Principal(string aws = null)
+        {
+            this.AwsList = new List<string>();
+            if (aws != null)
+            {
+                this.AwsList.Add(aws);
+            }
+        }
+
         [JsonProperty("AWS")]
         [JsonConverter(typeof(SingleOrArrayConverter<string>))]
 
-        internal IList<string> awsList { get; set; }
-        [JsonProperty("CanonicalUser")]
-        internal IList<string> canonicalUser { get; set; }
-        public Principal()
-        {
+        internal IList<string> AwsList { get; set; }
 
-        }
-        public Principal(string aws=null)
+        [JsonProperty("CanonicalUser")]
+        internal IList<string> CanonicalUser { get; set; }
+
+        public void SetCanonicalUser(string val)
         {
-            this.awsList = new List<string>();
-            if (aws != null)
-            {
-                this.awsList.Add(aws);
-            }
-        }
-        public void CanonicalUser(string val)
-        {
-            this.canonicalUser = new List<string>();
+            this.CanonicalUser = new List<string>();
             if (val != null)
             {
-                this.canonicalUser.Add(val);
+                this.CanonicalUser.Add(val);
             }
         }
-        public IList<string> aws()
+
+        public IList<string> Aws()
         {
-            return this.awsList;
+            return this.AwsList;
         }
     }
 }

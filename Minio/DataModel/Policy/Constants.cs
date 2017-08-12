@@ -14,56 +14,61 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace MinioCore2.Policy
+namespace Minio.DataModel.Policy
 {
-    class Constants
+    using System.Collections.Generic;
+    using System.Linq;
+
+    internal class Constants
     {
         // Resource prefix for all aws resources.
-        public static readonly String AWS_RESOURCE_PREFIX = "arn:aws:s3:::";
-
-        // Common bucket actions for both read and write policies.
-        public static readonly List<String> COMMON_BUCKET_ACTIONS = new List<String>() { "s3:GetBucketLocation" };
-
-        // Read only bucket actions.
-        public static readonly List<String> READ_ONLY_BUCKET_ACTIONS = new List<String>() { "s3:ListBucket"};
-
-        // Write only bucket actions.
-        public static readonly List<String> WRITE_ONLY_BUCKET_ACTIONS =
-            new List<String>() { "s3:ListBucketMultipartUploads" };
+        public static readonly string AwsResourcePrefix = "arn:aws:s3:::";
 
         // Read only object actions.
-        public static readonly List<String> READ_ONLY_OBJECT_ACTIONS = new List<String>() { "s3:GetObject" };
+        public static readonly List<string> ReadOnlyObjectActions = new List<string> {"s3:GetObject"};
 
         // Write only object actions.
-        public static readonly List<String> WRITE_ONLY_OBJECT_ACTIONS =
-            new List<String>() { "s3:AbortMultipartUpload",
-                                              "s3:DeleteObject",
-                                              "s3:ListMultipartUploadParts",
-                                              "s3:PutObject" };
+        public static readonly List<string> WriteOnlyObjectActions =
+            new List<string>
+            {
+                "s3:AbortMultipartUpload",
+                "s3:DeleteObject",
+                "s3:ListMultipartUploadParts",
+                "s3:PutObject"
+            };
+
+        // Common bucket actions for both read and write policies.
+        public static List<string> CommonBucketActions => new List<string> {"s3:GetBucketLocation"};
+
+        // Read only bucket actions.
+        public static List<string> ReadOnlyBucketActions => new List<string> {"s3:ListBucket"};
+
+        // Write only bucket actions.
+        public static List<string> WriteOnlyBucketActions =>
+            new List<string> {"s3:ListBucketMultipartUploads"};
 
         // Read and write object actions.
         public static IList<string> READ_WRITE_OBJECT_ACTIONS()
         {
             IList<string> res = new List<string>();
-            res.Union(READ_ONLY_OBJECT_ACTIONS);
-            res.Union(WRITE_ONLY_OBJECT_ACTIONS);
+            res = res
+                .Union(ReadOnlyObjectActions)
+                .Union(WriteOnlyObjectActions)
+                .ToList();
             return res;
         }
         // All valid bucket and object actions.
 
         public static List<string> VALID_ACTIONS()
         {
-            List<string> res = new List<string>();
-            res.Union(COMMON_BUCKET_ACTIONS);
-            res.Union(READ_ONLY_BUCKET_ACTIONS);
-            res.Union(WRITE_ONLY_BUCKET_ACTIONS);
-            res.Union(READ_WRITE_OBJECT_ACTIONS());
+            var res = new List<string>();
+            res = res
+                .Union(CommonBucketActions)
+                .Union(ReadOnlyBucketActions)
+                .Union(WriteOnlyBucketActions)
+                .Union(READ_WRITE_OBJECT_ACTIONS())
+                .ToList();
             return res;
         }
-
     }
 }

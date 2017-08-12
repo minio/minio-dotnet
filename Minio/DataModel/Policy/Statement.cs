@@ -14,78 +14,74 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-using System.Linq;
-using Newtonsoft.Json;
-
 namespace Minio.DataModel.Policy
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using Minio.Helper;
+    using Newtonsoft.Json;
 
-    internal class Statement
-
+    public class Statement
     {
         [JsonProperty("Action")]
         [JsonConverter(typeof(SingleOrArrayConverter<string>))]
-        public IList<string> actions { get; set; }
+        public IList<string> Actions { get; set; }
 
         [JsonProperty("Condition")]
-        public ConditionMap conditions { get; set; }
+        public ConditionMap Conditions { get; set; }
 
         [JsonProperty("Effect")]
-        public string effect { get; set; }
+        public string Effect { get; set; }
 
         [JsonProperty("Principal")]
         [JsonConverter(typeof(PrincipalJsonConverter))]
-        public Principal principal { get; set; }
+        public Principal Principal { get; set; }
 
         [JsonProperty("Resource")]
         [JsonConverter(typeof(ResourceJsonConverter))]
-        public Resources resources { get; set; }
+        public Resources Resources { get; set; }
 
         [JsonProperty("Sid")]
-        public string sid { get; set; }
+        public string Sid { get; set; }
+
         /**
         * Returns whether given statement is valid to process for given bucket name.
          */
-        public bool isValid(string bucketName)
+        public bool IsValid(string bucketName)
         {
             ISet<string> intersection;
-            if (this.actions != null)
-                intersection = new HashSet<string>(this.actions);
-            else
-                intersection = new HashSet<string>();
-
+            intersection = this.Actions != null ? new HashSet<string>(this.Actions) : new HashSet<string>();
             intersection.IntersectWith(PolicyConstants.VALID_ACTIONS());
 
             if (intersection.Count == 0)
             {
                 return false;
             }
-            if (!this.effect.Equals("Allow"))
+            if (!this.Effect.Equals("Allow"))
             {
                 return false;
             }
 
-            IList<string> aws = this.principal != null ? this.principal.aws() : null;
+            var aws = this.Principal?.Aws();
 
             if (aws == null || !aws.Contains("*"))
             {
                 return false;
             }
 
-            string bucketResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName;
+            var bucketResource = PolicyConstants.AwsResourcePrefix + bucketName;
 
-            if (this.resources == null)
+            if (this.Resources == null)
             {
                 return false;
             }
 
-            if (this.resources.Contains(bucketResource))
+            if (this.Resources.Contains(bucketResource))
             {
                 return true;
             }
 
-            if (this.resources.startsWith(bucketResource + "/").Count == 0)
+            if (this.Resources.StartsWith(bucketResource + "/").Count == 0)
             {
                 return false;
             }
@@ -96,43 +92,43 @@ namespace Minio.DataModel.Policy
         /**
          * Removes object actions for given object resource.
          */
-        public void removeObjectActions(string objectResource)
+        public void RemoveObjectActions(string objectResource)
         {
-            if (this.conditions != null)
+            if (this.Conditions != null)
             {
                 return;
             }
 
-            if (this.resources.Count > 1)
+            if (this.Resources.Count > 1)
             {
-                this.resources.Remove(objectResource);
+                this.Resources.Remove(objectResource);
             }
             else
             {
-                this.actions.Except(PolicyConstants.READ_WRITE_OBJECT_ACTIONS());
+                this.Actions = this.Actions.Except(PolicyConstants.READ_WRITE_OBJECT_ACTIONS())?.ToList();
             }
         }
-        private void removeReadOnlyBucketActions(string prefix)
+
+        private void RemoveReadOnlyBucketActions(string prefix)
         {
-            if (!utils.isSupersetOf(this.actions, PolicyConstants.READ_ONLY_BUCKET_ACTIONS))
+            if (!Utils.IsSupersetOf(this.Actions, PolicyConstants.ReadOnlyBucketActions))
             {
                 return;
             }
 
-            this.actions.Except(PolicyConstants.READ_ONLY_BUCKET_ACTIONS);
-
-            if (this.conditions == null)
+            this.Actions = this.Actions.Except(PolicyConstants.ReadOnlyBucketActions)?.ToList();
+            if (this.Conditions == null)
             {
                 return;
             }
 
-            if (prefix == null || prefix.Count() == 0)
+            if (string.IsNullOrEmpty(prefix))
             {
                 return;
             }
 
             ConditionKeyMap stringEqualsValue;
-            this.conditions.TryGetValue("StringEquals", out stringEqualsValue);
+            this.Conditions.TryGetValue("StringEquals", out stringEqualsValue);
             if (stringEqualsValue == null)
             {
                 return;
@@ -140,10 +136,7 @@ namespace Minio.DataModel.Policy
 
             ISet<string> values;
             stringEqualsValue.TryGetValue("s3:prefix", out values);
-            if (values != null)
-            {
-                values.Remove(prefix);
-            }
+            values?.Remove(prefix);
 
             if (values == null || values.Count == 0)
             {
@@ -152,80 +145,77 @@ namespace Minio.DataModel.Policy
 
             if (stringEqualsValue.Count == 0)
             {
-                this.conditions.Remove("StringEquals");
+                this.Conditions.Remove("StringEquals");
             }
 
-            if (this.conditions.Count == 0)
+            if (this.Conditions.Count == 0)
             {
-                this.conditions = null;
+                this.Conditions = null;
             }
         }
 
-        private void removeWriteOnlyBucketActions()
+        private void RemoveWriteOnlyBucketActions()
         {
-            if (this.conditions == null)
+            if (this.Conditions == null)
             {
-                this.actions.Except(PolicyConstants.WRITE_ONLY_BUCKET_ACTIONS);
+                this.Actions = this.Actions.Except(PolicyConstants.WriteOnlyBucketActions)?.ToList();
             }
         }
 
         /**
         * Removes bucket actions for given prefix and bucketResource.
         */
-        public void removeBucketActions(string prefix, string bucketResource,
-                                    bool readOnlyInUse, bool writeOnlyInUse)
+        public void RemoveBucketActions(string prefix, string bucketResource,
+            bool readOnlyInUse, bool writeOnlyInUse)
         {
-            if (this.resources.Count > 1)
+            if (this.Resources.Count > 1)
             {
-                this.resources.Remove(bucketResource);
+                this.Resources.Remove(bucketResource);
                 return;
             }
 
             if (!readOnlyInUse)
             {
-                removeReadOnlyBucketActions(prefix);
+                this.RemoveReadOnlyBucketActions(prefix);
             }
 
             if (!writeOnlyInUse)
             {
-                removeWriteOnlyBucketActions();
+                this.RemoveWriteOnlyBucketActions();
             }
-
-            return;
         }
 
         /**
          * Returns bucket policy types for given prefix.
          */
-        // [JsonIgnore]
-        public bool[] getBucketPolicy(string prefix)
+        public bool[] GetBucketPolicy(string prefix)
         {
-            bool commonFound = false;
-            bool readOnly = false;
-            bool writeOnly = false;
+            var commonFound = false;
+            var readOnly = false;
+            var writeOnly = false;
 
-            IList<string> aws = this.principal.aws();
-            if (!(this.effect.Equals("Allow") && aws != null && aws.Contains("*")))
+            var aws = this.Principal.Aws();
+            if (!(this.Effect.Equals("Allow") && aws != null && aws.Contains("*")))
             {
-                return new bool[] { commonFound, readOnly, writeOnly };
+                return new[] {commonFound, readOnly, writeOnly};
             }
 
-            if (utils.isSupersetOf(this.actions, PolicyConstants.COMMON_BUCKET_ACTIONS) && this.conditions == null)
+            if (Utils.IsSupersetOf(this.Actions, PolicyConstants.CommonBucketActions) && this.Conditions == null)
             {
                 commonFound = true;
             }
 
-            if (utils.isSupersetOf(this.actions, PolicyConstants.WRITE_ONLY_BUCKET_ACTIONS) && this.conditions == null)
+            if (Utils.IsSupersetOf(this.Actions, PolicyConstants.WriteOnlyBucketActions) && this.Conditions == null)
             {
                 writeOnly = true;
             }
 
-            if (utils.isSupersetOf(this.actions, PolicyConstants.READ_ONLY_BUCKET_ACTIONS))
+            if (Utils.IsSupersetOf(this.Actions, PolicyConstants.ReadOnlyBucketActions))
             {
-                if (prefix != null && prefix.Count() != 0 && this.conditions != null)
+                if (!string.IsNullOrEmpty(prefix) && this.Conditions != null)
                 {
                     ConditionKeyMap stringEqualsValue;
-                    this.conditions.TryGetValue("StringEquals", out stringEqualsValue);
+                    this.Conditions.TryGetValue("StringEquals", out stringEqualsValue);
                     if (stringEqualsValue != null)
                     {
                         ISet<string> s3PrefixValues;
@@ -238,7 +228,7 @@ namespace Minio.DataModel.Policy
                     else
                     {
                         ConditionKeyMap stringNotEqualsValue;
-                        this.conditions.TryGetValue("StringNotEquals", out stringNotEqualsValue);
+                        this.Conditions.TryGetValue("StringNotEquals", out stringNotEqualsValue);
                         if (stringNotEqualsValue != null)
                         {
                             ISet<string> s3PrefixValues;
@@ -250,50 +240,49 @@ namespace Minio.DataModel.Policy
                         }
                     }
                 }
-                else if ((prefix == null || prefix.Count() == 0) && this.conditions == null)
+                else if (string.IsNullOrEmpty(prefix) && this.Conditions == null)
                 {
                     readOnly = true;
                 }
-                else if (prefix != null && prefix.Count() != 0 && this.conditions == null)
+                else if (!string.IsNullOrEmpty(prefix) && this.Conditions == null)
                 {
                     readOnly = true;
                 }
             }
 
-            return new bool[] { commonFound, readOnly, writeOnly };
+            return new[] {commonFound, readOnly, writeOnly};
         }
 
         /**
         * Returns object policy types.
         */
         // [JsonIgnore]
-        public bool[] getObjectPolicy()
+        public bool[] GetObjectPolicy()
         {
-            bool readOnly = false;
-            bool writeOnly = false;
+            var readOnly = false;
+            var writeOnly = false;
 
             IList<string> aws = null;
-            if (this.principal != null)
+            if (this.Principal != null)
             {
-                aws = this.principal.aws();
+                aws = this.Principal.Aws();
             }
 
-            if (this.effect.Equals("Allow")
+            if (this.Effect.Equals("Allow")
                 && aws != null && aws.Contains("*")
-                && this.conditions == null)
+                && this.Conditions == null)
             {
-                if (utils.isSupersetOf(this.actions, PolicyConstants.READ_ONLY_OBJECT_ACTIONS))
+                if (Utils.IsSupersetOf(this.Actions, PolicyConstants.ReadOnlyObjectActions))
                 {
                     readOnly = true;
                 }
-                if (utils.isSupersetOf(this.actions, PolicyConstants.WRITE_ONLY_OBJECT_ACTIONS))
+                if (Utils.IsSupersetOf(this.Actions, PolicyConstants.WriteOnlyObjectActions))
                 {
                     writeOnly = true;
                 }
             }
 
-            return new bool[] { readOnly, writeOnly };
+            return new[] {readOnly, writeOnly};
         }
-
     }
 }

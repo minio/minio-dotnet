@@ -21,10 +21,5 @@ namespace Minio.Exceptions
         public RedirectionException(string message) : base(message)
         {
         }
-
-        public override string ToString()
-        {
-            return base.ToString();
-        }
     }
 }

@@ -1,5 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\Minio.Platform\Minio.Platform.projitems" Label="Shared" Condition="Exists('..\Minio.Platform\Minio.Platform.projitems')" />
+  <Import Project="..\Minio\Minio.Shared.projitems" Label="Shared" Condition="Exists('..\Minio\Minio.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -53,34 +55,16 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
-    <!--<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>-->
+  <!--<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>-->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Mint|AnyCPU'">
     <OutputPath>bin\Mint\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Reactive.Core, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.Core.3.1.1\lib\net45\System.Reactive.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Interfaces, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.Interfaces.3.1.1\lib\net45\System.Reactive.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Linq, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.Linq.3.1.1\lib\net45\System.Reactive.Linq.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.PlatformServices, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.PlatformServices.3.1.1\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Windows.Threading, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.Windows.Threading.3.1.1\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
-    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -90,242 +74,14 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
+    <Reference Include="FubarCoder.RestSharp.Portable.Core">
+      <HintPath>..\packages\FubarCoder.RestSharp.Portable.Core.4.0.8\lib\net45\FubarCoder.RestSharp.Portable.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Minio\ApiEndpoints\BucketOperations.cs">
-      <Link>ApiEndpoints\BucketOperations.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\ApiEndpoints\IBucketOperations.cs">
-      <Link>ApiEndpoints\IBucketOperations.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\ApiEndpoints\IObjectOperations.cs">
-      <Link>ApiEndpoints\IObjectOperations.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\ApiEndpoints\ObjectOperations.cs">
-      <Link>ApiEndpoints\ObjectOperations.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\AWSS3Endpoints.cs">
-      <Link>AWSS3Endpoints.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\BucketRegionCache.cs">
-      <Link>BucketRegionCache.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Bucket.cs">
-      <Link>DataModel\Bucket.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\CopyConditions.cs">
-      <Link>DataModel\CopyConditions.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\CopyObjectResult.cs">
-      <Link>DataModel\CopyObjectResult.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\CopyPartResult.cs">
-      <Link>DataModel\CopyPartResult.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\CreateBucketConfiguration.cs">
-      <Link>DataModel\CreateBucketConfiguration.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\DateFormat.cs">
-      <Link>DataModel\DateFormat.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Grant.cs">
-      <Link>DataModel\Grant.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\GranteeUser.cs">
-      <Link>DataModel\GranteeUser.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\InitiateMultipartUploadResult.cs">
-      <Link>DataModel\InitiateMultipartUploadResult.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Item.cs">
-      <Link>DataModel\Item.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\ListAllMyBucketsResult.cs">
-      <Link>DataModel\ListAllMyBucketsResult.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\ListBucketResult.cs">
-      <Link>DataModel\ListBucketResult.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\ListMultipartUploadsResult.cs">
-      <Link>DataModel\ListMultipartUploadsResult.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\ListPartsResult.cs">
-      <Link>DataModel\ListPartsResult.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\LocationConstraint.cs">
-      <Link>DataModel\LocationConstraint.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Notification\Arn.cs">
-      <Link>DataModel\Notification\Arn.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Notification\BucketNotification.cs">
-      <Link>DataModel\Notification\BucketNotification.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Notification\EventType.cs">
-      <Link>DataModel\Notification\EventType.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Notification\Filter.cs">
-      <Link>DataModel\Notification\Filter.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Notification\FilterRule.cs">
-      <Link>DataModel\Notification\FilterRule.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Notification\LambdaConfig.cs">
-      <Link>DataModel\Notification\LambdaConfig.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Notification\NotificationConfiguration.cs">
-      <Link>DataModel\Notification\NotificationConfiguration.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Notification\QueueConfig.cs">
-      <Link>DataModel\Notification\QueueConfig.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Notification\S3Key.cs">
-      <Link>DataModel\Notification\S3Key.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Notification\TopicConfig.cs">
-      <Link>DataModel\Notification\TopicConfig.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\ObjectStat.cs">
-      <Link>DataModel\ObjectStat.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Part.cs">
-      <Link>DataModel\Part.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\ActionJsonConverter.cs">
-      <Link>DataModel\Policy\ActionJsonConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\BucketPolicy.cs">
-      <Link>DataModel\Policy\BucketPolicy.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\ConditionKeyMap.cs">
-      <Link>DataModel\Policy\ConditionKeyMap.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\ConditionKeyMapConverter.cs">
-      <Link>DataModel\Policy\ConditionKeyMapConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\ConditionMap.cs">
-      <Link>DataModel\Policy\ConditionMap.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\PolicyConstants.cs">
-      <Link>DataModel\Policy\PolicyConstants.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\PolicyType.cs">
-      <Link>DataModel\Policy\PolicyType.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\Principal.cs">
-      <Link>DataModel\Policy\Principal.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\PrincipalJsonConverter.cs">
-      <Link>DataModel\Policy\PrincipalJsonConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\ResourceJsonConverter.cs">
-      <Link>DataModel\Policy\ResourceJsonConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\Resources.cs">
-      <Link>DataModel\Policy\Resources.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\SingleOrArrayConverter.cs">
-      <Link>DataModel\Policy\SingleOrArrayConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\Statement.cs">
-      <Link>DataModel\Policy\Statement.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\PostPolicy.cs">
-      <Link>DataModel\PostPolicy.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Prefix.cs">
-      <Link>DataModel\Prefix.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Upload.cs">
-      <Link>DataModel\Upload.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\AccessDeniedException.cs">
-      <Link>Exceptions\AccessDeniedException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\ErrorResponseException.cs">
-      <Link>Exceptions\ErrorResponseException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\BucketNotFoundException.cs">
-      <Link>Exceptions\BucketNotFoundException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\ConnectionException.cs">
-      <Link>Exceptions\ConnectionException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\EntityTooLargeException.cs">
-      <Link>Exceptions\EntityTooLargeException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\ErrorResponse.cs">
-      <Link>Exceptions\ErrorResponse.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\ForbiddenException.cs">
-      <Link>Exceptions\ForbiddenException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\InternalClientException.cs">
-      <Link>Exceptions\InternalClientException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\InternalServerException.cs">
-      <Link>Exceptions\InternalServerException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\InvalidBucketNameException.cs">
-      <Link>Exceptions\InvalidBucketNameException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\InvalidContentLengthException.cs">
-      <Link>Exceptions\InvalidContentLengthException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\InvalidEndpointException.cs">
-      <Link>Exceptions\InvalidEndpointException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\InvalidKeyNameException.cs">
-      <Link>Exceptions\InvalidKeyNameException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\InvalidObjectNameException.cs">
-      <Link>Exceptions\InvalidObjectNameException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\InvalidObjectPrefixException.cs">
-      <Link>Exceptions\InvalidObjectPrefixException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\MaxBucketsReachedException.cs">
-      <Link>Exceptions\MaxBucketsReachedException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\MethodNotAllowedException.cs">
-      <Link>Exceptions\MethodNotAllowedException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\MinioException.cs">
-      <Link>Exceptions\MinioException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\ObjectNotFoundException.cs">
-      <Link>Exceptions\ObjectNotFoundException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\RedirectionException.cs">
-      <Link>Exceptions\RedirectionException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\UnexpectedShortReadException.cs">
-      <Link>Exceptions\UnexpectedShortReadException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Helper\Constants.cs">
-      <Link>Helper\Constants.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Helper\Enum.cs">
-      <Link>Helper\Enum.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Helper\RequestUtil.cs">
-      <Link>Helper\RequestUtil.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Helper\s3utils.cs">
-      <Link>Helper\s3utils.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Helper\utils.cs">
-      <Link>Helper\utils.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\MinioClient.cs">
-      <Link>MinioClient.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Regions.cs">
-      <Link>Regions.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\V4Authenticator.cs">
-      <Link>V4Authenticator.cs</Link>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -333,11 +89,4 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

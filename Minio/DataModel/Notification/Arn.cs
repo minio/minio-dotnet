@@ -14,57 +14,55 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Xml.Serialization;
-
-namespace Minio.DataModel
+namespace Minio.DataModel.Notification
 {
+    using System.Xml.Serialization;
+
     // Arn holds ARN information that will be sent to the web service,
     // ARN desciption can be found in http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
     public class Arn
     {
-       private string Partition { get; }
-       private string Service { get; }
-       private string Region { get; }
-       private string AccountID { get; }
-       private string Resource { get; }
-
-        [XmlText]
-        private string arnString;
-
-        public Arn()
-        {  
-        }
-
         // Pass valid Arn string on aws to constructor
         public Arn(string arnString)
         {
-            string[] parts = arnString.Split(':');
-            if (parts.Length == 6)
+            var parts = arnString.Split(':');
+            if (parts.Length != 6)
             {
-                this.Partition = parts[1];
-                this.Service = parts[2];
-                this.Region = parts[3];
-                this.AccountID = parts[4];
-                this.Resource = parts[5];
-                this.arnString = arnString;
+                return;
             }
             
+            this.Partition = parts[1];
+            this.Service = parts[2];
+            this.Region = parts[3];
+            this.AccountId = parts[4];
+            this.Resource = parts[5];
+            this.ArnString = arnString;
         }
+
         // constructs new ARN based on the given partition, service, region, account id and resource
         public Arn(string partition, string service, string region, string accountId, string resource)
         {
             this.Partition = partition;
             this.Service = service;
             this.Region = region;
-            this.AccountID = accountId;
+            this.AccountId = accountId;
             this.Resource = resource;
-            this.arnString = "arn:" + this.Partition + ":" + this.Service + ":" + this.Region + ":" + this.AccountID + ":" + this.Resource;
+            this.ArnString = "arn:" + this.Partition + ":" + this.Service + ":" + this.Region + ":" + this.AccountId +
+                             ":" + this.Resource;
         }
+
+        [XmlText]
+        public string ArnString { get; }
+
+        public string Partition { get; }
+        public string Service { get; }
+        public string Region { get; }
+        public string AccountId { get; }
+        public string Resource { get; }
+
         public override string ToString()
         {
-            return  arnString;
+            return this.ArnString;
         }
     }
 }

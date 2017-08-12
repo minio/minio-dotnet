@@ -18,7 +18,7 @@ namespace Minio.Exceptions
 {
     public class InvalidObjectPrefixException : MinioException
     {
-        private string objectPrefix;
+        private readonly string objectPrefix;
 
         public InvalidObjectPrefixException(string objectPrefix, string message) : base(message)
         {

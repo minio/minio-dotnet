@@ -20,7 +20,6 @@ using System.Xml.Serialization;
 
 namespace Minio.DataModel
 {
-    [Serializable]
     [XmlRoot(ElementName = "ListAllMyBucketsResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
     [XmlInclude(typeof(Bucket))]
     public class ListAllMyBucketsResult

@@ -1,0 +1,9 @@
+language: csharp
+solution: "./Minio.Tests.sln"
+mono: none
+dotnet: 1.0.3
+dist: trusty
+install:
+- dotnet restore ./Minio.Tests/Minio.Tests.csproj
+script:
+- dotnet test -c Debug ./Minio.Tests/Minio.Tests.csproj

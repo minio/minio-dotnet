@@ -18,14 +18,8 @@ namespace Minio.Exceptions
 {
     public class UnexpectedShortReadException : MinioException
     {
-
         public UnexpectedShortReadException(string message) : base(message)
         {
-        }
-
-        public override string ToString()
-        {
-            return base.ToString();
         }
     }
 }

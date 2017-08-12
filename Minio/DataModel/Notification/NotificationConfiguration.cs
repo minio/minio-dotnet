@@ -14,23 +14,15 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Xml.Serialization;
-
-namespace Minio.DataModel
+namespace Minio.DataModel.Notification
 {
+    using System.Collections.Generic;
+    using System.Xml.Serialization;
+
     // NotificationConfig - represents one single notification configuration
     // such as topic, queue or lambda configuration.
     public class NotificationConfiguration
     {
-        [XmlElement]
-        public string Id { get; set; }
-        private Arn Arn { get; set; }
-        [XmlElement("Event")]
-        public List<EventType> Events { get; set; }
-        [XmlElement("Filter")]
-        public Filter Filter;
         public NotificationConfiguration()
         {
             this.Arn = null;
@@ -41,55 +33,76 @@ namespace Minio.DataModel
         {
             this.Arn = new Arn(arn);
         }
+
         public NotificationConfiguration(Arn arn)
         {
             this.Arn = arn;
         }
 
-        public void AddEvents(List<EventType> evnt)
+        [XmlElement]
+        public string Id { get; set; }
+
+        [XmlElement("Event")]
+        public List<EventType> Events { get; set; }
+
+        [XmlElement("Filter")]
+        public Filter Filter { get; set; }
+
+        private Arn Arn { get; }
+
+
+        public void AddEvents(IEnumerable<EventType> evnt)
         {
             if (this.Events == null)
+            {
                 this.Events = new List<EventType>();
+            }
             this.Events.AddRange(evnt);
         }
+
         /// <summary>
-        ///  AddFilterSuffix sets the suffix configuration to the current notification config
+        ///     AddFilterSuffix sets the suffix configuration to the current notification config
         /// </summary>
         /// <param name="suffix"></param>
         public void AddFilterSuffix(string suffix)
         {
             if (this.Filter == null)
-                this.Filter = new Filter();
-            FilterRule newFilterRule = new FilterRule("suffix", suffix);
-            // Replace any suffix rule if existing and add to the list otherwise
-            for (int i = 0; i < this.Filter.S3Key.FilterRules.Count; i++)
             {
-                if (this.Filter.S3Key.FilterRules[i].Equals("suffix"))
+                this.Filter = new Filter();
+            }
+            var newFilterRule = new FilterRule("suffix", suffix);
+            // Replace any suffix rule if existing and add to the list otherwise
+            for (var i = 0; i < this.Filter.S3Key.FilterRules.Count; i++)
+            {
+                if (this.Filter.S3Key.FilterRules[i].Value.Equals("suffix"))
                 {
                     this.Filter.S3Key.FilterRules[i] = newFilterRule;
                     return;
-                }            
+                }
             }
             this.Filter.S3Key.FilterRules.Add(newFilterRule);
         }
 
         /// <summary>
-        ///  AddFilterPrefix sets the prefix configuration to the current notification config
+        ///     AddFilterPrefix sets the prefix configuration to the current notification config
         /// </summary>
-        /// <param name="suffix"></param>
         public void AddFilterPrefix(string prefix)
         {
             if (this.Filter == null)
-                this.Filter = new Filter();
-            FilterRule newFilterRule = new FilterRule("prefix", prefix);
-            // Replace any prefix rule if existing and add to the list otherwise
-            for (int i = 0; i < this.Filter.S3Key.FilterRules.Count; i++)
             {
-                if (this.Filter.S3Key.FilterRules[i].Equals("prefix"))
+                this.Filter = new Filter();
+            }
+            var newFilterRule = new FilterRule("prefix", prefix);
+            // Replace any prefix rule if existing and add to the list otherwise
+            for (var i = 0; i < this.Filter.S3Key.FilterRules.Count; i++)
+            {
+                if (!this.Filter.S3Key.FilterRules[i].Name.Equals("prefix"))
                 {
-                    this.Filter.S3Key.FilterRules[i] = newFilterRule;
-                    return;
-                }              
+                    continue;
+                }
+
+                this.Filter.S3Key.FilterRules[i] = newFilterRule;
+                return;
             }
             this.Filter.S3Key.FilterRules.Add(newFilterRule);
         }
@@ -101,12 +114,14 @@ namespace Minio.DataModel
 
         public bool ShouldSerializeId()
         {
-            return Id != null;
+            return this.Id != null;
         }
+
         public bool ShouldSerializeEvents()
         {
             return this.Events != null && this.Events.Count > 0;
         }
+
         internal bool IsIdSet()
         {
             return this.Id != null;

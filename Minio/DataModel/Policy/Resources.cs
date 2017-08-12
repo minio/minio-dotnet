@@ -14,24 +14,26 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-
 namespace Minio.DataModel.Policy
 {
-    internal class Resources : HashSet<string>
+    using System;
+    using System.Collections.Generic;
+    using System.Text.RegularExpressions;
+
+    public class Resources : HashSet<string>
     {
-        public Resources(string resource=null) : base()
+        public Resources(string resource = null)
         {
-             if (resource != null)
+            if (resource != null)
             {
-                Add(resource);
+                this.Add(resource);
             }
         }
-        public ISet<string> startsWith(string resourcePrefix)
+
+        public ISet<string> StartsWith(string resourcePrefix)
         {
-            HashSet<string> res = new HashSet<string>();
-            foreach(string resource in this)
+            var res = new HashSet<string>();
+            foreach (var resource in this)
             {
                 if (resource.StartsWith(resourcePrefix))
                 {
@@ -40,6 +42,7 @@ namespace Minio.DataModel.Policy
             }
             return res;
         }
+
         private bool matched(string pattern, string resource)
         {
             if (pattern.Length == 0)
@@ -50,36 +53,36 @@ namespace Minio.DataModel.Policy
             {
                 return true;
             }
-            string[] parts = Regex.Split(pattern, "\\*");
+            var parts = Regex.Split(pattern, "\\*");
             if (parts.Length == 1)
             {
                 return resource.Equals(parts[0]);
             }
-            bool tglob = pattern.EndsWith("*");
-            int end = parts.Length - 1;
+            var tglob = pattern.EndsWith("*");
+            var end = parts.Length - 1;
 
             if (!resource.StartsWith(parts[0]))
             {
                 return false;
             }
-            for (int i = 1; i < end; i++)
+            for (var i = 1; i < end; i++)
             {
                 if (!resource.Contains(parts[i]))
                 {
                     return false;
                 }
-                int idx = resource.IndexOf(parts[i]) + parts[i].Length;
+                var idx = resource.IndexOf(parts[i], StringComparison.Ordinal) + parts[i].Length;
                 resource = resource.Substring(idx);
             }
             return tglob || resource.EndsWith(parts[end]);
-
         }
+
         internal Resources Match(string resource)
         {
-            Resources res = new Resources();
-            foreach (string pattern in this)
+            var res = new Resources();
+            foreach (var pattern in this)
             {
-                if (matched(pattern,resource))
+                if (this.matched(pattern, resource))
                 {
                     res.Add(pattern);
                 }

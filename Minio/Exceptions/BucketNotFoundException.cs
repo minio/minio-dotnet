@@ -14,22 +14,17 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Minio.Exceptions
 {
-    [Serializable]
     public class BucketNotFoundException : MinioException
     {
-        private string bucketName;
-        public BucketNotFoundException()
-        {
+        private readonly string bucketName;
 
-        }
         public BucketNotFoundException(string bucketName, string message) : base(message)
         {
             this.bucketName = bucketName;
         }
+
         public override string ToString()
         {
             return this.bucketName + ": " + base.ToString();

@@ -14,32 +14,33 @@
  * limitations under the License.
  */
 
-using System;
-using Newtonsoft.Json;
-
 namespace Minio.DataModel.Policy
 {
-    class ActionJsonConverter : JsonConverter
+    using System;
+    using Newtonsoft.Json;
+
+    public class ActionJsonConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {
             throw new NotImplementedException();
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
+            JsonSerializer serializer)
         {
-            object retVal = new Object();
+            var retVal = new object();
             if (reader.TokenType == JsonToken.StartObject)
             {
-                Principal instance = (Principal)serializer.Deserialize(reader, typeof(Principal));
+                var instance = (Principal) serializer.Deserialize(reader, typeof(Principal));
                 retVal = instance;
             }
             else if (reader.TokenType == JsonToken.String)
             {
                 if (reader.Value.Equals("*"))
                 {
-                    Principal instance = new Principal("AWS");
-                    instance.CanonicalUser(reader.Value.ToString());
+                    var instance = new Principal("AWS");
+                    instance.SetCanonicalUser(reader.Value.ToString());
                     retVal = instance;
                 }
             }
@@ -48,7 +49,6 @@ namespace Minio.DataModel.Policy
                 retVal = serializer.Deserialize(reader, objectType);
             }
             return retVal;
-
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -57,4 +57,3 @@ namespace Minio.DataModel.Policy
         }
     }
 }
-

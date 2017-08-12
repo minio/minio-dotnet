@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
  * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,113 +13,115 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using Minio.Exceptions;
-using Minio.Helper;
-using System;
-using System.Text.RegularExpressions;
 
-namespace Minio
+namespace Minio.Helper
 {
-    internal class RequestUtil
+    using System;
+    using System.Text.RegularExpressions;
+    using Exceptions;
+
+    internal static class RequestUtil
     {
-        internal static Uri GetEndpointURL(string endPoint, bool secure)
+        internal static Uri GetEndpointUrl(string endPoint, bool secure)
         {
             if (endPoint.Contains(":"))
             {
-                string[] parts = endPoint.Split(':');
-                string host = parts[0];
-                string port = parts[1]; 
-                if (!s3utils.IsValidIP(host) && !IsValidEndpoint(host))
+                var parts = endPoint.Split(':');
+                var host = parts[0];
+                if (!S3Utils.IsValidIp(host) && !IsValidEndpoint(host))
                 {
-                    throw new InvalidEndpointException("Endpoint: " + endPoint + " does not follow ip address or domain name standards.");
+                    throw new InvalidEndpointException("Endpoint: " + endPoint +
+                                                       " does not follow ip address or domain name standards.");
                 }
-            } 
+            }
             else
             {
-                if (!s3utils.IsValidIP(endPoint) && !IsValidEndpoint(endPoint))
+                if (!S3Utils.IsValidIp(endPoint) && !IsValidEndpoint(endPoint))
                 {
-                    throw new InvalidEndpointException("Endpoint: " + endPoint + " does not follow ip address or domain name standards.");
+                    throw new InvalidEndpointException("Endpoint: " + endPoint +
+                                                       " does not follow ip address or domain name standards.");
                 }
             }
 
-            Uri uri = TryCreateUri(endPoint, secure);
-            RequestUtil.ValidateEndpoint(uri,endPoint);
+            var uri = TryCreateUri(endPoint, secure);
+            ValidateEndpoint(uri, endPoint);
             return uri;
         }
-     
-        internal static Uri MakeTargetURL(string endPoint, bool secure, string bucketName = null, string region = null, bool usePathStyle = true)
+
+        internal static Uri MakeTargetUrl(string endPoint, bool secure, string bucketName = null, string region = null,
+            bool usePathStyle = true)
         {
             // For Amazon S3 endpoint, try to fetch location based endpoint.
-            string host = endPoint;
-            if (s3utils.IsAmazonEndPoint(endPoint))
+            var host = endPoint;
+            if (S3Utils.IsAmazonEndPoint(endPoint))
             {
                 // Fetch new host based on the bucket location.
-                host = AWSS3Endpoints.Instance.endpoint(region);
+                host = Awss3Endpoints.Endpoint(region);
                 if (!usePathStyle)
                 {
-                    host = utils.UrlEncode(bucketName) + "." + utils.UrlEncode(host) + "/";
+                    host = Utils.UrlEncode(bucketName) + "." + Utils.UrlEncode(host) + "/";
                 }
             }
-            Uri uri = TryCreateUri(host,secure);
+            var uri = TryCreateUri(host, secure);
             return uri;
         }
 
-        internal static Uri TryCreateUri(string endpoint,bool secure)
+        internal static Uri TryCreateUri(string endpoint, bool secure)
         {
-            var scheme = secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
-
+            var scheme = secure ? Utils.UrlEncode("https") : Utils.UrlEncode("http");
             // This is the actual url pointed to for all HTTP requests
-            string endpointURL = string.Format("{0}://{1}", scheme, endpoint);
-            Uri uri = null;
+            var endpointUrl = $"{scheme}://{endpoint}";
+            Uri uri;
             try
             {
-                uri = new Uri(endpointURL);
+                uri = new Uri(endpointUrl);
             }
-            catch (UriFormatException e)
+            catch (Exception e)
             {
                 throw new InvalidEndpointException(e.Message);
             }
+
             return uri;
         }
 
         /// <summary>
-        /// Validates URI to check if it is well formed. Otherwise cry foul.
+        ///     Validates URI to check if it is well formed. Otherwise cry foul.
         /// </summary>
-        internal static void ValidateEndpoint(Uri uri,string Endpoint)
+        internal static void ValidateEndpoint(Uri uri, string endpoint)
         {
             if (string.IsNullOrEmpty(uri.OriginalString))
             {
                 throw new InvalidEndpointException("Endpoint cannot be empty.");
             }
-            string host = uri.Host;
 
             if (!IsValidEndpoint(uri.Host))
             {
-                throw new InvalidEndpointException(Endpoint, "Invalid endpoint.");
+                throw new InvalidEndpointException(endpoint, "Invalid endpoint.");
             }
             if (!uri.AbsolutePath.Equals("/", StringComparison.CurrentCultureIgnoreCase))
             {
-                throw new InvalidEndpointException(Endpoint, "No path allowed in endpoint.");
+                throw new InvalidEndpointException(endpoint, "No path allowed in endpoint.");
             }
 
             if (!string.IsNullOrEmpty(uri.Query))
             {
-                throw new InvalidEndpointException(Endpoint, "No query parameter allowed in endpoint.");
+                throw new InvalidEndpointException(endpoint, "No query parameter allowed in endpoint.");
             }
-            if ((!uri.Scheme.ToLowerInvariant().Equals("https")) && (!uri.Scheme.ToLowerInvariant().Equals("http")))
+            if (!uri.Scheme.ToLowerInvariant().Equals("https") && !uri.Scheme.ToLowerInvariant().Equals("http"))
             {
-                throw new InvalidEndpointException(Endpoint, "Invalid scheme detected in endpoint.");
+                throw new InvalidEndpointException(endpoint, "Invalid scheme detected in endpoint.");
             }
-            string amzHost = uri.Host;
-            if ((utils.CaseInsensitiveContains(amzHost,".amazonaws.com"))
-                 && !s3utils.IsAmazonEndPoint(uri.Host))
+            var amzHost = uri.Host;
+            if (Utils.CaseInsensitiveContains(amzHost, ".amazonaws.com")
+                && !S3Utils.IsAmazonEndPoint(uri.Host))
             {
-                throw new InvalidEndpointException(amzHost, "For Amazon S3, host should be \'s3.amazonaws.com\' in endpoint.");
+                throw new InvalidEndpointException(amzHost,
+                    "For Amazon S3, host should be \'s3.amazonaws.com\' in endpoint.");
             }
         }
-       
+
         /// <summary>
-        /// Validate Url endpoint 
+        ///     Validate Url endpoint
         /// </summary>
         /// <param name="endpoint"></param>
         /// <returns>true/false</returns>
@@ -133,7 +134,7 @@ namespace Minio
             {
                 return false;
             }
-           
+
             foreach (var label in endpoint.Split('.'))
             {
                 if (label.Length < 1 || label.Length > 63)
@@ -141,7 +142,7 @@ namespace Minio
                     return false;
                 }
 
-                Regex validLabel = new Regex("^[a-zA-Z0-9]([A-Za-z0-9-]*[a-zA-Z0-9])?$");
+                var validLabel = new Regex("^[a-zA-Z0-9]([A-Za-z0-9-]*[a-zA-Z0-9])?$");
 
                 if (!validLabel.IsMatch(label))
                 {
@@ -149,6 +150,6 @@ namespace Minio
                 }
             }
             return true;
-        }     
+        }
     }
 }

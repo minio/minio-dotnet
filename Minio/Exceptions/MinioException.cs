@@ -14,38 +14,39 @@
  * limitations under the License.
  */
 
-using System;
-using RestSharp;
-
 namespace Minio.Exceptions
 {
-    [Serializable]
+    using System;
+    using RestSharp.Portable;
+
     public class MinioException : Exception
     {
-        public string message { get; set; }
-        public IRestResponse response { get; set; }
-
-        public MinioException(IRestResponse response)
-            : base($"Minio API responded with status code={response.StatusCode}, response={response.ErrorMessage}, content={response.Content}")
+        public MinioException(IRestResponse restResponse)
+            : base(
+                $"Minio API responded with status code={restResponse.StatusCode}, response={restResponse.StatusDescription}, content={restResponse.Content}")
         {
-            this.response = response;
-
+            this.RestResponse = restResponse;
         }
+
         public MinioException()
         {
-
         }
+
         public MinioException(string message) : base($"Minio API responded with message={message}")
         {
-            this.message = message;
+            this.Message = message;
         }
+
+        public override string Message { get; }
+        
+        public IRestResponse RestResponse { get; set; }
 
         public ErrorResponse Response { get; set; }
         public string XmlError { get; set; }
 
         public override string ToString()
         {
-            return this.message + ": " + base.ToString();
+            return this.Message + ": " + base.ToString();
         }
     }
 }

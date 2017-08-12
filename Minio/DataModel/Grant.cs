@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
-using System;
-using System.Xml.Serialization;
-    
-namespace Minio.Datamodel
+namespace Minio.DataModel
 {
-    [Serializable]
+    using System.Xml.Serialization;
+
     [XmlInclude(typeof(GranteeUser))]
     public class Grant
     {

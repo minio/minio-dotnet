@@ -14,133 +14,130 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-
 namespace Minio.DataModel
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+
     /**
     * A container class to hold all the Conditions to be checked
     * before copying an object.
     */
     public class CopyConditions
     {
-        private Dictionary<string, string> copyConditions = new Dictionary<string, string>();
-        internal long byteRangeStart = -1;
-        internal long byteRangeEnd = -1;
+        private readonly Dictionary<string, string> copyConditions = new Dictionary<string, string>();
+        internal long ByteRangeEnd = -1;
+        internal long ByteRangeStart = -1;
 
         /// <summary>
-        /// Clone CopyConditions object
+        ///     Clone CopyConditions object
         /// </summary>
         /// <returns>new CopyConditions object</returns>
         public CopyConditions Clone()
         {
-            CopyConditions newcond = new CopyConditions();
-            foreach (KeyValuePair<string, string> item in this.copyConditions)
+            var newcond = new CopyConditions();
+            foreach (var item in this.copyConditions)
             {
                 newcond.copyConditions.Add(item.Key, item.Value);
             }
-            newcond.byteRangeStart = this.byteRangeStart;
-            newcond.byteRangeEnd = this.byteRangeEnd;
+            newcond.ByteRangeStart = this.ByteRangeStart;
+            newcond.ByteRangeEnd = this.ByteRangeEnd;
             return newcond;
         }
 
 
-        /**
-         * Set modified condition, copy object modified since given time.
-         *
-         * @throws ArgumentException
-         *           When date is null
-        */
-
+        /// <summary>
+        ///     Set modified condition, copy object modified since given time.
+        /// </summary>
+        /// <param name="date"></param>
+        /// <exception cref="ArgumentException"></exception>
         public void SetModified(DateTime date)
         {
             if (date == null)
             {
                 throw new ArgumentException("Date cannot be empty");
             }
-            copyConditions.Add("x-amz-copy-source-if-modified-since", date.ToUniversalTime().ToString("r"));
+            this.copyConditions.Add("x-amz-copy-source-if-modified-since", date.ToUniversalTime().ToString("r"));
         }
 
-        /**
-        * Unset modified condition, copy object modified since given time.
-        *
-        * @throws ArgumentException
-        *           When date is null
-       */
-
+        /// <summary>
+        ///     Unset modified condition, copy object modified since given time.
+        /// </summary>
+        /// <param name="date"></param>
+        /// <exception cref="ArgumentException"></exception>
         public void SetUnmodified(DateTime date)
         {
             if (date == null)
             {
                 throw new ArgumentException("Date cannot be empty");
             }
-            copyConditions.Add("x-amz-copy-source-if-unmodified-since", date.ToUniversalTime().ToString("r"));
+            this.copyConditions.Add("x-amz-copy-source-if-unmodified-since", date.ToUniversalTime().ToString("r"));
         }
-        /**
-         * Set matching ETag condition, copy object which matches
-         * the following ETag.
-         *
-         * @throws ArgumentException when etag is null
-         */
+
+        /// <summary>
+        ///     Set matching ETag condition, copy object which matches the following ETag.
+        /// </summary>
+        /// <param name="etag"></param>
+        /// <exception cref="ArgumentException"></exception>
         public void SetMatchETag(string etag)
         {
             if (etag == null)
             {
                 throw new ArgumentException("ETag cannot be empty");
             }
-            copyConditions.Add("x-amz-copy-source-if-match", etag);
+            this.copyConditions.Add("x-amz-copy-source-if-match", etag);
         }
 
-        /**
-         * Set matching ETag none condition, copy object which does not
-         * match the following ETag.
-         *
-         * @throws InvalidArgumentException
-         *           When etag is null
-         */
+        /// <summary>
+        ///     Set matching ETag none condition, copy object which does not
+        ///     match the following ETag.
+        /// </summary>
+        /// <param name="etag"></param>
+        /// <exception cref="ArgumentException"></exception>
         public void SetMatchETagNone(string etag)
         {
             if (etag == null)
             {
                 throw new ArgumentException("ETag cannot be empty");
             }
-            copyConditions.Add("x-amz-copy-source-if-none-match", etag);
+            this.copyConditions.Add("x-amz-copy-source-if-none-match", etag);
         }
 
-        /**
-       * Set Byte Range condition, copy object which falls within the 
-       * start and end byte range specified by user
-       *
-       * @throws InvalidArgumentException
-       *           When firstByte is null or lastByte is null
-       */
+        /// <summary>
+        ///     Set Byte Range condition, copy object which falls within the
+        ///     start and end byte range specified by user
+        /// </summary>
+        /// <param name="firstByte"></param>
+        /// <param name="lastByte"></param>
+        /// <exception cref="ArgumentException"></exception>
         public void SetByteRange(long firstByte, long lastByte)
         {
-            if ((firstByte < 0) || (lastByte < firstByte))
+            if (firstByte < 0 || lastByte < firstByte)
+            {
                 throw new ArgumentException("Range start less than zero or range end less than range start");
+            }
 
-            this.byteRangeStart = firstByte;
-            this.byteRangeEnd = lastByte;
+            this.ByteRangeStart = firstByte;
+            this.ByteRangeEnd = lastByte;
         }
-        /**
-         * Get range size
-         */
+
+        /// <summary>
+        ///     Get range size
+        /// </summary>
+        /// <returns></returns>
         public long GetByteRange()
         {
-            return (this.byteRangeStart == -1) ? 0 : (this.byteRangeEnd - this.byteRangeStart + 1);
+            return this.ByteRangeStart == -1 ? 0 : this.ByteRangeEnd - this.ByteRangeStart + 1;
         }
 
-        /**
-         * Get all the set copy conditions map.
-         *
-         */
+        /// <summary>
+        ///     Get all the set copy conditions map.
+        /// </summary>
+        /// <returns></returns>
         public ReadOnlyDictionary<string, string> GetConditions()
         {
-            return new ReadOnlyDictionary<string, string>(copyConditions);
-
+            return new ReadOnlyDictionary<string, string>(this.copyConditions);
         }
-
     }
 }

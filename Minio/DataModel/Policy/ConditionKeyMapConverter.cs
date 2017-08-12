@@ -14,31 +14,32 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Linq;
-
 namespace Minio.DataModel.Policy
 {
+    using System;
+    using System.Collections.Generic;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
+
     public class ConditionKeyMapConverter : JsonConverter
     {
+        public override bool CanWrite => false;
+
         public override bool CanConvert(Type objectType)
         {
-            return (objectType == typeof(IDictionary<,>));
+            return objectType == typeof(IDictionary<,>);
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
+            JsonSerializer serializer)
         {
-            object retVal = new Object();
-            bool isParsed = false;
+            var isParsed = false;
             ISet<string> parseSet = new HashSet<string>();
             string key = null;
             ConditionKeyMap instance = null;
             if (reader.TokenType == JsonToken.StartObject)
             {
-                instance = new ConditionKeyMap();          
+                instance = new ConditionKeyMap();
             }
             do
             {
@@ -46,37 +47,36 @@ namespace Minio.DataModel.Policy
                     if (reader.TokenType == JsonToken.PropertyName)
                     {
                         if (key == null)
+                        {
                             key = reader.Value.ToString();
+                        }
                     }
                     else if (reader.TokenType == JsonToken.String)
                     {
                         parseSet.Add(reader.Value.ToString());
-                        instance.Put(key, parseSet);
+                        instance?.Put(key, parseSet);
                         isParsed = true;
                     }
                     else if (reader.TokenType == JsonToken.StartArray)
                     {
-                        JArray array = JArray.Load(reader);
+                        var array = JArray.Load(reader);
                         var rs = array.ToObject<ISet<string>>();
                         parseSet = new HashSet<string>();
                         foreach (var el in rs)
                         {
                             parseSet.Add(el);
                         }
-                        instance.Put(key, parseSet);
+                        instance?.Put(key, parseSet);
                         isParsed = true;
                     }
                 }
-            }
-            while (reader.Read() && !isParsed);
+            } while (reader.Read() && !isParsed);
             return instance;
         }
 
-        public override bool CanWrite { get { return false; } }
-
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        { 
+        {
             throw new NotImplementedException();
         }
     }

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-
-namespace Minio.DataModel
+namespace Minio.DataModel.Policy
 {
+    using System.Collections.Generic;
+
     public class ConditionMap : Dictionary<string, ConditionKeyMap>
     {
         public ConditionMap() : base() { }

@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>{6F34C613-708D-4C99-9278-B4D0612024FF}</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Minio.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)DefaultMinioClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ApiEndpoints\BucketOperations.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ApiEndpoints\IBucketOperations.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ApiEndpoints\IObjectOperations.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ApiEndpoints\ObjectOperations.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AWSS3Endpoints.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BucketRegionCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CryptoProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Bucket.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\CopyConditions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\CopyObjectResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\CopyPartResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\CreateBucketConfiguration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\DateFormat.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Grant.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\GranteeUser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\InitiateMultipartUploadResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Item.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\ListAllMyBucketsResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\ListBucketResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\ListMultipartUploadsResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\ListPartsResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\LocationConstraint.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Notification\Arn.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Notification\BucketNotification.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Notification\EventType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Notification\Filter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Notification\FilterRule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Notification\LambdaConfig.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Notification\NotificationConfiguration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Notification\QueueConfig.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Notification\S3Key.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Notification\TopicConfig.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\ObjectStat.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Part.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Policy\ActionJsonConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Policy\BucketPolicy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Policy\ConditionKeyMap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Policy\ConditionKeyMapConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Policy\ConditionMap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Policy\Constants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Policy\PolicyConstants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Policy\PolicyType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Policy\Principal.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Policy\PrincipalJsonConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Policy\ResourceJsonConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Policy\Resources.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Policy\SingleOrArrayConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Policy\Statement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\PostPolicy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Prefix.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataModel\Upload.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\AccessDeniedException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\BucketNotFoundException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ConnectionException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\EntityTooLargeException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ErrorResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ErrorResponseException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ForbiddenException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\InternalClientException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\InternalServerException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\InvalidBucketNameException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\InvalidContentLengthException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\InvalidEndpointException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\InvalidKeyNameException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\InvalidObjectNameException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\InvalidObjectPrefixException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\MaxBucketsReachedException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\MethodNotAllowedException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\MinioException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ObjectNotFoundException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RedirectionException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\UnexpectedShortReadException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\Constants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\Enum.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\RequestUtil.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\S3utils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\Utils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IMinioClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MinioSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Regions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\Extensions\HttpExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\Extensions\HttpMethodExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\Extensions\RestClientExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\Impl\HttpContentWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\Impl\MinioHttpContent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\Impl\MinioHttpHeaders.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\Impl\MinioHttpRequestMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\Impl\MinioHttpResponseMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\MinioHttpClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\MinioHttpClientFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\RestClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)V4Authenticator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LogProvider.cs" />
+  </ItemGroup>
+  <ItemGroup />
+</Project>

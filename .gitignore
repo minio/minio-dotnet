@@ -99,6 +99,8 @@ $tf/
 _ReSharper*/
 *.[Rr]e[Ss]harper
 *.DotSettings.user
+*.DotSettings
+.idea
 
 # JustCode is a .NET coding add-in
 .JustCode

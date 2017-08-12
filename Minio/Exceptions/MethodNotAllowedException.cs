@@ -21,10 +21,5 @@ namespace Minio.Exceptions
         public MethodNotAllowedException(string message) : base(message)
         {
         }
-
-        public override string ToString()
-        {
-            return base.ToString();
-        }
     }
 }

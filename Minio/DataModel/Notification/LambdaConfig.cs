@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-using System;
-using System.Xml.Serialization;
-
-namespace Minio.DataModel
+namespace Minio.DataModel.Notification
 {
+    using System.Xml.Serialization;
+
     // LambdaConfig carries one single cloudfunction notification configuration
-    [Serializable]
     public class LambdaConfig : NotificationConfiguration
     {
-        [XmlElement("CloudFunction")]
-        public string Lambda { get; set; }
-        public LambdaConfig() : base()
+        public LambdaConfig()
         {
-        }    
-        public LambdaConfig(string arn): base(arn)
+        }
+
+        public LambdaConfig(string arn) : base(arn)
         {
             this.Lambda = arn;
         }
@@ -38,21 +35,20 @@ namespace Minio.DataModel
             this.Lambda = arn.ToString();
         }
 
-        // Implement equality for this object
-        public override bool Equals(Object obj)
-        {
-            LambdaConfig other = (LambdaConfig)obj;
-            // If parameter is null return false.
-            if ((obj == null) || ((LambdaConfig)obj == null))
-            {
-                return false;
-            }
-            return other.Lambda.Equals(this.Lambda);
+        [XmlElement("CloudFunction")]
+        public string Lambda { get; }
 
+        // Implement equality for this object
+        public override bool Equals(object obj)
+        {
+            var other = obj as LambdaConfig;
+            // If parameter is null return false.
+            return other != null && other.Lambda.Equals(this.Lambda);
         }
+
         public override int GetHashCode()
         {
             return this.Lambda.GetHashCode();
         }
-     }
+    }
 }
