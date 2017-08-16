@@ -1,0 +1,22 @@
+language: csharp
+dist: trusty
+sudo: required
+mono: none
+dotnet: dotnet-dev-1.0.4
+addons:  
+  apt:
+    packages:
+    - gettext
+    - libcurl4-openssl-dev
+    - libicu-dev
+    - libssl-dev
+    - libunwind8
+    - zlib1g
+branches:
+  only:
+    - master
+install:
+  dotnet restore /p:Configuration=.netcore
+script:
+- dotnet publish --runtime ubuntu.16.04-x64 --output out /p:Configuration=.netcore
+- ./out/Minio.Functional.Tests
