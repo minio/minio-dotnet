@@ -21,7 +21,7 @@ namespace Minio.Tests.Unit
     using Xunit;
 
     /// <summary>
-    ///     Summary description for UnitTest1
+    /// Summary description for UnitTest1
     /// </summary>
     public class UrlTests
     {

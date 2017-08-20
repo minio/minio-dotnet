@@ -23,15 +23,15 @@ namespace Minio.Tests.Int
     public class ListObjectsTests : AbstractMinioTests
     {
         /// <summary>
-        ///     List objects matching optional prefix in a specified bucket.
+        /// List objects matching optional prefix in a specified bucket.
         /// </summary>
         /// <returns></returns>
         [Fact]
         public async Task HappyCase()
         {
             // arrange
-            var basketName = await this.GetTargetBasketName();
-            var objects = await this.MinioClient.ListObjectsAsync(basketName, null, false);
+            var bucketName = await this.GetTargetBucketName();
+            var objects = await this.MinioClient.ListObjectsAsync(bucketName, null, false);
 
             // assert
             Assert.NotNull(objects);
@@ -42,7 +42,7 @@ namespace Minio.Tests.Int
                 Console.WriteLine("Object: {0}", item.Key);
             }
 
-            Console.WriteLine("Listed all objects in bucket " + TargetBasketName + "\n");
+            Console.WriteLine("Listed all objects in bucket " + TargetBucketName + "\n");
         }
     }
 }

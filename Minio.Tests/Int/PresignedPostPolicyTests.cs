@@ -30,11 +30,11 @@ namespace Minio.Tests.Int
             // arrange
             var form = new PostPolicy();
             var expiration = DateTime.UtcNow;
-            var basketName = await this.GetTargetBasketName();
+            var bucketName = await this.GetTargetBucketName();
             var fileName = await this.CreateFileForTarget();
             form.SetExpires(expiration.AddDays(10));
             form.SetKey(fileName);
-            form.SetBucket(basketName);
+            form.SetBucket(bucketName);
 
             string curlCommand;
             try

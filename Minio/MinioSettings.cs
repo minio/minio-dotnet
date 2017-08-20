@@ -13,22 +13,22 @@
         }
 
         /// <summary>
-        ///     Location of the server, supports HTTP and HTTPS
+        /// Location of the server, supports HTTP and HTTPS
         /// </summary>
         public string Endpoint { get; }
 
         /// <summary>
-        ///     Access Key for authenticated requests (Optional,can be omitted for anonymous requests)
+        /// Access Key for authenticated requests (Optional,can be omitted for anonymous requests)
         /// </summary>
         public string AccessKey { get; }
 
         /// <summary>
-        ///     Secret Key for authenticated requests (Optional,can be omitted for anonymous requests)
+        /// Secret Key for authenticated requests (Optional,can be omitted for anonymous requests)
         /// </summary>
         public string SecretKey { get; }
 
         /// <summary>
-        ///     Create HttpClientHandler Func
+        /// Create HttpClientHandler Func
         /// </summary>
         public Func<HttpClientHandler> CreateHttpClientHandlerFunc { get; set; }
 

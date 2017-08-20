@@ -23,21 +23,21 @@ namespace Minio.Tests.Int
     public class RemoveIncompleteUploadTests : AbstractMinioTests
     {
         /// <summary>
-        ///     Remove incomplete upload object from a bucket
+        /// Remove incomplete upload object from a bucket
         /// </summary>
         /// <returns></returns>
         [Fact]
         public async Task HappyCase()
         {
             // arrange
-            var basketName = await this.GetTargetBasketName();
+            var bucketName = await this.GetTargetBucketName();
             var fileName = await this.CreateFileForTarget();
 
             try
             {
                 // act
                 Console.WriteLine("Running example for API: RemoveIncompleteUploadAsync");
-                await this.MinioClient.RemoveIncompleteUploadAsync(basketName, fileName);
+                await this.MinioClient.RemoveIncompleteUploadAsync(bucketName, fileName);
             }
             finally
             {
@@ -49,7 +49,7 @@ namespace Minio.Tests.Int
             Assert.NotNull(fileName);
 
             // log
-            Console.WriteLine("Removed object {0} from bucket {1} successfully", fileName, basketName);
+            Console.WriteLine("Removed object {0} from bucket {1} successfully", fileName, bucketName);
         }
     }
 }

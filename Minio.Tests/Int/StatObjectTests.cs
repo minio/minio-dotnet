@@ -24,21 +24,21 @@ namespace Minio.Tests.Int
     public class StatObjectTests : AbstractMinioTests
     {
         /// <summary>
-        ///     Get stats on a object
+        /// Get stats on a object
         /// </summary>
         /// <returns></returns>
         [Fact]
         public async Task HappyCase()
         {
             // arrange
-            var basketName = await this.GetTargetBasketName();
+            var bucketName = await this.GetTargetBucketName();
             var fileName = await this.CreateFileForTarget();
             ObjectStat statObject;
             try
             {
                 // act
                 Console.WriteLine("Running example for API: StatObjectAsync");
-                statObject = await this.MinioClient.StatObjectAsync(basketName, fileName);
+                statObject = await this.MinioClient.StatObjectAsync(bucketName, fileName);
             }
             finally
             {

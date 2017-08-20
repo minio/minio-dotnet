@@ -61,7 +61,7 @@ namespace Minio.DataModel.Notification
         }
 
         /// <summary>
-        ///     AddFilterSuffix sets the suffix configuration to the current notification config
+        /// AddFilterSuffix sets the suffix configuration to the current notification config
         /// </summary>
         /// <param name="suffix"></param>
         public void AddFilterSuffix(string suffix)
@@ -84,7 +84,7 @@ namespace Minio.DataModel.Notification
         }
 
         /// <summary>
-        ///     AddFilterPrefix sets the prefix configuration to the current notification config
+        /// AddFilterPrefix sets the prefix configuration to the current notification config
         /// </summary>
         public void AddFilterPrefix(string prefix)
         {

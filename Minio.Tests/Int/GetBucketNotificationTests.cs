@@ -23,20 +23,20 @@ namespace Minio.Tests.Int
     public class GetBucketNotificationTests : AbstractMinioTests
     {
         /// <summary>
-        ///     Get bucket notifications - this works only with AWS endpoint
+        /// Get bucket notifications - this works only with AWS endpoint
         /// </summary>
         /// <returns></returns>
         [Fact]
         public async Task HappyCase()
         {
             // arrange & act
-            var notifications = await this.MinioClient.GetBucketNotificationsAsync(await this.GetTargetBasketName());
+            var notifications = await this.MinioClient.GetBucketNotificationsAsync(await this.GetTargetBucketName());
 
             // assert
             Assert.NotNull(notifications);
 
             // log
-            Console.Out.WriteLine("Notifications is " + notifications.ToXml() + " for bucket " + TargetBasketName);
+            Console.Out.WriteLine("Notifications is " + notifications.ToXml() + " for bucket " + TargetBucketName);
         }
     }
 }

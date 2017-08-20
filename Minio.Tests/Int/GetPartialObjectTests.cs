@@ -23,15 +23,15 @@ namespace Minio.Tests.Int
     public class GetPartialObjectTests : AbstractMinioTests
     {
         /// <summary>
-        ///     Get object in a bucket for a particular offset range. Dotnet SDK currently
-        ///     requires both start offset and end
+        /// Get object in a bucket for a particular offset range. Dotnet SDK currently
+        /// requires both start offset and end
         /// </summary>
         /// <returns></returns>
         [Fact]
         public async Task HappyCase()
         {
             // arrange
-            var basketName = await this.GetTargetBasketName();
+            var bucketName = await this.GetTargetBucketName();
             var fileName = await this.CreateFileForTarget();
 
             byte[] fileContent;
@@ -40,7 +40,7 @@ namespace Minio.Tests.Int
                 // act
                 // Get object content starting at byte position 1024 and length of 4096
                 Console.WriteLine("Running example for API: GetObjectAsync");
-                fileContent = await this.MinioClient.GetObjectAsync(basketName, fileName, 8L, 64L);
+                fileContent = await this.MinioClient.GetObjectAsync(bucketName, fileName, 8L, 64L);
             }
             finally
             {

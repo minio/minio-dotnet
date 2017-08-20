@@ -73,7 +73,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Creates an object from inputstream
+        /// Creates an object from inputstream
         /// </summary>
         /// <param name="bucketName">Bucket to create object in</param>
         /// <param name="objectName">Key of the new object</param>
@@ -90,7 +90,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Creates an object from inputstream
+        /// Creates an object from inputstream
         /// </summary>
         /// <param name="bucketName">Bucket to create object in</param>
         /// <param name="objectName">Key of the new object</param>
@@ -208,7 +208,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Lists all incomplete uploads in a given bucket and prefix recursively
+        /// Lists all incomplete uploads in a given bucket and prefix recursively
         /// </summary>
         /// <param name="bucketName">Bucket to list all incomplepte uploads from</param>
         /// <param name="prefix">prefix to list all incomplete uploads</param>
@@ -221,7 +221,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Remove incomplete uploads from a given bucket and objectName
+        /// Remove incomplete uploads from a given bucket and objectName
         /// </summary>
         /// <param name="bucketName">Bucket to remove incomplete uploads from</param>
         /// <param name="objectName">Key to remove incomplete uploads from</param>
@@ -242,7 +242,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Removes an object with given name in specific bucket
+        /// Removes an object with given name in specific bucket
         /// </summary>
         /// <param name="bucketName">Bucket to list incomplete uploads from</param>
         /// <param name="objectName">Key of object to list incomplete uploads from</param>
@@ -258,7 +258,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Tests the object's existence and returns metadata about existing objects.
+        /// Tests the object's existence and returns metadata about existing objects.
         /// </summary>
         /// <param name="bucketName">Bucket to test object in</param>
         /// <param name="objectName">Name of the object to stat</param>
@@ -312,18 +312,18 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Copy a source object into a new destination object.
+        /// Copy a source object into a new destination object.
         /// </summary>
         /// <param name="bucketName"> Bucket name where the object to be copied exists.</param>
         /// <param name="objectName">Object name source to be copied.</param>
         /// <param name="destBucketName">Bucket name where the object will be copied to.</param>
         /// <param name="destObjectName">
-        ///     Object name to be created, if not provided uses source object name as destination object
-        ///     name.
+        /// Object name to be created, if not provided uses source object name as destination object
+        /// name.
         /// </param>
         /// <param name="copyConditions">
-        ///     optionally can take a key value CopyConditions as well for conditionally attempting
-        ///     copyObject.
+        /// optionally can take a key value CopyConditions as well for conditionally attempting
+        /// copyObject.
         /// </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
@@ -387,7 +387,7 @@ namespace Minio
 
 
         /// <summary>
-        ///     Presigned Get url.
+        /// Presigned Get url.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Key of object to retrieve</param>
@@ -402,7 +402,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Presigned Put url.
+        /// Presigned Put url.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Key of object to retrieve</param>
@@ -416,7 +416,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Presigned post policy
+        /// Presigned post policy
         /// </summary>
         public async Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy)
         {
@@ -466,7 +466,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Internal method to complete multi part upload of object to server.
+        /// Internal method to complete multi part upload of object to server.
         /// </summary>
         /// <param name="bucketName">Bucket Name</param>
         /// <param name="objectName">Object to be uploaded</param>
@@ -505,7 +505,7 @@ namespace Minio
 
 
         /// <summary>
-        ///     Returns an async observable of parts corresponding to a uploadId for a specific bucket and objectName
+        /// Returns an async observable of parts corresponding to a uploadId for a specific bucket and objectName
         /// </summary>
         /// <param name="bucketName"></param>
         /// <param name="objectName"></param>
@@ -533,7 +533,7 @@ namespace Minio
 		}
 
         /// <summary>
-        ///     Gets the list of parts corresponding to a uploadId for given bucket and object
+        /// Gets the list of parts corresponding to a uploadId for given bucket and object
         /// </summary>
         /// <param name="bucketName"></param>
         /// <param name="objectName"></param>
@@ -581,7 +581,7 @@ namespace Minio
 
 
         /// <summary>
-        ///     Start a new multi-part upload request
+        /// Start a new multi-part upload request
         /// </summary>
         /// <param name="bucketName"></param>
         /// <param name="objectName"></param>
@@ -609,7 +609,7 @@ namespace Minio
 
 
         /// <summary>
-        ///     Upload object part to bucket for particular uploadId
+        /// Upload object part to bucket for particular uploadId
         /// </summary>
         /// <param name="bucketName"></param>
         /// <param name="objectName"></param>
@@ -656,7 +656,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Get list of multi-part uploads matching particular uploadIdMarker
+        /// Get list of multi-part uploads matching particular uploadIdMarker
         /// </summary>
         /// <param name="bucketName">bucketName</param>
         /// <param name="prefix">prefix</param>
@@ -724,7 +724,7 @@ namespace Minio
 
 
         /// <summary>
-        ///     Lists all or delimited incomplete uploads in a given bucket with a given objectName
+        /// Lists all or delimited incomplete uploads in a given bucket with a given objectName
         /// </summary>
         /// <param name="bucketName">Bucket to list incomplete uploads from</param>
         /// <param name="prefix">prefix</param>
@@ -756,7 +756,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Find uploadId of most recent unsuccessful attempt to upload object to bucket.
+        /// Find uploadId of most recent unsuccessful attempt to upload object to bucket.
         /// </summary>
         /// <param name="bucketName"></param>
         /// <param name="objectName"></param>
@@ -781,7 +781,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Remove object with matching uploadId from bucket
+        /// Remove object with matching uploadId from bucket
         /// </summary>
         /// <param name="bucketName"></param>
         /// <param name="objectName"></param>
@@ -803,7 +803,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Advances in the stream upto currentPartSize or End of Stream
+        /// Advances in the stream upto currentPartSize or End of Stream
         /// </summary>
         /// <param name="data"></param>
         /// <param name="currentPartSize"></param>
@@ -846,18 +846,18 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Create the copy request,execute it and
+        /// Create the copy request,execute it and
         /// </summary>
         /// <param name="bucketName"> Bucket name where the object to be copied exists.</param>
         /// <param name="objectName">Object name source to be copied.</param>
         /// <param name="destBucketName">Bucket name where the object will be copied to.</param>
         /// <param name="destObjectName">
-        ///     Object name to be created, if not provided uses source object name as destination object
-        ///     name.
+        /// Object name to be created, if not provided uses source object name as destination object
+        /// name.
         /// </param>
         /// <param name="copyConditions">
-        ///     optionally can take a key value CopyConditions as well for conditionally attempting
-        ///     copyObject.
+        /// optionally can take a key value CopyConditions as well for conditionally attempting
+        /// copyObject.
         /// </param>
         /// <param name="customHeaders">optional custom header to specify byte range</param>
         /// <param name="resource"> optional string to specify upload id and part number </param>
@@ -917,7 +917,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Make a multi part copy upload for objects larger than 5GB or if CopyCondition specifies a byte range.
+        /// Make a multi part copy upload for objects larger than 5GB or if CopyCondition specifies a byte range.
         /// </summary>
         /// <param name="bucketName"> source bucket name</param>
         /// <param name="objectName"> source object name</param>

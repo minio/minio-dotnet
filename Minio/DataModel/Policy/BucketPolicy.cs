@@ -44,7 +44,7 @@ namespace Minio.DataModel.Policy
         public string Version { get; set; } = "2012-10-17";
 
         /// <summary>
-        ///     Reads JSON from given {@link Reader} and returns new {@link BucketPolicy} of given bucket name.
+        /// Reads JSON from given {@link Reader} and returns new {@link BucketPolicy} of given bucket name.
         /// </summary>
         /// <param name="reader"></param>
         /// <param name="bucketName"></param>
@@ -63,7 +63,7 @@ namespace Minio.DataModel.Policy
         }
 
         /// <summary>
-        ///     Generates JSON of this BucketPolicy object.
+        /// Generates JSON of this BucketPolicy object.
         /// </summary>
         /// <returns></returns>
         public string GetJson()
@@ -77,7 +77,7 @@ namespace Minio.DataModel.Policy
 
 
         /// <summary>
-        ///     Returns new bucket statements for given policy type.
+        /// Returns new bucket statements for given policy type.
         /// </summary>
         /// <param name="policy"></param>
         /// <param name="prefix"></param>
@@ -141,7 +141,7 @@ namespace Minio.DataModel.Policy
 
 
         /// <summary>
-        ///     Returns new object statements for given policy type.
+        /// Returns new object statements for given policy type.
         /// </summary>
         /// <param name="policy"></param>
         /// <param name="prefix"></param>
@@ -420,7 +420,7 @@ namespace Minio.DataModel.Policy
 
 
         /// <summary>
-        ///     Appends new statements for given policy type.
+        /// Appends new statements for given policy type.
         /// </summary>
         /// <param name="policy"></param>
         /// <param name="prefix"></param>
@@ -435,7 +435,7 @@ namespace Minio.DataModel.Policy
 
 
         /// <summary>
-        ///     Returns policy type of this bucket policy.
+        /// Returns policy type of this bucket policy.
         /// </summary>
         /// <param name="prefix"></param>
         /// <returns></returns>
@@ -526,7 +526,7 @@ namespace Minio.DataModel.Policy
 
 
         /// <summary>
-        ///     Returns policy type of all prefixes.
+        /// Returns policy type of all prefixes.
         /// </summary>
         /// <returns></returns>
         public Dictionary<string, PolicyType> GetPolicies()
@@ -570,7 +570,7 @@ namespace Minio.DataModel.Policy
 
 
         /// <summary>
-        ///     Sets policy type for given prefix.
+        /// Sets policy type for given prefix.
         /// </summary>
         /// <param name="policy"></param>
         /// <param name="prefix"></param>

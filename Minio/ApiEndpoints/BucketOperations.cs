@@ -1,4 +1,4 @@
-﻿﻿/*
+﻿/*
  * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,17 +28,17 @@ namespace Minio
     using System.Xml.Linq;
     using System.Xml.Serialization;
     using DataModel;
+    using DataModel.Notification;
     using DataModel.Policy;
     using Exceptions;
     using Helper;
-    using Minio.DataModel.Notification;
     using RestSharp.Portable;
     using RestSharp.Portable.Serializers;
 
     public partial class DefaultMinioClient
     {
         /// <summary>
-        ///     List all objects in a bucket
+        /// List all objects in a bucket
         /// </summary>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task with an iterator lazily populated with objects</returns>
@@ -59,7 +59,7 @@ namespace Minio
             {
                 return bucketList;
             }
-            
+
             var contentBytes = Encoding.UTF8.GetBytes(response.Content);
             using (var stream = new MemoryStream(contentBytes))
             {
@@ -70,7 +70,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Create a private bucket with the given name.
+        /// Create a private bucket with the given name.
         /// </summary>
         /// <param name="bucketName">Name of the new bucket</param>
         /// <param name="location">location</param>
@@ -96,7 +96,7 @@ namespace Minio
 
 
         /// <summary>
-        ///     Returns true if the specified bucketName exists, otherwise returns false.
+        /// Returns true if the specified bucketName exists, otherwise returns false.
         /// </summary>
         /// <param name="bucketName">Bucket to test existence of</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -122,7 +122,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Remove a bucket
+        /// Remove a bucket
         /// </summary>
         /// <param name="bucketName">Name of bucket to remove</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -136,7 +136,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
+        /// List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
         /// </summary>
         /// <param name="bucketName">Bucket to list objects from</param>
         /// <param name="prefix">Filters all objects not beginning with a given prefix</param>
@@ -175,7 +175,7 @@ namespace Minio
 
 
         /// <summary>
-        ///     Get bucket policy at given objectPrefix
+        /// Get bucket policy at given objectPrefix
         /// </summary>
         /// <param name="bucketName">Bucket name.</param>
         /// <param name="objectPrefix">Name of the object prefix</param>
@@ -189,7 +189,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Sets the current bucket policy
+        /// Sets the current bucket policy
         /// </summary>
         /// <param name="bucketName">Bucket Name</param>
         /// <param name="objectPrefix">Name of the object prefix.</param>
@@ -214,7 +214,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Gets notification configuration for this bucket
+        /// Gets notification configuration for this bucket
         /// </summary>
         /// <param name="bucketName"> bucket name</param>
         /// <param name="cancellationToken"> Optional cancellation token</param>
@@ -251,7 +251,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Sets the notification configuration for this bucket
+        /// Sets the notification configuration for this bucket
         /// </summary>
         /// <param name="bucketName"> bucket name</param>
         /// <param name="notification">notification object with configuration to be set on the server</param>
@@ -271,7 +271,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Removes all bucket notification configurations stored on the server.
+        /// Removes all bucket notification configurations stored on the server.
         /// </summary>
         /// <param name="bucketName"> bucket name </param>
         /// <param name="cancellationToken"> optional cancellation token</param>
@@ -285,7 +285,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Gets the list of objects in the bucket filtered by prefix
+        /// Gets the list of objects in the bucket filtered by prefix
         /// </summary>
         /// <param name="bucketName">Bucket to list objects from</param>
         /// <param name="prefix">Filters all objects not beginning with a given prefix</param>
@@ -356,7 +356,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Returns current policy stored on the server for this bucket
+        /// Returns current policy stored on the server for this bucket
         /// </summary>
         /// <param name="bucketName">Bucket name.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -397,8 +397,9 @@ namespace Minio
             return policy;
         }
 
+
         /// <summary>
-        ///     Internal method that sets the bucket access policy
+        /// Internal method that sets the bucket access policy
         /// </summary>
         /// <param name="bucketName">Bucket Name.</param>
         /// <param name="policy">Valid Json policy object</param>

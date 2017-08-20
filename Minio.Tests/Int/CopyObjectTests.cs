@@ -23,16 +23,16 @@ namespace Minio.Tests.Int
     public class CopyObjectTests : AbstractMinioTests
     {
         /// <summary>
-        ///     Copy object from one bucket to another
+        /// Copy object from one bucket to another
         /// </summary>
         /// <returns></returns>
         [Fact]
         public async Task HappyCase()
         {
             // arrange
-            var fromBucketName = await this.GetTargetBasketName();
+            var fromBucketName = await this.GetTargetBucketName();
             var fromObjectName = await this.CreateFileForTarget();
-            var destBucketName = await this.GetSpareBasketName();
+            var destBucketName = await this.GetSpareBucketName();
             var destObjectName = this.GetRandomName();
 
             try

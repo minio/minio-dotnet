@@ -26,14 +26,14 @@ namespace Minio.Tests.Int
         private const int MB = 1024 * 1024;
 
         /// <summary>
-        ///     Put an large object from a local stream into bucket
+        /// Put an large object from a local stream into bucket
         /// </summary>
         /// <returns></returns>
         [Fact]
         public async Task HappyLargeFileCase()
         {
             // arrange
-            var basketName = await this.GetTargetBasketName();
+            var bucketName = await this.GetTargetBucketName();
             var fileName = this.GetRandomName();
             var fileContent = this.GetRandomFile(MB * 6);
             using (var filestream = new MemoryStream(fileContent))
@@ -42,7 +42,7 @@ namespace Minio.Tests.Int
                 {
                     // act
                     Console.WriteLine("Running example for API: PutObjectAsync with Stream and MultiPartUpload");
-                    await this.MinioClient.PutObjectAsync(basketName,
+                    await this.MinioClient.PutObjectAsync(bucketName,
                         fileName,
                         filestream,
                         "application/octet-stream");
@@ -58,12 +58,12 @@ namespace Minio.Tests.Int
                 Assert.NotEmpty(fileName);
 
                 // log
-                Console.WriteLine("Uploaded object " + fileName + " to bucket " + TargetBasketName);
+                Console.WriteLine("Uploaded object " + fileName + " to bucket " + TargetBucketName);
             }
         }
 
         /// <summary>
-        ///     Put an small object from a local stream into bucket
+        /// Put an small object from a local stream into bucket
         /// </summary>
         /// <returns></returns>
         [Fact]
@@ -90,7 +90,7 @@ namespace Minio.Tests.Int
             Assert.NotNull(randomFileContent);
 
             // log
-            Console.WriteLine("Uploaded object " + randomFileName + " to bucket " + TargetBasketName);
+            Console.WriteLine("Uploaded object " + randomFileName + " to bucket " + TargetBucketName);
         }
     }
 }

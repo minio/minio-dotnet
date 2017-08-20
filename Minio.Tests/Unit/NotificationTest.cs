@@ -9,7 +9,7 @@
     using Xunit;
 
     /// <summary>
-    ///     Summary description for NotificationTest
+    /// Summary description for NotificationTest
     /// </summary>
     public class NotificationTest
     {

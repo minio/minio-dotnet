@@ -23,7 +23,7 @@ namespace Minio.Tests.Int
     public class ListBucketsTests : AbstractMinioTests
     {
         /// <summary>
-        ///     List all buckets on host
+        /// List all buckets on host
         /// </summary>
         /// <returns></returns>
         [Fact]

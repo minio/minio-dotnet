@@ -23,7 +23,7 @@ namespace Minio.Tests.Int
     public class RemoveObjectTests : AbstractMinioTests
     {
         /// <summary>
-        ///     Remove an object from a bucket
+        /// Remove an object from a bucket
         /// </summary>
         /// <returns></returns>
         [Fact]
@@ -40,7 +40,7 @@ namespace Minio.Tests.Int
             Assert.NotNull(fileName);
 
             // log
-            Console.WriteLine("Removed object " + fileName + " from bucket " + TargetBasketName + " successfully");
+            Console.WriteLine("Removed object " + fileName + " from bucket " + TargetBucketName + " successfully");
         }
     }
 }

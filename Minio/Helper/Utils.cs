@@ -35,8 +35,8 @@ namespace Minio.Helper
         private static readonly Regex InvalidDotBucketName = new Regex("`/./.");
 
         /// <summary>
-        ///     isValidBucketName - verify bucket name in accordance with
-        ///     - http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html
+        /// isValidBucketName - verify bucket name in accordance with
+        /// - http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html
         /// </summary>
         /// <param name="bucketName">Bucket to test existence of</param>
         internal static void ValidateBucketName(string bucketName)
@@ -170,7 +170,7 @@ namespace Minio.Helper
         }
 
         /// <summary>
-        ///     Calculate part size and number of parts required.
+        /// Calculate part size and number of parts required.
         /// </summary>
         /// <param name="size"></param>
         /// <returns></returns>

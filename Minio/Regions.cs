@@ -19,7 +19,7 @@ namespace Minio
     internal static class Regions
     {
         /// <summary>
-        ///     Get corresponding region for input host.
+        /// Get corresponding region for input host.
         /// </summary>
         /// <param name="endpoint">S3 API endpoint</param>
         /// <returns>Region corresponding to the endpoint. Default is 'us-east-1'</returns>

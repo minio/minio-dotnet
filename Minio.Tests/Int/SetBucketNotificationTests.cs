@@ -24,15 +24,15 @@ namespace Minio.Tests.Int
     public class SetBucketNotificationTests : AbstractMinioTests
     {
         /// <summary>
-        ///     Set bucket notifications. The resource ARN needs to exist on AWS with correct permissions.
-        ///     For further info: see http://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html
+        /// Set bucket notifications. The resource ARN needs to exist on AWS with correct permissions.
+        /// For further info: see http://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html
         /// </summary>
         /// <returns></returns>
         [Fact]
         public async Task HappyCase()
         {
             // arrange
-            var basketName = await this.GetTargetBasketName();
+            var bucketName = await this.GetTargetBucketName();
 
             // act
             Console.Out.WriteLine("Running example for API: SetBucketNotificationAsync");
@@ -60,7 +60,7 @@ namespace Minio.Tests.Int
             */
             try
             {
-                await this.MinioClient.SetBucketNotificationsAsync(basketName, notification);
+                await this.MinioClient.SetBucketNotificationsAsync(bucketName, notification);
             }
             catch (Exception ex)
             {
@@ -71,7 +71,7 @@ namespace Minio.Tests.Int
             Assert.NotNull(notification);
 
             // log
-            Console.WriteLine("Notifications set for the bucket " + basketName + "were set successfully");
+            Console.WriteLine("Notifications set for the bucket " + bucketName + "were set successfully");
         }
     }
 }

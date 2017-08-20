@@ -80,7 +80,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Updates Region cache for given bucket.
+        /// Updates Region cache for given bucket.
         /// </summary>
         /// <param name="client">client</param>
         /// <param name="bucketName"></param>

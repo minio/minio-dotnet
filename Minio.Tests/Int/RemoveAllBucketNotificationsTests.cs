@@ -23,20 +23,20 @@ namespace Minio.Tests.Int
     public class RemoveAllBucketNotificationsTests : AbstractMinioTests
     {
         /// <summary>
-        ///     Try removes all bucket notifications
+        /// Try removes all bucket notifications
         /// </summary>
         /// <returns></returns>
         [Fact]
         public async Task HappyCase()
         {
             // arrange
-            var basketName = await this.GetTargetBasketName();
+            var bucketName = await this.GetTargetBucketName();
 
             // act
             try
             {
                 Console.WriteLine("Running example for API: RemoveAllBucketNotificationAsync");
-                await this.MinioClient.RemoveAllBucketNotificationsAsync(basketName);
+                await this.MinioClient.RemoveAllBucketNotificationsAsync(bucketName);
             }
             catch (Exception ex)
             {
@@ -44,10 +44,10 @@ namespace Minio.Tests.Int
             }
 
             // assert
-            Assert.NotNull(basketName);
+            Assert.NotNull(bucketName);
 
             // log
-            Console.WriteLine("Notifications successfully removed from the bucket " + basketName);
+            Console.WriteLine("Notifications successfully removed from the bucket " + bucketName);
         }
     }
 }

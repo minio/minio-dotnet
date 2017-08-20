@@ -26,99 +26,99 @@ namespace Minio.Tests.Int
     public class SetBucketPolicyTests : AbstractMinioTests
     {
         /// <summary>
-        ///     Set read only bucket policy
+        /// Set read only bucket policy
         /// </summary>
         /// <returns></returns>
         [Fact]
         public async Task HappyReadOnlyCase()
         {
             // arrange
-            var policyBasketName = this.GetRandomName();
-            await this.MinioClient.MakeBucketAsync(policyBasketName);
-            const string basketReadPrefix = "";
+            var policyBucketName = this.GetRandomName();
+            await this.MinioClient.MakeBucketAsync(policyBucketName);
+            const string bucketReadPrefix = "";
 
             try
             {
                 // act
                 // Minio.Exceptions.MinioException : The provided 'x-amz-content-sha256' header does not match what was computed.
-                var ex = Assert.ThrowsAsync<MinioException>(() => this.MinioClient.SetPolicyAsync(policyBasketName, basketReadPrefix, PolicyType.ReadOnly));
+                var ex = Assert.ThrowsAsync<MinioException>(() => this.MinioClient.SetPolicyAsync(policyBucketName, bucketReadPrefix, PolicyType.ReadOnly));
             }
             finally
             {
                 // clean
-                await this.MinioClient.RemoveBucketAsync(policyBasketName);
+                await this.MinioClient.RemoveBucketAsync(policyBucketName);
             }
 
             // assert
-            Assert.NotNull(basketReadPrefix);
+            Assert.NotNull(bucketReadPrefix);
 
             // log
-            Console.WriteLine("Policy " + PolicyType.ReadOnly + " set for the bucket " + policyBasketName +
+            Console.WriteLine("Policy " + PolicyType.ReadOnly + " set for the bucket " + policyBucketName +
                               " successfully");
         }
 
         /// <summary>
-        ///     Set read write bucket policy
+        /// Set read write bucket policy
         /// </summary>
         /// <returns></returns>
         [Fact]
         public async Task HappyReadWriteCase()
         {
             // arrange
-            var policyBasketName = this.GetRandomName();
-            await this.MinioClient.MakeBucketAsync(policyBasketName);
-            const string basketReadWritePrefix = "prefixReadWrite";
+            var policyBucketName = this.GetRandomName();
+            await this.MinioClient.MakeBucketAsync(policyBucketName);
+            const string bucketReadWritePrefix = "prefixReadWrite";
 
             try
             {
                 // act
                 // Minio.Exceptions.MinioException : The provided 'x-amz-content-sha256' header does not match what was computed.
-                var ex = Assert.ThrowsAsync<MinioException>(() => this.MinioClient.SetPolicyAsync(policyBasketName, basketReadWritePrefix, PolicyType.ReadWrite));
+                var ex = Assert.ThrowsAsync<MinioException>(() => this.MinioClient.SetPolicyAsync(policyBucketName, bucketReadWritePrefix, PolicyType.ReadWrite));
             }
             finally
             {
                 // clean
-                await this.MinioClient.RemoveBucketAsync(policyBasketName);
+                await this.MinioClient.RemoveBucketAsync(policyBucketName);
             }
 
             // assert
-            Assert.NotNull(basketReadWritePrefix);
+            Assert.NotNull(bucketReadWritePrefix);
 
             // log
-            Console.WriteLine("Policy " + PolicyType.ReadWrite + " set for the bucket " + policyBasketName +
+            Console.WriteLine("Policy " + PolicyType.ReadWrite + " set for the bucket " + policyBucketName +
                               " successfully");
         }
 
         /// <summary>
-        ///     Set write only bucket policy
+        /// Set write only bucket policy
         /// </summary>
         /// <returns></returns>
         [Fact]
         public async Task HappyWriteOnlyCase()
         {
             // arrange
-            var policyBasketName = this.GetRandomName();
-            await this.MinioClient.MakeBucketAsync(policyBasketName);
+            var policyBucketName = this.GetRandomName();
+            await this.MinioClient.MakeBucketAsync(policyBucketName);
 
-            const string basketWritePrefix = "prefixWrite";
+            const string bucketWritePrefix = "prefixWrite";
 
             try
             {
                 // act
                 // Minio.Exceptions.MinioException : The provided 'x-amz-content-sha256' header does not match what was computed.
-                var ex = Assert.ThrowsAsync<MinioException>(() => this.MinioClient.SetPolicyAsync(policyBasketName, basketWritePrefix, PolicyType.WriteOnly));
+                var ex = Assert.ThrowsAsync<MinioException>(() => this.MinioClient.SetPolicyAsync(policyBucketName, bucketWritePrefix, PolicyType.WriteOnly));
             }
             finally
             {
                 // clean
-                await this.MinioClient.RemoveBucketAsync(policyBasketName);
+                await this.MinioClient.RemoveBucketAsync(policyBucketName);
             }
 
             // assert
-            Assert.NotNull(basketWritePrefix);
+            Assert.NotNull(bucketWritePrefix);
 
             // log
-            Console.WriteLine("Policy " + PolicyType.WriteOnly + " set for the bucket " + policyBasketName +
+            Console.WriteLine("Policy " + PolicyType.WriteOnly + " set for the bucket " + policyBucketName +
                               " successfully");
         }
     }

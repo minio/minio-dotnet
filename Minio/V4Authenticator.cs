@@ -25,7 +25,7 @@ namespace Minio
     using RestSharp.Portable;
 
     /// <summary>
-    ///     V4Authenticator implements IAuthenticator interface.
+    /// V4Authenticator implements IAuthenticator interface.
     /// </summary>
     internal class V4Authenticator : IAuthenticator
     {
@@ -71,7 +71,7 @@ namespace Minio
         private readonly string secretKey;
 
         /// <summary>
-        ///     Authenticator constructor.
+        /// Authenticator constructor.
         /// </summary>
 		/// <param name="minioClient">minio client</param>
 		public V4Authenticator(DefaultMinioClient minioClient)
@@ -149,7 +149,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Get credential string of form <ACCESSID />/date/region/s3/aws4_request.
+        /// Get credential string of form <ACCESSID />/date/region/s3/aws4_request.
         /// </summary>
         /// <param name="signingDate">Signature initated date</param>
         /// <param name="region">Region for the credential string</param>
@@ -160,7 +160,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Constructs an authorization header.
+        /// Constructs an authorization header.
         /// </summary>
         /// <param name="signedHeaders">All signed http headers</param>
         /// <param name="signature">Hexadecimally encoded computed signature</param>
@@ -175,7 +175,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Concatenates sorted list of signed http headers.
+        /// Concatenates sorted list of signed http headers.
         /// </summary>
         /// <param name="headersToSign">Sorted dictionary of headers to be signed</param>
         /// <returns>All signed headers</returns>
@@ -185,7 +185,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Generates signing key based on the region and date.
+        /// Generates signing key based on the region and date.
         /// </summary>
         /// <param name="region">Requested region</param>
         /// <param name="signingDate">Date for signature to be signed</param>
@@ -207,7 +207,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Compute hmac of input content with key.
+        /// Compute hmac of input content with key.
         /// </summary>
         /// <param name="key">Hmac key</param>
         /// <param name="content">Bytes to be hmac computed</param>
@@ -218,7 +218,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Get string to sign.
+        /// Get string to sign.
         /// </summary>
         /// <param name="region">Requested region</param>
         /// <param name="signingDate">Date for signature to be signed</param>
@@ -232,7 +232,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Get scope.
+        /// Get scope.
         /// </summary>
         /// <param name="region">Requested region</param>
         /// <param name="signingDate">Date for signature to be signed</param>
@@ -244,7 +244,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Compute sha256 checksum.
+        /// Compute sha256 checksum.
         /// </summary>
         /// <param name="body">Bytes body</param>
         /// <returns>Bytes of sha256 checksum</returns>
@@ -254,7 +254,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Convert bytes to hexadecimal string.
+        /// Convert bytes to hexadecimal string.
         /// </summary>
         /// <param name="checkSum">Bytes of any checksum</param>
         /// <returns>Hexlified string of input bytes</returns>
@@ -264,7 +264,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Generate signature for post policy.
+        /// Generate signature for post policy.
         /// </summary>
         /// <param name="region">Requested region</param>
         /// <param name="signingDate">Date for signature to be signed</param>
@@ -282,7 +282,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Presigns any input client object with a requested expiry.
+        /// Presigns any input client object with a requested expiry.
         /// </summary>
         /// <param name="client">Instantiated client</param>
         /// <param name="request">Instantiated request</param>
@@ -321,7 +321,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Get presign canonical request.
+        /// Get presign canonical request.
         /// </summary>
         /// <param name="client">Instantiated client object</param>
         /// <param name="request">Instantiated request object</param>
@@ -357,7 +357,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Get canonical request.
+        /// Get canonical request.
         /// </summary>
         /// <param name="client">Instantiated client object</param>
         /// <param name="request">Instantiated request object</param>
@@ -414,7 +414,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Get headers to be signed.
+        /// Get headers to be signed.
         /// </summary>
         /// <param name="request">Instantiated requesst</param>
         /// <returns>Sorted dictionary of headers to be signed</returns>
@@ -449,7 +449,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Sets 'x-amz-date' http header.
+        /// Sets 'x-amz-date' http header.
         /// </summary>
         /// <param name="request">Instantiated request object</param>
         /// <param name="signingDate">Date for signature to be signed</param>
@@ -459,7 +459,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Set 'Host' http header.
+        /// Set 'Host' http header.
         /// </summary>
         /// <param name="request">Instantiated request object</param>
         /// <param name="hostUrl">Host url</param>
@@ -479,7 +479,7 @@ namespace Minio
 		}
 
         /// <summary>
-        ///     Set 'x-amz-content-sha256' http header.
+        /// Set 'x-amz-content-sha256' http header.
         /// </summary>
         /// <param name="request">Instantiated request object</param>
         private void SetContentSha256(IRestRequest request)
@@ -528,7 +528,7 @@ namespace Minio
 		}
 
         /// <summary>
-        ///     Set 'Content-MD5' http header.
+        /// Set 'Content-MD5' http header.
         /// </summary>
         /// <param name="request">Instantiated request object</param>
         private void SetContentMd5(IRestRequest request)

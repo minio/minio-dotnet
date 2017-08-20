@@ -140,7 +140,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Get user agent from web view
+        /// Get user agent from web view
         /// </summary>
         /// <returns></returns>
         protected virtual string GetPlatformUserAgent()
@@ -176,8 +176,8 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Constructs a RestRequest. For AWS, this function has the side-effect of overriding the baseUrl
-        ///     in the RestClient with region specific host path or virtual style path.
+        /// Constructs a RestRequest. For AWS, this function has the side-effect of overriding the baseUrl
+        /// in the RestClient with region specific host path or virtual style path.
         /// </summary>
         /// <param name="method">HTTP method</param>
         /// <param name="bucketName">Bucket Name</param>
@@ -296,8 +296,8 @@ namespace Minio
         }
 
         /// <summary>
-        ///     This method initializes a new RESTClient. The host URI for Amazon is set to virtual hosted style
-        ///     if usePathStyle is false. Otherwise path style URL is constructed.
+        /// This method initializes a new RESTClient. The host URI for Amazon is set to virtual hosted style
+        /// if usePathStyle is false. Otherwise path style URL is constructed.
         /// </summary>
         private void InitClient(MinioSettings minioSettings)
         {
@@ -340,7 +340,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Actual doer that executes the REST request to the server
+        /// Actual doer that executes the REST request to the server
         /// </summary>
         /// <param name="errorHandlers">List of handlers to override default handling</param>
         /// <param name="request">request</param>
@@ -365,7 +365,7 @@ namespace Minio
 
 
         /// <summary>
-        ///     Parse response errors if any and return relevant error messages
+        /// Parse response errors if any and return relevant error messages
         /// </summary>
         /// <param name="response"></param>
         private static void ParseError(IRestResponse response)
@@ -507,7 +507,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Delegate errors to handlers
+        /// Delegate errors to handlers
         /// </summary>
         /// <param name="response"></param>
         /// <param name="handlers"></param>
@@ -535,7 +535,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///     Logs the request sent to server and corresponding response
+        /// Logs the request sent to server and corresponding response
         /// </summary>
         /// <param name="request"></param>
         /// <param name="response"></param>
@@ -579,22 +579,22 @@ namespace Minio
         protected class SystemUserAgentSettings
         {
             /// <summary>
-            ///     SIMULATOR, DEVICE
+            /// SIMULATOR, DEVICE
             /// </summary>
             public string ModelArch { get; set; }
 
             /// <summary>
-            ///     iPhone5s, Samsung S7
+            /// iPhone5s, Samsung S7
             /// </summary>
             public string ModelDescription { get; set; }
 
             /// <summary>
-            ///     iOS, Android, UWP, NET
+            /// iOS, Android, UWP, NET
             /// </summary>
             public string Platform { get; set; }
 
             /// <summary>
-            ///     App version
+            /// App version
             /// </summary>
             public string AppVersion { get; set; }
         }

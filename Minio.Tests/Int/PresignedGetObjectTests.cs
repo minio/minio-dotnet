@@ -26,14 +26,14 @@ namespace Minio.Tests.Int
         public async Task HappyCase()
         {
             // arrange
-            var basketName = await this.GetTargetBasketName();
+            var bucketName = await this.GetTargetBucketName();
             var fileName = await this.CreateFileForTarget();
 
             string presigned_url;
             try
             {
                 // act
-                presigned_url = await this.MinioClient.PresignedGetObjectAsync(basketName, fileName, 1000);
+                presigned_url = await this.MinioClient.PresignedGetObjectAsync(bucketName, fileName, 1000);
             }
             finally
             {

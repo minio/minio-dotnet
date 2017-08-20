@@ -9,9 +9,9 @@
     {
         protected static Random random = new Random();
 
-        protected const string TargetBasketName = "xamarin-tests";
+        protected const string TargetBucketName = "xamarin-tests";
 
-        protected const string SpareBasketName = "xamarin-spare-tests";
+        protected const string SpareBucketName = "xamarin-spare-tests";
 
         private const int RandomFileLength = 128;
 
@@ -23,15 +23,15 @@
         protected IMinioClient MinioClient { get; }
 
 
-        protected Task<string> GetTargetBasketName()
+        protected Task<string> GetTargetBucketName()
         {
-            return this.GetTBasketNameImpl(TargetBasketName);
+            return this.GetTBucketNameImpl(TargetBucketName);
         }
 
 
-        protected Task<string> GetSpareBasketName()
+        protected Task<string> GetSpareBucketName()
         {
-            return this.GetTBasketNameImpl(SpareBasketName);
+            return this.GetTBucketNameImpl(SpareBucketName);
         }
 
         protected string GetRandomName()
@@ -45,17 +45,17 @@
             return "minio-xamarin-example-" + result;
         }
 
-        private async Task<string> GetTBasketNameImpl(string basketName)
+        private async Task<string> GetTBucketNameImpl(string bucketName)
         {
-            var basketExists = await this.MinioClient.BucketExistsAsync(basketName);
-            if (basketExists)
+            var bucketExists = await this.MinioClient.BucketExistsAsync(bucketName);
+            if (bucketExists)
             {
-                return basketName;
+                return bucketName;
             }
 
-            await this.MinioClient.MakeBucketAsync(basketName);
+            await this.MinioClient.MakeBucketAsync(bucketName);
 
-            return basketName;
+            return bucketName;
         }
 
         protected byte[] GetRandomFile(int length = RandomFileLength)
@@ -77,7 +77,7 @@
 
         protected async Task<string> CreateFileForTarget(string fileName, byte[] fileContent)
         {
-            return await this.CreateFileForImpl(await this.GetTargetBasketName(), fileName, fileContent);
+            return await this.CreateFileForImpl(await this.GetTargetBucketName(), fileName, fileContent);
         }
 
         protected Task<string> CreateFileForSpare()
@@ -92,31 +92,31 @@
 
         protected async Task<string> CreateFileForSpare(string fileName, byte[] fileContent)
         {
-            return await this.CreateFileForImpl(await this.GetSpareBasketName(), fileName, fileContent);
+            return await this.CreateFileForImpl(await this.GetSpareBucketName(), fileName, fileContent);
         }
 
         protected async Task RemoveFileForTarget(string fileName)
         {
-            await this.RemoveFileImpl(await this.GetTargetBasketName(), fileName);
+            await this.RemoveFileImpl(await this.GetTargetBucketName(), fileName);
         }
 
         protected async Task RemoveFileForSpare(string fileName)
         {
-            await this.RemoveFileImpl(await this.GetSpareBasketName(), fileName);
+            await this.RemoveFileImpl(await this.GetSpareBucketName(), fileName);
         }
 
-        private async Task<string> CreateFileForImpl(string basketName, string fileName, byte[] fileContent)
+        private async Task<string> CreateFileForImpl(string bucketName, string fileName, byte[] fileContent)
         {
             var stream = new MemoryStream(fileContent);
-            await this.MinioClient.PutObjectAsync(basketName, fileName, stream);
+            await this.MinioClient.PutObjectAsync(bucketName, fileName, stream);
             return fileName;
         }
 
-        private async Task RemoveFileImpl(string basketName, string fileName)
+        private async Task RemoveFileImpl(string bucketName, string fileName)
         {
             try
             {
-                await this.MinioClient.RemoveObjectAsync(basketName, fileName);
+                await this.MinioClient.RemoveObjectAsync(bucketName, fileName);
             }
             catch (Exception e)
             {

@@ -23,7 +23,7 @@ namespace Minio.Tests.Int
     public class MakeBucketTests : AbstractMinioTests
     {
         /// <summary>
-        ///     Make a bucket
+        /// Make a bucket
         /// </summary>
         /// <returns></returns>
         [Fact]
@@ -31,13 +31,13 @@ namespace Minio.Tests.Int
         {
             // arrange & act
             Console.WriteLine("Running example for API: MakeBucketAsync");
-            var basketName = await this.GetTargetBasketName();
+            var bucketName = await this.GetTargetBucketName();
 
             // assert
-            Assert.NotNull(basketName);
+            Assert.NotNull(bucketName);
 
             // log
-            Console.WriteLine("Created bucket " + basketName);
+            Console.WriteLine("Created bucket " + bucketName);
         }
     }
 }

@@ -23,7 +23,7 @@ namespace Minio.Tests.Int
     public class GetObjectTests : AbstractMinioTests
     {
         /// <summary>
-        ///     Download object from bucket into local file
+        /// Download object from bucket into local file
         /// </summary>
         /// <returns></returns>
         [Fact]
@@ -31,13 +31,13 @@ namespace Minio.Tests.Int
         {
             // arrange
             var fileName = await this.CreateFileForTarget();
-            var basketName = await this.GetTargetBasketName();
+            var bucketName = await this.GetTargetBucketName();
 
             byte[] fileContent;
             try
             {
                 // act
-                fileContent = await this.MinioClient.GetObjectAsync(basketName, fileName);
+                fileContent = await this.MinioClient.GetObjectAsync(bucketName, fileName);
             }
             finally
             {
@@ -49,7 +49,7 @@ namespace Minio.Tests.Int
             Assert.NotNull(fileContent);
 
             // log
-            Console.WriteLine("Downloaded the file " + fileName + " from bucket " + basketName);
+            Console.WriteLine("Downloaded the file " + fileName + " from bucket " + bucketName);
         }
     }
 }

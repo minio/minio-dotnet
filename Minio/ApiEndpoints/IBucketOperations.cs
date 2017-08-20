@@ -27,7 +27,7 @@ namespace Minio
     public interface IBucketOperations
     {
         /// <summary>
-        ///     Create a private bucket with the given name.
+        /// Create a private bucket with the given name.
         /// </summary>
         /// <param name="bucketName">Name of the new bucket</param>
         /// <param name="location">location</param>
@@ -37,14 +37,14 @@ namespace Minio
             CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        ///     List all objects in a bucket
+        /// List all objects in a bucket
         /// </summary>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task with an iterator lazily populated with objects</returns>
         Task<ListAllMyBucketsResult> ListBucketsAsync(CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        ///     Returns true if the specified bucketName exists, otherwise returns false.
+        /// Returns true if the specified bucketName exists, otherwise returns false.
         /// </summary>
         /// <param name="bucketName">Bucket to test existence of</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -53,7 +53,7 @@ namespace Minio
             CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        ///     Remove a bucket
+        /// Remove a bucket
         /// </summary>
         /// <param name="bucketName">Name of bucket to remove</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -61,7 +61,7 @@ namespace Minio
         Task RemoveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        ///     List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
+        /// List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
         /// </summary>
         /// <param name="bucketName">Bucket to list objects from</param>
         /// <param name="prefix">Filters all objects not beginning with a given prefix</param>
@@ -71,7 +71,7 @@ namespace Minio
             CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        ///     Get bucket policy at given objectPrefix
+        /// Get bucket policy at given objectPrefix
         /// </summary>
         /// <param name="bucketName">Bucket name.</param>
         /// <param name="objectPrefix">Name of the object prefix</param>
@@ -81,7 +81,7 @@ namespace Minio
             CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        ///     Sets the current bucket policy
+        /// Sets the current bucket policy
         /// </summary>
         /// <param name="bucketName">Bucket Name</param>
         /// <param name="objectPrefix">Name of the object prefix.</param>
@@ -92,7 +92,7 @@ namespace Minio
             CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        ///     Gets the notification configuration set for this bucket
+        /// Gets the notification configuration set for this bucket
         /// </summary>
         /// <param name="bucketName">bucketName</param>
         /// <param name="cancellationToken">optional cancellation token</param>
@@ -101,7 +101,7 @@ namespace Minio
             CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        ///     Sets bucket notification configuration
+        /// Sets bucket notification configuration
         /// </summary>
         /// <param name="bucketName">bucketName</param>
         /// <param name="notification">BucketNotification object</param>
@@ -111,7 +111,7 @@ namespace Minio
             CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        ///     Remove all bucket notifications
+        /// Remove all bucket notifications
         /// </summary>
         /// <param name="bucketName">bucketName</param>
         /// <param name="cancellationToken">optional cancellation token</param>

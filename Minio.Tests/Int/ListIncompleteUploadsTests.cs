@@ -23,18 +23,18 @@ namespace Minio.Tests.Int
     public class ListIncompleteUploadsTests : AbstractMinioTests
     {
         /// <summary>
-        ///     List incomplete uploads on the bucket matching specified prefix
+        /// List incomplete uploads on the bucket matching specified prefix
         /// </summary>
         /// <returns></returns>
         [Fact]
         public async Task HappyCase()
         {
             // arrange
-            var basketName = await this.GetTargetBasketName();
+            var bucketName = await this.GetTargetBucketName();
 
             // act
             Console.Out.WriteLine("Running example for API: ListIncompleteUploads");
-            var uploads = await this.MinioClient.ListIncompleteUploads(basketName, "", true);
+            var uploads = await this.MinioClient.ListIncompleteUploads(bucketName, "", true);
 
             // assert
             Assert.NotNull(uploads);
@@ -45,7 +45,7 @@ namespace Minio.Tests.Int
                 Console.WriteLine("OnNext: {0}", upload.Key);
             }
 
-            Console.WriteLine("Listed the pending uploads to bucket " + TargetBasketName);
+            Console.WriteLine("Listed the pending uploads to bucket " + TargetBucketName);
         }
     }
 }

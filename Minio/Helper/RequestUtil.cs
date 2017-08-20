@@ -85,7 +85,7 @@ namespace Minio.Helper
         }
 
         /// <summary>
-        ///     Validates URI to check if it is well formed. Otherwise cry foul.
+        /// Validates URI to check if it is well formed. Otherwise cry foul.
         /// </summary>
         internal static void ValidateEndpoint(Uri uri, string endpoint)
         {
@@ -121,7 +121,7 @@ namespace Minio.Helper
         }
 
         /// <summary>
-        ///     Validate Url endpoint
+        /// Validate Url endpoint
         /// </summary>
         /// <param name="endpoint"></param>
         /// <returns>true/false</returns>

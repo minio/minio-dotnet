@@ -23,22 +23,22 @@ namespace Minio.Tests.Int
     public class GetBucketPolicyTests : AbstractMinioTests
     {
         /// <summary>
-        ///     Get bucket policy
+        /// Get bucket policy
         /// </summary>
         /// <returns></returns>
 		[Fact]
         public async Task HappyCase()
         {
             // arrange & act
-            var basketName = await this.GetTargetBasketName();
+            var bucketName = await this.GetTargetBucketName();
             Console.WriteLine("Running example for API: GetPolicyAsync");
-            var policy = await this.MinioClient.GetPolicyAsync(basketName);
+            var policy = await this.MinioClient.GetPolicyAsync(bucketName);
 
             // assert
             Assert.NotNull(policy);
 
             // log
-            Console.WriteLine("Current Policy is " + policy + " for bucket " + TargetBasketName);
+            Console.WriteLine("Current Policy is " + policy + " for bucket " + TargetBucketName);
         }
     }
 }

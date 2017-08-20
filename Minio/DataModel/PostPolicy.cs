@@ -33,7 +33,7 @@ namespace Minio.DataModel
         public string Bucket { get; private set; }
 
         /// <summary>
-        ///     Set expiration policy.
+        /// Set expiration policy.
         /// </summary>
         public void SetExpires(DateTime exp)
         {
@@ -41,7 +41,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Set key policy.
+        /// Set key policy.
         /// </summary>
         public void SetKey(string key)
         {
@@ -55,7 +55,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Set key prefix policy.
+        /// Set key prefix policy.
         /// </summary>
         public void SetKeyStartsWith(string keyStartsWith)
         {
@@ -68,7 +68,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Set bucket policy.
+        /// Set bucket policy.
         /// </summary>
         public void SetBucket(string bucket)
         {
@@ -82,7 +82,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Set content type policy.
+        /// Set content type policy.
         /// </summary>
         public void SetcontentType(string contentType)
         {
@@ -95,7 +95,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Set content encoding
+        /// Set content encoding
         /// </summary>
         public void SetContentEncoding(string contentEncoding)
         {
@@ -108,7 +108,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Set content length
+        /// Set content length
         /// </summary>
         public void SetContentLength(long contentLength)
         {
@@ -121,7 +121,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Set content range
+        /// Set content range
         /// </summary>
         public void SetContentRange(long startRange, long endRange)
         {
@@ -138,7 +138,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Set the success action status of the object for this policy based upload.
+        /// Set the success action status of the object for this policy based upload.
         /// </summary>
         /// <param name="status">Success action status</param>
         public void SetSuccessStatusAction(string status)
@@ -153,7 +153,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Set signature algorithm policy.
+        /// Set signature algorithm policy.
         /// </summary>
         /// <param name="algorithm">Set signature algorithm used for the policy</param>
         public void SetAlgorithm(string algorithm)
@@ -167,7 +167,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Set credential policy.
+        /// Set credential policy.
         /// </summary>
         /// <param name="credential">Set credential string for the policy</param>
         public void SetCredential(string credential)
@@ -181,7 +181,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Set date policy.
+        /// Set date policy.
         /// </summary>
         /// <param name="date">Set date for the policy</param>
         public void SetDate(DateTime date)
@@ -192,7 +192,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Set base64 encoded policy to form dictionary.
+        /// Set base64 encoded policy to form dictionary.
         /// </summary>
         public void SetPolicy(string policyBase64)
         {
@@ -200,7 +200,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Set computed signature for the policy to form dictionary.
+        /// Set computed signature for the policy to form dictionary.
         /// </summary>
         /// <param name="signature">Computed signature</param>
         public void SetSignature(string signature)
@@ -209,7 +209,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Serialize policy into JSON string.
+        /// Serialize policy into JSON string.
         /// </summary>
         /// <returns>Serialized JSON policy</returns>
         private byte[] MarshalJson()
@@ -231,7 +231,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Compute base64 encoded form of JSON policy.
+        /// Compute base64 encoded form of JSON policy.
         /// </summary>
         /// <returns>Base64 encoded string of JSON policy</returns>
         public string Base64()
@@ -241,7 +241,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Verify if bucket is set in policy.
+        /// Verify if bucket is set in policy.
         /// </summary>
         /// <returns>true if bucket is set</returns>
         public bool IsBucketSet()
@@ -258,7 +258,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Verify if key is set in policy.
+        /// Verify if key is set in policy.
         /// </summary>
         /// <returns>true if key is set</returns>
         public bool IsKeySet()
@@ -275,7 +275,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Verify if expiration is set in policy.
+        /// Verify if expiration is set in policy.
         /// </summary>
         /// <returns>true if expiration is set</returns>
         public bool IsExpirationSet()
@@ -288,7 +288,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Get the populated dictionary of policy data.
+        /// Get the populated dictionary of policy data.
         /// </summary>
         /// <returns>Dictionary of policy data</returns>
         public Dictionary<string, string> GetFormData()

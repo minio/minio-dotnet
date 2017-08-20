@@ -23,24 +23,24 @@ namespace Minio.Tests.Int
     public class RemoveBucketTests : AbstractMinioTests
     {
         /// <summary>
-        ///     Remove a bucket
+        /// Remove a bucket
         /// </summary>
         /// <returns></returns>
         [Fact]
         public async Task HappyCase()
         {
             // arrange
-            var basketName = this.GetRandomName();
+            var bucketName = this.GetRandomName();
 
             // act
-            await this.MinioClient.MakeBucketAsync(basketName);
-            await this.MinioClient.RemoveBucketAsync(basketName);
+            await this.MinioClient.MakeBucketAsync(bucketName);
+            await this.MinioClient.RemoveBucketAsync(bucketName);
 
             // assert
-            Assert.NotNull(basketName);
+            Assert.NotNull(bucketName);
 
             // log
-            Console.WriteLine("Removed the bucket " + basketName + " successfully");
+            Console.WriteLine("Removed the bucket " + bucketName + " successfully");
         }
     }
 }

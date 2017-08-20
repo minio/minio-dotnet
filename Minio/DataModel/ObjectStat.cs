@@ -22,7 +22,7 @@ namespace Minio.DataModel
     public class ObjectStat
     {
         /// <summary>
-        ///     Object metadata information.
+        /// Object metadata information.
         /// </summary>
         /// <param name="objectName">Object name</param>
         /// <param name="size">Object size</param>

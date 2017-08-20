@@ -23,20 +23,20 @@ namespace Minio.Tests.Int
     public class BucketExistsTests : AbstractMinioTests
     {
         /// <summary>
-        ///     Check if a bucket exists
+        /// Check if a bucket exists
         /// </summary>
         /// <returns></returns>
         [Fact]
         public async Task HappyCase()
         {
             // arrange & act
-            var basketName = await this.GetTargetBasketName();
+            var bucketName = await this.GetTargetBucketName();
 
             // assert
-            Assert.NotEmpty(basketName);
+            Assert.NotEmpty(bucketName);
 
             // log
-            Console.WriteLine($"{nameof(this.HappyCase)}: BasketName: {basketName}");
+            Console.WriteLine($"{nameof(this.HappyCase)}: BucketName: {bucketName}");
         }
     }
 }

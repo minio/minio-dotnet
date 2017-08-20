@@ -31,7 +31,7 @@ namespace Minio.DataModel
         internal long ByteRangeStart = -1;
 
         /// <summary>
-        ///     Clone CopyConditions object
+        /// Clone CopyConditions object
         /// </summary>
         /// <returns>new CopyConditions object</returns>
         public CopyConditions Clone()
@@ -48,7 +48,7 @@ namespace Minio.DataModel
 
 
         /// <summary>
-        ///     Set modified condition, copy object modified since given time.
+        /// Set modified condition, copy object modified since given time.
         /// </summary>
         /// <param name="date"></param>
         /// <exception cref="ArgumentException"></exception>
@@ -62,7 +62,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Unset modified condition, copy object modified since given time.
+        /// Unset modified condition, copy object modified since given time.
         /// </summary>
         /// <param name="date"></param>
         /// <exception cref="ArgumentException"></exception>
@@ -76,7 +76,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Set matching ETag condition, copy object which matches the following ETag.
+        /// Set matching ETag condition, copy object which matches the following ETag.
         /// </summary>
         /// <param name="etag"></param>
         /// <exception cref="ArgumentException"></exception>
@@ -90,8 +90,8 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Set matching ETag none condition, copy object which does not
-        ///     match the following ETag.
+        /// Set matching ETag none condition, copy object which does not
+        /// match the following ETag.
         /// </summary>
         /// <param name="etag"></param>
         /// <exception cref="ArgumentException"></exception>
@@ -105,8 +105,8 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Set Byte Range condition, copy object which falls within the
-        ///     start and end byte range specified by user
+        /// Set Byte Range condition, copy object which falls within the
+        /// start and end byte range specified by user
         /// </summary>
         /// <param name="firstByte"></param>
         /// <param name="lastByte"></param>
@@ -123,7 +123,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Get range size
+        /// Get range size
         /// </summary>
         /// <returns></returns>
         public long GetByteRange()
@@ -132,7 +132,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///     Get all the set copy conditions map.
+        /// Get all the set copy conditions map.
         /// </summary>
         /// <returns></returns>
         public ReadOnlyDictionary<string, string> GetConditions()
