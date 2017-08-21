@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<d:ViewPage 
+    xmlns="http://xamarin.com/schemas/2014/forms" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+    xmlns:d="clr-namespace:Minio.Sample.Pages;assembly=Minio.Sample"
+    xmlns:vm="clr-namespace:Minio.Sample.ViewModels"
+    x:Class="Minio.Sample.Pages.BucketsPage"
+    x:TypeArguments="vm:BucketsViewModel">
+	<ContentPage.Content>
+       <ListView x:Name="ListView"
+            ItemsSource="{Binding Buckets}" 
+            IsPullToRefreshEnabled="true" 
+            IsRefreshing="{Binding IsRefreshing}" 
+            RefreshCommand="{Binding RefreshCommand}">
+          <ListView.ItemTemplate>
+            <DataTemplate>
+              <ImageCell Text="{Binding Name}" Detail = "{Binding CreationDate}" />
+            </DataTemplate>
+          </ListView.ItemTemplate>
+        </ListView>
+	</ContentPage.Content>
+</d:ViewPage>

@@ -65,7 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Minio.Xamarin.Interface\Minio.Xamarin.Interface.csproj">
-      <Project>{713B5EBD-412B-4195-BE33-512886DF5E28}</Project>
+      <Project>{7A34059A-FFB2-42BF-84B8-7B2BCA005703}</Project>
       <Name>Minio.Xamarin.Interface</Name>
     </ProjectReference>
   </ItemGroup>

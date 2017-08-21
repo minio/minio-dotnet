@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<d:ViewPage 
+    xmlns="http://xamarin.com/schemas/2014/forms" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:d="clr-namespace:Minio.Sample.Pages;assembly=Minio.Sample"
+    xmlns:vm="clr-namespace:Minio.Sample.ViewModels"
+    x:Class="Minio.Sample.Pages.BucketDetailsPage"
+    x:TypeArguments="vm:BucketDetailsViewModel"
+    xmlns:ffimageloading="clr-namespace:FFImageLoading.Forms;assembly=FFImageLoading.Forms">
+	<ContentPage.Content>
+        <ListView CachingStrategy="RecycleElement" x:Name="ListView"
+            RowHeight="55"
+            ItemsSource="{Binding Items}" 
+            IsPullToRefreshEnabled="true" 
+            IsRefreshing="{Binding IsRefreshing}" 
+            RefreshCommand="{Binding RefreshCommand}">
+          <ListView.ItemTemplate>
+            <DataTemplate>
+               <ViewCell>
+                 <ViewCell.View>
+                    <Grid Padding="5">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="20"></RowDefinition>
+                            <RowDefinition Height="20"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="64"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Row="0" Grid.Column="0" Text="{Binding Key}" LineBreakMode="TailTruncation"></Label>
+                        <Label Grid.Row="1" Grid.Column="0" Text="{Binding LastModified}" Font="Small"  TextColor="Gray" LineBreakMode="TailTruncation"></Label>
+                        <ffimageloading:CachedImage Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" x:Name="Image" Source="{Binding ImageSource}" HorizontalOptions="End" VerticalOptions="Center"
+                            LoadingPlaceholder="loading.png" ErrorPlaceholder="error.png" DownsampleToViewSize="true"
+                            Aspect="AspectFit" HeightRequest="64" WidthRequest="64">
+                        </ffimageloading:CachedImage>
+                    </Grid>
+                </ViewCell.View>
+              </ViewCell>
+            </DataTemplate>
+          </ListView.ItemTemplate>
+        </ListView>
+	</ContentPage.Content>
+</d:ViewPage>

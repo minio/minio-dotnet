@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<d:ViewPage xmlns="http://xamarin.com/schemas/2014/forms" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:d="clr-namespace:Minio.Sample.Pages;assembly=Minio.Sample"
+    xmlns:vm="clr-namespace:Minio.Sample.ViewModels"
+    x:Class="Minio.Sample.Pages.ObjectDetailsPage"
+    x:TypeArguments="vm:ObjectDetailsViewModel"
+    xmlns:ffimageloading="clr-namespace:FFImageLoading.Forms;assembly=FFImageLoading.Forms">
+	<ContentPage.Content>
+        <StackLayout Orientation="Vertical" Padding="16">
+            <Label Text="{Binding Model.Key}" HorizontalOptions="Center" LineBreakMode="TailTruncation"></Label>
+            <Label Text="{Binding Model.LastModified}" HorizontalOptions="Center" Font="Small"  TextColor="Gray" LineBreakMode="TailTruncation"></Label>
+            <ffimageloading:CachedImage x:Name="Image" Source="{Binding Model.ImageSource}" HorizontalOptions="Center" VerticalOptions="Center"
+                LoadingPlaceholder="loading.png" ErrorPlaceholder="error.png" DownsampleToViewSize="true"
+                Aspect="AspectFit" HeightRequest="512" WidthRequest="512">
+            </ffimageloading:CachedImage>
+        </StackLayout>
+	</ContentPage.Content>
+</d:ViewPage>
