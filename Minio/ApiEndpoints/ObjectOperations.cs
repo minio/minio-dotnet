@@ -1000,7 +1000,7 @@ namespace Minio
             {
                 region = await BucketRegionCache.Instance.Update(this, policy.Bucket);
             }
-            else
+            if (region == null) 
             {
                 region = BucketRegionCache.Instance.Region(policy.Bucket);
             }
