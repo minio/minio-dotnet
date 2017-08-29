@@ -15,14 +15,16 @@
 # limitations under the License.
 #
 
+UBUNTU_CODENAME="xenial"
+
 # Download and install Mono and .NETCore for Ubuntu 16.04
 main() {
-	sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ xenial main"'
+	echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ $UBUNTU_CODENAME main" | sudo tee /etc/apt/sources.list.d/mono-official.list
 	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893
 	sudo apt-get update
 	sudo apt-get install -yq dotnet-dev-1.0.4
 	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-	echo "deb http://download.mono-project.com/repo/ubuntu xenial main" | sudo tee /etc/apt/sources.list.d/mono-official.list
+	echo "deb http://download.mono-project.com/repo/ubuntu $UBUNTU_CODENAME main" | sudo tee -a /etc/apt/sources.list.d/mono-official.list
 	sudo apt-get update
 	sudo apt-get install -yq  mono-complete 
 	sudo apt-get install -yq ca-certificates-mono
