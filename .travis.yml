@@ -2,7 +2,7 @@ language: csharp
 dist: trusty
 sudo: required
 mono: none
-dotnet: dotnet-dev-1.0.4
+dotnet: 1.0.4
 addons:  
   apt:
     packages:
@@ -16,7 +16,7 @@ branches:
   only:
     - master
 install:
-  dotnet restore /p:Configuration=.netcore
+  dotnet restore /p:Configuration=.netcore --runtime ubuntu.16.04-x64
 script:
 - dotnet publish --runtime ubuntu.16.04-x64 --output out /p:Configuration=.netcore
-- ./out/Minio.Functional.Tests
+- dotnet /home/travis/build/minio/minio-dotnet/Minio.Functional.Tests/bin/Debug/netcoreapp1.1/ubuntu.16.04-x64/Minio.Functional.Tests.dll
