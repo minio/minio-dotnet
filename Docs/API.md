@@ -1046,7 +1046,7 @@ catch(MinioException e)
 ## 4. Presigned operations
 <a name="presignedGetObject"></a>
 
-### PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt);
+### PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string,string> reqParams = null);
 `Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)`
 
 Generates a presigned URL for HTTP GET operations. Browsers/Mobile clients may point to this URL to directly download objects even if the bucket is private. This presigned URL can have an associated expiration time in seconds after which it is no longer operational. The default expiry is set to 7 days.
@@ -1059,12 +1059,13 @@ __Parameters__
 | ``bucketName``  | _String_ | Name of the bucket  |
 | ``objectName``  | _String_  | Object name in the bucket |
 | ``expiresInt``  | _Integer_  | Expiry in seconds. Default expiry is set to 7 days. |
-
+| ``reqParams``   | _Dictionary<string,string>_ | Additional response header overrides supports response-expires, response-content-type, response-cache-control, response-content-disposition.|
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 |  ``Task<string>`` : string contains URL to download the object | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name |
 |        | ``ConnectionException`` : upon connection error            |
+|        | ``InvalidExpiryRangeException`` : upon invalid expiry range.            |
 
 
 __Example__
@@ -1104,6 +1105,7 @@ __Parameters__
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name |
 |        | ``InvalidKeyException`` : upon an invalid access key or secret key           |
 |        | ``ConnectionException`` : upon connection error            |
+|        | ``InvalidExpiryRangeException`` : upon invalid expiry range.            |
 
 
 __Example__

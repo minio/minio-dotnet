@@ -248,5 +248,16 @@ namespace Minio
             obj.lastPartSize = lastPartSize;
             return obj;
         }
+
+        /// <summary>
+        /// Check if input expires value is valid.
+        /// </summary>
+        /// <param name="expiryInt">time to expiry in seconds</param>
+        /// <returns>bool</returns>
+
+        public static bool IsValidExpiry(int expiryInt)
+        {
+            return (expiryInt > 0) && (expiryInt <= Constants.DefaultExpiryTime); 
+        }
     }
 }

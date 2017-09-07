@@ -129,15 +129,18 @@ namespace Minio
         Task GetObjectAsync(string bucketName, string objectName, string filePath, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// Presigned Get url.
+        /// Presigned get url - returns a presigned url to access an object's data without credentials.URL can have a maximum expiry of 
+        /// upto 7 days or a minimum of 1 second.Additionally, you can override a set of response headers using reqParams.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Key of object to retrieve</param>
-        /// <param name="expiresInt">Expiration time in seconds</param>
-        Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt);
+        /// <param name="expiresInt">Expiration time in seconds.</param>
+        /// <param name="reqParams">optional override response headers</param>
+        Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string,string> reqParams = null);
 
         /// <summary>
-        /// Presigned Put url.
+        /// Presigned Put url - returns a presigned url to upload an object without credentials.URL can have a maximum expiry of 
+        /// upto 7 days or a minimum of 1 second.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Key of object to retrieve</param>

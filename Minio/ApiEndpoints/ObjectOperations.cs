@@ -945,29 +945,42 @@ namespace Minio
 
 
         /// <summary>
-        /// Presigned Get url.
+        /// Presigned get url - returns a presigned url to access an object's data without credentials.URL can have a maximum expiry of 
+        /// upto 7 days or a minimum of 1 second.Additionally, you can override a set of response headers using reqParams.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds</param>
+        /// <param name="reqParams">optional override response headers</param>
         /// <returns></returns>
-        public async Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)
+        public async Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string,string> reqParams = null)
         {
+            if (!utils.IsValidExpiry(expiresInt))
+            {
+                throw new InvalidExpiryRangeException("expiry range should be between 1 and " + Constants.DefaultExpiryTime.ToString());
+            }
             var request = await this.CreateRequest(Method.GET, bucketName,
-                                                    objectName: objectName);
+                                                    objectName: objectName,
+                                                    headerMap: reqParams);
 
             return this.authenticator.PresignURL(this.restClient, request, expiresInt);
         }
 
         /// <summary>
-        /// Presigned Put url.
+        /// Presigned Put url -returns a presigned url to upload an object without credentials.URL can have a maximum expiry of 
+        /// upto 7 days or a minimum of 1 second.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds</param>
+
         /// <returns></returns>
         public async Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
         {
+            if (!utils.IsValidExpiry(expiresInt))
+            {
+                throw new InvalidExpiryRangeException("expiry range should be between 1 and " + Constants.DefaultExpiryTime.ToString());
+            }
             var request = await this.CreateRequest(Method.PUT, bucketName,
                                                     objectName: objectName);
             return this.authenticator.PresignURL(this.restClient, request, expiresInt);
