@@ -34,6 +34,6 @@
     <PackageReference Include="MSTest.TestFramework" Version="1.1.11" />
     <PackageReference Include="System.Net.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Reactive.Linq" Version="4.0.0-preview00001" />
-
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />
   </ItemGroup>
 </Project>
