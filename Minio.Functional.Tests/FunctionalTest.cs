@@ -118,7 +118,7 @@ namespace Minio.Functional.Tests
 
             // Set app Info 
             minioClient.SetAppInfo("app-name", "app-version");
-
+    
             // Set HTTP Tracing On
             // minioClient.SetTraceOn();
 
@@ -184,8 +184,11 @@ namespace Minio.Functional.Tests
 
             // Test Presigned Get/Put operations
             PresignedGetObject_Test1(minioClient).Wait();
+            PresignedGetObject_Test1(minioClient).Wait();
+            PresignedGetObject_Test2(minioClient).Wait();
+            PresignedGetObject_Test3(minioClient).Wait();
             PresignedPutObject_Test1(minioClient).Wait();
-
+            PresignedPutObject_Test2(minioClient).Wait();
             // Test incomplete uploads
             ListIncompleteUpload_Test1(minioClient).Wait();
 
@@ -1161,6 +1164,77 @@ namespace Minio.Functional.Tests
             }
         }
 
+        private async static Task PresignedGetObject_Test2(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            try
+            {
+                try
+                {
+
+                    await Setup_Test(minio, bucketName);
+                    using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                        await minio.PutObjectAsync(bucketName,
+                                                    objectName,
+                                                    filestream, filestream.Length, null);
+                    ObjectStat stats = await minio.StatObjectAsync(bucketName, objectName);
+                    string presigned_url = await minio.PresignedGetObjectAsync(bucketName, objectName, 0);
+                    new MintLogger("PresignedGetObject_Test2","Tests whether PresignedGetObject url retrieves object from bucket when invalid expiry is set.",TestStatus.FAIL,(DateTime.Now - startTime),"","","").Log();
+
+                }
+                catch (InvalidExpiryRangeException)
+                {
+                    new MintLogger("PresignedGetObject_Test2","Tests whether PresignedGetObject url retrieves object from bucket when invalid expiry is set.",TestStatus.PASS,(DateTime.Now - startTime)).Log();
+                }
+                await minio.RemoveObjectAsync(bucketName, objectName);
+                await TearDown(minio, bucketName);
+            }
+            catch (Exception ex)
+            {
+                new MintLogger("PresignedGetObject_Test2","Tests whether PresignedGetObject url retrieves object from bucket when invalid expiry is set.",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString()).Log();
+            }
+        }
+        private async static Task PresignedGetObject_Test3(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            try
+            {
+                string bucketName = GetRandomName(15);
+                string objectName = GetRandomName(10);
+                string downloadFile = "downloadFileName";
+                await Setup_Test(minio, bucketName);
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                    await minio.PutObjectAsync(bucketName,
+                                                objectName,
+                                                filestream, filestream.Length, null);
+                ObjectStat stats = await minio.StatObjectAsync(bucketName, objectName);
+                Dictionary<string, string> reqParams = new Dictionary<string,string>();
+                reqParams["response-content-type"] = "application/json";
+                string presigned_url = await minio.PresignedGetObjectAsync(bucketName, objectName, 1000, reqParams);
+                WebRequest httpRequest = WebRequest.Create(presigned_url);
+                var response = (HttpWebResponse)(await Task<WebResponse>.Factory.FromAsync(httpRequest.BeginGetResponse, httpRequest.EndGetResponse, null));
+                Stream stream = response.GetResponseStream();
+                var fileStream = File.Create(downloadFile);
+                stream.CopyTo(fileStream);
+                fileStream.Dispose();
+                FileInfo writtenInfo = new FileInfo(downloadFile);
+                long file_read_size = writtenInfo.Length;
+                // Compare size of file downloaded  with presigned curl request and actual object size on server
+                Assert.AreEqual(file_read_size, stats.Size);
+
+                await minio.RemoveObjectAsync(bucketName, objectName);
+
+                await TearDown(minio, bucketName);
+                File.Delete(downloadFile);
+                new MintLogger("PresignedGetObject_Test3","Tests whether PresignedGetObject url retrieves object from bucket when override response headers sent",TestStatus.PASS,(DateTime.Now - startTime)).Log();
+            }
+            catch (MinioException ex)
+            {
+                new MintLogger("PresignedGetObject_Test3","Tests whether PresignedGetObject url retrieves object from bucket when override response headers sent",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString()).Log();
+            }
+        }
         private async static Task PresignedPutObject_Test1(MinioClient minio)
         {
              DateTime startTime = DateTime.Now;
@@ -1191,6 +1265,40 @@ namespace Minio.Functional.Tests
                 new MintLogger("PresignedPutObject_Test1","Tests whether PresignedPutObject url uploads object to bucket",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString()).Log();
             }
         }
+
+        private async static Task PresignedPutObject_Test2(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            try
+            {
+                try
+                {
+
+                    await Setup_Test(minio, bucketName);
+                    using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                        await minio.PutObjectAsync(bucketName,
+                                                    objectName,
+                                                    filestream, filestream.Length, null);
+                    ObjectStat stats = await minio.StatObjectAsync(bucketName, objectName);
+                    string presigned_url = await minio.PresignedPutObjectAsync(bucketName, objectName, 0);
+                    new MintLogger("PresignedPutObject_Test2","Tests whether PresignedPutObject url retrieves object from bucket when invalid expiry is set.",TestStatus.FAIL,(DateTime.Now - startTime),"","","").Log();
+
+                }
+                catch (InvalidExpiryRangeException)
+                {
+                    new MintLogger("PresignedPutObject_Test2","Tests whether PresignedPutObject url retrieves object from bucket when invalid expiry is set.",TestStatus.PASS,(DateTime.Now - startTime)).Log();
+                }
+                await minio.RemoveObjectAsync(bucketName, objectName);
+                await TearDown(minio, bucketName);
+            }
+            catch (Exception ex)
+            {
+                new MintLogger("PresignedPutObject_Test2","Tests whether PresignedPutObject url retrieves object from bucket when invalid expiry is set.",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString()).Log();
+            }
+        }
+        
         private static async Task UploadObjectAsync(string url, string filePath)
         {
             HttpWebRequest httpRequest = WebRequest.Create(url) as HttpWebRequest;

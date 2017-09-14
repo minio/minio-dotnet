@@ -40,6 +40,6 @@ namespace Minio.Helper
         // through Read operation.
         public static long OptimalReadBufferSize = 1024L * 1024L * 5;
 
-
+        public static int DefaultExpiryTime = 7 * 24 * 3600;
     }
 }
