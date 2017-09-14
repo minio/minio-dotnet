@@ -302,6 +302,9 @@
     <Compile Include="..\Minio\Exceptions\UnexpectedShortReadException.cs">
       <Link>Exceptions\UnexpectedShortReadException.cs</Link>
     </Compile>
+     <Compile Include="..\Minio\Exceptions\InvalidExpiryRangeException.cs">
+      <Link>Exceptions\InvalidExpiryRangeException.cs</Link>
+    </Compile>
     <Compile Include="..\Minio\Helper\Constants.cs">
       <Link>Helper\Constants.cs</Link>
     </Compile>

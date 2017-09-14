@@ -104,6 +104,8 @@
     <Compile Include="..\Minio\Exceptions\ObjectNotFoundException.cs" Link="Exceptions\ObjectNotFoundException.cs" />
     <Compile Include="..\Minio\Exceptions\RedirectionException.cs" Link="Exceptions\RedirectionException.cs" />
     <Compile Include="..\Minio\Exceptions\UnexpectedShortReadException.cs" Link="Exceptions\UnexpectedShortReadException.cs" />
+    <Compile Include="..\Minio\Exceptions\InvalidExpiryRangeException.cs" Link="Exceptions\InvalidExpiryRangeException.cs" />
+    
     <Compile Include="..\Minio\Helper\Constants.cs" Link="Helper\Constants.cs" />
     <Compile Include="..\Minio\Helper\Enum.cs" Link="Helper\Enum.cs" />
     <Compile Include="..\Minio\Helper\RequestUtil.cs" Link="Helper\RequestUtil.cs" />
