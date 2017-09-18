@@ -248,11 +248,16 @@ namespace Minio
 
             double expectedReadSize = partSize;
             int partNumber;
+            int numPartsUploaded = 0;
             bool skipUpload = false;
             for (partNumber = 1; partNumber <= partCount; partNumber++)
             {
                 byte[] dataToCopy = ReadFull(data, (int)partSize);
-
+                if (dataToCopy == null)
+                {
+                    break;
+                }
+                
                 if (partNumber == partCount)
                 {
                     expectedReadSize = lastPartSize;
@@ -278,22 +283,29 @@ namespace Minio
                 {
                     skipUpload = false;
                 }
-
                 if (!skipUpload)
                 {
+                    numPartsUploaded += 1;
                     string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, metaData, cancellationToken);
                     totalParts[partNumber - 1] = new Part() { PartNumber = partNumber, ETag = etag, size = (long)expectedReadSize };
                 }
 
             }
+            // This shouldn't happen where stream size is known.
+            if (partCount != numPartsUploaded && size != -1)
+            {
+                await this.RemoveUploadAsync(bucketName, objectName, uploadId, cancellationToken);
+                return;
+            }
+
             Dictionary<int, string> etags = new Dictionary<int, string>();
-            for (partNumber = 1; partNumber <= partCount; partNumber++)
+            for (partNumber = 1; partNumber <= numPartsUploaded; partNumber++)
             {
                 etags[partNumber] = totalParts[partNumber - 1].ETag;
             }
             await this.CompleteMultipartUploadAsync(bucketName, objectName, uploadId, etags, cancellationToken);
-
         }
+
         /// <summary>
         /// Internal method to complete multi part upload of object to server.
         /// </summary>
