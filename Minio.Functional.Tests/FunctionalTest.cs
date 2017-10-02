@@ -167,6 +167,7 @@ namespace Minio.Functional.Tests
             PutObject_Test5(minioClient).Wait();
             PutObject_Test6(minioClient).Wait();
             PutObject_Test7(minioClient).Wait();
+            PutObject_Test8(minioClient).Wait();
 
             // Test StatObject function
             StatObject_Test1(minioClient).Wait();
@@ -575,6 +576,37 @@ namespace Minio.Functional.Tests
                 new MintLogger("PutObject_Test7","Tests thread safety of minioclient on a parallel put operation",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString()).Log();
             }
         }
+        private async static Task PutObject_Test8(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            try {
+                // Putobject call with unknown stream size. See if PutObjectAsync call succeeds 
+                string bucketName = GetRandomName(15);
+                string objectName = GetRandomName(10);
+                string contentType = "application/octet-stream";
+
+                await Setup_Test(minio, bucketName);
+                using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                {
+                    
+                        long size = -1;
+                        long file_write_size = filestream.Length;
+
+                        await minio.PutObjectAsync(bucketName,
+                                                objectName,
+                                                filestream,
+                                                size,
+                                                contentType);
+                        await minio.RemoveObjectAsync(bucketName, objectName);
+                        await TearDown(minio, bucketName);
+                }
+                new MintLogger("PutObject_Test8","Tests whether PutObject with unknown stream-size passes",TestStatus.PASS,(DateTime.Now - startTime)).Log();
+        }
+        catch (Exception ex)
+        {
+            new MintLogger("PutObject_Test8","Tests whether PutObject with unknown stream-size passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString()).Log();
+        }
+    }
         private async static Task PutObject_Task(MinioClient minio, string bucketName, string objectName, string fileName = null, string contentType = "application/octet-stream", long size = 0, Dictionary<string, string> metaData = null, MemoryStream mstream = null)
         {
             try
