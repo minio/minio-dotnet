@@ -1154,6 +1154,7 @@ try
 {
     PostPolicy policy = new PostPolicy();
     policy.SetContentType("image/png");
+    policy.SetUserSpecifiedMetadata("custom", "user");
     DateTime expiration = DateTime.UtcNow;
     policy.SetExpires(expiration.AddDays(10));
     policy.SetKey("my-objectname");
