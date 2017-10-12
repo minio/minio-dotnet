@@ -158,6 +158,22 @@ namespace Minio.DataModel
         }
 
         /// <summary>
+        /// Set user specified metadata as a key/value couple.
+        /// </summary>
+        /// <param name="status">Key and Value to insert in the metadata</param>
+
+        public void SetUserMetadata(string key, string value)
+        {
+            if (string.IsNullOrEmpty(key))
+                throw new ArgumentException("Key is Empty");
+            if (string.IsNullOrEmpty(value))
+                throw new ArgumentException("Value is Empty");
+            string headerName = "x-amz-meta-" + key;
+            this.policies.Add(new Tuple<string, string, string>("eq", "$" + headerName, value));
+            this.formData.Add(headerName, value);
+        }
+
+        /// <summary>
         /// Set signature algorithm policy.
         /// </summary>
         /// <param name="algorithm">Set signature algorithm used for the policy</param>
