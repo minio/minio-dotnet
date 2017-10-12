@@ -162,7 +162,7 @@ namespace Minio.DataModel
         /// </summary>
         /// <param name="status">Key and Value to insert in the metadata</param>
 
-        public void SetUserSpecifiedMetadata(string key, string value)
+        public void SetUserMetadata(string key, string value)
         {
             if (string.IsNullOrEmpty(key))
                 throw new ArgumentException("Key is Empty");

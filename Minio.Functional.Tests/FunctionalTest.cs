@@ -1687,7 +1687,7 @@ namespace Minio.Functional.Tests
                 form.SetExpires(expiration.AddDays(10));
                 form.SetKey(objectName);
                 form.SetBucket(bucketName);
-                form.SetUserSpecifiedMetadata(metadataKey, metadataValue);
+                form.SetUserMetadata(metadataKey, metadataValue);
                 var pairs = new List<KeyValuePair<string, string>>();
                 string url = "https://s3.amazonaws.com/" + bucketName;
                 Tuple<string, System.Collections.Generic.Dictionary<string, string>> policyTuple = await minio.PresignedPostPolicyAsync(form);
