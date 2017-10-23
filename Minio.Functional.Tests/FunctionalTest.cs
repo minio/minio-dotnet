@@ -1400,7 +1400,7 @@ namespace Minio.Functional.Tests
                 await Setup_Test(minio, bucketName);
                 Task[] tasks = new Task[numObjects];
                 for (int i = 1; i <= numObjects; i++) {
-                    tasks[i - 1]= PutObject_Task(minio, bucketName, objectNamePrefix + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1*MB));
+                    tasks[i - 1]= PutObject_Task(minio, bucketName, objectNamePrefix + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
                 }
                 await Task.WhenAll(tasks);
                

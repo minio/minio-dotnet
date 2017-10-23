@@ -26,6 +26,6 @@
     
   </metadata>
   <files>
-      <file src="..\core\lib\**" target="lib" />
+      <file src="Minio.Core\bin\Release.Core\**" target="lib" />
   </files>
 </package>
