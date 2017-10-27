@@ -9,6 +9,6 @@ branches:
 install:
 
 script:
-- dotnet restore /p:Configuration=.netcore 
-- dotnet publish  --output out /p:Configuration=.netcore
-- dotnet /home/travis/build/minio/minio-dotnet/Minio.Functional.Tests/bin/Debug/netcoreapp1.1/Minio.Functional.Tests.dll
+- dotnet restore /p:Configuration=Release.Core 
+- dotnet publish  --output out /p:Configuration=Release.Core
+- dotnet Minio.Functional.Tests/bin/Release.Core/netcoreapp1.1/Minio.Functional.Tests.dll

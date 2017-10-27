@@ -8,33 +8,21 @@
     <Version>1.0.3</Version>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>..\..\..\lib\</OutputPath>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release.Core|AnyCPU'">
+    <OutputPath></OutputPath>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <OutputPath>..\..\core\lib\</OutputPath>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='.net4.5.2|AnyCPU'">
-    <OutputPath>..\..\core\lib\</OutputPath>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='.netcore|AnyCPU'">
-    <OutputPath>..\..\core\lib\</OutputPath>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='net4.5.2|AnyCPU'" />
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='net4.5.2|x64'" />
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='net4.5.2|x86'" />
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mint|AnyCPU'" />
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mint|x64'" />
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mint|x86'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release.Net452|x64'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release.Net452|x86'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release.Net452|AnyCPU'" />
 
   <ItemGroup>
     <Compile Include="..\Minio\ApiEndpoints\BucketOperations.cs" Link="ApiEndpoints\BucketOperations.cs" />

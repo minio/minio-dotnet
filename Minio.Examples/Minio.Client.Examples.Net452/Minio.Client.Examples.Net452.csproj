@@ -31,11 +31,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'net4.5.2|AnyCPU'">
-    <OutputPath>bin\net4.5.2\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == '.netcore|AnyCPU'">
-    <OutputPath>bin\.netcore\</OutputPath>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.Core|AnyCPU'">
+    <OutputPath>bin\Release.Core\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -44,8 +42,8 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == '.net4.5.2|AnyCPU'">
-    <OutputPath>bin\.net4.5.2\</OutputPath>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.Net452|AnyCPU'">
+    <OutputPath>bin\Release.Net452\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>

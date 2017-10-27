@@ -144,13 +144,13 @@ $ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet
 * To run .NET4.5.2 example,
 ```
 $ mono nuget.exe restore
-$ msbuild /p:Configuration=.net4.5.2 /t:Clean 
-$ msbuild /p:Configuration=.net4.5.2
-$ ./Minio.Examples/Minio.Client.Examples.Net452/bin/.net4.5.2/Minio.Client.Examples.Net452.exe 
+$ msbuild /p:Configuration=Release.Net452 /t:Clean 
+$ msbuild /p:Configuration=Release.Net452
+$ ./Minio.Examples/Minio.Client.Examples.Net452/bin/Release.Net452/Minio.Client.Examples.Net452.exe 
 ```
 * To run .NetCore example,
 ```
-$ dotnet msbuild /p:Configuration=.netcore
+$ dotnet msbuild /p:Configuration=Release.Core
 $ cd Minio.Examples/Minio.Client.Examples.Core
 $ dotnet restore
 $ dotnet run
