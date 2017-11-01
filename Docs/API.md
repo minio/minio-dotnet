@@ -38,7 +38,7 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 |  |
 |---|
 |`public MinioClient(string endpoint, string accessKey = "", string secretKey = "")`   |
-| Creates Minio client object with given endpoint.AccessKey and secretKey are optional parameters,and can be omitted for anonymous access. 
+| Creates Minio client object with given endpoint.AccessKey,secretKey and region are optional parameters,and can be omitted for anonymous access. 
   The client object uses Http access by default. To use Https, chain method WithSSL() to client object to use secure transfer protocol   |
 
 
@@ -53,6 +53,7 @@ __Parameters__
 | | |play.minio.io|
 | `accessKey`   | _string_   |accessKey is like user-id that uniquely identifies your account.This field is optional and can be omitted for anonymous access. |
 |`secretKey`  |  _string_   | secretKey is the password to your account.This field is optional and can be omitted for anonymous access.|
+|`region`  |  _string_   | region to which calls should be made.This field is optional and can be omitted.|
 
 __Secure Access__
 

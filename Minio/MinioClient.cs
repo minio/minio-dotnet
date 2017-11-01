@@ -40,6 +40,7 @@ namespace Minio
         // Reconstructed endpoint with scheme and host.In the case of Amazon, this url
         // is the virtual style path or location based endpoint
         internal string Endpoint { get; private set; }
+        internal string Region;
         // Corresponding URI for above endpoint
         internal Uri uri;
 
@@ -97,6 +98,34 @@ namespace Minio
             }
 
         }
+
+        // Resolve region bucket resides in.
+        private async Task<string> getRegion(string bucketName)
+        {
+            // Use user specified region in client constructor if present
+            if (this.Region != "")
+            {
+                return this.Region;
+            }
+            // pick region from endpoint if present
+            string region = Regions.GetRegionFromEndpoint(this.Endpoint);
+
+            // Pick region from location HEAD request
+            if (region == "")
+            {
+                if (!BucketRegionCache.Instance.Exists(bucketName))
+                {
+                    region = await BucketRegionCache.Instance.Update(this, bucketName);
+                }
+                else
+                {
+                    region = BucketRegionCache.Instance.Region(bucketName);
+                }
+            }
+            // Default to us-east-1 if region could not be found
+            return (region == "") ? "us-east-1" : region;
+        }
+
         /// <summary>
         /// Constructs a RestRequest. For AWS, this function has the side-effect of overriding the baseUrl 
         /// in the RestClient with region specific host path or virtual style path.
@@ -113,7 +142,7 @@ namespace Minio
         internal async Task<RestRequest> CreateRequest(Method method, string bucketName, string objectName = null,
                                 Dictionary<string, string> headerMap = null,
                                 string contentType = "application/octet-stream",
-                                Object body = null, string resourcePath = null, string region = null)
+                                Object body = null, string resourcePath = null)
         {
             // Validate bucket name and object name
             if (bucketName == null && objectName == null)
@@ -124,25 +153,15 @@ namespace Minio
             if (objectName != null)
             {
                 utils.validateObjectName(objectName);
-
             }
 
             // Start with user specified endpoint
             string host = this.BaseUrl;
 
             // Fetch correct region for bucket
-            if (region == null)
-            {
-                if (!BucketRegionCache.Instance.Exists(bucketName))
-                {
-                    region = await BucketRegionCache.Instance.Update(this, bucketName);
-                }
-                else
-                {
-                    region = BucketRegionCache.Instance.Region(bucketName);
-                }
-            }
-
+            string region = await getRegion(bucketName);
+            
+            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region);
 
             // This section reconstructs the url with scheme followed by location specific endpoint( s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
@@ -267,8 +286,9 @@ namespace Minio
         /// <param name="endpoint">Location of the server, supports HTTP and HTTPS</param>
         /// <param name="accessKey">Access Key for authenticated requests (Optional,can be omitted for anonymous requests)</param>
         /// <param name="secretKey">Secret Key for authenticated requests (Optional,can be omitted for anonymous requests)</param>
+        /// <param name="region">Optional custom region</param>
         /// <returns>Client initialized with user credentials</returns>
-        public MinioClient(string endpoint, string accessKey = "", string secretKey = "")
+        public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region="")
         {
 
             this.Secure = false;
@@ -277,7 +297,7 @@ namespace Minio
             this.BaseUrl = endpoint;
             this.AccessKey = accessKey;
             this.SecretKey = secretKey;
-
+            this.Region = region;
             // Instantiate a region cache 
             this.regionCache = BucketRegionCache.Instance;
 

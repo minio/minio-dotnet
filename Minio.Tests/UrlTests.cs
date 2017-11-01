@@ -148,8 +148,7 @@ namespace Minio.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidEndpointException))]
-        public void TestEndpointFailure()
+        public void TestEndpointSuccess2()
         {
             new MinioClient("s3-us-west-1.amazonaws.com");
         }
