@@ -36,6 +36,10 @@
     <Compile Include="..\Minio\DataModel\CopyObjectResult.cs" Link="DataModel\CopyObjectResult.cs" />
     <Compile Include="..\Minio\DataModel\CopyPartResult.cs" Link="DataModel\CopyPartResult.cs" />
     <Compile Include="..\Minio\DataModel\CreateBucketConfiguration.cs" Link="DataModel\CreateBucketConfiguration.cs" />
+    <Compile Include="..\Minio\DataModel\DeletedObject.cs" Link="DataModel\DeletedObject.cs" />
+    <Compile Include="..\Minio\DataModel\DeleteObject.cs" Link="DataModel\DeleteObject.cs" />
+    <Compile Include="..\Minio\DataModel\DeleteObjectsRequest.cs" Link="DataModel\DeleteObjectsRequest.cs" />
+    <Compile Include="..\Minio\DataModel\DeleteObjectsResult.cs" Link="DataModel\DeleteObjectsResult.cs" />
     <Compile Include="..\Minio\DataModel\InitiateMultipartUploadResult.cs" Link="DataModel\InitiateMultipartUploadResult.cs" />
     <Compile Include="..\Minio\DataModel\Item.cs" Link="DataModel\Item.cs" />
     <Compile Include="..\Minio\DataModel\ListAllMyBucketsResult.cs" Link="DataModel\ListAllMyBucketsResult.cs" />
@@ -72,6 +76,8 @@
     <Compile Include="..\Minio\DataModel\Prefix.cs" Link="DataModel\Prefix.cs" />
     <Compile Include="..\Minio\DataModel\Upload.cs" Link="DataModel\Upload.cs" />
     <Compile Include="..\Minio\Exceptions\AccessDeniedException.cs" Link="Exceptions\AccessDeniedException.cs" />
+    <Compile Include="..\Minio\Exceptions\DeleteError.cs" Link="Exceptions\DeleteError.cs" />
+    <Compile Include="..\Minio\Exceptions\DeleteObjectException.cs" Link="Exceptions\DeleteObjectException.cs" />
     <Compile Include="..\Minio\Exceptions\ErrorResponseException.cs" Link="Exceptions\ErrorResponseException.cs" />
     <Compile Include="..\Minio\Exceptions\BucketNotFoundException.cs" Link="Exceptions\BucketNotFoundException.cs" />
     <Compile Include="..\Minio\Exceptions\ConnectionException.cs" Link="Exceptions\ConnectionException.cs" />

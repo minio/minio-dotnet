@@ -20,6 +20,7 @@ using Minio.Exceptions;
 using System.Text;
 using System.IO;
 using Minio.DataModel;
+using System.Collections.Generic;
 #if NET452
 using System.Configuration;
 #endif
@@ -99,7 +100,11 @@ namespace Minio.Examples
                 string objectName = GetRandomName();
                 string destBucketName = GetRandomName();
                 string destObjectName = GetRandomName();
-
+                List<string> objectsList = new List<string>();
+                for (int i = 0; i < 10; i++)
+                {
+                    objectsList.Add(objectName + i.ToString());
+                }
                 // Set app Info 
                 minioClient.SetAppInfo("app-name", "app-version");
 
@@ -179,6 +184,8 @@ namespace Minio.Examples
                 // Get the presigned url for a PUT object request
                 Cases.PresignedPutObject.Run(minioClient, bucketName, objectName).Wait();
 
+                // Delete the list of objects
+                Cases.RemoveObjects.Run(minioClient, bucketName, objectsList).Wait();
 
                 // Delete the object
                 Cases.RemoveObject.Run(minioClient, bucketName, objectName).Wait();

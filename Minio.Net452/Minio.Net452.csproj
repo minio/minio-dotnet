@@ -44,7 +44,10 @@
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <!--<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>-->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Mint|AnyCPU'">
+    <OutputPath>bin\Mint\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -116,6 +119,18 @@
     </Compile>
     <Compile Include="..\Minio\DataModel\DateFormat.cs">
       <Link>DataModel\DateFormat.cs</Link>
+    </Compile>
+    <Compile Include="..\Minio\DataModel\DeletedObject.cs">
+      <Link>DataModel\DeletedObject.cs</Link>
+    </Compile>
+    <Compile Include="..\Minio\DataModel\DeleteObject.cs">
+      <Link>DataModel\DeleteObject.cs</Link>
+    </Compile>
+    <Compile Include="..\Minio\DataModel\DeleteObjectsRequest.cs">
+      <Link>DataModel\DeleteObjectsRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Minio\DataModel\DeleteObjectsResult.cs">
+      <Link>DataModel\DeleteObjectsResult.cs</Link>
     </Compile>
     <Compile Include="..\Minio\DataModel\Grant.cs">
       <Link>DataModel\Grant.cs</Link>
@@ -230,6 +245,12 @@
     </Compile>
     <Compile Include="..\Minio\Exceptions\AccessDeniedException.cs">
       <Link>Exceptions\AccessDeniedException.cs</Link>
+    </Compile>
+    <Compile Include="..\Minio\Exceptions\DeleteError.cs">
+      <Link>Exceptions\DeleteError.cs</Link>
+    </Compile>
+    <Compile Include="..\Minio\Exceptions\DeleteObjectException.cs">
+      <Link>Exceptions\DeleteObjectException.cs</Link>
     </Compile>
     <Compile Include="..\Minio\Exceptions\ErrorResponseException.cs">
       <Link>Exceptions\ErrorResponseException.cs</Link>

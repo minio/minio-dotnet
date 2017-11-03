@@ -15,17 +15,17 @@
 */
 
 using System;
-using Minio.Exceptions;
 using System.Text;
 using System.IO;
-using Minio.DataModel;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
 using System.Net.Http;
 using System.Collections.Generic;
-using System.Threading;
 using System.Runtime.InteropServices;
+using System.Threading;
+using Minio.DataModel;
+using Minio.Exceptions;
 
 namespace Minio.Functional.Tests
 
@@ -112,6 +112,7 @@ namespace Minio.Functional.Tests
                 secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
                 enableHttps = "1";
             }
+
             MinioClient minioClient = null;
             if (enableHttps.Equals("1"))
                 // WithSSL() enables SSL support in Minio client
@@ -192,6 +193,7 @@ namespace Minio.Functional.Tests
 
             // Test RemoveObjectAsync function
             RemoveObject_Test1(minioClient).Wait();
+            RemoveObjects_Test2(minioClient).Wait();
 
             // Test CopyObjectAsync function
             CopyObject_Test1(minioClient).Wait();
@@ -1469,6 +1471,43 @@ namespace Minio.Functional.Tests
             catch (MinioException ex)
             {
                 new MintLogger("RemoveObject_Test1","Tests whether RemoveObjectAsync for existing object passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString()).Log();
+            }
+        }
+
+        private async static Task RemoveObjects_Test2(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            try
+            {
+                string bucketName = GetRandomName(15);
+                string objectName = GetRandomName(6);
+                int count = 1005;
+                Task[] tasks = new Task[count];
+                List<string> objectsList = new List<string>();
+                await Setup_Test(minio, bucketName);
+                for (int i = 0; i < count; i++)
+                {
+                    tasks[i] = PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(5));
+                    objectsList.Add(objectName + i.ToString());
+                }
+                Task.WhenAll(tasks).Wait();
+                System.Threading.Thread.Sleep(5000);
+                IObservable<DeleteError> observable = await minio.RemoveObjectAsync(bucketName, objectsList);
+                IDisposable subscription = observable.Subscribe(
+                   deleteError => Console.WriteLine("Object: {0}", deleteError.Key),
+                   ex => Console.WriteLine("OnError: {0}", ex),
+                   () =>
+                   {
+                       Console.WriteLine("Listed all delete errors for remove objects on  " + bucketName + "\n");
+                       TearDown(minio, bucketName).Wait();
+                   });
+
+
+                new MintLogger("RemoveObjects_Test2","Tests whether RemoveObjectAsync for multi objects delete passes",TestStatus.PASS,(DateTime.Now - startTime)).Log();
+            }
+            catch (MinioException ex)
+            {
+                new MintLogger("RemoveObjects_Test2", "Tests whether RemoveObjectAsync for multi objects delete passes", TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString()).Log();
             }
         }
 

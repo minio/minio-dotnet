@@ -17,11 +17,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release.Core|AnyCPU'" />
   
   <Choose>  
-        <When Condition=" '$(Configuration)'=='Debug' ">  
-            <ItemGroup>  
-                    <ProjectReference Include="..\Minio.Core\Minio.Core.csproj" />
-            </ItemGroup>  
-        </When>
+        <When Condition=" '$(Configuration)'=='Debug' ">
+         <ItemGroup>
+            <ProjectReference Include="..\Minio.Core\Minio.Core.csproj" />
+          </ItemGroup>
+          </When>
         <When Condition=" '$(Configuration)'=='Release.Core' ">
           <ItemGroup>
             <ProjectReference Include="..\Minio.Core\Minio.Core.csproj" />

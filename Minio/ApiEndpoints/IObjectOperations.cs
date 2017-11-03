@@ -19,7 +19,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Minio.DataModel;
 using System.Threading;
-
+using Minio.Exceptions;
 namespace Minio
 {
     public interface IObjectOperations
@@ -60,11 +60,20 @@ namespace Minio
         /// <summary>
         /// Removes an object with given name in specific bucket
         /// </summary>
-        /// <param name="bucketName">Bucket to list incomplete uploads from</param>
-        /// <param name="objectName">Key of object to list incomplete uploads from</param>
+        /// <param name="bucketName">Bucket to remove object from</param>
+        /// <param name="objectName">Key of object to remove</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Removes objects in the list from specific bucket
+        /// </summary>
+        /// <param name="bucketName">Bucket to remove objects from</param>
+        /// <param name="objectsList">List of object keys to remove</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectsList, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Tests the object's existence and returns metadata about existing objects.
