@@ -111,12 +111,6 @@ namespace Minio
             {
                 throw new InvalidEndpointException(Endpoint, "Invalid scheme detected in endpoint.");
             }
-            string amzHost = uri.Host;
-            if ((utils.CaseInsensitiveContains(amzHost,".amazonaws.com"))
-                 && !s3utils.IsAmazonEndPoint(uri.Host))
-            {
-                throw new InvalidEndpointException(amzHost, "For Amazon S3, host should be \'s3.amazonaws.com\' in endpoint.");
-            }
         }
        
         /// <summary>

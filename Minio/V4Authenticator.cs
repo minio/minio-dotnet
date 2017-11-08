@@ -30,6 +30,7 @@ namespace Minio
     {
         private readonly string accessKey;
         private readonly string secretKey;
+        private string Region;
         internal bool isAnonymous { get; private set; }
         internal bool isSecure { get; private set; }
         //
@@ -73,11 +74,12 @@ namespace Minio
         /// <param name="scheme">URL Scheme</param>
         /// <param name="accessKey">Access key id</param>
         /// <param name="secretKey">Secret access key</param>
-        public V4Authenticator(bool secure,string accessKey, string secretKey)
+        public V4Authenticator(bool secure,string accessKey, string secretKey, string region ="us-east-1")
         {
             this.isSecure = secure;
             this.accessKey = accessKey;
             this.secretKey = secretKey;
+            this.Region = region;
             this.isAnonymous = String.IsNullOrEmpty(accessKey) && String.IsNullOrEmpty(secretKey);
         }
 
@@ -96,12 +98,11 @@ namespace Minio
             SetDateHeader(request, signingDate);
             SortedDictionary<string, string> headersToSign = GetHeadersToSign(request);
             string signedHeaders = GetSignedHeaders(headersToSign);
-            string region = Regions.GetRegion(client.BaseUrl.Host);
             string canonicalRequest = GetCanonicalRequest(client, request, headersToSign);
             byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = BytesToHex(ComputeSha256(canonicalRequestBytes));
-            string stringToSign = GetStringToSign(region, signingDate, canonicalRequestHash);
-            byte[] signingKey = GenerateSigningKey(region, signingDate);
+            string stringToSign = GetStringToSign(this.Region, signingDate, canonicalRequestHash);
+            byte[] signingKey = GenerateSigningKey(this.Region, signingDate);
 
             byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(stringToSign);
 
@@ -109,7 +110,7 @@ namespace Minio
 
             string signature = BytesToHex(signatureBytes);
           
-            string authorization = GetAuthorizationHeader(signedHeaders, signature, signingDate, region);
+            string authorization = GetAuthorizationHeader(signedHeaders, signature, signingDate, this.Region);
             request.AddHeader("Authorization", authorization);
 
         }
@@ -261,14 +262,13 @@ namespace Minio
         public string PresignURL(IRestClient client, IRestRequest request, int expires)
         {
             DateTime signingDate = DateTime.UtcNow;
-            string region = Regions.GetRegion(client.BaseUrl.Host);
             string requestQuery = "";
             string path = request.Resource;
 
             requestQuery = "X-Amz-Algorithm=AWS4-HMAC-SHA256&";
             requestQuery += "X-Amz-Credential="
                 + this.accessKey
-                + Uri.EscapeDataString("/" + GetScope(region, signingDate))
+                + Uri.EscapeDataString("/" + GetScope(this.Region, signingDate))
                 + "&";
             requestQuery += "X-Amz-Date="
                 + signingDate.ToString("yyyyMMddTHHmmssZ")
@@ -281,8 +281,8 @@ namespace Minio
             string canonicalRequest = GetPresignCanonicalRequest(client, request, requestQuery);
             byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = BytesToHex(ComputeSha256(canonicalRequestBytes));
-            string stringToSign = GetStringToSign(region, signingDate, canonicalRequestHash);
-            byte[] signingKey = GenerateSigningKey(region, signingDate);
+            string stringToSign = GetStringToSign(this.Region, signingDate, canonicalRequestHash);
+            byte[] signingKey = GenerateSigningKey(this.Region, signingDate);
             byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(stringToSign);
             byte[] signatureBytes = SignHmac(signingKey, stringToSignBytes);
             string signature = BytesToHex(signatureBytes);

@@ -91,7 +91,7 @@ namespace Minio
         {
             string region = null;
 
-            if (bucketName != null && s3utils.IsAmazonEndPoint(client.BaseUrl) && client.AccessKey != null
+            if (bucketName != null && client.AccessKey != null
             && client.SecretKey != null && !Instance.Exists(bucketName))
             {
                 string location = null;

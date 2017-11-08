@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+using System;
+using System.Text.RegularExpressions;
 namespace Minio
 {
     public class Regions
@@ -27,46 +28,16 @@ namespace Minio
         /// </summary>
         /// <param name="endpoint">S3 API endpoint</param>
         /// <returns>Region corresponding to the endpoint. Default is 'us-east-1'</returns>
-        internal static string GetRegion(string endpoint)
+        public static string GetRegionFromEndpoint(string endpoint)
         {
-            if (endpoint.EndsWith("s3 - ap - northeast - 1.amazonaws.com"))
+            string region = null;
+            Regex rgx = new Regex("s3[.-]?(.*?)\\.amazonaws\\.com$", RegexOptions.IgnoreCase);
+            MatchCollection matches = rgx.Matches(endpoint);
+            if ((matches.Count > 0) && (matches[0].Groups.Count> 1))
             {
-                return "ap-northeast-1";
+                region = matches[0].Groups[1].Value;
             }
-            if (endpoint.EndsWith("s3-ap-southeast-1.amazonaws.com"))
-            {
-                return "ap-southeast-1";
-            }
-            if (endpoint.EndsWith("s3-ap-southeast-2.amazonaws.com"))
-            {
-                return "ap-southeast-2";
-
-            }
-            if (endpoint.EndsWith("s3-eu-central-1.amazonaws.com"))
-            {
-                return "eu-central-1";
-            }
-            if (endpoint.EndsWith("s3-eu-west-1.amazonaws.com"))
-            {
-                return "eu-west-1";
-            }
-            if (endpoint.EndsWith("s3-sa-east-1.amazonaws.com"))
-            {
-                return "sa-east-1";
-            }
-            if (endpoint.EndsWith("s3.amazonaws.com"))
-            {
-                return "us-east-1";
-            }
-            if (endpoint.EndsWith("s3-us-west-1.amazonaws.com"))
-            {
-                return "us-west-1";
-            }
-            if (endpoint.EndsWith("s3-us-west-2.amazonaws.com"))
-            {
-                return "us-west-2";
-            }
-            return "us-east-1";
+            return (region == null) ? "" : region;
         }
        
     }

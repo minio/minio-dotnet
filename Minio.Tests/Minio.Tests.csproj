@@ -34,7 +34,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.Core|AnyCPU'">
     <OutputPath>bin\Release.Core\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
@@ -90,6 +89,7 @@
     <Compile Include="TestHelper.cs" />
     <Compile Include="PolicyTests.cs" />
     <Compile Include="AuthenticatorTest.cs" />
+    <Compile Include="RegionTest.cs" />
     <Compile Include="UtilsTest.cs" />
     <Compile Include="UrlTests.cs" />
   </ItemGroup>
