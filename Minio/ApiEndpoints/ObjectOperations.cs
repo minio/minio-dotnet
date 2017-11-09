@@ -707,10 +707,10 @@ namespace Minio
             var request = await this.CreateRequest(Method.POST, bucketName, resourcePath: resource);
             List<XElement> objects = new List<XElement>();
 
-            for (int i = 0; i < objectsList.Count; i++)
+            foreach (var obj in objectsList)
             {
                 objects.Add(new XElement("Object",
-                                       new XElement("Key", objectsList[i].Key)));
+                                       new XElement("Key", obj.Key)));
             }
 
             var deleteObjectsRequest = new XElement("DeleteObject", objects,
