@@ -28,7 +28,8 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 | [`bucketExists`](#bucketExists)  | [`copyObject`](#copyObject)  | [`presignedPostPolicy`](#presignedPostPolicy)  |[`setBucketNotification`](#setBucketNotification)  |
 | [`removeBucket`](#removeBucket)  | [`statObject`](#statObject) |   | [`getBucketNotification`](#getBucketNotification)  |
 | [`listObjects`](#listObjects)  | [`removeObject`](#removeObject) |   |  [`removeAllBucketNotification`](#removeAllBucketNotification) |
-| [`listIncompleteUploads`](#listIncompleteUploads)  | [`removeIncompleteUpload`](#removeIncompleteUpload) |   |   |
+| [`listIncompleteUploads`](#listIncompleteUploads)  | [`removeObjects`](#removeObjects) |   |   |
+| | [`removeIncompleteUpload`](#removeIncompleteUpload) |   |   |
 
 
 ## 1. Constructors
@@ -993,9 +994,59 @@ __Example__
 ```cs
 try 
 {
-    // Remove my-objectname from the bucket my-bucketname.
+    // Remove objectname from the bucket my-bucketname.
     await minioClient.RemoveObjectAsync("mybucket", "myobject");
     Console.Out.WriteLine("successfully removed mybucket/myobject");
+} 
+catch (MinioException e) 
+{
+    Console.Out.WriteLine("Error: " + e);
+}
+```
+<a name="removeObjects"></a>
+### RemoveObjectAsync(string bucketName, IEnumerable<string> objectsList)
+
+`Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectsList, CancellationToken cancellationToken = default(CancellationToken))`
+
+Removes a list of objects.
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``bucketName``  | _string_  | Name of the bucket  |
+| ``objectsList``  | _IEnumerable<string>_  | IEnumerable of Object names |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task``  | Listed Exceptions: |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``ConnectionException`` : upon connection error            |
+|        | ``InternalClientException`` : upon internal library error        |
+
+
+
+__Example__
+
+
+```cs
+try 
+{
+    List<String> objectNames = new LinkedList<String>();
+    objectNames.add("my-objectname1");
+    objectNames.add("my-objectname2");
+    objectNames.add("my-objectname3");
+    // Remove list of objects in objectNames from the bucket bucketName.
+    IObservable<DeleteError> observable = await minio.RemoveObjectAsync(bucketName, objectNames);
+    IDisposable subscription = observable.Subscribe(
+        deleteError => Console.WriteLine("Object: {0}", deleteError.Key),
+        ex => Console.WriteLine("OnError: {0}", ex),
+        () =>
+        {
+            Console.WriteLine("Listed all delete errors for remove objects on  " + bucketName + "\n");
+        });
 } 
 catch (MinioException e) 
 {

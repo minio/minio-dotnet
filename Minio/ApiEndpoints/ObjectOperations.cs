@@ -30,6 +30,8 @@ using Minio.Exceptions;
 using System.Globalization;
 using Minio.Helper;
 using System.Threading;
+using System.Text;
+using System.Xml;
 
 namespace Minio
 {
@@ -679,8 +681,8 @@ namespace Minio
         /// <summary>
         /// Removes an object with given name in specific bucket
         /// </summary>
-        /// <param name="bucketName">Bucket to list incomplete uploads from</param>
-        /// <param name="objectName">Key of object to list incomplete uploads from</param>
+        /// <param name="bucketName">Bucket to remove object from</param>
+        /// <param name="objectName">Key of object to remove</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         public async Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))
@@ -690,8 +692,93 @@ namespace Minio
                                                      objectName: objectName);
 
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+        }
 
+        /// <summary>
+        /// private helper method to remove list of objects from bucket
+        /// </summary>
+        /// <param name="bucketName"></param>
+        /// <param name="objectsList"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        private async Task<List<DeleteError>> removeObjectsAsync(string bucketName, List<DeleteObject> objectsList, CancellationToken cancellationToken)
+        {
+            string resource = "?delete";
+            var request = await this.CreateRequest(Method.POST, bucketName, resourcePath: resource);
+            List<XElement> objects = new List<XElement>();
 
+            foreach (var obj in objectsList)
+            {
+                objects.Add(new XElement("Object",
+                                       new XElement("Key", obj.Key)));
+            }
+
+            var deleteObjectsRequest = new XElement("DeleteObject", objects,
+                                        new XElement("Quiet",true));
+
+            var bodyString = deleteObjectsRequest.ToString();
+
+            var body = System.Text.Encoding.UTF8.GetBytes(bodyString);
+            request.AddParameter("application/xml", body, RestSharp.ParameterType.RequestBody);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+            DeleteObjectsResult deleteResult = null;
+            using (var stream = new MemoryStream(contentBytes))
+                deleteResult = (DeleteObjectsResult)(new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(stream));
+
+            if (deleteResult == null )
+            {
+                return new List<DeleteError>();
+            }
+            return deleteResult.ErrorList();
+        }
+
+        /// <summary>
+        /// Removes multiple objects from a specific bucket
+        /// </summary>
+        /// <param name="bucketName">Bucket to  remove objects from</param>
+        /// <param name="objectNames">List of object keys to remove.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        public async Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectNames, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (objectNames == null)
+            {
+                return null;
+            }
+            utils.validateBucketName(bucketName);
+            List<DeleteObject> objectList;
+            return Observable.Create<DeleteError>(
+              async obs =>
+              {
+                  bool process = true;
+                  int count = objectNames.Count();
+                  int i = 0;
+
+                  while (process)
+                  {
+                      objectList = new List<DeleteObject>();
+                      while (i < count)
+                      {
+                          string objectName = objectNames.ElementAt(i);
+                          utils.validateObjectName(objectName);
+                          objectList.Add(new DeleteObject(objectName));
+                          i++;
+                          if (i % 1000 == 0)
+                             break;                          
+                      }
+                      if (objectList.Count() > 0)
+                      {
+                        var errorsList = await removeObjectsAsync(bucketName, objectList, cancellationToken);
+                        foreach (DeleteError error in errorsList)
+                        {
+                            obs.OnNext(error);
+                        }
+                      }
+                      if (i >= objectNames.Count())
+                        process = !process;
+                  }
+              });
         }
 
         /// <summary>

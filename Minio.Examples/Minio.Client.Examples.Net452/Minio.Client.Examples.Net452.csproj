@@ -140,6 +140,9 @@
     <Compile Include="..\Cases\RemoveObject.cs">
       <Link>Cases\RemoveObject.cs</Link>
     </Compile>
+    <Compile Include="..\Cases\RemoveObjects.cs">
+      <Link>Cases\RemoveObjects.cs</Link>
+    </Compile>
     <Compile Include="..\Cases\SetBucketNotification.cs">
       <Link>Cases\SetBucketNotification.cs</Link>
     </Compile>

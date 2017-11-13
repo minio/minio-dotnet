@@ -51,6 +51,7 @@
     <Compile Include="..\Cases\RemoveBucket.cs" Link="Cases\RemoveBucket.cs" />
     <Compile Include="..\Cases\RemoveIncompleteUpload.cs" Link="Cases\RemoveIncompleteUpload.cs" />
     <Compile Include="..\Cases\RemoveObject.cs" Link="Cases\RemoveObject.cs" />
+    <Compile Include="..\Cases\RemoveObjects.cs" Link="Cases\RemoveObjects.cs" />
     <Compile Include="..\Cases\SetBucketNotification.cs" Link="Cases\SetBucketNotification.cs" />
     <Compile Include="..\Cases\SetBucketPolicy.cs" Link="Cases\SetBucketPolicy.cs" />
     <Compile Include="..\Cases\StatObject.cs" Link="Cases\StatObject.cs" />

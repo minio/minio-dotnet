@@ -46,6 +46,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataModel", "DataModel", "{
 		Minio\DataModel\CopyObjectResult.cs = Minio\DataModel\CopyObjectResult.cs
 		Minio\DataModel\CopyPartResult.cs = Minio\DataModel\CopyPartResult.cs
 		Minio\DataModel\CreateBucketConfiguration.cs = Minio\DataModel\CreateBucketConfiguration.cs
+		Minio\DataModel\DeletedObject.cs = Minio\DataModel\DeletedObject.cs
+		Minio\DataModel\DeleteObject.cs = Minio\DataModel\DeleteObject.cs
+		Minio\DataModel\DeleteObjectsRequest.cs = Minio\DataModel\DeleteObjectsRequest.cs
+		Minio\DataModel\DeleteObjectsResult.cs = Minio\DataModel\DeleteObjectsResult.cs
 		Minio\DataModel\Grant.cs = Minio\DataModel\Grant.cs
 		Minio\DataModel\GranteeUser.cs = Minio\DataModel\GranteeUser.cs
 		Minio\DataModel\InitiateMultipartUploadResult.cs = Minio\DataModel\InitiateMultipartUploadResult.cs
@@ -68,6 +72,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Exceptions", "Exceptions", 
 		Minio\Exceptions\AccessDeniedException.cs = Minio\Exceptions\AccessDeniedException.cs
 		Minio\Exceptions\BucketNotFoundException.cs = Minio\Exceptions\BucketNotFoundException.cs
 		Minio\Exceptions\ConnectionException.cs = Minio\Exceptions\ConnectionException.cs
+		Minio\Exceptions\DeleteError.cs = Minio\Exceptions\DeleteError.cs
+		Minio\Exceptions\DeleteObjectException.cs = Minio\Exceptions\DeleteObjectException.cs
 		Minio\Exceptions\EntityTooLargeException.cs = Minio\Exceptions\EntityTooLargeException.cs
 		Minio\Exceptions\ErrorResponse.cs = Minio\Exceptions\ErrorResponse.cs
 		ErrorResponseException.cs = ErrorResponseException.cs
@@ -128,6 +134,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cases", "Cases", "{FD22BDF0
 		Minio.Examples\Cases\GetBucketNotification.cs = Minio.Examples\Cases\GetBucketNotification.cs
 		Minio.Examples\Cases\GetPartialObject.cs = Minio.Examples\Cases\GetPartialObject.cs
 		Minio.Examples\Cases\RemoveAllBucketNotifications.cs = Minio.Examples\Cases\RemoveAllBucketNotifications.cs
+		RemoveObjects.cs = RemoveObjects.cs
 		Minio.Examples\Cases\SetBucketNotification.cs = Minio.Examples\Cases\SetBucketNotification.cs
 	EndProjectSection
 EndProject

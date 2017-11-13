@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,22 +14,32 @@
  * limitations under the License.
  */
 
+using Minio.Exceptions;
 using System;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace Minio.Exceptions
+namespace Minio.DataModel
 {
     [Serializable]
-    [XmlRoot(ElementName="Error",Namespace = "")]
-    public class ErrorResponse
+    [XmlRoot(ElementName = "DeleteResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+
+    public class DeleteObjectsResult
     {
-        public string Code { get; set; }
-        public string Message { get; set; }
-        public string RequestId { get; set; }
-        public string HostId { get; set; }
-        public string Resource { get; set; }
-        public string BucketName { get; set; }
-        public string Key { get; set; }
-        public string BucketRegion { get; set; }
+        [XmlElement("Deleted")]
+        public List<DeletedObject> objectsList;
+
+        [XmlElement("Error")]
+        public List<DeleteError> errorList;
+
+        public List<DeletedObject> ObjectsList()
+        {
+          return this.objectsList;
+        }
+
+        public List<DeleteError> ErrorList()
+        {
+          return this.errorList;
+        }
     }
 }

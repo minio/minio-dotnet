@@ -467,7 +467,6 @@ namespace Minio
                 request.AddHeader("x-amz-content-sha256","UNSIGNED-PAYLOAD");
                 return;
             }
-
             if (request.Method == Method.PUT || request.Method.Equals(Method.POST))
             {
                 var bodyParameter = request.Parameters.Where(p => p.Type.Equals(ParameterType.RequestBody)).FirstOrDefault();
@@ -513,8 +512,13 @@ namespace Minio
                 {
                     return;
                 }
+                bool isMultiDeleteRequest = false;
+                if (request.Method == Method.POST && request.Resource.EndsWith("?delete"))
+                {
+                    isMultiDeleteRequest = true;
+                }
                 // For insecure, authenticated requests set sha256 header instead of MD5.
-                if (!isSecure && !isAnonymous)
+                if (!isSecure && !isAnonymous && !isMultiDeleteRequest)
                     return;
                 // All anonymous access requests get Content-MD5 header set.
                 byte[] body = null;
