@@ -1099,7 +1099,7 @@ catch(MinioException e)
 <a name="presignedGetObject"></a>
 
 ### PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string,string> reqParams = null);
-`Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)`
+`Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt,, Dictionary<string,string> reqParams = null))`
 
 Generates a presigned URL for HTTP GET operations. Browsers/Mobile clients may point to this URL to directly download objects even if the bucket is private. This presigned URL can have an associated expiration time in seconds after which it is no longer operational. The default expiry is set to 7 days.
 
