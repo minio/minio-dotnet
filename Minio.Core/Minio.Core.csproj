@@ -46,7 +46,6 @@
     <Compile Include="..\Minio\DataModel\ListBucketResult.cs" Link="DataModel\ListBucketResult.cs" />
     <Compile Include="..\Minio\DataModel\ListMultipartUploadsResult.cs" Link="DataModel\ListMultipartUploadsResult.cs" />
     <Compile Include="..\Minio\DataModel\ListPartsResult.cs" Link="DataModel\ListPartsResult.cs" />
-    <Compile Include="..\Minio\DataModel\LocationConstraint.cs" Link="DataModel\LocationConstraint.cs" />
     <Compile Include="..\Minio\DataModel\Notification\Arn.cs" Link="DataModel\Notification\Arn.cs" />
     <Compile Include="..\Minio\DataModel\Notification\BucketNotification.cs" Link="DataModel\Notification\BucketNotification.cs" />
     <Compile Include="..\Minio\DataModel\Notification\EventType.cs" Link="DataModel\Notification\EventType.cs" />
@@ -89,11 +88,8 @@
     <Compile Include="..\Minio\Exceptions\InvalidBucketNameException.cs" Link="Exceptions\InvalidBucketNameException.cs" />
     <Compile Include="..\Minio\Exceptions\InvalidContentLengthException.cs" Link="Exceptions\InvalidContentLengthException.cs" />
     <Compile Include="..\Minio\Exceptions\InvalidEndpointException.cs" Link="Exceptions\InvalidEndpointException.cs" />
-    <Compile Include="..\Minio\Exceptions\InvalidKeyNameException.cs" Link="Exceptions\InvalidKeyNameException.cs" />
     <Compile Include="..\Minio\Exceptions\InvalidObjectNameException.cs" Link="Exceptions\InvalidObjectNameException.cs" />
     <Compile Include="..\Minio\Exceptions\InvalidObjectPrefixException.cs" Link="Exceptions\InvalidObjectPrefixException.cs" />
-    <Compile Include="..\Minio\Exceptions\MaxBucketsReachedException.cs" Link="Exceptions\MaxBucketsReachedException.cs" />
-    <Compile Include="..\Minio\Exceptions\MethodNotAllowedException.cs" Link="Exceptions\MethodNotAllowedException.cs" />
     <Compile Include="..\Minio\Exceptions\MinioException.cs" Link="Exceptions\MinioException.cs" />
     <Compile Include="..\Minio\Exceptions\ObjectNotFoundException.cs" Link="Exceptions\ObjectNotFoundException.cs" />
     <Compile Include="..\Minio\Exceptions\RedirectionException.cs" Link="Exceptions\RedirectionException.cs" />
