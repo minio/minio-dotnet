@@ -117,9 +117,6 @@
     <Compile Include="..\Minio\DataModel\CreateBucketConfiguration.cs">
       <Link>DataModel\CreateBucketConfiguration.cs</Link>
     </Compile>
-    <Compile Include="..\Minio\DataModel\DateFormat.cs">
-      <Link>DataModel\DateFormat.cs</Link>
-    </Compile>
     <Compile Include="..\Minio\DataModel\DeletedObject.cs">
       <Link>DataModel\DeletedObject.cs</Link>
     </Compile>
@@ -131,12 +128,6 @@
     </Compile>
     <Compile Include="..\Minio\DataModel\DeleteObjectsResult.cs">
       <Link>DataModel\DeleteObjectsResult.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Grant.cs">
-      <Link>DataModel\Grant.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\GranteeUser.cs">
-      <Link>DataModel\GranteeUser.cs</Link>
     </Compile>
     <Compile Include="..\Minio\DataModel\InitiateMultipartUploadResult.cs">
       <Link>DataModel\InitiateMultipartUploadResult.cs</Link>
@@ -155,9 +146,6 @@
     </Compile>
     <Compile Include="..\Minio\DataModel\ListPartsResult.cs">
       <Link>DataModel\ListPartsResult.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\LocationConstraint.cs">
-      <Link>DataModel\LocationConstraint.cs</Link>
     </Compile>
     <Compile Include="..\Minio\DataModel\Notification\Arn.cs">
       <Link>DataModel\Notification\Arn.cs</Link>
@@ -285,20 +273,11 @@
     <Compile Include="..\Minio\Exceptions\InvalidEndpointException.cs">
       <Link>Exceptions\InvalidEndpointException.cs</Link>
     </Compile>
-    <Compile Include="..\Minio\Exceptions\InvalidKeyNameException.cs">
-      <Link>Exceptions\InvalidKeyNameException.cs</Link>
-    </Compile>
     <Compile Include="..\Minio\Exceptions\InvalidObjectNameException.cs">
       <Link>Exceptions\InvalidObjectNameException.cs</Link>
     </Compile>
     <Compile Include="..\Minio\Exceptions\InvalidObjectPrefixException.cs">
       <Link>Exceptions\InvalidObjectPrefixException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\MaxBucketsReachedException.cs">
-      <Link>Exceptions\MaxBucketsReachedException.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\Exceptions\MethodNotAllowedException.cs">
-      <Link>Exceptions\MethodNotAllowedException.cs</Link>
     </Compile>
     <Compile Include="..\Minio\Exceptions\MinioException.cs">
       <Link>Exceptions\MinioException.cs</Link>
