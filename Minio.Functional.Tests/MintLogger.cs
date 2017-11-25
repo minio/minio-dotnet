@@ -86,7 +86,7 @@ namespace Minio.Functional.Tests
       }  
       public  void Log() {
 
-          Console.Out.WriteLine(JsonConvert.SerializeObject(this,Formatting.Indented,
+          Console.Out.WriteLine(JsonConvert.SerializeObject(this,Formatting.None,
             new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
       }
     }
