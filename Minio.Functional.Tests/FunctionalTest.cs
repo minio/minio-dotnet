@@ -226,7 +226,7 @@ namespace Minio.Functional.Tests
         }
         private static void runQuickTests(MinioClient minioClient)
         {
-              // Check if bucket exists
+            // Check if bucket exists
             BucketExists_Test(minioClient).Wait();
 
             // Create a new bucket
@@ -236,7 +236,8 @@ namespace Minio.Functional.Tests
             ListObjects_Test1(minioClient).Wait();
             RemoveObject_Test1(minioClient).Wait();
             CopyObject_Test1(minioClient).Wait();
-           // Test SetPolicyAsync function
+            
+            // Test SetPolicyAsync function
             SetBucketPolicy_Test1(minioClient).Wait();
 
             // Test Presigned Get/Put operations
@@ -375,9 +376,6 @@ namespace Minio.Functional.Tests
             {
                 new MintLogger("RemoveBucket_Test1","Tests whether RemoveBucket passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString()).Log();
             }
-    
-
-
         }
         private async static Task ListBuckets_Test(MinioClient minio)
         {
@@ -603,12 +601,12 @@ namespace Minio.Functional.Tests
                         await TearDown(minio, bucketName);
                 }
                 new MintLogger("PutObject_Test8","Tests whether PutObject with unknown stream-size passes",TestStatus.PASS,(DateTime.Now - startTime)).Log();
+            }
+            catch (Exception ex)
+            {
+                new MintLogger("PutObject_Test8","Tests whether PutObject with unknown stream-size passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString()).Log();
+            }
         }
-        catch (Exception ex)
-        {
-            new MintLogger("PutObject_Test8","Tests whether PutObject with unknown stream-size passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString()).Log();
-        }
-    }
         private async static Task PutObject_Task(MinioClient minio, string bucketName, string objectName, string fileName = null, string contentType = "application/octet-stream", long size = 0, Dictionary<string, string> metaData = null, MemoryStream mstream = null)
         {
             try
@@ -732,7 +730,7 @@ namespace Minio.Functional.Tests
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("[Bucket]  Exception: {0}", e);
+                    new MintLogger("StatObject_Test1","Tests whether StatObject passes",TestStatus.FAIL,(DateTime.Now - startTime),"",e.Message, e.ToString()).Log();
                     Assert.Fail();
                 }
                 await TearDown(minio, bucketName);
@@ -1111,7 +1109,7 @@ namespace Minio.Functional.Tests
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("[Bucket]  Exception: {0}", e);
+                    new MintLogger("GetObject_Test1","Tests whether GetObject as stream works",TestStatus.FAIL,(DateTime.Now - startTime),"",e.Message, e.ToString()).Log();
                     Assert.Fail();
                 }
                 await TearDown(minio, bucketName);
@@ -1192,7 +1190,7 @@ namespace Minio.Functional.Tests
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Bucket]  Exception: {0}", e);
+                new MintLogger("GetObject_Test3","Tests whether GetObject returns all the data",TestStatus.FAIL,(DateTime.Now - startTime),"",e.Message, e.ToString()).Log();
                 Assert.Fail();
             }
             await TearDown(minio, bucketName);
@@ -1498,11 +1496,8 @@ namespace Minio.Functional.Tests
                    ex => Console.WriteLine("OnError: {0}", ex),
                    () =>
                    {
-                       Console.WriteLine("Listed all delete errors for remove objects on  " + bucketName + "\n");
                        TearDown(minio, bucketName).Wait();
                    });
-
-
                 new MintLogger("RemoveObjects_Test2","Tests whether RemoveObjectAsync for multi objects delete passes",TestStatus.PASS,(DateTime.Now - startTime)).Log();
             }
             catch (MinioException ex)
@@ -1801,7 +1796,7 @@ namespace Minio.Functional.Tests
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("[Bucket]  Exception: {0}", e);
+                    new MintLogger("ListIncompleteUpload_Test1","Tests whether ListIncompleteUpload passes",TestStatus.FAIL,(DateTime.Now - startTime),"",e.Message, e.ToString()).Log();
                     Assert.Fail();
                 }
                 await TearDown(minio, bucketName);
@@ -1848,7 +1843,7 @@ namespace Minio.Functional.Tests
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("[Bucket]  Exception: {0}", e);
+                    new MintLogger("ListIncompleteUpload_Test2","Tests whether ListIncompleteUpload passes when qualified by prefix",TestStatus.FAIL,(DateTime.Now - startTime),"",e.Message, e.ToString()).Log();
                     Assert.Fail();
                 }
                 await TearDown(minio, bucketName);
@@ -1896,7 +1891,7 @@ namespace Minio.Functional.Tests
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("[Bucket]  Exception: {0}", e);
+                    new MintLogger("ListIncompleteUpload_Test3","Tests whether ListIncompleteUpload passes when qualified by prefix and recursive",TestStatus.FAIL,(DateTime.Now - startTime),"",e.Message, e.ToString()).Log();
                     Assert.Fail();
                 }
                 await TearDown(minio, bucketName);
@@ -1944,7 +1939,7 @@ namespace Minio.Functional.Tests
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("[Bucket]  Exception: {0}", e);
+                    new MintLogger("RemoveIncompleteUpload_Test1","Tests whether RemoveIncompleteUpload passes.",TestStatus.FAIL,(DateTime.Now - startTime),"",e.Message, e.ToString()).Log();
                     Assert.Fail();
                 }
                 await TearDown(minio, bucketName);
