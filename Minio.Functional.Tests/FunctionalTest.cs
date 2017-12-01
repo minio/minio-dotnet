@@ -1323,8 +1323,7 @@ namespace Minio.Functional.Tests
                 string bucketName = GetRandomName(15);
                 await Setup_Test(minio, bucketName);
 
-                await ListObjects_Test(minio, bucketName, null, 0);
-
+                ListObjects_Test(minio, bucketName, null, 0).Wait(5000);
                 await TearDown(minio, bucketName);
                 new MintLogger("ListObjects_Test2","Tests whether ListObjects passes when bucket is empty",TestStatus.PASS,(DateTime.Now - startTime)).Log();
             }
