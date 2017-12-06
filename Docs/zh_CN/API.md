@@ -59,7 +59,7 @@ __安全访问__
 
 |  |
 |---|
-|`针对client对象链式调用.WithSSL()，可以启用https。 `   |
+|`client对象链式调用.WithSSL()，可以启用https。 `   |
 
 
 __示例__
