@@ -111,10 +111,12 @@ namespace FileUploader
 
 ## 运行Minio Client示例
 ####  Windows
-* clone这个repository，并在Visual Studio 2017中找开Minio.Sln。
-
+* clone这个项目，并在Visual Studio 2017中打开Minio.Sln。
+```
+$ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet 
+```
 * 在Minio.Examples/Program.cs中输入你的认证信息、存储桶名称、对象名称等。
-  在Program.cs中取消注释以下示例测试用例来运行示例。
+  在Program.cs中取消注释以下类似的测试用例来运行示例。
 ```cs
   //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
 ```
@@ -130,17 +132,6 @@ namespace FileUploader
 $ ./mono_install.sh    
 ```
 ##### 运行Minio.Examples 
-* clone这个项目。
-
-```
-$ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet 
-```
-
-* 在Minio.Examples/Program.cs中输入你的认证信息、存储桶名称、对象名称等。
-  在Program.cs中取消注释以下示例测试用例来运行示例。
-```cs
-  //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
-```
 * 运行.NET4.5.2示例
 ```
 $ mono nuget.exe restore
