@@ -831,33 +831,8 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_Test(minio, bucketName);
-                try
-                {
-                    using (var filestream = rsg.GenerateStreamFromSeed(1 * MB))
-                    {
-                        long file_write_size = filestream.Length;
+                await PutObject_Tester(minio, bucketName, objectName, null, null, 0, null, rsg.GenerateStreamFromSeed(1 * MB));
 
-                        await minio.PutObjectAsync(bucketName,
-                                            objectName,
-                                            filestream,
-                                            filestream.Length,
-                                            contentType);
-                        ObjectStat statObject = await minio.StatObjectAsync(bucketName, objectName);
-                        Assert.IsNotNull(statObject);
-                        Assert.AreEqual(statObject.ObjectName, objectName);
-                        Assert.AreEqual(statObject.Size, file_write_size);
-                        Assert.AreEqual(statObject.ContentType, contentType);
-
-                        await minio.RemoveObjectAsync(bucketName, objectName);
-                    }
-
-
-                }
-                catch (Exception ex)
-                {
-                    Assert.Fail();
-                    throw ex;
-                }
                 await TearDown(minio, bucketName);
                 new MintLogger("StatObject_Test1",statObjectSignature,"Tests whether StatObject passes",TestStatus.PASS,(DateTime.Now - startTime), args:args).Log();
             }
@@ -1649,14 +1624,17 @@ namespace Minio.Functional.Tests
             };
             try
             {
-                int numObjects = 1050;
+                int numObjects = 101;
                 await Setup_Test(minio, bucketName);
-                Task[] tasks = new Task[numObjects];
-                for (int i = 1; i <= numObjects; i++) {
-                    tasks[i - 1]= PutObject_Task(minio, bucketName, objectNamePrefix + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
+                for (int j=1; j <= 10; j++) {
+                    Task[] tasks = new Task[numObjects];
+                    // split parallel uploads into batches to avoid crossing default max open fd limit[1024] for a process
+                    for (int i = 1; i <= numObjects; i++) {
+                        tasks[i - 1]= PutObject_Task(minio, bucketName, objectNamePrefix + j.ToString()+  i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
+                    }
+                    Task.WaitAll(tasks);
+                    System.Threading.Thread.Sleep(5000);
                 }
-                await Task.WhenAll(tasks);
-               
                 ListObjects_Test(minio, bucketName, objectNamePrefix, numObjects,false).Wait();
                 System.Threading.Thread.Sleep(5000);
                 for(int index=1; index <= numObjects; index++)
@@ -1730,21 +1708,24 @@ namespace Minio.Functional.Tests
             Dictionary<string,string> args = new Dictionary<string,string>
             {
                 {"bucketName", bucketName},
-                {"objectNames","[" + objectName + "0..." + objectName + "1004]"},
+                {"objectNames","[" + objectName + "1..." + objectName + "1010]"},
             };
             try
             {
-                int count = 1005;
-                Task[] tasks = new Task[count];
+                int count = 101;
                 List<string> objectsList = new List<string>();
                 await Setup_Test(minio, bucketName);
-                for (int i = 0; i < count; i++)
-                {
-                    tasks[i] = PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(5));
-                    objectsList.Add(objectName + i.ToString());
+                for (int j=1; j <= 10; j++) {
+                    Task[] tasks = new Task[count];
+                    // split parallel uploads into batches to avoid crossing default max open fd limit[1024] for a process
+                    for (int i = 1; i <= count; i++) {
+                        string suffix = ((j - 1)* 10 + i).ToString();
+                        tasks[i - 1]= PutObject_Task(minio, bucketName, objectName + suffix, null, null, 0, null, rsg.GenerateStreamFromSeed(1));
+                        objectsList.Add(objectName + suffix);
+                    }
+                    Task.WaitAll(tasks);
+                    System.Threading.Thread.Sleep(5000);
                 }
-                Task.WhenAll(tasks).Wait();
-                System.Threading.Thread.Sleep(5000);
                 DeleteError de;
                 IObservable<DeleteError> observable = await minio.RemoveObjectAsync(bucketName, objectsList);
                 IDisposable subscription = observable.Subscribe(
