@@ -207,7 +207,7 @@ namespace Minio.DataModel
         /// <param name="date">Set date for the policy</param>
         public void SetDate(DateTime date)
         {
-            string dateStr = date.ToString("yyyyMMddTHHmmssZ");
+            string dateStr = date.ToString("yyyyMMddTHHmmssZ", new System.Globalization.CultureInfo("en-US"));
             this.policies.Add(new Tuple<string, string, string>("eq", "$x-amz-date", dateStr));
             this.formData.Add("x-amz-date", dateStr);
         }
