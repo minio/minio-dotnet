@@ -160,9 +160,9 @@ namespace Minio.Functional.Tests
 
             string runMode = Environment.GetEnvironmentVariable("MINT_MODE");
 
-            if (!String.IsNullOrEmpty(runMode) && runMode.Equals("quick"))
+            if (!String.IsNullOrEmpty(runMode) && runMode.Equals("core"))
             {
-                runQuickTests(minioClient);
+                runCoreTests(minioClient);
                 System.Environment.Exit(0);
             }
             // Check if bucket exists
@@ -248,7 +248,7 @@ namespace Minio.Functional.Tests
 
             GetBucketPolicy_Test1(minioClient).Wait();
         }
-        private static void runQuickTests(MinioClient minioClient)
+        private static void runCoreTests(MinioClient minioClient)
         {
             // Check if bucket exists
             BucketExists_Test(minioClient).Wait();
