@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Minio.NetCore</id>
-    <version>1.0.7</version>
+    <version>1.0.8</version>
     <authors>Minio, Inc.</authors>
     <owners>Minio, Inc</owners>
     <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
