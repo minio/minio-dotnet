@@ -21,7 +21,7 @@ test_script:
   - ps: dotnet test .\Minio.Tests\Minio.Tests.csproj -f netcoreapp2.0
 
 after_test:
-  - ps: dotnet pack .\Minio -c Release - o artifacts
+  - ps: dotnet pack .\Minio\Minio.csproj -c Release -o artifacts
 
 artifacts:
   - path: artifacts\*.nupkg
