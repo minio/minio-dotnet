@@ -38,7 +38,6 @@ namespace Minio
         /// <summary>
         /// List all objects in a bucket
         /// </summary>
-        /// <param name="bucketName">Bucket to list objects from</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task with an iterator lazily populated with objects</returns>
         public async Task<ListAllMyBucketsResult> ListBucketsAsync(CancellationToken cancellationToken = default(CancellationToken))
@@ -67,6 +66,7 @@ namespace Minio
         /// Create a private bucket with the given name.
         /// </summary>
         /// <param name="bucketName">Name of the new bucket</param>
+        /// <param name="location">Region</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns> Task </returns>
         public async Task MakeBucketAsync(string bucketName, string location = "us-east-1", CancellationToken cancellationToken = default(CancellationToken))
@@ -390,11 +390,11 @@ namespace Minio
         /// <param name="bucketName"> bucket name </param>
         /// <param name="cancellationToken"> optional cancellation token</param>
         /// <returns></returns>
-        public async Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        public Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
             utils.validateBucketName(bucketName);
             BucketNotification notification = new BucketNotification();
-            await SetBucketNotificationsAsync(bucketName, notification, cancellationToken);
+            return SetBucketNotificationsAsync(bucketName, notification, cancellationToken);
         }
     }
 }

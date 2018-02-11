@@ -71,9 +71,10 @@ namespace Minio
         /// <summary>
         /// Authenticator constructor.
         /// </summary>
-        /// <param name="scheme">URL Scheme</param>
+        /// <param name="secure"></param>
         /// <param name="accessKey">Access key id</param>
         /// <param name="secretKey">Secret access key</param>
+        /// <param name="region"></param>
         public V4Authenticator(bool secure,string accessKey, string secretKey, string region ="us-east-1")
         {
             this.isSecure = secure;
@@ -116,7 +117,7 @@ namespace Minio
         }
 
         /// <summary>
-        /// Get credential string of form <ACCESSID>/date/region/s3/aws4_request. 
+        /// Get credential string of form {ACCESSID}/date/region/s3/aws4_request. 
         /// </summary>
         /// <param name="signingDate">Signature initated date</param>
         /// <param name="region">Region for the credential string</param>
@@ -403,33 +404,25 @@ namespace Minio
             {
                 string headerName = header.Name.ToLower();
                 string headerValue = header.Value.ToString();
-            #if NET452
-                                if (!ignoredHeaders.Contains(headerName))
-                                {
-                                    sortedHeaders.Add(headerName, headerValue);
-                                }
-            #else 
-                                 if (headerName.Equals("host"))
-                                {
-                                    var host = headerValue.Split(':')[0];
-                                    var port = headerValue.Split(':')[1];
-                                    if (port.Equals("80") || port.Equals("443"))
-                                    {
-                                        sortedHeaders.Add(headerName, host);
-                                    }
-                                    else
-                                    {
-                                        sortedHeaders.Add(headerName, headerValue);
-                                    }
-                                }
-                                else if (!ignoredHeaders.Contains(headerName))
-                                {
-                                    sortedHeaders.Add(headerName, headerValue);
-                                }
-
-            #endif
-
+                if (headerName.Equals("host"))
+                {
+                    var host = headerValue.Split(':')[0];
+                    var port = headerValue.Split(':')[1];
+                    if (port.Equals("80") || port.Equals("443"))
+                    {
+                        sortedHeaders.Add(headerName, host);
+                    }
+                    else
+                    {
+                        sortedHeaders.Add(headerName, headerValue);
+                    }
+                }
+                else if (!ignoredHeaders.Contains(headerName))
+                {
+                    sortedHeaders.Add(headerName, headerValue);
+                }
             }
+
             return sortedHeaders;
             
         }

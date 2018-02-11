@@ -1,19 +1,4 @@
-﻿using System.Reflection;
+using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
-// General Information about an assembly is controlled through the following
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Vagrant Inc.")]
-[assembly: AssemblyProduct("MinioCore22")]
-[assembly: AssemblyTrademark("")]
-
-// Setting ComVisible to false makes the types in this assembly not visible
-// to COM components.  If you need to access a type in this assembly from
-// COM, set the ComVisible attribute to true on that type.
-[assembly: ComVisible(false)]
-
-// The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("c7579cad-6d2a-45e0-8737-8e66c78ebe2f")]
+[assembly: InternalsVisibleTo("Minio.Tests, PublicKey=002400000480000094000000060200000024000052534131000400000100010089AB1063CE53A0D6996B457CA7F0459426360358488D111A35727013E090404FFB7D338B122B5543243C27B0589D6E1A584A3B7ADC608A3933B11DC8D19B961A5054C183A1475D3601BF0EBF0B5F5F3C4FD727BD4233D852B9F90200F98F06716303238FDC26A18EB9450EF7C3DC4B651E9101A457F028278FB1E1C8EA54AFC8")]

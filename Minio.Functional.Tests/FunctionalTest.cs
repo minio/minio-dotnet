@@ -18,19 +18,17 @@ using System;
 using System.Text;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
 using System.Net.Http;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Threading;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
 using Minio.Exceptions;
 
 namespace Minio.Functional.Tests
-
 {
-    class FunctionalTest
+    public class FunctionalTest
     {
         private static Random rnd = new Random();
         private static int MB = 1024 * 1024;
@@ -2025,7 +2023,7 @@ namespace Minio.Functional.Tests
                 new MintLogger("ListIncompleteUpload_Test1",listIncompleteUploadsSignature,"Tests whether ListIncompleteUpload passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString()).Log();
             }
         }
-    private async static Task ListIncompleteUpload_Test2(MinioClient minio)
+        private async static Task ListIncompleteUpload_Test2(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
@@ -2239,6 +2237,7 @@ namespace Minio.Functional.Tests
             }
         }
     }
+
     internal class RandomStreamGenerator
     {
         private readonly Random _random = new Random();

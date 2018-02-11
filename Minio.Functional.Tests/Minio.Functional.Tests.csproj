@@ -1,43 +1,24 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
-    <RuntimeIdentifiers>
-      ubuntu.16.04-x64;linuxmint.17.3-x64;win10-x64
-    </RuntimeIdentifiers>
-    <PackageId>$(MSBuildProjectName)</PackageId>
-
-
+    <IsPackable>False</IsPackable>
+    <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release.Net452|AnyCPU'" />
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release.Core|AnyCPU'" />
-  
-  <Choose>  
-        <When Condition=" '$(Configuration)'=='Debug' ">
-         <ItemGroup>
-            <ProjectReference Include="..\Minio.Core\Minio.Core.csproj" />
-          </ItemGroup>
-          </When>
-        <When Condition=" '$(Configuration)'=='Release.Core' ">
-          <ItemGroup>
-            <ProjectReference Include="..\Minio.Core\Minio.Core.csproj" />
-          </ItemGroup>
-        </When>
-        <When Condition=" '$(Configuration)'=='Mint' ">   
-            <ItemGroup>  
-              <PackageReference Include="Minio.Netcore" Version="1.0.*" />
-            </ItemGroup> 
-        </When>  
-  </Choose>
+  <PropertyGroup Label="Signing">
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    <AssemblyOriginatorKeyFile>..\Minio.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MSTest.TestFramework" Version="1.1.11" />
-    <PackageReference Include="System.Net.Primitives" Version="4.3.0" />
-    <PackageReference Include="System.Reactive.Linq" Version="4.0.0-preview00001" />
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="1.1.18" />
+    <PackageReference Include="MSTest.TestFramework" Version="1.1.18" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Minio\Minio.csproj" />
   </ItemGroup>
 </Project>

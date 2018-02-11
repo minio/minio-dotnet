@@ -43,7 +43,7 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Name of object to retrieve</param>
-        /// <param name="callback">A stream will be passed to the callback</param>
+        /// <param name="cb">A stream will be passed to the callback</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -65,7 +65,7 @@ namespace Minio
         /// <param name="offset"> Offset of the object from where stream will start</param>
         /// <param name="length">length of the object that will be read in the stream </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <param name="callback">A stream will be passed to the callback</param>
+        /// <param name="cb">A stream will be passed to the callback</param>
         public async Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (offset < 0)
@@ -426,7 +426,7 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName"></param>
         /// <param name="objectName"></param>
-        /// <param name="contentType"></param>
+        /// <param name="metaData"></param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         private async Task<string> NewMultipartUploadAsync(string bucketName, string objectName, Dictionary<string,string> metaData, CancellationToken cancellationToken)
@@ -454,7 +454,7 @@ namespace Minio
         /// <param name="uploadId"></param>
         /// <param name="partNumber"></param>
         /// <param name="data"></param>
-        /// <param name="contentType"></param>
+        /// <param name="metaData"></param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         private async Task<string> PutObjectAsync(string bucketName, string objectName, string uploadId, int partNumber, byte[] data, Dictionary<string,string> metaData, CancellationToken cancellationToken)
@@ -579,7 +579,7 @@ namespace Minio
         /// Lists all or delimited incomplete uploads in a given bucket with a given objectName
         /// </summary>
         /// <param name="bucketName">Bucket to list incomplete uploads from</param>
-        /// <param name="objectName">Key of object to list incomplete uploads from</param>
+        /// <param name="prefix">Key of object to list incomplete uploads from</param>
         /// <param name="delimiter">delimiter of object to list incomplete uploads</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Observable that notifies when next next upload becomes available</returns>

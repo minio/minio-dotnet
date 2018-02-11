@@ -20,9 +20,7 @@ using Newtonsoft.Json;
 
 namespace Minio.DataModel.Policy
 {
-
     internal class Statement
-
     {
         [JsonProperty("Action")]
         [JsonConverter(typeof(SingleOrArrayConverter<string>))]

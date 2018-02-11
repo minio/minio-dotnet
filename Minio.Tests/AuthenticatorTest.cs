@@ -13,19 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minio.DataModel;
-using Minio.DataModel.Policy;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.Serialization.Json;
-using System.Text;
-using static Minio.Enum;
-using RestSharp;
 using System.Linq;
+using RestSharp;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Minio.Tests
 {

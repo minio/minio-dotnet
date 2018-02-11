@@ -15,13 +15,10 @@
  */
 
 using System;
-using System.Text;
-using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
-using System.Configuration;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Exceptions;
-using Minio;
+
 namespace Minio.Tests
 {
     /// <summary>
@@ -35,10 +32,9 @@ namespace Minio.Tests
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                     | SecurityProtocolType.Tls11
                                     | SecurityProtocolType.Tls12;
-            var minio = new MinioClient(ConfigurationManager.AppSettings["Endpoint"],
-                                   ConfigurationManager.AppSettings["AccessKey"],
-                                   ConfigurationManager.AppSettings["SecretKey"]);
-
+            var minio = new MinioClient("play.minio.io:9000",
+                "Q3AM3UQ867SPQQA43P2F",
+                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG");
         }
 
         private TestContext testContextInstance;

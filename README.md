@@ -1,28 +1,24 @@
 # Minio Client SDK for .NET  [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io) [![Build status](https://ci.appveyor.com/api/projects/status/tvdpoypdmbuwg0me/branch/master?svg=true)](https://ci.appveyor.com/project/Harshavardhana/minio-dotnet/branch/master)
- 
-Minio Client SDK provides higher level APIs for Minio and Amazon S3 compatible cloud storage services.For a complete list of APIs and examples, please take a look at the [Dotnet Client API Reference](https://docs.minio.io/docs/dotnet-client-api-reference).This document assumes that you have a working VisualStudio development environment.  
+
+Minio Client SDK provides higher level APIs for Minio and Amazon S3 compatible cloud storage services.For a complete list of APIs and examples, please take a look at the [Dotnet Client API Reference](https://docs.minio.io/docs/dotnet-client-api-reference).This document assumes that you have a working VisualStudio development environment.
 
 ## Minimum Requirements
- * .NET 4.5.2, .NetStandard1.6 or higher
- * Visual Studio 2017 RC 
-  
+ * .NET 4.5.2, .NetStandard 2.0 or higher
+ * Visual Studio 2017
+
 ## Install from NuGet
 
-To install Minio .NET package for .NET Framework, run the following command in Nuget Package Manager Console.
+To install Minio .NET package, run the following command in Nuget Package Manager Console.
 ```powershell
-PM> Install-Package Minio 
-```
-To install Minio .NET package for .NetCore, run the following command in Nuget Package Manager Console.
-```powershell
-PM> Install-Package Minio.NetCore
+PM> Install-Package Minio
 ```
 ## Minio Client Example
 To connect to an Amazon S3 compatible cloud storage service, you will need to specify the following parameters.
 
-| Parameter  | Description| 
+| Parameter  | Description|
 | :---         |     :---     |
-| endpoint   | URL to object storage service.   | 
-| accessKey | Access key is the user ID that uniquely identifies your account. |   
+| endpoint   | URL to object storage service.   |
+| accessKey | Access key is the user ID that uniquely identifies your account. |
 | secretKey | Secret key is the password to your account. |
 | secure | Enable/Disable HTTPS support. |
 
@@ -41,8 +37,8 @@ private static MinioClient minio = new MinioClient("play.minio.io:9000",
 var getListBucketsTask = minio.ListBucketsAsync();
 
 // Iterate over the list of buckets.
-foreach (Bucket bucket in getListBucketsTask.Result.Buckets)          
-{                
+foreach (Bucket bucket in getListBucketsTask.Result.Buckets)
+{
     Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDate.DateTime);
 }
 
@@ -68,7 +64,7 @@ namespace FileUploader
             var accessKey = "Q3AM3UQ867SPQQA43P2F";
             var secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
             try
-            { 
+            {
                 var minio = new MinioClient(endpoint, accessKey, secretKey).WithSSL();
                 FileUpload.Run(minio).Wait();
             }
@@ -78,7 +74,7 @@ namespace FileUploader
             }
             Console.ReadLine();
         }
-        
+
         // File uploader task.
         private async static Task Run(MinioClient minio)
         {
@@ -97,7 +93,7 @@ namespace FileUploader
                     await minio.MakeBucketAsync(bucketName, location);
                 }
                 // Upload a file to bucket.
-                await minio.PutObjectAsync(bucketName, objectName, filePath, contentType);  
+                await minio.PutObjectAsync(bucketName, objectName, filePath, contentType);
                 Console.Out.WriteLine("Successfully uploaded " + objectName );
             }
             catch (MinioException e)
@@ -110,7 +106,7 @@ namespace FileUploader
 ```
 
 ## Running Minio Client Examples
-#### On Windows 
+#### On Windows
 * Clone this repository and open the Minio.Sln in Visual Studio 2017.
 
 * Enter your credentials and bucket name, object name etc.in Minio.Examples/Program.cs
@@ -118,22 +114,22 @@ namespace FileUploader
 ```cs
   //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
 ```
-* Run the Minio.Client.Examples.NET452 or Minio.Client.Examples.NetCore project from Visual Studio
+* Run the Minio.Client.Examples project from Visual Studio
 #### On Linux (Ubuntu 16.04)
 
 ##### Setting up Mono and .NETCore on Linux
-<blockquote> NOTE: minio-dotnet requires mono 5.0.1 stable release and .NET Core 1.0 SDK to build on Linux. </blockquote>
+<blockquote> NOTE: minio-dotnet requires mono 5.0.1 stable release and .NET Core 2.0 SDK to build on Linux. </blockquote>
 
 * Install [.NETCore](https://www.microsoft.com/net/core#linuxredhat) and [Mono](http://www.mono-project.com/download/#download-lin) for your distro. See sample script  to install .NETCore and Mono for Ubuntu Xenial [mono_install.sh](https://github.com/minio/minio-dotnet/blob/master/mono_install.sh)
 
 ```
-$ ./mono_install.sh    
+$ ./mono_install.sh
 ```
-##### Running Minio.Examples 
+##### Running Minio.Examples
 * Clone this project.
 
 ```
-$ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet 
+$ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet
 ```
 
 * Enter your credentials and bucket name, object name etc. in Minio.Examples/Program.cs
@@ -141,18 +137,8 @@ $ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet
 ```cs
   //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
 ```
-* To run .NET4.5.2 example,
-```
-$ mono nuget.exe restore
-$ msbuild /p:Configuration=Release.Net452 /t:Clean 
-$ msbuild /p:Configuration=Release.Net452
-$ ./Minio.Examples/Minio.Client.Examples.Net452/bin/Release.Net452/Minio.Client.Examples.Net452.exe 
-```
-* To run .NetCore example,
-```
-$ dotnet msbuild /p:Configuration=Release.Core
-$ cd Minio.Examples/Minio.Client.Examples.Core
-$ dotnet restore
+$ cd Minio.Examples
+$ dotnet build -c Release
 $ dotnet run
 ```
 #### Bucket Operations

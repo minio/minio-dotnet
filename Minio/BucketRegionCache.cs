@@ -86,6 +86,7 @@ namespace Minio
         /// <summary>
         /// Updates Region cache for given bucket.
         /// </summary>
+        /// <param name="client"></param>
         /// <param name="bucketName"></param>
         internal async Task<string> Update(MinioClient client, string bucketName)
         {

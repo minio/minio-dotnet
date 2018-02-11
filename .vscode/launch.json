@@ -6,7 +6,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceRoot}\\MinioCoreTest\\bin\\Debug\\netcoreapp1.0\\MinioCoreTest.dll",
+            "program": "${workspaceRoot}\\Minio.Tests\\bin\\Debug\\netcoreapp2.0\\Minio.Tests.dll",
             "args": [],
             "cwd": "${workspaceRoot}",
             "externalConsole": false,
