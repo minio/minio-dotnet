@@ -9,6 +9,5 @@ branches:
 install:
 
 script:
-- dotnet restore
 - dotnet build  Minio.Functional.Tests -c Release --framework netcoreapp2.0
-- dotnet run Minio.Functional.Tests/bin/Release/netcoreapp2.0/Minio.Functional.Tests.dll
+- dotnet Minio.Functional.Tests/bin/Release/netcoreapp2.0/Minio.Functional.Tests.dll
