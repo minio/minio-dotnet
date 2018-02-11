@@ -10,5 +10,5 @@ install:
 
 script:
 - dotnet restore
-- dotnet publish --output out /p:Configuration=Release
-- dotnet Minio.Functional.Tests/bin/Release/netcoreapp2.0/Minio.Functional.Tests.dll
+- dotnet build -c Release
+- dotnet run Minio.Functional.Tests/bin/Release/netcoreapp2.0/Minio.Functional.Tests.dll

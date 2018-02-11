@@ -24,7 +24,7 @@ namespace Minio.Tests
     /// <summary>
     /// Summary description for UnitTest1
     /// </summary>
-    [TestClass]
+    [TestClass, Ignore("Class was previously skipped by unit tests.. See #211")]
     public class UnitTest1
     {
         public UnitTest1()
@@ -77,13 +77,6 @@ namespace Minio.Tests
         //
         #endregion
 
-        [TestMethod]
-        public void TestMethod1()
-        {
-            //
-            // TODO: Add test logic here
-            //
-        }
         [TestMethod]
         public void TestWithUrl()
         {

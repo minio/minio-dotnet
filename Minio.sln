@@ -5,6 +5,7 @@ VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C8111804-63DA-4E74-9C1F-FEC46632A33B}"
 	ProjectSection(SolutionItems) = preProject
+		.travis.yml = .travis.yml
 		Docs\API.md = Docs\API.md
 		appveyor.yml = appveyor.yml
 		MAINTAINERS.md = MAINTAINERS.md

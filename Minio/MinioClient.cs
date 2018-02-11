@@ -287,7 +287,6 @@ namespace Minio
         /// <returns>Client initialized with user credentials</returns>
         public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region="")
         {
-
             this.Secure = false;
 
             // Save user entered credentials
@@ -299,8 +298,6 @@ namespace Minio
             this.regionCache = BucketRegionCache.Instance;
 
             initClient();
-            return;
-
         }
 
         /// <summary>
