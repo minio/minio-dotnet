@@ -10,5 +10,5 @@ install:
 
 script:
 - dotnet restore
-- dotnet build -c Release
+- dotnet build -c Release --framework netcoreapp2.0
 - dotnet run Minio.Functional.Tests/bin/Release/netcoreapp2.0/Minio.Functional.Tests.dll
