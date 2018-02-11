@@ -15,9 +15,16 @@ before_build:
 - appveyor-retry dotnet restore -v Minimal
 
 build_script:
-  - ps: dotnet publish -c Release
+  - ps: dotnet build -c Release
 
 test_script:
   - ps: dotnet test .\Minio.Tests\Minio.Tests.csproj -f netcoreapp2.0
+
+after_test:
+  - ps: dotnet pack .\Minio -c Release - o artifacts
+
+artifacts:
+  - path: artifacts\*.nupkg
+    name: ReleaseArtifacts
 
 deploy: off
