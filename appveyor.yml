@@ -16,15 +16,13 @@ before_build:
 
 build_script:
   - ps: dotnet build -c Release
+  - ps: dotnet pack .\Minio\Minio.csproj --no-build -c Release -o artifacts
 
 test_script:
   - ps: dotnet test .\Minio.Tests\Minio.Tests.csproj -f netcoreapp2.0
 
-after_test:
-  - ps: dotnet pack .\Minio\Minio.csproj -c Release -o artifacts
-
 artifacts:
-  - path: artifacts\*.nupkg
+  - path: **\*.nupkg
     name: ReleaseArtifacts
 
 deploy: off
