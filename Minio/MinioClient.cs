@@ -76,8 +76,13 @@ namespace Minio
             get
             {
                 string release = "minio-dotnet/1.0.9";
+#if NET452
+                string arch = Environment.Is64BitOperatingSystem ? "x86_64" : "x86";
+                return String.Format("Minio ({0};{1}) {2}", Environment.OSVersion, arch, release);
+#else
                 string arch = RuntimeInformation.OSArchitecture.ToString();
                 return String.Format("Minio ({0};{1}) {2}", RuntimeInformation.OSDescription, arch, release);
+#endif
             }
         }
 

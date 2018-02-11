@@ -404,6 +404,12 @@ namespace Minio
             {
                 string headerName = header.Name.ToLower();
                 string headerValue = header.Value.ToString();
+#if NET452
+                if (!ignoredHeaders.Contains(headerName))
+                {
+                    sortedHeaders.Add(headerName, headerValue);
+                }
+#else
                 if (headerName.Equals("host"))
                 {
                     var host = headerValue.Split(':')[0];
@@ -421,6 +427,7 @@ namespace Minio
                 {
                     sortedHeaders.Add(headerName, headerValue);
                 }
+#endif
             }
 
             return sortedHeaders;
