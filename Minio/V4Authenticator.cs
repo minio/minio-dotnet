@@ -469,7 +469,7 @@ namespace Minio
             }
             if (request.Method == Method.PUT || request.Method.Equals(Method.POST))
             {
-                var bodyParameter = request.Parameters.Where(p => p.Type.Equals(ParameterType.RequestBody)).FirstOrDefault();
+                var bodyParameter = request.Parameters.FirstOrDefault(p => p.Type.Equals(ParameterType.RequestBody));
                 if (bodyParameter == null)
                 {
                     request.AddHeader("x-amz-content-sha256", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
