@@ -233,7 +233,6 @@ namespace Minio.Functional.Tests
 
             // Test Presigned Get/Put operations
             PresignedGetObject_Test1(minioClient).Wait();
-            PresignedGetObject_Test1(minioClient).Wait();
             PresignedGetObject_Test2(minioClient).Wait();
             PresignedGetObject_Test3(minioClient).Wait();
             PresignedPutObject_Test1(minioClient).Wait();
@@ -1779,7 +1778,7 @@ namespace Minio.Functional.Tests
                 {"bucketName", bucketName},
                 {"objectName", objectName},
                 {"expiresInt", expiresInt.ToString()},
-                {"reqParams", "response-content-type:application/json"}
+                {"reqParams", "response-content-type:application/json,response-content-disposition:attachment;filename=MyDocument.json;"}
             };
             try
             {
@@ -1792,15 +1791,21 @@ namespace Minio.Functional.Tests
                 ObjectStat stats = await minio.StatObjectAsync(bucketName, objectName);
                 Dictionary<string, string> reqParams = new Dictionary<string,string>();
                 reqParams["response-content-type"] = "application/json";
+                reqParams["response-content-disposition"] = "attachment;filename=MyDocument.json;";
                 string presigned_url = await minio.PresignedGetObjectAsync(bucketName, objectName, 1000, reqParams);
                 WebRequest httpRequest = WebRequest.Create(presigned_url);
                 var response = (HttpWebResponse)(await Task<WebResponse>.Factory.FromAsync(httpRequest.BeginGetResponse, httpRequest.EndGetResponse, null));
+                Assert.AreEqual(response.ContentType,reqParams["response-content-type"]);
+                Assert.AreEqual(response.Headers["Content-Disposition"],"attachment;filename=MyDocument.json;");
+                Assert.AreEqual(response.Headers["Content-Type"],"application/json");
+                Assert.AreEqual(response.Headers["Content-Length"],stats.Size.ToString());
                 Stream stream = response.GetResponseStream();
                 var fileStream = File.Create(downloadFile);
                 stream.CopyTo(fileStream);
                 fileStream.Dispose();
                 FileInfo writtenInfo = new FileInfo(downloadFile);
                 long file_read_size = writtenInfo.Length;
+
                 // Compare size of file downloaded  with presigned curl request and actual object size on server
                 Assert.AreEqual(file_read_size, stats.Size);
 
