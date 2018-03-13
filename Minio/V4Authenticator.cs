@@ -277,11 +277,7 @@ namespace Minio
                 + expires
                 + "&";
             requestQuery += "X-Amz-SignedHeaders=host";
-
-            foreach(Parameter requestParam in request.Parameters)
-            {
-                requestQuery += $"&{requestParam.Name}={Uri.EscapeDataString((string)requestParam.Value)}";
-            }
+            requestQuery += string.Join("&", request.Parameters.Select(rp => $"{rp.Name}={Uri.EscapeDataString((string)rp.Value)}"));
 
             string canonicalRequest = GetPresignCanonicalRequest(client, request, requestQuery);
             byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
