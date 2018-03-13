@@ -81,6 +81,33 @@ namespace Minio.Tests
         }
 
         [TestMethod]
+        public void TestRequestWithHeaderParameters()
+        {
+            // secure authenticated requests
+            V4Authenticator authenticator = new V4Authenticator(true, "accesskey", "secretkey");
+            Assert.IsTrue(authenticator.isSecure);
+            Assert.IsFalse(authenticator.isAnonymous);
+
+            IRestClient restClient = new RestClient("http://localhost:9000");
+            IRestRequest request = new RestRequest("bucketname/objectname", RestSharp.Method.PUT);
+            request.AddHeader("response-content-disposition", "inline;filenameMyDocument.txt;");
+            request.AddHeader("response-content-type", "application/json");
+
+            request.AddBody("body of request");
+            authenticator.Authenticate(restClient, request);
+            var presignedUrl = authenticator.PresignURL(restClient, request, 5000);
+
+            Assert.IsTrue(presignedUrl.Contains("response-content-disposition"));
+            Assert.IsTrue(presignedUrl.Contains("response-content-type"));
+
+            Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
+            Assert.IsTrue(hasPayloadHeader(request, "Content-Md5"));
+            Assert.IsTrue(hasPayloadHeader(request, "response-content-disposition"));
+            Tuple<string, object> match = GetHeaderKV(request, "x-amz-content-sha256");
+            Assert.IsTrue(match != null && ((string)match.Item2).Equals("UNSIGNED-PAYLOAD"));
+        }
+
+        [TestMethod]
         public void TestInsecureRequestHeaders()
         {
             // insecure authenticated requests
