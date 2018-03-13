@@ -97,8 +97,8 @@ namespace Minio.Tests
             authenticator.Authenticate(restClient, request);
             var presignedUrl = authenticator.PresignURL(restClient, request, 5000);
 
-            Assert.IsTrue(presignedUrl.Contains("response-content-disposition"));
-            Assert.IsTrue(presignedUrl.Contains("response-content-type"));
+            Assert.IsTrue(presignedUrl.Contains("&response-content-disposition"));
+            Assert.IsTrue(presignedUrl.Contains("&response-content-type"));
 
             Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
             Assert.IsTrue(hasPayloadHeader(request, "Content-Md5"));
