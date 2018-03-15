@@ -57,8 +57,8 @@ namespace Minio.Functional.Tests
         private static string presignedGetObjectSignature = "Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string,string> reqParams = null)";
         private static string presignedPutObjectSignature = "Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)";
         private static string presignedPostPolicySignature = "Task<Dictionary<string, string>> PresignedPostPolicyAsync(PostPolicy policy)";
-        private static string getBucketPolicySignature = "Task<PolicyType> GetPolicyAsync(string bucketName, string objectPrefix, CancellationToken cancellationToken = default(CancellationToken))";
-        private static string setBucketPolicySignature = "Task SetPolicyAsync(string bucketName, string objectPrefix, PolicyType policyType, CancellationToken cancellationToken = default(CancellationToken))";
+        private static string getBucketPolicySignature = "Task<String> GetPolicyAsync(string bucketName,CancellationToken cancellationToken = default(CancellationToken))";
+        private static string setBucketPolicySignature = "Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default(CancellationToken))";
         private static string getBucketNotificationSignature = "Task<BucketNotification> GetBucketNotificationAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))";
         private static string setBucketNotificationSignature = "Task SetBucketNotificationAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken))";
         private static string removeAllBucketsNotificationSignature = "Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))";
@@ -1957,8 +1957,7 @@ namespace Minio.Functional.Tests
                 }
 
                 // Validate
-                PolicyType policy = await minio.GetPolicyAsync(bucketName, objectName.Substring(5));
-                Assert.AreEqual(policy.GetType(), PolicyType.READ_ONLY);
+                String policy = await minio.GetPolicyAsync(bucketName);
                 await minio.RemoveObjectAsync(bucketName, objectName);
                 await TearDown(minio, bucketName);
                 new MintLogger("PresignedPostPolicy_Test1",presignedPostPolicySignature,"Tests whether PresignedPostPolicy url applies policy on server",TestStatus.PASS,(DateTime.Now - startTime), args:args).Log();
@@ -2196,9 +2195,9 @@ namespace Minio.Functional.Tests
                     await minio.PutObjectAsync(bucketName,
                                                 objectName,
                                                 filestream, filestream.Length, null);
+                string policyJson = $@"{{""Version"":""2012-10-17"",""Statement"":[{{""Action"":[""s3:GetObject""],""Effect"":""Allow"",""Principal"":{{""AWS"":[""*""]}},""Resource"":[""arn:aws:s3:::{bucketName}/foo*"",""arn:aws:s3:::{bucketName}/prefix/*""],""Sid"":""""}}]}}";
                 await minio.SetPolicyAsync(bucketName,
-                                    objectName.Substring(5),
-                                    PolicyType.READ_ONLY);
+                                    policyJson);
                 await minio.RemoveObjectAsync(bucketName, objectName);
 
                 await TearDown(minio, bucketName);
@@ -2219,20 +2218,19 @@ namespace Minio.Functional.Tests
             Dictionary<string,string> args = new Dictionary<string,string>
             {
                 {"bucketName", bucketName},
-                {"objectPrefix", objectName.Substring(5)},
             };
             try
             {
                 await Setup_Test(minio, bucketName);
+                String policyJson="";
                 using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
                     await minio.PutObjectAsync(bucketName,
                                                 objectName,
                                                 filestream, filestream.Length, null);
                 await minio.SetPolicyAsync(bucketName,
-                                    objectName.Substring(5),
-                                    PolicyType.READ_ONLY);
-                PolicyType policy = await minio.GetPolicyAsync(bucketName, objectName.Substring(5));
-                Assert.IsTrue(policy.Equals(PolicyType.READ_ONLY));
+                                    policyJson);
+                String policy = await minio.GetPolicyAsync(bucketName);
+                Assert.IsTrue(policy.Equals(policyJson));
                 await minio.RemoveObjectAsync(bucketName, objectName);
 
                 await TearDown(minio, bucketName);

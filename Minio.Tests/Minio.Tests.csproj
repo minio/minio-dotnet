@@ -83,11 +83,9 @@
   <ItemGroup>
     <Compile Include="DictionaryExtensionMethods.cs" />
     <Compile Include="NotificationTest.cs" />
-    <Compile Include="PolicyConditionTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EndpointTest.cs" />
     <Compile Include="TestHelper.cs" />
-    <Compile Include="PolicyTests.cs" />
     <Compile Include="AuthenticatorTest.cs" />
     <Compile Include="RegionTest.cs" />
     <Compile Include="UtilsTest.cs" />

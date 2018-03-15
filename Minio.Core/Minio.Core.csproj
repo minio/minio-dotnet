@@ -5,7 +5,7 @@
     <AssemblyName>Minio</AssemblyName>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <RootNamespace>Minio</RootNamespace>
-    <Version>1.0.8</Version>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release.Core|AnyCPU'">
@@ -58,19 +58,6 @@
     <Compile Include="..\Minio\DataModel\Notification\TopicConfig.cs" Link="DataModel\Notification\TopicConfig.cs" />
     <Compile Include="..\Minio\DataModel\ObjectStat.cs" Link="DataModel\ObjectStat.cs" />
     <Compile Include="..\Minio\DataModel\Part.cs" Link="DataModel\Part.cs" />
-    <Compile Include="..\Minio\DataModel\Policy\ActionJsonConverter.cs" Link="DataModel\Policy\ActionJsonConverter.cs" />
-    <Compile Include="..\Minio\DataModel\Policy\BucketPolicy.cs" Link="DataModel\Policy\BucketPolicy.cs" />
-    <Compile Include="..\Minio\DataModel\Policy\ConditionKeyMap.cs" Link="DataModel\Policy\ConditionKeyMap.cs" />
-    <Compile Include="..\Minio\DataModel\Policy\ConditionKeyMapConverter.cs" Link="DataModel\Policy\ConditionKeyMapConverter.cs" />
-    <Compile Include="..\Minio\DataModel\Policy\ConditionMap.cs" Link="DataModel\Policy\ConditionMap.cs" />
-    <Compile Include="..\Minio\DataModel\Policy\PolicyConstants.cs" Link="DataModel\Policy\PolicyConstants.cs" />
-    <Compile Include="..\Minio\DataModel\Policy\PolicyType.cs" Link="DataModel\Policy\PolicyType.cs" />
-    <Compile Include="..\Minio\DataModel\Policy\Principal.cs" Link="DataModel\Policy\Principal.cs" />
-    <Compile Include="..\Minio\DataModel\Policy\PrincipalJsonConverter.cs" Link="DataModel\Policy\PrincipalJsonConverter.cs" />
-    <Compile Include="..\Minio\DataModel\Policy\ResourceJsonConverter.cs" Link="DataModel\Policy\ResourceJsonConverter.cs" />
-    <Compile Include="..\Minio\DataModel\Policy\Resources.cs" Link="DataModel\Policy\Resources.cs" />
-    <Compile Include="..\Minio\DataModel\Policy\SingleOrArrayConverter.cs" Link="DataModel\Policy\SingleOrArrayConverter.cs" />
-    <Compile Include="..\Minio\DataModel\Policy\Statement.cs" Link="DataModel\Policy\Statement.cs" />
     <Compile Include="..\Minio\DataModel\PostPolicy.cs" Link="DataModel\PostPolicy.cs" />
     <Compile Include="..\Minio\DataModel\Prefix.cs" Link="DataModel\Prefix.cs" />
     <Compile Include="..\Minio\DataModel\Upload.cs" Link="DataModel\Upload.cs" />

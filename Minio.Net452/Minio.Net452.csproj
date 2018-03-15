@@ -183,45 +183,6 @@
     <Compile Include="..\Minio\DataModel\Part.cs">
       <Link>DataModel\Part.cs</Link>
     </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\ActionJsonConverter.cs">
-      <Link>DataModel\Policy\ActionJsonConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\BucketPolicy.cs">
-      <Link>DataModel\Policy\BucketPolicy.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\ConditionKeyMap.cs">
-      <Link>DataModel\Policy\ConditionKeyMap.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\ConditionKeyMapConverter.cs">
-      <Link>DataModel\Policy\ConditionKeyMapConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\ConditionMap.cs">
-      <Link>DataModel\Policy\ConditionMap.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\PolicyConstants.cs">
-      <Link>DataModel\Policy\PolicyConstants.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\PolicyType.cs">
-      <Link>DataModel\Policy\PolicyType.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\Principal.cs">
-      <Link>DataModel\Policy\Principal.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\PrincipalJsonConverter.cs">
-      <Link>DataModel\Policy\PrincipalJsonConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\ResourceJsonConverter.cs">
-      <Link>DataModel\Policy\ResourceJsonConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\Resources.cs">
-      <Link>DataModel\Policy\Resources.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\SingleOrArrayConverter.cs">
-      <Link>DataModel\Policy\SingleOrArrayConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Minio\DataModel\Policy\Statement.cs">
-      <Link>DataModel\Policy\Statement.cs</Link>
-    </Compile>
     <Compile Include="..\Minio\DataModel\PostPolicy.cs">
       <Link>DataModel\PostPolicy.cs</Link>
     </Compile>

@@ -64,23 +64,21 @@ namespace Minio
         IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// Get bucket policy at given objectPrefix
+        /// Get bucket policy
         /// </summary>
         /// <param name="bucketName">Bucket name.</param>
-        /// <param name="objectPrefix">Name of the object prefix</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <returns>Returns Task<PolicyType> </PolicyType> </returns>
-        Task<PolicyType> GetPolicyAsync(String bucketName, String objectPrefix, CancellationToken cancellationToken = default(CancellationToken));
+        /// <returns>Returns Task with bucket policy json as string </returns>
+        Task<String> GetPolicyAsync(String bucketName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Sets the current bucket policy
         /// </summary>
         /// <param name="bucketName">Bucket Name</param>
-        /// <param name="objectPrefix">Name of the object prefix.</param>
-        /// <param name="policyType">Desired Policy type change </param>
+        /// <param name="policyJson"> policy json </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns> Returns Task that sets the current bucket policy</returns>
-        Task SetPolicyAsync(String bucketName, String objectPrefix, PolicyType policyType, CancellationToken cancellationToken = default(CancellationToken));
+        Task SetPolicyAsync(String bucketName, String policyJson, CancellationToken cancellationToken = default(CancellationToken));
        
         /// <summary>
         ///  Gets the notification configuration set for this bucket

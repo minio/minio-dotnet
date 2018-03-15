@@ -30,8 +30,8 @@ namespace Minio.Examples.Cases
             try
             {
                 Console.Out.WriteLine("Running example for API: GetPolicyAsync");
-                PolicyType policy = await minio.GetPolicyAsync(bucketName);
-                Console.Out.WriteLine("Current Policy is " + policy.ToString() + " for bucket " + bucketName);
+                String policyJson = await minio.GetPolicyAsync(bucketName);
+                Console.Out.WriteLine("Current Policy is " + policyJson + " for bucket " + bucketName);
                 Console.Out.WriteLine();
             }
             catch (Exception e)

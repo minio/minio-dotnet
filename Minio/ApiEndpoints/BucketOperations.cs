@@ -245,10 +245,9 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket name.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <returns>Task that returns the Bucket policy</returns>
-        private async Task<BucketPolicy> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        /// <returns>Task that returns the Bucket policy as a json string</returns>
+        public async Task<String> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            BucketPolicy policy = null;
             IRestResponse response = null;
 
             var path = bucketName + "?policy";
@@ -256,90 +255,32 @@ namespace Minio
             var request = await this.CreateRequest(Method.GET, bucketName,
                                  contentType: "application/json",
                                  resourcePath: "?policy");
-            try
+            string policyString = null;
+            response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+
+            using (var stream = new MemoryStream(contentBytes))
             {
-                response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
-                var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-
-                using (var stream = new MemoryStream(contentBytes))
-                {
-                    policy = BucketPolicy.ParseJson(stream, bucketName);
-                }
-
+                policyString = new StreamReader(stream).ReadToEnd();
             }
-            catch (ErrorResponseException e)
-            {
-                // Ignore if there is 
-                if (!e.Response.Code.Equals("NoSuchBucketPolicy"))
-                {
-                    throw e;
-                }
-            }
-            finally
-            {
-                if (policy == null)
-                {
-                    policy = new BucketPolicy(bucketName);
-                }
-            }
-            return policy;
-        }
-
-
-        /// <summary>
-        /// Get bucket policy at given objectPrefix
-        /// </summary>
-        /// <param name="bucketName">Bucket name.</param>
-        /// <param name="objectPrefix">Name of the object prefix</param>
-        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <returns>Task that returns the PolicyType </returns>
-        public async Task<PolicyType> GetPolicyAsync(string bucketName, string objectPrefix = "", CancellationToken cancellationToken = default(CancellationToken))
-        {
-            BucketPolicy policy = await GetPolicyAsync(bucketName, cancellationToken);
-            return policy.GetPolicy(objectPrefix);
-        }
-
-        /// <summary>
-        /// Internal method that sets the bucket access policy
-        /// </summary>
-        /// <param name="bucketName">Bucket Name.</param>
-        /// <param name="policy">Valid Json policy object</param>
-        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <returns>Task that sets policy</returns>
-        private async Task setPolicyAsync(string bucketName, BucketPolicy policy, CancellationToken cancellationToken = default(CancellationToken))
-        {
-
-            string policyJson = policy.GetJson();
-            var request = await this.CreateRequest(Method.PUT, bucketName,
-                                           resourcePath: "?policy",
-                                           contentType: "application/json",
-                                           body: policyJson);
-
-            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            return policyString;
         }
 
         /// <summary>
         /// Sets the current bucket policy
         /// </summary>
         /// <param name="bucketName">Bucket Name</param>
-        /// <param name="objectPrefix">Name of the object prefix.</param>
-        /// <param name="policyType">Desired Policy type change </param>
+        /// <param name="policyJson">Policy json as string </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task to set a policy</returns>
-        public async Task SetPolicyAsync(String bucketName, String objectPrefix, PolicyType policyType, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task SetPolicyAsync(String bucketName, String policyJson, CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.validateObjectPrefix(objectPrefix);
-            BucketPolicy policy = await GetPolicyAsync(bucketName, cancellationToken);
-            if (policyType == PolicyType.NONE && policy.Statements() == null)
-            {
-                // As the request is for removing policy and the bucket
-                // has empty policy statements, just return success.
-                return;
-            }
+            var request = await this.CreateRequest(Method.PUT, bucketName,
+                                           resourcePath: "?policy",
+                                           contentType: "application/json",
+                                           body: policyJson);
 
-            policy.SetPolicy(policyType, objectPrefix);
-
-            await setPolicyAsync(bucketName, policy, cancellationToken);
+            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
         }
 
         /// <summary>

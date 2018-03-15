@@ -15,7 +15,6 @@
  */
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
-using Minio.DataModel.Policy;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
