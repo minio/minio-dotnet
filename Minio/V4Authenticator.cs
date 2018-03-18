@@ -278,7 +278,9 @@ namespace Minio
                 + "&";
             requestQuery += "X-Amz-SignedHeaders=host";
 
-            string canonicalRequest = GetPresignCanonicalRequest(client, request, requestQuery);
+            SortedDictionary<string,string> headersToSign = GetHeadersToSign(request);
+            string canonicalRequest = GetPresignCanonicalRequest(client, request, requestQuery, headersToSign);
+            string headers = string.Join("&", headersToSign.Select(p => p.Key + "=" + utils.UrlEncode(p.Value)));
             byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = BytesToHex(ComputeSha256(canonicalRequestBytes));
             string stringToSign = GetStringToSign(this.Region, signingDate, canonicalRequestHash);
@@ -288,7 +290,7 @@ namespace Minio
             string signature = BytesToHex(signatureBytes);
 
             // Return presigned url.
-            return client.BaseUrl + path + "?" + requestQuery + "&X-Amz-Signature=" + signature;
+            return client.BaseUrl + path + "?" + requestQuery + "&" + headers + "&X-Amz-Signature=" + signature;
         }
 
         /// <summary>
@@ -298,7 +300,7 @@ namespace Minio
         /// <param name="request">Instantiated request object</param>
         /// <param name="requestQuery">Additional request query params</param>
         /// <returns>Presigned canonical request</returns>
-        private string GetPresignCanonicalRequest(IRestClient client, IRestRequest request, string requestQuery)
+        private string GetPresignCanonicalRequest(IRestClient client, IRestRequest request, string requestQuery,  SortedDictionary<string,string> headersToSign)
         {
             LinkedList<string> canonicalStringList = new LinkedList<string>();
             // METHOD
@@ -310,7 +312,8 @@ namespace Minio
                 path = "/" + path;
             }
             canonicalStringList.AddLast(path);
-            canonicalStringList.AddLast(requestQuery);
+            String query = headersToSign.Aggregate(requestQuery, (pv, cv) => $"{pv}&{utils.UrlEncode((string)cv.Key)}={utils.UrlEncode((string)cv.Value)}");
+            canonicalStringList.AddLast(query);
             if (client.BaseUrl.Port > 0 && (client.BaseUrl.Port != 80 && client.BaseUrl.Port != 443))
             {
                 canonicalStringList.AddLast("host:" + client.BaseUrl.Host + ":" + client.BaseUrl.Port);
