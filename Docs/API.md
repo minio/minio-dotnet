@@ -393,10 +393,10 @@ catch (MinioException e)
 ```
 
 <a name="getBucketPolicy"></a>
-### GetPolicyAsync(string bucketName, string objectPrefix)
-`Task<PolicyType> GetPolicyAsync(string bucketName, string objectPrefix, CancellationToken cancellationToken = default(CancellationToken))`
+### GetPolicyAsync(string bucketName)
+`Task<String> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))`
 
-Get bucket policy at given objectPrefix.
+Get bucket policy.
 
 
 __Parameters__
@@ -404,13 +404,12 @@ __Parameters__
 |Param   | Type   | Description  |
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_  | Name of the bucket.  |
-| ``objectPrefix``  | _string_  | Policy applies to objects with prefix |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  ``Task<PolicyType>``: The current bucket policy for given bucket and objectPrefix.  | Listed Exceptions: |
+|  ``Task<String>``: The current bucket policy for given bucket as a json string.  | Listed Exceptions: |
 |        | ``InvalidBucketNameException `` : upon invalid bucket name.       |
 |        | ``InvalidObjectPrefixException`` : upon invalid object prefix.        |
 |        | ``ConnectionException`` : upon connection error.            |
@@ -425,7 +424,7 @@ __Example__
 ```cs
 try 
 {
-    PolicyType policy = await minioClient.GetPolicyAsync("myBucket", objectPrefix:"downloads");
+    String policyJson = await minioClient.GetPolicyAsync("myBucket");
     Console.Out.WriteLine("Current policy: " + policy.GetType().ToString());
 } 
 catch (MinioException e) 
@@ -435,18 +434,17 @@ catch (MinioException e)
 ```
 
 <a name="setBucketPolicy"></a>
-### SetPolicyAsync(string bucketName, string objectPrefix, PolicyType policyType)
-`Task SetPolicyAsync(string bucketName, string objectPrefix, PolicyType policyType, CancellationToken cancellationToken = default(CancellationToken))`
+### SetPolicyAsync(string bucketName, string policyJson)
+`Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default(CancellationToken))`
 
-Set policy on bucket and object prefix.
+Set policy on bucket.
 
 __Parameters__
 
 |Param   | Type   | Description  |
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_  | Name of the bucket  |
-| ``objectPrefix``  | _string_  | Policy applies to objects with prefix |
-| ``PolicyType``  | _PolicyType_  | Policy to apply |
+| ``policyJson``  | _string_  | Policy as a json string |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -466,7 +464,7 @@ __Example__
 ```cs
 try 
 {
-    await minioClient.SetPolicyAsync("myBucket", "uploads",PolicyType.WRITE_ONLY);
+    await minioClient.SetPolicyAsync("myBucket");
 }
 catch (MinioException e) 
 {
