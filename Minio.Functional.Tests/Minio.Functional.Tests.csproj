@@ -29,7 +29,7 @@
         </When>
         <When Condition=" '$(Configuration)'=='Mint' ">   
             <ItemGroup>  
-              <PackageReference Include="Minio.Netcore" Version="1.0.*" />
+              <PackageReference Include="Minio.Netcore" Version="1.1.*" />
             </ItemGroup> 
         </When>  
   </Choose>
