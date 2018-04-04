@@ -49,10 +49,11 @@ namespace Minio
         {
             var request = await this.CreateRequest(Method.GET,
                                                 bucketName,
-                                                objectName: objectName);
+                                                objectName: objectName)
+                                    .ConfigureAwait(false);
             request.ResponseWriter = cb;
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
         }
 
@@ -79,10 +80,11 @@ namespace Minio
             var request = await this.CreateRequest(Method.GET,
                                                      bucketName,
                                                      objectName: objectName,
-                                                     headerMap: headerMap);
+                                                     headerMap: headerMap)
+                                .ConfigureAwait(false);
 
             request.ResponseWriter = cb;
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
         }
         /// <summary>
@@ -99,7 +101,7 @@ namespace Minio
             bool fileExists = File.Exists(fileName);
             utils.ValidateFile(fileName);
 
-            ObjectStat objectStat = await StatObjectAsync(bucketName, objectName, cancellationToken);
+            ObjectStat objectStat = await StatObjectAsync(bucketName, objectName, cancellationToken).ConfigureAwait(false);
             long length = objectStat.Size;
             string etag = objectStat.ETag;
 
@@ -157,7 +159,7 @@ namespace Minio
                                            + ", written = " + writtenSize);
                 }
                 utils.MoveWithReplace(tempFileName, fileName);
-            }, cancellationToken);
+            }, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -176,7 +178,7 @@ namespace Minio
             long size = fileInfo.Length;
             using (FileStream file = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             {
-                await PutObjectAsync(bucketName, objectName, file, size, contentType, metaData, cancellationToken);
+                await PutObjectAsync(bucketName, objectName, file, size, contentType, metaData, cancellationToken).ConfigureAwait(false);
             }
 
         }
@@ -224,7 +226,7 @@ namespace Minio
                 {
                     throw new UnexpectedShortReadException("Data read " + bytes.Length + " is shorter than the size " + size + " of input buffer.");
                 }
-                await this.PutObjectAsync(bucketName, objectName, null, 0, bytes, metaData, cancellationToken);
+                await this.PutObjectAsync(bucketName, objectName, null, 0, bytes, metaData, cancellationToken).ConfigureAwait(false);
                 return;
             }
             // For all sizes greater than 5MiB do multipart.
@@ -237,11 +239,11 @@ namespace Minio
             Part part = null;
             Part[] existingParts = null;
 
-            string uploadId = await this.getLatestIncompleteUploadIdAsync(bucketName, objectName, cancellationToken);
+            string uploadId = await this.getLatestIncompleteUploadIdAsync(bucketName, objectName, cancellationToken).ConfigureAwait(false);
 
             if (uploadId == null)
             {
-                uploadId = await this.NewMultipartUploadAsync(bucketName, objectName, metaData, cancellationToken);
+                uploadId = await this.NewMultipartUploadAsync(bucketName, objectName, metaData, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -288,7 +290,7 @@ namespace Minio
                 if (!skipUpload)
                 {
                     numPartsUploaded += 1;
-                    string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, metaData, cancellationToken);
+                    string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, metaData, cancellationToken).ConfigureAwait(false);
                     totalParts[partNumber - 1] = new Part() { PartNumber = partNumber, ETag = etag, size = (long)expectedReadSize };
                 }
 
@@ -296,7 +298,7 @@ namespace Minio
             // This shouldn't happen where stream size is known.
             if (partCount != numPartsUploaded && size != -1)
             {
-                await this.RemoveUploadAsync(bucketName, objectName, uploadId, cancellationToken);
+                await this.RemoveUploadAsync(bucketName, objectName, uploadId, cancellationToken).ConfigureAwait(false);
                 return;
             }
 
@@ -305,7 +307,7 @@ namespace Minio
             {
                 etags[partNumber] = totalParts[partNumber - 1].ETag;
             }
-            await this.CompleteMultipartUploadAsync(bucketName, objectName, uploadId, etags, cancellationToken);
+            await this.CompleteMultipartUploadAsync(bucketName, objectName, uploadId, etags, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -323,8 +325,8 @@ namespace Minio
             string resourcePath = "?uploadId=" + uploadId;
             var request = await this.CreateRequest(Method.POST, bucketName,
                                                      objectName: objectName,
-                                                     resourcePath: resourcePath
-                                           );
+                                                     resourcePath: resourcePath)
+                                    .ConfigureAwait(false);
 
             List<XElement> parts = new List<XElement>();
 
@@ -343,7 +345,7 @@ namespace Minio
 
             request.AddParameter("application/xml", body, RestSharp.ParameterType.RequestBody);
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
         }
 
@@ -366,7 +368,7 @@ namespace Minio
                   bool isRunning = true;
                   while (isRunning)
                   {
-                      var uploads = await this.GetListPartsAsync(bucketName, objectName, uploadId, nextPartNumberMarker, cancellationToken);
+                      var uploads = await this.GetListPartsAsync(bucketName, objectName, uploadId, nextPartNumberMarker, cancellationToken).ConfigureAwait(false);
                       foreach (Part part in uploads.Item2)
                       {
                           obs.OnNext(part);
@@ -396,10 +398,10 @@ namespace Minio
             resourcePath += "&max-parts=1000";
             var request = await this.CreateRequest(Method.GET, bucketName,
                                                      objectName: objectName,
-                                                     resourcePath: resourcePath
-                                                  );
+                                                     resourcePath: resourcePath)
+                                .ConfigureAwait(false);
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             ListPartsResult listPartsResult = null;
@@ -434,9 +436,9 @@ namespace Minio
             var resource = "?uploads";
 
             var request = await this.CreateRequest(Method.POST, bucketName, objectName: objectName,
-                            headerMap: metaData, resourcePath: resource);
+                            headerMap: metaData, resourcePath: resource).ConfigureAwait(false);
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             InitiateMultipartUploadResult newUpload = null;
@@ -475,10 +477,10 @@ namespace Minio
                                                      contentType: contentType,
                                                      headerMap: metaData,
                                                      body: data,
-                                                     resourcePath: resource
-                                           );
+                                                     resourcePath: resource)
+                                    .ConfigureAwait(false);
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             string etag = null;
             foreach (Parameter parameter in response.Headers)
@@ -533,10 +535,9 @@ namespace Minio
 
             string query = string.Join("&", queries);
 
-            var request = await this.CreateRequest(Method.GET, bucketName,
-                                                     resourcePath: "?" + query);
+            var request = await this.CreateRequest(Method.GET, bucketName, resourcePath: "?" + query).ConfigureAwait(false);
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             ListMultipartUploadsResult listBucketResult = null;
@@ -594,7 +595,7 @@ namespace Minio
 
                   while (isRunning)
                   {
-                      var uploads = await this.GetMultipartUploadsListAsync(bucketName, prefix, nextKeyMarker, nextUploadIdMarker, delimiter, cancellationToken);
+                      var uploads = await this.GetMultipartUploadsListAsync(bucketName, prefix, nextKeyMarker, nextUploadIdMarker, delimiter, cancellationToken).ConfigureAwait(false);
                       foreach (Upload upload in uploads.Item2)
                       {
                           obs.OnNext(upload);
@@ -651,7 +652,7 @@ namespace Minio
             {
                 if (objectName == upload.Key)
                 {
-                    await this.RemoveUploadAsync(bucketName, objectName, upload.UploadId, cancellationToken);
+                    await this.RemoveUploadAsync(bucketName, objectName, upload.UploadId, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
@@ -671,10 +672,10 @@ namespace Minio
 
             var request = await this.CreateRequest(Method.DELETE, bucketName,
                                                      objectName: objectName,
-                                                     resourcePath: resourcePath
-                                           );
+                                                     resourcePath: resourcePath)
+                                    .ConfigureAwait(false);
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
         }
 
@@ -688,10 +689,9 @@ namespace Minio
         public async Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))
         {
 
-            var request = await this.CreateRequest(Method.DELETE, bucketName,
-                                                     objectName: objectName);
+            var request = await this.CreateRequest(Method.DELETE, bucketName, objectName: objectName).ConfigureAwait(false);
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -704,7 +704,7 @@ namespace Minio
         private async Task<List<DeleteError>> removeObjectsAsync(string bucketName, List<DeleteObject> objectsList, CancellationToken cancellationToken)
         {
             string resource = "?delete";
-            var request = await this.CreateRequest(Method.POST, bucketName, resourcePath: resource);
+            var request = await this.CreateRequest(Method.POST, bucketName, resourcePath: resource).ConfigureAwait(false);
             List<XElement> objects = new List<XElement>();
 
             foreach (var obj in objectsList)
@@ -720,7 +720,7 @@ namespace Minio
 
             var body = System.Text.Encoding.UTF8.GetBytes(bodyString);
             request.AddParameter("application/xml", body, RestSharp.ParameterType.RequestBody);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             DeleteObjectsResult deleteResult = null;
             using (var stream = new MemoryStream(contentBytes))
@@ -769,7 +769,7 @@ namespace Minio
                       }
                       if (objectList.Count() > 0)
                       {
-                        var errorsList = await removeObjectsAsync(bucketName, objectList, cancellationToken);
+                        var errorsList = await removeObjectsAsync(bucketName, objectList, cancellationToken).ConfigureAwait(false);
                         foreach (DeleteError error in errorsList)
                         {
                             obs.OnNext(error);
@@ -790,10 +790,9 @@ namespace Minio
         /// <returns>Facts about the object</returns>
         public async Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var request = await this.CreateRequest(Method.HEAD, bucketName,
-                                                     objectName: objectName);
+            var request = await this.CreateRequest(Method.HEAD, bucketName, objectName: objectName).ConfigureAwait(false);
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
 
             // Extract stats from response
@@ -906,7 +905,7 @@ namespace Minio
             }
 
             // Get Stats on the source object 
-            ObjectStat srcStats = await this.StatObjectAsync(bucketName, objectName, cancellationToken);
+            ObjectStat srcStats = await this.StatObjectAsync(bucketName, objectName, cancellationToken).ConfigureAwait(false);
 
             long srcByteRangeSize = 0L;
 
@@ -922,9 +921,9 @@ namespace Minio
 
             if ((copySize > Constants.MaxSingleCopyObjectSize) ||
                     (srcByteRangeSize > 0 && (srcByteRangeSize != srcStats.Size)))
-                await MultipartCopyUploadAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, copySize, cancellationToken);
+                await MultipartCopyUploadAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, copySize, cancellationToken).ConfigureAwait(false);
             else
-                await this.CopyObjectRequestAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, null, null, cancellationToken, typeof(CopyObjectResult));
+                await this.CopyObjectRequestAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, null, null, cancellationToken, typeof(CopyObjectResult)).ConfigureAwait(false);
         }
         /// <summary>
         ///  Create the copy request,execute it and 
@@ -955,8 +954,8 @@ namespace Minio
             var request = await this.CreateRequest(Method.PUT, destBucketName,
                                                    objectName: destObjectName,
                                                    resourcePath: resource,
-                                                   headerMap: customHeaders
-                                         );
+                                                   headerMap: customHeaders)
+                                .ConfigureAwait(false);
             // Set the object source
             request.AddHeader("x-amz-copy-source", sourceObjectPath);
 
@@ -969,7 +968,7 @@ namespace Minio
                 }
             }
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             // Just read the result and parse content.
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
@@ -1008,7 +1007,7 @@ namespace Minio
             Part[] totalParts = new Part[(int)partCount];
 
             // No need to resume upload since this is a server side copy. Just initiate a new upload.
-            string uploadId = await this.NewMultipartUploadAsync(destBucketName, destObjectName, null, cancellationToken);
+            string uploadId = await this.NewMultipartUploadAsync(destBucketName, destObjectName, null, cancellationToken).ConfigureAwait(false);
 
             // Upload each part
             double expectedReadSize = partSize;
@@ -1028,7 +1027,7 @@ namespace Minio
                 }
                 Dictionary<string, string> customHeader = new Dictionary<string, string>();
                 customHeader.Add("x-amz-copy-source-range", "bytes=" + partCondition.byteRangeStart.ToString() + "-" + partCondition.byteRangeEnd.ToString());
-                CopyPartResult cpPartResult = (CopyPartResult)await this.CopyObjectRequestAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, customHeader, resource, cancellationToken, typeof(CopyPartResult));
+                CopyPartResult cpPartResult = (CopyPartResult)await this.CopyObjectRequestAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, customHeader, resource, cancellationToken, typeof(CopyPartResult)).ConfigureAwait(false);
 
                 totalParts[partNumber - 1] = new Part() { PartNumber = partNumber, ETag = cpPartResult.ETag, size = (long)expectedReadSize };
             }
@@ -1039,7 +1038,7 @@ namespace Minio
                 etags[partNumber] = totalParts[partNumber - 1].ETag;
             }
             // Complete multi part upload
-            await this.CompleteMultipartUploadAsync(destBucketName, destObjectName, uploadId, etags, cancellationToken);
+            await this.CompleteMultipartUploadAsync(destBucketName, destObjectName, uploadId, etags, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -1060,7 +1059,8 @@ namespace Minio
             }
             var request = await this.CreateRequest(Method.GET, bucketName,
                                                     objectName: objectName,
-                                                    headerMap: reqParams);
+                                                    headerMap: reqParams)
+                                    .ConfigureAwait(false);
 
             return this.authenticator.PresignURL(this.restClient, request, expiresInt);
         }
@@ -1080,8 +1080,7 @@ namespace Minio
             {
                 throw new InvalidExpiryRangeException("expiry range should be between 1 and " + Constants.DefaultExpiryTime.ToString());
             }
-            var request = await this.CreateRequest(Method.PUT, bucketName,
-                                                    objectName: objectName);
+            var request = await this.CreateRequest(Method.PUT, bucketName, objectName: objectName).ConfigureAwait(false);
             return this.authenticator.PresignURL(this.restClient, request, expiresInt);
         }
 
@@ -1110,7 +1109,7 @@ namespace Minio
             // Initialize a new client.
             if (!BucketRegionCache.Instance.Exists(policy.Bucket))
             {
-                region = await BucketRegionCache.Instance.Update(this, policy.Bucket);
+                region = await BucketRegionCache.Instance.Update(this, policy.Bucket).ConfigureAwait(false);
             }
             if (region == null) 
             {

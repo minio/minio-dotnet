@@ -50,7 +50,7 @@ namespace Minio
             //PrepareClient();
 
             var request = new RestRequest("/", Method.GET);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             ListAllMyBucketsResult bucketList = new ListAllMyBucketsResult();
             if (HttpStatusCode.OK.Equals(response.StatusCode))
@@ -86,7 +86,7 @@ namespace Minio
                 request.AddBody(config);
             }
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
         }
 
@@ -101,9 +101,8 @@ namespace Minio
         {
             try
             {
-                var request = await this.CreateRequest(Method.HEAD,
-                                                   bucketName);
-                var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+                var request = await this.CreateRequest(Method.HEAD, bucketName).ConfigureAwait(false);
+                var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -124,9 +123,9 @@ namespace Minio
         /// <returns>Task</returns>
         public async Task RemoveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var request = await this.CreateRequest(Method.DELETE, bucketName, resourcePath: null);
+            var request = await this.CreateRequest(Method.DELETE, bucketName, resourcePath: null).ConfigureAwait(false);
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
         }
 
@@ -147,7 +146,7 @@ namespace Minio
                   string marker = null;
                   while (isRunning)
                   {
-                      Tuple<ListBucketResult, List<Item>> result = await GetObjectListAsync(bucketName, prefix, recursive, marker, cancellationToken);
+                      Tuple<ListBucketResult, List<Item>> result = await GetObjectListAsync(bucketName, prefix, recursive, marker, cancellationToken).ConfigureAwait(false);
                       Item lastItem = null;
                       foreach (Item item in result.Item2)
                       {
@@ -203,11 +202,10 @@ namespace Minio
 
             var request = await this.CreateRequest(Method.GET,
                                                      bucketName,
-                                                     resourcePath: "?" + query);
-
-
-
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+                                                     resourcePath: "?" + query)
+                                        .ConfigureAwait(false);
+            
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             ListBucketResult listBucketResult = null;
@@ -254,9 +252,10 @@ namespace Minio
 
             var request = await this.CreateRequest(Method.GET, bucketName,
                                  contentType: "application/json",
-                                 resourcePath: "?policy");
+                                 resourcePath: "?policy")
+                            .ConfigureAwait(false);
             string policyString = null;
-            response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
 
             using (var stream = new MemoryStream(contentBytes))
@@ -278,9 +277,10 @@ namespace Minio
             var request = await this.CreateRequest(Method.PUT, bucketName,
                                            resourcePath: "?policy",
                                            contentType: "application/json",
-                                           body: policyJson);
+                                           body: policyJson)
+                                .ConfigureAwait(false);
 
-            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -294,10 +294,11 @@ namespace Minio
             utils.validateBucketName(bucketName);
             var request = await this.CreateRequest(Method.GET,
                                                bucketName,
-                                               resourcePath: "?notification");
+                                               resourcePath: "?notification")
+                                    .ConfigureAwait(false);
             BucketNotification notification = null;
            
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             using (var stream = new MemoryStream(contentBytes))
             {
@@ -316,13 +317,14 @@ namespace Minio
         {
             utils.validateBucketName(bucketName);
             var request = await this.CreateRequest(Method.PUT, bucketName,
-                                           resourcePath: "?notification");
+                                           resourcePath: "?notification")
+                                .ConfigureAwait(false);
     
             request.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
             request.RequestFormat = DataFormat.Xml;
             request.AddBody(notification);
             
-            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -335,7 +337,7 @@ namespace Minio
         {
             utils.validateBucketName(bucketName);
             BucketNotification notification = new BucketNotification();
-            await SetBucketNotificationsAsync(bucketName, notification, cancellationToken);
+            await SetBucketNotificationsAsync(bucketName, notification, cancellationToken).ConfigureAwait(false);
         }
     }
 }
