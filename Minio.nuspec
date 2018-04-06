@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Minio</id>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
     <authors>Minio, Inc.</authors>
     <owners>Minio, Inc</owners>
     <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
