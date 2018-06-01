@@ -2,14 +2,14 @@
   <PropertyGroup>
     <AssemblyName>Minio</AssemblyName>
     <RootNamespace>Minio</RootNamespace>
-    <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
     <DebugType>embedded</DebugType>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Label="Package">
     <Product>Minio</Product>
-    <Version>1.0.9</Version>
+    <Version>1.1.2</Version>
     <Description>Minio .NET SDK for Amazon S3 Compatible Cloud Storage.</Description>
     <Copyright>Copyright (c) 2018.  All rights reserved.</Copyright>
     <Authors>Minio, Inc.</Authors>
@@ -33,15 +33,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.0" PrivateAssets="all" />
-    <PackageReference Include="AsyncFixer" Version="1.1.5" PrivateAssets="All" />
+    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.1" PrivateAssets="all" />
+    <PackageReference Include="AsyncFixer" Version="1.1.6" PrivateAssets="All" />
 
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-    <PackageReference Include="RestSharp" Version="106.2.1" />
-    <PackageReference Include="System.Reactive.Linq" Version="3.1.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="RestSharp" Version="106.3.0" />
+    <PackageReference Include="System.Reactive.Linq" Version="4.0.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net452'" Label="Framework References">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net46'" Label="Framework References">
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 </Project>

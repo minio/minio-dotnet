@@ -404,7 +404,7 @@ namespace Minio
             {
                 string headerName = header.Name.ToLower();
                 string headerValue = header.Value.ToString();
-#if NET452
+#if NET46
                 if (!ignoredHeaders.Contains(headerName))
                 {
                     sortedHeaders.Add(headerName, headerValue);
