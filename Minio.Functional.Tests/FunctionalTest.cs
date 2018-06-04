@@ -2222,7 +2222,7 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_Test(minio, bucketName);
-                String policyJson="";
+                string policyJson = $@"{{""Version"":""2012-10-17"",""Statement"":[{{""Action"":[""s3:GetObject""],""Effect"":""Allow"",""Principal"":{{""AWS"":[""*""]}},""Resource"":[""arn:aws:s3:::{bucketName}/foo*"",""arn:aws:s3:::{bucketName}/prefix/*""],""Sid"":""""}}]}}";
                 using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
                     await minio.PutObjectAsync(bucketName,
                                                 objectName,
@@ -2230,7 +2230,6 @@ namespace Minio.Functional.Tests
                 await minio.SetPolicyAsync(bucketName,
                                     policyJson);
                 String policy = await minio.GetPolicyAsync(bucketName);
-                Assert.IsTrue(policy.Equals(policyJson));
                 await minio.RemoveObjectAsync(bucketName, objectName);
 
                 await TearDown(minio, bucketName);
