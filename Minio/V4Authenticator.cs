@@ -267,8 +267,8 @@ namespace Minio
 
             requestQuery = "X-Amz-Algorithm=AWS4-HMAC-SHA256&";
             requestQuery += "X-Amz-Credential="
-                + this.accessKey
-                + Uri.EscapeDataString("/" + GetScope(this.Region, signingDate))
+                + Uri.EscapeDataString(this.accessKey
+                + "/" + GetScope(this.Region, signingDate))
                 + "&";
             requestQuery += "X-Amz-Date="
                 + signingDate.ToString("yyyyMMddTHHmmssZ")
