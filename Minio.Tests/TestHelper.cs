@@ -15,7 +15,6 @@
  */
 
 using Minio.DataModel;
-using Minio.DataModel.Policy;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -40,57 +39,5 @@ namespace Minio.Tests
             }
             return result.ToString();
         }
-
-        // Generate an empty statement
-        internal static Statement GenerateStatement(string resource)
-        {
-            Statement stmt = new Statement();
-            stmt.resources = new Resources(resource);
-            return stmt;
-        }
-
-        // Generate a resource prefix
-        internal static string GenerateResourcesPrefix(string bucketName, string objectName)
-        {
-            return PolicyConstants.AWS_RESOURCE_PREFIX + bucketName + "/" + objectName;
-        }
-
-        // Generate a new statement
-        internal static Statement GenerateStatement(List<string> actions,string resourcePrefix, string effect = "Allow", string aws = "*",bool withConditions=false,string withStringSet="hello",string condition="StringEquals")
-        {
-            Statement stmt = new Statement();
-            stmt.resources = new Resources(resourcePrefix);
-            stmt.actions = actions;
-            stmt.effect = effect;
-            stmt.principal = new Principal(aws);
-            if (withConditions)
-            {
-                stmt.conditions = new ConditionMap();
-                ConditionKeyMap ckmap = new ConditionKeyMap();
-                if (withStringSet != null)
-                    ckmap.Add("s3:prefix", new HashSet<string>() {withStringSet });
-                if (condition != null && ckmap != null)
-                    stmt.conditions.Add(condition, ckmap);
-            }
-            
-            return stmt;
-        }
-        // Get List with Read and Write bucket actions 
-        internal static List<string> GetReadAndWriteBucketActions()
-        {
-            List<string> res = new List<string>();
-            res.AddRange(PolicyConstants.READ_ONLY_BUCKET_ACTIONS);
-            res.AddRange(PolicyConstants.WRITE_ONLY_BUCKET_ACTIONS);
-            return res;
-        }
-        // Hydrate a bucket policy from JSON string 
-        internal static BucketPolicy GenerateBucketPolicy(string policyString,string bucketName)
-        {
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(policyString);
-            var stream = new MemoryStream(contentBytes);
-            return BucketPolicy.ParseJson(stream, bucketName);
-
-        }
-     
     }
 }

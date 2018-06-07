@@ -103,7 +103,7 @@ namespace Minio
 
                 var request = new RestRequest(path, Method.GET);
 
-                var response = await client.ExecuteTaskAsync(client.NoErrorHandlers, request);
+                var response = await client.ExecuteTaskAsync(client.NoErrorHandlers, request).ConfigureAwait(false);
 
                 if (HttpStatusCode.OK.Equals(response.StatusCode))
                 {

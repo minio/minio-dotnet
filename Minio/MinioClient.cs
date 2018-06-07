@@ -113,7 +113,7 @@ namespace Minio
             {
                 if (!BucketRegionCache.Instance.Exists(bucketName))
                 {
-                    region = await BucketRegionCache.Instance.Update(this, bucketName);
+                    region = await BucketRegionCache.Instance.Update(this, bucketName).ConfigureAwait(false);
                 }
                 else
                 {
@@ -156,7 +156,7 @@ namespace Minio
             string host = this.BaseUrl;
 
             // Fetch correct region for bucket
-            string region = await getRegion(bucketName);
+            string region = await getRegion(bucketName).ConfigureAwait(false);
             
             this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region);
 
@@ -344,7 +344,7 @@ namespace Minio
                                             });
             cancellationToken.ThrowIfCancellationRequested();
 
-            IRestResponse response = await tcs.Task;
+            IRestResponse response = await tcs.Task.ConfigureAwait(false);
             HandleIfErrorResponse(response, errorHandlers, startTime);
             return response;
         }

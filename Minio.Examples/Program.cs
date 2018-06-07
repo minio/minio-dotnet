@@ -104,13 +104,12 @@ namespace Minio.Examples
 
                 // Set HTTP Tracing Off
                 // minioClient.SetTraceOff();
-
                 // Check if bucket exists
                 Cases.BucketExists.Run(minioClient, bucketName).Wait();
 
                 // Create a new bucket
                 Cases.MakeBucket.Run(minioClient, bucketName).Wait();
-
+ 
                 Cases.MakeBucket.Run(minioClient, destBucketName).Wait();
 
 
@@ -151,11 +150,10 @@ namespace Minio.Examples
                 Cases.RemoveIncompleteUpload.Run(minioClient, bucketName, objectName).Wait();
 
                 // Set a policy for given bucket
-                Cases.SetBucketPolicy.Run(minioClient, PolicyType.READ_ONLY, bucketName).Wait();
-
+                Cases.SetBucketPolicy.Run(minioClient, bucketName).Wait();
                 // Get the policy for given bucket
                 Cases.GetBucketPolicy.Run(minioClient, bucketName).Wait();
-
+ 
                 // Set bucket notifications
                 Cases.SetBucketNotification.Run(minioClient, bucketName).Wait();
 
