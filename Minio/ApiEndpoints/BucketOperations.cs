@@ -337,7 +337,7 @@ namespace Minio
         {
             utils.validateBucketName(bucketName);
             BucketNotification notification = new BucketNotification();
-            await SetBucketNotificationsAsync(bucketName, notification, cancellationToken).ConfigureAwait(false);
+            return SetBucketNotificationsAsync(bucketName, notification, cancellationToken);
         }
     }
 }
