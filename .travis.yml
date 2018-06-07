@@ -10,4 +10,4 @@ install:
 
 script:
 - dotnet build  Minio.Functional.Tests -c Release --framework netcoreapp2.1
-- dotnet Minio.Functional.Tests/bin/Release/netcoreapp2.0/Minio.Functional.Tests.dll
+- dotnet Minio.Functional.Tests/bin/Release/netcoreapp2.1/Minio.Functional.Tests.dll
