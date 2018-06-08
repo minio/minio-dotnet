@@ -2,12 +2,12 @@ language: csharp
 dist: trusty
 sudo: required
 mono: none
-dotnet: 2.1.4
+dotnet: 2.1.300
 branches:
   only:
     - master
 install:
 
 script:
-- dotnet build  Minio.Functional.Tests -c Release --framework netcoreapp2.0
-- dotnet Minio.Functional.Tests/bin/Release/netcoreapp2.0/Minio.Functional.Tests.dll
+- dotnet build  Minio.Functional.Tests -c Release --framework netcoreapp2.1
+- dotnet Minio.Functional.Tests/bin/Release/netcoreapp2.1/Minio.Functional.Tests.dll

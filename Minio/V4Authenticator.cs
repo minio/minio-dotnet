@@ -300,6 +300,7 @@ namespace Minio
         /// <param name="client">Instantiated client object</param>
         /// <param name="request">Instantiated request object</param>
         /// <param name="requestQuery">Additional request query params</param>
+        /// <param name="headersToSign"></param>
         /// <returns>Presigned canonical request</returns>
         private string GetPresignCanonicalRequest(IRestClient client, IRestRequest request, string requestQuery,  SortedDictionary<string,string> headersToSign)
         {
