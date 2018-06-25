@@ -38,6 +38,7 @@ namespace Minio.Tests
                 {"mybucket-s3-us-east-2.amazonaws.com", "us-east-2"},
                 {"s3.us-west-1.amazonaws.com", "us-west-1"},
                 {"mybucket-s3-us-west-1.amazonaws.com", "us-west-1"},
+                {"wests3iss.s3-us-west-1.amazonaws.com", "us-west-1"},
             };
             foreach (KeyValuePair<string, string> testCase in endpoint2Region)
             {
