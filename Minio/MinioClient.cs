@@ -136,17 +136,18 @@ namespace Minio
         /// <param name="body">request body</param>
         /// <param name="resourcePath">query string</param>
         /// <returns>A RestRequest</returns>
-        internal async Task<RestRequest> CreateRequest(Method method, string bucketName, string objectName = null,
+        internal async Task<RestRequest> CreateRequest(Method method, string bucketName = null, string objectName = null,
                                 Dictionary<string, string> headerMap = null,
                                 string contentType = "application/octet-stream",
                                 Object body = null, string resourcePath = null)
         {
-            // Validate bucket name and object name
-            if (bucketName == null && objectName == null)
+            string region = "";
+            if ( bucketName != null)
             {
-                throw new InvalidBucketNameException(bucketName, "null bucket name for object '" + objectName + "'");
+                utils.validateBucketName(bucketName);
+                // Fetch correct region for bucket
+                region = await getRegion(bucketName).ConfigureAwait(false);
             }
-            utils.validateBucketName(bucketName);
             if (objectName != null)
             {
                 utils.validateObjectName(objectName);
@@ -154,45 +155,45 @@ namespace Minio
 
             // Start with user specified endpoint
             string host = this.BaseUrl;
-
-            // Fetch correct region for bucket
-            string region = await getRegion(bucketName).ConfigureAwait(false);
             
-            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region);
+            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey);
 
             // This section reconstructs the url with scheme followed by location specific endpoint( s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
             string resource = "";
             bool usePathStyle = false;
-            if (s3utils.IsAmazonEndPoint(this.BaseUrl))
+            if (bucketName != null)
             {
-                usePathStyle = false;
+                if (s3utils.IsAmazonEndPoint(this.BaseUrl))
+                {
+                    usePathStyle = false;
 
-                if (method == Method.PUT && objectName == null && resourcePath == null)
-                {
-                    // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
-                    usePathStyle = true;
-                }
-                else if (resourcePath != null && resourcePath.Contains("location"))
-                {
-                    // use path style for location query
-                    usePathStyle = true;
-                }
-                else if (bucketName.Contains(".") && this.Secure)
-                {
-                    // use path style where '.' in bucketName causes SSL certificate validation error
-                    usePathStyle = true;
-                }
+                    if (method == Method.PUT && objectName == null && resourcePath == null)
+                    {
+                        // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
+                        usePathStyle = true;
+                    }
+                    else if (resourcePath != null && resourcePath.Contains("location"))
+                    {
+                        // use path style for location query
+                        usePathStyle = true;
+                    }
+                    else if (bucketName != null  && bucketName.Contains(".") && this.Secure)
+                    {
+                        // use path style where '.' in bucketName causes SSL certificate validation error
+                        usePathStyle = true;
+                    }
 
-                if (usePathStyle)
+                    if (usePathStyle)
+                    {
+                        resource += utils.UrlEncode(bucketName) + "/";
+                    }
+
+                }
+                else
                 {
                     resource += utils.UrlEncode(bucketName) + "/";
                 }
-
-            }
-            else
-            {
-                resource += utils.UrlEncode(bucketName) + "/";
             }
 
             // Set Target URL

@@ -58,7 +58,8 @@ namespace Minio
                 host = AWSS3Endpoints.Instance.endpoint(region);
                 if (!usePathStyle)
                 {
-                    host = utils.UrlEncode(bucketName) + "." + utils.UrlEncode(host) + "/";
+                    string prefix = (bucketName != null) ? utils.UrlEncode(bucketName) + "." : "";
+                    host = prefix + utils.UrlEncode(host) + "/";
                 }
             }
             Uri uri = TryCreateUri(host,secure);
