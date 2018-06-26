@@ -222,7 +222,7 @@ namespace Minio
             if (size < Constants.MinimumPartSize && size >= 0)
             {
                 var bytes = ReadFull(data, (int)size);
-                if (bytes.Length != (int)size)
+                if (bytes != null && bytes.Length != (int)size)
                 {
                     throw new UnexpectedShortReadException("Data read " + bytes.Length + " is shorter than the size " + size + " of input buffer.");
                 }
