@@ -76,7 +76,7 @@ namespace Minio.DataModel
         /// <summary>
         ///  AddFilterPrefix sets the prefix configuration to the current notification config
         /// </summary>
-        /// <param name="suffix"></param>
+        /// <param name="prefix"></param>
         public void AddFilterPrefix(string prefix)
         {
             if (this.Filter == null)

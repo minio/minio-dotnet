@@ -13,18 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minio.DataModel;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.Serialization.Json;
-using System.Text;
-using static Minio.Enum;
-using RestSharp;
 using System.Linq;
+using RestSharp;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Minio.Tests
 {
@@ -35,7 +28,7 @@ namespace Minio.Tests
         public void TestAnonymousInsecureRequestHeaders()
         {
             //test anonymous insecure request headers
-            V4Authenticator authenticator = new V4Authenticator(false, null, null);
+            var authenticator = new V4Authenticator(false, null, null);
             Assert.IsTrue(authenticator.isAnonymous);
           
             IRestClient restClient = new RestClient("http://localhost:9000");
@@ -50,7 +43,7 @@ namespace Minio.Tests
         public void TestAnonymousSecureRequestHeaders()
         {
             //test anonymous secure request headers
-            V4Authenticator authenticator = new V4Authenticator(true, null, null);
+            var authenticator = new V4Authenticator(true, null, null);
             Assert.IsTrue(authenticator.isAnonymous);
 
             IRestClient restClient = new RestClient("http://localhost:9000");
@@ -65,7 +58,7 @@ namespace Minio.Tests
         public void TestSecureRequestHeaders()
         {
             // secure authenticated requests
-            V4Authenticator authenticator = new V4Authenticator(true, "accesskey", "secretkey");
+            var authenticator = new V4Authenticator(true, "accesskey", "secretkey");
             Assert.IsTrue(authenticator.isSecure);
             Assert.IsFalse(authenticator.isAnonymous);
 
@@ -83,7 +76,7 @@ namespace Minio.Tests
         public void TestInsecureRequestHeaders()
         {
             // insecure authenticated requests
-            V4Authenticator authenticator = new V4Authenticator(false, "accesskey", "secretkey");
+            var authenticator = new V4Authenticator(false, "accesskey", "secretkey");
             Assert.IsFalse(authenticator.isSecure);
             Assert.IsFalse(authenticator.isAnonymous);
             IRestClient restClient = new RestClient("http://localhost:9000");

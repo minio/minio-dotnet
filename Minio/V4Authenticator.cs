@@ -72,7 +72,7 @@ namespace Minio
         /// <summary>
         /// Authenticator constructor.
         /// </summary>
-        /// <param name="scheme">URL Scheme</param>
+        /// <param name="secure"></param>
         /// <param name="accessKey">Access key id</param>
         /// <param name="secretKey">Secret access key</param>
         public V4Authenticator(bool secure,string accessKey, string secretKey)
@@ -122,7 +122,7 @@ namespace Minio
         }
 
         /// <summary>
-        /// Get credential string of form <ACCESSID>/date/region/s3/aws4_request. 
+        /// Get credential string of form {ACCESSID}/date/region/s3/aws4_request. 
         /// </summary>
         /// <param name="signingDate">Signature initated date</param>
         /// <param name="region">Region for the credential string</param>
@@ -306,6 +306,7 @@ namespace Minio
         /// <param name="client">Instantiated client object</param>
         /// <param name="request">Instantiated request object</param>
         /// <param name="requestQuery">Additional request query params</param>
+        /// <param name="headersToSign"></param>
         /// <returns>Presigned canonical request</returns>
         private string GetPresignCanonicalRequest(IRestClient client, IRestRequest request, string requestQuery,  SortedDictionary<string,string> headersToSign)
         {
@@ -413,33 +414,32 @@ namespace Minio
             {
                 string headerName = header.Name.ToLower();
                 string headerValue = header.Value.ToString();
-            #if NET452
-                                if (!ignoredHeaders.Contains(headerName))
-                                {
-                                    sortedHeaders.Add(headerName, headerValue);
-                                }
-            #else 
-                                 if (headerName.Equals("host"))
-                                {
-                                    var host = headerValue.Split(':')[0];
-                                    var port = headerValue.Split(':')[1];
-                                    if (port.Equals("80") || port.Equals("443"))
-                                    {
-                                        sortedHeaders.Add(headerName, host);
-                                    }
-                                    else
-                                    {
-                                        sortedHeaders.Add(headerName, headerValue);
-                                    }
-                                }
-                                else if (!ignoredHeaders.Contains(headerName))
-                                {
-                                    sortedHeaders.Add(headerName, headerValue);
-                                }
-
-            #endif
-
+#if NET46
+                if (!ignoredHeaders.Contains(headerName))
+                {
+                    sortedHeaders.Add(headerName, headerValue);
+                }
+#else
+                if (headerName.Equals("host"))
+                {
+                    var host = headerValue.Split(':')[0];
+                    var port = headerValue.Split(':')[1];
+                    if (port.Equals("80") || port.Equals("443"))
+                    {
+                        sortedHeaders.Add(headerName, host);
+                    }
+                    else
+                    {
+                        sortedHeaders.Add(headerName, headerValue);
+                    }
+                }
+                else if (!ignoredHeaders.Contains(headerName))
+                {
+                    sortedHeaders.Add(headerName, headerValue);
+                }
+#endif
             }
+
             return sortedHeaders;
             
         }
@@ -479,7 +479,7 @@ namespace Minio
             }
             if (request.Method == Method.PUT || request.Method.Equals(Method.POST))
             {
-                var bodyParameter = request.Parameters.Where(p => p.Type.Equals(ParameterType.RequestBody)).FirstOrDefault();
+                var bodyParameter = request.Parameters.FirstOrDefault(p => p.Type.Equals(ParameterType.RequestBody));
                 if (bodyParameter == null)
                 {
                     request.AddHeader("x-amz-content-sha256", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");

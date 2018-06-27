@@ -15,19 +15,16 @@
  */
 
 using System;
-using System.Text;
-using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
-using System.Configuration;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Exceptions;
-using Minio;
+
 namespace Minio.Tests
 {
     /// <summary>
     /// Summary description for UnitTest1
     /// </summary>
-    [TestClass]
+    [TestClass, Ignore("Class was previously skipped by unit tests.. See #211")]
     public class UnitTest1
     {
         public UnitTest1()
@@ -35,10 +32,9 @@ namespace Minio.Tests
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                     | SecurityProtocolType.Tls11
                                     | SecurityProtocolType.Tls12;
-            var minio = new MinioClient(ConfigurationManager.AppSettings["Endpoint"],
-                                   ConfigurationManager.AppSettings["AccessKey"],
-                                   ConfigurationManager.AppSettings["SecretKey"]);
-
+            var minio = new MinioClient("play.minio.io:9000",
+                "Q3AM3UQ867SPQQA43P2F",
+                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG");
         }
 
         private TestContext testContextInstance;
@@ -81,13 +77,6 @@ namespace Minio.Tests
         //
         #endregion
 
-        [TestMethod]
-        public void TestMethod1()
-        {
-            //
-            // TODO: Add test logic here
-            //
-        }
         [TestMethod]
         public void TestWithUrl()
         {

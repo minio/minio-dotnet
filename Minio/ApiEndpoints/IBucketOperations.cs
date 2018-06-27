@@ -26,6 +26,7 @@ namespace Minio
         /// Create a private bucket with the given name.
         /// </summary>
         /// <param name="bucketName">Name of the new bucket</param>
+        /// <param name="location">Region</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task</returns>
         Task MakeBucketAsync(string bucketName, string location = "us-east-1", CancellationToken cancellationToken = default(CancellationToken));
@@ -33,7 +34,6 @@ namespace Minio
         /// <summary>
         /// List all objects in a bucket
         /// </summary>
-        /// <param name="bucketName">Bucket to list objects from</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task with an iterator lazily populated with objects</returns>
         Task<ListAllMyBucketsResult> ListBucketsAsync(CancellationToken cancellationToken = default(CancellationToken));
@@ -60,6 +60,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to list objects from</param>
         /// <param name="prefix">Filters all objects not beginning with a given prefix</param>
         /// <param name="recursive">Set to false to emulate a directory</param>
+        /// <param name="cancellationToken"></param>
         /// <returns>An observable of items that client can subscribe to</returns>
         IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true, CancellationToken cancellationToken = default(CancellationToken));
 

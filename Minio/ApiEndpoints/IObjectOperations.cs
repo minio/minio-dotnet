@@ -41,7 +41,7 @@ namespace Minio
         /// <param name="objectName">Name of object to retrieve</param>
         /// <param name="offset">offset of the object from where stream will start </param>
         /// <param name="length"> length of object to read in from the stream</param>
-        /// <param name="callback">A stream will be passed to the callback</param>
+        /// <param name="cb">A stream will be passed to the callback</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken));
 
@@ -121,7 +121,7 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to create object in</param>
         /// <param name="objectName">Key of the new object</param>
-        /// <param name="fileName">Path of file to upload</param>
+        /// <param name="filePath">Path of file to upload</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <param name="metaData">Optional Object metadata to be stored. Defaults to null.</param>
@@ -132,7 +132,7 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Name of object to retrieve</param>
-        /// <param name="fileName">string with file path</param>
+        /// <param name="filePath">string with file path</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         Task GetObjectAsync(string bucketName, string objectName, string filePath, CancellationToken cancellationToken = default(CancellationToken));

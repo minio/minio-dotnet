@@ -15,21 +15,17 @@
  */
 
 using System;
+using System.Threading.Tasks;
+using System.Net;
 using Minio;
 using Minio.DataModel;
 
-using System.Configuration;
-using System.Threading.Tasks;
-
-using System.Net;
-
 namespace SimpleTest
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
-
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                     | SecurityProtocolType.Tls11
                                     | SecurityProtocolType.Tls12;
@@ -37,9 +33,9 @@ namespace SimpleTest
 
             /// Note: s3 AccessKey and SecretKey needs to be added in App.config file
             /// See instructions in README.md on running examples for more information.
-            var minio = new MinioClient(ConfigurationManager.AppSettings["Endpoint"],
-                                             ConfigurationManager.AppSettings["AccessKey"],
-                                             ConfigurationManager.AppSettings["SecretKey"]).WithSSL();
+            var minio = new MinioClient("play.minio.io:9000",
+                                             "Q3AM3UQ867SPQQA43P2F",
+                                             "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG").WithSSL();
 
             var getListBucketsTask = minio.ListBucketsAsync();
             try

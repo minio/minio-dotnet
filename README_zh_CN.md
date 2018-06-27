@@ -1,28 +1,24 @@
 # 适用于与Amazon S3兼容的云存储的Minio .NET SDK  [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io) [![Build status](https://ci.appveyor.com/api/projects/status/tvdpoypdmbuwg0me/branch/master?svg=true)](https://ci.appveyor.com/project/Harshavardhana/minio-dotnet/branch/master)
- 
+
 Minio .NET Client SDK提供了简单的API来访问Minio以及任何与Amazon S3兼容的对象存储服务。有关API和示例的完整列表，请查看[Dotnet Client API Reference](https://docs.minio.io/docs/dotnet-client-api-reference)文档。本文假设你已经有VisualStudio开发环境。
 
 ## 最低需求
- * .NET 4.5.2，.NetStandard1.6或更高版本
- * Visual Studio 2017 RC 
-  
+ * .NET 4.5.2，.NetStandard2.0或更高版本
+ * Visual Studio 2017
+
 ## 使用NuGet安装
 
 为了安装.NET Framework的Minio .NET包，你可以在Nuget Package Manager控制台运行下面的命令。
 ```powershell
-PM> Install-Package Minio 
-```
-为了安装.NetCore的Minio .NET包，你可以在Nuget Package Manager控制台运行下面的命令。
-```powershell
-PM> Install-Package Minio.NetCore
+PM> Install-Package Minio
 ```
 ## Minio Client示例
 Minio client需要以下4个参数来连接与Amazon S3兼容的对象存储服务。
 
-| 参数  | 描述| 
+| 参数  | 描述|
 | :---         |     :---     |
 | endpoint   | 对象存储服务的URL   |
-| accessKey | Access key是唯一标识你的账户的用户ID。 |   
+| accessKey | Access key是唯一标识你的账户的用户ID。 |
 | secretKey | Secret key是你账户的密码。 |
 | secure | true代表使用HTTPS。 |
 
@@ -41,8 +37,8 @@ private static MinioClient minio = new MinioClient("play.minio.io:9000",
 var getListBucketsTask = minio.ListBucketsAsync();
 
 // Iterate over the list of buckets.
-foreach (Bucket bucket in getListBucketsTask.Result.Buckets)          
-{                
+foreach (Bucket bucket in getListBucketsTask.Result.Buckets)
+{
     Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDate.DateTime);
 }
 
@@ -68,7 +64,7 @@ namespace FileUploader
             var accessKey = "Q3AM3UQ867SPQQA43P2F";
             var secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
             try
-            { 
+            {
                 var minio = new MinioClient(endpoint, accessKey, secretKey).WithSSL();
                 FileUpload.Run(minio).Wait();
             }
@@ -78,7 +74,7 @@ namespace FileUploader
             }
             Console.ReadLine();
         }
-        
+
         // File uploader task.
         private async static Task Run(MinioClient minio)
         {
@@ -97,7 +93,7 @@ namespace FileUploader
                     await minio.MakeBucketAsync(bucketName, location);
                 }
                 // Upload a file to bucket.
-                await minio.PutObjectAsync(bucketName, objectName, filePath, contentType);  
+                await minio.PutObjectAsync(bucketName, objectName, filePath, contentType);
                 Console.Out.WriteLine("Successfully uploaded " + objectName );
             }
             catch (MinioException e)
@@ -113,37 +109,28 @@ namespace FileUploader
 ####  Windows
 * clone这个项目，并在Visual Studio 2017中打开Minio.Sln。
 ```
-$ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet 
+$ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet
 ```
 * 在Minio.Examples/Program.cs中输入你的认证信息、存储桶名称、对象名称等。
   在Program.cs中取消注释以下类似的测试用例来运行示例。
 ```cs
   //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
 ```
-* 从Visual Studio运行Minio.Client.Examples.NET452或Minio.Client.Examples.NetCore项目
+* 从Visual Studio运行Minio.Client.Examples或
 #### Linux (Ubuntu 16.04)
 
 ##### 在Linux上设置Mono和.NETCore
-<blockquote> 注意：minio-dotnet需要mono 5.0.1稳定版本和.NET Core 1.0 SDK。</blockquote>
+<blockquote> 注意：minio-dotnet需要mono 5.0.1稳定版本和.NET Core 2.0 SDK。</blockquote>
 
 * 为你的发行版发装[.NETCore](https://www.microsoft.com/net/core#linuxredhat)和[Mono](http://www.mono-project.com/download/#download-lin) 。请参阅示例脚本Ubuntu Xenial [mono_install.sh](https://github.com/minio/minio-dotnet/blob/master/mono_install.sh)安装.NETCore和Mono。
 
 ```
-$ ./mono_install.sh    
+$ ./mono_install.sh
 ```
-##### 运行Minio.Examples 
-* 运行.NET4.5.2示例
+##### 运行Minio.Examples
 ```
-$ mono nuget.exe restore
-$ msbuild /p:Configuration=Release.Net452 /t:Clean 
-$ msbuild /p:Configuration=Release.Net452
-$ ./Minio.Examples/Minio.Client.Examples.Net452/bin/Release.Net452/Minio.Client.Examples.Net452.exe 
-```
-* 运行.NetCore示例
-```
-$ dotnet msbuild /p:Configuration=Release.Core
-$ cd Minio.Examples/Minio.Client.Examples.Core
-$ dotnet restore
+$ cd Minio.Examples
+$ dotnet build -c Release 
 $ dotnet run
 ```
 #### 操作存储桶

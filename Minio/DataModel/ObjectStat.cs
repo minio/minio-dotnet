@@ -29,6 +29,7 @@ namespace Minio.DataModel
         /// <param name="lastModified">Last when object was modified</param>
         /// <param name="etag">Unique entity tag for the object</param>
         /// <param name="contentType">Object content type</param>
+        /// <param name="metadata"></param>
         public ObjectStat(string objectName, long size, DateTime lastModified, string etag, string contentType, Dictionary<string, string> metadata)
         {
             this.ObjectName = objectName;

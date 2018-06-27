@@ -41,7 +41,7 @@ namespace Minio.DataModel
         /// <summary>
         /// Set key policy.
         /// </summary>
-        /// <param name="Key">Object name for the policy</param>
+        /// <param name="key">Object name for the policy</param>
         public void SetKey(string key)
         {
             if (string.IsNullOrEmpty(key))
@@ -56,7 +56,7 @@ namespace Minio.DataModel
         /// <summary>
         /// Set key prefix policy.
         /// </summary>
-        /// <param name="KeyStartsWith">Object name prefix for the policy</param>
+        /// <param name="keyStartsWith">Object name prefix for the policy</param>
         public void SetKeyStartsWith(string keyStartsWith)
         {
             if (string.IsNullOrEmpty(keyStartsWith))
@@ -70,7 +70,7 @@ namespace Minio.DataModel
         /// <summary>
         /// Set bucket policy.
         /// </summary>
-        /// <param name="Bucket">Bucket name for the policy</param>
+        /// <param name="bucket">Bucket name for the policy</param>
         public void SetBucket(string bucket)
         {
             if (string.IsNullOrEmpty(bucket))
@@ -85,7 +85,7 @@ namespace Minio.DataModel
         /// <summary>
         /// Set content type policy.
         /// </summary>
-        /// <param name="ContentType">ContentType for the policy</param>
+        /// <param name="contentType">ContentType for the policy</param>
         public void SetcontentType(string contentType)
         {
             if (string.IsNullOrEmpty(contentType))
@@ -99,7 +99,7 @@ namespace Minio.DataModel
         /// <summary>
         /// Set content encoding 
         /// </summary>
-        /// <param name="ContentEncoding">ContentEncoding for the policy</param>
+        /// <param name="contentEncoding">ContentEncoding for the policy</param>
 
         public void SetContentEncoding(string contentEncoding)
         {
@@ -114,7 +114,7 @@ namespace Minio.DataModel
         /// <summary>
         /// Set content length
         /// </summary>
-        /// <param name="ContentLength">ContentLength for the policy</param>
+        /// <param name="contentLength">ContentLength for the policy</param>
 
         public void SetContentLength(long contentLength)
         {
@@ -128,8 +128,8 @@ namespace Minio.DataModel
         /// <summary>
         /// Set content range 
         /// </summary>
-        /// <param name="ContentRange">ContentRange for the policy</param>
-
+        /// <param name="startRange">ContentRange for the policy</param>
+        /// <param name="endRange"></param>
         public void SetContentRange(long startRange, long endRange)
         {
             if ((startRange <= 0) || (endRange <= 0))
@@ -160,8 +160,8 @@ namespace Minio.DataModel
         /// <summary>
         /// Set user specified metadata as a key/value couple.
         /// </summary>
-        /// <param name="status">Key and Value to insert in the metadata</param>
-
+        /// <param name="key">Key and Value to insert in the metadata</param>
+        /// <param name="value"></param>
         public void SetUserMetadata(string key, string value)
         {
             if (string.IsNullOrEmpty(key))
@@ -215,7 +215,7 @@ namespace Minio.DataModel
         /// <summary>
         /// Set base64 encoded policy to form dictionary.
         /// </summary>
-        /// <param name="policy">Base64 encoded policy</param>
+        /// <param name="policyBase64">Base64 encoded policy</param>
         public void SetPolicy(string policyBase64)
         {
             this.formData.Add("policy", policyBase64);

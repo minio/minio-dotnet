@@ -75,15 +75,13 @@ namespace Minio
         {
             get
             {
-                string release = "minio-dotnet/0.2.1";
-#if NET452
-                string arch = System.Environment.Is64BitOperatingSystem ? "x86_64" : "x86";
-                return String.Format("Minio ({0};{1}) {2}", System.Environment.OSVersion.ToString(), arch, release);
-
+                string release = "minio-dotnet/1.0.9";
+#if NET46
+                string arch = Environment.Is64BitOperatingSystem ? "x86_64" : "x86";
+                return String.Format("Minio ({0};{1}) {2}", Environment.OSVersion, arch, release);
 #else
                 string arch = RuntimeInformation.OSArchitecture.ToString();
                 return String.Format("Minio ({0};{1}) {2}", RuntimeInformation.OSDescription, arch, release);
-
 #endif
             }
         }
@@ -134,7 +132,6 @@ namespace Minio
         /// <param name="bucketName">Bucket Name</param>
         /// <param name="objectName">Object Name</param>
         /// <param name="headerMap">headerMap</param>
-        /// <param name="queryParamMap">unused queryParamMap</param>
         /// <param name="contentType">Content Type</param>
         /// <param name="body">request body</param>
         /// <param name="resourcePath">query string</param>
@@ -291,7 +288,6 @@ namespace Minio
         /// <returns>Client initialized with user credentials</returns>
         public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region="")
         {
-
             this.Secure = false;
 
             // Save user entered credentials
@@ -303,8 +299,6 @@ namespace Minio
             this.regionCache = BucketRegionCache.Instance;
 
             initClient();
-            return;
-
         }
 
         /// <summary>
@@ -332,6 +326,7 @@ namespace Minio
         /// </summary>
         /// <param name="errorHandlers">List of handlers to override default handling</param>
         /// <param name="request">request</param>
+        /// <param name="cancellationToken"></param>
         /// <returns>IRESTResponse</returns>
         internal async Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request, CancellationToken cancellationToken=default(CancellationToken))
         {
@@ -479,11 +474,13 @@ namespace Minio
             MinioException.XmlError = response.Content;
             throw MinioException;
         }
+
         /// <summary>
         /// Delegate errors to handlers
         /// </summary>
         /// <param name="response"></param>
         /// <param name="handlers"></param>
+        /// <param name="startTime"></param>
         private void HandleIfErrorResponse(IRestResponse response, IEnumerable<ApiResponseErrorHandlingDelegate> handlers, DateTime startTime)
         {
             // Logs Response if HTTP tracing is enabled

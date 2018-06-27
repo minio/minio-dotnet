@@ -17,7 +17,7 @@
 
 namespace Minio
 {
-    class Enum
+    public class Enum
     {
         /// <summary>
         /// HTTP method to use when making requests

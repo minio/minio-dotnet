@@ -15,14 +15,8 @@
 */
 
 using System;
-using System.ComponentModel;
-using Minio.Exceptions;
-using System.Text;
-using System.IO;
-using Minio.DataModel;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Minio.Functional.Tests
 {
@@ -33,18 +27,18 @@ namespace Minio.Functional.Tests
       NA
     }
 
-  static class TestStatusExtender
-  {
-    public static String AsText(this TestStatus status)
+    static class TestStatusExtender
     {
-      switch(status)
-      {
-        case TestStatus.PASS: return "PASS";
-        case TestStatus.FAIL: return "FAIL";
-        default: return "NA";
-      }
+        public static String AsText(this TestStatus status)
+        {
+            switch (status)
+            {
+                case TestStatus.PASS: return "PASS";
+                case TestStatus.FAIL: return "FAIL";
+                default: return "NA";
+            }
+        }
     }
-  }
 
     internal class MintLogger
     {
@@ -83,7 +77,7 @@ namespace Minio.Functional.Tests
         this.args = args;
         this.status = status.AsText();
       }  
-      public  void Log() {
+      public void Log() {
 
           Console.Out.WriteLine(JsonConvert.SerializeObject(this,Formatting.None,
             new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));

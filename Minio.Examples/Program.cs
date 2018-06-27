@@ -15,19 +15,15 @@
 */
 
 using System;
-using System.Net;
-using Minio.Exceptions;
-using System.Text;
-using System.IO;
-using Minio.DataModel;
 using System.Collections.Generic;
-#if NET452
-using System.Configuration;
-#endif
+using System.IO;
+using System.Text;
+using Minio.DataModel;
+using Minio.Exceptions;
 
 namespace Minio.Examples
 {
-    class Program
+    public class Program
     {
         private static Random rnd = new Random();
         private static int UNIT_MB = 1024 * 1024;
@@ -77,12 +73,6 @@ namespace Minio.Examples
                 secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
                 enableHTTPS = true;
             }
-#if NET452
-            ServicePointManager.Expect100Continue = true;
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
-                                     | SecurityProtocolType.Tls11
-                                     | SecurityProtocolType.Tls12;
-#endif
 
             // WithSSL() enables SSL support in Minio client
             MinioClient minioClient = null;
