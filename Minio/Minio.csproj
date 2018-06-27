@@ -9,7 +9,7 @@
 
   <PropertyGroup Label="Package">
     <Product>Minio</Product>
-    <Version>1.1.2</Version>
+    <Version>2.0.0</Version>
     <Description>Minio .NET SDK for Amazon S3 Compatible Cloud Storage.</Description>
     <Copyright>Copyright (c) 2018.  All rights reserved.</Copyright>
     <Authors>Minio, Inc.</Authors>
@@ -25,26 +25,20 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/minio/minio-dotnet</RepositoryUrl>
   </PropertyGroup>
-
-  <PropertyGroup Label="Signing">
-    <SignAssembly>true</SignAssembly>
-    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
-    <AssemblyOriginatorKeyFile>..\Minio.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
-
+  
   <ItemGroup>
-    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.1" PrivateAssets="All" />
+    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="All" />
     <PackageReference Include="AsyncFixer" Version="1.1.6" PrivateAssets="All" />
 
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="RestSharp" Version="106.3.0" />
+    <PackageReference Include="RestSharp" Version="106.3.1" />
     <PackageReference Include="System.Reactive.Linq" Version="4.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'" Label="Framework References">
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
   </ItemGroup>
-  
+
   <ItemGroup Condition="'$(TargetFramework)' == 'net46'" Label="Framework References">
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
