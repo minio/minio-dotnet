@@ -47,11 +47,16 @@ namespace Minio.DataModel
 
         public bool IsDir { get; set; }
 
-        public DateTime LastModifiedDateTime
+        public DateTime? LastModifiedDateTime
         {
             get
             {
-                return DateTime.Parse(this.LastModified);
+                DateTime? dt = null;
+                if(!string.IsNullOrEmpty(this.LastModified))
+                {
+                    dt = DateTime.Parse(this.LastModified);
+                }
+                return dt;
             }
         }
     }
