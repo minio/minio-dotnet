@@ -137,6 +137,7 @@ $ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet
 ```cs
   //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
 ```
+```
 $ cd Minio.Examples
 $ dotnet build -c Release
 $ dotnet run
