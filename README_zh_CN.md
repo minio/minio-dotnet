@@ -3,7 +3,7 @@
 Minio .NET Client SDK提供了简单的API来访问Minio以及任何与Amazon S3兼容的对象存储服务。有关API和示例的完整列表，请查看[Dotnet Client API Reference](https://docs.minio.io/docs/dotnet-client-api-reference)文档。本文假设你已经有VisualStudio开发环境。
 
 ## 最低需求
- * .NET 4.5.2，.NetStandard2.0或更高版本
+ * .NET 4.6，.NetStandard2.0或更高版本
  * Visual Studio 2017
 
 ## 使用NuGet安装
@@ -119,13 +119,13 @@ $ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet
 * 从Visual Studio运行Minio.Client.Examples或
 #### Linux (Ubuntu 16.04)
 
-##### 在Linux上设置Mono和.NETCore
+##### 在Linux.NETCore
 <blockquote> 注意：minio-dotnet需要mono 5.0.1稳定版本和.NET Core 2.0 SDK。</blockquote>
 
-* 为你的发行版发装[.NETCore](https://www.microsoft.com/net/core#linuxredhat)和[Mono](http://www.mono-project.com/download/#download-lin) 。请参阅示例脚本Ubuntu Xenial [mono_install.sh](https://github.com/minio/minio-dotnet/blob/master/mono_install.sh)安装.NETCore和Mono。
+* 为你的发行版发装[.NETCore](https://www.microsoft.com/net/core#linuxredhat)。请参阅示例脚本Ubuntu Xenial [netcore_install_linux.sh](https://github.com/minio/minio-dotnet/blob/master/netcore_install_linux.sh)安装.NETCore。
 
 ```
-$ ./mono_install.sh
+$ ./netcore_install_linux.sh
 ```
 ##### 运行Minio.Examples
 ```

@@ -16,14 +16,13 @@ Minio .NET Library uses nuget for its dependency management https://nuget.org/
 
 ### Publishing a new package
 The steps below assume that the package is being built on Ubuntu 16.04, with following dependencies met.
-- Mono 4.4.2 or later
-- dotnet-dev-1.1.5
+- dotnet-sdk-2.1
 
-For installation instructions follow this [script](https://github.com/minio/minio-dotnet/blob/master/mono_install.sh)
+For installation instructions follow this [script](https://github.com/minio/minio-dotnet/blob/master/netcore_install_linux.sh)
 #### Update package Version
 - Update Minio/Minio.csproj with the next version in the <Version></Version> tag
  ```
- <Version>1.0.9</Version>
+ <Version>2.0.0</Version>
  ```
 
 - Update Minio/MinioClient.cs with the next version in the `SystemUserAgent`.
@@ -45,7 +44,8 @@ $ nuget restore
 
 #### Build a package
 ```sh
-$ dotnet publish -c Release
+$ dotnet build -c Release
+$ dotnet pack Minio\Minio.csproj --no-build -c Release -o .\artifacts
 ... package built ...
 ```
 #### Upload the package to nuget.org
@@ -53,14 +53,14 @@ Login to nuget.org(https://www.nuget.org) and find the API Key for Minio
 ```sh
 $  export MINIO_API_KEY=??
 $  nuget setApiKey $MINIO_API_KEY
-$  nuget push .\Minio.1.0.9.nupkg -Apikey $MINIO_API_KEY -src https://nuget.org
+$  nuget push ./Minio/.artifacts/Minio.2.0.0.nupkg -Apikey $MINIO_API_KEY -src https://nuget.org
 ```
 #### Verify package on nuget.org
 Verify that latest versions of Minio packages are available on [Nuget](https://www.nuget.org/account/Packages).
 
 #### Tag
 Tag and sign your release commit, additionally this step requires you to have access to Minio's trusted private key.
-$ git tag -s 1.0.9
+$ git tag -s 2.0.0
 $ git push
 $ git push --tags
 

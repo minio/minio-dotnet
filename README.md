@@ -3,7 +3,7 @@
 Minio Client SDK provides higher level APIs for Minio and Amazon S3 compatible cloud storage services.For a complete list of APIs and examples, please take a look at the [Dotnet Client API Reference](https://docs.minio.io/docs/dotnet-client-api-reference).This document assumes that you have a working VisualStudio development environment.
 
 ## Minimum Requirements
- * .NET 4.5.2, .NetStandard 2.0 or higher
+ * .NET 4.6, .NetStandard 2.0 or higher
  * Visual Studio 2017
 
 ## Install from NuGet
@@ -117,13 +117,13 @@ namespace FileUploader
 * Run the Minio.Client.Examples project from Visual Studio
 #### On Linux (Ubuntu 16.04)
 
-##### Setting up Mono and .NETCore on Linux
-<blockquote> NOTE: minio-dotnet requires mono 5.0.1 stable release and .NET Core 2.0 SDK to build on Linux. </blockquote>
+##### Setting up .NETCore on Linux
+<blockquote> NOTE: minio-dotnet requires .NET Core 2.0 SDK to build on Linux. </blockquote>
 
-* Install [.NETCore](https://www.microsoft.com/net/core#linuxredhat) and [Mono](http://www.mono-project.com/download/#download-lin) for your distro. See sample script  to install .NETCore and Mono for Ubuntu Xenial [mono_install.sh](https://github.com/minio/minio-dotnet/blob/master/mono_install.sh)
+* Install [.NETCore](https://www.microsoft.com/net/core#linuxredhat)) for your distro. See sample script  to install .NETCore for Ubuntu Xenial [netcore_install_linux.sh](https://github.com/minio/minio-dotnet/blob/master/netcore_install_linux.sh)
 
 ```
-$ ./mono_install.sh
+$ ./netcore_install_linux.sh
 ```
 ##### Running Minio.Examples
 * Clone this project.
@@ -136,6 +136,7 @@ $ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet
   Uncomment the example test cases such as below in Program.cs to run an example.
 ```cs
   //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
+```
 ```
 $ cd Minio.Examples
 $ dotnet build -c Release

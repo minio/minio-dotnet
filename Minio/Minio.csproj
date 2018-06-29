@@ -3,6 +3,8 @@
     <AssemblyName>Minio</AssemblyName>
     <RootNamespace>Minio</RootNamespace>
     <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
+    <!-- Add the myget feed, without altering any other configurations. -->
+    <RestoreAdditionalProjectSources>https://dotnet.myget.org/F/dotnet-core/api/v3/index.json</RestoreAdditionalProjectSources>
     <DebugType>embedded</DebugType>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
   </PropertyGroup>
@@ -39,7 +41,16 @@
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
   </ItemGroup>
 
+  <PropertyGroup Condition="'$(TargetFramework)'== 'net46'">
+    <!-- Make .NET 4.6 reference assemblies available even on Linux -->
+    <FrameworkPathOverride>$(NuGetPackageRoot)microsoft.targetingpack.netframework.v4.6/1.0.1/lib/net46/</FrameworkPathOverride>
+  </PropertyGroup>
+
+
   <ItemGroup Condition="'$(TargetFramework)' == 'net46'" Label="Framework References">
     <Reference Include="Microsoft.CSharp" />
+          <!-- Make sure the reference assemblies are available -->
+    <PackageReference Include="Microsoft.TargetingPack.NETFramework.v4.6"
+                      Version="1.0.1" ExcludeAssets="All" PrivateAssets="All" />
   </ItemGroup>
 </Project>
