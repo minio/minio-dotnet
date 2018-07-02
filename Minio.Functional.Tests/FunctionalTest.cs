@@ -225,6 +225,7 @@ namespace Minio.Functional.Tests
             CopyObject_Test5(minioClient).Wait();
             CopyObject_Test6(minioClient).Wait();
             CopyObject_Test7(minioClient).Wait();
+            CopyObject_Test8(minioClient).Wait();
 
             // Test SetPolicyAsync function
             SetBucketPolicy_Test1(minioClient).Wait();
@@ -1193,6 +1194,63 @@ namespace Minio.Functional.Tests
 
         }
 
+        private async static Task CopyObject_Test8(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string destBucketName = GetRandomName(15);
+            string destObjectName = GetRandomName(10);
+            Dictionary<string,string> args = new Dictionary<string,string>
+            {
+                {"bucketName", bucketName},
+                {"objectName",objectName},
+                {"destBucketName", destBucketName},
+                {"destObjectName", destObjectName},
+                {"data","1MB"},
+                {"size","1MB"},
+                {"copyconditions","x-amz-metadata-directive:REPLACE"},
+            };
+            try
+            {
+                await Setup_Test(minio, bucketName);
+                await Setup_Test(minio, destBucketName);
+
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                {
+                    await minio.PutObjectAsync(bucketName,
+                                            objectName,
+                                            filestream, filestream.Length, metaData:new Dictionary<string,string>{{"X-Amz-Meta-Orig", "orig-val"}});
+                }
+                ObjectStat stats = await minio.StatObjectAsync(bucketName, objectName);
+                Assert.IsTrue(stats.metaData["X-Amz-Meta-Orig"] != null);
+
+                CopyConditions copyCond = new CopyConditions();
+                copyCond.SetReplaceMetadataDirective();
+
+                // set custom metadata
+                Dictionary<string,string> metadata = new Dictionary<string,string>()
+                {
+                    { "Content-Type", "application/css"},
+                    {"X-Amz-Meta-Mynewkey","my-new-value"}
+                };
+                await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName,copyConditions:copyCond,metadata: metadata);
+
+                ObjectStat dstats = await minio.StatObjectAsync(destBucketName, destObjectName);
+                Assert.IsTrue(dstats.metaData["X-Amz-Meta-Mynewkey"] != null);
+                await minio.RemoveObjectAsync(bucketName, objectName);
+                await minio.RemoveObjectAsync(destBucketName, destObjectName);
+
+
+                await TearDown(minio, bucketName);
+                await TearDown(minio, destBucketName);
+                new MintLogger("CopyObject_Test8",copyObjectSignature,"Tests whether CopyObject with metadata replacement passes",TestStatus.PASS,(DateTime.Now - startTime), args:args).Log();
+            }
+            catch (MinioException ex)
+            {
+                new MintLogger("CopyObject_Test8",copyObjectSignature,"Tests whether CopyObject with metadata replacement passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(),args).Log();
+            }
+        }
         private async static Task GetObject_Test1(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;

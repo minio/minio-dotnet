@@ -27,7 +27,7 @@ namespace Minio.DataModel
     public class CopyConditions
     {
         private Dictionary<string, string> copyConditions = new Dictionary<string, string>();
-        internal long byteRangeStart = -1;
+        internal long byteRangeStart = 0;
         internal long byteRangeEnd = -1;
 
         /// <summary>
@@ -110,6 +110,30 @@ namespace Minio.DataModel
         }
 
         /**
+        * Set replace metadata directive which specifies that
+        * server side copy needs to replace metadata on destination with custom
+        * metadata provided in the request.
+        *
+        */
+        public void SetReplaceMetadataDirective()
+        {
+            copyConditions.Add("x-amz-metadata-directive", "REPLACE");
+        }
+        /**
+        * Return true if replace metadata directive is specified
+        *
+        */
+        public bool HasReplaceMetadataDirective()
+        {
+            foreach (var item in copyConditions)
+            {
+                if (item.Key.Equals("x-amz-metadata-directive") && 
+                    (item.Value.ToUpper().Equals("REPLACE")))
+                    return true;
+            }
+            return false;
+        }       
+       /**
        * Set Byte Range condition, copy object which falls within the 
        * start and end byte range specified by user
        *

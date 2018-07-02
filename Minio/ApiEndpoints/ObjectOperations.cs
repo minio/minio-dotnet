@@ -879,9 +879,10 @@ namespace Minio
         /// <param name="destBucketName">Bucket name where the object will be copied to.</param>
         /// <param name="destObjectName">Object name to be created, if not provided uses source object name as destination object name.</param>
         /// <param name="copyConditions">optionally can take a key value CopyConditions as well for conditionally attempting copyObject.</param>
+        /// <param name="metadata">Optional Object metadata to be stored. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public async Task CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (bucketName == null)
             {
@@ -906,6 +907,20 @@ namespace Minio
 
             // Get Stats on the source object 
             ObjectStat srcStats = await this.StatObjectAsync(bucketName, objectName, cancellationToken).ConfigureAwait(false);
+            // Copy metadata from the source object if no metadata replace directive
+            Dictionary<string,string> meta = new Dictionary<string,string>();
+            Dictionary<string,string> m = metadata;
+            if (copyConditions != null && !copyConditions.HasReplaceMetadataDirective()) 
+            {
+                m = srcStats.metaData;
+            }
+            if (m != null)
+            {
+                foreach (var item in m)
+                {
+                    meta[item.Key] = item.Value;
+                }
+            }
 
             long srcByteRangeSize = 0L;
 
@@ -921,9 +936,9 @@ namespace Minio
 
             if ((copySize > Constants.MaxSingleCopyObjectSize) ||
                     (srcByteRangeSize > 0 && (srcByteRangeSize != srcStats.Size)))
-                await MultipartCopyUploadAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, copySize, cancellationToken).ConfigureAwait(false);
+                await MultipartCopyUploadAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, copySize, meta, cancellationToken).ConfigureAwait(false);
             else
-                await this.CopyObjectRequestAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, null, null, cancellationToken, typeof(CopyObjectResult)).ConfigureAwait(false);
+                await this.CopyObjectRequestAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, meta, null, cancellationToken, typeof(CopyObjectResult)).ConfigureAwait(false);
         }
         /// <summary>
         ///  Create the copy request,execute it and 
@@ -995,7 +1010,7 @@ namespace Minio
         /// <param name="copySize"> size of copy upload</param>
         /// <param name="cancellationToken"> optional cancellation token</param>
         /// <returns></returns>
-        private async Task MultipartCopyUploadAsync(string bucketName, string objectName, string destBucketName, string destObjectName, CopyConditions copyConditions, long copySize, CancellationToken cancellationToken)
+        private async Task MultipartCopyUploadAsync(string bucketName, string objectName, string destBucketName, string destObjectName, CopyConditions copyConditions, long copySize,Dictionary<string, string> metadata = null, CancellationToken cancellationToken=default(CancellationToken))
         {
             // For all sizes greater than 5GB or if Copy byte range specified in conditions and byte range larger 
             // than minimum part size (5 MB) do multipart.
@@ -1007,7 +1022,7 @@ namespace Minio
             Part[] totalParts = new Part[(int)partCount];
 
             // No need to resume upload since this is a server side copy. Just initiate a new upload.
-            string uploadId = await this.NewMultipartUploadAsync(destBucketName, destObjectName, null, cancellationToken).ConfigureAwait(false);
+            string uploadId = await this.NewMultipartUploadAsync(destBucketName, destObjectName, metadata, cancellationToken).ConfigureAwait(false);
 
             // Upload each part
             double expectedReadSize = partSize;
