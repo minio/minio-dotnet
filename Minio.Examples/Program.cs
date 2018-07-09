@@ -134,6 +134,9 @@ namespace Minio.Examples
                 // Server side copyObject
                 Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName).Wait();
 
+                // Server side copyObject with metadata replacement
+                Cases.CopyObjectMetadata.Run(minioClient, bucketName, objectName, destBucketName, objectName).Wait();
+
                 // Upload a File with PutObject
                 Cases.FPutObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
 

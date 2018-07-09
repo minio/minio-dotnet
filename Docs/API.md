@@ -913,9 +913,9 @@ catch(MinioException e)
 ```
 
 <a name="copyObject"></a>
-### CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null)
+### CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null,Dictionary<string, string> metadata = null)
 
-*`Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, CancellationToken cancellationToken = default(CancellationToken))`*
+*`Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null,CancellationToken cancellationToken = default(CancellationToken))`*
 
 Copies content from objectName to destObjectName.
 
@@ -930,6 +930,7 @@ __Parameters__
 | ``destBucketName``  | _string_  | Destination bucket name |
 | ``destObjectName`` | _string_ | Destination object name to be created, if not provided defaults to source object name|
 | ``copyConditions`` | _CopyConditions_ | Map of conditions useful for applying restrictions on copy operation|
+| ``metadata``  | _Dictionary<string,string>_ | Dictionary of meta data headers and their values on the destination side.Defaults to null.|
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
