@@ -414,30 +414,10 @@ namespace Minio
             {
                 string headerName = header.Name.ToLower();
                 string headerValue = header.Value.ToString();
-#if NET46
                 if (!ignoredHeaders.Contains(headerName))
                 {
                     sortedHeaders.Add(headerName, headerValue);
                 }
-#else
-                if (headerName.Equals("host"))
-                {
-                    var host = headerValue.Split(':')[0];
-                    var port = headerValue.Split(':')[1];
-                    if (port.Equals("80") || port.Equals("443"))
-                    {
-                        sortedHeaders.Add(headerName, host);
-                    }
-                    else
-                    {
-                        sortedHeaders.Add(headerName, headerValue);
-                    }
-                }
-                else if (!ignoredHeaders.Contains(headerName))
-                {
-                    sortedHeaders.Add(headerName, headerValue);
-                }
-#endif
             }
 
             return sortedHeaders;
