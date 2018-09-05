@@ -39,7 +39,7 @@ var getListBucketsTask = minio.ListBucketsAsync();
 // Iterate over the list of buckets.
 foreach (Bucket bucket in getListBucketsTask.Result.Buckets)
 {
-    Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDate.DateTime);
+    Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
 }
 
 ```
