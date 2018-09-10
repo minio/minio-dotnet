@@ -320,7 +320,7 @@ namespace Minio
                 path = "/" + path;
             }
             canonicalStringList.AddLast(path);
-            String query = headersToSign.Aggregate(requestQuery, (pv, cv) => $"{pv}&{utils.UrlEncode((string)cv.Key)}={utils.UrlEncode((string)cv.Value)}");
+            String query = headersToSign.Aggregate(requestQuery, (pv, cv) => $"{pv}&{utils.UrlEncode(cv.Key)}={utils.UrlEncode(cv.Value)}");
             canonicalStringList.AddLast(query);
             if (client.BaseUrl.Port > 0 && (client.BaseUrl.Port != 80 && client.BaseUrl.Port != 443))
             {
