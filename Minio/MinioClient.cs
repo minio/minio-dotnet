@@ -24,9 +24,8 @@ using System.Xml.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Minio.Helper;
-using Newtonsoft.Json;
+using Minio.DataModel.Tracing;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Minio
 {
@@ -54,6 +53,8 @@ namespace Minio
 
         // Cache holding bucket to region mapping for buckets seen so far.
         internal BucketRegionCache regionCache;
+
+        private IRequestLogger logger;
 
         // Enables HTTP tracing if set to true
         private bool trace = false;
@@ -505,8 +506,9 @@ namespace Minio
         /// <summary>
         /// Sets HTTP tracing On.Writes output to Console
         /// </summary>
-        public void SetTraceOn()
+        public void SetTraceOn(IRequestLogger logger = null)
         {
+            this.logger = logger ?? new DefaultRequestLogger();
             this.trace = true;
         }
         /// <summary>
@@ -525,12 +527,12 @@ namespace Minio
         /// <param name="durationMs"></param>
         private void LogRequest(IRestRequest request, IRestResponse response, double durationMs)
         {
-            var requestToLog = new
+            var requestToLog = new RequestToLog
             {
                 resource = request.Resource,
                 // Parameters are custom anonymous objects in order to have the parameter type as a nice string
                 // otherwise it will just show the enum value
-                parameters = request.Parameters.Select(parameter => new
+                parameters = request.Parameters.Select(parameter => new RequestParameter
                 {
                     name = parameter.Name,
                     value = parameter.Value,
@@ -539,10 +541,10 @@ namespace Minio
                 // ToString() here to have the method as a nice string otherwise it will just show the enum value
                 method = request.Method.ToString(),
                 // This will generate the actual Uri used in the request
-                uri = restClient.BuildUri(request),
+                uri = restClient.BuildUri(request)
             };
 
-            var responseToLog = new
+            var responseToLog = new ResponseToLog
             {
                 statusCode = response.StatusCode,
                 content = response.Content,
@@ -550,12 +552,10 @@ namespace Minio
                 // The Uri that actually responded (could be different from the requestUri if a redirection occurred)
                 responseUri = response.ResponseUri,
                 errorMessage = response.ErrorMessage,
+                durationMs = durationMs
             };
 
-            Console.Out.WriteLine(string.Format("Request completed in {0} ms, Request: {1}, Response: {2}",
-                    durationMs,
-                    JsonConvert.SerializeObject(requestToLog, Formatting.Indented),
-                    JsonConvert.SerializeObject(responseToLog, Formatting.Indented)));
+            this.logger.LogRequest(requestToLog, responseToLog, durationMs);
         }
 
     }

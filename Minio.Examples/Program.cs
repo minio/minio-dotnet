@@ -184,10 +184,13 @@ namespace Minio.Examples
                 // Delete the object
                 Cases.RemoveObject.Run(minioClient, destBucketName, objectName).Wait();
 
+                // Tacing request with custom logger
+                Cases.CustomRequestLogger.Run(minioClient).Wait();
+
                 // Remove the buckets
                 Cases.RemoveBucket.Run(minioClient, bucketName).Wait();
                 Cases.RemoveBucket.Run(minioClient, destBucketName).Wait();
-
+                
                 // Remove the binary files created for test
                 File.Delete(smallFileName);
                 File.Delete(bigFileName);

@@ -30,7 +30,6 @@
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="All" />
     <PackageReference Include="AsyncFixer" Version="1.1.6" PrivateAssets="All" />
 
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="RestSharp" Version="106.3.1" />
     <PackageReference Include="System.Reactive.Linq" Version="4.0.0" />
   </ItemGroup>
@@ -42,4 +41,4 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net46'" Label="Framework References">
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
-</Project>
+</Project>  

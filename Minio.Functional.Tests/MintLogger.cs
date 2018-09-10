@@ -14,9 +14,9 @@
 * limitations under the License.
 */
 
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 
 namespace Minio.Functional.Tests
 {
@@ -77,10 +77,10 @@ namespace Minio.Functional.Tests
         this.args = args;
         this.status = status.AsText();
       }  
-      public void Log() {
-
-          Console.Out.WriteLine(JsonConvert.SerializeObject(this,Formatting.None,
-            new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
-      }
+      public void Log()
+      {
+            Console.Out.WriteLine(JsonConvert.SerializeObject(this, Formatting.None,
+                new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
+        }
     }
 }
