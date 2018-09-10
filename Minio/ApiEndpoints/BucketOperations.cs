@@ -111,7 +111,7 @@ namespace Minio
                 {
                     return false;
                 }
-                throw ex;
+                throw;
             }
             return true;
         }
