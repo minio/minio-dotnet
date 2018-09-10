@@ -16,7 +16,7 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text;
 
 namespace Minio.Functional.Tests
 {
@@ -77,10 +77,37 @@ namespace Minio.Functional.Tests
         this.args = args;
         this.status = status.AsText();
       }  
-      public void Log() {
+      public void Log()
+      {
+            var sb = new StringBuilder();
 
-          Console.Out.WriteLine(JsonConvert.SerializeObject(this,Formatting.None,
-            new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
+            sb.Append("function="); sb.AppendLine(this.function);
+            sb.Append("duration="); sb.AppendLine(this.duration.ToString() );
+            sb.Append("name=");     sb.AppendLine(this.name     );
+            sb.Append("alert=");    sb.AppendLine(this.alert    );
+            sb.Append("message=");  sb.AppendLine(this.message  );
+            sb.Append("error=");    sb.AppendLine(this.error    );
+            sb.Append("status=");   sb.AppendLine(this.status   );
+            sb.Append("args=");
+
+            if (this.args == null)
+            {
+                sb.AppendLine("[]");
+            }
+            else
+            {
+                foreach (var kv in this.args)
+                {
+                    sb.Append("[");
+                    sb.Append(kv.Key);
+                    sb.Append("]=");
+
+                    sb.AppendLine(kv.Value);
+                }
+            }
+
+
+            Console.Out.WriteLine(sb.ToString());
       }
     }
 }
