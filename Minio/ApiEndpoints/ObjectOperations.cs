@@ -964,7 +964,6 @@ namespace Minio
             {
                 destObjectName = objectName;
             }
-            var path = destBucketName + "/" + utils.UrlEncode(destObjectName);
 
             var request = await this.CreateRequest(Method.PUT, destBucketName,
                                                    objectName: destObjectName,
