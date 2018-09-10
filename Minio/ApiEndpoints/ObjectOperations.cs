@@ -155,7 +155,7 @@ namespace Minio
                 long writtenSize = writtenInfo.Length;
                 if (writtenSize != length - tempFileSize)
                 {
-                    new IOException(tempFileName + ": unexpected data written.  expected = " + (length - tempFileSize)
+                    throw new IOException(tempFileName + ": unexpected data written.  expected = " + (length - tempFileSize)
                                            + ", written = " + writtenSize);
                 }
                 utils.MoveWithReplace(tempFileName, fileName);
