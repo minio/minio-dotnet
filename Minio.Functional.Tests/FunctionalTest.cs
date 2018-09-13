@@ -957,7 +957,6 @@ namespace Minio.Functional.Tests
                 string outFileName = "outFileName";
                 ObjectStat dstats = await minio.StatObjectAsync(destBucketName, destObjectName);
                 Assert.IsNotNull(dstats);
-                Assert.AreEqual(dstats.ETag, stats.ETag);
                 Assert.AreEqual(dstats.ObjectName, destObjectName);
                 await minio.GetObjectAsync(destBucketName, destObjectName, outFileName);
                 File.Delete(outFileName);
