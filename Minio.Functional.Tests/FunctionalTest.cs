@@ -1076,7 +1076,14 @@ namespace Minio.Functional.Tests
             }
             catch (MinioException ex)
             {
-                new MintLogger("CopyObject_Test5",copyObjectSignature,"Tests whether CopyObject  multi-part copy upload for large files works",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(),args).Log();
+                if (ex.message.Equals("A header you provided implies functionality that is not implemented"))
+                {
+                    new MintLogger("CopyObject_Test5",copyObjectSignature,"Tests whether CopyObject  multi-part copy upload for large files works",TestStatus.NA,(DateTime.Now - startTime),args:args).Log();
+                }
+                else
+                {
+                    new MintLogger("CopyObject_Test5",copyObjectSignature,"Tests whether CopyObject  multi-part copy upload for large files works",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(),args).Log();
+                }
             }
        
         }
@@ -1117,7 +1124,6 @@ namespace Minio.Functional.Tests
                 string outFileName = "outFileName";
                 ObjectStat dstats = await minio.StatObjectAsync(destBucketName, destObjectName);
                 Assert.IsNotNull(dstats);
-                Assert.AreEqual(dstats.ETag, stats.ETag);
                 Assert.AreEqual(dstats.ObjectName, destObjectName);
                 await minio.GetObjectAsync(destBucketName, destObjectName, outFileName);
                 File.Delete(outFileName);
