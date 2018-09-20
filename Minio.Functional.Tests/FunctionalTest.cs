@@ -151,7 +151,7 @@ namespace Minio.Functional.Tests
             // Set app Info 
             minioClient.SetAppInfo("app-name", "app-version");
             // Set HTTP Tracing On
-            // minioClient.SetTraceOn();
+             minioClient.SetTraceOn(new JsonNetLogger());
 
             // Set HTTP Tracing Off
             // minioClient.SetTraceOff();

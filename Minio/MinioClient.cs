@@ -24,8 +24,8 @@ using System.Xml.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Minio.Helper;
+using Minio.DataModel.Tracing;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Minio
 {
@@ -53,6 +53,8 @@ namespace Minio
 
         // Cache holding bucket to region mapping for buckets seen so far.
         internal BucketRegionCache regionCache;
+
+        private IRequestLogger logger;
 
         // Enables HTTP tracing if set to true
         private bool trace = false;
@@ -504,8 +506,9 @@ namespace Minio
         /// <summary>
         /// Sets HTTP tracing On.Writes output to Console
         /// </summary>
-        public void SetTraceOn()
+        public void SetTraceOn(IRequestLogger logger = null)
         {
+            this.logger = logger ?? new DefaultRequestLogger();
             this.trace = true;
         }
         /// <summary>
@@ -524,12 +527,12 @@ namespace Minio
         /// <param name="durationMs"></param>
         private void LogRequest(IRestRequest request, IRestResponse response, double durationMs)
         {
-            var requestToLog = new
+            var requestToLog = new RequestToLog
             {
                 resource = request.Resource,
                 // Parameters are custom anonymous objects in order to have the parameter type as a nice string
                 // otherwise it will just show the enum value
-                parameters = request.Parameters.Select(parameter => new
+                parameters = request.Parameters.Select(parameter => new RequestParameter
                 {
                     name = parameter.Name,
                     value = parameter.Value,
@@ -541,7 +544,7 @@ namespace Minio
                 uri = restClient.BuildUri(request),
             };
 
-            var responseToLog = new
+            var responseToLog = new ResponseToLog
             {
                 statusCode = response.StatusCode,
                 content = response.Content,
@@ -549,42 +552,10 @@ namespace Minio
                 // The Uri that actually responded (could be different from the requestUri if a redirection occurred)
                 responseUri = response.ResponseUri,
                 errorMessage = response.ErrorMessage,
+                durationMs = durationMs
             };
 
-            var sb = new StringBuilder("Request completed in ");
-
-            sb.Append(durationMs);
-            sb.AppendLine(" ms, ");
-            sb.AppendLine("Request: ");
-
-            sb.Append(" method: "); sb.AppendLine(requestToLog.method);
-            sb.Append(" uri: "); sb.AppendLine(requestToLog.uri.ToString());
-            sb.Append(" resource: "); sb.AppendLine(requestToLog.resource);
-
-            sb.Append(" parameters: ");
-
-            foreach (var item in requestToLog.parameters)
-            {
-                sb.Append("  name:"); sb.AppendLine(item.name);
-                sb.Append("  type:"); sb.AppendLine(item.type);
-                sb.Append("  value:"); sb.AppendLine(item.value.ToString());
-            }
-
-            sb.AppendLine("Response: ");
-            sb.Append(" statusCode: "); sb.AppendLine(responseToLog.statusCode.ToString());
-            sb.Append(" responseUri: "); sb.AppendLine(responseToLog.responseUri.ToString());
-            sb.Append(" headers: ");
-
-            foreach (RestSharp.Parameter item in responseToLog.headers)
-            {
-                sb.Append("  name:"); sb.AppendLine(item.Name);
-                sb.Append("  value:"); sb.AppendLine(item.Value.ToString());
-            }
-
-            sb.Append(" content: "); sb.AppendLine(responseToLog.content);
-            sb.Append(" errorMessage: "); sb.AppendLine(responseToLog.errorMessage);
-
-            Console.Out.WriteLine(sb.ToString());
+            this.logger.LogRequest(requestToLog, responseToLog, durationMs);
         }
 
     }
