@@ -1638,6 +1638,10 @@ namespace Minio.Functional.Tests
                 Task[] tasks = new Task[numObjects];
                 for (int i = 1; i <= numObjects; i++) {
                     tasks[i - 1]= PutObject_Task(minio, bucketName, objectNamePrefix + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
+                    // Add sleep to avoid flooding server with concurrent requests
+                    if (i % 100 == 0){
+                        System.Threading.Thread.Sleep(5000);
+                    }
                 }
                 await Task.WhenAll(tasks);
                
@@ -1726,6 +1730,10 @@ namespace Minio.Functional.Tests
                 {
                     tasks[i] = PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(5));
                     objectsList.Add(objectName + i.ToString());
+                    // Add sleep to avoid flooding server with concurrent requests
+                    if (i % 100 == 0){
+                        System.Threading.Thread.Sleep(5000);
+                    }
                 }
                 Task.WhenAll(tasks).Wait();
                 System.Threading.Thread.Sleep(5000);
