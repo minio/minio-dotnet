@@ -541,7 +541,7 @@ namespace Minio
                 // ToString() here to have the method as a nice string otherwise it will just show the enum value
                 method = request.Method.ToString(),
                 // This will generate the actual Uri used in the request
-                uri = restClient.BuildUri(request),
+                uri = restClient.BuildUri(request)
             };
 
             var responseToLog = new ResponseToLog
