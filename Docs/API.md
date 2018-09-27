@@ -1246,17 +1246,26 @@ __Example__
 minioClient.SetAppInfo("myCloudApp", "1.0.0")
 ```
 <a name="SetTraceOn"></a>
-### SetTraceOn()
+### SetTraceOn(IRequestLogger logger = null)
 Enables HTTP tracing. The trace is written to the stdout.
 
+__Parameters__
+
+| Param  | Type  | Description  |
+|---|---|---|
+|`logger`  | _IRequestLogger_  | Implementation of interface `Minio.IRequestLogger` for serialization models for trace HTTP |
 
 __Example__
 
-
 ```cs
-// Set HTTP tracing on.
+// Set HTTP tracing on with default trace logger.
 minioClient.SetTraceOn()
+
+// Set custom logger for HTTP trace
+minioClient.SetTraceOn(new JsonNetLogger())
 ```
+
+
 <a name="SetTraceOff"></a>
 ### SetTraceOff()
 Disables HTTP tracing.
