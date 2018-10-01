@@ -103,7 +103,7 @@ namespace Minio
             SetDateHeader(request, signingDate);
             SortedDictionary<string, string> headersToSign = GetHeadersToSign(request);
             string signedHeaders = GetSignedHeaders(headersToSign);
-            string canonicalRequest = GetCanonicalRequest(client, request, headersToSign);
+            string canonicalRequest = GetCanonicalRequest(request, headersToSign);
             byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = BytesToHex(ComputeSha256(canonicalRequestBytes));
             string region = this.getRegion(client.BaseUrl.Host);
@@ -320,7 +320,7 @@ namespace Minio
                 path = "/" + path;
             }
             canonicalStringList.AddLast(path);
-            String query = headersToSign.Aggregate(requestQuery, (pv, cv) => $"{pv}&{utils.UrlEncode((string)cv.Key)}={utils.UrlEncode((string)cv.Value)}");
+            String query = headersToSign.Aggregate(requestQuery, (pv, cv) => $"{pv}&{utils.UrlEncode(cv.Key)}={utils.UrlEncode(cv.Value)}");
             canonicalStringList.AddLast(query);
             if (client.BaseUrl.Port > 0 && (client.BaseUrl.Port != 80 && client.BaseUrl.Port != 443))
             {
@@ -345,7 +345,7 @@ namespace Minio
         /// <param name="request">Instantiated request object</param>
         /// <param name="headersToSign">Dictionary of http headers to be signed</param>
         /// <returns>Canonical Request</returns>
-        private string GetCanonicalRequest(IRestClient client, IRestRequest request,
+        private string GetCanonicalRequest(IRestRequest request,
             SortedDictionary<string, string> headersToSign)
         {
             LinkedList<string> canonicalStringList = new LinkedList<string>();

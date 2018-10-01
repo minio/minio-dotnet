@@ -30,7 +30,7 @@ namespace Minio.Tests
             }
             catch (Exception ex)
             {
-                Assert.Fail();
+                Assert.Fail(ex.ToString());
             }
         }  
 

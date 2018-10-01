@@ -111,7 +111,7 @@ namespace Minio
                 {
                     return false;
                 }
-                throw ex;
+                throw;
             }
             return true;
         }
@@ -194,12 +194,6 @@ namespace Minio
             }
             queries.Add("max-keys=1000");
             string query = string.Join("&", queries);
-
-            string path = bucketName;
-            if (query.Length > 0)
-            {
-                path += "?" + query;
-            }
 
             var request = await this.CreateRequest(Method.GET,
                                                      bucketName,

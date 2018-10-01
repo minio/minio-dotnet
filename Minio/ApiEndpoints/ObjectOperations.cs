@@ -155,7 +155,7 @@ namespace Minio
                 long writtenSize = writtenInfo.Length;
                 if (writtenSize != length - tempFileSize)
                 {
-                    new IOException(tempFileName + ": unexpected data written.  expected = " + (length - tempFileSize)
+                    throw new IOException(tempFileName + ": unexpected data written.  expected = " + (length - tempFileSize)
                                            + ", written = " + writtenSize);
                 }
                 utils.MoveWithReplace(tempFileName, fileName);
@@ -964,7 +964,6 @@ namespace Minio
             {
                 destObjectName = objectName;
             }
-            var path = destBucketName + "/" + utils.UrlEncode(destObjectName);
 
             var request = await this.CreateRequest(Method.PUT, destBucketName,
                                                    objectName: destObjectName,
