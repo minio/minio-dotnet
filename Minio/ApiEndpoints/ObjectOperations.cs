@@ -32,6 +32,8 @@ using Minio.Helper;
 using System.Threading;
 using System.Text;
 using System.Xml;
+using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace Minio
 {
@@ -308,6 +310,39 @@ namespace Minio
                 etags[partNumber] = totalParts[partNumber - 1].ETag;
             }
             await this.CompleteMultipartUploadAsync(bucketName, objectName, uploadId, etags, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task PutObjectAsyncFast(string bucketName, string objectName, Stream data, string contentType = null, Dictionary<string, string> metaData = null, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            string url = await PresignedPutObjectAsync(bucketName, objectName, (int)TimeSpan.FromMinutes(20).TotalSeconds);
+
+            using (var http = new HttpClient())
+            {
+                using (var streamContent = new StreamContent(data))
+                {
+                    streamContent.Headers.ContentType = new MediaTypeHeaderValue(contentType ?? "application/octet-stream");
+
+                    if (metaData != null)
+                    {
+                        if (!metaData.ContainsKey("Content-Type"))
+                        {
+                            metaData["Content-Type"] = contentType;
+                        }
+
+                        foreach (var item in metaData)
+                        {
+                            streamContent.Headers.Add(item.Key, item.Value);
+                        }
+                    }
+
+                    var res = await http.PutAsync(url, streamContent, cancellationToken);
+
+                    if (!res.IsSuccessStatusCode)
+                    {
+                        throw new Exception(res.ToString());
+                    }
+                }
+            }
         }
 
         /// <summary>
