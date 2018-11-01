@@ -257,20 +257,25 @@ namespace Minio
                 
             return signature;
         }
-        
+
         /// <summary>
         /// Presigns any input client object with a requested expiry.
         /// </summary>
         /// <param name="client">Instantiated client</param>
         /// <param name="request">Instantiated request</param>
         /// <param name="expires">Expiration in seconds</param>
+        /// <param name="region">Region of storage</param>
         /// <returns>Presigned url</returns>      
-        public string PresignURL(IRestClient client, IRestRequest request, int expires)
+        public string PresignURL(IRestClient client, IRestRequest request, int expires, string region = "")
         {
             DateTime signingDate = DateTime.UtcNow;
             string requestQuery = "";
             string path = request.Resource;
-            string region = this.getRegion(client.BaseUrl.Host);
+
+            if (string.IsNullOrWhiteSpace(region))
+            {
+                region = this.getRegion(client.BaseUrl.Host);
+            }
 
             requestQuery = "X-Amz-Algorithm=AWS4-HMAC-SHA256&";
             requestQuery += "X-Amz-Credential="

@@ -1076,7 +1076,7 @@ namespace Minio
                                                     headerMap: reqParams)
                                     .ConfigureAwait(false);
 
-            return this.authenticator.PresignURL(this.restClient, request, expiresInt);
+            return this.authenticator.PresignURL(this.restClient, request, expiresInt, Region);
         }
 
         /// <summary>
@@ -1095,7 +1095,7 @@ namespace Minio
                 throw new InvalidExpiryRangeException("expiry range should be between 1 and " + Constants.DefaultExpiryTime.ToString());
             }
             var request = await this.CreateRequest(Method.PUT, bucketName, objectName: objectName).ConfigureAwait(false);
-            return this.authenticator.PresignURL(this.restClient, request, expiresInt);
+            return this.authenticator.PresignURL(this.restClient, request, expiresInt, Region);
         }
 
         /// <summary>
