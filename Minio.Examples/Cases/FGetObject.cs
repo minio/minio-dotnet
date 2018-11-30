@@ -18,6 +18,8 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
+using Minio.DataModel;
+
 namespace Minio.Examples.Cases
 {
     class FGetObject
@@ -26,13 +28,14 @@ namespace Minio.Examples.Cases
         public async static Task Run(Minio.MinioClient minio, 
                                      string bucketName = "my-bucket-name",
                                      string objectName = "my-object-name",
-                                     string fileName="local-filename")
+                                     string fileName="local-filename",
+                                     ServerSideEncryption sse = null)
         {
             try
             {
                 Console.Out.WriteLine("Running example for API: GetObjectAsync");
                 File.Delete(fileName);
-                await minio.GetObjectAsync(bucketName, objectName, fileName);
+                await minio.GetObjectAsync(bucketName, objectName, fileName, sse: sse);
                 Console.WriteLine("Downloaded the file " + fileName + " from bucket " + bucketName);
                 Console.Out.WriteLine();
             }

@@ -259,6 +259,14 @@ namespace Minio
             return (expiryInt > 0) && (expiryInt <= Constants.DefaultExpiryTime); 
         }
 
+        internal static string getMD5SumStr(byte[] key)
+        {
+            var hashedBytes = System.Security.Cryptography.MD5
+              .Create()
+              .ComputeHash(key);
+
+            return Convert.ToBase64String(hashedBytes);
+        }
         private static readonly Lazy<IDictionary<string, string>> _contentTypeMap = new Lazy<IDictionary<string, string>>(AddContentTypeMappings);
 
         private static IDictionary<string, string> AddContentTypeMappings()

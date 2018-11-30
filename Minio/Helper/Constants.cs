@@ -41,5 +41,14 @@ namespace Minio.Helper
         public static long OptimalReadBufferSize = 1024L * 1024L * 5;
 
         public static int DefaultExpiryTime = 7 * 24 * 3600;
+	    
+        // SSEGenericHeader is the AWS SSE header used for SSE-S3 and SSE-KMS.
+        public static string SSEGenericHeader = "X-Amz-Server-Side-Encryption";
+
+        // SSEKMSKeyId is the AWS SSE KMS Key-Id.
+        public static string SSEKMSKeyId = "X-Amz-Server-Side-Encryption-Aws-Kms-Key-Id";
+
+        // SSEKMSContext is the AWS SSE KMS Context.
+        public static string SSEKMSContext = "X-Amz-Server-Side-Encryption-Context";
     }
 }
