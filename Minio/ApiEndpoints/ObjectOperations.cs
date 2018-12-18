@@ -47,6 +47,8 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
         {
+            await StatObjectAsync(bucketName, objectName, cancellationToken).ConfigureAwait(false);
+
             var request = await this.CreateRequest(Method.GET,
                                                 bucketName,
                                                 objectName: objectName)
@@ -73,6 +75,9 @@ namespace Minio
                 throw new ArgumentException("Offset should be zero or greater");
             if (length < 0)
                 throw new ArgumentException("Length should be greater than zero");
+
+            await StatObjectAsync(bucketName, objectName, cancellationToken).ConfigureAwait(false);
+
             Dictionary<string, string> headerMap = new Dictionary<string, string>();
             if (length > 0)
                 headerMap.Add("Range", "bytes=" + offset.ToString() + "-" + (offset + length - 1).ToString());
