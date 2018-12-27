@@ -75,7 +75,7 @@ namespace Minio
         /// <param name="secure"></param>
         /// <param name="accessKey">Access key id</param>
         /// <param name="secretKey">Secret access key</param>
-        public V4Authenticator(bool secure,string accessKey, string secretKey)
+        public V4Authenticator(bool secure, string accessKey, string secretKey)
         {
             this.isSecure = secure;
             this.accessKey = accessKey;
@@ -83,8 +83,28 @@ namespace Minio
             this.isAnonymous = String.IsNullOrEmpty(accessKey) && String.IsNullOrEmpty(secretKey);
         }
 
+        /// <summary>
+        /// Authenticator constructor with region specified.
+        /// </summary>
+        /// <param name="secure"></param>
+        /// <param name="accessKey">Access key id</param>
+        /// <param name="secretKey">Secret access key</param>
+        /// <param name="region">Region</param>
+        public V4Authenticator(bool secure, string accessKey, string secretKey, string region)
+        {
+            this.isSecure = secure;
+            this.accessKey = accessKey;
+            this.secretKey = secretKey;
+            this.isAnonymous = String.IsNullOrEmpty(accessKey) && String.IsNullOrEmpty(secretKey);
+            this.Region = region;
+        }
+
         private String getRegion(string url)
         {
+            if (!string.IsNullOrEmpty(this.Region))
+            {
+                return this.Region;
+            }
             string region = Regions.GetRegionFromEndpoint(url);
             return (region == "") ? "us-east-1" : region;
         }
