@@ -156,8 +156,15 @@ namespace Minio
 
             // Start with user specified endpoint
             string host = this.BaseUrl;
-            
-            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey);
+
+            // Use region supplied while instantiating MinioClient object in the V4Authenticator
+            if (string.IsNullOrEmpty(this.Region))
+            {
+                this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey);
+            }
+            else {
+                this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, this.Region);
+            }
 
             // This section reconstructs the url with scheme followed by location specific endpoint( s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
