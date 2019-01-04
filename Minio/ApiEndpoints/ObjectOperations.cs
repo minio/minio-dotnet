@@ -51,10 +51,10 @@ namespace Minio
             await StatObjectAsync(bucketName, objectName, cancellationToken:cancellationToken).ConfigureAwait(false);
 
             var headers = new Dictionary<string,string>();
-            if (sse != null && sse.GetType().Equals(EncryptionType.SSE_C)) 
+            if (sse != null && sse.GetType().Equals(EncryptionType.SSE_C))
             {
                 sse.Marshal(headers);
-            } 
+            }
             var request = await this.CreateRequest(Method.GET,
                                                 bucketName,
                                                 objectName: objectName,
@@ -90,10 +90,10 @@ namespace Minio
             if (length > 0)
                 headerMap.Add("Range", "bytes=" + offset.ToString() + "-" + (offset + length - 1).ToString());
 
-            if (sse != null && sse.GetType().Equals(EncryptionType.SSE_C)) 
+            if (sse != null && sse.GetType().Equals(EncryptionType.SSE_C))
             {
                 sse.Marshal(headerMap);
-            } 
+            }
             var request = await this.CreateRequest(Method.GET,
                                                      bucketName,
                                                      objectName: objectName,
@@ -251,7 +251,7 @@ namespace Minio
                 {
                     throw new UnexpectedShortReadException("Data read " + bytes.Length + " is shorter than the size " + size + " of input buffer.");
                 }
-                await this.PutObjectAsync(bucketName, objectName, null, 0, bytes, metaData, sseHeaders,cancellationToken).ConfigureAwait(false);
+                await this.PutObjectAsync(bucketName, objectName, null, 0, bytes, metaData, sseHeaders, cancellationToken).ConfigureAwait(false);
                 return;
             }
             // For all sizes greater than 5MiB do multipart.
@@ -261,21 +261,11 @@ namespace Minio
             double partCount = multiPartInfo.partCount;
             double lastPartSize = multiPartInfo.lastPartSize;
             Part[] totalParts = new Part[(int)partCount];
-            Part part = null;
-            Part[] existingParts = null;
 
-            string uploadId = await this.getLatestIncompleteUploadIdAsync(bucketName, objectName, cancellationToken).ConfigureAwait(false);
+            string uploadId = await this.NewMultipartUploadAsync(bucketName, objectName, metaData, sseHeaders, cancellationToken).ConfigureAwait(false);
 
-            if (uploadId == null)
-            {
-                uploadId = await this.NewMultipartUploadAsync(bucketName, objectName, metaData,sseHeaders,cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                existingParts = await this.ListParts(bucketName, objectName, uploadId, cancellationToken).ToArray();
-            }
-
-            if (sse != null && 
+            // Remove SSE-S3 and KMS headers during PutObjectPart operations.
+            if (sse != null &&
                (sse.GetType().Equals(EncryptionType.SSE_S3) ||
                 sse.GetType().Equals(EncryptionType.SSE_KMS)))
             {
@@ -283,10 +273,10 @@ namespace Minio
                 sseHeaders.Remove(Constants.SSEKMSContext);
                 sseHeaders.Remove(Constants.SSEKMSKeyId);
             }
+
             double expectedReadSize = partSize;
             int partNumber;
             int numPartsUploaded = 0;
-            bool skipUpload = false;
             for (partNumber = 1; partNumber <= partCount; partNumber++)
             {
                 byte[] dataToCopy = ReadFull(data, (int)partSize);
@@ -294,40 +284,16 @@ namespace Minio
                 {
                     break;
                 }
-                
+
                 if (partNumber == partCount)
                 {
                     expectedReadSize = lastPartSize;
                 }
-                if (existingParts != null && partNumber <= existingParts.Length)
-                {
-                    part = existingParts[partNumber - 1];
-                    if (part != null && partNumber == part.PartNumber && expectedReadSize == part.partSize())
-                    {
-                        System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create();
-                        byte[] hash = md5.ComputeHash(dataToCopy);
-                        string etag = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
-                        if (etag.Equals(part.ETag))
-                        {
-                            totalParts[partNumber - 1] = new Part() { PartNumber = part.PartNumber, ETag = part.ETag, size = part.partSize() };
-                            skipUpload = true;
-
-                        }
-
-                    }
-                }
-                else
-                {
-                    skipUpload = false;
-                }
-                if (!skipUpload)
-                {
-                    numPartsUploaded += 1;
-                    string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, metaData,sseHeaders, cancellationToken).ConfigureAwait(false);
-                    totalParts[partNumber - 1] = new Part() { PartNumber = partNumber, ETag = etag, size = (long)expectedReadSize };
-                }
-
+                numPartsUploaded += 1;
+                string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, metaData, sseHeaders, cancellationToken).ConfigureAwait(false);
+                totalParts[partNumber - 1] = new Part() { PartNumber = partNumber, ETag = etag, size = (long)expectedReadSize };
             }
+
             // This shouldn't happen where stream size is known.
             if (partCount != numPartsUploaded && size != -1)
             {
@@ -384,7 +350,7 @@ namespace Minio
 
 
         /// <summary>
-        /// Returns an async observable of parts corresponding to a uploadId for a specific bucket and objectName   
+        /// Returns an async observable of parts corresponding to a uploadId for a specific bucket and objectName
         /// </summary>
         /// <param name="bucketName"></param>
         /// <param name="objectName"></param>
@@ -808,7 +774,7 @@ namespace Minio
                           objectList.Add(new DeleteObject(objectName));
                           i++;
                           if (i % 1000 == 0)
-                             break;                          
+                             break;
                       }
                       if (objectList.Count() > 0)
                       {
@@ -851,7 +817,7 @@ namespace Minio
             string etag = "";
             string contentType = null;
             Dictionary<string,string> metaData = new Dictionary<string, string>();
-            
+
             //Supported headers for object.
             List<string> supportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type" };
 
@@ -878,7 +844,7 @@ namespace Minio
                 {
                     metaData[parameter.Name] = parameter.Value.ToString();
                 }
-       
+
             }
             return new ObjectStat(objectName, size, lastModified, etag, contentType, metaData);
 
@@ -956,18 +922,19 @@ namespace Minio
             {
                 destObjectName = objectName;
             }
+
             ServerSideEncryption sseGet = sseSrc;
             if (sseSrc is SSECopy)
             {
                 SSECopy sseCpy = (SSECopy)sseSrc;
                 sseGet = sseCpy.CloneToSSEC();
             }
-            // Get Stats on the source object 
+            // Get Stats on the source object
             ObjectStat srcStats = await this.StatObjectAsync(bucketName, objectName, sse:sseGet, cancellationToken:cancellationToken).ConfigureAwait(false);
             // Copy metadata from the source object if no metadata replace directive
             Dictionary<string,string> meta = new Dictionary<string,string>();
             Dictionary<string,string> m = metadata;
-            if (copyConditions != null && !copyConditions.HasReplaceMetadataDirective()) 
+            if (copyConditions != null && !copyConditions.HasReplaceMetadataDirective())
             {
                 m = srcStats.metaData;
             }
@@ -1009,7 +976,7 @@ namespace Minio
             }
         }
         /// <summary>
-        ///  Create the copy request,execute it and 
+        ///  Create the copy request,execute it and
         /// </summary>
         /// <param name="bucketName"> Bucket name where the object to be copied exists.</param>
         /// <param name="objectName">Object name source to be copied.</param>
@@ -1054,7 +1021,7 @@ namespace Minio
 
             // Just read the result and parse content.
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-            
+
             object copyResult = null;
             using (var stream = new MemoryStream(contentBytes))
             {
@@ -1063,7 +1030,7 @@ namespace Minio
                 if (type == typeof(CopyPartResult))
                     copyResult = (CopyPartResult)(new XmlSerializer(typeof(CopyPartResult)).Deserialize(stream));
             }
-     
+
             return copyResult;
         }
         /// <summary>
@@ -1082,7 +1049,7 @@ namespace Minio
         /// <returns></returns>
         private async Task MultipartCopyUploadAsync(string bucketName, string objectName, string destBucketName, string destObjectName, CopyConditions copyConditions, long copySize,Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null, CancellationToken cancellationToken=default(CancellationToken))
         {
-            // For all sizes greater than 5GB or if Copy byte range specified in conditions and byte range larger 
+            // For all sizes greater than 5GB or if Copy byte range specified in conditions and byte range larger
             // than minimum part size (5 MB) do multipart.
 
             dynamic multiPartInfo = utils.CalculateMultiPartSize(copySize);
@@ -1142,7 +1109,7 @@ namespace Minio
 
 
         /// <summary>
-        /// Presigned get url - returns a presigned url to access an object's data without credentials.URL can have a maximum expiry of 
+        /// Presigned get url - returns a presigned url to access an object's data without credentials.URL can have a maximum expiry of
         /// upto 7 days or a minimum of 1 second.Additionally, you can override a set of response headers using reqParams.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
@@ -1165,7 +1132,7 @@ namespace Minio
         }
 
         /// <summary>
-        /// Presigned Put url -returns a presigned url to upload an object without credentials.URL can have a maximum expiry of 
+        /// Presigned Put url -returns a presigned url to upload an object without credentials.URL can have a maximum expiry of
         /// upto 7 days or a minimum of 1 second.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
@@ -1210,7 +1177,7 @@ namespace Minio
             {
                 region = await BucketRegionCache.Instance.Update(this, policy.Bucket).ConfigureAwait(false);
             }
-            if (region == null) 
+            if (region == null)
             {
                 region = BucketRegionCache.Instance.Region(policy.Bucket);
             }

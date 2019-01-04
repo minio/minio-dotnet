@@ -126,7 +126,7 @@ namespace Minio
         }
 
         /// <summary>
-        /// Constructs a RestRequest. For AWS, this function has the side-effect of overriding the baseUrl 
+        /// Constructs a RestRequest. For AWS, this function has the side-effect of overriding the baseUrl
         /// in the RestClient with region specific host path or virtual style path.
         /// </summary>
         /// <param name="method">HTTP method</param>
@@ -162,7 +162,8 @@ namespace Minio
             {
                 this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey);
             }
-            else {
+            else
+            {
                 this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, this.Region);
             }
 
@@ -213,7 +214,7 @@ namespace Minio
                 resource += utils.EncodePath(objectName);
             }
 
-            // Append query string passed in 
+            // Append query string passed in
             if (resourcePath != null)
             {
                 resource += resourcePath;
@@ -303,7 +304,7 @@ namespace Minio
             this.AccessKey = accessKey;
             this.SecretKey = secretKey;
             this.Region = region;
-            // Instantiate a region cache 
+            // Instantiate a region cache
             this.regionCache = BucketRegionCache.Instance;
 
             initClient();
@@ -436,7 +437,7 @@ namespace Minio
                                 BucketRegionCache.Instance.Remove(resource);
                                 e = new BucketNotFoundException(resource, "Not found.");
                             }
-                    
+
                         }
                         else
                         {
@@ -470,11 +471,11 @@ namespace Minio
             if (response.StatusCode.Equals(HttpStatusCode.NotFound) && response.Request.Resource.EndsWith("?policy")
                 && response.Request.Method.Equals(Method.GET) && (errResponse.Code.Equals("NoSuchBucketPolicy")))
             {
-                
+
                 ErrorResponseException ErrorException = new ErrorResponseException(errResponse.Message,errResponse.Code);
                 ErrorException.Response = errResponse;
                 ErrorException.XmlError = response.Content;
-                throw ErrorException;          
+                throw ErrorException;
             }
 
             MinioException MinioException = new MinioException(errResponse.Message);
@@ -505,7 +506,7 @@ namespace Minio
             foreach (var handler in handlers)
             {
                 handler(response);
-            }            
+            }
             // Fall back default error handler
             _defaultErrorHandlingDelegate(response);
 
@@ -527,7 +528,7 @@ namespace Minio
         }
 
         /// <summary>
-        /// Logs the request sent to server and corresponding response 
+        /// Logs the request sent to server and corresponding response
         /// </summary>
         /// <param name="request"></param>
         /// <param name="response"></param>
