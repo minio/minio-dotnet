@@ -831,7 +831,7 @@ namespace Minio
                 {
                     lastModified = DateTime.Parse(parameter.Value.ToString());
                 }
-                else if (parameter.Name.Equals("ETag"))
+                else if (parameter.Name.Equals("ETag", StringComparison.OrdinalIgnoreCase))
                 {
                     etag = parameter.Value.ToString().Replace("\"", "");
                 }
