@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Http;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
@@ -118,6 +119,7 @@ namespace Minio.Functional.Tests
             String accessKey = null;
             String secretKey = null;
             String enableHttps = "0";
+            String kmsEnabled = "0";
 
             bool useAWS = Environment.GetEnvironmentVariable("AWS_ENDPOINT") != null;
             if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
@@ -126,6 +128,7 @@ namespace Minio.Functional.Tests
                 accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
                 secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
                 enableHttps = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
+                kmsEnabled = Environment.GetEnvironmentVariable("ENABLE_KMS");
             }
             else
             {
@@ -243,8 +246,24 @@ namespace Minio.Functional.Tests
             RemoveIncompleteUpload_Test(minioClient).Wait();
 
             // Test GetBucket policy
-
             GetBucketPolicy_Test1(minioClient).Wait();
+
+            // Test encryption
+            if (enableHttps.Equals("1"))
+            {
+                ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
+                PutGetStatEncryptedObject_Test1(minioClient).Wait();
+                PutGetStatEncryptedObject_Test2(minioClient).Wait();
+
+                EncryptedCopyObject_Test1(minioClient).Wait();
+                EncryptedCopyObject_Test2(minioClient).Wait();
+            }
+            if (kmsEnabled.Equals("1"))
+            {
+                PutGetStatEncryptedObject_Test3(minioClient).Wait();
+                EncryptedCopyObject_Test3(minioClient).Wait();
+                EncryptedCopyObject_Test4(minioClient).Wait();
+            }
         }
         private static void runCoreTests(MinioClient minioClient)
         {
@@ -717,6 +736,180 @@ namespace Minio.Functional.Tests
             catch (Exception ex)
             {
                 new MintLogger("PutObject_Test8",putObjectSignature1,"Tests whether PutObject with unknown stream-size passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(), args).Log();
+            }
+        }
+        private async static Task PutGetStatEncryptedObject_Test1(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string contentType = "application/octet-stream";
+            Dictionary<string,string> args = new Dictionary<string,string>
+            {
+                { "bucketName", bucketName},
+                {"objectName",objectName},
+                {"contentType", contentType},
+                {"data","1MB"},
+                {"size","1MB"},
+            };
+            try
+            {
+                // Putobject with SSE-C encryption. 
+                await Setup_Test(minio, bucketName);
+                Aes aesEncryption = Aes.Create();
+                aesEncryption.KeySize = 256;
+                aesEncryption.GenerateKey();
+                var ssec = new SSEC(aesEncryption.Key);
+
+                using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                {
+                    long file_write_size = filestream.Length;
+                    string tempFileName = "tempFileName";
+                    long file_read_size = 0;
+                    await minio.PutObjectAsync(bucketName,
+                                            objectName,
+                                            filestream,
+                                            filestream.Length,
+                                            contentType,sse: ssec);
+
+                    await minio.GetObjectAsync(bucketName, objectName,
+                    (stream) =>
+                    {
+                        var fileStream = File.Create(tempFileName);
+                        stream.CopyTo(fileStream);
+                        fileStream.Dispose();
+                        FileInfo writtenInfo = new FileInfo(tempFileName);
+                        file_read_size = writtenInfo.Length;
+
+                        Assert.AreEqual(file_read_size, file_write_size);
+                        File.Delete(tempFileName);
+                    },sse:ssec);
+                    await minio.StatObjectAsync(bucketName, objectName,sse:ssec);
+                    await minio.RemoveObjectAsync(bucketName, objectName);
+                }
+                await TearDown(minio, bucketName);
+
+                new MintLogger("PutGetStatEncryptedObject_Test1",putObjectSignature1,"Tests whether Put/Get/Stat Object with encryption passes",TestStatus.PASS,(DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                new MintLogger("PutGetStatEncryptedObject_Test1",putObjectSignature1,"Tests whether Put/Get/Stat Object with encryption passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(), args).Log();
+            }
+        }
+
+    private async static Task PutGetStatEncryptedObject_Test2(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string contentType = "application/octet-stream";
+            Dictionary<string,string> args = new Dictionary<string,string>
+            {
+                { "bucketName", bucketName},
+                {"objectName",objectName},
+                {"contentType", contentType},
+                {"data","6MB"},
+                {"size","6MB"},
+            };
+            try
+            {
+                // Test multipart Put with SSE-C encryption
+                await Setup_Test(minio, bucketName);
+                Aes aesEncryption = Aes.Create();
+                aesEncryption.KeySize = 256;
+                aesEncryption.GenerateKey();
+                var ssec = new SSEC(aesEncryption.Key);
+
+                using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(6 * MB))
+                {
+                    long file_write_size = filestream.Length;
+                    string tempFileName = "tempFileName";
+                    long file_read_size = 0;
+                    await minio.PutObjectAsync(bucketName,
+                                            objectName,
+                                            filestream,
+                                            filestream.Length,
+                                            contentType,sse: ssec);
+
+                    await minio.GetObjectAsync(bucketName, objectName,
+                    (stream) =>
+                    {
+                        var fileStream = File.Create(tempFileName);
+                        stream.CopyTo(fileStream);
+                        fileStream.Dispose();
+                        FileInfo writtenInfo = new FileInfo(tempFileName);
+                        file_read_size = writtenInfo.Length;
+
+                        Assert.AreEqual(file_read_size, file_write_size);
+                        File.Delete(tempFileName);
+                    },sse:ssec);
+                    await minio.StatObjectAsync(bucketName, objectName,sse:ssec);
+                    await minio.RemoveObjectAsync(bucketName, objectName);
+                }
+                await TearDown(minio, bucketName);
+
+                new MintLogger("PutGetStatEncryptedObject_Test2",putObjectSignature1,"Tests whether Put/Get/Stat multipart upload with encryption passes",TestStatus.PASS,(DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                new MintLogger("PutGetStatEncryptedObject_Test2",putObjectSignature2,"Tests whether Put/Get/Stat multipart upload with encryption passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(), args).Log();
+            }
+        }
+
+    private async static Task PutGetStatEncryptedObject_Test3(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string contentType = "application/octet-stream";
+            Dictionary<string,string> args = new Dictionary<string,string>
+            {
+                { "bucketName", bucketName},
+                {"objectName",objectName},
+                {"contentType", contentType},
+                {"data","6MB"},
+                {"size","6MB"},
+            };
+            try
+            {
+                // Test multipart Put/Get/Stat with SSE-S3 encryption
+                await Setup_Test(minio, bucketName);
+                Aes aesEncryption = Aes.Create();
+                var sses3 = new SSES3();
+
+                using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(6 * MB))
+                {
+                    long file_write_size = filestream.Length;
+                    string tempFileName = "tempFileName";
+                    long file_read_size = 0;
+                    await minio.PutObjectAsync(bucketName,
+                                            objectName,
+                                            filestream,
+                                            filestream.Length,
+                                            contentType,sse: sses3);
+
+                    await minio.GetObjectAsync(bucketName, objectName,
+                    (stream) =>
+                    {
+                        var fileStream = File.Create(tempFileName);
+                        stream.CopyTo(fileStream);
+                        fileStream.Dispose();
+                        FileInfo writtenInfo = new FileInfo(tempFileName);
+                        file_read_size = writtenInfo.Length;
+
+                        Assert.AreEqual(file_read_size, file_write_size);
+                        File.Delete(tempFileName);
+                    });
+                    await minio.StatObjectAsync(bucketName, objectName);
+                    await minio.RemoveObjectAsync(bucketName, objectName);
+                }
+                await TearDown(minio, bucketName);
+
+                new MintLogger("PutGetStatEncryptedObject_Test3",putObjectSignature1,"Tests whether Put/Get/Stat multipart upload with encryption passes",TestStatus.PASS,(DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                new MintLogger("PutGetStatEncryptedObject_Test3",putObjectSignature2,"Tests whether Put/Get/Stat multipart upload with encryption passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(), args).Log();
             }
         }
         private async static Task PutObject_Task(MinioClient minio, string bucketName, string objectName, string fileName = null, string contentType = "application/octet-stream", long size = 0, Dictionary<string, string> metaData = null, MemoryStream mstream = null)
@@ -1254,6 +1447,219 @@ namespace Minio.Functional.Tests
             catch (MinioException ex)
             {
                 new MintLogger("CopyObject_Test8",copyObjectSignature,"Tests whether CopyObject with metadata replacement passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(),args).Log();
+            }
+        }
+
+        private async static Task EncryptedCopyObject_Test1(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string destBucketName = GetRandomName(15);
+            string destObjectName = GetRandomName(10);
+            Dictionary<string,string> args = new Dictionary<string,string>
+            {
+                {"bucketName", bucketName},
+                {"objectName",objectName},
+                {"destBucketName", destBucketName},
+                {"destObjectName", destObjectName},
+                {"data","1MB"},
+                {"size","1MB"},
+            };
+            try
+            {
+                // Test Copy with SSE-C -> SSE-C encryption
+                await Setup_Test(minio, bucketName);
+                await Setup_Test(minio, destBucketName);
+                Aes aesEncryption = Aes.Create();
+                aesEncryption.KeySize = 256;
+                aesEncryption.GenerateKey();
+                var ssec = new SSEC(aesEncryption.Key);
+                var sseCpy = new SSECopy(aesEncryption.Key);
+                Aes destAesEncryption = Aes.Create();
+                destAesEncryption.KeySize = 256;
+                destAesEncryption.GenerateKey();
+                var ssecDst = new SSEC(destAesEncryption.Key);
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                {
+                    await minio.PutObjectAsync(bucketName,
+                                            objectName,
+                                            filestream, filestream.Length, null, sse:ssec);
+                }
+
+                await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName,sseSrc:sseCpy,sseDest:ssecDst);
+                string outFileName = "outFileName";
+
+                await minio.GetObjectAsync(destBucketName, destObjectName, outFileName,sse:ssecDst);
+                File.Delete(outFileName);
+                await minio.RemoveObjectAsync(bucketName, objectName);
+                await minio.RemoveObjectAsync(destBucketName, destObjectName);
+
+
+                await TearDown(minio, bucketName);
+                await TearDown(minio, destBucketName);
+                new MintLogger("EncryptedCopyObject_Test1",copyObjectSignature,"Tests whether encrypted CopyObject passes",TestStatus.PASS,(DateTime.Now - startTime), args:args).Log();
+            }
+            catch (MinioException ex)
+            {
+                new MintLogger("EncryptedCopyObject_Test1",copyObjectSignature,"Tests whether encrypted CopyObject passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(),args).Log();
+            }
+        }
+
+        private async static Task EncryptedCopyObject_Test2(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string destBucketName = GetRandomName(15);
+            string destObjectName = GetRandomName(10);
+            Dictionary<string,string> args = new Dictionary<string,string>
+            {
+                {"bucketName", bucketName},
+                {"objectName",objectName},
+                {"destBucketName", destBucketName},
+                {"destObjectName", destObjectName},
+                {"data","1MB"},
+                {"size","1MB"},
+            };
+            try
+            {
+                // Test Copy of SSE-C encrypted object to unencrypted on destination side
+                await Setup_Test(minio, bucketName);
+                await Setup_Test(minio, destBucketName);
+                Aes aesEncryption = Aes.Create();
+                aesEncryption.KeySize = 256;
+                aesEncryption.GenerateKey();
+                var ssec = new SSEC(aesEncryption.Key);
+                var sseCpy = new SSECopy(aesEncryption.Key);
+
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                {
+                    await minio.PutObjectAsync(bucketName,
+                                            objectName,
+                                            filestream, filestream.Length, null, sse:ssec);
+                }
+
+                await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName,sseSrc:sseCpy,sseDest:null);
+                string outFileName = "outFileName";
+
+                await minio.GetObjectAsync(destBucketName, destObjectName, outFileName);
+                File.Delete(outFileName);
+                await minio.RemoveObjectAsync(bucketName, objectName);
+                await minio.RemoveObjectAsync(destBucketName, destObjectName);
+
+
+                await TearDown(minio, bucketName);
+                await TearDown(minio, destBucketName);
+                new MintLogger("EncryptedCopyObject_Test2",copyObjectSignature,"Tests whether encrypted CopyObject passes",TestStatus.PASS,(DateTime.Now - startTime), args:args).Log();
+            }
+            catch (MinioException ex)
+            {
+                new MintLogger("EncryptedCopyObject_Test2",copyObjectSignature,"Tests whether encrypted CopyObject passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(),args).Log();
+            }
+        }
+
+        private async static Task EncryptedCopyObject_Test3(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string destBucketName = GetRandomName(15);
+            string destObjectName = GetRandomName(10);
+            Dictionary<string,string> args = new Dictionary<string,string>
+            {
+                {"bucketName", bucketName},
+                {"objectName",objectName},
+                {"destBucketName", destBucketName},
+                {"destObjectName", destObjectName},
+                {"data","1MB"},
+                {"size","1MB"},
+            };
+            try
+            {
+                // Test Copy of SSE-C encrypted object to unencrypted on destination side
+                await Setup_Test(minio, bucketName);
+                await Setup_Test(minio, destBucketName);
+                Aes aesEncryption = Aes.Create();
+                aesEncryption.KeySize = 256;
+                aesEncryption.GenerateKey();
+                var ssec = new SSEC(aesEncryption.Key);
+                var sseCpy = new SSECopy(aesEncryption.Key);
+                var sses3 = new SSES3();
+
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                {
+                    await minio.PutObjectAsync(bucketName,
+                                            objectName,
+                                            filestream, filestream.Length, null, sse:ssec);
+                }
+
+                await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName,sseSrc:sseCpy,sseDest:sses3);
+                string outFileName = "outFileName";
+
+                await minio.GetObjectAsync(destBucketName, destObjectName, outFileName);
+                File.Delete(outFileName);
+                await minio.RemoveObjectAsync(bucketName, objectName);
+                await minio.RemoveObjectAsync(destBucketName, destObjectName);
+
+
+                await TearDown(minio, bucketName);
+                await TearDown(minio, destBucketName);
+                new MintLogger("EncryptedCopyObject_Test3",copyObjectSignature,"Tests whether encrypted CopyObject passes",TestStatus.PASS,(DateTime.Now - startTime), args:args).Log();
+            }
+            catch (MinioException ex)
+            {
+                new MintLogger("EncryptedCopyObject_Test3",copyObjectSignature,"Tests whether encrypted CopyObject passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(),args).Log();
+            }
+        }
+
+        private async static Task EncryptedCopyObject_Test4(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string destBucketName = GetRandomName(15);
+            string destObjectName = GetRandomName(10);
+            Dictionary<string,string> args = new Dictionary<string,string>
+            {
+                {"bucketName", bucketName},
+                {"objectName",objectName},
+                {"destBucketName", destBucketName},
+                {"destObjectName", destObjectName},
+                {"data","1MB"},
+                {"size","1MB"},
+            };
+            try
+            {
+                // Test Copy of SSE-S3 encrypted object to SSE-S3 on destination side
+                await Setup_Test(minio, bucketName);
+                await Setup_Test(minio, destBucketName);
+
+                var sses3 = new SSES3();
+                var sseDest = new SSES3();
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                {
+                    await minio.PutObjectAsync(bucketName,
+                                            objectName,
+                                            filestream, filestream.Length, null, sse:sses3);
+                }
+
+                await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName,sseSrc:null,sseDest:sses3);
+                string outFileName = "outFileName";
+
+                await minio.GetObjectAsync(destBucketName, destObjectName, outFileName);
+                File.Delete(outFileName);
+                await minio.RemoveObjectAsync(bucketName, objectName);
+                await minio.RemoveObjectAsync(destBucketName, destObjectName);
+
+
+                await TearDown(minio, bucketName);
+                await TearDown(minio, destBucketName);
+                new MintLogger("EncryptedCopyObject_Test4",copyObjectSignature,"Tests whether encrypted CopyObject passes",TestStatus.PASS,(DateTime.Now - startTime), args:args).Log();
+            }
+            catch (MinioException ex)
+            {
+                new MintLogger("EncryptedCopyObject_Test4",copyObjectSignature,"Tests whether encrypted CopyObject passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(),args).Log();
             }
         }
         private async static Task GetObject_Test1(MinioClient minio)

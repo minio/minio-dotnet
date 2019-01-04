@@ -31,8 +31,9 @@ namespace Minio
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Name of object to retrieve</param>
         /// <param name="callback">A stream will be passed to the callback</param>
+        /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, CancellationToken cancellationToken = default(CancellationToken));
+        Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
@@ -42,8 +43,9 @@ namespace Minio
         /// <param name="offset">offset of the object from where stream will start </param>
         /// <param name="length"> length of object to read in from the stream</param>
         /// <param name="cb">A stream will be passed to the callback</param>
+        /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken));
+        Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Creates an object from file input stream
@@ -53,9 +55,11 @@ namespace Minio
         /// <param name="data">Stream of file to upload</param>
         /// <param name="size">Size of stream</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
-        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <param name="metaData">Optional Object metadata to be stored. Defaults to null.</param>
-        Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null,CancellationToken cancellationToken = default(CancellationToken));
+        /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+
+        Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Removes an object with given name in specific bucket
@@ -80,9 +84,10 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to test object in</param>
         /// <param name="objectName">Name of the object to stat</param>
+        /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Facts about the object</returns>
-        Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken));
+        Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Lists all incomplete uploads in a given bucket and prefix recursively
@@ -112,10 +117,13 @@ namespace Minio
         /// <param name="destObjectName">Object name to be created, if not provided uses source object name as destination object name.</param>
         /// <param name="copyConditions">optionally can take a key value CopyConditions as well for conditionally attempting copyObject.</param>
         /// <param name="metadata">Optional Object metadata to be stored. Defaults to null.</param>
+        /// <param name="sseSrc">Optional Server-side encryption option for source. Defaults to null.</param>
+        /// <param name="sseDest">Optional Server-side encryption option for destination. Defaults to null.</param>
+
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
 
-        Task CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null,CancellationToken cancellationToken = default(CancellationToken));
+        Task CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Creates an object from file
@@ -124,9 +132,10 @@ namespace Minio
         /// <param name="objectName">Key of the new object</param>
         /// <param name="filePath">Path of file to upload</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
-        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <param name="metaData">Optional Object metadata to be stored. Defaults to null.</param>
-        Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType = null, Dictionary<string, string> metaData = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
@@ -134,9 +143,12 @@ namespace Minio
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Name of object to retrieve</param>
         /// <param name="filePath">string with file path</param>
+        /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        Task GetObjectAsync(string bucketName, string objectName, string filePath, CancellationToken cancellationToken = default(CancellationToken));
+        //Task GetObjectAsync(string bucketName, string objectName, string filePath,ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        Task GetObjectAsync(string bucketName, string objectName, string filePath, ServerSideEncryption sse = null ,CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Presigned get url - returns a presigned url to access an object's data without credentials.URL can have a maximum expiry of 

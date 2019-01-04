@@ -611,9 +611,9 @@ catch (MinioException e)
 ## 3. Object operations
 
 <a name="getObject"></a>
-### GetObjectAsync(string bucketName, string objectName, Action<Stream> callback)
+### GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, ServerSideEncryption sse)
 
-`Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, CancellationToken cancellationToken = default(CancellationToken))`
+`Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
 
 Downloads an object as a stream.
 
@@ -626,6 +626,7 @@ __Parameters__
 | ``bucketName``  | _string_ | Name of the bucket  |
 | ``objectName``  | _string_  | Object name in the bucket |
 | ``callback``    | _Action<Stream>_ | Call back to process stream |
+| ``sse``    | _ServerSideEncryption_ | Server-side encryption option | Optional parameter. Defaults to null |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -663,9 +664,9 @@ try
 ```
 
 <a name="getObject"></a>
-### GetObjectAsync(string bucketName, string objectName, long offset,long length, Action<Stream> callback)
+### GetObjectAsync(string bucketName, string objectName, long offset,long length, Action<Stream> callback, ServerSideEncryption sse)
 
-`Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> callback, CancellationToken cancellationToken = default(CancellationToken))`
+`Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> callback, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
 
 Downloads the specified range bytes of an object as a stream.Both offset and length are required.
 
@@ -680,6 +681,7 @@ __Parameters__
 | ``offset``| _long_ | Offset of the object from where stream will start |
 | ``length``| _long_| Length of the object to read in from the stream | 
 | ``callback``    | _Action<Stream>_ | Call back to process stream |
+| ``sse``    | _ServerSideEncryption_ | Server-side encryption option | Optional parameter. Defaults to null |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -717,9 +719,9 @@ try
 ```
 
 <a name="getObject"></a>
-### GetObjectAsync(String bucketName, String objectName, String fileName)
+### GetObjectAsync(String bucketName, String objectName, String fileName, ServerSideEncryption sse)
 
-`Task GetObjectAsync(string bucketName, string objectName, string fileName, CancellationToken cancellationToken = default(CancellationToken))`
+`Task GetObjectAsync(string bucketName, string objectName, string fileName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
 
 Downloads and saves the object as a file in the local filesystem.
 
@@ -732,6 +734,7 @@ __Parameters__
 | ``bucketName``  | _String_  | Name of the bucket  |
 | ``objectName``  | _String_  | Object name in the bucket |
 | ``fileName``  | _String_  | File name |
+| ``sse``    | _ServerSideEncryption_ | Server-side encryption option | Optional parameter. Defaults to null |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -763,9 +766,9 @@ catch (MinioException e)
 }
 ```
 <a name="putObject"></a>
-### PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType)
+### PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType,ServerSideEncryption sse)
 
-` Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType,Dictionary<string,string> metaData=null, CancellationToken cancellationToken = default(CancellationToken))`
+` Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType,Dictionary<string,string> metaData=null,ServerSideEncryption sse = null,CancellationToken cancellationToken = default(CancellationToken))`
 
 
 Uploads contents from a stream to objectName.
@@ -782,6 +785,7 @@ __Parameters__
 | ``size``  | _long_    | size of stream   |
 | ``contentType``  | _string_ | Content type of the file. Defaults to "application/octet-stream" |
 | ``metaData``  | _Dictionary<string,string>_ | Dictionary of metadata headers. Defaults to null. |
+| ``sse``    | _ServerSideEncryption_ | Server-side encryption option | Optional parameter. Defaults to null |
 
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
@@ -807,12 +811,16 @@ try
 {
     byte[] bs = File.ReadAllBytes(fileName);
     System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
-
+    // Specify SSE-C encryption options
+    Aes aesEncryption = Aes.Create();
+    aesEncryption.KeySize = 256;
+    aesEncryption.GenerateKey();
+    var ssec = new SSEC(aesEncryption.Key);
     await minio.PutObjectAsync("mybucket",
                                "island.jpg",
                                 filestream,
                                 filestream.Length,
-                               "application/octet-stream");
+                               "application/octet-stream",ssec);
     Console.Out.WriteLine("island.jpg is uploaded successfully");
 } 
 catch(MinioException e) 
@@ -822,9 +830,9 @@ catch(MinioException e)
 ```
 
 <a name="putObject"></a>
-### PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null)
+### PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null,ServerSideEncryption sse)
 
-` Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null,Dictionary<string,string> metaData=null, CancellationToken cancellationToken = default(CancellationToken))`
+` Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null,Dictionary<string,string> metaData=null, ServerSideEncryption sse=null,CancellationToken cancellationToken = default(CancellationToken))`
 
 
 Uploads contents from a file to objectName.
@@ -840,6 +848,7 @@ __Parameters__
 | ``fileName``  | _string_  | File to upload |
 | ``contentType``  | _string_ | Content type of the file. Defaults to " |
 | ``metadata``  | _Dictionary<string,string>_ | Dictionary of meta data headers and their values.Defaults to null.|
+| ``sse``    | _ServerSideEncryption_ | Server-side encryption option | Optional parameter. Defaults to null |
 
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
@@ -870,9 +879,9 @@ catch(MinioException e)
 }
 ```
 <a name="statObject"></a>
-### StatObjectAsync(string bucketName, string objectName)
+### StatObjectAsync(string bucketName, string objectName,ServerSideEncryption sse)
 
-`Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))`
+`Task<ObjectStat> StatObjectAsync(string bucketName, string objectName,ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
 
 Gets metadata of an object.
 
@@ -884,6 +893,7 @@ __Parameters__
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_  | Name of the bucket  |
 | ``objectName``  | _string_  | Object name in the bucket |
+| ``sse``    | _ServerSideEncryption_ | Server-side encryption option | Optional parameter. Defaults to null |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -913,9 +923,9 @@ catch(MinioException e)
 ```
 
 <a name="copyObject"></a>
-### CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null,Dictionary<string, string> metadata = null)
+### CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null,Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null)
 
-*`Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null,CancellationToken cancellationToken = default(CancellationToken))`*
+*`Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null,ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null,CancellationToken cancellationToken = default(CancellationToken))`*
 
 Copies content from objectName to destObjectName.
 
@@ -931,6 +941,8 @@ __Parameters__
 | ``destObjectName`` | _string_ | Destination object name to be created, if not provided defaults to source object name|
 | ``copyConditions`` | _CopyConditions_ | Map of conditions useful for applying restrictions on copy operation|
 | ``metadata``  | _Dictionary<string,string>_ | Dictionary of meta data headers and their values on the destination side.Defaults to null.|
+| ``sseSrc``    | _ServerSideEncryption_ | Server-side encryption option for source object | Optional parameter. Defaults to null |
+| ``sseDest``    | _ServerSideEncryption_ | Server-side encryption option for destination object| Optional parameter. Defaults to null |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -945,15 +957,23 @@ __Parameters__
 __Example__
 
 
-This API performs a server side copy operation from a given source object to destination object.
+This API performs a Server-side copy operation from a given source object to destination object.
 
 ```cs
 try
 {
    CopyConditions copyConditions = new CopyConditions();
    copyConditions.setMatchETagNone("TestETag");
-
-   await minioClient.CopyObjectAsync("mybucket",  "island.jpg", "mydestbucket", "processed.png", copyConditions);
+   ServerSideEncryption sseSrc,sseDst;
+   // Uncomment to specify source and destination Server-side encryption options
+   /*
+    Aes aesEncryption = Aes.Create();
+    aesEncryption.KeySize = 256;
+    aesEncryption.GenerateKey();
+    sseSrc = new SSEC(aesEncryption.Key);
+    sseDst = new SSES3();
+   */
+   await minioClient.CopyObjectAsync("mybucket",  "island.jpg", "mydestbucket", "processed.png", copyConditions,sseSrc:sseSrc, sseDest:sseDst);
    Console.Out.WriteLine("island.jpg is uploaded successfully");
 } 
 catch(MinioException e) 

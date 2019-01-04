@@ -17,6 +17,8 @@
 using System;
 using System.Threading.Tasks;
 
+using Minio.DataModel;
+
 namespace Minio.Examples.Cases
 {
     class CopyObject
@@ -26,7 +28,9 @@ namespace Minio.Examples.Cases
                                      string fromBucketName="from-bucket-name",
                                      string fromObjectName="from-object-name",
                                      string destBucketName="dest-bucket",
-                                     string destObjectName="to-object-name")
+                                     string destObjectName="to-object-name",
+                                     ServerSideEncryption sseSrc = null,
+                                     ServerSideEncryption sseDest = null)
         {
             try
             {
@@ -36,7 +40,9 @@ namespace Minio.Examples.Cases
                                                 fromObjectName, 
                                                 destBucketName, 
                                                 destObjectName, 
-                                                copyConditions:null);
+                                                copyConditions:null,
+                                                sseSrc: sseSrc,
+                                                sseDest: sseDest);
                 Console.Out.WriteLine("Copied object {0} from bucket {1} to bucket {2}", fromObjectName, fromBucketName, destBucketName);
                 Console.Out.WriteLine();    
             }

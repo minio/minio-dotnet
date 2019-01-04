@@ -17,6 +17,9 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Minio.DataModel;
+
+using System.Security.Cryptography;
 
 namespace Minio.Examples.Cases
 {
@@ -28,7 +31,8 @@ namespace Minio.Examples.Cases
         public async static Task Run(Minio.MinioClient minio,
                                      string bucketName = "my-bucket-name", 
                                      string objectName = "my-object-name",
-                                     string fileName="location-of-file")
+                                     string fileName="location-of-file",
+                                     ServerSideEncryption sse = null)
         {
             try
             {
@@ -43,12 +47,12 @@ namespace Minio.Examples.Cases
                     {
                         Console.Out.WriteLine("Running example for API: PutObjectAsync with Stream and MultiPartUpload");
                     }
-
                     await minio.PutObjectAsync(bucketName,
                                                objectName,
                                                filestream,
                                                filestream.Length,
-                                               "application/octet-stream");
+                                               "application/octet-stream",
+                                               sse:sse);
                 }
             
 
