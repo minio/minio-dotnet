@@ -187,13 +187,11 @@ namespace Minio.Functional.Tests
             // Test Putobject function
             PutObject_Test1(minioClient).Wait();
             PutObject_Test2(minioClient).Wait();
-
             PutObject_Test3(minioClient).Wait();
             PutObject_Test4(minioClient).Wait();
             PutObject_Test5(minioClient).Wait();
             PutObject_Test6(minioClient).Wait();
             PutObject_Test7(minioClient).Wait();
-            PutObject_Test8(minioClient).Wait();
 
             // Test StatObject function
             StatObject_Test1(minioClient).Wait();
@@ -562,53 +560,6 @@ namespace Minio.Functional.Tests
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
-            string contentType = "application/octet-stream";
-            Dictionary<string,string> args = new Dictionary<string,string>
-            {
-                { "bucketName", bucketName},
-                {"objectName",objectName},
-                {"contentType", contentType},
-                {"data","1MB"},
-                {"size","4MB"},
-            };
-            try
-            {
-                // Putobject call with incorrect size of stream. See if PutObjectAsync call resumes 
-                await Setup_Test(minio, bucketName);
-                using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
-                {
-                    try
-                    {
-                        long size = 4 * MB;
-                        long file_write_size = filestream.Length;
-
-                        await minio.PutObjectAsync(bucketName,
-                                                objectName,
-                                                filestream,
-                                                size,
-                                                contentType);
-                    }
-                    catch (UnexpectedShortReadException)
-                    {
-                        // PutObject failed as expected since the stream size is incorrect
-                        // default to actual stream size and complete the upload
-                        await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,rsg.GenerateStreamFromSeed(1 * MB));
-                    }
-                }
-                await TearDown(minio, bucketName);
-                new MintLogger("PutObject_Test4",putObjectSignature1,"Tests whether PutObject with incorrect stream-size passes",TestStatus.PASS,(DateTime.Now - startTime),args:args).Log();
-            }
-            catch (Exception ex)
-            {
-                new MintLogger("PutObject_Test4",putObjectSignature1,"Tests whether PutObject with incorrect stream-size passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(),args).Log();
-            }
-        }
-
-        private async static Task PutObject_Test5(MinioClient minio)
-        {
-            DateTime startTime = DateTime.Now;
-            string bucketName = GetRandomName(15);
-            string objectName = GetRandomName(10);
             string fileName = CreateFile(1 * MB, dataFile1MB);
             string contentType = "custom/contenttype";
             Dictionary<string, string> metaData = new Dictionary<string, string>(){
@@ -634,19 +585,18 @@ namespace Minio.Functional.Tests
                 Assert.IsTrue(statMeta.ContainsKey("x-amz-meta-customheader"));
                 Assert.IsTrue(statObject.metaData.ContainsKey("Content-Type") && statObject.metaData["Content-Type"].Equals("custom/contenttype"));
                 await TearDown(minio, bucketName);
-                new MintLogger("PutObject_Test5",putObjectSignature1,"Tests whether PutObject with different content-type passes",TestStatus.PASS,(DateTime.Now - startTime), args:args).Log();
+                new MintLogger("PutObject_Test4",putObjectSignature1,"Tests whether PutObject with different content-type passes",TestStatus.PASS,(DateTime.Now - startTime), args:args).Log();
             }
             catch (MinioException ex)
             {
-                new MintLogger("PutObject_Test5",putObjectSignature1,"Tests whether PutObject with different content-type passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(),args).Log();
+                new MintLogger("PutObject_Test4",putObjectSignature1,"Tests whether PutObject with different content-type passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(),args).Log();
             }
             if (!IsMintEnv())
             {
                 File.Delete(fileName);
             }
         }
-
-        private async static Task PutObject_Test6(MinioClient minio)
+        private async static Task PutObject_Test5(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
@@ -663,14 +613,14 @@ namespace Minio.Functional.Tests
                 await Setup_Test(minio, bucketName);
                 await PutObject_Tester(minio, bucketName, objectName, null, null, 0, null, rsg.GenerateStreamFromSeed(1 * MB));
                 await TearDown(minio, bucketName);
-                new MintLogger("PutObject_Test6",putObjectSignature1,"Tests whether PutObject with no content-type passes for small object",TestStatus.PASS,(DateTime.Now - startTime),args:args).Log();
+                new MintLogger("PutObject_Test5",putObjectSignature1,"Tests whether PutObject with no content-type passes for small object",TestStatus.PASS,(DateTime.Now - startTime),args:args).Log();
             }
             catch (Exception ex)
             {
-                new MintLogger("PutObject_Test6",putObjectSignature1,"Tests whether PutObject with no content-type passes for small object",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(), args).Log();
+                new MintLogger("PutObject_Test5",putObjectSignature1,"Tests whether PutObject with no content-type passes for small object",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(), args).Log();
             }
         }
-        private async static Task PutObject_Test7(MinioClient minio)
+        private async static Task PutObject_Test6(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
@@ -692,14 +642,14 @@ namespace Minio.Functional.Tests
                 await Task.WhenAll(tasks);
                 await minio.RemoveObjectAsync(bucketName, objectName);
                 await TearDown(minio, bucketName);
-                new MintLogger("PutObject_Test7",putObjectSignature1,"Tests thread safety of minioclient on a parallel put operation",TestStatus.PASS,(DateTime.Now - startTime), args:args).Log();
+                new MintLogger("PutObject_Test6",putObjectSignature1,"Tests thread safety of minioclient on a parallel put operation",TestStatus.PASS,(DateTime.Now - startTime), args:args).Log();
             }
             catch (Exception ex)
             {
-                new MintLogger("PutObject_Test7",putObjectSignature1,"Tests thread safety of minioclient on a parallel put operation",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(), args).Log();
+                new MintLogger("PutObject_Test6",putObjectSignature1,"Tests thread safety of minioclient on a parallel put operation",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(), args).Log();
             }
         }
-        private async static Task PutObject_Test8(MinioClient minio)
+        private async static Task PutObject_Test7(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
@@ -731,11 +681,11 @@ namespace Minio.Functional.Tests
                         await minio.RemoveObjectAsync(bucketName, objectName);
                         await TearDown(minio, bucketName);
                 }
-                new MintLogger("PutObject_Test8",putObjectSignature1,"Tests whether PutObject with unknown stream-size passes",TestStatus.PASS,(DateTime.Now - startTime), args:args).Log();
+                new MintLogger("PutObject_Test7",putObjectSignature1,"Tests whether PutObject with unknown stream-size passes",TestStatus.PASS,(DateTime.Now - startTime), args:args).Log();
             }
             catch (Exception ex)
             {
-                new MintLogger("PutObject_Test8",putObjectSignature1,"Tests whether PutObject with unknown stream-size passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(), args).Log();
+                new MintLogger("PutObject_Test7",putObjectSignature1,"Tests whether PutObject with unknown stream-size passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(), args).Log();
             }
         }
         private async static Task PutGetStatEncryptedObject_Test1(MinioClient minio)
