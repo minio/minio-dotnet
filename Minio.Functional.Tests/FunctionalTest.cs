@@ -118,8 +118,8 @@ namespace Minio.Functional.Tests
             String endPoint = null;
             String accessKey = null;
             String secretKey = null;
-            String enableHttps = "0";
-            String kmsEnabled = "0";
+            string enableHttps = "0";
+            string kmsEnabled = "0";
 
             bool useAWS = Environment.GetEnvironmentVariable("AWS_ENDPOINT") != null;
             if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
@@ -136,6 +136,7 @@ namespace Minio.Functional.Tests
                 accessKey = "Q3AM3UQ867SPQQA43P2F";
                 secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
                 enableHttps = "1";
+                kmsEnabled = "1";
             }
 
             MinioClient minioClient = null;
@@ -154,7 +155,7 @@ namespace Minio.Functional.Tests
             // Set app Info 
             minioClient.SetAppInfo("app-name", "app-version");
             // Set HTTP Tracing On
-             //minioClient.SetTraceOn(new JsonNetLogger());
+            // minioClient.SetTraceOn(new JsonNetLogger());
 
             // Set HTTP Tracing Off
             // minioClient.SetTraceOff();
@@ -256,7 +257,7 @@ namespace Minio.Functional.Tests
                 EncryptedCopyObject_Test1(minioClient).Wait();
                 EncryptedCopyObject_Test2(minioClient).Wait();
             }
-            if (kmsEnabled.Equals("1"))
+            if (kmsEnabled != null && kmsEnabled.Equals("1"))
             {
                 PutGetStatEncryptedObject_Test3(minioClient).Wait();
                 EncryptedCopyObject_Test3(minioClient).Wait();

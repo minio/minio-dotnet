@@ -127,7 +127,7 @@ namespace Minio.DataModel
         {
             foreach (var item in copyConditions)
             {
-                if (item.Key.Equals("x-amz-metadata-directive") && 
+                if (item.Key.Equals("x-amz-metadata-directive", StringComparison.OrdinalIgnoreCase) &&
                     (item.Value.ToUpper().Equals("REPLACE")))
                     return true;
             }

@@ -48,7 +48,7 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            await StatObjectAsync(bucketName, objectName, cancellationToken:cancellationToken).ConfigureAwait(false);
+            await StatObjectAsync(bucketName, objectName, sse:sse, cancellationToken:cancellationToken).ConfigureAwait(false);
 
             var headers = new Dictionary<string,string>();
             if (sse != null && sse.GetType().Equals(EncryptionType.SSE_C))
@@ -823,11 +823,11 @@ namespace Minio
 
             foreach (Parameter parameter in response.Headers)
             {
-                if (parameter.Name.Equals("Content-Length"))
+                if (parameter.Name.Equals("Content-Length", StringComparison.OrdinalIgnoreCase))
                 {
                     size = long.Parse(parameter.Value.ToString());
                 }
-                else if (parameter.Name.Equals("Last-Modified"))
+                else if (parameter.Name.Equals("Last-Modified", StringComparison.OrdinalIgnoreCase))
                 {
                     lastModified = DateTime.Parse(parameter.Value.ToString());
                 }
@@ -835,7 +835,7 @@ namespace Minio
                 {
                     etag = parameter.Value.ToString().Replace("\"", "");
                 }
-                else if (parameter.Name.Equals("Content-Type"))
+                else if (parameter.Name.Equals("Content-Type", StringComparison.OrdinalIgnoreCase))
                 {
                     contentType = parameter.Value.ToString();
                     metaData["Content-Type"] = contentType;
