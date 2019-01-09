@@ -280,7 +280,7 @@ namespace Minio
             for (partNumber = 1; partNumber <= partCount; partNumber++)
             {
                 byte[] dataToCopy = ReadFull(data, (int)partSize);
-                if (dataToCopy == null)
+                if (dataToCopy == null && numPartsUploaded > 0)
                 {
                     break;
                 }
