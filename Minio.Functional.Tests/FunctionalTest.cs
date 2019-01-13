@@ -193,6 +193,7 @@ namespace Minio.Functional.Tests
             PutObject_Test5(minioClient).Wait();
             PutObject_Test6(minioClient).Wait();
             PutObject_Test7(minioClient).Wait();
+            PutObject_Test8(minioClient).Wait();
 
             // Test StatObject function
             StatObject_Test1(minioClient).Wait();
@@ -662,7 +663,7 @@ namespace Minio.Functional.Tests
                 {"objectName",objectName},
                 {"contentType", contentType},
                 {"data","1MB"},
-                {"size","1MB"},
+                {"size","-1"},
             };
             try
             {
@@ -687,6 +688,44 @@ namespace Minio.Functional.Tests
             catch (Exception ex)
             {
                 new MintLogger("PutObject_Test7",putObjectSignature1,"Tests whether PutObject with unknown stream-size passes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(), args).Log();
+            }
+        }
+        private async static Task PutObject_Test8(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string contentType = "application/octet-stream";
+            Dictionary<string,string> args = new Dictionary<string,string>
+            {
+                { "bucketName", bucketName},
+                {"objectName",objectName},
+                {"contentType", contentType},
+                {"data","0B"},
+                {"size","-1"},
+            };
+            try
+            {
+                // Putobject call where unknown stream sent 0 bytes.
+                await Setup_Test(minio, bucketName);
+                using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(0))
+                {
+                    long size = -1;
+                    long file_write_size = filestream.Length;
+
+                    await minio.PutObjectAsync(bucketName,
+                                            objectName,
+                                            filestream,
+                                            size,
+                                            contentType);
+                    await minio.RemoveObjectAsync(bucketName, objectName);
+                    await TearDown(minio, bucketName);
+                }
+                new MintLogger("PutObject_Test8",putObjectSignature1,"Tests PutObject where unknown stream sends 0 bytes",TestStatus.PASS,(DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                new MintLogger("PutObject_Test8",putObjectSignature1,"Tests PutObject where unknown stream sends 0 bytes",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(), args).Log();
             }
         }
         private async static Task PutGetStatEncryptedObject_Test1(MinioClient minio)
