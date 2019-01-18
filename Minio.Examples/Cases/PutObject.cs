@@ -15,6 +15,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Minio.DataModel;
@@ -47,11 +48,16 @@ namespace Minio.Examples.Cases
                     {
                         Console.Out.WriteLine("Running example for API: PutObjectAsync with Stream and MultiPartUpload");
                     }
+                    var metaData = new Dictionary<string, string>()
+                                    {
+                                        {"X-Amz-Meta-Test", "Test  Test"}
+                                    };
                     await minio.PutObjectAsync(bucketName,
                                                objectName,
                                                filestream,
                                                filestream.Length,
                                                "application/octet-stream",
+                                               metaData: metaData,
                                                sse:sse);
                 }
             

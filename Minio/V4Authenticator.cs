@@ -345,7 +345,7 @@ namespace Minio
                 path = "/" + path;
             }
             canonicalStringList.AddLast(path);
-            String query = headersToSign.Aggregate(requestQuery, (pv, cv) => $"{pv}&{utils.UrlEncode(cv.Key)}={utils.UrlEncode(cv.Value)}");
+            String query = headersToSign.Aggregate(requestQuery, (pv, cv) => $"{pv}&{utils.UrlEncode(cv.Key)}={utils.UrlEncode(s3utils.TrimAll(cv.Value))}");
             canonicalStringList.AddLast(query);
             if (client.BaseUrl.Port > 0 && (client.BaseUrl.Port != 80 && client.BaseUrl.Port != 443))
             {
@@ -409,7 +409,7 @@ namespace Minio
 
             foreach (string header in headersToSign.Keys)
             {
-                canonicalStringList.AddLast(header + ":" + headersToSign[header]);
+                canonicalStringList.AddLast(header + ":" + s3utils.TrimAll(headersToSign[header]));
             }
             canonicalStringList.AddLast("");
             canonicalStringList.AddLast(string.Join(";", headersToSign.Keys));
