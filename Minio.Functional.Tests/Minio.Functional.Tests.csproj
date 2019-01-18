@@ -18,7 +18,7 @@
     </When>
     <When Condition=" '$(Configuration)'=='Mint' ">
       <ItemGroup>
-        <PackageReference Include="Minio" Version="2.0.*" />
+        <PackageReference Include="Minio" Version="3.0.*" />
       </ItemGroup>
     </When>
   </Choose>
