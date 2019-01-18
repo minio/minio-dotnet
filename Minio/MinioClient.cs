@@ -40,6 +40,7 @@ namespace Minio
         // is the virtual style path or location based endpoint
         internal string Endpoint { get; private set; }
         internal string Region;
+
         // Corresponding URI for above endpoint
         internal Uri uri;
 
@@ -319,6 +320,16 @@ namespace Minio
             this.Secure = true;
             Uri secureUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
             SetTargetURL(secureUrl);
+            return this;
+        }
+
+        /// <summary>
+        /// Uses webproxy for all requests if this method is invoked on client object
+        /// </summary>
+        /// <returns></returns>
+        public MinioClient WithProxy(IWebProxy proxy)
+        {
+            this.restClient.Proxy = proxy;
             return this;
         }
         /// <summary>
