@@ -1131,6 +1131,7 @@ __Parameters__
 | ``objectName``  | _String_  | Object name in the bucket |
 | ``expiresInt``  | _Integer_  | Expiry in seconds. Default expiry is set to 7 days. |
 | ``reqParams``   | _Dictionary<string,string>_ | Additional response header overrides supports response-expires, response-content-type, response-cache-control, response-content-disposition.|
+
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 |  ``Task<string>`` : string contains URL to download the object | Listed Exceptions: |
@@ -1172,7 +1173,7 @@ __Parameters__
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  ``Task<string>`` : string contains URL to download the object | Listed Exceptions: |
+|  ``Task<string>`` : string contains URL to upload the object | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name |
 |        | ``InvalidKeyException`` : upon an invalid access key or secret key           |
 |        | ``ConnectionException`` : upon connection error            |
