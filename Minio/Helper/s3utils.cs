@@ -16,11 +16,15 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 namespace Minio.Helper
 {
     internal class s3utils
     {
+
+        internal static readonly Regex TrimWhitespaceRegex = new Regex("\\s+");
+
         internal static bool IsAmazonEndPoint(string endpoint)
         {
             if (IsAmazonChinaEndPoint(endpoint))
@@ -92,6 +96,13 @@ namespace Minio.Helper
             byte tempForParsing;
 
             return splitValues.All(r => byte.TryParse(r, out tempForParsing));
+        }
+
+        // TrimAll trims leading and trailing spaces and replace sequential spaces with one space, following Trimall()
+        // in http://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
+        internal static string TrimAll(string s)
+        {
+            return TrimWhitespaceRegex.Replace(s, " ").Trim();
         }
     }
 }

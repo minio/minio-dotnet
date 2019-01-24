@@ -565,7 +565,7 @@ namespace Minio.Functional.Tests
             string fileName = CreateFile(1 * MB, dataFile1MB);
             string contentType = "custom/contenttype";
             Dictionary<string, string> metaData = new Dictionary<string, string>(){
-                { "x-amz-meta-customheader", "minio-dotnet"}
+                { "x-amz-meta-customheader", "minio   dotnet"}
             };
             Dictionary<string,string> args = new Dictionary<string,string>
             {
@@ -1408,7 +1408,7 @@ namespace Minio.Functional.Tests
                 {
                     await minio.PutObjectAsync(bucketName,
                                             objectName,
-                                            filestream, filestream.Length, metaData:new Dictionary<string,string>{{"X-Amz-Meta-Orig", "orig-val"}});
+                                            filestream, filestream.Length, metaData:new Dictionary<string,string>{{"X-Amz-Meta-Orig", "orig-val with  spaces"}});
                 }
                 ObjectStat stats = await minio.StatObjectAsync(bucketName, objectName);
                 Assert.IsTrue(stats.metaData["X-Amz-Meta-Orig"] != null);
@@ -1420,7 +1420,7 @@ namespace Minio.Functional.Tests
                 Dictionary<string,string> metadata = new Dictionary<string,string>()
                 {
                     { "Content-Type", "application/css"},
-                    {"X-Amz-Meta-Mynewkey","my-new-value"}
+                    {"X-Amz-Meta-Mynewkey","test   test"}
                 };
                 await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName,copyConditions:copyCond,metadata: metadata);
 
