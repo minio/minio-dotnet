@@ -1172,7 +1172,7 @@ __Parameters__
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  ``Task<string>`` : string contains URL to download the object | Listed Exceptions: |
+|  ``Task<string>`` : string contains URL to upload the object | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name |
 |        | ``InvalidKeyException`` : upon an invalid access key or secret key           |
 |        | ``ConnectionException`` : upon connection error            |
