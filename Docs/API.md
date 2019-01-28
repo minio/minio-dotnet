@@ -62,6 +62,11 @@ __Secure Access__
 |---|
 |`Chain .WithSSL() to Minio Client object to use https instead of http. `   |
 
+__Proxy__
+
+|  |
+|---|
+|`Chain .WithProxy(proxyObject) to Minio Client object to use proxy `   |
 
 __Example__
 
@@ -78,6 +83,10 @@ MinioClient minioClient = new MinioClient("play.minio.io:9000",
                                           accessKey:"Q3AM3UQ867SPQQA43P2F", 
                                           secretKey:"zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
                                           ).WithSSL();
+
+// 3. Initializing minio client with proxy
+IWebProxy proxy = new WebProxy("192.168.0.1",8000);
+MinioClient minioClient = new MinioClient("my-ip-address:9000","minio","minio123").WithSSL().WithProxy(proxy);
 ```
 
 
