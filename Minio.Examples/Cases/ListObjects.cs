@@ -19,20 +19,20 @@ using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
-    
+
     class ListObjects
     {
         // List objects matching optional prefix in a specified bucket.
         public static void Run(Minio.MinioClient minio,
                                      string bucketName = "my-bucket-name",
                                      string prefix = null,
-                                     bool recursive = false)
+                                     bool recursive = true)
         {
             try
             {
                 Console.Out.WriteLine("Running example for API: ListObjectsAsync");
                 IObservable<Item> observable = minio.ListObjectsAsync(bucketName, prefix, recursive);
-                
+
                 IDisposable subscription = observable.Subscribe(
                     item => Console.WriteLine("Object: {0}", item.Key),
                     ex => Console.WriteLine("OnError: {0}", ex),
@@ -47,4 +47,3 @@ namespace Minio.Examples.Cases
         }
     }
 }
-      

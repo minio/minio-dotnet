@@ -1,5 +1,6 @@
 /*
- * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
+ * Minio .NET Library for Amazon S3 Compatible Cloud Storage,
+ * (C) 2017, 2018, 2019 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,10 +95,10 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to list all incomplepte uploads from</param>
         /// <param name="prefix">prefix to list all incomplete uploads</param>
-        /// <param name="recursive">option to list incomplete uploads recursively</param>
+        /// <param name="recursive">Set to true to recursively list all incomplete uploads</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>A lazily populated list of incomplete uploads</returns>
-        IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix, bool recursive, CancellationToken cancellationToken = default(CancellationToken));
+        IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix = "", bool recursive = false, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Remove incomplete uploads from a given bucket and objectName
@@ -151,7 +152,7 @@ namespace Minio
         Task GetObjectAsync(string bucketName, string objectName, string filePath, ServerSideEncryption sse = null ,CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// Presigned get url - returns a presigned url to access an object's data without credentials.URL can have a maximum expiry of 
+        /// Presigned get url - returns a presigned url to access an object's data without credentials.URL can have a maximum expiry of
         /// upto 7 days or a minimum of 1 second.Additionally, you can override a set of response headers using reqParams.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
@@ -161,7 +162,7 @@ namespace Minio
         Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string,string> reqParams = null);
 
         /// <summary>
-        /// Presigned Put url - returns a presigned url to upload an object without credentials.URL can have a maximum expiry of 
+        /// Presigned Put url - returns a presigned url to upload an object without credentials.URL can have a maximum expiry of
         /// upto 7 days or a minimum of 1 second.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>

@@ -1,5 +1,6 @@
 ﻿/*
- * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
+ * Minio .NET Library for Amazon S3 Compatible Cloud Storage,
+ * (C) 2017, 2018, 2019 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,11 +59,11 @@ namespace Minio
         /// List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
         /// </summary>
         /// <param name="bucketName">Bucket to list objects from</param>
-        /// <param name="prefix">Filters all objects not beginning with a given prefix</param>
-        /// <param name="recursive">Set to false to emulate a directory</param>
+        /// <param name="prefix">Filter all incomplete uploads starting with this prefix</param>
+        /// <param name="recursive">List incomplete uploads recursively</param>
         /// <param name="cancellationToken"></param>
         /// <returns>An observable of items that client can subscribe to</returns>
-        IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true, CancellationToken cancellationToken = default(CancellationToken));
+        IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = false, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Get bucket policy
@@ -80,7 +81,7 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns> Returns Task that sets the current bucket policy</returns>
         Task SetPolicyAsync(String bucketName, String policyJson, CancellationToken cancellationToken = default(CancellationToken));
-       
+
         /// <summary>
         ///  Gets the notification configuration set for this bucket
         /// </summary>
@@ -105,8 +106,8 @@ namespace Minio
         /// <param name="cancellationToken">optional cancellation token</param>
         /// <returns></returns>
         Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
-      
+
         // Task ListenBucketNotificationsAsync(string bucketName, string prefix = "", string suffix = "", List<Notification> events,CancellationToken cancellationToken = default(CancellationToken));
-        
+
     }
 }
