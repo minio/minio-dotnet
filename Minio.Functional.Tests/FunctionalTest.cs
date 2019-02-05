@@ -2029,13 +2029,13 @@ namespace Minio.Functional.Tests
             };
             try
             {
-                int numObjects = 1050;
+                int numObjects = 100;
                 await Setup_Test(minio, bucketName);
                 Task[] tasks = new Task[numObjects];
                 for (int i = 1; i <= numObjects; i++) {
                     tasks[i - 1]= PutObject_Task(minio, bucketName, objectNamePrefix + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
                     // Add sleep to avoid flooding server with concurrent requests
-                    if (i % 100 == 0){
+                    if (i % 50 == 0){
                         System.Threading.Thread.Sleep(5000);
                     }
                 }
@@ -2049,11 +2049,11 @@ namespace Minio.Functional.Tests
                     await minio.RemoveObjectAsync(bucketName,objectName);
                 }
                 await TearDown(minio, bucketName);
-                new MintLogger("ListObjects_Test5",listObjectsSignature,"Tests whether ListObjects lists all objects when number of objects > 1000",TestStatus.PASS,(DateTime.Now - startTime),args:args).Log();
+                new MintLogger("ListObjects_Test5",listObjectsSignature,"Tests whether ListObjects lists all objects when number of objects == 100",TestStatus.PASS,(DateTime.Now - startTime),args:args).Log();
             }
             catch (MinioException ex)
             {
-                new MintLogger("ListObjects_Test5",listObjectsSignature,"Tests whether ListObjects lists all objects when number of objects > 1000",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(),args).Log();
+                new MintLogger("ListObjects_Test5",listObjectsSignature,"Tests whether ListObjects lists all objects when number of objects == 100",TestStatus.FAIL,(DateTime.Now - startTime),"",ex.Message, ex.ToString(),args).Log();
             }
         }
         private async static Task ListObjects_Test(MinioClient minio, string bucketName, string prefix, int numObjects, bool recursive = true)
@@ -2118,7 +2118,7 @@ namespace Minio.Functional.Tests
             };
             try
             {
-                int count = 1005;
+                int count = 50;
                 Task[] tasks = new Task[count];
                 List<string> objectsList = new List<string>();
                 await Setup_Test(minio, bucketName);
