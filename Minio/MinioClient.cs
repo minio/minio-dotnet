@@ -357,15 +357,9 @@ namespace Minio
                 var fullUrl = this.restClient.BuildUri(request);
                 Console.Out.WriteLine("Full URL of Request {0}", fullUrl);
             }
-            TaskCompletionSource<IRestResponse> tcs = new TaskCompletionSource<IRestResponse>();
-            RestRequestAsyncHandle handle = this.restClient.ExecuteAsync(
-                                            request, resp =>
-                                            {
-                                                tcs.SetResult(resp);
-                                            });
-            cancellationToken.ThrowIfCancellationRequested();
 
-            IRestResponse response = await tcs.Task.ConfigureAwait(false);
+            IRestResponse response = await this.restClient.ExecuteTaskAsync(request,cancellationToken);
+
             HandleIfErrorResponse(response, errorHandlers, startTime);
             return response;
         }
