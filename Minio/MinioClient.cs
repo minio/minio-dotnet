@@ -40,7 +40,7 @@ namespace Minio
         // is the virtual style path or location based endpoint
         internal string Endpoint { get; private set; }
         internal string Region;
-
+        internal string SessionToken { get; private set; }
         // Corresponding URI for above endpoint
         internal Uri uri;
 
@@ -157,16 +157,9 @@ namespace Minio
 
             // Start with user specified endpoint
             string host = this.BaseUrl;
+        
+            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region:this.Region, sessionToken:this.SessionToken);
 
-            // Use region supplied while instantiating MinioClient object in the V4Authenticator
-            if (string.IsNullOrEmpty(this.Region))
-            {
-                this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey);
-            }
-            else
-            {
-                this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, this.Region);
-            }
 
             // This section reconstructs the url with scheme followed by location specific endpoint( s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
@@ -265,7 +258,7 @@ namespace Minio
             restClient = new RestSharp.RestClient(this.uri);
             restClient.UserAgent = this.FullUserAgent;
 
-            authenticator = new V4Authenticator(this.Secure,this.AccessKey, this.SecretKey, this.Region);
+            authenticator = new V4Authenticator(this.Secure,this.AccessKey, this.SecretKey, this.Region, this.SessionToken);
             restClient.Authenticator = authenticator;
         }
 
@@ -295,8 +288,10 @@ namespace Minio
         /// <param name="accessKey">Access Key for authenticated requests (Optional,can be omitted for anonymous requests)</param>
         /// <param name="secretKey">Secret Key for authenticated requests (Optional,can be omitted for anonymous requests)</param>
         /// <param name="region">Optional custom region</param>
+        /// <param name="sessionToken">Optional session token</param>
+
         /// <returns>Client initialized with user credentials</returns>
-        public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region="")
+        public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region="",string sessionToken="")
         {
             this.Secure = false;
 
@@ -304,6 +299,7 @@ namespace Minio
             this.BaseUrl = endpoint;
             this.AccessKey = accessKey;
             this.SecretKey = secretKey;
+            this.SessionToken = sessionToken;
             this.Region = region;
             // Instantiate a region cache
             this.regionCache = BucketRegionCache.Instance;

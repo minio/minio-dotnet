@@ -1128,7 +1128,7 @@ namespace Minio
                                                     headerMap: reqParams)
                                     .ConfigureAwait(false);
 
-            return this.authenticator.PresignURL(this.restClient, request, expiresInt, Region);
+            return this.authenticator.PresignURL(this.restClient, request, expiresInt, Region, this.SessionToken);
         }
 
         /// <summary>
@@ -1147,7 +1147,7 @@ namespace Minio
                 throw new InvalidExpiryRangeException("expiry range should be between 1 and " + Constants.DefaultExpiryTime.ToString());
             }
             var request = await this.CreateRequest(Method.PUT, bucketName, objectName: objectName).ConfigureAwait(false);
-            return this.authenticator.PresignURL(this.restClient, request, expiresInt, Region);
+            return this.authenticator.PresignURL(this.restClient, request, expiresInt, Region, this.SessionToken);
         }
 
         /// <summary>
@@ -1189,7 +1189,7 @@ namespace Minio
             policy.SetAlgorithm("AWS4-HMAC-SHA256");
             policy.SetCredential(this.authenticator.GetCredentialString(signingDate, region));
             policy.SetDate(signingDate);
-
+            policy.SetSessionToken(this.SessionToken);
             string policyBase64 = policy.Base64();
             string signature = this.authenticator.PresignPostSignature(region, signingDate, policyBase64);
 
