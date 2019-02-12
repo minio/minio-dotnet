@@ -38,8 +38,8 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 
 |  |
 |---|
-|`public MinioClient(string endpoint, string accessKey = "", string secretKey = "")`   |
-| Creates Minio client object with given endpoint.AccessKey,secretKey and region are optional parameters,and can be omitted for anonymous access. 
+|`public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region="", string sessionToken="")`   |
+| Creates Minio client object with given endpoint.AccessKey,secretKey, region and sessionToken are optional parameters,and can be omitted for anonymous access. 
   The client object uses Http access by default. To use Https, chain method WithSSL() to client object to use secure transfer protocol   |
 
 
@@ -55,6 +55,7 @@ __Parameters__
 | `accessKey`   | _string_   |accessKey is like user-id that uniquely identifies your account.This field is optional and can be omitted for anonymous access. |
 |`secretKey`  |  _string_   | secretKey is the password to your account.This field is optional and can be omitted for anonymous access.|
 |`region`  |  _string_   | region to which calls should be made.This field is optional and can be omitted.|
+|`sessionToken`  |  _string_   | sessionToken needs to be set if temporary access credentials are used |
 
 __Secure Access__
 
@@ -87,6 +88,9 @@ MinioClient minioClient = new MinioClient("play.minio.io:9000",
 // 3. Initializing minio client with proxy
 IWebProxy proxy = new WebProxy("192.168.0.1",8000);
 MinioClient minioClient = new MinioClient("my-ip-address:9000","minio","minio123").WithSSL().WithProxy(proxy);
+
+// 4. Initializing minio client with temporary credentials
+MinioClient minioClient = new MinioClient("my-ip-address:9000","tempuserid","temppasswd",sessionToken:"sessionToken");
 ```
 
 

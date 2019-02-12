@@ -142,7 +142,19 @@ namespace Minio.DataModel
             }
             this.policies.Add(new Tuple<string, string, string>("content-length-range", startRange.ToString(), endRange.ToString()));
         }
-
+        
+        /// <summary>
+        /// Set session token
+        /// </summary>
+        /// <param name="sessionToken">set session token</param>
+        public void SetSessionToken(string sessionToken)
+        {
+            if (!string.IsNullOrEmpty(sessionToken))
+            {
+                this.policies.Add(new Tuple<string, string, string>("eq", "$x-amz-security-token", sessionToken));
+                this.formData.Add("x-amz-security-token", sessionToken);
+            }
+        }
         /// <summary>
         /// Set the success action status of the object for this policy based upload. 
         /// </summary>
