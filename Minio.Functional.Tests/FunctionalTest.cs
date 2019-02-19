@@ -32,8 +32,12 @@ namespace Minio.Functional.Tests
     public class FunctionalTest
     {
         private static Random rnd = new Random();
+        private static int KB = 1024;
         private static int MB = 1024 * 1024;
-        private static string dataFile1MB = "datafile-1-MB";
+
+        private static string dataFile1B = "datafile-1-b";
+
+        private static string dataFile10KB = "datafile-10-kB";
         private static string dataFile6MB = "datafile-6-MB";
 
         private static RandomStreamGenerator rsg = new RandomStreamGenerator(100 * MB);
@@ -231,7 +235,7 @@ namespace Minio.Functional.Tests
             CopyObject_Test8(minioClient).Wait();
 
             // Test SetPolicyAsync function
-            SetBucketPolicy_Test1(minioClient).Wait();
+             SetBucketPolicy_Test1(minioClient).Wait();
 
             // Test Presigned Get/Put operations
             PresignedGetObject_Test1(minioClient).Wait();
@@ -264,6 +268,7 @@ namespace Minio.Functional.Tests
                 EncryptedCopyObject_Test3(minioClient).Wait();
                 EncryptedCopyObject_Test4(minioClient).Wait();
             }
+            
         }
         private static void runCoreTests(MinioClient minioClient)
         {
@@ -494,7 +499,7 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_Test(minio, bucketName);
-                await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * MB));
+                await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
                 await TearDown(minio, bucketName);
                 new MintLogger("PutObject_Test1",putObjectSignature1,"Tests whether PutObject passes for small object",TestStatus.PASS,(DateTime.Now - startTime),args:args).Log();
             }
@@ -516,12 +521,12 @@ namespace Minio.Functional.Tests
                 { "bucketName", bucketName},
                 {"objectName",objectName},
                 {"contentType", contentType},
-                {"size","8MB"}
+                {"size","6MB"}
             };
             try
             {
                 await Setup_Test(minio, bucketName);
-                await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(8 * MB));
+                await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(6 * MB));
                 await TearDown(minio, bucketName);
                 new MintLogger("PutObject_Test2",putObjectSignature1,"Tests whether multipart PutObject passes",TestStatus.PASS,(DateTime.Now - startTime),args:args).Log();
             }
@@ -548,7 +553,7 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_Test(minio, bucketName);
-                await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * MB));
+                await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
                 await TearDown(minio, bucketName);
                 new MintLogger("PutObject_Test3",putObjectSignature1,"Tests whether PutObject with custom content-type passes",TestStatus.PASS,(DateTime.Now - startTime),args:args).Log();
             }
@@ -562,7 +567,7 @@ namespace Minio.Functional.Tests
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
-            string fileName = CreateFile(1 * MB, dataFile1MB);
+            string fileName = CreateFile(1, dataFile1B);
             string contentType = "custom/contenttype";
             Dictionary<string, string> metaData = new Dictionary<string, string>(){
                 { "x-amz-meta-customheader", "minio   dotnet"}
@@ -572,8 +577,8 @@ namespace Minio.Functional.Tests
                 { "bucketName", bucketName},
                 {"objectName",objectName},
                 {"contentType", contentType},
-                {"data","1MB"},
-                {"size","1MB"},
+                {"data","1B"},
+                {"size","1B"},
                 {"metaData","x-amz-meta-customheader:minio-dotnet"}
             };
             try
@@ -607,13 +612,13 @@ namespace Minio.Functional.Tests
             {
                 { "bucketName", bucketName},
                 {"objectName",objectName},
-                {"data","1MB"},
-                {"size","1MB"},
+                {"data","1B"},
+                {"size","1B"},
             };
             try
             {
                 await Setup_Test(minio, bucketName);
-                await PutObject_Tester(minio, bucketName, objectName, null, null, 0, null, rsg.GenerateStreamFromSeed(1 * MB));
+                await PutObject_Tester(minio, bucketName, objectName, null, null, 0, null, rsg.GenerateStreamFromSeed(1));
                 await TearDown(minio, bucketName);
                 new MintLogger("PutObject_Test5",putObjectSignature1,"Tests whether PutObject with no content-type passes for small object",TestStatus.PASS,(DateTime.Now - startTime),args:args).Log();
             }
@@ -631,15 +636,15 @@ namespace Minio.Functional.Tests
             {
                 { "bucketName", bucketName},
                 {"objectName",objectName},
-                {"data","1MB"},
-                {"size","1MB"},
+                {"data","10KB"},
+                {"size","10KB"},
             };
             try
             {
                 await Setup_Test(minio, bucketName);
                 Task[] tasks = new Task[7];
                 for (int i = 0; i < 7; i++) {
-                    tasks[i]= PutObject_Task(minio, bucketName, objectName, null, null, 0, null, rsg.GenerateStreamFromSeed(1*MB));
+                    tasks[i]= PutObject_Task(minio, bucketName, objectName, null, null, 0, null, rsg.GenerateStreamFromSeed(10*KB));
                 }
                 await Task.WhenAll(tasks);
                 await minio.RemoveObjectAsync(bucketName, objectName);
@@ -662,14 +667,14 @@ namespace Minio.Functional.Tests
                 { "bucketName", bucketName},
                 {"objectName",objectName},
                 {"contentType", contentType},
-                {"data","1MB"},
+                {"data","10KB"},
                 {"size","-1"},
             };
             try
             {
                 // Putobject call with unknown stream size. See if PutObjectAsync call succeeds
                 await Setup_Test(minio, bucketName);
-                using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(10 * KB))
                 {
                     
                         long size = -1;
@@ -739,8 +744,8 @@ namespace Minio.Functional.Tests
                 { "bucketName", bucketName},
                 {"objectName",objectName},
                 {"contentType", contentType},
-                {"data","1MB"},
-                {"size","1MB"},
+                {"data","1KB"},
+                {"size","1KB"},
             };
             try
             {
@@ -751,7 +756,7 @@ namespace Minio.Functional.Tests
                 aesEncryption.GenerateKey();
                 var ssec = new SSEC(aesEncryption.Key);
 
-                using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
                     long file_write_size = filestream.Length;
                     string tempFileName = "tempFileName";
@@ -989,13 +994,13 @@ namespace Minio.Functional.Tests
                 { "bucketName", bucketName},
                 {"objectName",objectName},
                 {"contentType", contentType},
-                {"data","1MB"},
-                {"size","1MB"},
+                {"data","1KB"},
+                {"size","1KB"},
             };
             try
             {
                 await Setup_Test(minio, bucketName);
-                await PutObject_Tester(minio, bucketName, objectName, null, null, 0, null, rsg.GenerateStreamFromSeed(1 * MB));
+                await PutObject_Tester(minio, bucketName, objectName, null, null, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
 
                 await TearDown(minio, bucketName);
                 new MintLogger("StatObject_Test1",statObjectSignature,"Tests whether StatObject passes",TestStatus.PASS,(DateTime.Now - startTime), args:args).Log();
@@ -1019,15 +1024,15 @@ namespace Minio.Functional.Tests
                 {"objectName",objectName},
                 {"destBucketName", destBucketName},
                 {"destObjectName", destObjectName},
-                {"data","1MB"},
-                {"size","1MB"},
+                {"data","1KB"},
+                {"size","1KB"},
             };
             try
             {
                 await Setup_Test(minio, bucketName);
                 await Setup_Test(minio, destBucketName);
 
-                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
                     await minio.PutObjectAsync(bucketName,
                                             objectName,
@@ -1066,8 +1071,8 @@ namespace Minio.Functional.Tests
                 {"objectName",objectName},
                 {"destBucketName", destBucketName},
                 {"destObjectName", destObjectName},
-                {"data","1MB"},
-                {"size","1MB"},
+                {"data","1KB"},
+                {"size","1KB"},
             };
             try
             {
@@ -1075,7 +1080,7 @@ namespace Minio.Functional.Tests
                 await Setup_Test(minio, bucketName);
                 await Setup_Test(minio, destBucketName);
 
-                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
                     await minio.PutObjectAsync(bucketName,
                                             objectName,
@@ -1118,15 +1123,15 @@ namespace Minio.Functional.Tests
                 {"objectName",objectName},
                 {"destBucketName", destBucketName},
                 {"destObjectName", destObjectName},
-                {"data","1MB"},
-                {"size","1MB"},
+                {"data","1KB"},
+                {"size","1KB"},
             };
             try
             {
                 // Test CopyConditions where matching ETag is found
                 await Setup_Test(minio, bucketName);
                 await Setup_Test(minio, destBucketName);
-                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
                     await minio.PutObjectAsync(bucketName,
                                             objectName,
@@ -1170,8 +1175,8 @@ namespace Minio.Functional.Tests
                 {"bucketName", bucketName},
                 {"objectName",objectName},
                 {"destBucketName", destBucketName},
-                {"data","1MB"},
-                {"size","1MB"},
+                {"data","1KB"},
+                {"size","1KB"},
             };
             try
             {
@@ -1179,7 +1184,7 @@ namespace Minio.Functional.Tests
                 await Setup_Test(minio, bucketName);
                 await Setup_Test(minio, destBucketName);
 
-                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
                     await minio.PutObjectAsync(bucketName,
                                             objectName,
@@ -1284,15 +1289,15 @@ namespace Minio.Functional.Tests
                 {"objectName",objectName},
                 {"destBucketName", destBucketName},
                 {"destObjectName", destObjectName},
-                {"data","1MB"},
-                {"size","1MB"},
+                {"data","1KB"},
+                {"size","1KB"},
             };
             try
             {
                 // Test CopyConditions where matching ETag is found
                 await Setup_Test(minio, bucketName);
                 await Setup_Test(minio, destBucketName);
-                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
                     await minio.PutObjectAsync(bucketName,
                                             objectName,
@@ -1338,15 +1343,15 @@ namespace Minio.Functional.Tests
                 {"objectName",objectName},
                 {"destBucketName", destBucketName},
                 {"destObjectName", destObjectName},
-                {"data","1MB"},
-                {"size","1MB"},
+                {"data","1KB"},
+                {"size","1KB"},
             };
             try
             {
                 // Test CopyConditions where matching ETag is found
                 await Setup_Test(minio, bucketName);
                 await Setup_Test(minio, destBucketName);
-                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
                     await minio.PutObjectAsync(bucketName,
                                             objectName,
@@ -1370,6 +1375,7 @@ namespace Minio.Functional.Tests
                 }
 
                 await minio.RemoveObjectAsync(bucketName, objectName);
+                await minio.RemoveObjectAsync(destBucketName, destObjectName);
 
                 await TearDown(minio, bucketName);
                 await TearDown(minio, destBucketName);
@@ -1395,23 +1401,23 @@ namespace Minio.Functional.Tests
                 {"objectName",objectName},
                 {"destBucketName", destBucketName},
                 {"destObjectName", destObjectName},
-                {"data","1MB"},
-                {"size","1MB"},
+                {"data","1KB"},
+                {"size","1KB"},
                 {"copyconditions","x-amz-metadata-directive:REPLACE"},
             };
             try
             {
                 await Setup_Test(minio, bucketName);
                 await Setup_Test(minio, destBucketName);
-
-                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
                     await minio.PutObjectAsync(bucketName,
                                             objectName,
                                             filestream, filestream.Length, metaData:new Dictionary<string,string>{{"X-Amz-Meta-Orig", "orig-val with  spaces"}});
                 }
                 ObjectStat stats = await minio.StatObjectAsync(bucketName, objectName);
-                Assert.IsTrue(stats.metaData["X-Amz-Meta-Orig"] != null);
+
+                Assert.IsTrue(stats.metaData["X-Amz-Meta-Orig"] != null) ;
 
                 CopyConditions copyCond = new CopyConditions();
                 copyCond.SetReplaceMetadataDirective();
@@ -1453,8 +1459,8 @@ namespace Minio.Functional.Tests
                 {"objectName",objectName},
                 {"destBucketName", destBucketName},
                 {"destObjectName", destObjectName},
-                {"data","1MB"},
-                {"size","1MB"},
+                {"data","1KB"},
+                {"size","1KB"},
             };
             try
             {
@@ -1470,7 +1476,7 @@ namespace Minio.Functional.Tests
                 destAesEncryption.KeySize = 256;
                 destAesEncryption.GenerateKey();
                 var ssecDst = new SSEC(destAesEncryption.Key);
-                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
                     await minio.PutObjectAsync(bucketName,
                                             objectName,
@@ -1509,8 +1515,8 @@ namespace Minio.Functional.Tests
                 {"objectName",objectName},
                 {"destBucketName", destBucketName},
                 {"destObjectName", destObjectName},
-                {"data","1MB"},
-                {"size","1MB"},
+                {"data","1KB"},
+                {"size","1KB"},
             };
             try
             {
@@ -1523,7 +1529,7 @@ namespace Minio.Functional.Tests
                 var ssec = new SSEC(aesEncryption.Key);
                 var sseCpy = new SSECopy(aesEncryption.Key);
 
-                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
                     await minio.PutObjectAsync(bucketName,
                                             objectName,
@@ -1562,8 +1568,8 @@ namespace Minio.Functional.Tests
                 {"objectName",objectName},
                 {"destBucketName", destBucketName},
                 {"destObjectName", destObjectName},
-                {"data","1MB"},
-                {"size","1MB"},
+                {"data","1KB"},
+                {"size","1KB"},
             };
             try
             {
@@ -1577,7 +1583,7 @@ namespace Minio.Functional.Tests
                 var sseCpy = new SSECopy(aesEncryption.Key);
                 var sses3 = new SSES3();
 
-                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
                     await minio.PutObjectAsync(bucketName,
                                             objectName,
@@ -1616,8 +1622,8 @@ namespace Minio.Functional.Tests
                 {"objectName",objectName},
                 {"destBucketName", destBucketName},
                 {"destObjectName", destObjectName},
-                {"data","1MB"},
-                {"size","1MB"},
+                {"data","1KB"},
+                {"size","1KB"},
             };
             try
             {
@@ -1627,7 +1633,7 @@ namespace Minio.Functional.Tests
 
                 var sses3 = new SSES3();
                 var sseDest = new SSES3();
-                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
                     await minio.PutObjectAsync(bucketName,
                                             objectName,
@@ -1755,7 +1761,7 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_Test(minio, bucketName);
-                using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(10 * KB))
                 {
                     long file_write_size = 10L;
                     string tempFileName = "tempFileName";
@@ -1805,7 +1811,7 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_Test(minio, bucketName);
-                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
                     await minio.PutObjectAsync(bucketName,
                                             objectName,
@@ -1864,7 +1870,7 @@ namespace Minio.Functional.Tests
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
-            string fileName = CreateFile(1 * MB, dataFile1MB);
+            string fileName = CreateFile(10 * KB, dataFile10KB);
             Dictionary<string,string> args = new Dictionary<string,string>
                     {
                         {"bucketName", bucketName},
@@ -1910,12 +1916,12 @@ namespace Minio.Functional.Tests
                 await Setup_Test(minio, bucketName);
                 Task[] tasks = new Task[2];
                 for (int i = 0; i < 2; i++) {
-                    tasks[i]= PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1*MB));
+                    tasks[i]= PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
                 }
                 await Task.WhenAll(tasks);
                
                 ListObjects_Test(minio, bucketName, prefix, 2,false).Wait();
-                System.Threading.Thread.Sleep(5000);
+                System.Threading.Thread.Sleep(2000);
                 await minio.RemoveObjectAsync(bucketName, objectName + "0");
                 await minio.RemoveObjectAsync(bucketName, objectName + "1");
                 await TearDown(minio, bucketName);
@@ -1939,7 +1945,7 @@ namespace Minio.Functional.Tests
             {
                 await Setup_Test(minio, bucketName);
 
-                ListObjects_Test(minio, bucketName, null, 0).Wait(5000);
+                ListObjects_Test(minio, bucketName, null, 0).Wait(1000);
                 await TearDown(minio, bucketName);
                 new MintLogger("ListObjects_Test2",listObjectsSignature,"Tests whether ListObjects passes when bucket is empty",TestStatus.PASS,(DateTime.Now - startTime),args:args).Log();
             }
@@ -1967,12 +1973,12 @@ namespace Minio.Functional.Tests
                 await Setup_Test(minio, bucketName);
                   Task[] tasks = new Task[2];
                 for (int i = 0; i < 2; i++) {
-                    tasks[i]= PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1*MB));
+                    tasks[i]= PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1*KB));
                 }
                 await Task.WhenAll(tasks);
 
                 ListObjects_Test(minio, bucketName, prefix, 2,true).Wait();
-                System.Threading.Thread.Sleep(5000);
+                System.Threading.Thread.Sleep(2000);
                 await minio.RemoveObjectAsync(bucketName, objectName + "0");
                 await minio.RemoveObjectAsync(bucketName, objectName + "1");
                 await TearDown(minio, bucketName);
@@ -2000,12 +2006,12 @@ namespace Minio.Functional.Tests
                 await Setup_Test(minio, bucketName);
                 Task[] tasks = new Task[2];
                 for (int i = 0; i < 2; i++) {
-                    tasks[i]= PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1*MB));
+                    tasks[i]= PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1*KB));
                 }
                 await Task.WhenAll(tasks);
                
                 ListObjects_Test(minio, bucketName, null, 2,false).Wait();
-                System.Threading.Thread.Sleep(5000);
+                System.Threading.Thread.Sleep(2000);
                 await minio.RemoveObjectAsync(bucketName, objectName + "0");
                 await minio.RemoveObjectAsync(bucketName, objectName + "1");
                 await TearDown(minio, bucketName);
@@ -2036,7 +2042,7 @@ namespace Minio.Functional.Tests
                     tasks[i - 1]= PutObject_Task(minio, bucketName, objectNamePrefix + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
                     // Add sleep to avoid flooding server with concurrent requests
                     if (i % 50 == 0){
-                        System.Threading.Thread.Sleep(5000);
+                        System.Threading.Thread.Sleep(2000);
                     }
                 }
                 await Task.WhenAll(tasks);
@@ -2087,7 +2093,7 @@ namespace Minio.Functional.Tests
             };
             try
             {
-                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
                     await Setup_Test(minio, bucketName);
 
@@ -2114,7 +2120,7 @@ namespace Minio.Functional.Tests
             Dictionary<string,string> args = new Dictionary<string,string>
             {
                 {"bucketName", bucketName},
-                {"objectNames","[" + objectName + "0..." + objectName + "1004]"},
+                {"objectNames","[" + objectName + "0..." + objectName + "50]"},
             };
             try
             {
@@ -2126,13 +2132,9 @@ namespace Minio.Functional.Tests
                 {
                     tasks[i] = PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(5));
                     objectsList.Add(objectName + i.ToString());
-                    // Add sleep to avoid flooding server with concurrent requests
-                    if (i % 100 == 0){
-                        System.Threading.Thread.Sleep(5000);
-                    }
                 }
                 Task.WhenAll(tasks).Wait();
-                System.Threading.Thread.Sleep(5000);
+                System.Threading.Thread.Sleep(1000);
                 DeleteError de;
                 IObservable<DeleteError> observable = await minio.RemoveObjectAsync(bucketName, objectsList);
                 IDisposable subscription = observable.Subscribe(
@@ -2167,7 +2169,7 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_Test(minio, bucketName);
-                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                     await minio.PutObjectAsync(bucketName,
                                                 objectName,
                                                 filestream, filestream.Length, null);
@@ -2213,7 +2215,7 @@ namespace Minio.Functional.Tests
                 try
                 {
                     await Setup_Test(minio, bucketName);
-                    using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                    using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                         await minio.PutObjectAsync(bucketName,
                                                     objectName,
                                                     filestream, filestream.Length, null);
@@ -2249,7 +2251,7 @@ namespace Minio.Functional.Tests
             {
                 string downloadFile = "downloadFileName";
                 await Setup_Test(minio, bucketName);
-                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                     await minio.PutObjectAsync(bucketName,
                                                 objectName,
                                                 filestream, filestream.Length, null);
@@ -2291,7 +2293,7 @@ namespace Minio.Functional.Tests
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
             int expiresInt = 1000;
-            string fileName = CreateFile(1 * MB, dataFile1MB);
+            string fileName = CreateFile(10 * KB, dataFile10KB);
 
             Dictionary<string,string> args = new Dictionary<string,string>
             {
@@ -2345,7 +2347,7 @@ namespace Minio.Functional.Tests
                 try
                 {
                     await Setup_Test(minio, bucketName);
-                    using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                    using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                         await minio.PutObjectAsync(bucketName,
                                                     objectName,
                                                     filestream, filestream.Length, null);
@@ -2399,7 +2401,7 @@ namespace Minio.Functional.Tests
             {
                 {"form", form.Base64()},
             };
-            string fileName = CreateFile(1 * MB, dataFile1MB);
+            string fileName = CreateFile(10 * KB, dataFile10KB);
 
             try
             {
@@ -2656,7 +2658,7 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_Test(minio, bucketName);
-                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                     await minio.PutObjectAsync(bucketName,
                                                 objectName,
                                                 filestream, filestream.Length, null);
@@ -2688,7 +2690,7 @@ namespace Minio.Functional.Tests
             {
                 await Setup_Test(minio, bucketName);
                 string policyJson = $@"{{""Version"":""2012-10-17"",""Statement"":[{{""Action"":[""s3:GetObject""],""Effect"":""Allow"",""Principal"":{{""AWS"":[""*""]}},""Resource"":[""arn:aws:s3:::{bucketName}/foo*"",""arn:aws:s3:::{bucketName}/prefix/*""],""Sid"":""""}}]}}";
-                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                     await minio.PutObjectAsync(bucketName,
                                                 objectName,
                                                 filestream, filestream.Length, null);
