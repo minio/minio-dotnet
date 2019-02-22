@@ -816,7 +816,7 @@ namespace Minio
             DateTime lastModified = new DateTime();
             string etag = "";
             string contentType = null;
-            Dictionary<string,string> metaData = new Dictionary<string, string>();
+            Dictionary<string,string> metaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             //Supported headers for object.
             List<string> supportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type" };
@@ -932,7 +932,7 @@ namespace Minio
             // Get Stats on the source object
             ObjectStat srcStats = await this.StatObjectAsync(bucketName, objectName, sse:sseGet, cancellationToken:cancellationToken).ConfigureAwait(false);
             // Copy metadata from the source object if no metadata replace directive
-            Dictionary<string,string> meta = new Dictionary<string,string>();
+            Dictionary<string,string> meta = new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase);
             Dictionary<string,string> m = metadata;
             if (copyConditions != null && !copyConditions.HasReplaceMetadataDirective())
             {
