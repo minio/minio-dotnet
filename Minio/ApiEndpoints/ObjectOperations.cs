@@ -1,5 +1,6 @@
 ﻿/*
- * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
+ * Minio .NET Library for Amazon S3 Compatible Cloud Storage,
+ * (C) 2017, 2018, 2019 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -522,24 +523,26 @@ namespace Minio
                                                                                      CancellationToken cancellationToken)
         {
             var queries = new List<string>();
-            queries.Add("uploads");
-            if (prefix != null)
-            {
-                queries.Add("prefix=" + Uri.EscapeDataString(prefix));
+
+            // null values are treated as empty strings.
+            if (delimiter == null) {
+                delimiter = "";
             }
-            if (keyMarker != null)
-            {
-                queries.Add("key-marker=" + Uri.EscapeDataString(keyMarker));
+            if (prefix == null) {
+                prefix = "";
             }
-            if (uploadIdMarker != null)
-            {
-                queries.Add("upload-id-marker=" + uploadIdMarker);
+            if (keyMarker == null) {
+                keyMarker = "";
             }
-            if (delimiter != null)
-            {
-                queries.Add("delimiter=" + delimiter);
+            if (uploadIdMarker == null) {
+                uploadIdMarker = "";
             }
 
+            queries.Add("uploads");
+            queries.Add("prefix=" + Uri.EscapeDataString(prefix));
+            queries.Add("delimiter=" + Uri.EscapeDataString(delimiter));
+            queries.Add("key-marker=" + Uri.EscapeDataString(keyMarker));
+            queries.Add("upload-id-marker=" + uploadIdMarker);
             queries.Add("max-uploads=1000");
 
             string query = string.Join("&", queries);
@@ -571,11 +574,11 @@ namespace Minio
         /// Lists all incomplete uploads in a given bucket and prefix recursively
         /// </summary>
         /// <param name="bucketName">Bucket to list all incomplepte uploads from</param>
-        /// <param name="prefix">prefix to list all incomplete uploads</param>
-        /// <param name="recursive">option to list incomplete uploads recursively</param>
+        /// <param name="prefix">Filter all incomplete uploads starting with this prefix</param>
+        /// <param name="recursive">Set to true to recursively list all incomplete uploads</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>A lazily populated list of incomplete uploads</returns>
-        public IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix = "", bool recursive = true, CancellationToken cancellationToken = default(CancellationToken))
+        public IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix = null, bool recursive = true, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (recursive)
             {
@@ -617,36 +620,6 @@ namespace Minio
 
         }
 
-        /// <summary>
-        /// Find uploadId of most recent unsuccessful attempt to upload object to bucket.
-        /// </summary>
-        /// <param name="bucketName"></param>
-        /// <param name="objectName"></param>
-        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <returns></returns>
-        private async Task<string> getLatestIncompleteUploadIdAsync(string bucketName, string objectName, CancellationToken cancellationToken)
-        {
-            Upload latestUpload = null;
-            var uploads = await this.ListIncompleteUploads(bucketName, objectName, cancellationToken: cancellationToken).ToArray();
-
-            foreach (Upload upload in uploads)
-            {
-                if (objectName == upload.Key && (latestUpload == null || latestUpload.Initiated.CompareTo(upload.Initiated) < 0))
-                {
-                    latestUpload = upload;
-
-                }
-            }
-            if (latestUpload != null)
-            {
-                return latestUpload.UploadId;
-            }
-            else
-            {
-                return null;
-            }
-
-        }
         /// <summary>
         /// Remove incomplete uploads from a given bucket and objectName
         /// </summary>

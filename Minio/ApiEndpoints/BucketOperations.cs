@@ -1,5 +1,6 @@
 ﻿/*
- * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
+ * Minio .NET Library for Amazon S3 Compatible Cloud Storage,
+ * (C) 2017, 2018, 2019 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +73,7 @@ namespace Minio
                     location = this.Region;
                 }
             }
-          
+
             // Set Target URL
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure,location);
             SetTargetURL(requestUrl);
@@ -134,20 +135,27 @@ namespace Minio
         /// List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
         /// </summary>
         /// <param name="bucketName">Bucket to list objects from</param>
-        /// <param name="prefix">Filters all objects not beginning with a given prefix</param>
-        /// <param name="recursive">Set to false to emulate a directory</param>
+        /// <param name="prefix">Filters all objects beginning with a given prefix</param>
+        /// <param name="recursive">Set to true to recursively list all objects</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>An observable of items that client can subscribe to</returns>
-        public IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true, CancellationToken cancellationToken = default(CancellationToken))
+        public IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = false, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Observable.Create<Item>(
               async obs =>
               {
                   bool isRunning = true;
                   string marker = null;
+
+                  var delimiter = "/";
+                  if (recursive)
+                  {
+                      delimiter = "";
+                  }
+
                   while (isRunning)
                   {
-                      Tuple<ListBucketResult, List<Item>> result = await GetObjectListAsync(bucketName, prefix, recursive, marker, cancellationToken).ConfigureAwait(false);
+                      Tuple<ListBucketResult, List<Item>> result = await GetObjectListAsync(bucketName, prefix, delimiter, marker, cancellationToken).ConfigureAwait(false);
                       Item lastItem = null;
                       foreach (Item item in result.Item2)
                       {
@@ -171,35 +179,39 @@ namespace Minio
         /// Gets the list of objects in the bucket filtered by prefix
         /// </summary>
         /// <param name="bucketName">Bucket to list objects from</param>
-        /// <param name="prefix">Filters all objects not beginning with a given prefix</param>
-        /// <param name="recursive">Set to false to emulate a directory</param>
+        /// <param name="prefix">Filters all objects starting with a given prefix</param>
+        /// <param name="delimiter">Delimit the output upto this character</param>
         /// <param name="marker">marks location in the iterator sequence</param>
         /// <returns>Task with a tuple populated with objects</returns>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
 
-        private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix, bool recursive, string marker, CancellationToken cancellationToken = default(CancellationToken))
+        private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix, string delimiter, string marker, CancellationToken cancellationToken = default(CancellationToken))
         {
             var queries = new List<string>();
-            if (!recursive)
-            {
-                queries.Add("delimiter=%2F");
+
+            // null values are treated as empty strings.
+            if (delimiter == null) {
+                delimiter = "";
             }
-            if (prefix != null)
-            {
-                queries.Add("prefix=" + Uri.EscapeDataString(prefix));
+            if (prefix == null) {
+                prefix = "";
             }
-            if (marker != null)
-            {
-                queries.Add("marker=" + Uri.EscapeDataString(marker));
+            if (marker == null) {
+                marker = "";
             }
+
+            queries.Add("delimiter="+ Uri.EscapeDataString(delimiter));
+            queries.Add("prefix=" + Uri.EscapeDataString(prefix));
             queries.Add("max-keys=1000");
+            queries.Add("marker=" + Uri.EscapeDataString(marker));
+
             string query = string.Join("&", queries);
 
             var request = await this.CreateRequest(Method.GET,
                                                      bucketName,
                                                      resourcePath: "?" + query)
                                         .ConfigureAwait(false);
-            
+
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
@@ -292,7 +304,7 @@ namespace Minio
                                                resourcePath: "?notification")
                                     .ConfigureAwait(false);
             BucketNotification notification = null;
-           
+
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             using (var stream = new MemoryStream(contentBytes))
@@ -314,11 +326,11 @@ namespace Minio
             var request = await this.CreateRequest(Method.PUT, bucketName,
                                            resourcePath: "?notification")
                                 .ConfigureAwait(false);
-    
+
             request.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
             request.RequestFormat = DataFormat.Xml;
             request.AddBody(notification);
-            
+
             IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 

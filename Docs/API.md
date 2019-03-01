@@ -1,12 +1,12 @@
 # .NET Client API Reference [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io)
- 
+
 ## Initialize Minio Client object.
 
 ## Minio
 
 ```cs
 var minioClient = new MinioClient("play.minio.io:9000",
-                                       "Q3AM3UQ867SPQQA43P2F", 
+                                       "Q3AM3UQ867SPQQA43P2F",
                                        "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
                                  ).WithSSL();
 ```
@@ -15,7 +15,7 @@ var minioClient = new MinioClient("play.minio.io:9000",
 
 
 ```cs
-var s3Client = new MinioClient("s3.amazonaws.com",	
+var s3Client = new MinioClient("s3.amazonaws.com",
                                    "YOUR-ACCESSKEYID",
                                    "YOUR-SECRETACCESSKEY"
                                ).WithSSL();
@@ -39,7 +39,7 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 |  |
 |---|
 |`public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region="", string sessionToken="")`   |
-| Creates Minio client object with given endpoint.AccessKey,secretKey, region and sessionToken are optional parameters,and can be omitted for anonymous access. 
+| Creates Minio client object with given endpoint.AccessKey,secretKey, region and sessionToken are optional parameters,and can be omitted for anonymous access.
   The client object uses Http access by default. To use Https, chain method WithSSL() to client object to use secure transfer protocol   |
 
 
@@ -80,8 +80,8 @@ __Example__
 MinioClient minioClient = new MinioClient("play.minio.io:9000");
 
 // 2. public MinioClient(String endpoint, String accessKey, String secretKey)
-MinioClient minioClient = new MinioClient("play.minio.io:9000", 
-                                          accessKey:"Q3AM3UQ867SPQQA43P2F", 
+MinioClient minioClient = new MinioClient("play.minio.io:9000",
+                                          accessKey:"Q3AM3UQ867SPQQA43P2F",
                                           secretKey:"zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
                                           ).WithSSL();
 
@@ -102,8 +102,8 @@ MinioClient minioClient = new MinioClient("my-ip-address:9000","tempuserid","tem
 MinioClient s3Client = new MinioClient("s3.amazonaws.com").WithSSL();
 
 // 2. public MinioClient(String endpoint, String accessKey, String secretKey)
-MinioClient s3Client = new MinioClient("s3.amazonaws.com:80", 
-                                       accessKey:"YOUR-ACCESSKEYID", 
+MinioClient s3Client = new MinioClient("s3.amazonaws.com:80",
+                                       accessKey:"YOUR-ACCESSKEYID",
                                        secretKey:"YOUR-SECRETACCESSKEY").WithSSL();
 ```
 
@@ -138,22 +138,22 @@ __Example__
 
 
 ```cs
-try 
+try
 {
    // Create bucket if it doesn't exist.
    bool found = await minioClient.BucketExistsAsync("mybucket");
-   if (found) 
+   if (found)
    {
       Console.Out.WriteLine("mybucket already exists");
-   } 
-   else 
+   }
+   else
    {
      // Create bucket 'my-bucketname'.
      await minioClient.MakeBucketAsync("mybucket");
      Console.Out.WriteLine("mybucket is created successfully");
    }
-} 
-catch (MinioException e) 
+}
+catch (MinioException e)
 {
    Console.Out.WriteLine("Error occurred: " + e);
 }
@@ -185,7 +185,7 @@ __Example__
 
 
 ```cs
-try 
+try
 {
     // List buckets that have read access.
     var list = await minioClient.ListBucketsAsync();
@@ -193,8 +193,8 @@ try
     {
         Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
     }
-} 
-catch (MinioException e) 
+}
+catch (MinioException e)
 {
     Console.Out.WriteLine("Error occurred: " + e);
 }
@@ -238,7 +238,7 @@ try
    bool found = await minioClient.BucketExistsAsync(bucketName);
    Console.Out.WriteLine("bucket-name " + ((found == true) ? "exists" : "does not exist"));
 }
-catch (MinioException e) 
+catch (MinioException e)
 {
    Console.WriteLine("[Bucket]  Exception: {0}", e);
 }
@@ -280,22 +280,22 @@ __Example__
 
 
 ```cs
-try 
+try
 {
     // Check if my-bucket exists before removing it.
     bool found = await minioClient.BucketExistsAsync("mybucket");
-    if (found) 
-    {	
+    if (found)
+    {
         // Remove bucket my-bucketname. This operation will succeed only if the bucket is empty.
         await minioClient.RemoveBucketAsync("mybucket");
         Console.Out.WriteLine("mybucket is removed successfully");
     }
-    else 
+    else
     {
         Console.Out.WriteLine("mybucket does not exist");
     }
-} 
-catch(MinioException e) 
+}
+catch(MinioException e)
 {
     Console.Out.WriteLine("Error occurred: " + e);
 }
@@ -304,9 +304,9 @@ catch(MinioException e)
 <a name="listObjects"></a>
 ### ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true)
 
-`IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true, CancellationToken cancellationToken = default(CancellationToken))`
+`IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = false, CancellationToken cancellationToken = default(CancellationToken))`
 
-Lists all objects in a bucket. 
+Lists all objects in a bucket.
 
 __Parameters__
 
@@ -315,7 +315,7 @@ __Parameters__
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_  | Name of the bucket  |
 | ``prefix``  | _string_  | Prefix string. List objects whose name starts with ``prefix`` |
-| ``recursive``  | _bool_  | when false, emulates a directory structure where each listing returned is either a full object or part of the object's key up to the first '/'. All objects with the same prefix up to the first '/' will be merged into one entry |
+| ``recursive``  | _bool_  | when false, emulates a directory structure where each listing returned is either a full object or part of the object's key up to the first '/'. All objects with the same prefix up to the first '/' will be merged into one entry. Defaults to `false`|
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -328,25 +328,25 @@ __Example__
 
 
 ```cs
-try 
+try
 {
     // Check whether 'mybucket' exists or not.
     bool found = minioClient.BucketExistsAsync("mybucket");
-    if (found) 
+    if (found)
     {
         // List objects from 'my-bucketname'
         IObservable<Item> observable = minioClient.ListObjectsAsync("mybucket", "prefix", true);
         IDisposable subscription = observable.Subscribe(
 				item => Console.WriteLine("OnNext: {0}", item.Key),
 				ex => Console.WriteLine("OnError: {0}", ex.Message),
-				() => Console.WriteLine("OnComplete: {0}"));    
-    } 
-    else 
+				() => Console.WriteLine("OnComplete: {0}"));
+    }
+    else
     {
         Console.Out.WriteLine("mybucket does not exist");
     }
-} 
-catch (MinioException e) 
+}
+catch (MinioException e)
 {
     Console.Out.WriteLine("Error occurred: " + e);
 }
@@ -381,11 +381,11 @@ __Example__
 
 
 ```cs
-try 
+try
 {
     // Check whether 'mybucket' exist or not.
     bool found = minioClient.BucketExistsAsync("mybucket");
-    if (found) 
+    if (found)
     {
         // List all incomplete multipart upload of objects in 'mybucket'
         IObservable<Upload> observable = minioClient.ListIncompleteUploads("mybucket", "prefix", true);
@@ -393,13 +393,13 @@ try
 							item => Console.WriteLine("OnNext: {0}", item.Key),
 							ex => Console.WriteLine("OnError: {0}", ex.Message),
 							() => Console.WriteLine("OnComplete: {0}"));
-    } 
-    else 
+    }
+    else
     {
         Console.Out.WriteLine("mybucket does not exist");
     }
-} 
-catch (MinioException e) 
+}
+catch (MinioException e)
 {
     Console.Out.WriteLine("Error occurred: " + e);
 }
@@ -435,12 +435,12 @@ __Example__
 
 
 ```cs
-try 
+try
 {
     String policyJson = await minioClient.GetPolicyAsync("myBucket");
     Console.Out.WriteLine("Current policy: " + policy.GetType().ToString());
-} 
-catch (MinioException e) 
+}
+catch (MinioException e)
 {
     Console.Out.WriteLine("Error occurred: " + e);
 }
@@ -475,11 +475,11 @@ __Parameters__
 __Example__
 
 ```cs
-try 
+try
 {
     await minioClient.SetPolicyAsync("myBucket");
 }
-catch (MinioException e) 
+catch (MinioException e)
 {
     Console.Out.WriteLine("Error occurred: " + e);
 }
@@ -513,11 +513,11 @@ __Parameters__
 
 __Example__
 ```cs
-try 
+try
 {
     BucketNotification notification = new BucketNotification();
     Arn topicArn = new Arn("aws", "sns", "us-west-1", "412334153608", "topicminio");
-                
+
     TopicConfig topicConfiguration = new TopicConfig(topicArn);
     List<EventType> events = new List<EventType>(){ EventType.ObjectCreatedPut , EventType.ObjectCreatedCopy };
     topicConfiguration.AddEvents(events);
@@ -527,13 +527,13 @@ try
 
     QueueConfig queueConfiguration = new QueueConfig("arn:aws:sqs:us-west-1:482314153608:testminioqueue1");
     queueConfiguration.AddEvents(new List<EventType>() { EventType.ObjectCreatedCompleteMultipartUpload });
-    notification.AddQueue(queueConfiguration);    
-        
-    await minio.SetBucketNotificationsAsync(bucketName, 
+    notification.AddQueue(queueConfiguration);
+
+    await minio.SetBucketNotificationsAsync(bucketName,
                                         notification);
     Console.Out.WriteLine("Notifications set for the bucket " + bucketName + " successfully");
 }
-catch (MinioException e) 
+catch (MinioException e)
 {
     Console.Out.WriteLine("Error occurred: " + e);
 }
@@ -569,12 +569,12 @@ __Example__
 
 
 ```cs
-try 
+try
 {
     BucketNotification notifications = await minioClient.GetBucketNotificationAsync(bucketName);
     Console.Out.WriteLine("Notifications is " + notifications.ToXML());
-} 
-catch (MinioException e) 
+}
+catch (MinioException e)
 {
     Console.Out.WriteLine("Error occurred: " + e);
 }
@@ -610,12 +610,12 @@ __Example__
 
 
 ```cs
-try 
+try
 {
     await minioClient.RemoveAllBucketNotificationsAsync(bucketName);
     Console.Out.WriteLine("Notifications successfully removed from the bucket " + bucketName);
-} 
-catch (MinioException e) 
+}
+catch (MinioException e)
 {
     Console.Out.WriteLine("Error occurred: " + e);
 }
@@ -655,7 +655,7 @@ __Example__
 
 
 ```cs
-try 
+try
 {
    // Check whether the object exists using statObject().
    // If the object is not found, statObject() throws an exception,
@@ -664,13 +664,13 @@ try
    await minioClient.StatObjectAsync("mybucket", "myobject");
 
    // Get input stream to have content of 'my-objectname' from 'my-bucketname'
-   await minioClient.GetObjectAsync("mybucket", "myobject", 
+   await minioClient.GetObjectAsync("mybucket", "myobject",
                                     (stream) =>
                                     {
                                         stream.CopyTo(Console.OpenStandardOutput());
                                     });
-  } 
-  catch (MinioException e) 
+  }
+  catch (MinioException e)
   {
       Console.Out.WriteLine("Error occurred: " + e);
   }
@@ -692,7 +692,7 @@ __Parameters__
 | ``bucketName``  | _string_ | Name of the bucket.  |
 | ``objectName``  | _string_  | Object name in the bucket. |
 | ``offset``| _long_ | Offset of the object from where stream will start |
-| ``length``| _long_| Length of the object to read in from the stream | 
+| ``length``| _long_| Length of the object to read in from the stream |
 | ``callback``    | _Action<Stream>_ | Call back to process stream |
 | ``sse``    | _ServerSideEncryption_ | Server-side encryption option | Optional parameter. Defaults to null |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
@@ -710,7 +710,7 @@ __Example__
 
 
 ```cs
-try 
+try
 {
    // Check whether the object exists using statObject().
    // If the object is not found, statObject() throws an exception,
@@ -724,8 +724,8 @@ try
                                     {
                                         stream.CopyTo(Console.OpenStandardOutput());
                                     });
-  } 
-  catch (MinioException e) 
+  }
+  catch (MinioException e)
   {
       Console.Out.WriteLine("Error occurred: " + e);
   }
@@ -761,7 +761,7 @@ __Parameters__
 __Example__
 
 ```cs
-try 
+try
 {
    // Check whether the object exists using statObjectAsync().
    // If the object is not found, statObjectAsync() throws an exception,
@@ -772,8 +772,8 @@ try
    // Gets the object's data and stores it in photo.jpg
    await minioClient.GetObjectAsync("mybucket", "myobject", "photo.jpg");
 
-} 
-catch (MinioException e) 
+}
+catch (MinioException e)
 {
    Console.Out.WriteLine("Error occurred: " + e);
 }
@@ -820,7 +820,7 @@ The maximum size of a single object is limited to 5TB. putObject transparently u
 
 
 ```cs
-try 
+try
 {
     byte[] bs = File.ReadAllBytes(fileName);
     System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
@@ -835,8 +835,8 @@ try
                                 filestream.Length,
                                "application/octet-stream",ssec);
     Console.Out.WriteLine("island.jpg is uploaded successfully");
-} 
-catch(MinioException e) 
+}
+catch(MinioException e)
 {
     Console.Out.WriteLine("Error occurred: " + e);
 }
@@ -881,12 +881,12 @@ The maximum size of a single object is limited to 5TB. putObject transparently u
 
 
 ```cs
-try 
+try
 {
     await minio.PutObjectAsync("mybucket", "island.jpg", "/mnt/photos/island.jpg",contentType: "application/octet-stream");
     Console.Out.WriteLine("island.jpg is uploaded successfully");
-} 
-catch(MinioException e) 
+}
+catch(MinioException e)
 {
     Console.Out.WriteLine("Error occurred: " + e);
 }
@@ -923,13 +923,13 @@ __Example__
 
 
 ```cs
-try 
+try
 {
    // Get the metadata of the object.
    ObjectStat objectStat = await minioClient.StatObjectAsync("mybucket", "myobject");
    Console.Out.WriteLine(objectStat);
-} 
-catch(MinioException e) 
+}
+catch(MinioException e)
 {
    Console.Out.WriteLine("Error occurred: " + e);
 }
@@ -988,8 +988,8 @@ try
    */
    await minioClient.CopyObjectAsync("mybucket",  "island.jpg", "mydestbucket", "processed.png", copyConditions,sseSrc:sseSrc, sseDest:sseDst);
    Console.Out.WriteLine("island.jpg is uploaded successfully");
-} 
-catch(MinioException e) 
+}
+catch(MinioException e)
 {
    Console.Out.WriteLine("Error occurred: " + e);
 }
@@ -1024,13 +1024,13 @@ __Example__
 
 
 ```cs
-try 
+try
 {
     // Remove objectname from the bucket my-bucketname.
     await minioClient.RemoveObjectAsync("mybucket", "myobject");
     Console.Out.WriteLine("successfully removed mybucket/myobject");
-} 
-catch (MinioException e) 
+}
+catch (MinioException e)
 {
     Console.Out.WriteLine("Error: " + e);
 }
@@ -1064,7 +1064,7 @@ __Example__
 
 
 ```cs
-try 
+try
 {
     List<String> objectNames = new LinkedList<String>();
     objectNames.add("my-objectname1");
@@ -1079,8 +1079,8 @@ try
         {
             Console.WriteLine("Listed all delete errors for remove objects on  " + bucketName + "\n");
         });
-} 
-catch (MinioException e) 
+}
+catch (MinioException e)
 {
     Console.Out.WriteLine("Error: " + e);
 }
@@ -1115,13 +1115,13 @@ __Example__
 
 
 ```cs
-try 
+try
 {
     // Removes partially uploaded objects from buckets.
     await minioClient.RemoveIncompleteUploadAsync("mybucket", "myobject");
     Console.Out.WriteLine("successfully removed all incomplete upload session of my-bucketname/my-objectname");
-} 
-catch(MinioException e) 
+}
+catch(MinioException e)
 {
     Console.Out.WriteLine("Error occurred: " + e);
 }
@@ -1157,12 +1157,12 @@ __Example__
 
 
 ```cs
-try 
+try
 {
     String url = await minioClient.PresignedGetObjectAsync("mybucket", "myobject", 60 * 60 * 24);
     Console.Out.WriteLine(url);
-} 
-catch(MinioException e) 
+}
+catch(MinioException e)
 {
     Console.Out.WriteLine("Error occurred: " + e);
 }
@@ -1196,12 +1196,12 @@ __Parameters__
 __Example__
 
 ```cs
-try 
+try
 {
     String url = await minioClient.PresignedPutObjectAsync("mybucket", "myobject", 60 * 60 * 24);
     Console.Out.WriteLine(url);
 }
-catch(MinioException e) 
+catch(MinioException e)
 {
     Console.Out.WriteLine("Error occurred: " + e);
 }
@@ -1235,7 +1235,7 @@ __Example__
 
 
 ```cs
-try 
+try
 {
     PostPolicy policy = new PostPolicy();
     policy.SetContentType("image/png");
@@ -1253,8 +1253,8 @@ try
     }
     curlCommand = curlCommand + " -F file=@/etc/bashrc https://s3.amazonaws.com/my-bucketname";
     Console.Out.WriteLine(curlCommand);
-} 
-catch(MinioException e) 
+}
+catch(MinioException e)
 {
   Console.Out.WriteLine("Error occurred: " + e);
 }
