@@ -159,7 +159,8 @@ namespace Minio
         /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds.</param>
         /// <param name="reqParams">optional override response headers</param>
-        Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string,string> reqParams = null);
+        /// <param name="reqDate">optional request date and time in UTC</param>
+        Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string,string> reqParams = null, DateTime? reqDate = null);
 
         /// <summary>
         /// Presigned Put url - returns a presigned url to upload an object without credentials.URL can have a maximum expiry of

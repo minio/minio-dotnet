@@ -1089,8 +1089,9 @@ namespace Minio
         /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds</param>
         /// <param name="reqParams">optional override response headers</param>
+        /// <param name="reqDate">optional request date and time in UTC</param>
         /// <returns></returns>
-        public async Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string,string> reqParams = null)
+        public async Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string,string> reqParams = null, DateTime? reqDate = null)
         {
             if (!utils.IsValidExpiry(expiresInt))
             {
@@ -1101,7 +1102,7 @@ namespace Minio
                                                     headerMap: reqParams)
                                     .ConfigureAwait(false);
 
-            return this.authenticator.PresignURL(this.restClient, request, expiresInt, Region, this.SessionToken);
+            return this.authenticator.PresignURL(this.restClient, request, expiresInt, Region, this.SessionToken, reqDate);
         }
 
         /// <summary>
