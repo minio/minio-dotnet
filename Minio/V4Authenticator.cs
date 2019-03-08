@@ -277,11 +277,15 @@ namespace Minio
         /// <param name="expires">Expiration in seconds</param>
         /// <param name="region">Region of storage</param>
         /// <param name="sessionToken">Region of storage</param>
-
+        /// <param name="reqDate"> Optional request date and time in UTC</param>
         /// <returns>Presigned url</returns>      
-        internal string PresignURL(IRestClient client, IRestRequest request, int expires, string region = "",string sessionToken="")
+        internal string PresignURL(IRestClient client, IRestRequest request, int expires, string region = "",string sessionToken="", DateTime? reqDate = null)
         {
             DateTime signingDate = DateTime.UtcNow;
+
+            if (reqDate.HasValue){
+                signingDate = reqDate.Value;
+            }
             string requestQuery = "";
             string path = request.Resource;
 

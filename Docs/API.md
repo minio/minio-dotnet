@@ -1130,8 +1130,8 @@ catch(MinioException e)
 ## 4. Presigned operations
 <a name="presignedGetObject"></a>
 
-### PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string,string> reqParams = null);
-`Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string,string> reqParams = null)`
+### PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string,string> reqParams = null, DateTime? reqDate = null);
+`Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string,string> reqParams = null, DateTime? reqDate = null)`
 
 Generates a presigned URL for HTTP GET operations. Browsers/Mobile clients may point to this URL to directly download objects even if the bucket is private. This presigned URL can have an associated expiration time in seconds after which it is no longer operational. The default expiry is set to 7 days.
 
@@ -1144,6 +1144,7 @@ __Parameters__
 | ``objectName``  | _String_  | Object name in the bucket |
 | ``expiresInt``  | _Integer_  | Expiry in seconds. Default expiry is set to 7 days. |
 | ``reqParams``   | _Dictionary<string,string>_ | Additional response header overrides supports response-expires, response-content-type, response-cache-control, response-content-disposition.|
+| ``reqDate``   | _DateTime?_ | Optional request date and time. Defaults to DateTime.UtcNow if unset.|
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |

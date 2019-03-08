@@ -2243,12 +2243,14 @@ namespace Minio.Functional.Tests
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
             int expiresInt = 1000;
+            DateTime reqDate = DateTime.UtcNow.AddSeconds(-50);
             Dictionary<string,string> args = new Dictionary<string,string>
             {
                 {"bucketName", bucketName},
                 {"objectName", objectName},
                 {"expiresInt", expiresInt.ToString()},
-                {"reqParams", "response-content-type:application/json,response-content-disposition:attachment;filename=MyDocument.json;"}
+                {"reqParams", "response-content-type:application/json,response-content-disposition:attachment;filename=MyDocument.json;"},
+                {"reqDate", reqDate.ToString()},
             };
             try
             {
@@ -2262,7 +2264,7 @@ namespace Minio.Functional.Tests
                 Dictionary<string, string> reqParams = new Dictionary<string,string>();
                 reqParams["response-content-type"] = "application/json";
                 reqParams["response-content-disposition"] = "attachment;filename=MyDocument.json;";
-                string presigned_url = await minio.PresignedGetObjectAsync(bucketName, objectName, 1000, reqParams);
+                string presigned_url = await minio.PresignedGetObjectAsync(bucketName, objectName, 1000, reqParams, reqDate);
                 WebRequest httpRequest = WebRequest.Create(presigned_url);
                 var response = (HttpWebResponse)(await Task<WebResponse>.Factory.FromAsync(httpRequest.BeginGetResponse, httpRequest.EndGetResponse, null));
                 Assert.AreEqual(response.ContentType,reqParams["response-content-type"]);
