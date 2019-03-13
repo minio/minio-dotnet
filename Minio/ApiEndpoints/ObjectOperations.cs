@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using RestSharp;
 
 using System.Threading.Tasks;
@@ -802,7 +803,7 @@ namespace Minio
                 }
                 else if (parameter.Name.Equals("Last-Modified", StringComparison.OrdinalIgnoreCase))
                 {
-                    lastModified = DateTime.Parse(parameter.Value.ToString());
+                    lastModified = DateTime.Parse(parameter.Value.ToString(), CultureInfo.InvariantCulture);
                 }
                 else if (parameter.Name.Equals("ETag", StringComparison.OrdinalIgnoreCase))
                 {

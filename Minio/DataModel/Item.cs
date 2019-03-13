@@ -15,6 +15,7 @@
  */
 
 using System;
+using System.Globalization;
 
 namespace Minio.DataModel
 {
@@ -54,7 +55,7 @@ namespace Minio.DataModel
                 DateTime? dt = null;
                 if(!string.IsNullOrEmpty(this.LastModified))
                 {
-                    dt = DateTime.Parse(this.LastModified);
+                    dt = DateTime.Parse(this.LastModified, CultureInfo.InvariantCulture);
                 }
                 return dt;
             }
