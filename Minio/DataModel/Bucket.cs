@@ -15,6 +15,7 @@
  */
 
 using System;
+using System.Globalization;
 
 namespace Minio.DataModel
 {
@@ -26,7 +27,7 @@ namespace Minio.DataModel
 
         public DateTime CreationDateDateTime {
             get {
-                return DateTime.Parse(this.CreationDate);
+                return DateTime.Parse(this.CreationDate, CultureInfo.InvariantCulture);
             }
         }
     }
