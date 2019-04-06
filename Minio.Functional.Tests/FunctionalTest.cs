@@ -1,6 +1,6 @@
 ﻿/*
-* Minio .NET Library for Amazon S3 Compatible Cloud Storage,
-* (C) 2017, 2018, 2019 Minio, Inc.
+* MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
+* (C) 2017, 2018, 2019 MinIO, Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -137,7 +137,7 @@ namespace Minio.Functional.Tests
             }
             else
             {
-                endPoint = "play.minio.io:9000";
+                endPoint = "play.min.io:9000";
                 accessKey = "Q3AM3UQ867SPQQA43P2F";
                 secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
                 enableHttps = "1";
@@ -146,7 +146,7 @@ namespace Minio.Functional.Tests
 
             MinioClient minioClient = null;
             if (enableHttps.Equals("1"))
-                // WithSSL() enables SSL support in Minio client
+                // WithSSL() enables SSL support in MinIO client
                 minioClient = new MinioClient(endPoint, accessKey, secretKey).WithSSL();
             else
                 minioClient = new MinioClient(endPoint, accessKey, secretKey);
@@ -1096,7 +1096,7 @@ namespace Minio.Functional.Tests
                 }
                 catch (MinioException ex)
                 {
-                    Assert.AreEqual(ex.Message, "Minio API responded with message=At least one of the pre-conditions you specified did not hold");
+                    Assert.AreEqual(ex.Message, "MinIO API responded with message=At least one of the pre-conditions you specified did not hold");
                 }
 
                 await minio.RemoveObjectAsync(bucketName, objectName);
@@ -1372,7 +1372,7 @@ namespace Minio.Functional.Tests
                 }
                 catch (Exception ex)
                 {
-                    Assert.AreEqual("Minio API responded with message=At least one of the pre-conditions you specified did not hold",ex.Message);
+                    Assert.AreEqual("MinIO API responded with message=At least one of the pre-conditions you specified did not hold",ex.Message);
                 }
 
                 await minio.RemoveObjectAsync(bucketName, objectName);

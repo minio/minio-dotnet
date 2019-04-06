@@ -1,5 +1,5 @@
 ﻿/*
- * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ namespace Minio.Exceptions
         private string ErrorCode;
 
         public ErrorResponseException(IRestResponse response)
-            : base($"Minio API responded with status code={response.StatusCode}, response={response.ErrorMessage}, content={response.Content}")
+            : base($"MinIO API responded with status code={response.StatusCode}, response={response.ErrorMessage}, content={response.Content}")
         {
             this.response = response;
         }
@@ -31,7 +31,7 @@ namespace Minio.Exceptions
         {
 
         }
-        public ErrorResponseException(string message,string errorcode) : base($"Minio API responded with message={message}")
+        public ErrorResponseException(string message,string errorcode) : base($"MinIO API responded with message={message}")
         {
             this.message = message;
             this.ErrorCode = errorcode;

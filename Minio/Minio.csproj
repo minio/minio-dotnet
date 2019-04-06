@@ -18,7 +18,7 @@
     <PackageOutputPath>$(SolutionDir)artifacts</PackageOutputPath>
 
     <PackageReleaseNotes>https://github.com/minio/minio-dotnet/releases</PackageReleaseNotes>
-    <PackageIconUrl>https://www.minio.io/logo/</PackageIconUrl>
+    <PackageIconUrl>https://www.min.io/logo/</PackageIconUrl>
     <PackageProjectUrl>https://github.com/minio/minio-dotnet</PackageProjectUrl>
     <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
     <PackageTags>minio;cloud;storage</PackageTags>
