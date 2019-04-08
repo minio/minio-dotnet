@@ -1,5 +1,5 @@
 ﻿/*
- * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -163,7 +163,7 @@ namespace Minio.Tests
             Assert.IsTrue(s3utils.IsAmazonEndPoint("s3.amazonaws.com"));
             Assert.IsTrue(s3utils.IsAmazonEndPoint("s3.cn-north-1.amazonaws.com.cn"));
             Assert.IsFalse(s3utils.IsAmazonEndPoint("s3.us-west-1amazonaws.com"));
-            Assert.IsFalse(s3utils.IsAmazonEndPoint("play.minio.io"));
+            Assert.IsFalse(s3utils.IsAmazonEndPoint("play.min.io"));
             Assert.IsFalse(s3utils.IsAmazonEndPoint("192.168.12.1"));
             Assert.IsFalse(s3utils.IsAmazonEndPoint("storage.googleapis.com"));
         }
@@ -174,7 +174,7 @@ namespace Minio.Tests
             Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("s3.amazonaws.com"));
             Assert.IsTrue(s3utils.IsAmazonChinaEndPoint("s3.cn-north-1.amazonaws.com.cn"));
             Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("s3.us-west-1amazonaws.com"));
-            Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("play.minio.io"));
+            Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("play.min.io"));
             Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("192.168.12.1"));
             Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("storage.googleapis.com"));
         }

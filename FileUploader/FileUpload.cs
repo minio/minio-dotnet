@@ -1,5 +1,5 @@
 ﻿/*
-* Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
+* MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ namespace FileUploader
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                                  | SecurityProtocolType.Tls11
                                                  | SecurityProtocolType.Tls12;
-            var endpoint = "play.minio.io:9000";
+            var endpoint = "play.min.io:9000";
             var accessKey = "Q3AM3UQ867SPQQA43P2F";
             var secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
             try

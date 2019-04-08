@@ -1,6 +1,6 @@
-# 适用于与Amazon S3兼容的云存储的Minio .NET SDK  [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io) [![Build status](https://ci.appveyor.com/api/projects/status/tvdpoypdmbuwg0me/branch/master?svg=true)](https://ci.appveyor.com/project/Harshavardhana/minio-dotnet/branch/master)
+# 适用于与Amazon S3兼容的云存储的MinIO .NET SDK  [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io) [![Build status](https://ci.appveyor.com/api/projects/status/tvdpoypdmbuwg0me/branch/master?svg=true)](https://ci.appveyor.com/project/Harshavardhana/minio-dotnet/branch/master)
 
-Minio .NET Client SDK提供了简单的API来访问Minio以及任何与Amazon S3兼容的对象存储服务。有关API和示例的完整列表，请查看[Dotnet Client API Reference](https://docs.minio.io/docs/dotnet-client-api-reference)文档。本文假设你已经有VisualStudio开发环境。
+MinIO .NET Client SDK提供了简单的API来访问MinIO以及任何与Amazon S3兼容的对象存储服务。有关API和示例的完整列表，请查看[Dotnet Client API Reference](https://docs.min.io/docs/dotnet-client-api-reference)文档。本文假设你已经有VisualStudio开发环境。
 
 ## 最低需求
  * .NET 4.5.2，.NetStandard2.0或更高版本
@@ -8,12 +8,12 @@ Minio .NET Client SDK提供了简单的API来访问Minio以及任何与Amazon S3
 
 ## 使用NuGet安装
 
-为了安装.NET Framework的Minio .NET包，你可以在Nuget Package Manager控制台运行下面的命令。
+为了安装.NET Framework的MinIO .NET包，你可以在Nuget Package Manager控制台运行下面的命令。
 ```powershell
 PM> Install-Package Minio
 ```
-## Minio Client示例
-Minio client需要以下4个参数来连接与Amazon S3兼容的对象存储服务。
+## MinIO Client示例
+MinIO client需要以下4个参数来连接与Amazon S3兼容的对象存储服务。
 
 | 参数  | 描述|
 | :---         |     :---     |
@@ -22,13 +22,13 @@ Minio client需要以下4个参数来连接与Amazon S3兼容的对象存储服�
 | secretKey | Secret key是你账户的密码。 |
 | secure | true代表使用HTTPS。 |
 
-下面示例中使用运行在 [https://play.minio.io:9000](https://play.minio.io:9000) 上的Minio服务，你可以用这个服务来开发和测试。示例中的访问凭据是公开的。
+下面示例中使用运行在 [https://play.min.io:9000](https://play.min.io:9000) 上的MinIO服务，你可以用这个服务来开发和测试。示例中的访问凭据是公开的。
 
 ```cs
 using Minio;
 
 // Initialize the client with access credentials.
-private static MinioClient minio = new MinioClient("play.minio.io:9000",
+private static MinioClient minio = new MinioClient("play.min.io:9000",
                 "Q3AM3UQ867SPQQA43P2F",
                 "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
                 ).WithSSL();
@@ -60,7 +60,7 @@ namespace FileUploader
     {
         static void Main(string[] args)
         {
-            var endpoint  = "play.minio.io:9000";
+            var endpoint  = "play.min.io:9000";
             var accessKey = "Q3AM3UQ867SPQQA43P2F";
             var secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
             try
@@ -105,7 +105,7 @@ namespace FileUploader
 }
 ```
 
-## 运行Minio Client示例
+## 运行MinIO Client示例
 ####  Windows
 * clone这个项目，并在Visual Studio 2017中打开Minio.Sln。
 ```
@@ -176,5 +176,5 @@ $ dotnet run
 * [SetTraceOff](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Program.cs)
 
 ## 了解更多
-* [完整文档](https://docs.minio.io)
-* [Minio .NET SDK API文档](https://docs.minio.io/docs/dotnet-client-api-reference)
+* [完整文档](https://docs.min.io)
+* [MinIO .NET SDK API文档](https://docs.min.io/docs/dotnet-client-api-reference)

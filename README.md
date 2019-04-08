@@ -1,6 +1,6 @@
-# Minio Client SDK for .NET  [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io) [![Build status](https://ci.appveyor.com/api/projects/status/tvdpoypdmbuwg0me/branch/master?svg=true)](https://ci.appveyor.com/project/Harshavardhana/minio-dotnet/branch/master)
+# MinIO Client SDK for .NET  [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io) [![Build status](https://ci.appveyor.com/api/projects/status/tvdpoypdmbuwg0me/branch/master?svg=true)](https://ci.appveyor.com/project/Harshavardhana/minio-dotnet/branch/master)
 
-Minio Client SDK provides higher level APIs for Minio and Amazon S3 compatible cloud storage services.For a complete list of APIs and examples, please take a look at the [Dotnet Client API Reference](https://docs.minio.io/docs/dotnet-client-api-reference).This document assumes that you have a working VisualStudio development environment.
+MinIO Client SDK provides higher level APIs for MinIO and Amazon S3 compatible cloud storage services.For a complete list of APIs and examples, please take a look at the [Dotnet Client API Reference](https://docs.min.io/docs/dotnet-client-api-reference).This document assumes that you have a working VisualStudio development environment.
 
 ## Minimum Requirements
  * .NET 4.5.2, .NetStandard 2.0 or higher
@@ -8,11 +8,11 @@ Minio Client SDK provides higher level APIs for Minio and Amazon S3 compatible c
 
 ## Install from NuGet
 
-To install Minio .NET package, run the following command in Nuget Package Manager Console.
+To install MinIO .NET package, run the following command in Nuget Package Manager Console.
 ```powershell
 PM> Install-Package Minio
 ```
-## Minio Client Example
+## MinIO Client Example
 To connect to an Amazon S3 compatible cloud storage service, you will need to specify the following parameters.
 
 | Parameter  | Description|
@@ -22,13 +22,13 @@ To connect to an Amazon S3 compatible cloud storage service, you will need to sp
 | secretKey | Secret key is the password to your account. |
 | secure | Enable/Disable HTTPS support. |
 
-The following examples uses a freely hosted public Minio service 'play.minio.io' for development purposes.
+The following examples uses a freely hosted public MinIO service 'play.min.io' for development purposes.
 
 ```cs
 using Minio;
 
 // Initialize the client with access credentials.
-private static MinioClient minio = new MinioClient("play.minio.io:9000",
+private static MinioClient minio = new MinioClient("play.min.io:9000",
                 "Q3AM3UQ867SPQQA43P2F",
                 "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
                 ).WithSSL();
@@ -60,7 +60,7 @@ namespace FileUploader
     {
         static void Main(string[] args)
         {
-            var endpoint  = "play.minio.io:9000";
+            var endpoint  = "play.min.io:9000";
             var accessKey = "Q3AM3UQ867SPQQA43P2F";
             var secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
             try
@@ -105,7 +105,7 @@ namespace FileUploader
 }
 ```
 
-## Running Minio Client Examples
+## Running MinIO Client Examples
 #### On Windows
 * Clone this repository and open the Minio.Sln in Visual Studio 2017.
 
@@ -186,5 +186,5 @@ $ dotnet run
 * [SetTraceOff](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Program.cs)
 
 ## Explore Further
-* [Complete Documentation](https://docs.minio.io)
-* [Minio .NET SDK API Reference](https://docs.minio.io/docs/dotnet-client-api-reference)
+* [Complete Documentation](https://docs.min.io)
+* [MinIO .NET SDK API Reference](https://docs.min.io/docs/dotnet-client-api-reference)

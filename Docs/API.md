@@ -1,11 +1,11 @@
-# .NET Client API Reference [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io)
+# .NET Client API Reference [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io)
 
-## Initialize Minio Client object.
+## Initialize MinIO Client object.
 
-## Minio
+## MinIO
 
 ```cs
-var minioClient = new MinioClient("play.minio.io:9000",
+var minioClient = new MinioClient("play.min.io:9000",
                                        "Q3AM3UQ867SPQQA43P2F",
                                        "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
                                  ).WithSSL();
@@ -39,7 +39,7 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 |  |
 |---|
 |`public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region="", string sessionToken="")`   |
-| Creates Minio client object with given endpoint.AccessKey,secretKey, region and sessionToken are optional parameters,and can be omitted for anonymous access.
+| Creates MinIO client object with given endpoint.AccessKey,secretKey, region and sessionToken are optional parameters,and can be omitted for anonymous access.
   The client object uses Http access by default. To use Https, chain method WithSSL() to client object to use secure transfer protocol   |
 
 
@@ -49,9 +49,9 @@ __Parameters__
 |---|---|---|
 | `endpoint`  |  _string_ | endPoint is an URL, domain name, IPv4 address or IPv6 address.Valid endpoints are listed below: |
 | | |s3.amazonaws.com |
-| | |play.minio.io:9000 |
+| | |play.min.io:9000 |
 | | |localhost |
-| | |play.minio.io|
+| | |play.min.io|
 | `accessKey`   | _string_   |accessKey is like user-id that uniquely identifies your account.This field is optional and can be omitted for anonymous access. |
 |`secretKey`  |  _string_   | secretKey is the password to your account.This field is optional and can be omitted for anonymous access.|
 |`region`  |  _string_   | region to which calls should be made.This field is optional and can be omitted.|
@@ -61,26 +61,26 @@ __Secure Access__
 
 |  |
 |---|
-|`Chain .WithSSL() to Minio Client object to use https instead of http. `   |
+|`Chain .WithSSL() to MinIO Client object to use https instead of http. `   |
 
 __Proxy__
 
 |  |
 |---|
-|`Chain .WithProxy(proxyObject) to Minio Client object to use proxy `   |
+|`Chain .WithProxy(proxyObject) to MinIO Client object to use proxy `   |
 
 __Example__
 
 
-### Minio
+### MinIO
 
 
 ```cs
 // 1. public MinioClient(String endpoint)
-MinioClient minioClient = new MinioClient("play.minio.io:9000");
+MinioClient minioClient = new MinioClient("play.min.io:9000");
 
 // 2. public MinioClient(String endpoint, String accessKey, String secretKey)
-MinioClient minioClient = new MinioClient("play.minio.io:9000",
+MinioClient minioClient = new MinioClient("play.min.io:9000",
                                           accessKey:"Q3AM3UQ867SPQQA43P2F",
                                           secretKey:"zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
                                           ).WithSSL();

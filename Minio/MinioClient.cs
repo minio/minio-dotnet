@@ -1,5 +1,5 @@
 ﻿/*
- * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,10 +80,10 @@ namespace Minio
                 string release = "minio-dotnet/1.0.9";
 #if NET46
                 string arch = Environment.Is64BitOperatingSystem ? "x86_64" : "x86";
-                return String.Format("Minio ({0};{1}) {2}", Environment.OSVersion, arch, release);
+                return String.Format("MinIO ({0};{1}) {2}", Environment.OSVersion, arch, release);
 #else
                 string arch = RuntimeInformation.OSArchitecture.ToString();
-                return String.Format("Minio ({0};{1}) {2}", RuntimeInformation.OSDescription, arch, release);
+                return String.Format("MinIO ({0};{1}) {2}", RuntimeInformation.OSDescription, arch, release);
 #endif
             }
         }
