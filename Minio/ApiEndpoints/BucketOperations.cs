@@ -225,7 +225,7 @@ namespace Minio
                              Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
                              LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
                              ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value,
-                             Size = UInt64.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture),
+                             Size = ulong.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture),
                              IsDir = false
                          });
 
@@ -262,8 +262,9 @@ namespace Minio
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
 
             using (var stream = new MemoryStream(contentBytes))
+            using (var streamReader = new StreamReader(stream))
             {
-                policyString = new StreamReader(stream).ReadToEnd();
+                policyString = await streamReader.ReadToEndAsync();
             }
             return policyString;
         }
