@@ -20,10 +20,9 @@ using System.Collections.ObjectModel;
 
 namespace Minio.DataModel
 {
-    /**
-    * A container class to hold all the Conditions to be checked
-    * before copying an object.
-    */
+    /// <summary>
+    /// A container class to hold all the Conditions to be checked before copying an object.
+    /// </summary>
     public class CopyConditions
     {
         private Dictionary<string, string> copyConditions = new Dictionary<string, string>();
@@ -46,14 +45,11 @@ namespace Minio.DataModel
             return newcond;
         }
 
-
-        /**
-         * Set modified condition, copy object modified since given time.
-         *
-         * @throws ArgumentException
-         *           When date is null
-        */
-
+        /// <summary>
+        /// Set modified condition, copy object modified since given time.
+        /// </summary>
+        /// <param name="date"></param>
+        /// <exception cref="ArgumentException">When date is null</exception>
         public void SetModified(DateTime date)
         {
             if (date == null)
@@ -63,13 +59,11 @@ namespace Minio.DataModel
             copyConditions.Add("x-amz-copy-source-if-modified-since", date.ToUniversalTime().ToString("r"));
         }
 
-        /**
-        * Unset modified condition, copy object modified since given time.
-        *
-        * @throws ArgumentException
-        *           When date is null
-       */
-
+        /// <summary>
+        /// Unset modified condition, copy object modified since given time.
+        /// </summary>
+        /// <param name="date"></param>
+        /// <exception cref="ArgumentException">When date is null</exception>
         public void SetUnmodified(DateTime date)
         {
             if (date == null)
@@ -78,12 +72,13 @@ namespace Minio.DataModel
             }
             copyConditions.Add("x-amz-copy-source-if-unmodified-since", date.ToUniversalTime().ToString("r"));
         }
-        /**
-         * Set matching ETag condition, copy object which matches
-         * the following ETag.
-         *
-         * @throws ArgumentException when etag is null
-         */
+
+        /// <summary>
+        /// Set matching ETag condition, copy object which matches
+        /// the following ETag.
+        /// </summary>
+        /// <param name="etag"></param>
+        /// <exception cref="ArgumentException">When etag is null</exception>
         public void SetMatchETag(string etag)
         {
             if (etag == null)
@@ -93,13 +88,12 @@ namespace Minio.DataModel
             copyConditions.Add("x-amz-copy-source-if-match", etag);
         }
 
-        /**
-         * Set matching ETag none condition, copy object which does not
-         * match the following ETag.
-         *
-         * @throws InvalidArgumentException
-         *           When etag is null
-         */
+        /// <summary>
+        /// Set matching ETag none condition, copy object which does not
+        /// match the following ETag.
+        /// </summary>
+        /// <param name="etag"></param>
+        /// <exception cref="ArgumentException">When etag is null</exception>
         public void SetMatchETagNone(string etag)
         {
             if (etag == null)
@@ -109,20 +103,19 @@ namespace Minio.DataModel
             copyConditions.Add("x-amz-copy-source-if-none-match", etag);
         }
 
-        /**
-        * Set replace metadata directive which specifies that
-        * server side copy needs to replace metadata on destination with custom
-        * metadata provided in the request.
-        *
-        */
+        /// <summary>
+        /// Set replace metadata directive which specifies that server side copy needs to replace metadata 
+        /// on destination with custom metadata provided in the request.
+        /// </summary>
         public void SetReplaceMetadataDirective()
         {
             copyConditions.Add("x-amz-metadata-directive", "REPLACE");
         }
-        /**
-        * Return true if replace metadata directive is specified
-        *
-        */
+
+        /// <summary>
+        /// Return true if replace metadata directive is specified
+        /// </summary>
+        /// <returns></returns>
         public bool HasReplaceMetadataDirective()
         {
             foreach (var item in copyConditions)
@@ -132,14 +125,15 @@ namespace Minio.DataModel
                     return true;
             }
             return false;
-        }       
-       /**
-       * Set Byte Range condition, copy object which falls within the 
-       * start and end byte range specified by user
-       *
-       * @throws InvalidArgumentException
-       *           When firstByte is null or lastByte is null
-       */
+        }
+
+        /// <summary>
+        /// Set Byte Range condition, copy object which falls within the 
+        /// start and end byte range specified by user
+        /// </summary>
+        /// <param name="firstByte"></param>
+        /// <param name="lastByte"></param>
+        /// <exception cref="ArgumentException">When firstByte is null or lastByte is null</exception>
         public void SetByteRange(long firstByte, long lastByte)
         {
             if ((firstByte < 0) || (lastByte < firstByte))
@@ -148,23 +142,23 @@ namespace Minio.DataModel
             this.byteRangeStart = firstByte;
             this.byteRangeEnd = lastByte;
         }
-        /**
-         * Get range size
-         */
+
+        /// <summary>
+        /// Get range size
+        /// </summary>
+        /// <returns></returns>
         public long GetByteRange()
         {
             return (this.byteRangeStart == -1) ? 0 : (this.byteRangeEnd - this.byteRangeStart + 1);
         }
 
-        /**
-         * Get all the set copy conditions map.
-         *
-         */
+        /// <summary>
+        /// Get all the set copy conditions map.
+        /// </summary>
+        /// <returns></returns>
         public ReadOnlyDictionary<string, string> GetConditions()
         {
             return new ReadOnlyDictionary<string, string>(copyConditions);
-
         }
-
     }
 }

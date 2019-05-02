@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel
@@ -37,7 +35,10 @@ namespace Minio.DataModel
         {  
         }
 
-        // Pass valid Arn string on aws to constructor
+        /// <summary>
+        /// Pass valid Arn string on aws to constructor
+        /// </summary>
+        /// <param name="arnString"></param>
         public Arn(string arnString)
         {
             string[] parts = arnString.Split(':');
@@ -50,9 +51,16 @@ namespace Minio.DataModel
                 this.Resource = parts[5];
                 this.arnString = arnString;
             }
-            
         }
-        // constructs new ARN based on the given partition, service, region, account id and resource
+
+        /// <summary>
+        /// Constructs new ARN based on the given partition, service, region, account id and resource
+        /// </summary>
+        /// <param name="partition"></param>
+        /// <param name="service"></param>
+        /// <param name="region"></param>
+        /// <param name="accountId"></param>
+        /// <param name="resource"></param>
         public Arn(string partition, string service, string region, string accountId, string resource)
         {
             this.Partition = partition;
@@ -62,6 +70,7 @@ namespace Minio.DataModel
             this.Resource = resource;
             this.arnString = "arn:" + this.Partition + ":" + this.Service + ":" + this.Region + ":" + this.AccountID + ":" + this.Resource;
         }
+
         public override string ToString()
         {
             return  arnString;

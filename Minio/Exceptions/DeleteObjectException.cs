@@ -18,7 +18,6 @@ namespace Minio.Exceptions
 {
     public class DeleteObjectException : MinioException
     {
-
         public DeleteObjectException(string message) : base(message)
         {
         }

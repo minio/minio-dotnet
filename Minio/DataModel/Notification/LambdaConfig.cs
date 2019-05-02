@@ -19,7 +19,9 @@ using System.Xml.Serialization;
 
 namespace Minio.DataModel
 {
-    // LambdaConfig carries one single cloudfunction notification configuration
+    /// <summary>
+    /// LambdaConfig carries one single cloudfunction notification configuration
+    /// </summary>
     [Serializable]
     public class LambdaConfig : NotificationConfiguration
     {
@@ -27,8 +29,9 @@ namespace Minio.DataModel
         public string Lambda { get; set; }
         public LambdaConfig() : base()
         {
-        }    
-        public LambdaConfig(string arn): base(arn)
+        }
+
+        public LambdaConfig(string arn) : base(arn)
         {
             this.Lambda = arn;
         }
@@ -48,11 +51,11 @@ namespace Minio.DataModel
                 return false;
             }
             return other.Lambda.Equals(this.Lambda);
-
         }
+
         public override int GetHashCode()
         {
             return this.Lambda.GetHashCode();
         }
-     }
+    }
 }

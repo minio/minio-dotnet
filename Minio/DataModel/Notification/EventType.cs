@@ -18,7 +18,9 @@ using System.Xml.Serialization;
 
 namespace Minio.DataModel
 {
-    // EventType is a S3 notification event associated to the bucket notification configuration
+    /// <summary>
+    /// EventType is a S3 notification event associated to the bucket notification configuration
+    /// </summary>
     public sealed class EventType
     {
         [XmlText]
@@ -27,10 +29,12 @@ namespace Minio.DataModel
         {
             this.value = null;
         }
+
         public EventType(string value)
         {
             this.value = value;
         }
+
         // Valid Event types as described in:
         // http://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html#notification-how-to-event-types-and-destinations
 
@@ -46,6 +50,5 @@ namespace Minio.DataModel
         public static readonly EventType ObjectRemovedDelete = new EventType("s3:ObjectRemoved:Delete");
         public static readonly EventType ObjectRemovedDeleteMarkerCreated = new EventType("s3:ObjectRemoved:DeleteMarkerCreated");
         public static readonly EventType ReducedRedundancyLostObject = new EventType("s3:ReducedRedundancyLostObject");
-
     }
 }

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
 using System.Collections.Generic;
 using Minio.Exceptions;
@@ -64,7 +65,9 @@ namespace Minio
 
         internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers = Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
 
-        // Default error handling delegate
+        /// <summary>
+        /// Default error handling delegate
+        /// </summary>
         private readonly ApiResponseErrorHandlingDelegate _defaultErrorHandlingDelegate = (response) =>
         {
             if (response.StatusCode < HttpStatusCode.OK || response.StatusCode >= HttpStatusCode.BadRequest)
@@ -96,11 +99,14 @@ namespace Minio
             {
                 return SystemUserAgent + " " + CustomUserAgent;
             }
-
         }
 
-        // Resolve region bucket resides in.
-        private async Task<string> getRegion(string bucketName)
+        /// <summary>
+        /// Resolve region bucket resides in.
+        /// </summary>
+        /// <param name="bucketName"></param>
+        /// <returns></returns>
+        private async Task<string> GetRegion(string bucketName)
         {
             // Use user specified region in client constructor if present
             if (this.Region != "")
@@ -148,7 +154,7 @@ namespace Minio
             {
                 utils.validateBucketName(bucketName);
                 // Fetch correct region for bucket
-                region = await getRegion(bucketName).ConfigureAwait(false);
+                region = await GetRegion(bucketName).ConfigureAwait(false);
             }
             if (objectName != null)
             {
@@ -159,7 +165,6 @@ namespace Minio
             string host = this.BaseUrl;
         
             this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region:this.Region, sessionToken:this.SessionToken);
-
 
             // This section reconstructs the url with scheme followed by location specific endpoint( s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
@@ -191,7 +196,6 @@ namespace Minio
                     {
                         resource += utils.UrlEncode(bucketName) + "/";
                     }
-
                 }
                 else
                 {
@@ -237,7 +241,7 @@ namespace Minio
         /// This method initializes a new RESTClient. The host URI for Amazon is set to virtual hosted style
         /// if usePathStyle is false. Otherwise path style URL is constructed.
         /// </summary>
-        internal void initClient()
+        internal void InitClient()
         {
             if (string.IsNullOrEmpty(this.BaseUrl))
             {
@@ -289,7 +293,6 @@ namespace Minio
         /// <param name="secretKey">Secret Key for authenticated requests (Optional,can be omitted for anonymous requests)</param>
         /// <param name="region">Optional custom region</param>
         /// <param name="sessionToken">Optional session token</param>
-
         /// <returns>Client initialized with user credentials</returns>
         public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region="",string sessionToken="")
         {
@@ -304,7 +307,7 @@ namespace Minio
             // Instantiate a region cache
             this.regionCache = BucketRegionCache.Instance;
 
-            initClient();
+            this.InitClient();
         }
 
         /// <summary>
@@ -328,6 +331,7 @@ namespace Minio
             this.restClient.Proxy = proxy;
             return this;
         }
+
         /// <summary>
         /// Sets endpoint URL on the client object that request will be made against
         /// </summary>
@@ -359,7 +363,6 @@ namespace Minio
             HandleIfErrorResponse(response, errorHandlers, startTime);
             return response;
         }
-
 
         /// <summary>
         /// Parse response errors if any and return relevant error messages
@@ -510,8 +513,8 @@ namespace Minio
             }
             // Fall back default error handler
             _defaultErrorHandlingDelegate(response);
-
         }
+
         /// <summary>
         /// Sets HTTP tracing On.Writes output to Console
         /// </summary>
@@ -520,6 +523,7 @@ namespace Minio
             this.logger = logger ?? new DefaultRequestLogger();
             this.trace = true;
         }
+
         /// <summary>
         /// Sets HTTP tracing Off.
         /// </summary>
@@ -566,8 +570,7 @@ namespace Minio
 
             this.logger.LogRequest(requestToLog, responseToLog, durationMs);
         }
-
     }
-    internal delegate void ApiResponseErrorHandlingDelegate(IRestResponse response);
 
+    internal delegate void ApiResponseErrorHandlingDelegate(IRestResponse response);
 }

@@ -22,14 +22,17 @@ namespace Minio.Exceptions
     public class BucketNotFoundException : MinioException
     {
         private string bucketName;
+
         public BucketNotFoundException()
         {
 
         }
+
         public BucketNotFoundException(string bucketName, string message) : base(message)
         {
             this.bucketName = bucketName;
         }
+
         public override string ToString()
         {
             return this.bucketName + ": " + base.ToString();

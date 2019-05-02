@@ -25,8 +25,10 @@ namespace Minio.DataModel
         public string Name { get; set; }
         public string CreationDate { get; set; }
 
-        public DateTime CreationDateDateTime {
-            get {
+        public DateTime CreationDateDateTime
+        {
+            get
+            {
                 return DateTime.Parse(this.CreationDate, CultureInfo.InvariantCulture);
             }
         }

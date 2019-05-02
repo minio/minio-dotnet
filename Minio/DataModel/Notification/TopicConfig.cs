@@ -15,12 +15,13 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel
 {
-    // TopicConfig carries one single topic notification configuration
+    /// <summary>
+    /// TopicConfig carries one single topic notification configuration
+    /// </summary>
     [Serializable]
     public class TopicConfig : NotificationConfiguration
     {
@@ -40,7 +41,12 @@ namespace Minio.DataModel
         {
             this.Topic = arn.ToString();
         }
-        // Implement equality for this object
+
+        /// <summary>
+        /// Implement equality for this object
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public override bool Equals(Object obj)
         {
             TopicConfig other = (TopicConfig)obj;

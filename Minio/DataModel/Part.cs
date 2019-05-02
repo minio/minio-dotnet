@@ -44,10 +44,10 @@ namespace Minio.DataModel
                 }
             }
         }
+
         public long partSize()
         {
             return size;
         }
-        
     }
 }

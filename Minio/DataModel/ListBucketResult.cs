@@ -26,17 +26,11 @@ namespace Minio.DataModel
     public class ListBucketResult
     {
         public string Name { get; set; }
-
         public string Prefix { get; set; }
-
         public string Marker { get; set; }
-
         public string NextMarker { get; set; }
-
         public string MaxKeys { get; set; }
-
         public string Delimiter { get; set; }
-
         public bool IsTruncated { get; set; }
     }
 }

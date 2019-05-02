@@ -15,21 +15,20 @@
  * limitations under the License.
  */
 
+using Minio.DataModel;
+using Minio.Exceptions;
+using RestSharp;
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
-using Minio.DataModel;
-using RestSharp;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Xml.Linq;
-using System.Xml.Serialization;
-using Minio.Exceptions;
-using System.Globalization;
+using System.Net;
 using System.Reactive.Linq;
 using System.Threading;
-using System.Text;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+using System.Xml.Serialization;
 
 namespace Minio
 {
@@ -89,9 +88,7 @@ namespace Minio
             }
 
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-
         }
-
 
         /// <summary>
         /// Returns true if the specified bucketName exists, otherwise returns false.
@@ -128,7 +125,6 @@ namespace Minio
             var request = await this.CreateRequest(Method.DELETE, bucketName, resourcePath: null).ConfigureAwait(false);
 
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-
         }
 
         /// <summary>
