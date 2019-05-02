@@ -100,7 +100,6 @@ namespace Minio.DataModel
         /// Set content encoding 
         /// </summary>
         /// <param name="contentEncoding">ContentEncoding for the policy</param>
-
         public void SetContentEncoding(string contentEncoding)
         {
             if (string.IsNullOrEmpty(contentEncoding))
@@ -115,7 +114,6 @@ namespace Minio.DataModel
         /// Set content length
         /// </summary>
         /// <param name="contentLength">ContentLength for the policy</param>
-
         public void SetContentLength(long contentLength)
         {
             if (contentLength <= 0)
@@ -159,7 +157,6 @@ namespace Minio.DataModel
         /// Set the success action status of the object for this policy based upload. 
         /// </summary>
         /// <param name="status">Success action status</param>
-
         public void SetSuccessStatusAction(string status)
         {
             if (string.IsNullOrEmpty(status))

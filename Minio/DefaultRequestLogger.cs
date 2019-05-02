@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
+using Minio.DataModel.Tracing;
 using System;
 using System.Linq;
 using System.Text;
-using Minio.DataModel.Tracing;
 
 namespace Minio
 {

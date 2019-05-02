@@ -139,7 +139,10 @@ namespace Minio.DataModel
             return this.Name != null;
         }
 
-        // Serializes the notification configuration as an XML string
+        /// <summary>
+        /// Serializes the notification configuration as an XML string
+        /// </summary>
+        /// <returns></returns>
         public string ToXML()
         {
             XmlWriterSettings settings = new XmlWriterSettings();

@@ -15,6 +15,7 @@
  */
 
 using System.Text.RegularExpressions;
+
 namespace Minio
 {
     public class Regions

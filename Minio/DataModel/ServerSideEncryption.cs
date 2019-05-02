@@ -29,7 +29,9 @@ namespace Minio.DataModel
         SSE_KMS
     }
 
-    // ServerSideEncryption interface
+    /// <summary>
+    /// ServerSideEncryption interface
+    /// </summary>
     public interface ServerSideEncryption
     {
         // GetType() needs to return the type of Server-side encryption
@@ -38,11 +40,14 @@ namespace Minio.DataModel
         void Marshal(Dictionary<string, string> headers);
     }
 
-    // Server-side encryption with customer provided keys (SSE-C)
+    /// <summary>
+    /// Server-side encryption with customer provided keys (SSE-C)
+    /// </summary>
     public class SSEC : ServerSideEncryption
     {
         // secret AES-256 Key
         protected byte[] key;
+
         public new EncryptionType GetType()
         {
             return EncryptionType.SSE_C;
@@ -67,8 +72,9 @@ namespace Minio.DataModel
         }
     }
 
-    // Server-side encryption option for source side SSE-C
-    // copy operation
+    /// <summary>
+    /// Server-side encryption option for source side SSE-C copy operation
+    /// </summary>
     public class SSECopy : SSEC
     {
         public override void Marshal(Dictionary<string, string> headers)
@@ -90,7 +96,9 @@ namespace Minio.DataModel
         }
     }
 
-    // Server-side encryption with S3 managed encryption keys (SSE-S3)
+    /// <summary>
+    /// Server-side encryption with S3 managed encryption keys (SSE-S3)
+    /// </summary>
     public class SSES3 : ServerSideEncryption
     {
         public new EncryptionType GetType()
@@ -105,15 +113,17 @@ namespace Minio.DataModel
         }
     }
 
-    // Server-side encryption with AWS KMS managed keys
+    /// <summary>
+    /// Server-side encryption with AWS KMS managed keys
+    /// </summary>
     public class SSEKMS : ServerSideEncryption
     {
         // Specifies the customer master key(CMK).Cannot be null
         protected string key;
         protected Dictionary<string, string> context;
+
         public SSEKMS(string key, Dictionary<string, string> context = null)
         {
-
             if (key == "")
             {
                 throw new ArgumentException("KMS Key cannot be empty");
@@ -161,7 +171,7 @@ namespace Minio.DataModel
                 }
             }
             sb.Append("}");
-            byte[] contextBytes = System.Text.Encoding.UTF8.GetBytes(sb.ToString() as string);
+            byte[] contextBytes = Encoding.UTF8.GetBytes(sb.ToString() as string);
             return Convert.ToBase64String(contextBytes);
         }
     }

@@ -18,8 +18,10 @@ using System.Xml.Serialization;
 
 namespace Minio.DataModel
 {
-    // Arn holds ARN information that will be sent to the web service,
-    // ARN desciption can be found in http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
+    /// <summary>
+    /// Arn holds ARN information that will be sent to the web service,
+    /// ARN desciption can be found in http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
+    /// </summary>
     public class Arn
     {
        private string Partition { get; }
