@@ -79,7 +79,7 @@ namespace Minio
         /// <param name="secretKey">Secret access key</param>
         /// <param name="region">Region if specifically set</param>
         /// <param name="sessionToken">sessionToken</param>
-        public V4Authenticator(bool secure, string accessKey, string secretKey,string region="",string sessionToken="")
+        public V4Authenticator(bool secure, string accessKey, string secretKey, string region = "", string sessionToken = "")
         {
             this.isSecure = secure;
             this.accessKey = accessKey;
@@ -89,7 +89,7 @@ namespace Minio
             this.sessionToken = sessionToken;
         }
 
-        private String getRegion(string url)
+        private string GetRegion(string url)
         {
             if (!string.IsNullOrEmpty(this.region))
             {
@@ -98,7 +98,7 @@ namespace Minio
             string region = Regions.GetRegionFromEndpoint(url);
             return (region == "") ? "us-east-1" : region;
         }
-      
+
         /// <summary>
         /// Implements Authenticate interface method for IAuthenticator.
         /// </summary>
@@ -111,13 +111,13 @@ namespace Minio
             SetContentSha256(request);
             SetHostHeader(request, client.BaseUrl.Host + ":" + client.BaseUrl.Port);
             SetDateHeader(request, signingDate);
-            SetSessionTokenHeader(request,this.sessionToken);
+            SetSessionTokenHeader(request, this.sessionToken);
             SortedDictionary<string, string> headersToSign = GetHeadersToSign(request);
             string signedHeaders = GetSignedHeaders(headersToSign);
             string canonicalRequest = GetCanonicalRequest(request, headersToSign);
             byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = BytesToHex(ComputeSha256(canonicalRequestBytes));
-            string region = this.getRegion(client.BaseUrl.Host);
+            string region = this.GetRegion(client.BaseUrl.Host);
             string stringToSign = GetStringToSign(region, signingDate, canonicalRequestHash);
             byte[] signingKey = GenerateSigningKey(region, signingDate);
 
@@ -126,10 +126,9 @@ namespace Minio
             byte[] signatureBytes = SignHmac(signingKey, stringToSignBytes);
 
             string signature = BytesToHex(signatureBytes);
-          
+
             string authorization = GetAuthorizationHeader(signedHeaders, signature, signingDate, region);
             request.AddHeader("Authorization", authorization);
-
         }
 
         /// <summary>
@@ -140,9 +139,9 @@ namespace Minio
         /// <returns>Credential string for the authorization header</returns>
         public string GetCredentialString(DateTime signingDate, string region)
         {
-                return this.accessKey + "/" + GetScope(region, signingDate);
+            return this.accessKey + "/" + GetScope(region, signingDate);
         }
-        
+
         /// <summary>
         /// Constructs an authorization header.
         /// </summary>
@@ -265,7 +264,7 @@ namespace Minio
 
             byte[] signatureBytes = SignHmac(signingKey, stringToSignBytes);
             string signature = BytesToHex(signatureBytes);
-                
+
             return signature;
         }
 
@@ -279,11 +278,12 @@ namespace Minio
         /// <param name="sessionToken">Region of storage</param>
         /// <param name="reqDate"> Optional request date and time in UTC</param>
         /// <returns>Presigned url</returns>      
-        internal string PresignURL(IRestClient client, IRestRequest request, int expires, string region = "",string sessionToken="", DateTime? reqDate = null)
+        internal string PresignURL(IRestClient client, IRestRequest request, int expires, string region = "", string sessionToken = "", DateTime? reqDate = null)
         {
             DateTime signingDate = DateTime.UtcNow;
 
-            if (reqDate.HasValue){
+            if (reqDate.HasValue)
+            {
                 signingDate = reqDate.Value;
             }
             string requestQuery = "";
@@ -291,10 +291,10 @@ namespace Minio
 
             if (string.IsNullOrWhiteSpace(region))
             {
-                region = this.getRegion(client.BaseUrl.Host);
+                region = this.GetRegion(client.BaseUrl.Host);
             }
 
-            SetSessionTokenHeader(request,sessionToken);
+            SetSessionTokenHeader(request, sessionToken);
             requestQuery = "X-Amz-Algorithm=AWS4-HMAC-SHA256&";
             requestQuery += "X-Amz-Credential="
                 + this.accessKey
@@ -308,7 +308,7 @@ namespace Minio
                 + "&";
             requestQuery += "X-Amz-SignedHeaders=host";
 
-            SortedDictionary<string,string> headersToSign = GetHeadersToSign(request);
+            SortedDictionary<string, string> headersToSign = GetHeadersToSign(request);
             string canonicalRequest = GetPresignCanonicalRequest(client, request, requestQuery, headersToSign);
             string headers = string.Join("&", headersToSign.Select(p => p.Key + "=" + utils.UrlEncode(p.Value)));
             byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
@@ -331,7 +331,7 @@ namespace Minio
         /// <param name="requestQuery">Additional request query params</param>
         /// <param name="headersToSign"></param>
         /// <returns>Presigned canonical request</returns>
-        internal string GetPresignCanonicalRequest(IRestClient client, IRestRequest request, string requestQuery,  SortedDictionary<string,string> headersToSign)
+        internal string GetPresignCanonicalRequest(IRestClient client, IRestRequest request, string requestQuery, SortedDictionary<string, string> headersToSign)
         {
             LinkedList<string> canonicalStringList = new LinkedList<string>();
             // METHOD
@@ -443,8 +443,8 @@ namespace Minio
             }
 
             return sortedHeaders;
-            
         }
+
         /// <summary>
         /// Sets 'x-amz-date' http header.
         /// </summary>
@@ -471,12 +471,12 @@ namespace Minio
         /// <param name="request">Instantiated request object</param>
         /// <param name="sessionToken">session token</param>
 
-        private void SetSessionTokenHeader(IRestRequest request,string sessionToken)
+        private void SetSessionTokenHeader(IRestRequest request, string sessionToken)
         {
-             if (!string.IsNullOrEmpty(sessionToken))
-             {
+            if (!string.IsNullOrEmpty(sessionToken))
+            {
                 request.AddHeader("X-Amz-Security-Token", sessionToken);
-             }
+            }
         }
 
         /// <summary>
@@ -490,7 +490,7 @@ namespace Minio
             // No need to compute SHA256 if endpoint scheme is https
             if (isSecure)
             {
-                request.AddHeader("x-amz-content-sha256","UNSIGNED-PAYLOAD");
+                request.AddHeader("x-amz-content-sha256", "UNSIGNED-PAYLOAD");
                 return;
             }
             if (request.Method == Method.PUT || request.Method.Equals(Method.POST))

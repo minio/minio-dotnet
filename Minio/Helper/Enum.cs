@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 namespace Minio
 {
     public class Enum

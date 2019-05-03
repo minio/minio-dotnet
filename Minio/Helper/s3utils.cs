@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
+
 namespace Minio.Helper
 {
     internal class s3utils
     {
-
         internal static readonly Regex TrimWhitespaceRegex = new Regex("\\s+");
 
         internal static bool IsAmazonEndPoint(string endpoint)
@@ -81,7 +81,11 @@ namespace Minio.Helper
 
         }
 
-        // IsValidIP parses input string for ip address validity.
+        /// <summary>
+        /// IsValidIP parses input string for ip address validity.
+        /// </summary>
+        /// <param name="ip"></param>
+        /// <returns></returns>
         internal static bool IsValidIP(string ip)
         {
             if (String.IsNullOrEmpty(ip))

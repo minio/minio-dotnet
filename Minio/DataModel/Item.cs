@@ -44,7 +44,7 @@ namespace Minio.DataModel
                 }
             }
         }
-        public UInt64 Size { get; set; }
+        public ulong Size { get; set; }
 
         public bool IsDir { get; set; }
 

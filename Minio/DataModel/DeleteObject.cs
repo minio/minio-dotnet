@@ -28,6 +28,7 @@ namespace Minio.DataModel
 
         [XmlElement("VersionId")]
         public string VersionId { get;set;}
+
         public DeleteObject()
         {
             this.Key = null;

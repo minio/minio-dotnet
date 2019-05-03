@@ -20,6 +20,7 @@ namespace Minio.Exceptions
     {
         private string bucketName;
         private string objectName;
+
         public InvalidContentLengthException(string bucketName, string objectName, string message) : base(message)
         {
             this.bucketName = bucketName;

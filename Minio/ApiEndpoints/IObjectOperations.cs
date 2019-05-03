@@ -14,18 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+using Minio.DataModel;
+using Minio.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
-using Minio.DataModel;
 using System.Threading;
-using Minio.Exceptions;
+using System.Threading.Tasks;
+
 namespace Minio
 {
     public interface IObjectOperations
     {
-
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
@@ -59,7 +60,6 @@ namespace Minio
         /// <param name="metaData">Optional Object metadata to be stored. Defaults to null.</param>
         /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-
         Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -106,7 +106,6 @@ namespace Minio
         /// <param name="bucketName">Bucket to remove incomplete uploads from</param>
         /// <param name="objectName">Key to remove incomplete uploads from</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-
         Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -120,10 +119,8 @@ namespace Minio
         /// <param name="metadata">Optional Object metadata to be stored. Defaults to null.</param>
         /// <param name="sseSrc">Optional Server-side encryption option for source. Defaults to null.</param>
         /// <param name="sseDest">Optional Server-side encryption option for destination. Defaults to null.</param>
-
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-
         Task CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -148,7 +145,6 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         //Task GetObjectAsync(string bucketName, string objectName, string filePath,ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
-
         Task GetObjectAsync(string bucketName, string objectName, string filePath, ServerSideEncryption sse = null ,CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -169,13 +165,11 @@ namespace Minio
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds</param>
-
         Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt);
 
         /// <summary>
         ///  Presigned post policy
         /// </summary>
         Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy);
-
     }
 }

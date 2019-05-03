@@ -27,10 +27,12 @@ namespace Minio.Exceptions
         {
             this.response = response;
         }
+
         public ErrorResponseException()
         {
 
         }
+
         public ErrorResponseException(string message,string errorcode) : base($"MinIO API responded with message={message}")
         {
             this.message = message;

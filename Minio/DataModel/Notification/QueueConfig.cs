@@ -15,22 +15,22 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Xml.Serialization;
 
 namespace Minio.DataModel
 {
-    // QueueConfig carries one single queue notification configuration
+    /// <summary>
+    /// QueueConfig carries one single queue notification configuration
+    /// </summary>
     [Serializable]
     public class QueueConfig : NotificationConfiguration
     {
         public string Queue { get; set; }
 
-        public QueueConfig():base()
+        public QueueConfig() : base()
         {
         }
 
-        public QueueConfig(string arn): base(arn)
+        public QueueConfig(string arn) : base(arn)
         {
             this.Queue = arn.ToString();
         }
@@ -39,17 +39,17 @@ namespace Minio.DataModel
         {
             this.Queue = arn.ToString();
         }
+
         // Implement equality for this object
         public override bool Equals(Object obj)
-        {         
+        {
             QueueConfig other = (QueueConfig)obj;
             // If parameter is null return false.
             if (other == null)
             {
                 return false;
             }
-           return other.Queue.Equals(this.Queue);
-  
+            return other.Queue.Equals(this.Queue);
         }
 
         public override int GetHashCode()

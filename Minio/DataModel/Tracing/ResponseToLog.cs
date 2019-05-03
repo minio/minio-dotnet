@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Net;
-using RestSharp;
 
 namespace Minio.DataModel.Tracing
 {

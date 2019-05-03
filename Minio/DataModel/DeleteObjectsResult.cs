@@ -23,7 +23,6 @@ namespace Minio.DataModel
 {
     [Serializable]
     [XmlRoot(ElementName = "DeleteResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-
     public class DeleteObjectsResult
     {
         [XmlElement("Deleted")]

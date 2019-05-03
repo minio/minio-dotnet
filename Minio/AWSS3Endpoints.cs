@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
 using System.Collections.Concurrent;
 
 namespace Minio
 {
-
-    /**
-     * Amazon AWS S3 endpoints for various regions.
-     */
+    /// <summary>
+    /// Amazon AWS S3 endpoints for various regions.
+    /// </summary>
     public sealed class AWSS3Endpoints
     {
         private static readonly Lazy<AWSS3Endpoints> lazy =
@@ -33,6 +33,7 @@ namespace Minio
         {
             get { return lazy.Value; }
         }
+
         private AWSS3Endpoints()
         {
             endpoints = new ConcurrentDictionary<string, string>();
@@ -68,12 +69,13 @@ namespace Minio
             endpoints.TryAdd("cn-north-1", "s3.cn-north-1.amazonaws.com.cn");
         }
 
-        /**
-         * Gets Amazon S3 endpoint for the relevant region.
-         */
+        /// <summary>
+        /// Gets Amazon S3 endpoint for the relevant region.
+        /// </summary>
+        /// <param name="region"></param>
+        /// <returns></returns>
         public string endpoint(string region)
         {
-
             string endpoint = null;
             if (region != null)
             {
@@ -85,6 +87,5 @@ namespace Minio
             }
             return endpoint;
         }
-
     }
 }

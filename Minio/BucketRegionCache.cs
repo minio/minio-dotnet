@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-using Minio.Helper;
 using RestSharp;
-
 using System;
 using System.Collections.Concurrent;
 using System.IO;
@@ -26,7 +24,9 @@ using System.Xml.Linq;
 
 namespace Minio
 {
-    // A singleton bucket/region cache map.
+    /// <summary>
+    /// A singleton bucket/region cache map.
+    /// </summary>
     public sealed class BucketRegionCache
     {
         private static readonly Lazy<BucketRegionCache> lazy =
@@ -40,11 +40,14 @@ namespace Minio
         }
         private BucketRegionCache()
         {
-            regionMap = new ConcurrentDictionary<string, string>();
+            this.regionMap = new ConcurrentDictionary<string, string>();
         }
-        /**
-         * Returns AWS region for given bucket name.
-        */
+
+        /// <summary>
+        /// Returns AWS region for given bucket name.
+        /// </summary>
+        /// <param name="bucketName"></param>
+        /// <returns></returns>
         public string Region(string bucketName)
         {
             string value = null;
@@ -52,35 +55,36 @@ namespace Minio
             return value != null ? value : "us-east-1";
         }
 
-
-        /**
-         * Adds bucket name and its region to BucketRegionCache.
-         */
+        /// <summary>
+        /// Adds bucket name and its region to BucketRegionCache.
+        /// </summary>
+        /// <param name="bucketName"></param>
+        /// <param name="region"></param>
         public void Add(string bucketName, string region)
         {
             this.regionMap.TryAdd(bucketName, region);
         }
 
-
-        /**
-         * Removes region cache of the bucket if any.
-         */
+        /// <summary>
+        /// Removes region cache of the bucket if any.
+        /// </summary>
+        /// <param name="bucketName"></param>
         public void Remove(string bucketName)
         {
             string value;
             this.regionMap.TryRemove(bucketName, out value);
         }
 
-
-        /**
-         * Returns true if given bucket name is in the map else false.
-         */
+        /// <summary>
+        /// Returns true if given bucket name is in the map else false.
+        /// </summary>
+        /// <param name="bucketName"></param>
+        /// <returns></returns>
         public bool Exists(String bucketName)
         {
             string value = null;
             this.regionMap.TryGetValue(bucketName, out value);
             return value != null;
-
         }
 
         /// <summary>
@@ -134,8 +138,6 @@ namespace Minio
                 Instance.Add(bucketName, region);
             }
             return region;
-
         }
-
     }
 }

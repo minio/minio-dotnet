@@ -19,8 +19,10 @@ using System.Xml.Serialization;
 
 namespace Minio.DataModel
 {
-    // FilterRule - child of S3Key, a tag in the notification xml which
-    // carries suffix/prefix filters
+    /// <summary>
+    /// FilterRule - child of S3Key, a tag in the notification xml which
+    /// carries suffix/prefix filters
+    /// </summary>
     [Serializable]
     public class FilterRule
     {

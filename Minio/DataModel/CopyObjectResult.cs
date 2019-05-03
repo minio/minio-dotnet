@@ -21,11 +21,9 @@ namespace Minio.DataModel
 {
     [Serializable]
     [XmlRoot(ElementName = "CopyObjectResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-  
     public class CopyObjectResult
     {
         public string ETag { get; set; }
-
         public string lastModified { get; set; }
     }
 }

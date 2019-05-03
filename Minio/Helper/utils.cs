@@ -13,21 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+using Minio.Exceptions;
+using Minio.Helper;
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using Minio.Exceptions;
-using System.IO;
-using Microsoft.Win32;
-using Minio.Helper;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Minio
 {
     internal class utils
-
     {
         // We support '.' with bucket names but we fallback to using path
         // style requests instead for such buckets.

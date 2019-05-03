@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel
 {
-    // NotificationConfig - represents one single notification configuration
-    // such as topic, queue or lambda configuration.
+    /// <summary>
+    /// NotificationConfig - represents one single notification configuration
+    /// such as topic, queue or lambda configuration
+    /// </summary>
     public class NotificationConfiguration
     {
         [XmlElement]
@@ -31,6 +32,7 @@ namespace Minio.DataModel
         public List<EventType> Events { get; set; }
         [XmlElement("Filter")]
         public Filter Filter;
+
         public NotificationConfiguration()
         {
             this.Arn = null;
@@ -41,6 +43,7 @@ namespace Minio.DataModel
         {
             this.Arn = new Arn(arn);
         }
+
         public NotificationConfiguration(Arn arn)
         {
             this.Arn = arn;
@@ -52,6 +55,7 @@ namespace Minio.DataModel
                 this.Events = new List<EventType>();
             this.Events.AddRange(evnt);
         }
+
         /// <summary>
         ///  AddFilterSuffix sets the suffix configuration to the current notification config
         /// </summary>
@@ -68,7 +72,7 @@ namespace Minio.DataModel
                 {
                     this.Filter.S3Key.FilterRules[i] = newFilterRule;
                     return;
-                }            
+                }
             }
             this.Filter.S3Key.FilterRules.Add(newFilterRule);
         }
@@ -103,10 +107,12 @@ namespace Minio.DataModel
         {
             return Id != null;
         }
+
         public bool ShouldSerializeEvents()
         {
             return this.Events != null && this.Events.Count > 0;
         }
+
         internal bool IsIdSet()
         {
             return this.Id != null;

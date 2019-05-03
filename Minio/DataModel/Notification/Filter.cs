@@ -27,7 +27,6 @@ namespace Minio.DataModel
         [XmlElement("S3Key")]
         public S3Key S3Key { get;  set; }
 
-
         public Filter()
         {
             this.S3Key = new S3Key();
@@ -43,6 +42,5 @@ namespace Minio.DataModel
         {
             return S3Key.FilterRules.Count != 0;
         }
-
     }
 }
