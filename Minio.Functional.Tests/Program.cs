@@ -58,9 +58,6 @@ namespace Minio.Functional.Tests
 
             string runMode = Environment.GetEnvironmentVariable("MINT_MODE");
 
-            FunctionalTest.CopyObject_Test5(minioClient).Wait();
-            return;
-
             if (!string.IsNullOrEmpty(runMode) && runMode.Equals("core"))
             {
                 FunctionalTest.RunCoreTests(minioClient);
