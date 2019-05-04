@@ -18,7 +18,7 @@ namespace Minio.Exceptions
 {
     public class InvalidObjectNameException : MinioException
     {
-        private string objectName;
+        private readonly string objectName;
 
         public InvalidObjectNameException(string objectName, string message) : base(message)
         {

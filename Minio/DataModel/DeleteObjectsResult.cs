@@ -33,12 +33,12 @@ namespace Minio.DataModel
 
         public List<DeletedObject> ObjectsList()
         {
-          return this.objectsList;
+            return this.objectsList;
         }
 
         public List<DeleteError> ErrorList()
         {
-          return this.errorList;
+            return this.errorList;
         }
     }
 }

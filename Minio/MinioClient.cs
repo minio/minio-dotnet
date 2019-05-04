@@ -83,10 +83,10 @@ namespace Minio
                 string release = "minio-dotnet/1.0.9";
 #if NET46
                 string arch = Environment.Is64BitOperatingSystem ? "x86_64" : "x86";
-                return String.Format("MinIO ({0};{1}) {2}", Environment.OSVersion, arch, release);
+                return $"MinIO ({Environment.OSVersion};{arch}) {release}";
 #else
                 string arch = RuntimeInformation.OSArchitecture.ToString();
-                return String.Format("MinIO ({0};{1}) {2}", RuntimeInformation.OSDescription, arch, release);
+                return $"MinIO ({RuntimeInformation.OSDescription};{arch}) {release}";
 #endif
             }
         }
@@ -97,7 +97,7 @@ namespace Minio
         {
             get
             {
-                return SystemUserAgent + " " + CustomUserAgent;
+                return $"{SystemUserAgent} {CustomUserAgent}";
             }
         }
 
@@ -109,15 +109,16 @@ namespace Minio
         private async Task<string> GetRegion(string bucketName)
         {
             // Use user specified region in client constructor if present
-            if (this.Region != "")
+            if (!string.IsNullOrEmpty(this.Region))
             {
                 return this.Region;
             }
+
             // pick region from endpoint if present
             string region = Regions.GetRegionFromEndpoint(this.Endpoint);
 
             // Pick region from location HEAD request
-            if (region == "")
+            if (string.IsNullOrEmpty(region))
             {
                 if (!BucketRegionCache.Instance.Exists(bucketName))
                 {
@@ -129,7 +130,7 @@ namespace Minio
                 }
             }
             // Default to us-east-1 if region could not be found
-            return (region == "") ? "us-east-1" : region;
+            return (string.IsNullOrEmpty(region)) ? "us-east-1" : region;
         }
 
         /// <summary>
@@ -150,15 +151,15 @@ namespace Minio
                                 Object body = null, string resourcePath = null)
         {
             string region = "";
-            if ( bucketName != null)
+            if (bucketName != null)
             {
                 utils.validateBucketName(bucketName);
                 // Fetch correct region for bucket
-                region = await GetRegion(bucketName).ConfigureAwait(false);
+                region = await this.GetRegion(bucketName).ConfigureAwait(false);
             }
             if (objectName != null)
             {
-                utils.validateObjectName(objectName);
+                utils.ValidateObjectName(objectName);
             }
 
             // Start with user specified endpoint
@@ -205,7 +206,7 @@ namespace Minio
 
             // Set Target URL
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure,bucketName, region, usePathStyle);
-            SetTargetURL(requestUrl);
+            this.SetTargetURL(requestUrl);
 
             if (objectName != null)
             {
@@ -223,7 +224,6 @@ namespace Minio
             if (body != null)
             {
                 request.AddParameter(contentType, body, RestSharp.ParameterType.RequestBody);
-
             }
 
             if (headerMap != null)
@@ -253,13 +253,13 @@ namespace Minio
             var scheme = this.Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
 
             // This is the actual url pointed to for all HTTP requests
-            this.Endpoint = string.Format("{0}://{1}", scheme, host);
+            this.Endpoint = $"{scheme}://{host}";
             this.uri = RequestUtil.GetEndpointURL(this.BaseUrl,this.Secure);
             RequestUtil.ValidateEndpoint(this.uri,this.Endpoint);
 
             // Initialize a new REST client. This uri will be modified if region specific endpoint/virtual style request
             // is decided upon while constructing a request for Amazon.
-            restClient = new RestSharp.RestClient(this.uri);
+            restClient = new RestClient(this.uri);
             restClient.UserAgent = this.FullUserAgent;
 
             authenticator = new V4Authenticator(this.Secure,this.AccessKey, this.SecretKey, this.Region, this.SessionToken);
@@ -441,7 +441,6 @@ namespace Minio
                                 BucketRegionCache.Instance.Remove(resource);
                                 e = new BucketNotFoundException(resource, "Not found.");
                             }
-
                         }
                         else
                         {
@@ -482,9 +481,11 @@ namespace Minio
                 throw ErrorException;
             }
 
-            MinioException MinioException = new MinioException(errResponse.Message);
-            MinioException.Response = errResponse;
-            MinioException.XmlError = response.Content;
+            MinioException MinioException = new MinioException(errResponse.Message)
+            {
+                Response = errResponse,
+                XmlError = response.Content
+            };
             throw MinioException;
         }
 

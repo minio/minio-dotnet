@@ -68,7 +68,7 @@ namespace Minio.Tests
         {
             try
             {
-                utils.validateObjectName("");
+                utils.ValidateObjectName("");
             }
             catch (InvalidObjectNameException ex)
             {
@@ -82,7 +82,7 @@ namespace Minio.Tests
             try
             {
                 string objName = TestHelper.GetRandomName(1025);
-                utils.validateObjectName(objName);
+                utils.ValidateObjectName(objName);
             }
             catch (InvalidObjectNameException ex)
             {
@@ -95,7 +95,7 @@ namespace Minio.Tests
         public void TestObjectName()
         {
             string objName = TestHelper.GetRandomName(15);
-            utils.validateObjectName(objName);
+            utils.ValidateObjectName(objName);
         }
         [TestMethod]
         public void TestEmptyFile()

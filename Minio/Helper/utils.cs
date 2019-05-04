@@ -71,9 +71,13 @@ namespace Minio
                 throw new InvalidBucketNameException(bucketName, "Bucket name contains invalid characters.");
             }
         }
-        // isValidObjectName - verify object name in accordance with
-        //   - http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
-        internal static void validateObjectName(String objectName)
+
+        /// <summary>
+        /// isValidObjectName - verify object name in accordance with
+        /// http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
+        /// </summary>
+        /// <param name="objectName"></param>
+        internal static void ValidateObjectName(string objectName)
         {
             if (objectName.Trim() == "")
             {
@@ -96,7 +100,12 @@ namespace Minio
             }
             return;
         }
-        // Return url encoded string where reserved characters have been percent-encoded
+
+        /// <summary>
+        /// Return url encoded string where reserved characters have been percent-encoded
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         internal static string UrlEncode(string input)
         {
             return Uri.EscapeDataString(input).Replace("\\!", "%21")
@@ -116,7 +125,12 @@ namespace Minio
                                               .Replace("\\[", "%5B")
                                               .Replace("\\]", "%5D"); 
         }
-        // Return encoded path where extra "/" are trimmed off.
+
+        /// <summary>
+        /// Return encoded path where extra "/" are trimmed off.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         internal static string EncodePath(string path)
         {
             StringBuilder encodedPathBuf = new StringBuilder();
@@ -143,14 +157,14 @@ namespace Minio
             return encodedPathBuf.ToString();
         }
 
-        internal static bool isAnonymousClient(string accessKey, string secretKey)
+        internal static bool IsAnonymousClient(string accessKey, string secretKey)
         {
             return (secretKey == "" || accessKey == "");
         }
 
         internal static void ValidateFile(string filePath, string contentType = null)
         {
-            if (filePath == null || filePath == "")
+            if (string.IsNullOrEmpty(filePath))
             {
                 throw new ArgumentException("empty file name is not allowed");
             }
@@ -170,7 +184,6 @@ namespace Minio
             {
                 contentType = GetContentType(filePath);
             }
-
         }
 
         internal static string GetContentType(string fileName)
@@ -182,8 +195,10 @@ namespace Minio
             }
             catch { }
 
-            if (String.IsNullOrEmpty(extension))
+            if (string.IsNullOrEmpty(extension))
+            {
                 return "application/octet-stream";
+            }
 
             return _contentTypeMap.Value.TryGetValue(extension, out string contentType) 
                 ? contentType 
@@ -192,7 +207,6 @@ namespace Minio
 
         public static void MoveWithReplace(string sourceFileName, string destFileName)
         {
-
             //first, delete target file if exists, as File.Move() does not support overwrite
             if (File.Exists(destFileName))
             {
@@ -202,7 +216,7 @@ namespace Minio
             File.Move(sourceFileName, destFileName);
         }
 
-        internal static bool isSupersetOf(IList<string> l1, IList<string> l2)
+        internal static bool IsSupersetOf(IList<string> l1, IList<string> l2)
         {
             if (l2 == null)
             {
@@ -226,7 +240,7 @@ namespace Minio
         /// </summary>
         /// <param name="size"></param>
         /// <returns></returns>
-        public static Object CalculateMultiPartSize(long size)
+        public static object CalculateMultiPartSize(long size)
         {
             if (size == -1)
             {
@@ -252,7 +266,6 @@ namespace Minio
         /// </summary>
         /// <param name="expiryInt">time to expiry in seconds</param>
         /// <returns>bool</returns>
-
         public static bool IsValidExpiry(int expiryInt)
         {
             return (expiryInt > 0) && (expiryInt <= Constants.DefaultExpiryTime); 

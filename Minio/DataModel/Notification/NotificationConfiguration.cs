@@ -52,7 +52,9 @@ namespace Minio.DataModel
         public void AddEvents(List<EventType> evnt)
         {
             if (this.Events == null)
+            {
                 this.Events = new List<EventType>();
+            }
             this.Events.AddRange(evnt);
         }
 
@@ -63,7 +65,9 @@ namespace Minio.DataModel
         public void AddFilterSuffix(string suffix)
         {
             if (this.Filter == null)
+            {
                 this.Filter = new Filter();
+            }
             FilterRule newFilterRule = new FilterRule("suffix", suffix);
             // Replace any suffix rule if existing and add to the list otherwise
             for (int i = 0; i < this.Filter.S3Key.FilterRules.Count; i++)
@@ -84,7 +88,9 @@ namespace Minio.DataModel
         public void AddFilterPrefix(string prefix)
         {
             if (this.Filter == null)
+            {
                 this.Filter = new Filter();
+            }
             FilterRule newFilterRule = new FilterRule("prefix", prefix);
             // Replace any prefix rule if existing and add to the list otherwise
             for (int i = 0; i < this.Filter.S3Key.FilterRules.Count; i++)

@@ -143,7 +143,7 @@ namespace Minio.DataModel
             headers.Add(Constants.SSEGenericHeader, "aws:kms");
             if (context != null)
             {
-                headers.Add(Constants.SSEKMSContext, this.marshalContext());
+                headers.Add(Constants.SSEKMSContext, this.MarshalContext());
             }
             return;
         }
@@ -152,7 +152,7 @@ namespace Minio.DataModel
         /// Serialize context into JSON string.
         /// </summary>
         /// <returns>Serialized JSON context</returns>
-        private string marshalContext()
+        private string MarshalContext()
         {
             StringBuilder sb = new StringBuilder();
 

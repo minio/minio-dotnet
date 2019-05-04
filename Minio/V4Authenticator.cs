@@ -84,7 +84,7 @@ namespace Minio
             this.isSecure = secure;
             this.accessKey = accessKey;
             this.secretKey = secretKey;
-            this.isAnonymous = String.IsNullOrEmpty(accessKey) && String.IsNullOrEmpty(secretKey);
+            this.isAnonymous = string.IsNullOrEmpty(accessKey) && string.IsNullOrEmpty(secretKey);
             this.region = region;
             this.sessionToken = sessionToken;
         }
@@ -224,8 +224,7 @@ namespace Minio
         /// <returns>Scope string</returns>
         private string GetScope(string region, DateTime signingDate)
         {
-            string formattedDate = signingDate.ToString("yyyyMMdd");
-            return formattedDate + "/" + region + "/s3/aws4_request";
+            return $"{signingDate:yyyyMMdd}/{region}/s3/aws4_request";
         }
 
         /// <summary>
@@ -235,8 +234,7 @@ namespace Minio
         /// <returns>Bytes of sha256 checksum</returns>
         private byte[] ComputeSha256(byte[] body)
         {
-
-            SHA256 sha256 = System.Security.Cryptography.SHA256.Create();
+            SHA256 sha256 = SHA256.Create();
             return sha256.ComputeHash(body);
         }
 
@@ -286,6 +284,7 @@ namespace Minio
             {
                 signingDate = reqDate.Value;
             }
+
             string requestQuery = "";
             string path = request.Resource;
 
@@ -320,7 +319,7 @@ namespace Minio
             string signature = BytesToHex(signatureBytes);
 
             // Return presigned url.
-            return client.BaseUrl + path + "?" + requestQuery + "&" + headers + "&X-Amz-Signature=" + signature;
+            return $"{client.BaseUrl}{path}?{requestQuery}&{headers}&X-Amz-Signature={signature}";
         }
 
         /// <summary>
@@ -343,15 +342,15 @@ namespace Minio
                 path = "/" + path;
             }
             canonicalStringList.AddLast(path);
-            String query = headersToSign.Aggregate(requestQuery, (pv, cv) => $"{pv}&{utils.UrlEncode(cv.Key)}={utils.UrlEncode(s3utils.TrimAll(cv.Value))}");
+            string query = headersToSign.Aggregate(requestQuery, (pv, cv) => $"{pv}&{utils.UrlEncode(cv.Key)}={utils.UrlEncode(s3utils.TrimAll(cv.Value))}");
             canonicalStringList.AddLast(query);
             if (client.BaseUrl.Port > 0 && (client.BaseUrl.Port != 80 && client.BaseUrl.Port != 443))
             {
-                canonicalStringList.AddLast("host:" + client.BaseUrl.Host + ":" + client.BaseUrl.Port);
+                canonicalStringList.AddLast($"host:{client.BaseUrl.Host}:{client.BaseUrl.Port}");
             }
             else
             {
-                canonicalStringList.AddLast("host:" + client.BaseUrl.Host);
+                canonicalStringList.AddLast($"host:{client.BaseUrl.Host}");
             }
 
             canonicalStringList.AddLast("");
@@ -470,7 +469,6 @@ namespace Minio
         /// </summary>
         /// <param name="request">Instantiated request object</param>
         /// <param name="sessionToken">session token</param>
-
         private void SetSessionTokenHeader(IRestRequest request, string sessionToken)
         {
             if (!string.IsNullOrEmpty(sessionToken))
@@ -486,13 +484,17 @@ namespace Minio
         private void SetContentSha256(IRestRequest request)
         {
             if (this.isAnonymous)
+            {
                 return;
+            }
+
             // No need to compute SHA256 if endpoint scheme is https
             if (isSecure)
             {
                 request.AddHeader("x-amz-content-sha256", "UNSIGNED-PAYLOAD");
                 return;
             }
+
             if (request.Method == Method.PUT || request.Method.Equals(Method.POST))
             {
                 var bodyParameter = request.Parameters.FirstOrDefault(p => p.Type.Equals(ParameterType.RequestBody));
@@ -514,7 +516,7 @@ namespace Minio
                 {
                     body = new byte[0];
                 }
-                SHA256 sha256 = System.Security.Cryptography.SHA256.Create();
+                SHA256 sha256 = SHA256.Create();
                 byte[] hash = sha256.ComputeHash(body);
                 string hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
                 request.AddHeader("x-amz-content-sha256", hex);
@@ -531,21 +533,26 @@ namespace Minio
         /// <param name="request">Instantiated request object</param>
         private void SetContentMd5(IRestRequest request)
         {
-            if (request.Method == Method.PUT || request.Method.Equals(Method.POST))
+            if (request.Method.Equals(Method.PUT) || request.Method.Equals(Method.POST))
             {
                 var bodyParameter = request.Parameters.Where(p => p.Type.Equals(ParameterType.RequestBody)).FirstOrDefault();
                 if (bodyParameter == null)
                 {
                     return;
                 }
+
                 bool isMultiDeleteRequest = false;
-                if (request.Method == Method.POST && request.Resource.EndsWith("?delete"))
+                if (request.Method.Equals(Method.POST) && request.Resource.EndsWith("?delete"))
                 {
                     isMultiDeleteRequest = true;
                 }
+
                 // For insecure, authenticated requests set sha256 header instead of MD5.
                 if (!isSecure && !isAnonymous && !isMultiDeleteRequest)
+                {
                     return;
+                }
+
                 // All anonymous access requests get Content-MD5 header set.
                 byte[] body = null;
                 if (bodyParameter.Value is string)
@@ -560,7 +567,8 @@ namespace Minio
                 {
                     body = new byte[0];
                 }
-                MD5 md5 = System.Security.Cryptography.MD5.Create();
+
+                MD5 md5 = MD5.Create();
                 byte[] hash = md5.ComputeHash(body);
 
                 string base64 = Convert.ToBase64String(hash);

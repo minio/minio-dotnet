@@ -74,17 +74,19 @@ namespace Minio
         /// </summary>
         /// <param name="region"></param>
         /// <returns></returns>
-        public string endpoint(string region)
+        public string Endpoint(string region)
         {
-            string endpoint = null;
-            if (region != null)
+            if (region == null)
             {
-                AWSS3Endpoints.Instance.endpoints.TryGetValue(region, out endpoint);
+                return null;
             }
+
+            Instance.endpoints.TryGetValue(region, out string endpoint);
             if (endpoint == null)
             {
                 endpoint = "s3.amazonaws.com";
             }
+
             return endpoint;
         }
     }

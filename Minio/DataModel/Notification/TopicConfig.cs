@@ -47,7 +47,7 @@ namespace Minio.DataModel
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public override bool Equals(Object obj)
+        public override bool Equals(object obj)
         {
             TopicConfig other = (TopicConfig)obj;
             // If parameter is null return false.

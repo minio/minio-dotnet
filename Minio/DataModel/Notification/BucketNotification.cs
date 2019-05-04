@@ -65,7 +65,6 @@ namespace Minio.DataModel
         /// <param name="queueConfig"></param>
         public void AddQueue(QueueConfig queueConfig)
         {
-
             bool isQueueFound = this.QueueConfigs.Exists(t => t.Equals(queueConfig));
             if (!isQueueFound)
             {

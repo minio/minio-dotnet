@@ -20,7 +20,7 @@ using System.Xml.Serialization;
 namespace Minio.Exceptions
 {
     [Serializable]
-    [XmlRoot(ElementName="Error",Namespace = "")]
+    [XmlRoot(ElementName = "Error", Namespace = "")]
     public class ErrorResponse
     {
         public string Code { get; set; }

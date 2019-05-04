@@ -247,7 +247,7 @@ namespace Minio
         /// <param name="bucketName">Bucket name.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task that returns the Bucket policy as a json string</returns>
-        public async Task<String> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<string> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
             IRestResponse response = null;
 
@@ -276,7 +276,7 @@ namespace Minio
         /// <param name="policyJson">Policy json as string </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task to set a policy</returns>
-        public async Task SetPolicyAsync(String bucketName, String policyJson, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default(CancellationToken))
         {
             var request = await this.CreateRequest(Method.PUT, bucketName,
                                            resourcePath: "?policy",

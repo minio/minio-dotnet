@@ -160,7 +160,9 @@ namespace Minio.DataModel
         public void SetSuccessStatusAction(string status)
         {
             if (string.IsNullOrEmpty(status))
+            {
                 throw new ArgumentException("Status is Empty");
+            }
 
             this.policies.Add(new Tuple<string, string, string>("eq", "$success_action_status", status));
             this.formData.Add("success_action_status", status);
@@ -174,10 +176,14 @@ namespace Minio.DataModel
         public void SetUserMetadata(string key, string value)
         {
             if (string.IsNullOrEmpty(key))
+            {
                 throw new ArgumentException("Key is Empty");
+            }
             if (string.IsNullOrEmpty(value))
+            {
                 throw new ArgumentException("Value is Empty");
-            string headerName = "x-amz-meta-" + key;
+            }
+            string headerName = $"x-amz-meta-{key}";
             this.policies.Add(new Tuple<string, string, string>("eq", "$" + headerName, value));
             this.formData.Add(headerName, value);
         }
@@ -243,7 +249,7 @@ namespace Minio.DataModel
         /// Serialize policy into JSON string.
         /// </summary>
         /// <returns>Serialized JSON policy</returns>
-        private byte[] marshalJSON()
+        private byte[] MarshalJSON()
         {
             List<string> policyList = new List<string>();
             StringBuilder sb = new StringBuilder();
@@ -255,7 +261,7 @@ namespace Minio.DataModel
             // expiration and policies will never be empty because of checks at PresignedPostPolicy()
             sb.Append("{");
             sb.Append("\"expiration\":\"").Append(this.expiration.ToString("yyyy-MM-ddTHH:mm:ss.000Z")).Append("\"").Append(",");
-            sb.Append("\"conditions\":[").Append(String.Join(",", policyList)).Append("]");
+            sb.Append("\"conditions\":[").Append(string.Join(",", policyList)).Append("]");
             sb.Append("}");
             return System.Text.Encoding.UTF8.GetBytes(sb.ToString() as string);
         }
@@ -266,7 +272,7 @@ namespace Minio.DataModel
         /// <returns>Base64 encoded string of JSON policy</returns>
         public string Base64()
         {
-            byte[] policyStrBytes = this.marshalJSON();
+            byte[] policyStrBytes = this.MarshalJSON();
             return Convert.ToBase64String(policyStrBytes);
         }
 
@@ -276,14 +282,16 @@ namespace Minio.DataModel
         /// <returns>true if bucket is set</returns>
         public bool IsBucketSet()
         {
-            string value = "";
-            if (this.formData.TryGetValue("bucket", out value))
+            if (!this.formData.TryGetValue("bucket", out string value))
             {
-                if (!string.IsNullOrEmpty(value))
-                {
-                    return true;
-                }
+                return false;
             }
+
+            if (!string.IsNullOrEmpty(value))
+            {
+                return true;
+            }
+
             return false;
         }
 
@@ -293,14 +301,16 @@ namespace Minio.DataModel
         /// <returns>true if key is set</returns>
         public bool IsKeySet()
         {
-            string value = "";
-            if (this.formData.TryGetValue("key", out value))
+            if (!this.formData.TryGetValue("key", out string value))
             {
-                if (!string.IsNullOrEmpty(value))
-                {
-                    return true;
-                }
+                return false;
             }
+
+            if (!string.IsNullOrEmpty(value))
+            {
+                return true;
+            }
+
             return false;
         }
 
