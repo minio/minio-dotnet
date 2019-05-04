@@ -348,7 +348,7 @@ namespace Minio
         /// <param name="request">request</param>
         /// <param name="cancellationToken"></param>
         /// <returns>IRESTResponse</returns>
-        internal async Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request, CancellationToken cancellationToken=default(CancellationToken))
+        internal async Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             DateTime startTime = DateTime.Now;
             // Logs full url when HTTPtracing is enabled.
@@ -359,7 +359,6 @@ namespace Minio
             }
 
             IRestResponse response = await this.restClient.ExecuteTaskAsync(request,cancellationToken);
-
             HandleIfErrorResponse(response, errorHandlers, startTime);
             return response;
         }
