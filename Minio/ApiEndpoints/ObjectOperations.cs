@@ -157,11 +157,11 @@ namespace Minio
                     tempFileExists = true;
                 }
             }
-            await GetObjectAsync(bucketName, objectName, async (stream) =>
+            await GetObjectAsync(bucketName, objectName, (stream) =>
             {
                 using (var fileStream = File.Create(tempFileName))
                 {
-                    await stream.CopyToAsync(fileStream);
+                    stream.CopyTo(fileStream);
                 }
 
                 FileInfo writtenInfo = new FileInfo(tempFileName);
