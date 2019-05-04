@@ -358,7 +358,7 @@ namespace Minio
                 Console.Out.WriteLine("Full URL of Request {0}", fullUrl);
             }
 
-            IRestResponse response = await this.restClient.ExecuteTaskAsync(request,cancellationToken);
+            IRestResponse response = await this.restClient.ExecuteTaskAsync(request, cancellationToken);
             HandleIfErrorResponse(response, errorHandlers, startTime);
             return response;
         }
