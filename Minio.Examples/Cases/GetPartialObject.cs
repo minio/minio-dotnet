@@ -45,7 +45,7 @@ namespace Minio.Examples.Cases
                     fileStream.Dispose();
                     FileInfo writtenInfo = new FileInfo(fileName);
                     long file_read_size = writtenInfo.Length;
-                    // Uncommment to print the file on output console
+                    // Uncomment to print the file on output console
                     // stream.CopyTo(Console.OpenStandardOutput());
                     Console.WriteLine("Successfully downloaded object with requested offset and length {0} into file",writtenInfo.Length);
                     stream.Dispose();

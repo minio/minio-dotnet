@@ -34,7 +34,7 @@ namespace Minio.Examples.Cases
                 await minio.GetObjectAsync(bucketName, objectName, 
                 (stream) =>
                 {
-                     // Uncommment to print the file on output console
+                     // Uncomment to print the file on output console
                     // stream.CopyTo(Console.OpenStandardOutput());
                 });
                 Console.WriteLine("Downloaded the file " + fileName + " in bucket " + bucketName);

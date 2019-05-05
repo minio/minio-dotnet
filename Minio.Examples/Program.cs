@@ -157,10 +157,10 @@ namespace Minio.Examples
                 // Specify SSE-C source side encryption for Copy operations
                 var sseCpy = new SSECopy(aesEncryption.Key);
 
-                // Uncommment to specify SSE-S3 encryption option
+                // Uncomment to specify SSE-S3 encryption option
                 // var sses3 = new SSES3();
 
-                // Uncommment to specify SSE-KMS encryption option
+                // Uncomment to specify SSE-KMS encryption option
                 // var sseKms = new SSEKMS("kms-key",new Dictionary<string,string>{{ "kms-context", "somevalue"}});
 
                 // Upload encrypted object
@@ -208,7 +208,7 @@ namespace Minio.Examples
                 // Delete the object
                 Cases.RemoveObject.Run(minioClient, destBucketName, objectName).Wait();
 
-                // Tacing request with custom logger
+                // Tracing request with custom logger
                 Cases.CustomRequestLogger.Run(minioClient).Wait();
 
                 // Remove the buckets

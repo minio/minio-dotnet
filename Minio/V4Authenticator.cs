@@ -134,7 +134,7 @@ namespace Minio
         /// <summary>
         /// Get credential string of form {ACCESSID}/date/region/s3/aws4_request. 
         /// </summary>
-        /// <param name="signingDate">Signature initated date</param>
+        /// <param name="signingDate">Signature initiated date</param>
         /// <param name="region">Region for the credential string</param>
         /// <returns>Credential string for the authorization header</returns>
         public string GetCredentialString(DateTime signingDate, string region)

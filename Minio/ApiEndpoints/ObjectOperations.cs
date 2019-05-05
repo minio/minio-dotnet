@@ -562,7 +562,7 @@ namespace Minio
         /// <summary>
         /// Lists all incomplete uploads in a given bucket and prefix recursively
         /// </summary>
-        /// <param name="bucketName">Bucket to list all incomplepte uploads from</param>
+        /// <param name="bucketName">Bucket to list all incomplete uploads from</param>
         /// <param name="prefix">Filter all incomplete uploads starting with this prefix</param>
         /// <param name="recursive">Set to true to recursively list all incomplete uploads</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>

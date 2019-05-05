@@ -1262,7 +1262,7 @@ catch(MinioException e)
 ```
 ## Client Custom Settings
 <a name="SetAppInfo"></a>
-### SetAppInfo(string appName, tring appVersion)
+### SetAppInfo(string appName, string appVersion)
 Adds application details to User-Agent.
 
 __Parameters__
