@@ -255,7 +255,7 @@ namespace Minio.DataModel
             // expiration and policies will never be empty because of checks at PresignedPostPolicy()
             sb.Append("{");
             sb.Append("\"expiration\":\"").Append(this.expiration.ToString("yyyy-MM-ddTHH:mm:ss.000Z")).Append("\"").Append(",");
-            sb.Append("\"conditions\":[").Append(String.Join(",", policyList)).Append("]");
+            sb.Append("\"conditions\":[").Append(string.Join(",", policyList)).Append("]");
             sb.Append("}");
             return System.Text.Encoding.UTF8.GetBytes(sb.ToString() as string);
         }

@@ -39,7 +39,7 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 |  |
 |---|
 |`public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region="", string sessionToken="")`   |
-| Creates MinIO client object with given endpoint.AccessKey,secretKey, region and sessionToken are optional parameters,and can be omitted for anonymous access.
+| Creates MinIO client object with given endpoint.AccessKey, secretKey, region and sessionToken are optional parameters, and can be omitted for anonymous access.
   The client object uses Http access by default. To use Https, chain method WithSSL() to client object to use secure transfer protocol   |
 
 
@@ -86,11 +86,11 @@ MinioClient minioClient = new MinioClient("play.min.io:9000",
                                           ).WithSSL();
 
 // 3. Initializing minio client with proxy
-IWebProxy proxy = new WebProxy("192.168.0.1",8000);
-MinioClient minioClient = new MinioClient("my-ip-address:9000","minio","minio123").WithSSL().WithProxy(proxy);
+IWebProxy proxy = new WebProxy("192.168.0.1", 8000);
+MinioClient minioClient = new MinioClient("my-ip-address:9000", "minio", "minio123").WithSSL().WithProxy(proxy);
 
 // 4. Initializing minio client with temporary credentials
-MinioClient minioClient = new MinioClient("my-ip-address:9000","tempuserid","temppasswd",sessionToken:"sessionToken");
+MinioClient minioClient = new MinioClient("my-ip-address:9000", "tempuserid", "temppasswd", sessionToken:"sessionToken");
 ```
 
 
@@ -487,7 +487,7 @@ catch (MinioException e)
 
 
 <a name="setBucketNotification"></a>
-### SetBucketNotificationAsync(string bucketName,BucketNotification notification)
+### SetBucketNotificationAsync(string bucketName, BucketNotification notification)
 `Task SetBucketNotificationAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken))`
 
 Sets notification configuration for a given bucket
@@ -677,7 +677,7 @@ try
 ```
 
 <a name="getObject"></a>
-### GetObjectAsync(string bucketName, string objectName, long offset,long length, Action<Stream> callback, ServerSideEncryption sse)
+### GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> callback, ServerSideEncryption sse)
 
 `Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> callback, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
 
@@ -779,9 +779,9 @@ catch (MinioException e)
 }
 ```
 <a name="putObject"></a>
-### PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType,ServerSideEncryption sse)
+### PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType, ServerSideEncryption sse)
 
-` Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType,Dictionary<string,string> metaData=null,ServerSideEncryption sse = null,CancellationToken cancellationToken = default(CancellationToken))`
+` Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType, Dictionary<string, string> metaData=null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
 
 
 Uploads contents from a stream to objectName.
@@ -833,7 +833,7 @@ try
                                "island.jpg",
                                 filestream,
                                 filestream.Length,
-                               "application/octet-stream",ssec);
+                               "application/octet-stream", ssec);
     Console.Out.WriteLine("island.jpg is uploaded successfully");
 }
 catch(MinioException e)
@@ -843,9 +843,9 @@ catch(MinioException e)
 ```
 
 <a name="putObject"></a>
-### PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null,ServerSideEncryption sse)
+### PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null, ServerSideEncryption sse)
 
-` Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null,Dictionary<string,string> metaData=null, ServerSideEncryption sse=null,CancellationToken cancellationToken = default(CancellationToken))`
+` Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null, Dictionary<string, string> metaData=null, ServerSideEncryption sse=null, CancellationToken cancellationToken = default(CancellationToken))`
 
 
 Uploads contents from a file to objectName.
@@ -883,7 +883,7 @@ The maximum size of a single object is limited to 5TB. putObject transparently u
 ```cs
 try
 {
-    await minio.PutObjectAsync("mybucket", "island.jpg", "/mnt/photos/island.jpg",contentType: "application/octet-stream");
+    await minio.PutObjectAsync("mybucket", "island.jpg", "/mnt/photos/island.jpg", contentType: "application/octet-stream");
     Console.Out.WriteLine("island.jpg is uploaded successfully");
 }
 catch(MinioException e)
@@ -892,9 +892,9 @@ catch(MinioException e)
 }
 ```
 <a name="statObject"></a>
-### StatObjectAsync(string bucketName, string objectName,ServerSideEncryption sse)
+### StatObjectAsync(string bucketName, string objectName, ServerSideEncryption sse)
 
-`Task<ObjectStat> StatObjectAsync(string bucketName, string objectName,ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
+`Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
 
 Gets metadata of an object.
 
@@ -936,9 +936,9 @@ catch(MinioException e)
 ```
 
 <a name="copyObject"></a>
-### CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null,Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null)
+### CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null)
 
-*`Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null,ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null,CancellationToken cancellationToken = default(CancellationToken))`*
+*`Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken))`*
 
 Copies content from objectName to destObjectName.
 
@@ -977,7 +977,7 @@ try
 {
    CopyConditions copyConditions = new CopyConditions();
    copyConditions.setMatchETagNone("TestETag");
-   ServerSideEncryption sseSrc,sseDst;
+   ServerSideEncryption sseSrc, sseDst;
    // Uncomment to specify source and destination Server-side encryption options
    /*
     Aes aesEncryption = Aes.Create();
@@ -986,7 +986,7 @@ try
     sseSrc = new SSEC(aesEncryption.Key);
     sseDst = new SSES3();
    */
-   await minioClient.CopyObjectAsync("mybucket",  "island.jpg", "mydestbucket", "processed.png", copyConditions,sseSrc:sseSrc, sseDest:sseDst);
+   await minioClient.CopyObjectAsync("mybucket",  "island.jpg", "mydestbucket", "processed.png", copyConditions, sseSrc:sseSrc, sseDest:sseDst);
    Console.Out.WriteLine("island.jpg is uploaded successfully");
 }
 catch(MinioException e)
@@ -1130,8 +1130,8 @@ catch(MinioException e)
 ## 4. Presigned operations
 <a name="presignedGetObject"></a>
 
-### PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string,string> reqParams = null, DateTime? reqDate = null);
-`Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string,string> reqParams = null, DateTime? reqDate = null)`
+### PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null);
+`Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null)`
 
 Generates a presigned URL for HTTP GET operations. Browsers/Mobile clients may point to this URL to directly download objects even if the bucket is private. This presigned URL can have an associated expiration time in seconds after which it is no longer operational. The default expiry is set to 7 days.
 
@@ -1225,7 +1225,7 @@ __Parameters__
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-| ``Task<Dictionary<string,string>>``: Map of strings to construct form-data. | Listed Exceptions: |
+| ``Task<Dictionary<string, string>>``: Map of strings to construct form-data. | Listed Exceptions: |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name |
 |        | ``ConnectionException`` : upon connection error            |
 |        | ``NoSuchAlgorithmException`` : upon requested algorithm was not found during signature calculation.           |

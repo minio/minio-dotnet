@@ -33,8 +33,8 @@ namespace Minio.Tests
             Dictionary<string, string> endpoint2Region = new Dictionary<string, string>
             {
                 {"s3.us-east-2.amazonaws.com", "us-east-2"},
-                {"s3.amazonaws.com",""},
-                {"testbucket.s3-ca-central-1.amazonaws.com","ca-central-1"},
+                {"s3.amazonaws.com", ""},
+                {"testbucket.s3-ca-central-1.amazonaws.com", "ca-central-1"},
                 {"mybucket-s3-us-east-2.amazonaws.com", "us-east-2"},
                 {"s3.us-west-1.amazonaws.com", "us-west-1"},
                 {"mybucket-s3-us-west-1.amazonaws.com", "us-west-1"},

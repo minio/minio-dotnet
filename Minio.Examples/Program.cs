@@ -161,14 +161,14 @@ namespace Minio.Examples
                 // var sses3 = new SSES3();
 
                 // Uncomment to specify SSE-KMS encryption option
-                // var sseKms = new SSEKMS("kms-key",new Dictionary<string,string>{{ "kms-context", "somevalue"}});
+                // var sseKms = new SSEKMS("kms-key", new Dictionary<string, string>{{ "kms-context", "somevalue"}});
 
                 // Upload encrypted object
-                Cases.PutObject.Run(minioClient, bucketName, objectName, smallFileName,sse:ssec).Wait();
+                Cases.PutObject.Run(minioClient, bucketName, objectName, smallFileName, sse:ssec).Wait();
                 // Copy SSE-C encrypted object to unencrypted object
-                Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName,sseSrc:sseCpy,sseDest:ssec).Wait();
+                Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName, sseSrc:sseCpy, sseDest:ssec).Wait();
                 // Download SSE-C encrypted object
-                Cases.FGetObject.Run(minioClient, destBucketName, objectName, bigFileName,sse:ssec).Wait();
+                Cases.FGetObject.Run(minioClient, destBucketName, objectName, bigFileName, sse:ssec).Wait();
 
                 // List the incomplete uploads
                 Cases.ListIncompleteUploads.Run(minioClient, bucketName);

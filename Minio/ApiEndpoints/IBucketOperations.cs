@@ -108,6 +108,6 @@ namespace Minio
         /// <returns></returns>
         Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
 
-        // Task ListenBucketNotificationsAsync(string bucketName, string prefix = "", string suffix = "", List<Notification> events,CancellationToken cancellationToken = default(CancellationToken));
+        // Task ListenBucketNotificationsAsync(string bucketName, string prefix = "", string suffix = "", List<Notification> events, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

@@ -144,8 +144,8 @@ namespace Minio
         /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        //Task GetObjectAsync(string bucketName, string objectName, string filePath,ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
-        Task GetObjectAsync(string bucketName, string objectName, string filePath, ServerSideEncryption sse = null ,CancellationToken cancellationToken = default(CancellationToken));
+        //Task GetObjectAsync(string bucketName, string objectName, string filePath, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task GetObjectAsync(string bucketName, string objectName, string filePath, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Presigned get url - returns a presigned url to access an object's data without credentials.URL can have a maximum expiry of
@@ -156,7 +156,7 @@ namespace Minio
         /// <param name="expiresInt">Expiration time in seconds.</param>
         /// <param name="reqParams">optional override response headers</param>
         /// <param name="reqDate">optional request date and time in UTC</param>
-        Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string,string> reqParams = null, DateTime? reqDate = null);
+        Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null);
 
         /// <summary>
         /// Presigned Put url - returns a presigned url to upload an object without credentials.URL can have a maximum expiry of

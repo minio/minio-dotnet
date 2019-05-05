@@ -42,7 +42,7 @@ namespace Minio
         /// <returns>Task with an iterator lazily populated with objects</returns>
         public async Task<ListAllMyBucketsResult> ListBucketsAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            var request= await this.CreateRequest(Method.GET,resourcePath:"/").ConfigureAwait(false);
+            var request= await this.CreateRequest(Method.GET, resourcePath:"/").ConfigureAwait(false);
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             ListAllMyBucketsResult bucketList = new ListAllMyBucketsResult();
@@ -74,7 +74,7 @@ namespace Minio
             }
 
             // Set Target URL
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure,location);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, location);
             SetTargetURL(requestUrl);
 
             var request = new RestRequest("/" + bucketName, Method.PUT);

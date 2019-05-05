@@ -34,7 +34,7 @@ namespace Minio.DataModel
             this.Key = null;
             this.VersionId = null;
         }
-        public DeleteObject(string key,string versionId=null) 
+        public DeleteObject(string key, string versionId=null) 
         {
             this.Key = key;
             this.VersionId = versionId;

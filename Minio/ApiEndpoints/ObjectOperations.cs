@@ -234,7 +234,7 @@ namespace Minio
             }
             if (data == null)
             {
-                throw new ArgumentNullException("Invalid input stream,cannot be null");
+                throw new ArgumentNullException(nameof(data), "Invalid input stream, cannot be null");
             }
 
             // for sizes less than 5Mb , put a single object
@@ -933,7 +933,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///  Create the copy request,execute it and
+        ///  Create the copy request, execute it and
         /// </summary>
         /// <param name="bucketName"> Bucket name where the object to be copied exists.</param>
         /// <param name="objectName">Object name source to be copied.</param>

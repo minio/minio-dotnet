@@ -204,7 +204,7 @@ namespace Minio
             }
 
             // Set Target URL
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure,bucketName, region, usePathStyle);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, bucketName, region, usePathStyle);
             SetTargetURL(requestUrl);
 
             if (objectName != null)
@@ -254,15 +254,15 @@ namespace Minio
 
             // This is the actual url pointed to for all HTTP requests
             this.Endpoint = string.Format("{0}://{1}", scheme, host);
-            this.uri = RequestUtil.GetEndpointURL(this.BaseUrl,this.Secure);
-            RequestUtil.ValidateEndpoint(this.uri,this.Endpoint);
+            this.uri = RequestUtil.GetEndpointURL(this.BaseUrl, this.Secure);
+            RequestUtil.ValidateEndpoint(this.uri, this.Endpoint);
 
             // Initialize a new REST client. This uri will be modified if region specific endpoint/virtual style request
             // is decided upon while constructing a request for Amazon.
             restClient = new RestSharp.RestClient(this.uri);
             restClient.UserAgent = this.FullUserAgent;
 
-            authenticator = new V4Authenticator(this.Secure,this.AccessKey, this.SecretKey, this.Region, this.SessionToken);
+            authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, this.Region, this.SessionToken);
             restClient.Authenticator = authenticator;
         }
 
@@ -289,12 +289,12 @@ namespace Minio
         ///  Creates and returns an Cloud Storage client
         /// </summary>
         /// <param name="endpoint">Location of the server, supports HTTP and HTTPS</param>
-        /// <param name="accessKey">Access Key for authenticated requests (Optional,can be omitted for anonymous requests)</param>
-        /// <param name="secretKey">Secret Key for authenticated requests (Optional,can be omitted for anonymous requests)</param>
+        /// <param name="accessKey">Access Key for authenticated requests (Optional, can be omitted for anonymous requests)</param>
+        /// <param name="secretKey">Secret Key for authenticated requests (Optional, can be omitted for anonymous requests)</param>
         /// <param name="region">Optional custom region</param>
         /// <param name="sessionToken">Optional session token</param>
         /// <returns>Client initialized with user credentials</returns>
-        public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region="",string sessionToken="")
+        public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region="", string sessionToken="")
         {
             this.Secure = false;
 
@@ -358,7 +358,7 @@ namespace Minio
                 Console.Out.WriteLine("Full URL of Request {0}", fullUrl);
             }
 
-            IRestResponse response = await this.restClient.ExecuteTaskAsync(request,cancellationToken);
+            IRestResponse response = await this.restClient.ExecuteTaskAsync(request, cancellationToken);
 
             HandleIfErrorResponse(response, errorHandlers, startTime);
             return response;
@@ -476,7 +476,7 @@ namespace Minio
                 && response.Request.Method.Equals(Method.GET) && (errResponse.Code.Equals("NoSuchBucketPolicy")))
             {
 
-                ErrorResponseException ErrorException = new ErrorResponseException(errResponse.Message,errResponse.Code);
+                ErrorResponseException ErrorException = new ErrorResponseException(errResponse.Message, errResponse.Code);
                 ErrorException.Response = errResponse;
                 ErrorException.XmlError = response.Content;
                 throw ErrorException;

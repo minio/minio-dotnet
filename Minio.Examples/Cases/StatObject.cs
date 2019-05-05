@@ -36,7 +36,7 @@ namespace Minio.Examples.Cases
             }
             catch (Exception e)
             {
-                Console.WriteLine("[StatObject] {0}-{1}  Exception: {2}",bucketName, bucketObject, e);
+                Console.WriteLine("[StatObject] {0}-{1}  Exception: {2}", bucketName, bucketObject, e);
             }
         }
     }

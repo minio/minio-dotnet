@@ -38,10 +38,10 @@ namespace Minio.Examples.Cases
                 copyCond.SetReplaceMetadataDirective();
 
                 // set custom metadata
-                Dictionary<string,string> metadata = new Dictionary<string,string>()
+                var metadata = new Dictionary<string, string>()
                 {
-                    { "Content-Type", "application/css"},
-                    {"X-Amz-Meta-Mynewkey","my-new-value"}
+                    { "Content-Type", "application/css" },
+                    { "X-Amz-Meta-Mynewkey", "my-new-value" }
                 };
                 await minio.CopyObjectAsync(fromBucketName, 
                                                 fromObjectName, 

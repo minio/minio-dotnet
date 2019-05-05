@@ -45,7 +45,7 @@ namespace Minio
             }
 
             Uri uri = TryCreateUri(endPoint, secure);
-            RequestUtil.ValidateEndpoint(uri,endPoint);
+            RequestUtil.ValidateEndpoint(uri, endPoint);
             return uri;
         }
      
@@ -63,11 +63,11 @@ namespace Minio
                     host = prefix + utils.UrlEncode(host) + "/";
                 }
             }
-            Uri uri = TryCreateUri(host,secure);
+            Uri uri = TryCreateUri(host, secure);
             return uri;
         }
 
-        internal static Uri TryCreateUri(string endpoint,bool secure)
+        internal static Uri TryCreateUri(string endpoint, bool secure)
         {
             var scheme = secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
 
@@ -88,7 +88,7 @@ namespace Minio
         /// <summary>
         /// Validates URI to check if it is well formed. Otherwise cry foul.
         /// </summary>
-        internal static void ValidateEndpoint(Uri uri,string Endpoint)
+        internal static void ValidateEndpoint(Uri uri, string Endpoint)
         {
             if (string.IsNullOrEmpty(uri.OriginalString))
             {
