@@ -257,7 +257,7 @@ namespace Minio.DataModel
             sb.Append("\"expiration\":\"").Append(this.expiration.ToString("yyyy-MM-ddTHH:mm:ss.000Z")).Append("\"").Append(",");
             sb.Append("\"conditions\":[").Append(string.Join(",", policyList)).Append("]");
             sb.Append("}");
-            return System.Text.Encoding.UTF8.GetBytes(sb.ToString() as string);
+            return System.Text.Encoding.UTF8.GetBytes(sb.ToString());
         }
 
         /// <summary>

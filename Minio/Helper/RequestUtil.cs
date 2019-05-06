@@ -45,7 +45,7 @@ namespace Minio
             }
 
             Uri uri = TryCreateUri(endPoint, secure);
-            RequestUtil.ValidateEndpoint(uri, endPoint);
+            ValidateEndpoint(uri, endPoint);
             return uri;
         }
      

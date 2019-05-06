@@ -285,7 +285,7 @@ namespace Minio
                 }
                 numPartsUploaded += 1;
                 string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, metaData, sseHeaders, cancellationToken).ConfigureAwait(false);
-                totalParts[partNumber - 1] = new Part() { PartNumber = partNumber, ETag = etag, size = (long)expectedReadSize };
+                totalParts[partNumber - 1] = new Part { PartNumber = partNumber, ETag = etag, size = (long)expectedReadSize };
             }
 
             // This shouldn't happen where stream size is known.
@@ -401,7 +401,7 @@ namespace Minio
             XDocument root = XDocument.Parse(response.Content);
 
             var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Part")
-                           select new Part()
+                           select new Part
                            {
                                PartNumber = int.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}PartNumber").Value, CultureInfo.CurrentCulture),
                                ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value.Replace("\"", ""),
@@ -549,7 +549,7 @@ namespace Minio
             XDocument root = XDocument.Parse(response.Content);
 
             var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
-                           select new Upload()
+                           select new Upload
                            {
                                Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
                                UploadId = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}UploadId").Value,
@@ -734,7 +734,7 @@ namespace Minio
                           if (i % 1000 == 0)
                               break;
                       }
-                      if (objectList.Count() > 0)
+                      if (objectList.Count > 0)
                       {
                           var errorsList = await removeObjectsAsync(bucketName, objectList, cancellationToken).ConfigureAwait(false);
                           foreach (DeleteError error in errorsList)
@@ -1054,7 +1054,7 @@ namespace Minio
                 }
                 CopyPartResult cpPartResult = (CopyPartResult)await this.CopyObjectRequestAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, customHeader, resource, cancellationToken, typeof(CopyPartResult)).ConfigureAwait(false);
 
-                totalParts[partNumber - 1] = new Part() { PartNumber = partNumber, ETag = cpPartResult.ETag, size = (long)expectedReadSize };
+                totalParts[partNumber - 1] = new Part { PartNumber = partNumber, ETag = cpPartResult.ETag, size = (long)expectedReadSize };
             }
 
             Dictionary<int, string> etags = new Dictionary<int, string>();

@@ -145,7 +145,7 @@ namespace Minio.Functional.Tests
             }
 
             MinioClient minioClient = null;
-            if (enableHttps.Equals("1"))
+            if (enableHttps == "1")
                 // WithSSL() enables SSL support in MinIO client
                 minioClient = new MinioClient(endPoint, accessKey, secretKey).WithSSL();
             else
@@ -167,7 +167,7 @@ namespace Minio.Functional.Tests
 
             string runMode = Environment.GetEnvironmentVariable("MINT_MODE");
 
-            if (!string.IsNullOrEmpty(runMode) && runMode.Equals("core"))
+            if (!string.IsNullOrEmpty(runMode) && runMode == "core")
             {
                 runCoreTests(minioClient);
                 System.Environment.Exit(0);
@@ -254,7 +254,7 @@ namespace Minio.Functional.Tests
             GetBucketPolicy_Test1(minioClient).Wait();
 
             // Test encryption
-            if (enableHttps.Equals("1"))
+            if (enableHttps == "1")
             {
                 ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
                 PutGetStatEncryptedObject_Test1(minioClient).Wait();
@@ -263,7 +263,7 @@ namespace Minio.Functional.Tests
                 EncryptedCopyObject_Test1(minioClient).Wait();
                 EncryptedCopyObject_Test2(minioClient).Wait();
             }
-            if (kmsEnabled != null && kmsEnabled.Equals("1"))
+            if (kmsEnabled != null && kmsEnabled == "1")
             {
                 PutGetStatEncryptedObject_Test3(minioClient).Wait();
                 EncryptedCopyObject_Test3(minioClient).Wait();
@@ -457,7 +457,7 @@ namespace Minio.Functional.Tests
         private async static Task ListBuckets_Test(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
-            var args = new Dictionary<string, string>{};
+            var args = new Dictionary<string, string>();
             try
             {
                 var list = await minio.ListBucketsAsync();

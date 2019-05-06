@@ -171,7 +171,7 @@ namespace Minio.DataModel
                 }
             }
             sb.Append("}");
-            byte[] contextBytes = Encoding.UTF8.GetBytes(sb.ToString() as string);
+            byte[] contextBytes = Encoding.UTF8.GetBytes(sb.ToString());
             return Convert.ToBase64String(contextBytes);
         }
     }

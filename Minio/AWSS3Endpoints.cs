@@ -27,7 +27,7 @@ namespace Minio
         private static readonly Lazy<AWSS3Endpoints> lazy =
             new Lazy<AWSS3Endpoints>(() => new AWSS3Endpoints());
 
-        private ConcurrentDictionary<string, string> endpoints;
+        private readonly ConcurrentDictionary<string, string> endpoints;
 
         public static AWSS3Endpoints Instance
         {

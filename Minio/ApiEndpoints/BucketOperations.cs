@@ -65,7 +65,7 @@ namespace Minio
         /// <returns> Task </returns>
         public async Task MakeBucketAsync(string bucketName, string location = "us-east-1", CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (location.Equals("us-east-1"))
+            if (location == "us-east-1")
             {
                 if (this.Region != "")
                 {
@@ -222,7 +222,7 @@ namespace Minio
             XDocument root = XDocument.Parse(response.Content);
 
             var items = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
-                         select new Item()
+                         select new Item
                          {
                              Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
                              LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
@@ -232,7 +232,7 @@ namespace Minio
                          });
 
             var prefixes = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}CommonPrefixes")
-                            select new Item()
+                            select new Item
                             {
                                 Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Prefix").Value,
                                 IsDir = true
@@ -308,8 +308,7 @@ namespace Minio
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             using (var stream = new MemoryStream(contentBytes))
             {
-                notification = (BucketNotification)(new XmlSerializer(typeof(BucketNotification)).Deserialize(stream));
-                return notification;
+                return (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(stream);
             }
         }
         /// <summary>

@@ -25,7 +25,7 @@ namespace Minio.DataModel
     /// </summary>
     public class CopyConditions
     {
-        private Dictionary<string, string> copyConditions = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> copyConditions = new Dictionary<string, string>();
         internal long byteRangeStart = 0;
         internal long byteRangeEnd = -1;
 

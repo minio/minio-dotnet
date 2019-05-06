@@ -128,7 +128,7 @@ namespace Minio
                     {
                         encodedPathBuf.Append("/");
                     }
-                    encodedPathBuf.Append(utils.UrlEncode(pathSegment));
+                    encodedPathBuf.Append(UrlEncode(pathSegment));
                 }
             }
 
@@ -238,7 +238,7 @@ namespace Minio
             }
             double partSize = (double)Math.Ceiling((decimal)size / Constants.MaxParts);
             partSize = (double)Math.Ceiling((decimal)partSize / Constants.MinimumPartSize) * Constants.MinimumPartSize;
-            double partCount = (double)Math.Ceiling(size / partSize);
+            double partCount = Math.Ceiling(size / partSize);
             double lastPartSize = size - (partCount - 1) * partSize;
             dynamic obj = new ExpandoObject();
             obj.partSize = partSize;

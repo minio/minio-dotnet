@@ -32,7 +32,7 @@ namespace Minio.DataModel
 
         public QueueConfig(string arn) : base(arn)
         {
-            this.Queue = arn.ToString();
+            this.Queue = arn;
         }
 
         public QueueConfig(Arn arn) : base(arn)

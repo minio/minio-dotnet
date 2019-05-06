@@ -64,7 +64,7 @@ namespace Minio
         //
         //      Is skipped for obvious reasons
         //
-        private static HashSet<string> ignoredHeaders = new HashSet<string>() {
+        private static HashSet<string> ignoredHeaders = new HashSet<string> {
             "authorization",
             "content-length",
             "content-type",
@@ -533,7 +533,7 @@ namespace Minio
         {
             if (request.Method == Method.PUT || request.Method.Equals(Method.POST))
             {
-                var bodyParameter = request.Parameters.Where(p => p.Type.Equals(ParameterType.RequestBody)).FirstOrDefault();
+                var bodyParameter = request.Parameters.FirstOrDefault(p => p.Type.Equals(ParameterType.RequestBody));
                 if (bodyParameter == null)
                 {
                     return;

@@ -121,7 +121,7 @@ namespace Minio
                 else
                 {
                     // eu-west-1 can be sometimes 'EU'.
-                    if ("EU".Equals(location))
+                    if (location == "EU")
                     {
                         region = "eu-west-1";
                     }
