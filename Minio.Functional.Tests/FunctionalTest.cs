@@ -646,7 +646,7 @@ namespace Minio.Functional.Tests
                 await Setup_Test(minio, bucketName);
                 Task[] tasks = new Task[7];
                 for (int i = 0; i < 7; i++) {
-                    tasks[i]= PutObject_Task(minio, bucketName, objectName, null, null, 0, null, rsg.GenerateStreamFromSeed(10*KB));
+                    tasks[i] = PutObject_Task(minio, bucketName, objectName, null, null, 0, null, rsg.GenerateStreamFromSeed(10*KB));
                 }
                 await Task.WhenAll(tasks);
                 await minio.RemoveObjectAsync(bucketName, objectName);
@@ -1918,7 +1918,7 @@ namespace Minio.Functional.Tests
                 await Setup_Test(minio, bucketName);
                 Task[] tasks = new Task[2];
                 for (int i = 0; i < 2; i++) {
-                    tasks[i]= PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
+                    tasks[i] = PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
                 }
                 await Task.WhenAll(tasks);
 
@@ -1976,7 +1976,7 @@ namespace Minio.Functional.Tests
                 await Setup_Test(minio, bucketName);
                   Task[] tasks = new Task[2];
                 for (int i = 0; i < 2; i++) {
-                    tasks[i]= PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1*KB));
+                    tasks[i] = PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1*KB));
                 }
                 await Task.WhenAll(tasks);
 
@@ -2009,7 +2009,7 @@ namespace Minio.Functional.Tests
                 await Setup_Test(minio, bucketName);
                 Task[] tasks = new Task[2];
                 for (int i = 0; i < 2; i++) {
-                    tasks[i]= PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1*KB));
+                    tasks[i] = PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1*KB));
                 }
                 await Task.WhenAll(tasks);
 
@@ -2043,9 +2043,9 @@ namespace Minio.Functional.Tests
                 await Setup_Test(minio, bucketName);
                 Task[] tasks = new Task[numObjects];
                 for (int i = 1; i <= numObjects; i++) {
-                    tasks[i - 1]= PutObject_Task(minio, bucketName, objectNamePrefix + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
+                    tasks[i - 1] = PutObject_Task(minio, bucketName, objectNamePrefix + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
                     // Add sleep to avoid flooding server with concurrent requests
-                    if (i % 50 == 0){
+                    if (i % 50 == 0) {
                         System.Threading.Thread.Sleep(2000);
                     }
                 }
@@ -2140,7 +2140,7 @@ namespace Minio.Functional.Tests
                 DeleteError de;
                 IObservable<DeleteError> observable = await minio.RemoveObjectAsync(bucketName, objectsList);
                 IDisposable subscription = observable.Subscribe(
-                   deleteError => de= deleteError,
+                   deleteError => de = deleteError,
                    () =>
                    {
                        TearDown(minio, bucketName).Wait();

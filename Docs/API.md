@@ -38,7 +38,7 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 
 |  |
 |---|
-|`public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region="", string sessionToken="")`   |
+|`public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region = "", string sessionToken="")`   |
 | Creates MinIO client object with given endpoint.AccessKey, secretKey, region and sessionToken are optional parameters, and can be omitted for anonymous access.
   The client object uses Http access by default. To use Https, chain method WithSSL() to client object to use secure transfer protocol   |
 
@@ -110,7 +110,7 @@ MinioClient s3Client = new MinioClient("s3.amazonaws.com:80",
 ## 2. Bucket operations
 
 <a name="makeBucket"></a>
-### MakeBucketAsync(string bucketName, string location="us-east-1")
+### MakeBucketAsync(string bucketName, string location = "us-east-1")
 `Task MakeBucketAsync(string bucketName, string location = "us-east-1", CancellationToken cancellationToken = default(CancellationToken))`
 
 Creates a new bucket.
@@ -781,7 +781,7 @@ catch (MinioException e)
 <a name="putObject"></a>
 ### PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType, ServerSideEncryption sse)
 
-` Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType, Dictionary<string, string> metaData=null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
+` Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
 
 
 Uploads contents from a stream to objectName.
@@ -845,7 +845,7 @@ catch(MinioException e)
 <a name="putObject"></a>
 ### PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null, ServerSideEncryption sse)
 
-` Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null, Dictionary<string, string> metaData=null, ServerSideEncryption sse=null, CancellationToken cancellationToken = default(CancellationToken))`
+` Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
 
 
 Uploads contents from a file to objectName.

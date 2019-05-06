@@ -25,7 +25,7 @@ namespace Minio.Examples.Cases
         // Get stats on a object
         public async static Task Run(Minio.MinioClient minio, 
                                      string bucketName = "my-bucket-name",
-                                     string bucketObject="my-object-name")
+                                     string bucketObject = "my-object-name")
         {
             try
             {

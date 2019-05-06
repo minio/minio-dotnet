@@ -25,10 +25,10 @@ namespace Minio.Examples.Cases
     {
         // Copy object from one bucket to another
         public async static Task Run(Minio.MinioClient minio,
-                                     string fromBucketName="from-bucket-name",
-                                     string fromObjectName="from-object-name",
-                                     string destBucketName="dest-bucket",
-                                     string destObjectName="to-object-name",
+                                     string fromBucketName = "from-bucket-name",
+                                     string fromObjectName = "from-object-name",
+                                     string destBucketName = "dest-bucket",
+                                     string destObjectName =" to-object-name",
                                      ServerSideEncryption sseSrc = null,
                                      ServerSideEncryption sseDest = null)
         {

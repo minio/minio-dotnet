@@ -32,7 +32,7 @@ namespace Minio.Examples.Cases
         public async static Task Run(Minio.MinioClient minio,
                                      string bucketName = "my-bucket-name", 
                                      string objectName = "my-object-name",
-                                     string fileName="location-of-file",
+                                     string fileName = "location-of-file",
                                      ServerSideEncryption sse = null)
         {
             try

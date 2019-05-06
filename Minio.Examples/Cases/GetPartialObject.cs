@@ -25,9 +25,9 @@ namespace Minio.Examples.Cases
         // Get object in a bucket for a particular offset range. Dotnet SDK currently
         // requires both start offset and end 
         public async static Task Run(MinioClient minio,
-                                     string bucketName="my-bucket-name",
-                                     string objectName="my-object-name",
-                                     string fileName="my-file-name")
+                                     string bucketName = "my-bucket-name",
+                                     string objectName = "my-object-name",
+                                     string fileName = "my-file-name")
         {
             try
             {

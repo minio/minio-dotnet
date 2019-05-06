@@ -150,7 +150,7 @@ namespace Minio
                                 Object body = null, string resourcePath = null)
         {
             string region = "";
-            if ( bucketName != null)
+            if (bucketName != null)
             {
                 utils.validateBucketName(bucketName);
                 // Fetch correct region for bucket
@@ -166,7 +166,7 @@ namespace Minio
         
             this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region:this.Region, sessionToken:this.SessionToken);
 
-            // This section reconstructs the url with scheme followed by location specific endpoint( s3.region.amazonaws.com)
+            // This section reconstructs the url with scheme followed by location specific endpoint (s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
             string resource = "";
             bool usePathStyle = false;
