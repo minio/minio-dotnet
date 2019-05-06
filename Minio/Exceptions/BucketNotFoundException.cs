@@ -21,7 +21,7 @@ namespace Minio.Exceptions
     [Serializable]
     public class BucketNotFoundException : MinioException
     {
-        private string bucketName;
+        private readonly string bucketName;
 
         public BucketNotFoundException()
         {

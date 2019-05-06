@@ -18,8 +18,8 @@ namespace Minio.Exceptions
 {
     public class InvalidContentLengthException : MinioException
     {
-        private string bucketName;
-        private string objectName;
+        private readonly string bucketName;
+        private readonly string objectName;
 
         public InvalidContentLengthException(string bucketName, string objectName, string message) : base(message)
         {

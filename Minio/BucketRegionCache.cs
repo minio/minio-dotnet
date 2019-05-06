@@ -32,7 +32,7 @@ namespace Minio
         private static readonly Lazy<BucketRegionCache> lazy =
             new Lazy<BucketRegionCache>(() => new BucketRegionCache());
 
-        private ConcurrentDictionary<string, string> regionMap;
+        private readonly ConcurrentDictionary<string, string> regionMap;
 
         public static BucketRegionCache Instance
         {

@@ -18,7 +18,7 @@ namespace Minio.Exceptions
 {
     public class InvalidBucketNameException : MinioException
     {
-        private string bucketName;
+        private readonly string bucketName;
 
         public InvalidBucketNameException(string bucketName, string message) : base(message)
         {

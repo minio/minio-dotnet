@@ -31,7 +31,7 @@ namespace Minio.DataModel
        private string Resource { get; }
 
         [XmlText]
-        private string arnString;
+        private readonly string arnString;
 
         public Arn()
         {  

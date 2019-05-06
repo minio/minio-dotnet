@@ -31,8 +31,8 @@ namespace Minio
     {
         private readonly string accessKey;
         private readonly string secretKey;
-        private string region;
-        private string sessionToken;
+        private readonly string region;
+        private readonly string sessionToken;
 
         internal bool isAnonymous { get; private set; }
         internal bool isSecure { get; private set; }

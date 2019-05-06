@@ -29,7 +29,7 @@ namespace Minio.Examples
     public class Program
     {
         private static Random rnd = new Random();
-        private static int UNIT_MB = 1024 * 1024;
+        private const int UNIT_MB = 1024 * 1024;
 
         // Create a file of given size from random byte array
         private static String CreateFile(int size)

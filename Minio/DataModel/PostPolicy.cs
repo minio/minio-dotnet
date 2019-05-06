@@ -23,9 +23,9 @@ namespace Minio.DataModel
     public class PostPolicy
     {
         private DateTime expiration;
-        private List<Tuple<string, string, string>> policies =
+        private readonly List<Tuple<string, string, string>> policies =
                 new List<Tuple<string, string, string>>();
-        private Dictionary<string, string> formData = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> formData = new Dictionary<string, string>();
         public string Key { get; private set; }
         public string Bucket { get; private set; }
 

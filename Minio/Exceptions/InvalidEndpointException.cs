@@ -18,7 +18,7 @@ namespace Minio.Exceptions
 {
     public class InvalidEndpointException : MinioException
     {
-        private string endpoint;
+        private readonly string endpoint;
 
         public InvalidEndpointException(string endpoint, string message) : base(message)
         {
