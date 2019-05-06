@@ -73,9 +73,6 @@ namespace Minio.DataModel
             this.arnString = "arn:" + this.Partition + ":" + this.Service + ":" + this.Region + ":" + this.AccountID + ":" + this.Resource;
         }
 
-        public override string ToString()
-        {
-            return  arnString;
-        }
+        public override string ToString() => arnString;
     }
 }

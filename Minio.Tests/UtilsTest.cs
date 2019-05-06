@@ -30,7 +30,7 @@ namespace Minio.Tests
         [TestMethod]
         public void TestValidBucketName()
         {
-        var testCases = new List<KeyValuePair<string, InvalidBucketNameException>>()
+            var testCases = new List<KeyValuePair<string, InvalidBucketNameException>>
             {
               new KeyValuePair<string, InvalidBucketNameException>(".mybucket", new InvalidBucketNameException(".mybucket", "Bucket name cannot start or end with a '.' dot.")),
               new KeyValuePair<string, InvalidBucketNameException>("mybucket.", new InvalidBucketNameException(".mybucket", "Bucket name cannot start or end with a '.' dot.")),
@@ -43,11 +43,10 @@ namespace Minio.Tests
               new KeyValuePair<string, InvalidBucketNameException>("mybucket", null ),
               new KeyValuePair<string, InvalidBucketNameException>("mybucket1234dhdjkshdkshdkshdjkshdkjshfkjsfhjkshsjkhjkhfkjd", null),
             };
-         
+
             foreach (KeyValuePair<string, InvalidBucketNameException> pair in testCases)
             {
-                
-                string bucketName = (string)pair.Key;
+                string bucketName = pair.Key;
                 InvalidBucketNameException expectedException = pair.Value;
                 try
                 {

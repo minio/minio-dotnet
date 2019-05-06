@@ -29,10 +29,7 @@ namespace Minio
 
         private readonly ConcurrentDictionary<string, string> endpoints;
 
-        public static AWSS3Endpoints Instance
-        {
-            get { return lazy.Value; }
-        }
+        public static AWSS3Endpoints Instance => lazy.Value;
 
         private AWSS3Endpoints()
         {

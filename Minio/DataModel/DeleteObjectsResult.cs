@@ -31,14 +31,8 @@ namespace Minio.DataModel
         [XmlElement("Error")]
         public List<DeleteError> errorList;
 
-        public List<DeletedObject> ObjectsList()
-        {
-          return this.objectsList;
-        }
+        public List<DeletedObject> ObjectsList() => this.objectsList;
 
-        public List<DeleteError> ErrorList()
-        {
-          return this.errorList;
-        }
+        public List<DeleteError> ErrorList() => this.errorList;
     }
 }

@@ -319,9 +319,6 @@ namespace Minio.DataModel
         /// Get the populated dictionary of policy data.
         /// </summary>
         /// <returns>Dictionary of policy data</returns>
-        public Dictionary<string, string> GetFormData()
-        {
-            return this.formData;
-        }
+        public Dictionary<string, string> GetFormData() => this.formData;
     }
 }

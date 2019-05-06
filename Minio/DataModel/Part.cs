@@ -45,9 +45,6 @@ namespace Minio.DataModel
             }
         }
 
-        public long PartSize()
-        {
-            return size;
-        }
+        public long PartSize() => size;
     }
 }

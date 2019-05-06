@@ -2476,7 +2476,7 @@ namespace Minio.Functional.Tests
                                                     objectName,
                                                     filestream,
                                                     filestream.Length,
-                                                    contentType, cancellationToken:cts.Token);
+                                                    contentType, cancellationToken: cts.Token);
                     }
                 }
                 catch (OperationCanceledException)
@@ -2530,7 +2530,7 @@ namespace Minio.Functional.Tests
                                                     objectName,
                                                     filestream,
                                                     filestream.Length,
-                                                    contentType, cancellationToken:cts.Token);
+                                                    contentType, cancellationToken: cts.Token);
                     }
                 }
                 catch (OperationCanceledException)
@@ -2580,7 +2580,7 @@ namespace Minio.Functional.Tests
                                                     objectName,
                                                     filestream,
                                                     filestream.Length,
-                                                    contentType, cancellationToken:cts.Token);
+                                                    contentType, cancellationToken: cts.Token);
                     }
                 }
                 catch (OperationCanceledException)
@@ -2628,7 +2628,7 @@ namespace Minio.Functional.Tests
                                                     objectName,
                                                     filestream,
                                                     filestream.Length,
-                                                    contentType, cancellationToken:cts.Token);
+                                                    contentType, cancellationToken: cts.Token);
                     }
                 }
                 catch (OperationCanceledException)

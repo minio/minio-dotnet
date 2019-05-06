@@ -34,10 +34,7 @@ namespace Minio
 
         private readonly ConcurrentDictionary<string, string> regionMap;
 
-        public static BucketRegionCache Instance
-        {
-            get { return lazy.Value; }
-        }
+        public static BucketRegionCache Instance => lazy.Value;
         private BucketRegionCache()
         {
             this.regionMap = new ConcurrentDictionary<string, string>();

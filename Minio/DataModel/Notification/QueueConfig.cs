@@ -52,9 +52,6 @@ namespace Minio.DataModel
             return other.Queue.Equals(this.Queue);
         }
 
-        public override int GetHashCode()
-        {
-            return this.Queue.GetHashCode();
-        }
+        public override int GetHashCode() => this.Queue.GetHashCode();
     }
 }

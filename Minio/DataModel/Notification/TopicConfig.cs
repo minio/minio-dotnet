@@ -58,9 +58,6 @@ namespace Minio.DataModel
             return other.Topic.Equals(this.Topic);
         }
 
-        public override int GetHashCode()
-        {
-            return this.Topic.GetHashCode();
-        }
+        public override int GetHashCode() => this.Topic.GetHashCode();
     }
 }
