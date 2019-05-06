@@ -25,7 +25,6 @@ namespace Minio.Exceptions
 
         public BucketNotFoundException()
         {
-
         }
 
         public BucketNotFoundException(string bucketName, string message) : base(message)

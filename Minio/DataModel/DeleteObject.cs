@@ -24,17 +24,17 @@ namespace Minio.DataModel
     public class DeleteObject
     {
         [XmlElement("Key")]
-        public string Key { get;set; }
+        public string Key { get; set; }
 
         [XmlElement("VersionId")]
-        public string VersionId { get;set;}
+        public string VersionId { get; set; }
 
         public DeleteObject()
         {
             this.Key = null;
             this.VersionId = null;
         }
-        public DeleteObject(string key, string versionId=null) 
+        public DeleteObject(string key, string versionId = null)
         {
             this.Key = key;
             this.VersionId = versionId;

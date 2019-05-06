@@ -75,7 +75,7 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName"></param>
         /// <returns></returns>
-        public bool Exists(String bucketName)
+        public bool Exists(string bucketName)
         {
             this.regionMap.TryGetValue(bucketName, out string value);
             return value != null;
@@ -109,7 +109,6 @@ namespace Minio
                     var stream = new MemoryStream(contentBytes);
                     XDocument root = XDocument.Parse(response.Content);
                     location = root.Root.Value;
-
                 }
                 if (location == null || location == "")
                 {

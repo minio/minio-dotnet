@@ -104,7 +104,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        /// Set replace metadata directive which specifies that server side copy needs to replace metadata 
+        /// Set replace metadata directive which specifies that server side copy needs to replace metadata
         /// on destination with custom metadata provided in the request.
         /// </summary>
         public void SetReplaceMetadataDirective()
@@ -121,14 +121,14 @@ namespace Minio.DataModel
             foreach (var item in copyConditions)
             {
                 if (item.Key.Equals("x-amz-metadata-directive", StringComparison.OrdinalIgnoreCase) &&
-                    (item.Value.ToUpper().Equals("REPLACE")))
+                    item.Value.ToUpper().Equals("REPLACE"))
                     return true;
             }
             return false;
         }
 
         /// <summary>
-        /// Set Byte Range condition, copy object which falls within the 
+        /// Set Byte Range condition, copy object which falls within the
         /// start and end byte range specified by user
         /// </summary>
         /// <param name="firstByte"></param>

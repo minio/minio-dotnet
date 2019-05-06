@@ -24,8 +24,8 @@ namespace Minio.DataModel
         private string etag;
         public int PartNumber { get; set; }
         public long size { get; set; }
-        public DateTime lastModified { get; set; } 
-        
+        public DateTime lastModified { get; set; }
+
         public string ETag
         {
             get

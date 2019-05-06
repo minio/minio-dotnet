@@ -42,7 +42,7 @@ namespace Minio.DataModel
         }
 
         // Implement equality for this object
-        public override bool Equals(Object obj)
+        public override bool Equals(object obj)
         {
             LambdaConfig other = (LambdaConfig)obj;
             // If parameter is null return false.

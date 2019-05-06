@@ -93,7 +93,7 @@ namespace Minio.DataModel
                 {
                     this.Filter.S3Key.FilterRules[i] = newFilterRule;
                     return;
-                }              
+                }
             }
             this.Filter.S3Key.FilterRules.Add(newFilterRule);
         }

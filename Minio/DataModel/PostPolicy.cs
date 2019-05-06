@@ -97,7 +97,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        /// Set content encoding 
+        /// Set content encoding
         /// </summary>
         /// <param name="contentEncoding">ContentEncoding for the policy</param>
         public void SetContentEncoding(string contentEncoding)
@@ -124,7 +124,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        /// Set content range 
+        /// Set content range
         /// </summary>
         /// <param name="startRange">ContentRange for the policy</param>
         /// <param name="endRange"></param>
@@ -140,7 +140,7 @@ namespace Minio.DataModel
             }
             this.policies.Add(Tuple.Create("content-length-range", startRange.ToString(), endRange.ToString()));
         }
-        
+
         /// <summary>
         /// Set session token
         /// </summary>
@@ -153,8 +153,9 @@ namespace Minio.DataModel
                 this.formData.Add("x-amz-security-token", sessionToken);
             }
         }
+
         /// <summary>
-        /// Set the success action status of the object for this policy based upload. 
+        /// Set the success action status of the object for this policy based upload.
         /// </summary>
         /// <param name="status">Success action status</param>
         public void SetSuccessStatusAction(string status)

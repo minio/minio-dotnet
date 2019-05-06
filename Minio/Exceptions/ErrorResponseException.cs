@@ -30,7 +30,6 @@ namespace Minio.Exceptions
 
         public ErrorResponseException()
         {
-
         }
 
         public ErrorResponseException(string message, string errorcode) : base($"MinIO API responded with message={message}")

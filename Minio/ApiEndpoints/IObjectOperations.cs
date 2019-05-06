@@ -144,7 +144,7 @@ namespace Minio
         /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        //Task GetObjectAsync(string bucketName, string objectName, string filePath, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
+        // Task GetObjectAsync(string bucketName, string objectName, string filePath, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
         Task GetObjectAsync(string bucketName, string objectName, string filePath, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -168,7 +168,7 @@ namespace Minio
         Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt);
 
         /// <summary>
-        ///  Presigned post policy
+        /// Presigned post policy
         /// </summary>
         Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy);
     }

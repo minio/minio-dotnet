@@ -34,7 +34,6 @@ namespace Minio
 {
     public partial class MinioClient : IBucketOperations
     {
-
         /// <summary>
         /// List all objects in a bucket
         /// </summary>
@@ -42,7 +41,7 @@ namespace Minio
         /// <returns>Task with an iterator lazily populated with objects</returns>
         public async Task<ListAllMyBucketsResult> ListBucketsAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            var request = await this.CreateRequest(Method.GET, resourcePath:"/").ConfigureAwait(false);
+            var request = await this.CreateRequest(Method.GET, resourcePath: "/").ConfigureAwait(false);
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             ListAllMyBucketsResult bucketList = new ListAllMyBucketsResult();
@@ -50,7 +49,7 @@ namespace Minio
             {
                 var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
                 using (var stream = new MemoryStream(contentBytes))
-                    bucketList = (ListAllMyBucketsResult)(new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream));
+                    bucketList = (ListAllMyBucketsResult)new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream);
                 return bucketList;
             }
             return bucketList;
@@ -182,23 +181,21 @@ namespace Minio
         /// <param name="marker">marks location in the iterator sequence</param>
         /// <returns>Task with a tuple populated with objects</returns>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-
         private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix, string delimiter, string marker, CancellationToken cancellationToken = default(CancellationToken))
         {
             var queries = new List<string>();
 
             // null values are treated as empty strings.
-            if (delimiter == null) {
+            if (delimiter == null)
                 delimiter = "";
-            }
-            if (prefix == null) {
-                prefix = "";
-            }
-            if (marker == null) {
-                marker = "";
-            }
 
-            queries.Add("delimiter="+ Uri.EscapeDataString(delimiter));
+            if (prefix == null)
+                prefix = "";
+
+            if (marker == null)
+                marker = "";
+
+            queries.Add("delimiter=" + Uri.EscapeDataString(delimiter));
             queries.Add("prefix=" + Uri.EscapeDataString(prefix));
             queries.Add("max-keys=1000");
             queries.Add("marker=" + Uri.EscapeDataString(marker));
@@ -216,7 +213,7 @@ namespace Minio
             ListBucketResult listBucketResult = null;
             using (var stream = new MemoryStream(contentBytes))
             {
-                listBucketResult = (ListBucketResult)(new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream));
+                listBucketResult = (ListBucketResult)new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream);
             }
 
             XDocument root = XDocument.Parse(response.Content);
@@ -249,7 +246,7 @@ namespace Minio
         /// <param name="bucketName">Bucket name.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task that returns the Bucket policy as a json string</returns>
-        public async Task<String> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<string> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
             IRestResponse response = null;
 
@@ -278,7 +275,7 @@ namespace Minio
         /// <param name="policyJson">Policy json as string </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task to set a policy</returns>
-        public async Task SetPolicyAsync(String bucketName, String policyJson, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default(CancellationToken))
         {
             var request = await this.CreateRequest(Method.PUT, bucketName,
                                            resourcePath: "?policy",
@@ -302,7 +299,6 @@ namespace Minio
                                                bucketName,
                                                resourcePath: "?notification")
                                     .ConfigureAwait(false);
-            BucketNotification notification = null;
 
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
@@ -311,6 +307,7 @@ namespace Minio
                 return (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(stream);
             }
         }
+
         /// <summary>
         /// Sets the notification configuration for this bucket
         /// </summary>

@@ -147,7 +147,7 @@ namespace Minio
         internal async Task<RestRequest> CreateRequest(Method method, string bucketName = null, string objectName = null,
                                 Dictionary<string, string> headerMap = null,
                                 string contentType = "application/octet-stream",
-                                Object body = null, string resourcePath = null)
+                                object body = null, string resourcePath = null)
         {
             string region = "";
             if (bucketName != null)
@@ -163,8 +163,8 @@ namespace Minio
 
             // Start with user specified endpoint
             string host = this.BaseUrl;
-        
-            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region:this.Region, sessionToken:this.SessionToken);
+
+            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region, sessionToken: this.SessionToken);
 
             // This section reconstructs the url with scheme followed by location specific endpoint (s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
@@ -186,7 +186,7 @@ namespace Minio
                         // use path style for location query
                         usePathStyle = true;
                     }
-                    else if (bucketName != null  && bucketName.Contains(".") && this.Secure)
+                    else if (bucketName != null && bucketName.Contains(".") && this.Secure)
                     {
                         // use path style where '.' in bucketName causes SSL certificate validation error
                         usePathStyle = true;
@@ -223,7 +223,6 @@ namespace Minio
             if (body != null)
             {
                 request.AddParameter(contentType, body, RestSharp.ParameterType.RequestBody);
-
             }
 
             if (headerMap != null)
@@ -273,7 +272,6 @@ namespace Minio
         /// </summary>
         /// <param name="appName"></param>
         /// <param name="appVersion"></param>
-        /// <returns></returns>
         public void SetAppInfo(string appName, string appVersion)
         {
             if (string.IsNullOrEmpty(appName))
@@ -296,7 +294,7 @@ namespace Minio
         /// <param name="region">Optional custom region</param>
         /// <param name="sessionToken">Optional session token</param>
         /// <returns>Client initialized with user credentials</returns>
-        public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region="", string sessionToken="")
+        public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region = "", string sessionToken = "")
         {
             this.Secure = false;
 
@@ -337,7 +335,6 @@ namespace Minio
         /// <summary>
         /// Sets endpoint URL on the client object that request will be made against
         /// </summary>
-        /// <returns></returns>
         internal void SetTargetURL(Uri uri)
         {
             this.restClient.BaseUrl = uri;
@@ -350,7 +347,7 @@ namespace Minio
         /// <param name="request">request</param>
         /// <param name="cancellationToken"></param>
         /// <returns>IRESTResponse</returns>
-        internal async Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request, CancellationToken cancellationToken=default(CancellationToken))
+        internal async Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             DateTime startTime = DateTime.Now;
             // Logs full url when HTTPtracing is enabled.
@@ -412,7 +409,7 @@ namespace Minio
                     {
                         int pathLength = response.Request.Resource.Split('/').Count();
                         bool isAWS = response.ResponseUri.Host.EndsWith("s3.amazonaws.com");
-                        bool isVirtual = isAWS  && !(response.ResponseUri.Host.StartsWith("s3.amazonaws.com"));
+                        bool isVirtual = isAWS && !response.ResponseUri.Host.StartsWith("s3.amazonaws.com");
 
                         if (pathLength > 1)
                         {
@@ -443,7 +440,6 @@ namespace Minio
                                 BucketRegionCache.Instance.Remove(resource);
                                 e = new BucketNotFoundException(resource, "Not found.");
                             }
-
                         }
                         else
                         {
@@ -471,11 +467,11 @@ namespace Minio
 
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
-            ErrorResponse errResponse = (ErrorResponse)(new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream));
+            ErrorResponse errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream);
 
             // Handle XML response for Bucket Policy not found case
             if (response.StatusCode.Equals(HttpStatusCode.NotFound) && response.Request.Resource.EndsWith("?policy")
-                && response.Request.Method.Equals(Method.GET) && (errResponse.Code.Equals("NoSuchBucketPolicy")))
+                && response.Request.Method.Equals(Method.GET) && errResponse.Code == "NoSuchBucketPolicy")
             {
                 throw new ErrorResponseException(errResponse.Message, errResponse.Code)
                 {

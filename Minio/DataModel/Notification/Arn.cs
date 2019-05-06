@@ -24,17 +24,17 @@ namespace Minio.DataModel
     /// </summary>
     public class Arn
     {
-       private string Partition { get; }
-       private string Service { get; }
-       private string Region { get; }
-       private string AccountID { get; }
-       private string Resource { get; }
+        private string Partition { get; }
+        private string Service { get; }
+        private string Region { get; }
+        private string AccountID { get; }
+        private string Resource { get; }
 
         [XmlText]
         private readonly string arnString;
 
         public Arn()
-        {  
+        {
         }
 
         /// <summary>

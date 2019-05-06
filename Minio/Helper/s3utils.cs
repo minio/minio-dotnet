@@ -33,7 +33,7 @@ namespace Minio.Helper
             }
             Regex rgx = new Regex("^s3[.-]?(.*?)\\.amazonaws\\.com$", RegexOptions.IgnoreCase);
             MatchCollection matches = rgx.Matches(endpoint);
-            return (matches.Count > 0);
+            return matches.Count > 0;
         }
 
         // IsAmazonChinaEndpoint - Match if it is exactly Amazon S3 China endpoint.

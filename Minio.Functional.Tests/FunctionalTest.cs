@@ -99,11 +99,13 @@ namespace Minio.Functional.Tests
             }
             return "miniodotnet" + result.ToString();
         }
+
         // Return true if running in Mint mode
         public static bool IsMintEnv()
         {
             return !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MINT_DATA_DIR"));
         }
+
         // Get full path of file
         public static string GetFilePath(string fileName)
         {
@@ -118,6 +120,7 @@ namespace Minio.Functional.Tests
                 return path + "/" + fileName;
             }
         }
+
         public static void Main(string[] args)
         {
             String endPoint = null;
@@ -271,6 +274,7 @@ namespace Minio.Functional.Tests
             }
 
         }
+
         private static void runCoreTests(MinioClient minioClient)
         {
             // Check if bucket exists
@@ -299,6 +303,7 @@ namespace Minio.Functional.Tests
 
             GetBucketPolicy_Test1(minioClient).Wait();
         }
+
         private async static Task BucketExists_Test(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -371,6 +376,7 @@ namespace Minio.Functional.Tests
             }
 
         }
+
         private async static Task MakeBucket_Test3(MinioClient minio, bool aws = false)
         {
             if (!aws)
@@ -402,6 +408,7 @@ namespace Minio.Functional.Tests
                 new MintLogger("MakeBucket_Test3", makeBucketSignature, "Tests whether MakeBucket with region passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
+
         private async static Task MakeBucket_Test4(MinioClient minio, bool aws = false)
         {
             if (!aws)
@@ -454,6 +461,7 @@ namespace Minio.Functional.Tests
                 new MintLogger("RemoveBucket_Test1", removeBucketSignature, "Tests whether RemoveBucket passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
+
         private async static Task ListBuckets_Test(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -473,6 +481,7 @@ namespace Minio.Functional.Tests
                 new MintLogger("ListBuckets_Test", listBucketsSignature, "Tests whether ListBucket passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
+
         private async static Task Setup_Test(MinioClient minio, string bucketName)
         {
             await minio.MakeBucketAsync(bucketName);
@@ -484,6 +493,7 @@ namespace Minio.Functional.Tests
         {
             await minio.RemoveBucketAsync(bucketName);
         }
+
         private async static Task PutObject_Test1(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -509,7 +519,6 @@ namespace Minio.Functional.Tests
                 new MintLogger("PutObject_Test1", putObjectSignature1, "Tests whether PutObject passes for small object", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
-
 
         private async static Task PutObject_Test2(MinioClient minio)
         {
@@ -563,6 +572,7 @@ namespace Minio.Functional.Tests
                 new MintLogger("PutObject_Test3", putObjectSignature1, "Tests whether PutObject with custom content-type passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
+
         private async static Task PutObject_Test4(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -605,6 +615,7 @@ namespace Minio.Functional.Tests
                 File.Delete(fileName);
             }
         }
+
         private async static Task PutObject_Test5(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -629,6 +640,7 @@ namespace Minio.Functional.Tests
                 new MintLogger("PutObject_Test5", putObjectSignature1, "Tests whether PutObject with no content-type passes for small object", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
+
         private async static Task PutObject_Test6(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -658,6 +670,7 @@ namespace Minio.Functional.Tests
                 new MintLogger("PutObject_Test6", putObjectSignature1, "Tests thread safety of minioclient on a parallel put operation", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
+
         private async static Task PutObject_Test7(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -697,6 +710,7 @@ namespace Minio.Functional.Tests
                 new MintLogger("PutObject_Test7", putObjectSignature1, "Tests whether PutObject with unknown stream-size passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
+
         private async static Task PutObject_Test8(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -735,6 +749,7 @@ namespace Minio.Functional.Tests
                 new MintLogger("PutObject_Test8", putObjectSignature1, "Tests PutObject where unknown stream sends 0 bytes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
+
         private async static Task PutGetStatEncryptedObject_Test1(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -794,7 +809,7 @@ namespace Minio.Functional.Tests
             }
         }
 
-    private async static Task PutGetStatEncryptedObject_Test2(MinioClient minio)
+        private async static Task PutGetStatEncryptedObject_Test2(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
@@ -853,7 +868,7 @@ namespace Minio.Functional.Tests
             }
         }
 
-    private async static Task PutGetStatEncryptedObject_Test3(MinioClient minio)
+        private async static Task PutGetStatEncryptedObject_Test3(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
@@ -909,6 +924,7 @@ namespace Minio.Functional.Tests
                 new MintLogger("PutGetStatEncryptedObject_Test3", putObjectSignature2, "Tests whether Put/Get/Stat multipart upload with encryption passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
+
         private async static Task PutObject_Task(MinioClient minio, string bucketName, string objectName, string fileName = null, string contentType = "application/octet-stream", long size = 0, Dictionary<string, string> metaData = null, MemoryStream mstream = null)
         {
             DateTime startTime = DateTime.Now;
@@ -936,6 +952,7 @@ namespace Minio.Functional.Tests
                 File.Delete(tempFileName);
             }
         }
+
         private async static Task<ObjectStat> PutObject_Tester(MinioClient minio, string bucketName, string objectName, string fileName = null, string contentType = "application/octet-stream", long size = 0, Dictionary<string, string> metaData = null, MemoryStream mstream = null)
         {
             ObjectStat statObject = null;
@@ -985,6 +1002,7 @@ namespace Minio.Functional.Tests
             }
             return statObject;
         }
+
         private async static Task StatObject_Test1(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -1112,6 +1130,7 @@ namespace Minio.Functional.Tests
                 new MintLogger("CopyObject_Test2", copyObjectSignature, "Tests whether CopyObject with Etag mismatch passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
+
         private async static Task CopyObject_Test3(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -1165,6 +1184,7 @@ namespace Minio.Functional.Tests
             }
 
         }
+
         private async static Task CopyObject_Test4(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -1215,6 +1235,7 @@ namespace Minio.Functional.Tests
             }
 
         }
+
         private async static Task CopyObject_Test5(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -1332,6 +1353,7 @@ namespace Minio.Functional.Tests
             }
 
         }
+
         private async static Task CopyObject_Test7(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -1660,6 +1682,7 @@ namespace Minio.Functional.Tests
                 new MintLogger("EncryptedCopyObject_Test4", copyObjectSignature, "Tests whether encrypted CopyObject passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
+
         private async static Task GetObject_Test1(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -1712,6 +1735,7 @@ namespace Minio.Functional.Tests
             }
 
         }
+
         private async static Task GetObject_Test2(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -1746,6 +1770,7 @@ namespace Minio.Functional.Tests
             }
 
         }
+
         private async static Task GetObject_Test3(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -1798,6 +1823,7 @@ namespace Minio.Functional.Tests
             }
 
         }
+
         private async static Task FGetObject_Test1(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -1958,7 +1984,7 @@ namespace Minio.Functional.Tests
             }
         }
 
-         private async static Task ListObjects_Test3(MinioClient minio)
+        private async static Task ListObjects_Test3(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
@@ -2026,7 +2052,8 @@ namespace Minio.Functional.Tests
                 new MintLogger("ListObjects_Test4", listObjectsSignature, "Tests whether ListObjects lists all objects when no prefix is specified", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
-         private async static Task ListObjects_Test5(MinioClient minio)
+
+        private async static Task ListObjects_Test5(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
@@ -2066,6 +2093,7 @@ namespace Minio.Functional.Tests
                 new MintLogger("ListObjects_Test5", listObjectsSignature, "Tests whether ListObjects lists all objects when number of objects == 100", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
+
         private async static Task ListObjects_Test(MinioClient minio, string bucketName, string prefix, int numObjects, bool recursive = true)
         {
             DateTime startTime = DateTime.Now;
@@ -2153,7 +2181,6 @@ namespace Minio.Functional.Tests
             }
         }
 
-
         private async static Task PresignedGetObject_Test1(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -2236,6 +2263,7 @@ namespace Minio.Functional.Tests
                 new MintLogger("PresignedGetObject_Test2", presignedGetObjectSignature, "Tests whether PresignedGetObject url retrieves object from bucket when invalid expiry is set.", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
+
         private async static Task PresignedGetObject_Test3(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -2293,6 +2321,7 @@ namespace Minio.Functional.Tests
                 new MintLogger("PresignedGetObject_Test3", presignedGetObjectSignature, "Tests whether PresignedGetObject url retrieves object from bucket when override response headers sent", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
+
         private async static Task PresignedPutObject_Test1(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -2502,6 +2531,7 @@ namespace Minio.Functional.Tests
                 new MintLogger("ListIncompleteUpload_Test1", listIncompleteUploadsSignature, "Tests whether ListIncompleteUpload passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString()).Log();
             }
         }
+
         private async static Task ListIncompleteUpload_Test2(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -2649,6 +2679,7 @@ namespace Minio.Functional.Tests
                 new MintLogger("RemoveIncompleteUpload_Test", removeIncompleteUploadSignature, "Tests whether RemoveIncompleteUpload passes.", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
+
         // Set a policy for given bucket
         private async static Task SetBucketPolicy_Test1(MinioClient minio)
         {

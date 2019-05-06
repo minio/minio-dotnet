@@ -41,7 +41,7 @@ namespace Minio.DataModel
         }
 
         // Implement equality for this object
-        public override bool Equals(Object obj)
+        public override bool Equals(object obj)
         {
             QueueConfig other = (QueueConfig)obj;
             // If parameter is null return false.

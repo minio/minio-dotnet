@@ -61,7 +61,6 @@ namespace Minio
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
-
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
@@ -200,9 +199,9 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to create object in</param>
         /// <param name="objectName">Key of the new object</param>
+        /// <param name="data">Stream of bytes to send</param>
         /// <param name="size">Total size of bytes to be written, must match with data's length</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
-        /// <param name="data">Stream of bytes to send</param>
         /// <param name="metaData">Object metadata to be stored. Defaults to null.</param>
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -350,7 +349,6 @@ namespace Minio
         /// <returns></returns>
         private IObservable<Part> ListParts(string bucketName, string objectName, string uploadId, CancellationToken cancellationToken)
         {
-
             return Observable.Create<Part>(
               async obs =>
               {
@@ -396,7 +394,7 @@ namespace Minio
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             ListPartsResult listPartsResult = null;
             using (var stream = new MemoryStream(contentBytes))
-                listPartsResult = (ListPartsResult)(new XmlSerializer(typeof(ListPartsResult)).Deserialize(stream));
+                listPartsResult = (ListPartsResult)new XmlSerializer(typeof(ListPartsResult)).Deserialize(stream);
 
             XDocument root = XDocument.Parse(response.Content);
 
@@ -436,7 +434,7 @@ namespace Minio
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             InitiateMultipartUploadResult newUpload = null;
             using (var stream = new MemoryStream(contentBytes))
-                newUpload = (InitiateMultipartUploadResult)(new XmlSerializer(typeof(InitiateMultipartUploadResult)).Deserialize(stream));
+                newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult)).Deserialize(stream);
             return newUpload.UploadId;
         }
 
@@ -544,7 +542,7 @@ namespace Minio
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             ListMultipartUploadsResult listBucketResult = null;
             using (var stream = new MemoryStream(contentBytes))
-                listBucketResult = (ListMultipartUploadsResult)(new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(stream));
+                listBucketResult = (ListMultipartUploadsResult)new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(stream);
 
             XDocument root = XDocument.Parse(response.Content);
 
@@ -691,7 +689,7 @@ namespace Minio
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             DeleteObjectsResult deleteResult = null;
             using (var stream = new MemoryStream(contentBytes))
-                deleteResult = (DeleteObjectsResult)(new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(stream));
+                deleteResult = (DeleteObjectsResult)new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(stream);
 
             if (deleteResult == null)
             {
@@ -775,7 +773,7 @@ namespace Minio
             string contentType = null;
             var metaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            //Supported headers for object.
+            // Supported headers for object.
             List<string> supportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type" };
 
             foreach (Parameter parameter in response.Headers)
@@ -801,7 +799,6 @@ namespace Minio
                 {
                     metaData[parameter.Name] = parameter.Value.ToString();
                 }
-
             }
             return new ObjectStat(objectName, size, lastModified, etag, contentType, metaData);
         }
@@ -910,13 +907,13 @@ namespace Minio
             }
             long copySize = (srcByteRangeSize == 0) ? srcStats.Size : srcByteRangeSize;
 
-            if ((srcByteRangeSize > srcStats.Size) ||
-                ((srcByteRangeSize > 0) && (copyConditions.byteRangeEnd >= srcStats.Size)))
+            if ((srcByteRangeSize > srcStats.Size) || ((srcByteRangeSize > 0) && (copyConditions.byteRangeEnd >= srcStats.Size)))
                 throw new ArgumentException("Specified byte range (" + copyConditions.byteRangeStart.ToString() + "-" + copyConditions.byteRangeEnd.ToString() + ") does not fit within source object (size=" + srcStats.Size.ToString() + ")");
 
-            if ((copySize > Constants.MaxSingleCopyObjectSize) ||
-                    (srcByteRangeSize > 0 && (srcByteRangeSize != srcStats.Size)))
+            if ((copySize > Constants.MaxSingleCopyObjectSize) || (srcByteRangeSize > 0 && (srcByteRangeSize != srcStats.Size)))
+            {
                 await MultipartCopyUploadAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, copySize, meta, sseSrc, sseDest, cancellationToken).ConfigureAwait(false);
+            }
             else
             {
                 if (sseSrc != null && sseSrc is SSECopy)
@@ -941,12 +938,11 @@ namespace Minio
         /// <param name="copyConditions">optionally can take a key value CopyConditions as well for conditionally attempting copyObject.</param>
         /// <param name="customHeaders">optional custom header to specify byte range</param>
         /// <param name="resource"> optional string to specify upload id and part number </param>
-        /// <param name="type"> type of XML serialization to be applied on the server response</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <param name="type"> type of XML serialization to be applied on the server response</param>
         /// <returns></returns>
         private async Task<object> CopyObjectRequestAsync(string bucketName, string objectName, string destBucketName, string destObjectName, CopyConditions copyConditions, Dictionary<string, string> customHeaders, string resource, CancellationToken cancellationToken, Type type)
         {
-
             // Escape source object path.
             string sourceObjectPath = bucketName + "/" + utils.UrlEncode(objectName);
 
@@ -982,9 +978,9 @@ namespace Minio
             using (var stream = new MemoryStream(contentBytes))
             {
                 if (type == typeof(CopyObjectResult))
-                    copyResult = (CopyObjectResult)(new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream));
+                    copyResult = (CopyObjectResult)new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream);
                 if (type == typeof(CopyPartResult))
-                    copyResult = (CopyPartResult)(new XmlSerializer(typeof(CopyPartResult)).Deserialize(stream));
+                    copyResult = (CopyPartResult)new XmlSerializer(typeof(CopyPartResult)).Deserialize(stream);
             }
 
             return copyResult;
@@ -996,7 +992,7 @@ namespace Minio
         /// <param name="bucketName"> source bucket name</param>
         /// <param name="objectName"> source object name</param>
         /// <param name="destBucketName"> destination bucket name</param>
-        /// <param name="destObjectName"> destiantion object name</param>
+        /// <param name="destObjectName"> destination object name</param>
         /// <param name="copyConditions"> copyconditions </param>
         /// <param name="copySize"> size of copy upload</param>
         /// <param name="metadata"> optional metadata on the destination side</param>

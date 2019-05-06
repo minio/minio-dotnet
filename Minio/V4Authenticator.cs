@@ -64,7 +64,8 @@ namespace Minio
         //
         //      Is skipped for obvious reasons
         //
-        private static HashSet<string> ignoredHeaders = new HashSet<string> {
+        private static HashSet<string> ignoredHeaders = new HashSet<string>
+        {
             "authorization",
             "content-length",
             "content-type",
@@ -132,7 +133,7 @@ namespace Minio
         }
 
         /// <summary>
-        /// Get credential string of form {ACCESSID}/date/region/s3/aws4_request. 
+        /// Get credential string of form {ACCESSID}/date/region/s3/aws4_request.
         /// </summary>
         /// <param name="signingDate">Signature initiated date</param>
         /// <param name="region">Region for the credential string</param>
@@ -149,7 +150,7 @@ namespace Minio
         /// <param name="signature">Hexadecimally encoded computed signature</param>
         /// <param name="signingDate">Date for signature to be signed</param>
         /// <param name="region">Requested region</param>
-        /// <returns>Fully formed authorization header</returns>              
+        /// <returns>Fully formed authorization header</returns>
         private string GetAuthorizationHeader(string signedHeaders, string signature, DateTime signingDate, string region)
         {
             return "AWS4-HMAC-SHA256 Credential=" + this.accessKey + "/" + GetScope(region, signingDate) +
@@ -235,7 +236,6 @@ namespace Minio
         /// <returns>Bytes of sha256 checksum</returns>
         private byte[] ComputeSha256(byte[] body)
         {
-
             SHA256 sha256 = System.Security.Cryptography.SHA256.Create();
             return sha256.ComputeHash(body);
         }
@@ -275,9 +275,9 @@ namespace Minio
         /// <param name="request">Instantiated request</param>
         /// <param name="expires">Expiration in seconds</param>
         /// <param name="region">Region of storage</param>
-        /// <param name="sessionToken">Region of storage</param>
+        /// <param name="sessionToken">Value for session token</param>
         /// <param name="reqDate"> Optional request date and time in UTC</param>
-        /// <returns>Presigned url</returns>      
+        /// <returns>Presigned url</returns>
         internal string PresignURL(IRestClient client, IRestRequest request, int expires, string region = "", string sessionToken = "", DateTime? reqDate = null)
         {
             DateTime signingDate = DateTime.UtcNow;
@@ -343,7 +343,7 @@ namespace Minio
                 path = "/" + path;
             }
             canonicalStringList.AddLast(path);
-            String query = headersToSign.Aggregate(requestQuery, (pv, cv) => $"{pv}&{utils.UrlEncode(cv.Key)}={utils.UrlEncode(s3utils.TrimAll(cv.Value))}");
+            string query = headersToSign.Aggregate(requestQuery, (pv, cv) => $"{pv}&{utils.UrlEncode(cv.Key)}={utils.UrlEncode(s3utils.TrimAll(cv.Value))}");
             canonicalStringList.AddLast(query);
             if (client.BaseUrl.Port > 0 && (client.BaseUrl.Port != 80 && client.BaseUrl.Port != 443))
             {
@@ -470,7 +470,6 @@ namespace Minio
         /// </summary>
         /// <param name="request">Instantiated request object</param>
         /// <param name="sessionToken">session token</param>
-
         private void SetSessionTokenHeader(IRestRequest request, string sessionToken)
         {
             if (!string.IsNullOrEmpty(sessionToken))
