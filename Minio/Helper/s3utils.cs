@@ -96,9 +96,7 @@ namespace Minio.Helper
                 return false;
             }
 
-            byte tempForParsing;
-
-            return splitValues.All(r => byte.TryParse(r, out tempForParsing));
+            return splitValues.All(r => byte.TryParse(r, out var _));
         }
 
         // TrimAll trims leading and trailing spaces and replace sequential spaces with one space, following Trimall()

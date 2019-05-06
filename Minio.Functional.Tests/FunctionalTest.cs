@@ -303,9 +303,9 @@ namespace Minio.Functional.Tests
         {
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName();
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                { "bucketName", bucketName},
+                { "bucketName", bucketName },
             };
 
             try
@@ -326,10 +326,10 @@ namespace Minio.Functional.Tests
         {
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(length: 60);
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                { "bucketName", bucketName},
-                {"region", "us-east-1"},
+                { "bucketName", bucketName },
+                { "region", "us-east-1" },
             };
 
             try
@@ -350,10 +350,10 @@ namespace Minio.Functional.Tests
         {
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(length: 10) + ".withperiod";
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                { "bucketName", bucketName},
-                {"region", "us-east-1"},
+                { "bucketName", bucketName },
+                { "region", "us-east-1" },
             };
             string testType = "Test whether make bucket passes when bucketname has a period.";
 
@@ -377,9 +377,9 @@ namespace Minio.Functional.Tests
                 return;
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(length: 60);
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                { "bucketName", bucketName},
+                { "bucketName", bucketName },
                 { "region", "eu-central-1" },
             };
             try
@@ -408,10 +408,10 @@ namespace Minio.Functional.Tests
                 return;
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(length: 20) + ".withperiod";
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                { "bucketName", bucketName},
-                {"region", "us-west-2"},
+                { "bucketName", bucketName },
+                { "region", "us-west-2" },
             };
             try
             {
@@ -435,9 +435,9 @@ namespace Minio.Functional.Tests
         {
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(length: 20);
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                { "bucketName", bucketName},
+                { "bucketName", bucketName },
             };
             try
             {
@@ -457,7 +457,7 @@ namespace Minio.Functional.Tests
         private async static Task ListBuckets_Test(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
-            Dictionary<string, string> args = new Dictionary<string, string>{};
+            var args = new Dictionary<string, string>{};
             try
             {
                 var list = await minio.ListBucketsAsync();
@@ -490,12 +490,12 @@ namespace Minio.Functional.Tests
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
             string contentType = "application/octet-stream";
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                { "bucketName", bucketName},
-                {"objectName", objectName},
-                {"contentType", contentType},
-                {"size", "1MB"}
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
+                { "size", "1MB" }
             };
             try
             {
@@ -517,12 +517,12 @@ namespace Minio.Functional.Tests
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
             string contentType = "application/octet-stream";
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                { "bucketName", bucketName},
-                {"objectName", objectName},
-                {"contentType", contentType},
-                {"size", "6MB"}
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
+                { "size", "6MB" }
             };
             try
             {
@@ -543,12 +543,12 @@ namespace Minio.Functional.Tests
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
             string contentType = "custom-contenttype";
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                { "bucketName", bucketName},
-                {"objectName", objectName},
-                {"contentType", contentType},
-                {"size", "1MB"}
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
+                { "size", "1MB" }
             };
 
             try
@@ -570,17 +570,18 @@ namespace Minio.Functional.Tests
             string objectName = GetRandomName(10);
             string fileName = CreateFile(1, dataFile1B);
             string contentType = "custom/contenttype";
-            Dictionary<string, string> metaData = new Dictionary<string, string>(){
-                { "x-amz-meta-customheader", "minio   dotnet"}
-            };
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var metaData = new Dictionary<string, string>
             {
-                { "bucketName", bucketName},
-                {"objectName", objectName},
-                {"contentType", contentType},
-                {"data", "1B"},
-                {"size", "1B"},
-                {"metaData", "x-amz-meta-customheader:minio-dotnet"}
+                { "x-amz-meta-customheader", "minio   dotnet" }
+            };
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
+                { "data", "1B" },
+                { "size", "1B" },
+                { "metaData", "x-amz-meta-customheader:minio-dotnet" }
             };
             try
             {
@@ -588,7 +589,7 @@ namespace Minio.Functional.Tests
                 ObjectStat statObject = await PutObject_Tester(minio, bucketName, objectName, fileName, contentType: contentType, metaData: metaData);
                 Assert.IsTrue(statObject != null);
                 Assert.IsTrue(statObject.metaData != null);
-                Dictionary<string, string> statMeta = new Dictionary<string, string>(statObject.metaData, StringComparer.OrdinalIgnoreCase);
+                var statMeta = new Dictionary<string, string>(statObject.metaData, StringComparer.OrdinalIgnoreCase);
 
                 Assert.IsTrue(statMeta.ContainsKey("x-amz-meta-customheader"));
                 Assert.IsTrue(statObject.metaData.ContainsKey("Content-Type") && statObject.metaData["Content-Type"].Equals("custom/contenttype"));
@@ -609,12 +610,12 @@ namespace Minio.Functional.Tests
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                { "bucketName", bucketName},
-                {"objectName", objectName},
-                {"data", "1B"},
-                {"size", "1B"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "data", "1B" },
+                { "size", "1B" },
             };
             try
             {
@@ -633,12 +634,12 @@ namespace Minio.Functional.Tests
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
             string objectName = "parallelput";
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                { "bucketName", bucketName},
-                {"objectName", objectName},
-                {"data", "10KB"},
-                {"size", "10KB"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "data", "10KB" },
+                { "size", "10KB" },
             };
             try
             {
@@ -663,13 +664,13 @@ namespace Minio.Functional.Tests
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
             string contentType = "application/octet-stream";
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                { "bucketName", bucketName},
-                {"objectName", objectName},
-                {"contentType", contentType},
-                {"data", "10KB"},
-                {"size", "-1"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
+                { "data", "10KB" },
+                { "size", "-1" },
             };
             try
             {
@@ -702,13 +703,13 @@ namespace Minio.Functional.Tests
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
             string contentType = "application/octet-stream";
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                { "bucketName", bucketName},
-                {"objectName", objectName},
-                {"contentType", contentType},
-                {"data", "0B"},
-                {"size", "-1"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
+                { "data", "0B" },
+                { "size", "-1" },
             };
             try
             {
@@ -740,13 +741,13 @@ namespace Minio.Functional.Tests
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
             string contentType = "application/octet-stream";
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                { "bucketName", bucketName},
-                {"objectName", objectName},
-                {"contentType", contentType},
-                {"data", "1KB"},
-                {"size", "1KB"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
+                { "data", "1KB" },
+                { "size", "1KB" },
             };
             try
             {
@@ -799,13 +800,13 @@ namespace Minio.Functional.Tests
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
             string contentType = "application/octet-stream";
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                { "bucketName", bucketName},
-                {"objectName", objectName},
-                {"contentType", contentType},
-                {"data", "6MB"},
-                {"size", "6MB"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
+                { "data", "6MB" },
+                { "size", "6MB" },
             };
             try
             {
@@ -858,13 +859,13 @@ namespace Minio.Functional.Tests
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
             string contentType = "application/octet-stream";
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                { "bucketName", bucketName},
-                {"objectName", objectName},
-                {"contentType", contentType},
-                {"data", "6MB"},
-                {"size", "6MB"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
+                { "data", "6MB" },
+                { "size", "6MB" },
             };
             try
             {
@@ -990,13 +991,13 @@ namespace Minio.Functional.Tests
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
             string contentType = "gzip";
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                { "bucketName", bucketName},
-                {"objectName", objectName},
-                {"contentType", contentType},
-                {"data", "1KB"},
-                {"size", "1KB"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
+                { "data", "1KB" },
+                { "size", "1KB" },
             };
             try
             {
@@ -1019,14 +1020,14 @@ namespace Minio.Functional.Tests
             string objectName = GetRandomName(10);
             string destBucketName = GetRandomName(15);
             string destObjectName = GetRandomName(10);
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"destBucketName", destBucketName},
-                {"destObjectName", destObjectName},
-                {"data", "1KB"},
-                {"size", "1KB"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "destBucketName", destBucketName },
+                { "destObjectName", destObjectName },
+                { "data", "1KB" },
+                { "size", "1KB" },
             };
             try
             {
@@ -1068,12 +1069,12 @@ namespace Minio.Functional.Tests
             string destObjectName = GetRandomName(10);
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"destBucketName", destBucketName},
-                {"destObjectName", destObjectName},
-                {"data", "1KB"},
-                {"size", "1KB"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "destBucketName", destBucketName },
+                { "destObjectName", destObjectName },
+                { "data", "1KB" },
+                { "size", "1KB" },
             };
             try
             {
@@ -1120,12 +1121,12 @@ namespace Minio.Functional.Tests
             string destObjectName = GetRandomName(10);
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"destBucketName", destBucketName},
-                {"destObjectName", destObjectName},
-                {"data", "1KB"},
-                {"size", "1KB"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "destBucketName", destBucketName },
+                { "destObjectName", destObjectName },
+                { "data", "1KB" },
+                { "size", "1KB" },
             };
             try
             {
@@ -1173,11 +1174,11 @@ namespace Minio.Functional.Tests
             string destObjectName = GetRandomName(10);
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"destBucketName", destBucketName},
-                {"data", "1KB"},
-                {"size", "1KB"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "destBucketName", destBucketName },
+                { "data", "1KB" },
+                { "size", "1KB" },
             };
             try
             {
@@ -1217,18 +1218,18 @@ namespace Minio.Functional.Tests
         private async static Task CopyObject_Test5(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
-           string bucketName = GetRandomName(15);
+            string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
             string destBucketName = GetRandomName(15);
             string destObjectName = GetRandomName(10);
-           var args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"destBucketName", destBucketName},
-                {"destObjectName", destObjectName},
-                {"data", "6MB"},
-                {"size", "6MB"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "destBucketName", destBucketName },
+                { "destObjectName", destObjectName },
+                { "data", "6MB" },
+                { "size", "6MB" },
             };
             try
             {
@@ -1286,12 +1287,12 @@ namespace Minio.Functional.Tests
             string destObjectName = GetRandomName(10);
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"destBucketName", destBucketName},
-                {"destObjectName", destObjectName},
-                {"data", "1KB"},
-                {"size", "1KB"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "destBucketName", destBucketName },
+                { "destObjectName", destObjectName },
+                { "data", "1KB" },
+                { "size", "1KB" },
             };
             try
             {
@@ -1340,12 +1341,12 @@ namespace Minio.Functional.Tests
             string destObjectName = GetRandomName(10);
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"destBucketName", destBucketName},
-                {"destObjectName", destObjectName},
-                {"data", "1KB"},
-                {"size", "1KB"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "destBucketName", destBucketName },
+                { "destObjectName", destObjectName },
+                { "data", "1KB" },
+                { "size", "1KB" },
             };
             try
             {
@@ -1398,13 +1399,13 @@ namespace Minio.Functional.Tests
             string destObjectName = GetRandomName(10);
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"destBucketName", destBucketName},
-                {"destObjectName", destObjectName},
-                {"data", "1KB"},
-                {"size", "1KB"},
-                {"copyconditions", "x-amz-metadata-directive:REPLACE"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "destBucketName", destBucketName },
+                { "destObjectName", destObjectName },
+                { "data", "1KB" },
+                { "size", "1KB" },
+                { "copyconditions", "x-amz-metadata-directive:REPLACE" },
             };
             try
             {
@@ -1424,10 +1425,10 @@ namespace Minio.Functional.Tests
                 copyCond.SetReplaceMetadataDirective();
 
                 // set custom metadata
-                var metadata = new Dictionary<string, string>()
+                var metadata = new Dictionary<string, string>
                 {
-                    { "Content-Type", "application/css"},
-                    {"X-Amz-Meta-Mynewkey", "test   test"}
+                    { "Content-Type", "application/css" },
+                    { "X-Amz-Meta-Mynewkey", "test   test" }
                 };
                 await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions:copyCond, metadata: metadata);
 
@@ -1456,12 +1457,12 @@ namespace Minio.Functional.Tests
             string destObjectName = GetRandomName(10);
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"destBucketName", destBucketName},
-                {"destObjectName", destObjectName},
-                {"data", "1KB"},
-                {"size", "1KB"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "destBucketName", destBucketName },
+                { "destObjectName", destObjectName },
+                { "data", "1KB" },
+                { "size", "1KB" },
             };
             try
             {
@@ -1512,12 +1513,12 @@ namespace Minio.Functional.Tests
             string destObjectName = GetRandomName(10);
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"destBucketName", destBucketName},
-                {"destObjectName", destObjectName},
-                {"data", "1KB"},
-                {"size", "1KB"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "destBucketName", destBucketName },
+                { "destObjectName", destObjectName },
+                { "data", "1KB" },
+                { "size", "1KB" },
             };
             try
             {
@@ -1565,12 +1566,12 @@ namespace Minio.Functional.Tests
             string destObjectName = GetRandomName(10);
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"destBucketName", destBucketName},
-                {"destObjectName", destObjectName},
-                {"data", "1KB"},
-                {"size", "1KB"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "destBucketName", destBucketName },
+                { "destObjectName", destObjectName },
+                { "data", "1KB" },
+                { "size", "1KB" },
             };
             try
             {
@@ -1619,12 +1620,12 @@ namespace Minio.Functional.Tests
             string destObjectName = GetRandomName(10);
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"destBucketName", destBucketName},
-                {"destObjectName", destObjectName},
-                {"data", "1KB"},
-                {"size", "1KB"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "destBucketName", destBucketName },
+                { "destObjectName", destObjectName },
+                { "data", "1KB" },
+                { "size", "1KB" },
             };
             try
             {
@@ -1667,9 +1668,9 @@ namespace Minio.Functional.Tests
             string contentType = null;
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"contentType", contentType},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
             };
             try
             {
@@ -1717,11 +1718,11 @@ namespace Minio.Functional.Tests
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
             string fileName = GetRandomName(10);
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"fileName", fileName},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "fileName", fileName },
             };
             try
             {
@@ -1753,11 +1754,11 @@ namespace Minio.Functional.Tests
             string contentType = null;
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"contentType", contentType},
-                {"size", "1024L"},
-                {"length", "10L"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
+                { "size", "1024L" },
+                { "length", "10L" },
             };
             try
             {
@@ -1805,9 +1806,9 @@ namespace Minio.Functional.Tests
             string outFileName = "outFileName";
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"fileName", outFileName},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "fileName", outFileName },
             };
             try
             {
@@ -1834,15 +1835,15 @@ namespace Minio.Functional.Tests
 
         private async static Task FPutObject_Test1(MinioClient minio)
         {
-           DateTime startTime = DateTime.Now;
-           string bucketName = GetRandomName(15);
-           string objectName = GetRandomName(10);
-           string fileName = CreateFile(6 * MB, dataFile6MB);
-           var args = new Dictionary<string, string>
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string fileName = CreateFile(6 * MB, dataFile6MB);
+            var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"fileName", fileName},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "fileName", fileName },
             };
             try
             {
@@ -1854,7 +1855,7 @@ namespace Minio.Functional.Tests
                 await minio.RemoveObjectAsync(bucketName, objectName);
 
                 await TearDown(minio, bucketName);
-                new MintLogger("FPutObject_Test1", putObjectSignature2, "Tests whether FPutObject for multipart upload passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+                new MintLogger("FPutObject_Test1", putObjectSignature2, "Tests whether FPutObject for multipart upload passes", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (MinioException ex)
             {
@@ -1873,11 +1874,11 @@ namespace Minio.Functional.Tests
             string objectName = GetRandomName(10);
             string fileName = CreateFile(10 * KB, dataFile10KB);
             var args = new Dictionary<string, string>
-                    {
-                        {"bucketName", bucketName},
-                        {"objectName", objectName},
-                        {"fileName", fileName},
-                    };
+            {
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "fileName", fileName },
+            };
             try
             {
                 await Setup_Test(minio, bucketName);
@@ -1905,12 +1906,12 @@ namespace Minio.Functional.Tests
             string bucketName = GetRandomName(15);
             string prefix = "minix";
             string objectName = prefix + GetRandomName(10);
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"prefix", prefix},
-                {"recursive", "false"},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "prefix", prefix },
+                { "recursive", "false" },
             };
             try
             {
@@ -1941,7 +1942,7 @@ namespace Minio.Functional.Tests
             string bucketName = GetRandomName(15);
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
+                { "bucketName", bucketName },
             };
             try
             {
@@ -1963,12 +1964,12 @@ namespace Minio.Functional.Tests
             string bucketName = GetRandomName(15);
             string prefix = "minix";
             string objectName = prefix + "/"+ GetRandomName(10) + "/suffix";
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"prefix", prefix},
-                {"recursive", "true"}
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "prefix", prefix },
+                { "recursive", "true" }
             };
             try
             {
@@ -1997,11 +1998,11 @@ namespace Minio.Functional.Tests
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"recursive", "false"}
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "recursive", "false" }
             };
             try
             {
@@ -2032,9 +2033,9 @@ namespace Minio.Functional.Tests
             string objectNamePrefix = GetRandomName(10);
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectNamePrefix},
-                {"recursive", "false"}
+                { "bucketName", bucketName },
+                { "objectName", objectNamePrefix },
+                { "recursive", "false" }
             };
             try
             {
@@ -2090,8 +2091,8 @@ namespace Minio.Functional.Tests
             string objectName = GetRandomName(10);
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
             };
             try
             {
@@ -2120,8 +2121,8 @@ namespace Minio.Functional.Tests
             string objectName = GetRandomName(6);
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectNames", "[" + objectName + "0..." + objectName + "50]"},
+                { "bucketName", bucketName },
+                { "objectNames", "[" + objectName + "0..." + objectName + "50]" },
             };
             try
             {
@@ -2163,9 +2164,9 @@ namespace Minio.Functional.Tests
 
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"expiresInt", expiresInt.ToString()}
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "expiresInt", expiresInt.ToString() }
             };
             try
             {
@@ -2205,11 +2206,11 @@ namespace Minio.Functional.Tests
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
             int expiresInt = 0;
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"expiresInt", expiresInt.ToString()}
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "expiresInt", expiresInt.ToString() }
             };
             try
             {
@@ -2244,11 +2245,11 @@ namespace Minio.Functional.Tests
             DateTime reqDate = DateTime.UtcNow.AddSeconds(-50);
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"expiresInt", expiresInt.ToString()},
-                {"reqParams", "response-content-type:application/json,response-content-disposition:attachment;filename=MyDocument.json;"},
-                {"reqDate", reqDate.ToString()},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "expiresInt", expiresInt.ToString() },
+                { "reqParams", "response-content-type:application/json,response-content-disposition:attachment;filename=MyDocument.json;" },
+                { "reqDate", reqDate.ToString() },
             };
             try
             {
@@ -2259,9 +2260,11 @@ namespace Minio.Functional.Tests
                                                 objectName,
                                                 filestream, filestream.Length, null);
                 ObjectStat stats = await minio.StatObjectAsync(bucketName, objectName);
-                Dictionary<string, string> reqParams = new Dictionary<string, string>();
-                reqParams["response-content-type"] = "application/json";
-                reqParams["response-content-disposition"] = "attachment;filename=MyDocument.json;";
+                var reqParams = new Dictionary<string, string>
+                {
+                    ["response-content-type"] = "application/json",
+                    ["response-content-disposition"] = "attachment;filename=MyDocument.json;"
+                };
                 string presigned_url = await minio.PresignedGetObjectAsync(bucketName, objectName, 1000, reqParams, reqDate);
                 WebRequest httpRequest = WebRequest.Create(presigned_url);
                 var response = (HttpWebResponse)(await Task<WebResponse>.Factory.FromAsync(httpRequest.BeginGetResponse, httpRequest.EndGetResponse, null));
@@ -2300,9 +2303,9 @@ namespace Minio.Functional.Tests
 
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"expiresInt", expiresInt.ToString()},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "expiresInt", expiresInt.ToString() },
             };
             try
             {
@@ -2341,9 +2344,9 @@ namespace Minio.Functional.Tests
 
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
-                {"expiresInt", expiresInt.ToString()},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "expiresInt", expiresInt.ToString() },
             };
             try
             {
@@ -2400,9 +2403,9 @@ namespace Minio.Functional.Tests
             form.SetKey(objectName);
             form.SetBucket(bucketName);
             form.SetUserMetadata(metadataKey, metadataValue);
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                {"form", form.Base64()},
+                { "form", form.Base64() },
             };
             string fileName = CreateFile(10 * KB, dataFile10KB);
 
@@ -2455,8 +2458,8 @@ namespace Minio.Functional.Tests
             string contentType = "gzip";
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"recursive", "true"}
+                { "bucketName", bucketName },
+                { "recursive", "true" }
             };
             try
             {
@@ -2508,9 +2511,9 @@ namespace Minio.Functional.Tests
             string contentType = "gzip";
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"prefix", prefix},
-                {"recursive", "false"}
+                { "bucketName", bucketName },
+                { "prefix", prefix },
+                { "recursive", "false" }
             };
             try
             {
@@ -2556,11 +2559,11 @@ namespace Minio.Functional.Tests
             string prefix = "minioprefix";
             string objectName = prefix + "/" + GetRandomName(10) + "/suffix";
             string contentType = "gzip";
-            Dictionary<string, string> args = new Dictionary<string, string>
+            var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"prefix", prefix},
-                {"recursive", "true"}
+                { "bucketName", bucketName },
+                { "prefix", prefix },
+                { "recursive", "true" }
             };
             try
             {
@@ -2607,8 +2610,8 @@ namespace Minio.Functional.Tests
             string contentType = "csv";
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectName", objectName},
+                { "bucketName", bucketName },
+                { "objectName", objectName },
             };
             try
             {
@@ -2654,9 +2657,9 @@ namespace Minio.Functional.Tests
             string objectName = GetRandomName(10);
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
-                {"objectPrefix", objectName.Substring(5)},
-                {"policyType", "readonly"}
+                { "bucketName", bucketName },
+                { "objectPrefix", objectName.Substring(5) },
+                { "policyType", "readonly" }
             };
             try
             {
@@ -2687,7 +2690,7 @@ namespace Minio.Functional.Tests
             string objectName = GetRandomName(10);
             var args = new Dictionary<string, string>
             {
-                {"bucketName", bucketName},
+                { "bucketName", bucketName },
             };
             try
             {

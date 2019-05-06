@@ -81,7 +81,7 @@ namespace Minio
 
             await StatObjectAsync(bucketName, objectName, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            Dictionary<string, string> headerMap = new Dictionary<string, string>();
+            var headerMap = new Dictionary<string, string>();
             if (length > 0)
                 headerMap.Add("Range", "bytes=" + offset.ToString() + "-" + (offset + length - 1).ToString());
 
@@ -773,7 +773,7 @@ namespace Minio
             DateTime lastModified = new DateTime();
             string etag = "";
             string contentType = null;
-            Dictionary<string, string> metaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var metaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             //Supported headers for object.
             List<string> supportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type" };
@@ -880,15 +880,14 @@ namespace Minio
             }
 
             ServerSideEncryption sseGet = sseSrc;
-            if (sseSrc is SSECopy)
+            if (sseSrc is SSECopy sseCpy)
             {
-                SSECopy sseCpy = (SSECopy)sseSrc;
                 sseGet = sseCpy.CloneToSSEC();
             }
             // Get Stats on the source object
             ObjectStat srcStats = await this.StatObjectAsync(bucketName, objectName, sse: sseGet, cancellationToken: cancellationToken).ConfigureAwait(false);
             // Copy metadata from the source object if no metadata replace directive
-            Dictionary<string, string> meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             Dictionary<string, string> m = metadata;
             if (copyConditions != null && !copyConditions.HasReplaceMetadataDirective())
             {
@@ -1041,8 +1040,10 @@ namespace Minio
                 {
                     resource += "?uploadId=" + uploadId + "&partNumber=" + partNumber;
                 }
-                Dictionary<string, string> customHeader = new Dictionary<string, string>();
-                customHeader.Add("x-amz-copy-source-range", "bytes=" + partCondition.byteRangeStart.ToString() + "-" + partCondition.byteRangeEnd.ToString());
+                var customHeader = new Dictionary<string, string>
+                {
+                    { "x-amz-copy-source-range", "bytes=" + partCondition.byteRangeStart.ToString() + "-" + partCondition.byteRangeEnd.ToString() }
+                };
                 if (sseSrc != null && sseSrc is SSECopy)
                 {
                     sseSrc.Marshal(customHeader);

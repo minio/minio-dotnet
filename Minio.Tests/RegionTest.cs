@@ -30,7 +30,7 @@ namespace Minio.Tests
         [TestMethod]
         public void TestGetRegion()
         {
-            Dictionary<string, string> endpoint2Region = new Dictionary<string, string>
+            var endpoint2Region = new Dictionary<string, string>
             {
                 {"s3.us-east-2.amazonaws.com", "us-east-2"},
                 {"s3.amazonaws.com", ""},

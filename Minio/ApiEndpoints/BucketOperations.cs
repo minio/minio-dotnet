@@ -77,9 +77,11 @@ namespace Minio
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, location);
             SetTargetURL(requestUrl);
 
-            var request = new RestRequest("/" + bucketName, Method.PUT);
-            request.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
-            request.RequestFormat = DataFormat.Xml;
+            var request = new RestRequest("/" + bucketName, Method.PUT)
+            {
+                XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer(),
+                RequestFormat = DataFormat.Xml
+            };
             // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
             if (location != "us-east-1")
             {

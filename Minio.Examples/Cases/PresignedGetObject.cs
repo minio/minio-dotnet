@@ -29,7 +29,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                Dictionary<string, string> reqParams = new Dictionary<string, string>(){{"response-content-type", "application/json"}};
+                var reqParams = new Dictionary<string, string> { {"response-content-type", "application/json" } };
                 string presigned_url = await client.PresignedGetObjectAsync(bucketName, objectName, 1000, reqParams);
                 Console.Out.WriteLine(presigned_url);
             } 

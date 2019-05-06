@@ -145,8 +145,10 @@ namespace Minio.DataModel
         /// <returns></returns>
         public string ToXML()
         {
-            XmlWriterSettings settings = new XmlWriterSettings();
-            settings.OmitXmlDeclaration = true;
+            XmlWriterSettings settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true
+            };
             using (MemoryStream ms = new MemoryStream())
             {
                 using (XmlWriter writer = XmlWriter.Create(ms, settings))

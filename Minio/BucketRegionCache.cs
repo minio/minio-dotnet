@@ -50,9 +50,8 @@ namespace Minio
         /// <returns></returns>
         public string Region(string bucketName)
         {
-            string value = null;
-            this.regionMap.TryGetValue(bucketName, out value);
-            return value != null ? value : "us-east-1";
+            this.regionMap.TryGetValue(bucketName, out string value);
+            return value ?? "us-east-1";
         }
 
         /// <summary>
@@ -71,8 +70,7 @@ namespace Minio
         /// <param name="bucketName"></param>
         public void Remove(string bucketName)
         {
-            string value;
-            this.regionMap.TryRemove(bucketName, out value);
+            this.regionMap.TryRemove(bucketName, out string value);
         }
 
         /// <summary>
@@ -82,8 +80,7 @@ namespace Minio
         /// <returns></returns>
         public bool Exists(String bucketName)
         {
-            string value = null;
-            this.regionMap.TryGetValue(bucketName, out value);
+            this.regionMap.TryGetValue(bucketName, out string value);
             return value != null;
         }
 

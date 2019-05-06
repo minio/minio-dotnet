@@ -259,8 +259,10 @@ namespace Minio
 
             // Initialize a new REST client. This uri will be modified if region specific endpoint/virtual style request
             // is decided upon while constructing a request for Amazon.
-            restClient = new RestSharp.RestClient(this.uri);
-            restClient.UserAgent = this.FullUserAgent;
+            restClient = new RestSharp.RestClient(this.uri)
+            {
+                UserAgent = this.FullUserAgent
+            };
 
             authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, this.Region, this.SessionToken);
             restClient.Authenticator = authenticator;
@@ -475,17 +477,18 @@ namespace Minio
             if (response.StatusCode.Equals(HttpStatusCode.NotFound) && response.Request.Resource.EndsWith("?policy")
                 && response.Request.Method.Equals(Method.GET) && (errResponse.Code.Equals("NoSuchBucketPolicy")))
             {
-
-                ErrorResponseException ErrorException = new ErrorResponseException(errResponse.Message, errResponse.Code);
-                ErrorException.Response = errResponse;
-                ErrorException.XmlError = response.Content;
-                throw ErrorException;
+                throw new ErrorResponseException(errResponse.Message, errResponse.Code)
+                {
+                    Response = errResponse,
+                    XmlError = response.Content
+                };
             }
 
-            MinioException MinioException = new MinioException(errResponse.Message);
-            MinioException.Response = errResponse;
-            MinioException.XmlError = response.Content;
-            throw MinioException;
+            throw new MinioException(errResponse.Message)
+            {
+                Response = errResponse,
+                XmlError = response.Content
+            };
         }
 
         /// <summary>

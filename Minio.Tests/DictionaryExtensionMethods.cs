@@ -36,9 +36,8 @@ namespace Minio.Tests
 
             foreach (var kvp in first)
             {
-                PolicyType secondValue;
                 PolicyType firstValue = kvp.Value;
-                if (!second.TryGetValue(kvp.Key, out secondValue)) return false;
+                if (!second.TryGetValue(kvp.Key, out PolicyType secondValue)) return false;
                 if (!firstValue.Equals(secondValue)) return false;
             }
             return true;

@@ -276,8 +276,7 @@ namespace Minio.DataModel
         /// <returns>true if bucket is set</returns>
         public bool IsBucketSet()
         {
-            string value = "";
-            if (this.formData.TryGetValue("bucket", out value))
+            if (this.formData.TryGetValue("bucket", out string value))
             {
                 if (!string.IsNullOrEmpty(value))
                 {
@@ -293,8 +292,7 @@ namespace Minio.DataModel
         /// <returns>true if key is set</returns>
         public bool IsKeySet()
         {
-            string value = "";
-            if (this.formData.TryGetValue("key", out value))
+            if (this.formData.TryGetValue("key", out string value))
             {
                 if (!string.IsNullOrEmpty(value))
                 {

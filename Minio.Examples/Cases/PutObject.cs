@@ -48,10 +48,10 @@ namespace Minio.Examples.Cases
                     {
                         Console.Out.WriteLine("Running example for API: PutObjectAsync with Stream and MultiPartUpload");
                     }
-                    var metaData = new Dictionary<string, string>()
-                                    {
-                                        {"X-Amz-Meta-Test", "Test  Test"}
-                                    };
+                    var metaData = new Dictionary<string, string>
+                    {
+                        { "X-Amz-Meta-Test", "Test  Test" }
+                    };
                     await minio.PutObjectAsync(bucketName,
                                                objectName,
                                                filestream,
