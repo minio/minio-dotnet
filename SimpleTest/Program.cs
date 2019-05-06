@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-using System.Net;
 using Minio;
 using Minio.DataModel;
+using System;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace SimpleTest
 {
@@ -62,6 +62,7 @@ namespace SimpleTest
             Console.Out.WriteLine("bucket was " + found);
             Console.ReadLine();
         }
+
         private static bool HandleBatchExceptions(Exception exceptionToHandle)
         {
             if (exceptionToHandle is ArgumentNullException)
@@ -79,6 +80,5 @@ namespace SimpleTest
                 return false;
             }
         }
-
     }
 }
