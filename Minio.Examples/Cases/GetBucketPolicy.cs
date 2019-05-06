@@ -16,21 +16,20 @@
 
 using System;
 using System.Threading.Tasks;
-using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
     class GetBucketPolicy
     {
         // Get bucket policy 
-        public async static Task Run(Minio.MinioClient minio, 
+        public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name",
-                                     string prefix="")
+                                     string prefix = "")
         {
             try
             {
                 Console.Out.WriteLine("Running example for API: GetPolicyAsync");
-                String policyJson = await minio.GetPolicyAsync(bucketName);
+                string policyJson = await minio.GetPolicyAsync(bucketName);
                 Console.Out.WriteLine("Current Policy is " + policyJson + " for bucket " + bucketName);
                 Console.Out.WriteLine();
             }

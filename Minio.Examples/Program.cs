@@ -14,15 +14,14 @@
 * limitations under the License.
 */
 
+using Minio.DataModel;
+using Minio.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using Minio.DataModel;
-using Minio.Exceptions;
-
 using System.Net;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace Minio.Examples
 {
@@ -32,9 +31,9 @@ namespace Minio.Examples
         private static int UNIT_MB = 1024 * 1024;
 
         // Create a file of given size from random byte array
-        private static String CreateFile(int size)
+        private static string CreateFile(int size)
         {
-            String fileName = GetRandomName();
+            string fileName = GetRandomName();
             byte[] data = new byte[size];
             rnd.NextBytes(data);
 
@@ -44,7 +43,7 @@ namespace Minio.Examples
         }
 
         // Generate a random string
-        public static String GetRandomName()
+        public static string GetRandomName()
         {
             string characters = "0123456789abcdefghijklmnopqrstuvwxyz";
             StringBuilder result = new StringBuilder(5);
@@ -57,9 +56,9 @@ namespace Minio.Examples
 
         public static void Main(string[] args)
         {
-            String endPoint = null;
-            String accessKey = null;
-            String secretKey = null;
+            string endPoint = null;
+            string accessKey = null;
+            string secretKey = null;
             bool enableHTTPS = false;
             if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
             {
@@ -67,7 +66,7 @@ namespace Minio.Examples
                 accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
                 secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
                 if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") != null)
-                    enableHTTPS = Environment.GetEnvironmentVariable("ENABLE_HTTPS").Equals("1"); 
+                    enableHTTPS = Environment.GetEnvironmentVariable("ENABLE_HTTPS").Equals("1");
             }
             else
             {
@@ -78,12 +77,17 @@ namespace Minio.Examples
             }
             ServicePointManager.ServerCertificateValidationCallback +=
                         (sender, certificate, chain, sslPolicyErrors) => true;
+
             // WithSSL() enables SSL support in MinIO client
             MinioClient minioClient = null;
             if (enableHTTPS)
-                minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey).WithSSL();
+            {
+                minioClient = new MinioClient(endPoint, accessKey, secretKey).WithSSL();
+            }
             else
-                minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey);
+            {
+                minioClient = new MinioClient(endPoint, accessKey, secretKey);
+            }
 
             try
             {
@@ -112,7 +116,7 @@ namespace Minio.Examples
 
                 // Create a new bucket
                 Cases.MakeBucket.Run(minioClient, bucketName).Wait();
- 
+
                 Cases.MakeBucket.Run(minioClient, destBucketName).Wait();
 
 
@@ -130,7 +134,7 @@ namespace Minio.Examples
 
                 // Delete the file and Download the object as file
                 Cases.GetObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
-               
+
                 // Delete the file and Download partial object as file
                 Cases.GetPartialObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
 
@@ -164,11 +168,11 @@ namespace Minio.Examples
                 // var sseKms = new SSEKMS("kms-key",new Dictionary<string,string>{{ "kms-context", "somevalue"}});
 
                 // Upload encrypted object
-                Cases.PutObject.Run(minioClient, bucketName, objectName, smallFileName,sse:ssec).Wait();
+                Cases.PutObject.Run(minioClient, bucketName, objectName, smallFileName, sse: ssec).Wait();
                 // Copy SSE-C encrypted object to unencrypted object
-                Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName,sseSrc:sseCpy,sseDest:ssec).Wait();
+                Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName, sseSrc: sseCpy, sseDest: ssec).Wait();
                 // Download SSE-C encrypted object
-                Cases.FGetObject.Run(minioClient, destBucketName, objectName, bigFileName,sse:ssec).Wait();
+                Cases.FGetObject.Run(minioClient, destBucketName, objectName, bigFileName, sse: ssec).Wait();
 
                 // List the incomplete uploads
                 Cases.ListIncompleteUploads.Run(minioClient, bucketName);
@@ -180,7 +184,7 @@ namespace Minio.Examples
                 Cases.SetBucketPolicy.Run(minioClient, bucketName).Wait();
                 // Get the policy for given bucket
                 Cases.GetBucketPolicy.Run(minioClient, bucketName).Wait();
- 
+
                 // Set bucket notifications
                 Cases.SetBucketNotification.Run(minioClient, bucketName).Wait();
 
@@ -220,13 +224,12 @@ namespace Minio.Examples
                 File.Delete(bigFileName);
 
                 Console.ReadLine();
-
             }
             catch (MinioException ex)
             {
                 Console.Out.WriteLine(ex.Message);
             }
-
         }
     }
 }
+

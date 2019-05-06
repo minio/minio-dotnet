@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
+using Minio.DataModel;
 using System;
 using System.Threading.Tasks;
-using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
     class StatObject
     {
         // Get stats on a object
-        public async static Task Run(Minio.MinioClient minio, 
+        public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name",
-                                     string bucketObject="my-object-name")
+                                     string bucketObject = "my-object-name")
         {
             try
             {
@@ -36,7 +36,7 @@ namespace Minio.Examples.Cases
             }
             catch (Exception e)
             {
-                Console.WriteLine("[StatObject] {0}-{1}  Exception: {2}",bucketName, bucketObject, e);
+                Console.WriteLine("[StatObject] {0}-{1}  Exception: {2}", bucketName, bucketObject, e);
             }
         }
     }

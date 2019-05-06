@@ -17,7 +17,6 @@
 using System;
 using System.Threading.Tasks;
 
-
 namespace Minio.Examples.Cases
 {
     public class PresignedPutObject
@@ -35,7 +34,7 @@ namespace Minio.Examples.Cases
             {
                 Console.Out.WriteLine("Exception ", e.Message);
             }
-            
+
         }
     }
 }

@@ -18,7 +18,6 @@ using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-
 namespace Minio.Examples.Cases
 {
     public class PresignedGetObject
@@ -29,17 +28,15 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                Dictionary<string,string> reqParams = new Dictionary<string, string>(){{"response-content-type", "application/json"}};
+                Dictionary<string, string> reqParams = new Dictionary<string, string>() { { "response-content-type", "application/json" } };
                 string presigned_url = await client.PresignedGetObjectAsync(bucketName, objectName, 1000, reqParams);
                 Console.Out.WriteLine(presigned_url);
-            } 
+            }
             catch (Exception e)
             {
                 Console.Out.WriteLine("Exception ", e.Message);
             }
-         
+
         }
     }
 }
-
- 

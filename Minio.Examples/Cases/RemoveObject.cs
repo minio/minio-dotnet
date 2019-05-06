@@ -23,13 +23,13 @@ namespace Minio.Examples.Cases
     {
         // Remove an object from a bucket
         public async static Task Run(MinioClient minio,
-                                     string bucketName = "my-bucket-name", 
+                                     string bucketName = "my-bucket-name",
                                      string objectName = "my-object-name")
         {
             try
             {
                 Console.Out.WriteLine("Running example for API: RemoveObjectAsync");
-                await minio.RemoveObjectAsync(bucketName,objectName);
+                await minio.RemoveObjectAsync(bucketName, objectName);
                 Console.Out.WriteLine("Removed object " + objectName + " from bucket " + bucketName + " successfully");
                 Console.Out.WriteLine();
             }

@@ -21,9 +21,8 @@ namespace Minio.Examples.Cases
 {
     class RemoveIncompleteUpload
     {
-      
         // Remove incomplete upload object from a bucket
-        public async static Task Run(MinioClient minio, 
+        public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name",
                                      string objectName = "my-object-name")
         {
@@ -31,7 +30,7 @@ namespace Minio.Examples.Cases
             {
                 Console.Out.WriteLine("Running example for API: RemoveIncompleteUploadAsync");
                 await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
-                Console.Out.WriteLine("Removed object {0} from bucket {1} successfully",objectName, bucketName);
+                Console.Out.WriteLine("Removed object {0} from bucket {1} successfully", objectName, bucketName);
                 Console.Out.WriteLine();
             }
             catch (Exception e)

@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-using System;
 using Minio.DataModel;
+using System;
 
 namespace Minio.Examples.Cases
 {
-
     class ListObjects
     {
         // List objects matching optional prefix in a specified bucket.
-        public static void Run(Minio.MinioClient minio,
+        public static void Run(MinioClient minio,
                                      string bucketName = "my-bucket-name",
                                      string prefix = null,
                                      bool recursive = true)

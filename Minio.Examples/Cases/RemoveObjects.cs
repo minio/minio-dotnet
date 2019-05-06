@@ -26,7 +26,7 @@ namespace Minio.Examples.Cases
         // Remove a list of objects from a bucket
         public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name",
-                                     List<string> objectsList=null)
+                                     List<string> objectsList = null)
         {
             try
             {

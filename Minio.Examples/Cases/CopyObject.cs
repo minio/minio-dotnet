@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
+using Minio.DataModel;
 using System;
 using System.Threading.Tasks;
-
-using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
     class CopyObject
     {
         // Copy object from one bucket to another
-        public async static Task Run(Minio.MinioClient minio,
-                                     string fromBucketName="from-bucket-name",
-                                     string fromObjectName="from-object-name",
-                                     string destBucketName="dest-bucket",
-                                     string destObjectName="to-object-name",
+        public async static Task Run(MinioClient minio,
+                                     string fromBucketName = "from-bucket-name",
+                                     string fromObjectName = "from-object-name",
+                                     string destBucketName = "dest-bucket",
+                                     string destObjectName = "to-object-name",
                                      ServerSideEncryption sseSrc = null,
                                      ServerSideEncryption sseDest = null)
         {
@@ -36,21 +35,20 @@ namespace Minio.Examples.Cases
             {
                 Console.Out.WriteLine("Running example for API: CopyObjectAsync");
                 // Optionally pass copy conditions
-                await minio.CopyObjectAsync(fromBucketName, 
-                                                fromObjectName, 
-                                                destBucketName, 
-                                                destObjectName, 
-                                                copyConditions:null,
+                await minio.CopyObjectAsync(fromBucketName,
+                                                fromObjectName,
+                                                destBucketName,
+                                                destObjectName,
+                                                copyConditions: null,
                                                 sseSrc: sseSrc,
                                                 sseDest: sseDest);
                 Console.Out.WriteLine("Copied object {0} from bucket {1} to bucket {2}", fromObjectName, fromBucketName, destBucketName);
-                Console.Out.WriteLine();    
+                Console.Out.WriteLine();
             }
             catch (Exception e)
             {
                 Console.WriteLine("[Bucket]  Exception: {0}", e);
             }
         }
-
     }
 }
