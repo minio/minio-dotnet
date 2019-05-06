@@ -95,7 +95,7 @@ namespace Minio.Tests
                 string headerName = header.Name.ToLower();
                 if (headerName.Contains(headername.ToLower()))
                 {
-                    return new Tuple<string, object>(headerName, header.Value);
+                    return Tuple.Create(headerName, header.Value);
                 }
             }
             return null;

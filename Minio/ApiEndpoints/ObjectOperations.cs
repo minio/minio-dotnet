@@ -408,7 +408,7 @@ namespace Minio
                                size = long.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture)
                            });
 
-            return new Tuple<ListPartsResult, List<Part>>(listPartsResult, uploads.ToList());
+            return Tuple.Create(listPartsResult, uploads.ToList());
         }
 
         /// <summary>
@@ -556,7 +556,7 @@ namespace Minio
                                Initiated = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Initiated").Value
                            });
 
-            return new Tuple<ListMultipartUploadsResult, List<Upload>>(listBucketResult, uploads.ToList());
+            return Tuple.Create(listBucketResult, uploads.ToList());
         }
 
         /// <summary>
@@ -1153,7 +1153,7 @@ namespace Minio
             policy.SetPolicy(policyBase64);
             policy.SetSignature(signature);
 
-            return new Tuple<string, Dictionary<string, string>>(this.restClient.BaseUrl.AbsoluteUri, policy.GetFormData());
+            return Tuple.Create(this.restClient.BaseUrl.AbsoluteUri, policy.GetFormData());
         }
     }
 }

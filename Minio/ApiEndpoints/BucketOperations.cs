@@ -238,7 +238,7 @@ namespace Minio
 
             items = items.Concat(prefixes);
 
-            return new Tuple<ListBucketResult, List<Item>>(listBucketResult, items.ToList());
+            return Tuple.Create(listBucketResult, items.ToList());
         }
 
         /// <summary>
