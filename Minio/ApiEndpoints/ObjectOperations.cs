@@ -75,9 +75,9 @@ namespace Minio
         public async Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (offset < 0)
-                throw new ArgumentException("Offset should be zero or greater");
+                throw new ArgumentException("Offset should be zero or greater", nameof(offset));
             if (length < 0)
-                throw new ArgumentException("Length should be greater than zero");
+                throw new ArgumentException("Length should be greater than zero", nameof(length));
 
             await StatObjectAsync(bucketName, objectName, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -148,7 +148,7 @@ namespace Minio
                 else if (fileSize > length)
                 {
                     throw new ArgumentException("'" + fileName + "': object size " + length + " is smaller than file size "
-                                                       + fileSize);
+                                                       + fileSize, nameof(fileSize));
                 }
                 else if (!tempFileExists)
                 {
@@ -860,15 +860,15 @@ namespace Minio
         {
             if (bucketName == null)
             {
-                throw new ArgumentException("Source bucket name cannot be empty");
+                throw new ArgumentException("Source bucket name cannot be empty", nameof(bucketName));
             }
             if (objectName == null)
             {
-                throw new ArgumentException("Source object name cannot be empty");
+                throw new ArgumentException("Source object name cannot be empty", nameof(objectName));
             }
             if (destBucketName == null)
             {
-                throw new ArgumentException("Destination bucket name cannot be empty");
+                throw new ArgumentException("Destination bucket name cannot be empty", nameof(destBucketName));
             }
             // Escape source object path.
             string sourceObjectPath = bucketName + "/" + utils.UrlEncode(objectName);
@@ -1116,17 +1116,17 @@ namespace Minio
 
             if (!policy.IsBucketSet())
             {
-                throw new ArgumentException("bucket should be set");
+                throw new ArgumentException("bucket should be set", nameof(policy));
             }
 
             if (!policy.IsKeySet())
             {
-                throw new ArgumentException("key should be set");
+                throw new ArgumentException("key should be set", nameof(policy));
             }
 
             if (!policy.IsExpirationSet())
             {
-                throw new ArgumentException("expiration should be set");
+                throw new ArgumentException("expiration should be set", nameof(policy));
             }
 
             // Initialize a new client.

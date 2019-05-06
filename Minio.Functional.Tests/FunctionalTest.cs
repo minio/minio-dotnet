@@ -102,13 +102,13 @@ namespace Minio.Functional.Tests
         // Return true if running in Mint mode
         public static bool IsMintEnv()
         {
-            return !String.IsNullOrEmpty(Environment.GetEnvironmentVariable("MINT_DATA_DIR"));
+            return !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MINT_DATA_DIR"));
         }
         // Get full path of file
         public static string GetFilePath(string fileName)
         {
             var dataDir = Environment.GetEnvironmentVariable("MINT_DATA_DIR");
-            if (!String.IsNullOrEmpty(dataDir))
+            if (!string.IsNullOrEmpty(dataDir))
             {
                 return dataDir + "/" + fileName;
             }
@@ -167,7 +167,7 @@ namespace Minio.Functional.Tests
 
             string runMode = Environment.GetEnvironmentVariable("MINT_MODE");
 
-            if (!String.IsNullOrEmpty(runMode) && runMode.Equals("core"))
+            if (!string.IsNullOrEmpty(runMode) && runMode.Equals("core"))
             {
                 runCoreTests(minioClient);
                 System.Environment.Exit(0);

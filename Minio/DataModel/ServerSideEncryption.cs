@@ -66,7 +66,7 @@ namespace Minio.DataModel
         {
             if (key == null || key.Length != 32)
             {
-                throw new ArgumentException("Secret key needs to be a 256 bit AES Key");
+                throw new ArgumentException("Secret key needs to be a 256 bit AES Key", nameof(key));
             }
             this.key = key;
         }
@@ -126,7 +126,7 @@ namespace Minio.DataModel
         {
             if (key == "")
             {
-                throw new ArgumentException("KMS Key cannot be empty");
+                throw new ArgumentException("KMS Key cannot be empty", nameof(key));
             }
             this.key = key;
             this.context = context;

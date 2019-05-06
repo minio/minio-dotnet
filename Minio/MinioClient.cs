@@ -83,10 +83,10 @@ namespace Minio
                 string release = "minio-dotnet/1.0.9";
 #if NET46
                 string arch = Environment.Is64BitOperatingSystem ? "x86_64" : "x86";
-                return String.Format("MinIO ({0};{1}) {2}", Environment.OSVersion, arch, release);
+                return string.Format("MinIO ({0};{1}) {2}", Environment.OSVersion, arch, release);
 #else
                 string arch = RuntimeInformation.OSArchitecture.ToString();
-                return String.Format("MinIO ({0};{1}) {2}", RuntimeInformation.OSDescription, arch, release);
+                return string.Format("MinIO ({0};{1}) {2}", RuntimeInformation.OSDescription, arch, release);
 #endif
             }
         }
@@ -276,11 +276,11 @@ namespace Minio
         {
             if (string.IsNullOrEmpty(appName))
             {
-                throw new ArgumentException("Appname cannot be null or empty");
+                throw new ArgumentException("Appname cannot be null or empty", nameof(appName));
             }
             if (string.IsNullOrEmpty(appVersion))
             {
-                throw new ArgumentException("Appversion cannot be null or empty");
+                throw new ArgumentException("Appversion cannot be null or empty", nameof(appVersion));
             }
             this.CustomUserAgent = appName + "/" + appVersion;
         }

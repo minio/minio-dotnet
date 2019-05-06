@@ -54,7 +54,7 @@ namespace Minio.DataModel
         {
             if (date == null)
             {
-                throw new ArgumentException("Date cannot be empty");
+                throw new ArgumentException("Date cannot be empty", nameof(date));
             }
             copyConditions.Add("x-amz-copy-source-if-modified-since", date.ToUniversalTime().ToString("r"));
         }
@@ -68,7 +68,7 @@ namespace Minio.DataModel
         {
             if (date == null)
             {
-                throw new ArgumentException("Date cannot be empty");
+                throw new ArgumentException("Date cannot be empty", nameof(date));
             }
             copyConditions.Add("x-amz-copy-source-if-unmodified-since", date.ToUniversalTime().ToString("r"));
         }
@@ -83,7 +83,7 @@ namespace Minio.DataModel
         {
             if (etag == null)
             {
-                throw new ArgumentException("ETag cannot be empty");
+                throw new ArgumentException("ETag cannot be empty", nameof(etag));
             }
             copyConditions.Add("x-amz-copy-source-if-match", etag);
         }
@@ -98,7 +98,7 @@ namespace Minio.DataModel
         {
             if (etag == null)
             {
-                throw new ArgumentException("ETag cannot be empty");
+                throw new ArgumentException("ETag cannot be empty", nameof(etag));
             }
             copyConditions.Add("x-amz-copy-source-if-none-match", etag);
         }

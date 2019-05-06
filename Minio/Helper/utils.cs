@@ -152,7 +152,7 @@ namespace Minio
         {
             if (filePath == null || filePath == "")
             {
-                throw new ArgumentException("empty file name is not allowed");
+                throw new ArgumentException("empty file name is not allowed", nameof(filePath));
             }
 
             string fileName = Path.GetFileName(filePath);
@@ -162,7 +162,7 @@ namespace Minio
                 FileAttributes attr = File.GetAttributes(filePath);
                 if (attr.HasFlag(FileAttributes.Directory))
                 {
-                    throw new ArgumentException("'" + fileName + "': not a regular file");
+                    throw new ArgumentException("'" + fileName + "': not a regular file", nameof(filePath));
                 }
             }
 
@@ -182,7 +182,7 @@ namespace Minio
             }
             catch { }
 
-            if (String.IsNullOrEmpty(extension))
+            if (string.IsNullOrEmpty(extension))
                 return "application/octet-stream";
 
             return _contentTypeMap.Value.TryGetValue(extension, out string contentType) 

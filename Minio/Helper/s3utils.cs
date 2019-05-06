@@ -78,7 +78,6 @@ namespace Minio.Helper
             {
                 throw new ArgumentException(ex.Message);
             }
-
         }
 
         /// <summary>
@@ -88,7 +87,7 @@ namespace Minio.Helper
         /// <returns></returns>
         internal static bool IsValidIP(string ip)
         {
-            if (String.IsNullOrEmpty(ip))
+            if (string.IsNullOrEmpty(ip))
                 return false;
 
             string[] splitValues = ip.Split('.');

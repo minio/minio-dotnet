@@ -84,7 +84,7 @@ namespace Minio
             this.isSecure = secure;
             this.accessKey = accessKey;
             this.secretKey = secretKey;
-            this.isAnonymous = String.IsNullOrEmpty(accessKey) && String.IsNullOrEmpty(secretKey);
+            this.isAnonymous = string.IsNullOrEmpty(accessKey) && string.IsNullOrEmpty(secretKey);
             this.region = region;
             this.sessionToken = sessionToken;
         }
