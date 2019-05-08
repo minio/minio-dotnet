@@ -93,29 +93,20 @@ namespace Minio.DataModel
                 {
                     this.Filter.S3Key.FilterRules[i] = newFilterRule;
                     return;
-                }              
+                }
             }
             this.Filter.S3Key.FilterRules.Add(newFilterRule);
         }
 
-        public bool ShouldSerializeFilter()
-        {
-            return this.Filter != null;
-        }
+        public bool ShouldSerializeFilter() => this.Filter != null;
 
-        public bool ShouldSerializeId()
-        {
-            return Id != null;
-        }
+        public bool ShouldSerializeId() => Id != null;
 
         public bool ShouldSerializeEvents()
         {
             return this.Events != null && this.Events.Count > 0;
         }
 
-        internal bool IsIdSet()
-        {
-            return this.Id != null;
-        }
+        internal bool IsIdSet() => this.Id != null;
     }
 }

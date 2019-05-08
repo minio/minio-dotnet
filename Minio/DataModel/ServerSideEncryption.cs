@@ -48,10 +48,7 @@ namespace Minio.DataModel
         // secret AES-256 Key
         protected byte[] key;
 
-        public new EncryptionType GetType()
-        {
-            return EncryptionType.SSE_C;
-        }
+        public new EncryptionType GetType() => EncryptionType.SSE_C;
 
         public virtual void Marshal(Dictionary<string, string> headers)
         {
@@ -66,7 +63,7 @@ namespace Minio.DataModel
         {
             if (key == null || key.Length != 32)
             {
-                throw new ArgumentException("Secret key needs to be a 256 bit AES Key");
+                throw new ArgumentException("Secret key needs to be a 256 bit AES Key", nameof(key));
             }
             this.key = key;
         }
@@ -90,10 +87,7 @@ namespace Minio.DataModel
         {
         }
 
-        public SSEC CloneToSSEC()
-        {
-            return new SSEC(this.key);
-        }
+        public SSEC CloneToSSEC() => new SSEC(this.key);
     }
 
     /// <summary>
@@ -101,10 +95,7 @@ namespace Minio.DataModel
     /// </summary>
     public class SSES3 : ServerSideEncryption
     {
-        public new EncryptionType GetType()
-        {
-            return EncryptionType.SSE_S3;
-        }
+        public new EncryptionType GetType() => EncryptionType.SSE_S3;
 
         public virtual void Marshal(Dictionary<string, string> headers)
         {
@@ -126,16 +117,13 @@ namespace Minio.DataModel
         {
             if (key == "")
             {
-                throw new ArgumentException("KMS Key cannot be empty");
+                throw new ArgumentException("KMS Key cannot be empty", nameof(key));
             }
             this.key = key;
             this.context = context;
         }
 
-        public new EncryptionType GetType()
-        {
-            return EncryptionType.SSE_KMS;
-        }
+        public new EncryptionType GetType() => EncryptionType.SSE_KMS;
 
         public void Marshal(Dictionary<string, string> headers)
         {
@@ -171,7 +159,7 @@ namespace Minio.DataModel
                 }
             }
             sb.Append("}");
-            byte[] contextBytes = Encoding.UTF8.GetBytes(sb.ToString() as string);
+            byte[] contextBytes = Encoding.UTF8.GetBytes(sb.ToString());
             return Convert.ToBase64String(contextBytes);
         }
     }

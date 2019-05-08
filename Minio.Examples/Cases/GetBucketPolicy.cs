@@ -25,7 +25,7 @@ namespace Minio.Examples.Cases
         // Get bucket policy 
         public async static Task Run(Minio.MinioClient minio, 
                                      string bucketName = "my-bucket-name",
-                                     string prefix="")
+                                     string prefix = "")
         {
             try
             {

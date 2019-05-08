@@ -21,11 +21,10 @@ namespace Minio.Exceptions
     [Serializable]
     public class BucketNotFoundException : MinioException
     {
-        private string bucketName;
+        private readonly string bucketName;
 
         public BucketNotFoundException()
         {
-
         }
 
         public BucketNotFoundException(string bucketName, string message) : base(message)
@@ -33,9 +32,6 @@ namespace Minio.Exceptions
             this.bucketName = bucketName;
         }
 
-        public override string ToString()
-        {
-            return this.bucketName + ": " + base.ToString();
-        }
+        public override string ToString() => this.bucketName + ": " + base.ToString();
     }
 }

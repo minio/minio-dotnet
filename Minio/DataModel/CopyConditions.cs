@@ -25,7 +25,7 @@ namespace Minio.DataModel
     /// </summary>
     public class CopyConditions
     {
-        private Dictionary<string, string> copyConditions = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> copyConditions = new Dictionary<string, string>();
         internal long byteRangeStart = 0;
         internal long byteRangeEnd = -1;
 
@@ -54,7 +54,7 @@ namespace Minio.DataModel
         {
             if (date == null)
             {
-                throw new ArgumentException("Date cannot be empty");
+                throw new ArgumentException("Date cannot be empty", nameof(date));
             }
             copyConditions.Add("x-amz-copy-source-if-modified-since", date.ToUniversalTime().ToString("r"));
         }
@@ -68,7 +68,7 @@ namespace Minio.DataModel
         {
             if (date == null)
             {
-                throw new ArgumentException("Date cannot be empty");
+                throw new ArgumentException("Date cannot be empty", nameof(date));
             }
             copyConditions.Add("x-amz-copy-source-if-unmodified-since", date.ToUniversalTime().ToString("r"));
         }
@@ -83,7 +83,7 @@ namespace Minio.DataModel
         {
             if (etag == null)
             {
-                throw new ArgumentException("ETag cannot be empty");
+                throw new ArgumentException("ETag cannot be empty", nameof(etag));
             }
             copyConditions.Add("x-amz-copy-source-if-match", etag);
         }
@@ -98,13 +98,13 @@ namespace Minio.DataModel
         {
             if (etag == null)
             {
-                throw new ArgumentException("ETag cannot be empty");
+                throw new ArgumentException("ETag cannot be empty", nameof(etag));
             }
             copyConditions.Add("x-amz-copy-source-if-none-match", etag);
         }
 
         /// <summary>
-        /// Set replace metadata directive which specifies that server side copy needs to replace metadata 
+        /// Set replace metadata directive which specifies that server side copy needs to replace metadata
         /// on destination with custom metadata provided in the request.
         /// </summary>
         public void SetReplaceMetadataDirective()
@@ -121,14 +121,14 @@ namespace Minio.DataModel
             foreach (var item in copyConditions)
             {
                 if (item.Key.Equals("x-amz-metadata-directive", StringComparison.OrdinalIgnoreCase) &&
-                    (item.Value.ToUpper().Equals("REPLACE")))
+                    item.Value.ToUpper().Equals("REPLACE"))
                     return true;
             }
             return false;
         }
 
         /// <summary>
-        /// Set Byte Range condition, copy object which falls within the 
+        /// Set Byte Range condition, copy object which falls within the
         /// start and end byte range specified by user
         /// </summary>
         /// <param name="firstByte"></param>

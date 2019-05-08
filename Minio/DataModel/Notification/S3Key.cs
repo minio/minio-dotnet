@@ -49,9 +49,6 @@ namespace Minio.DataModel
             return this.filterRules != null && this.filterRules.Count > 0;
         }
 
-        public bool ShouldSerializeFilterRules()
-        {
-            return this.filterRules.Count > 0;
-        }
+        public bool ShouldSerializeFilterRules() => this.filterRules.Count > 0;
     }
 }

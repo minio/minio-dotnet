@@ -30,24 +30,23 @@ namespace Minio.Tests
         [TestMethod]
         public void TestValidBucketName()
         {
-        var testCases = new List<KeyValuePair<string, InvalidBucketNameException>>()
+            var testCases = new List<KeyValuePair<string, InvalidBucketNameException>>
             {
-              new KeyValuePair<string, InvalidBucketNameException>(".mybucket",new InvalidBucketNameException(".mybucket", "Bucket name cannot start or end with a '.' dot.")),
-              new KeyValuePair<string, InvalidBucketNameException>("mybucket.",new InvalidBucketNameException(".mybucket", "Bucket name cannot start or end with a '.' dot.")),
-              new KeyValuePair<string, InvalidBucketNameException>("",new InvalidBucketNameException("", "Bucket name cannot be empty.")),
-              new KeyValuePair<string, InvalidBucketNameException>("mk",new InvalidBucketNameException("mk", "Bucket name cannot be smaller than 3 characters.")),
-              new KeyValuePair<string, InvalidBucketNameException>("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz123456789012345",new InvalidBucketNameException("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz123456789012345", "Bucket name cannot be greater than 63 characters.")),
-              new KeyValuePair<string, InvalidBucketNameException>("my..bucket",new InvalidBucketNameException("my..bucket", "Bucket name cannot have successive periods.")),
-              new KeyValuePair<string, InvalidBucketNameException>("MyBucket",new InvalidBucketNameException("MyBucket", "Bucket name cannot have upper case characters")),
+              new KeyValuePair<string, InvalidBucketNameException>(".mybucket", new InvalidBucketNameException(".mybucket", "Bucket name cannot start or end with a '.' dot.")),
+              new KeyValuePair<string, InvalidBucketNameException>("mybucket.", new InvalidBucketNameException(".mybucket", "Bucket name cannot start or end with a '.' dot.")),
+              new KeyValuePair<string, InvalidBucketNameException>("", new InvalidBucketNameException("", "Bucket name cannot be empty.")),
+              new KeyValuePair<string, InvalidBucketNameException>("mk", new InvalidBucketNameException("mk", "Bucket name cannot be smaller than 3 characters.")),
+              new KeyValuePair<string, InvalidBucketNameException>("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz123456789012345", new InvalidBucketNameException("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz123456789012345", "Bucket name cannot be greater than 63 characters.")),
+              new KeyValuePair<string, InvalidBucketNameException>("my..bucket", new InvalidBucketNameException("my..bucket", "Bucket name cannot have successive periods.")),
+              new KeyValuePair<string, InvalidBucketNameException>("MyBucket", new InvalidBucketNameException("MyBucket", "Bucket name cannot have upper case characters")),
               new KeyValuePair<string, InvalidBucketNameException>("my!bucket", new InvalidBucketNameException("my!bucket", "Bucket name contains invalid characters.")),
               new KeyValuePair<string, InvalidBucketNameException>("mybucket", null ),
-              new KeyValuePair<string, InvalidBucketNameException>("mybucket1234dhdjkshdkshdkshdjkshdkjshfkjsfhjkshsjkhjkhfkjd",null ),
+              new KeyValuePair<string, InvalidBucketNameException>("mybucket1234dhdjkshdkshdkshdjkshdkjshfkjsfhjkshsjkhjkhfkjd", null),
             };
-         
-            foreach (KeyValuePair<string,InvalidBucketNameException> pair in testCases)
+
+            foreach (KeyValuePair<string, InvalidBucketNameException> pair in testCases)
             {
-                
-                string bucketName = (string)pair.Key;
+                string bucketName = pair.Key;
                 InvalidBucketNameException expectedException = pair.Value;
                 try
                 {

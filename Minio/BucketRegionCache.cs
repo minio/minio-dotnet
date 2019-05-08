@@ -32,12 +32,9 @@ namespace Minio
         private static readonly Lazy<BucketRegionCache> lazy =
             new Lazy<BucketRegionCache>(() => new BucketRegionCache());
 
-        private ConcurrentDictionary<string, string> regionMap;
+        private readonly ConcurrentDictionary<string, string> regionMap;
 
-        public static BucketRegionCache Instance
-        {
-            get { return lazy.Value; }
-        }
+        public static BucketRegionCache Instance => lazy.Value;
         private BucketRegionCache()
         {
             this.regionMap = new ConcurrentDictionary<string, string>();
@@ -50,9 +47,8 @@ namespace Minio
         /// <returns></returns>
         public string Region(string bucketName)
         {
-            string value = null;
-            this.regionMap.TryGetValue(bucketName, out value);
-            return value != null ? value : "us-east-1";
+            this.regionMap.TryGetValue(bucketName, out string value);
+            return value ?? "us-east-1";
         }
 
         /// <summary>
@@ -71,8 +67,7 @@ namespace Minio
         /// <param name="bucketName"></param>
         public void Remove(string bucketName)
         {
-            string value;
-            this.regionMap.TryRemove(bucketName, out value);
+            this.regionMap.TryRemove(bucketName, out string value);
         }
 
         /// <summary>
@@ -80,10 +75,9 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName"></param>
         /// <returns></returns>
-        public bool Exists(String bucketName)
+        public bool Exists(string bucketName)
         {
-            string value = null;
-            this.regionMap.TryGetValue(bucketName, out value);
+            this.regionMap.TryGetValue(bucketName, out string value);
             return value != null;
         }
 
@@ -115,7 +109,6 @@ namespace Minio
                     var stream = new MemoryStream(contentBytes);
                     XDocument root = XDocument.Parse(response.Content);
                     location = root.Root.Value;
-
                 }
                 if (location == null || location == "")
                 {
@@ -124,7 +117,7 @@ namespace Minio
                 else
                 {
                     // eu-west-1 can be sometimes 'EU'.
-                    if ("EU".Equals(location))
+                    if (location == "EU")
                     {
                         region = "eu-west-1";
                     }

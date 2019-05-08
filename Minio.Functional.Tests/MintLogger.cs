@@ -51,7 +51,7 @@ namespace Minio.Functional.Tests
       public string description {get; private set;}
 
       // Key-value pair of args relevant to test
-      public Dictionary<string,string> args {get; private set;}
+      public Dictionary<string, string> args {get; private set;}
       
       // duration of the whole test
       public int duration {get; private set;}
@@ -66,7 +66,7 @@ namespace Minio.Functional.Tests
 
       // actual low level exception/error thrown by the program
       public string error {get; private set;}
-      public MintLogger(string testName,string function, string description,TestStatus status,System.TimeSpan duration, string alert = null,string message=null, string error=null, Dictionary<string,string> args=null)
+      public MintLogger(string testName, string function, string description, TestStatus status, System.TimeSpan duration, string alert = null, string message = null, string error = null, Dictionary<string,string> args = null)
       {
         this.function = function;
         this.duration = (int)duration.TotalMilliseconds;

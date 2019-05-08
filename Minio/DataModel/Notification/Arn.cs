@@ -24,17 +24,17 @@ namespace Minio.DataModel
     /// </summary>
     public class Arn
     {
-       private string Partition { get; }
-       private string Service { get; }
-       private string Region { get; }
-       private string AccountID { get; }
-       private string Resource { get; }
+        private string Partition { get; }
+        private string Service { get; }
+        private string Region { get; }
+        private string AccountID { get; }
+        private string Resource { get; }
 
         [XmlText]
-        private string arnString;
+        private readonly string arnString;
 
         public Arn()
-        {  
+        {
         }
 
         /// <summary>
@@ -73,9 +73,6 @@ namespace Minio.DataModel
             this.arnString = "arn:" + this.Partition + ":" + this.Service + ":" + this.Region + ":" + this.AccountID + ":" + this.Resource;
         }
 
-        public override string ToString()
-        {
-            return  arnString;
-        }
+        public override string ToString() => arnString;
     }
 }

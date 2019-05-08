@@ -18,16 +18,13 @@ namespace Minio.Exceptions
 {
     public class InvalidObjectPrefixException : MinioException
     {
-        private string objectPrefix;
+        private readonly string objectPrefix;
 
         public InvalidObjectPrefixException(string objectPrefix, string message) : base(message)
         {
             this.objectPrefix = objectPrefix;
         }
 
-        public override string ToString()
-        {
-            return this.objectPrefix + ": " + base.ToString();
-        }
+        public override string ToString() => this.objectPrefix + ": " + base.ToString();
     }
 }

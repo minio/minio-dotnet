@@ -27,9 +27,9 @@ namespace Minio.DataModel
         [XmlElement("Quiet")]
         public bool quiet { get;  set; }
         [XmlElement("Object")]
-        public List<DeleteObject> objects { get; set;}
-      
-        public DeleteObjectsRequest(List<DeleteObject> objectsList, bool quiet=true) 
+        public List<DeleteObject> objects { get; set; }
+
+        public DeleteObjectsRequest(List<DeleteObject> objectsList, bool quiet = true)
         {
             this.quiet = quiet;
             this.objects = objectsList;

@@ -47,7 +47,7 @@ namespace Minio.DataModel
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public override bool Equals(Object obj)
+        public override bool Equals(object obj)
         {
             TopicConfig other = (TopicConfig)obj;
             // If parameter is null return false.
@@ -58,9 +58,6 @@ namespace Minio.DataModel
             return other.Topic.Equals(this.Topic);
         }
 
-        public override int GetHashCode()
-        {
-            return this.Topic.GetHashCode();
-        }
+        public override int GetHashCode() => this.Topic.GetHashCode();
     }
 }

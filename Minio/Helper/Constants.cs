@@ -30,7 +30,7 @@ namespace Minio.Helper
         // operation.
         public static long MaxSinglePutObjectSize = 1024L * 1024L * 1024L * 5;
 
-        // maxSingleCopyObjectSize - 5GiB 
+        // maxSingleCopyObjectSize - 5GiB
         public static long MaxSingleCopyObjectSize = 1024L * 1024L * 1024L * 5;
         // maxMultipartPutObjectSize - maximum size 5TiB of object for
         // Multipart operation.
@@ -41,7 +41,7 @@ namespace Minio.Helper
         public static long OptimalReadBufferSize = 1024L * 1024L * 5;
 
         public static int DefaultExpiryTime = 7 * 24 * 3600;
-	    
+
         // SSEGenericHeader is the AWS SSE header used for SSE-S3 and SSE-KMS.
         public static string SSEGenericHeader = "X-Amz-Server-Side-Encryption";
 

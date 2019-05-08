@@ -27,12 +27,9 @@ namespace Minio
         private static readonly Lazy<AWSS3Endpoints> lazy =
             new Lazy<AWSS3Endpoints>(() => new AWSS3Endpoints());
 
-        private ConcurrentDictionary<string, string> endpoints;
+        private readonly ConcurrentDictionary<string, string> endpoints;
 
-        public static AWSS3Endpoints Instance
-        {
-            get { return lazy.Value; }
-        }
+        public static AWSS3Endpoints Instance => lazy.Value;
 
         private AWSS3Endpoints()
         {
@@ -41,7 +38,7 @@ namespace Minio
             endpoints.TryAdd("ap-northeast-1", "s3-ap-northeast-1.amazonaws.com");
             // ap-northeast-2
             endpoints.TryAdd("ap-northeast-2", "s3-ap-northeast-2.amazonaws.com");
-            //ap-south-1
+            // ap-south-1
             endpoints.TryAdd("ap-south-1", "s3-ap-south-1.amazonaws.com");
             // ap-southeast-1
             endpoints.TryAdd("ap-southeast-1", "s3-ap-southeast-1.amazonaws.com");
@@ -63,7 +60,7 @@ namespace Minio
             endpoints.TryAdd("us-east-1", "s3.amazonaws.com");
             // us-east-2
             endpoints.TryAdd("us-east-2", "s3-us-east-2.amazonaws.com");
-            //ca-central-1
+            // ca-central-1
             endpoints.TryAdd("ca-central-1", "s3.ca-central-1.amazonaws.com");
             // cn-north-1
             endpoints.TryAdd("cn-north-1", "s3.cn-north-1.amazonaws.com.cn");

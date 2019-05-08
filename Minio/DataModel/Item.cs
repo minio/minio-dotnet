@@ -53,7 +53,7 @@ namespace Minio.DataModel
             get
             {
                 DateTime? dt = null;
-                if(!string.IsNullOrEmpty(this.LastModified))
+                if (!string.IsNullOrEmpty(this.LastModified))
                 {
                     dt = DateTime.Parse(this.LastModified, CultureInfo.InvariantCulture);
                 }

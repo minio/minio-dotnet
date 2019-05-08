@@ -33,57 +33,55 @@ namespace Minio.Tests
             Minio.RequestUtil.GetEndpointURL("s3.amazonaws.com", true);
             object[] parameterValuesArray =
                         {
-                          new Object[]{ "s3.amazonaws.com",true,"testbucket",null,false },
-                          new object[] {"testbucket.s3.amazonaws.com", true}
+                          new object[] { "s3.amazonaws.com", true, "testbucket", null, false },
+                          new object[] {"testbucket.s3.amazonaws.com", true }
 
                         };
             object[] parameterValuesArray1 =
                        {
-                           "s3.amazonaws.com",true,"testbucket","testobject",false
-
-                        };
+                           "s3.amazonaws.com", true, "testbucket", "testobject", false
+                       };
 
             object[][] testCases =
             {
                 new Object[] {
-                          new Object[]{ "s3.cn-north-1.amazonaws.com.cn", true},
-                          new Object[] { "https://s3.cn-north-1.amazonaws.com.cn", null,true}
+                        new Object[] { "s3.cn-north-1.amazonaws.com.cn", true },
+                        new Object[] { "https://s3.cn-north-1.amazonaws.com.cn", null, true }
                 },
-               new Object[] {
-                            new Object[]{ "s3.amazonaws.com:443",true },
-                            new Object[] {"https://s3.amazonaws.com:443",null, true}
+                new Object[] {
+                        new Object[] { "s3.amazonaws.com:443", true },
+                        new Object[] { "https://s3.amazonaws.com:443", null, true }
                 },
-               new Object[] {
-                          new Object[]{ "s3.amazonaws.com",true },
-                          new Object[] {"https://s3.amazonaws.com",null, true}
+                new Object[] {
+                        new Object[] { "s3.amazonaws.com", true },
+                        new Object[] { "https://s3.amazonaws.com", null, true }
                 },
-
 
                 new Object[] {
-                            new Object[]{ "s3.amazonaws.com",false },
-                            new Object[] {"http://s3.amazonaws.com",null, true}
+                        new Object[] { "s3.amazonaws.com", false },
+                        new Object[] { "http://s3.amazonaws.com", null, true }
                 },
 
-                 new Object[] {
-                          new Object[]{ "192.168.1.1:9000", false},
-                          new object[] { "http://192.168.1.1:9000", null,true}
+                new Object[] {
+                        new object[] { "192.168.1.1:9000", false},
+                        new object[] { "http://192.168.1.1:9000", null, true }
                 },
-                 new Object[] {
-                          new Object[]{ "192.168.1.1:9000", true},
-                          new object[] { "https://192.168.1.1:9000", null,true}
+                new Object[] {
+                        new Object[] { "192.168.1.1:9000", true },
+                        new object[] { "https://192.168.1.1:9000", null, true }
                 },
-                 new Object[] {
-                          new Object[]{ "13333.123123.-", true},
-                          new object[] { "",new InvalidEndpointException("Endpoint: 13333.123123.- does not follow ip address or domain name standards."),false}
+                new Object[] {
+                        new Object[] { "13333.123123.-", true },
+                        new object[] { "", new InvalidEndpointException("Endpoint: 13333.123123.- does not follow ip address or domain name standards."), false }
                 },
 
-                     new Object[] {
-                          new Object[]{ "s3.aamzza.-", true},
-                          new object[] { "",new InvalidEndpointException("Endpoint: s3.aamzza.- does not follow ip address or domain name standards."),false}
+                new Object[] {
+                        new Object[] { "s3.aamzza.-", true },
+                        new object[] { "", new InvalidEndpointException("Endpoint: s3.aamzza.- does not follow ip address or domain name standards."), false }
                 },
-                         new Object[] {
-                          new Object[]{ "", true},
-                          new object[] { "",new InvalidEndpointException("Endpoint:  does not follow ip address or domain name standards."),false}
+                new Object[] {
+                        new Object[] { "", true },
+                        new object[] { "", new InvalidEndpointException("Endpoint:  does not follow ip address or domain name standards."), false }
                 },
             };
             for (int i = 0; i < testCases.Length; i++)
@@ -109,13 +107,13 @@ namespace Minio.Tests
         {
             Dictionary<string, bool> testIPDict = new Dictionary<string, bool>
             {
-                {"192.168.1",false },
-                {"192.168.1.1", true},
-                {"192.168.1.1.1", false},
-                {"-192.168.1.1", false},
-                {"260.192.1.1", false},
+                { "192.168.1", false },
+                { "192.168.1.1", true },
+                { "192.168.1.1.1", false },
+                { "-192.168.1.1", false },
+                { "260.192.1.1", false },
             };
-            foreach (KeyValuePair<string,bool> testCase in testIPDict)
+            foreach (KeyValuePair<string, bool> testCase in testIPDict)
             {
                 Assert.AreEqual(s3utils.IsValidIP(testCase.Key), testCase.Value);
             }

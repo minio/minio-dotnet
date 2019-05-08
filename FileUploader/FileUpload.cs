@@ -38,7 +38,7 @@ namespace FileUploader
             try
             {
                 var minio = new MinioClient(endpoint, accessKey, secretKey).WithSSL();
-                FileUpload.Run(minio).Wait();
+                Run(minio).Wait();
             }
             catch (Exception ex)
             {

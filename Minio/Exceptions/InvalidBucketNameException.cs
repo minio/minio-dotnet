@@ -18,16 +18,13 @@ namespace Minio.Exceptions
 {
     public class InvalidBucketNameException : MinioException
     {
-        private string bucketName;
+        private readonly string bucketName;
 
         public InvalidBucketNameException(string bucketName, string message) : base(message)
         {
             this.bucketName = bucketName;
         }
 
-        public override string ToString()
-        {
-            return this.bucketName + ": " + base.ToString();
-        }
+        public override string ToString() => this.bucketName + ": " + base.ToString();
     }
 }

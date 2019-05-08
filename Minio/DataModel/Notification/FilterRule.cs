@@ -43,14 +43,8 @@ namespace Minio.DataModel
             this.Value = value;
         }
 
-        public bool ShouldSerializeName()
-        {
-            return this.Name != null;
-        }
+        public bool ShouldSerializeName() => this.Name != null;
 
-        public bool ShouldSerializeValue()
-        {
-            return this.Value != null;
-        }
+        public bool ShouldSerializeValue() => this.Value != null;
     }
 }

@@ -38,9 +38,6 @@ namespace Minio.DataModel
         }
 
         // Helper to XMLSerializer which decides whether to serialize S3Key
-        public bool ShouldSerializeS3Key()
-        {
-            return S3Key.FilterRules.Count != 0;
-        }
+        public bool ShouldSerializeS3Key() => S3Key.FilterRules.Count != 0;
     }
 }

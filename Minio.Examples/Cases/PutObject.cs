@@ -26,13 +26,13 @@ namespace Minio.Examples.Cases
 {
     class PutObject
     {
-        private static int MB = 1024 * 1024;
+        private const int MB = 1024 * 1024;
 
         // Put an object from a local stream into bucket
         public async static Task Run(Minio.MinioClient minio,
                                      string bucketName = "my-bucket-name", 
                                      string objectName = "my-object-name",
-                                     string fileName="location-of-file",
+                                     string fileName = "location-of-file",
                                      ServerSideEncryption sse = null)
         {
             try
@@ -48,10 +48,10 @@ namespace Minio.Examples.Cases
                     {
                         Console.Out.WriteLine("Running example for API: PutObjectAsync with Stream and MultiPartUpload");
                     }
-                    var metaData = new Dictionary<string, string>()
-                                    {
-                                        {"X-Amz-Meta-Test", "Test  Test"}
-                                    };
+                    var metaData = new Dictionary<string, string>
+                    {
+                        { "X-Amz-Meta-Test", "Test  Test" }
+                    };
                     await minio.PutObjectAsync(bucketName,
                                                objectName,
                                                filestream,

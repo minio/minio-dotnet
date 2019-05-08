@@ -29,7 +29,7 @@ namespace Minio.Examples
     public class Program
     {
         private static Random rnd = new Random();
-        private static int UNIT_MB = 1024 * 1024;
+        private const int UNIT_MB = 1024 * 1024;
 
         // Create a file of given size from random byte array
         private static String CreateFile(int size)
@@ -157,18 +157,18 @@ namespace Minio.Examples
                 // Specify SSE-C source side encryption for Copy operations
                 var sseCpy = new SSECopy(aesEncryption.Key);
 
-                // Uncommment to specify SSE-S3 encryption option
+                // Uncomment to specify SSE-S3 encryption option
                 // var sses3 = new SSES3();
 
-                // Uncommment to specify SSE-KMS encryption option
-                // var sseKms = new SSEKMS("kms-key",new Dictionary<string,string>{{ "kms-context", "somevalue"}});
+                // Uncomment to specify SSE-KMS encryption option
+                // var sseKms = new SSEKMS("kms-key", new Dictionary<string, string>{{ "kms-context", "somevalue"}});
 
                 // Upload encrypted object
-                Cases.PutObject.Run(minioClient, bucketName, objectName, smallFileName,sse:ssec).Wait();
+                Cases.PutObject.Run(minioClient, bucketName, objectName, smallFileName, sse:ssec).Wait();
                 // Copy SSE-C encrypted object to unencrypted object
-                Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName,sseSrc:sseCpy,sseDest:ssec).Wait();
+                Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName, sseSrc:sseCpy, sseDest:ssec).Wait();
                 // Download SSE-C encrypted object
-                Cases.FGetObject.Run(minioClient, destBucketName, objectName, bigFileName,sse:ssec).Wait();
+                Cases.FGetObject.Run(minioClient, destBucketName, objectName, bigFileName, sse:ssec).Wait();
 
                 // List the incomplete uploads
                 Cases.ListIncompleteUploads.Run(minioClient, bucketName);
@@ -208,7 +208,7 @@ namespace Minio.Examples
                 // Delete the object
                 Cases.RemoveObject.Run(minioClient, destBucketName, objectName).Wait();
 
-                // Tacing request with custom logger
+                // Tracing request with custom logger
                 Cases.CustomRequestLogger.Run(minioClient).Wait();
 
                 // Remove the buckets

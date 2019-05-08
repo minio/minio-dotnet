@@ -72,7 +72,7 @@ namespace Minio
         /// <param name="bucketName">Bucket name.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Returns Task with bucket policy json as string </returns>
-        Task<String> GetPolicyAsync(String bucketName, CancellationToken cancellationToken = default(CancellationToken));
+        Task<string> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Sets the current bucket policy
@@ -81,7 +81,7 @@ namespace Minio
         /// <param name="policyJson"> policy json </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns> Returns Task that sets the current bucket policy</returns>
-        Task SetPolicyAsync(String bucketName, String policyJson, CancellationToken cancellationToken = default(CancellationToken));
+        Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///  Gets the notification configuration set for this bucket
@@ -108,6 +108,6 @@ namespace Minio
         /// <returns></returns>
         Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
 
-        // Task ListenBucketNotificationsAsync(string bucketName, string prefix = "", string suffix = "", List<Notification> events,CancellationToken cancellationToken = default(CancellationToken));
+        // Task ListenBucketNotificationsAsync(string bucketName, string prefix = "", string suffix = "", List<Notification> events, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

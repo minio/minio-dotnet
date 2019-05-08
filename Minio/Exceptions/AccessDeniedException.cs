@@ -28,10 +28,5 @@ namespace Minio.Exceptions
         public AccessDeniedException(string message) : base(message)
         {
         }
-
-        public override string ToString()
-        {
-            return base.ToString();
-        }
     }
 }

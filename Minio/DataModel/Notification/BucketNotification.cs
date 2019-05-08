@@ -65,7 +65,6 @@ namespace Minio.DataModel
         /// <param name="queueConfig"></param>
         public void AddQueue(QueueConfig queueConfig)
         {
-
             bool isQueueFound = this.QueueConfigs.Exists(t => t.Equals(queueConfig));
             if (!isQueueFound)
             {
@@ -119,25 +118,13 @@ namespace Minio.DataModel
         /// Helper methods to guide XMLSerializer
         /// </summary>
         /// <returns></returns>
-        public bool ShouldSerializeLambdaConfigs()
-        {
-            return LambdaConfigs.Count > 0;
-        }
+        public bool ShouldSerializeLambdaConfigs() => LambdaConfigs.Count > 0;
 
-        public bool ShouldSerializeTopicConfigs()
-        {
-            return TopicConfigs.Count > 0;
-        }
+        public bool ShouldSerializeTopicConfigs() => TopicConfigs.Count > 0;
 
-        public bool ShouldSerializeQueueConfigs()
-        {
-            return QueueConfigs.Count > 0;
-        }
+        public bool ShouldSerializeQueueConfigs() => QueueConfigs.Count > 0;
 
-        public bool ShouldSerializeName()
-        {
-            return this.Name != null;
-        }
+        public bool ShouldSerializeName() => this.Name != null;
 
         /// <summary>
         /// Serializes the notification configuration as an XML string
@@ -145,8 +132,10 @@ namespace Minio.DataModel
         /// <returns></returns>
         public string ToXML()
         {
-            XmlWriterSettings settings = new XmlWriterSettings();
-            settings.OmitXmlDeclaration = true;
+            XmlWriterSettings settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true
+            };
             using (MemoryStream ms = new MemoryStream())
             {
                 using (XmlWriter writer = XmlWriter.Create(ms, settings))

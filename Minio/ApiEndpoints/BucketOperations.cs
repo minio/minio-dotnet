@@ -34,7 +34,6 @@ namespace Minio
 {
     public partial class MinioClient : IBucketOperations
     {
-
         /// <summary>
         /// List all objects in a bucket
         /// </summary>
@@ -42,7 +41,7 @@ namespace Minio
         /// <returns>Task with an iterator lazily populated with objects</returns>
         public async Task<ListAllMyBucketsResult> ListBucketsAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            var request= await this.CreateRequest(Method.GET,resourcePath:"/").ConfigureAwait(false);
+            var request = await this.CreateRequest(Method.GET, resourcePath: "/").ConfigureAwait(false);
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             ListAllMyBucketsResult bucketList = new ListAllMyBucketsResult();
@@ -50,7 +49,7 @@ namespace Minio
             {
                 var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
                 using (var stream = new MemoryStream(contentBytes))
-                    bucketList = (ListAllMyBucketsResult)(new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream));
+                    bucketList = (ListAllMyBucketsResult)new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream);
                 return bucketList;
             }
             return bucketList;
@@ -65,7 +64,7 @@ namespace Minio
         /// <returns> Task </returns>
         public async Task MakeBucketAsync(string bucketName, string location = "us-east-1", CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (location.Equals("us-east-1"))
+            if (location == "us-east-1")
             {
                 if (this.Region != "")
                 {
@@ -74,12 +73,14 @@ namespace Minio
             }
 
             // Set Target URL
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure,location);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, location);
             SetTargetURL(requestUrl);
 
-            var request = new RestRequest("/" + bucketName, Method.PUT);
-            request.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
-            request.RequestFormat = DataFormat.Xml;
+            var request = new RestRequest("/" + bucketName, Method.PUT)
+            {
+                XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer(),
+                RequestFormat = DataFormat.Xml
+            };
             // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
             if (location != "us-east-1")
             {
@@ -180,23 +181,21 @@ namespace Minio
         /// <param name="marker">marks location in the iterator sequence</param>
         /// <returns>Task with a tuple populated with objects</returns>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-
         private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix, string delimiter, string marker, CancellationToken cancellationToken = default(CancellationToken))
         {
             var queries = new List<string>();
 
             // null values are treated as empty strings.
-            if (delimiter == null) {
+            if (delimiter == null)
                 delimiter = "";
-            }
-            if (prefix == null) {
-                prefix = "";
-            }
-            if (marker == null) {
-                marker = "";
-            }
 
-            queries.Add("delimiter="+ Uri.EscapeDataString(delimiter));
+            if (prefix == null)
+                prefix = "";
+
+            if (marker == null)
+                marker = "";
+
+            queries.Add("delimiter=" + Uri.EscapeDataString(delimiter));
             queries.Add("prefix=" + Uri.EscapeDataString(prefix));
             queries.Add("max-keys=1000");
             queries.Add("marker=" + Uri.EscapeDataString(marker));
@@ -214,13 +213,13 @@ namespace Minio
             ListBucketResult listBucketResult = null;
             using (var stream = new MemoryStream(contentBytes))
             {
-                listBucketResult = (ListBucketResult)(new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream));
+                listBucketResult = (ListBucketResult)new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream);
             }
 
             XDocument root = XDocument.Parse(response.Content);
 
             var items = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
-                         select new Item()
+                         select new Item
                          {
                              Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
                              LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
@@ -230,7 +229,7 @@ namespace Minio
                          });
 
             var prefixes = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}CommonPrefixes")
-                            select new Item()
+                            select new Item
                             {
                                 Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Prefix").Value,
                                 IsDir = true
@@ -238,7 +237,7 @@ namespace Minio
 
             items = items.Concat(prefixes);
 
-            return new Tuple<ListBucketResult, List<Item>>(listBucketResult, items.ToList());
+            return Tuple.Create(listBucketResult, items.ToList());
         }
 
         /// <summary>
@@ -247,7 +246,7 @@ namespace Minio
         /// <param name="bucketName">Bucket name.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task that returns the Bucket policy as a json string</returns>
-        public async Task<String> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<string> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
             IRestResponse response = null;
 
@@ -276,7 +275,7 @@ namespace Minio
         /// <param name="policyJson">Policy json as string </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task to set a policy</returns>
-        public async Task SetPolicyAsync(String bucketName, String policyJson, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default(CancellationToken))
         {
             var request = await this.CreateRequest(Method.PUT, bucketName,
                                            resourcePath: "?policy",
@@ -300,16 +299,15 @@ namespace Minio
                                                bucketName,
                                                resourcePath: "?notification")
                                     .ConfigureAwait(false);
-            BucketNotification notification = null;
 
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             using (var stream = new MemoryStream(contentBytes))
             {
-                notification = (BucketNotification)(new XmlSerializer(typeof(BucketNotification)).Deserialize(stream));
-                return notification;
+                return (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(stream);
             }
         }
+
         /// <summary>
         /// Sets the notification configuration for this bucket
         /// </summary>

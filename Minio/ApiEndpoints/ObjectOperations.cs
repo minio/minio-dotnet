@@ -61,7 +61,6 @@ namespace Minio
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
-
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
@@ -75,13 +74,13 @@ namespace Minio
         public async Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (offset < 0)
-                throw new ArgumentException("Offset should be zero or greater");
+                throw new ArgumentException("Offset should be zero or greater", nameof(offset));
             if (length < 0)
-                throw new ArgumentException("Length should be greater than zero");
+                throw new ArgumentException("Length should be greater than zero", nameof(length));
 
             await StatObjectAsync(bucketName, objectName, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            Dictionary<string, string> headerMap = new Dictionary<string, string>();
+            var headerMap = new Dictionary<string, string>();
             if (length > 0)
                 headerMap.Add("Range", "bytes=" + offset.ToString() + "-" + (offset + length - 1).ToString());
 
@@ -148,7 +147,7 @@ namespace Minio
                 else if (fileSize > length)
                 {
                     throw new ArgumentException("'" + fileName + "': object size " + length + " is smaller than file size "
-                                                       + fileSize);
+                                                       + fileSize, nameof(fileSize));
                 }
                 else if (!tempFileExists)
                 {
@@ -200,9 +199,9 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to create object in</param>
         /// <param name="objectName">Key of the new object</param>
+        /// <param name="data">Stream of bytes to send</param>
         /// <param name="size">Total size of bytes to be written, must match with data's length</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
-        /// <param name="data">Stream of bytes to send</param>
         /// <param name="metaData">Object metadata to be stored. Defaults to null.</param>
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -234,7 +233,7 @@ namespace Minio
             }
             if (data == null)
             {
-                throw new ArgumentNullException("Invalid input stream,cannot be null");
+                throw new ArgumentNullException(nameof(data), "Invalid input stream, cannot be null");
             }
 
             // for sizes less than 5Mb , put a single object
@@ -285,7 +284,7 @@ namespace Minio
                 }
                 numPartsUploaded += 1;
                 string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, metaData, sseHeaders, cancellationToken).ConfigureAwait(false);
-                totalParts[partNumber - 1] = new Part() { PartNumber = partNumber, ETag = etag, size = (long)expectedReadSize };
+                totalParts[partNumber - 1] = new Part { PartNumber = partNumber, ETag = etag, size = (long)expectedReadSize };
             }
 
             // This shouldn't happen where stream size is known.
@@ -350,7 +349,6 @@ namespace Minio
         /// <returns></returns>
         private IObservable<Part> ListParts(string bucketName, string objectName, string uploadId, CancellationToken cancellationToken)
         {
-
             return Observable.Create<Part>(
               async obs =>
               {
@@ -396,19 +394,19 @@ namespace Minio
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             ListPartsResult listPartsResult = null;
             using (var stream = new MemoryStream(contentBytes))
-                listPartsResult = (ListPartsResult)(new XmlSerializer(typeof(ListPartsResult)).Deserialize(stream));
+                listPartsResult = (ListPartsResult)new XmlSerializer(typeof(ListPartsResult)).Deserialize(stream);
 
             XDocument root = XDocument.Parse(response.Content);
 
             var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Part")
-                           select new Part()
+                           select new Part
                            {
                                PartNumber = int.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}PartNumber").Value, CultureInfo.CurrentCulture),
                                ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value.Replace("\"", ""),
                                size = long.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture)
                            });
 
-            return new Tuple<ListPartsResult, List<Part>>(listPartsResult, uploads.ToList());
+            return Tuple.Create(listPartsResult, uploads.ToList());
         }
 
         /// <summary>
@@ -436,7 +434,7 @@ namespace Minio
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             InitiateMultipartUploadResult newUpload = null;
             using (var stream = new MemoryStream(contentBytes))
-                newUpload = (InitiateMultipartUploadResult)(new XmlSerializer(typeof(InitiateMultipartUploadResult)).Deserialize(stream));
+                newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult)).Deserialize(stream);
             return newUpload.UploadId;
         }
 
@@ -544,25 +542,25 @@ namespace Minio
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             ListMultipartUploadsResult listBucketResult = null;
             using (var stream = new MemoryStream(contentBytes))
-                listBucketResult = (ListMultipartUploadsResult)(new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(stream));
+                listBucketResult = (ListMultipartUploadsResult)new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(stream);
 
             XDocument root = XDocument.Parse(response.Content);
 
             var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
-                           select new Upload()
+                           select new Upload
                            {
                                Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
                                UploadId = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}UploadId").Value,
                                Initiated = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Initiated").Value
                            });
 
-            return new Tuple<ListMultipartUploadsResult, List<Upload>>(listBucketResult, uploads.ToList());
+            return Tuple.Create(listBucketResult, uploads.ToList());
         }
 
         /// <summary>
         /// Lists all incomplete uploads in a given bucket and prefix recursively
         /// </summary>
-        /// <param name="bucketName">Bucket to list all incomplepte uploads from</param>
+        /// <param name="bucketName">Bucket to list all incomplete uploads from</param>
         /// <param name="prefix">Filter all incomplete uploads starting with this prefix</param>
         /// <param name="recursive">Set to true to recursively list all incomplete uploads</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -691,7 +689,7 @@ namespace Minio
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             DeleteObjectsResult deleteResult = null;
             using (var stream = new MemoryStream(contentBytes))
-                deleteResult = (DeleteObjectsResult)(new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(stream));
+                deleteResult = (DeleteObjectsResult)new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(stream);
 
             if (deleteResult == null)
             {
@@ -734,7 +732,7 @@ namespace Minio
                           if (i % 1000 == 0)
                               break;
                       }
-                      if (objectList.Count() > 0)
+                      if (objectList.Count > 0)
                       {
                           var errorsList = await removeObjectsAsync(bucketName, objectList, cancellationToken).ConfigureAwait(false);
                           foreach (DeleteError error in errorsList)
@@ -773,9 +771,9 @@ namespace Minio
             DateTime lastModified = new DateTime();
             string etag = "";
             string contentType = null;
-            Dictionary<string, string> metaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var metaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            //Supported headers for object.
+            // Supported headers for object.
             List<string> supportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type" };
 
             foreach (Parameter parameter in response.Headers)
@@ -801,7 +799,6 @@ namespace Minio
                 {
                     metaData[parameter.Name] = parameter.Value.ToString();
                 }
-
             }
             return new ObjectStat(objectName, size, lastModified, etag, contentType, metaData);
         }
@@ -860,15 +857,15 @@ namespace Minio
         {
             if (bucketName == null)
             {
-                throw new ArgumentException("Source bucket name cannot be empty");
+                throw new ArgumentException("Source bucket name cannot be empty", nameof(bucketName));
             }
             if (objectName == null)
             {
-                throw new ArgumentException("Source object name cannot be empty");
+                throw new ArgumentException("Source object name cannot be empty", nameof(objectName));
             }
             if (destBucketName == null)
             {
-                throw new ArgumentException("Destination bucket name cannot be empty");
+                throw new ArgumentException("Destination bucket name cannot be empty", nameof(destBucketName));
             }
             // Escape source object path.
             string sourceObjectPath = bucketName + "/" + utils.UrlEncode(objectName);
@@ -880,15 +877,14 @@ namespace Minio
             }
 
             ServerSideEncryption sseGet = sseSrc;
-            if (sseSrc is SSECopy)
+            if (sseSrc is SSECopy sseCpy)
             {
-                SSECopy sseCpy = (SSECopy)sseSrc;
                 sseGet = sseCpy.CloneToSSEC();
             }
             // Get Stats on the source object
             ObjectStat srcStats = await this.StatObjectAsync(bucketName, objectName, sse: sseGet, cancellationToken: cancellationToken).ConfigureAwait(false);
             // Copy metadata from the source object if no metadata replace directive
-            Dictionary<string, string> meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             Dictionary<string, string> m = metadata;
             if (copyConditions != null && !copyConditions.HasReplaceMetadataDirective())
             {
@@ -911,13 +907,13 @@ namespace Minio
             }
             long copySize = (srcByteRangeSize == 0) ? srcStats.Size : srcByteRangeSize;
 
-            if ((srcByteRangeSize > srcStats.Size) ||
-                ((srcByteRangeSize > 0) && (copyConditions.byteRangeEnd >= srcStats.Size)))
+            if ((srcByteRangeSize > srcStats.Size) || ((srcByteRangeSize > 0) && (copyConditions.byteRangeEnd >= srcStats.Size)))
                 throw new ArgumentException("Specified byte range (" + copyConditions.byteRangeStart.ToString() + "-" + copyConditions.byteRangeEnd.ToString() + ") does not fit within source object (size=" + srcStats.Size.ToString() + ")");
 
-            if ((copySize > Constants.MaxSingleCopyObjectSize) ||
-                    (srcByteRangeSize > 0 && (srcByteRangeSize != srcStats.Size)))
+            if ((copySize > Constants.MaxSingleCopyObjectSize) || (srcByteRangeSize > 0 && (srcByteRangeSize != srcStats.Size)))
+            {
                 await MultipartCopyUploadAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, copySize, meta, sseSrc, sseDest, cancellationToken).ConfigureAwait(false);
+            }
             else
             {
                 if (sseSrc != null && sseSrc is SSECopy)
@@ -933,7 +929,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///  Create the copy request,execute it and
+        ///  Create the copy request, execute it and
         /// </summary>
         /// <param name="bucketName"> Bucket name where the object to be copied exists.</param>
         /// <param name="objectName">Object name source to be copied.</param>
@@ -942,12 +938,11 @@ namespace Minio
         /// <param name="copyConditions">optionally can take a key value CopyConditions as well for conditionally attempting copyObject.</param>
         /// <param name="customHeaders">optional custom header to specify byte range</param>
         /// <param name="resource"> optional string to specify upload id and part number </param>
-        /// <param name="type"> type of XML serialization to be applied on the server response</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <param name="type"> type of XML serialization to be applied on the server response</param>
         /// <returns></returns>
         private async Task<object> CopyObjectRequestAsync(string bucketName, string objectName, string destBucketName, string destObjectName, CopyConditions copyConditions, Dictionary<string, string> customHeaders, string resource, CancellationToken cancellationToken, Type type)
         {
-
             // Escape source object path.
             string sourceObjectPath = bucketName + "/" + utils.UrlEncode(objectName);
 
@@ -983,9 +978,9 @@ namespace Minio
             using (var stream = new MemoryStream(contentBytes))
             {
                 if (type == typeof(CopyObjectResult))
-                    copyResult = (CopyObjectResult)(new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream));
+                    copyResult = (CopyObjectResult)new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream);
                 if (type == typeof(CopyPartResult))
-                    copyResult = (CopyPartResult)(new XmlSerializer(typeof(CopyPartResult)).Deserialize(stream));
+                    copyResult = (CopyPartResult)new XmlSerializer(typeof(CopyPartResult)).Deserialize(stream);
             }
 
             return copyResult;
@@ -997,7 +992,7 @@ namespace Minio
         /// <param name="bucketName"> source bucket name</param>
         /// <param name="objectName"> source object name</param>
         /// <param name="destBucketName"> destination bucket name</param>
-        /// <param name="destObjectName"> destiantion object name</param>
+        /// <param name="destObjectName"> destination object name</param>
         /// <param name="copyConditions"> copyconditions </param>
         /// <param name="copySize"> size of copy upload</param>
         /// <param name="metadata"> optional metadata on the destination side</param>
@@ -1041,8 +1036,10 @@ namespace Minio
                 {
                     resource += "?uploadId=" + uploadId + "&partNumber=" + partNumber;
                 }
-                Dictionary<string, string> customHeader = new Dictionary<string, string>();
-                customHeader.Add("x-amz-copy-source-range", "bytes=" + partCondition.byteRangeStart.ToString() + "-" + partCondition.byteRangeEnd.ToString());
+                var customHeader = new Dictionary<string, string>
+                {
+                    { "x-amz-copy-source-range", "bytes=" + partCondition.byteRangeStart.ToString() + "-" + partCondition.byteRangeEnd.ToString() }
+                };
                 if (sseSrc != null && sseSrc is SSECopy)
                 {
                     sseSrc.Marshal(customHeader);
@@ -1053,7 +1050,7 @@ namespace Minio
                 }
                 CopyPartResult cpPartResult = (CopyPartResult)await this.CopyObjectRequestAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, customHeader, resource, cancellationToken, typeof(CopyPartResult)).ConfigureAwait(false);
 
-                totalParts[partNumber - 1] = new Part() { PartNumber = partNumber, ETag = cpPartResult.ETag, size = (long)expectedReadSize };
+                totalParts[partNumber - 1] = new Part { PartNumber = partNumber, ETag = cpPartResult.ETag, size = (long)expectedReadSize };
             }
 
             Dictionary<int, string> etags = new Dictionary<int, string>();
@@ -1116,17 +1113,17 @@ namespace Minio
 
             if (!policy.IsBucketSet())
             {
-                throw new ArgumentException("bucket should be set");
+                throw new ArgumentException("bucket should be set", nameof(policy));
             }
 
             if (!policy.IsKeySet())
             {
-                throw new ArgumentException("key should be set");
+                throw new ArgumentException("key should be set", nameof(policy));
             }
 
             if (!policy.IsExpirationSet())
             {
-                throw new ArgumentException("expiration should be set");
+                throw new ArgumentException("expiration should be set", nameof(policy));
             }
 
             // Initialize a new client.
@@ -1153,7 +1150,7 @@ namespace Minio
             policy.SetPolicy(policyBase64);
             policy.SetSignature(signature);
 
-            return new Tuple<string, Dictionary<string, string>>(this.restClient.BaseUrl.AbsoluteUri, policy.GetFormData());
+            return Tuple.Create(this.restClient.BaseUrl.AbsoluteUri, policy.GetFormData());
         }
     }
 }

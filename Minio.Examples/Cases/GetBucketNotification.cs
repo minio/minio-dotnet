@@ -35,7 +35,7 @@ namespace Minio.Examples.Cases
             }
             catch (Exception e)
             {
-                Console.Out.WriteLine("Error parsing bucket notifications - make sure that you are running this call against AWS end point");
+                Console.Out.WriteLine("Error parsing bucket notifications - make sure that you are running this call against AWS end point: " + e.Message);
             }
         }
     }

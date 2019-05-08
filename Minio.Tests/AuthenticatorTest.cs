@@ -86,7 +86,7 @@ namespace Minio.Tests
             Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
             Assert.IsFalse(hasPayloadHeader(request, "Content-Md5"));
         }
-        private Tuple<string,object> GetHeaderKV(IRestRequest request, string headername)
+        private Tuple<string, object> GetHeaderKV(IRestRequest request, string headername)
         {
             var headers = request.Parameters.Where(p => p.Type.Equals(ParameterType.HttpHeader)).ToList();
             List<string> headerKeys = new List<string>();
@@ -95,7 +95,7 @@ namespace Minio.Tests
                 string headerName = header.Name.ToLower();
                 if (headerName.Contains(headername.ToLower()))
                 {
-                    return new Tuple<string, object>(headerName, header.Value);
+                    return Tuple.Create(headerName, header.Value);
                 }
             }
             return null;

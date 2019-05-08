@@ -21,7 +21,7 @@ namespace Minio.Exceptions
 {
     [Serializable]
     [XmlRoot(ElementName = "Error")]
-    public class DeleteError: ErrorResponse
+    public class DeleteError : ErrorResponse
     {
     }
 }

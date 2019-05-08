@@ -42,7 +42,7 @@ namespace Minio.DataModel
         }
 
         // Implement equality for this object
-        public override bool Equals(Object obj)
+        public override bool Equals(object obj)
         {
             LambdaConfig other = (LambdaConfig)obj;
             // If parameter is null return false.
@@ -53,9 +53,6 @@ namespace Minio.DataModel
             return other.Lambda.Equals(this.Lambda);
         }
 
-        public override int GetHashCode()
-        {
-            return this.Lambda.GetHashCode();
-        }
+        public override int GetHashCode() => this.Lambda.GetHashCode();
     }
 }

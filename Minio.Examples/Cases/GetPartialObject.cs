@@ -25,9 +25,9 @@ namespace Minio.Examples.Cases
         // Get object in a bucket for a particular offset range. Dotnet SDK currently
         // requires both start offset and end 
         public async static Task Run(MinioClient minio,
-                                     string bucketName="my-bucket-name",
-                                     string objectName="my-object-name",
-                                     string fileName="my-file-name")
+                                     string bucketName = "my-bucket-name",
+                                     string objectName = "my-object-name",
+                                     string fileName = "my-file-name")
         {
             try
             {
@@ -45,9 +45,9 @@ namespace Minio.Examples.Cases
                     fileStream.Dispose();
                     FileInfo writtenInfo = new FileInfo(fileName);
                     long file_read_size = writtenInfo.Length;
-                    // Uncommment to print the file on output console
+                    // Uncomment to print the file on output console
                     // stream.CopyTo(Console.OpenStandardOutput());
-                    Console.WriteLine("Successfully downloaded object with requested offset and length {0} into file",writtenInfo.Length);
+                    Console.WriteLine("Successfully downloaded object with requested offset and length {0} into file", writtenInfo.Length);
                     stream.Dispose();
                 });
                 Console.Out.WriteLine();

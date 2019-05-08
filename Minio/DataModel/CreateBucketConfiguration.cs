@@ -26,7 +26,7 @@ namespace Minio.DataModel
             this.LocationConstraint = null;
         }
 
-        public CreateBucketConfiguration(string location=null)
+        public CreateBucketConfiguration(string location = null)
         {
             this.LocationConstraint = location;
         }

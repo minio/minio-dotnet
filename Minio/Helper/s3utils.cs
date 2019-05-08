@@ -33,7 +33,7 @@ namespace Minio.Helper
             }
             Regex rgx = new Regex("^s3[.-]?(.*?)\\.amazonaws\\.com$", RegexOptions.IgnoreCase);
             MatchCollection matches = rgx.Matches(endpoint);
-            return (matches.Count > 0);
+            return matches.Count > 0;
         }
 
         // IsAmazonChinaEndpoint - Match if it is exactly Amazon S3 China endpoint.
@@ -78,7 +78,6 @@ namespace Minio.Helper
             {
                 throw new ArgumentException(ex.Message);
             }
-
         }
 
         /// <summary>
@@ -88,7 +87,7 @@ namespace Minio.Helper
         /// <returns></returns>
         internal static bool IsValidIP(string ip)
         {
-            if (String.IsNullOrEmpty(ip))
+            if (string.IsNullOrEmpty(ip))
                 return false;
 
             string[] splitValues = ip.Split('.');
@@ -97,9 +96,7 @@ namespace Minio.Helper
                 return false;
             }
 
-            byte tempForParsing;
-
-            return splitValues.All(r => byte.TryParse(r, out tempForParsing));
+            return splitValues.All(r => byte.TryParse(r, out var _));
         }
 
         // TrimAll trims leading and trailing spaces and replace sequential spaces with one space, following Trimall()

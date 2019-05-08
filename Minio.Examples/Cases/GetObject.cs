@@ -24,9 +24,9 @@ namespace Minio.Examples.Cases
     {
         // Get object in a bucket
         public async static Task Run(MinioClient minio,
-                                     string bucketName="my-bucket-name",
-                                     string objectName="my-object-name",
-                                     string fileName="my-file-name")
+                                     string bucketName = "my-bucket-name",
+                                     string objectName = "my-object-name",
+                                     string fileName = "my-file-name")
         {
             try
             {
@@ -34,7 +34,7 @@ namespace Minio.Examples.Cases
                 await minio.GetObjectAsync(bucketName, objectName, 
                 (stream) =>
                 {
-                     // Uncommment to print the file on output console
+                     // Uncomment to print the file on output console
                     // stream.CopyTo(Console.OpenStandardOutput());
                 });
                 Console.WriteLine("Downloaded the file " + fileName + " in bucket " + bucketName);
