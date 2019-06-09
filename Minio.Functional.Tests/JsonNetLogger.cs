@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-using System;
 using Minio.DataModel.Tracing;
 using Newtonsoft.Json;
+using System;
 
 namespace Minio.Functional.Tests
 {
