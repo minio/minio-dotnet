@@ -14,10 +14,10 @@
 * limitations under the License.
 */
 
-using System;
-using System.Threading.Tasks;
-using System.Net;
 using Minio;
+using System;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace FileUploader
 {
