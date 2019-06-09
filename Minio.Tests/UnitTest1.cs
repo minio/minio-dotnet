@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-using System;
-using System.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Exceptions;
+using System;
+using System.Net;
 
 namespace Minio.Tests
 {
@@ -161,6 +161,3 @@ namespace Minio.Tests
         //}
     }
 }
-
-
-

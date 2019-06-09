@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RestSharp;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Minio.Tests
 {
@@ -37,8 +38,8 @@ namespace Minio.Tests
             authenticator.Authenticate(restClient, request);
             Assert.IsFalse(hasPayloadHeader(request, "x-amz-content-sha256"));
             Assert.IsTrue(hasPayloadHeader(request, "Content-MD5"));
-
         }
+
         [TestMethod]
         public void TestAnonymousSecureRequestHeaders()
         {
@@ -52,8 +53,8 @@ namespace Minio.Tests
             authenticator.Authenticate(restClient, request);
             Assert.IsFalse(hasPayloadHeader(request, "x-amz-content-sha256"));
             Assert.IsTrue(hasPayloadHeader(request, "Content-MD5"));
-
         }
+
         [TestMethod]
         public void TestSecureRequestHeaders()
         {
@@ -86,6 +87,7 @@ namespace Minio.Tests
             Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
             Assert.IsFalse(hasPayloadHeader(request, "Content-Md5"));
         }
+
         private Tuple<string, object> GetHeaderKV(IRestRequest request, string headername)
         {
             var headers = request.Parameters.Where(p => p.Type.Equals(ParameterType.HttpHeader)).ToList();
@@ -100,6 +102,7 @@ namespace Minio.Tests
             }
             return null;
         }
+
         private bool hasPayloadHeader(IRestRequest request, string headerName)
         {
             Tuple<string, object> match = GetHeaderKV(request, headerName);

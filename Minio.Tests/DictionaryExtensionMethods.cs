@@ -13,35 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System.Linq;
+
 using System.Collections.Generic;
-using Minio.DataModel;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 
 namespace Minio.Tests
 {
-    ///
-    /// <summary> Deep compares two dictionaries for equality</summary>
-    ///
+    /// <summary>
+    /// Deep compares two dictionaries for equality
+    /// </summary>
     public static class DictionaryExtensionMethods
     {
-        public static bool PoliciesEqual<String, PolicyType>(
-        this IDictionary<String, PolicyType> first, IDictionary<String, PolicyType> second)
-        { 
-            if (first == second) return true;
-            if ((first == null) || (second == null)) return false;
-            if (first.Count != second.Count) return false;
+        public static bool PoliciesEqual<String, PolicyType>(this IDictionary<String, PolicyType> first,
+            IDictionary<String, PolicyType> second)
+        {
+            if (first == second)
+            {
+                return true;
+            }
 
+            if ((first == null) || (second == null))
+            {
+                return false;
+            }
+
+            if (first.Count != second.Count)
+            {
+                return false;
+            }
 
             foreach (var kvp in first)
             {
                 PolicyType firstValue = kvp.Value;
-                if (!second.TryGetValue(kvp.Key, out PolicyType secondValue)) return false;
-                if (!firstValue.Equals(secondValue)) return false;
+                if (!second.TryGetValue(kvp.Key, out PolicyType secondValue))
+                {
+                    return false;
+                }
+
+                if (!firstValue.Equals(secondValue))
+                {
+                    return false;
+                }
             }
             return true;
         }
     }
 }
-
