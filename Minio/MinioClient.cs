@@ -97,7 +97,7 @@ namespace Minio
         {
             get
             {
-                return SystemUserAgent + " " + CustomUserAgent;
+                return $"{SystemUserAgent} {CustomUserAgent}";
             }
         }
 

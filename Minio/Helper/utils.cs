@@ -96,6 +96,7 @@ namespace Minio
             }
             return;
         }
+
         // Return url encoded string where reserved characters have been percent-encoded
         internal static string UrlEncode(string input)
         {
@@ -116,6 +117,7 @@ namespace Minio
                                               .Replace("\\[", "%5B")
                                               .Replace("\\]", "%5D");
         }
+
         // Return encoded path where extra "/" are trimmed off.
         internal static string EncodePath(string path)
         {
@@ -184,7 +186,9 @@ namespace Minio
             }
 
             if (string.IsNullOrEmpty(extension))
+            {
                 return "application/octet-stream";
+            }
 
             return _contentTypeMap.Value.TryGetValue(extension, out string contentType)
                 ? contentType
@@ -208,15 +212,17 @@ namespace Minio
             {
                 return true;
             }
+
             if (l1 == null)
             {
                 return false;
             }
+
             return !l2.Except(l1).Any();
         }
 
         public static bool CaseInsensitiveContains(string text, string value,
-    StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
+            StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
         {
             return text.IndexOf(value, stringComparison) >= 0;
         }
@@ -265,6 +271,7 @@ namespace Minio
 
             return Convert.ToBase64String(hashedBytes);
         }
+
         private static readonly Lazy<IDictionary<string, string>> _contentTypeMap = new Lazy<IDictionary<string, string>>(AddContentTypeMappings);
 
         private static IDictionary<string, string> AddContentTypeMappings()

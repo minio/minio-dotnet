@@ -513,7 +513,7 @@ namespace Minio
                 {
                     body = new byte[0];
                 }
-                SHA256 sha256 = System.Security.Cryptography.SHA256.Create();
+                SHA256 sha256 = SHA256.Create();
                 byte[] hash = sha256.ComputeHash(body);
                 string hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
                 request.AddHeader("x-amz-content-sha256", hex);
@@ -559,7 +559,7 @@ namespace Minio
                 {
                     body = new byte[0];
                 }
-                MD5 md5 = System.Security.Cryptography.MD5.Create();
+                MD5 md5 = MD5.Create();
                 byte[] hash = md5.ComputeHash(body);
 
                 string base64 = Convert.ToBase64String(hash);
