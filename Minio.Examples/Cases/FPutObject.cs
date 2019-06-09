@@ -23,7 +23,7 @@ namespace Minio.Examples.Cases
     {
 
         // Upload object to bucket from file
-        public async static Task Run(Minio.MinioClient minio, 
+        public async static Task Run(MinioClient minio, 
                                       string bucketName = "my-bucket-name",
                                       string objectName = "my-object-name",
                                       string fileName = "from where")

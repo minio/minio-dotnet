@@ -16,7 +16,6 @@
 
 using System;
 using System.Threading.Tasks;
-using System.IO;
 
 namespace Minio.Examples.Cases
 {

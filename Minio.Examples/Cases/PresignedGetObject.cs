@@ -18,7 +18,6 @@ using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-
 namespace Minio.Examples.Cases
 {
     public class PresignedGetObject
@@ -37,9 +36,6 @@ namespace Minio.Examples.Cases
             {
                 Console.Out.WriteLine("Exception ", e.Message);
             }
-         
         }
     }
 }
-
- 

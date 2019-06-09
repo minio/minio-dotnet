@@ -46,7 +46,6 @@ namespace Minio.Examples.Cases
             {
                 Console.Out.WriteLine("Exception ", e.Message);
             }
-           
         }
     }
 }

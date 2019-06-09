@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
+using Minio.DataModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Minio.DataModel;
-
-using System.Security.Cryptography;
 
 namespace Minio.Examples.Cases
 {
@@ -29,7 +27,7 @@ namespace Minio.Examples.Cases
         private const int MB = 1024 * 1024;
 
         // Put an object from a local stream into bucket
-        public async static Task Run(Minio.MinioClient minio,
+        public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name", 
                                      string objectName = "my-object-name",
                                      string fileName = "location-of-file",
@@ -38,7 +36,7 @@ namespace Minio.Examples.Cases
             try
             {
                 byte[] bs = File.ReadAllBytes(fileName);
-                using (System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs))
+                using (MemoryStream filestream = new MemoryStream(bs))
                 {
                     if (filestream.Length < (5 * MB))
                     {
@@ -61,7 +59,6 @@ namespace Minio.Examples.Cases
                                                sse:sse);
                 }
             
-
                 Console.Out.WriteLine("Uploaded object " + objectName + " to bucket " + bucketName);
                 Console.Out.WriteLine();
             }
@@ -70,6 +67,5 @@ namespace Minio.Examples.Cases
                 Console.WriteLine("[Bucket]  Exception: {0}", e);
             }
         }
-      
     }
 }

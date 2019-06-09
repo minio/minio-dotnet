@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
+using Minio.DataModel;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-
-using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
     class FGetObject
     {
         // Download object from bucket into local file
-        public async static Task Run(Minio.MinioClient minio, 
+        public async static Task Run(MinioClient minio, 
                                      string bucketName = "my-bucket-name",
                                      string objectName = "my-object-name",
                                      string fileName = "local-filename",

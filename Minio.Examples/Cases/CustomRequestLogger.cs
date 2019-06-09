@@ -29,13 +29,9 @@ namespace Minio.Examples.Cases
             try
             {
                 Console.Out.WriteLine("Running example for: set custom request logger");
-
                 minio.SetTraceOn(new MyRequestLogger());
-
                 await minio.ListBucketsAsync();
-
                 minio.SetTraceOff();
-
                 Console.Out.WriteLine();
             }
             catch (Exception e)

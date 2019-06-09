@@ -16,7 +16,6 @@
 
 using Minio.DataModel;
 using System;
-
 using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
@@ -41,7 +40,5 @@ namespace Minio.Examples.Cases
                 Console.WriteLine("[Bucket]  Exception: {0}", e);
             }
         }
-
-       
     }
 }

@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
+using Minio.DataModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Minio.DataModel;
+
 namespace Minio.Examples.Cases
 {
     class CopyObjectMetadata
     {
         // Copy object from one bucket to another
-        public async static Task Run(Minio.MinioClient minio,
+        public async static Task Run(MinioClient minio,
                                      string fromBucketName = "from-bucket-name",
                                      string fromObjectName = "from-object-name",
                                      string destBucketName = "dest-bucket",
@@ -57,6 +58,5 @@ namespace Minio.Examples.Cases
                 Console.WriteLine("[Bucket]  Exception: {0}", e);
             }
         }
-
     }
 }
