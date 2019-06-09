@@ -40,11 +40,11 @@ namespace Minio.Examples.Cases
                     curlCommand = curlCommand + string.Format(" -F {0}={1}", pair.Key, pair.Value);
                 }
                 curlCommand = curlCommand + " -F file=@/etc/bashrc " + tuple.Item1; // https://s3.amazonaws.com/my-bucketname";
-                Console.Out.WriteLine(curlCommand);
+                Console.WriteLine(curlCommand);
             }
             catch (Exception e)
             {
-                Console.Out.WriteLine("Exception ", e.Message);
+                Console.WriteLine("Exception ", e.Message);
             }
         }
     }

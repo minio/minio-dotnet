@@ -28,11 +28,11 @@ namespace Minio.Examples.Cases
             try
             {
                 string presigned_url = await client.PresignedPutObjectAsync(bucketName, objectName, 1000);
-                Console.Out.WriteLine(presigned_url);
+                Console.WriteLine(presigned_url);
             }
             catch (Exception e)
             {
-                Console.Out.WriteLine("Exception ", e.Message);
+                Console.WriteLine("Exception ", e.Message);
             }
         }
     }

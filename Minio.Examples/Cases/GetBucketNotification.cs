@@ -28,14 +28,14 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                Console.Out.WriteLine("Running example for API: GetBucketNotificationsAsync");
+                Console.WriteLine("Running example for API: GetBucketNotificationsAsync");
                 BucketNotification notifications = await minio.GetBucketNotificationsAsync(bucketName);
-                Console.Out.WriteLine("Notifications is " + notifications.ToXML() + " for bucket " + bucketName);
-                Console.Out.WriteLine();
+                Console.WriteLine("Notifications is " + notifications.ToXML() + " for bucket " + bucketName);
+                Console.WriteLine();
             }
             catch (Exception e)
             {
-                Console.Out.WriteLine("Error parsing bucket notifications - make sure that you are running this call against AWS end point: " + e.Message);
+                Console.WriteLine("Error parsing bucket notifications - make sure that you are running this call against AWS end point: " + e.Message);
             }
         }
     }

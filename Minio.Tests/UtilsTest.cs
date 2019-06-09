@@ -188,7 +188,7 @@ namespace Minio.Tests
             XmlSerializer xs = new XmlSerializer(typeof(CreateBucketConfiguration));
             StringWriter writer = new StringWriter();
             xs.Serialize(writer, config);
-            Console.Out.WriteLine(writer.ToString());
+            Console.WriteLine(writer.ToString());
         }
 
         [TestMethod]

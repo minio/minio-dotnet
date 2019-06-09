@@ -29,7 +29,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                Console.Out.WriteLine("Running example for API: SetBucketNotificationAsync");
+                Console.WriteLine("Running example for API: SetBucketNotificationAsync");
                 BucketNotification notification = new BucketNotification();
 
                 // Uncomment the code below and change Arn and event types to configure.
@@ -54,8 +54,8 @@ namespace Minio.Examples.Cases
                 */
                 await minio.SetBucketNotificationsAsync(bucketName, notification);
              
-                Console.Out.WriteLine("Notifications set for the bucket " + bucketName + "were set successfully");
-                Console.Out.WriteLine();
+                Console.WriteLine("Notifications set for the bucket " + bucketName + "were set successfully");
+                Console.WriteLine();
             }
             catch (Exception e)
             {

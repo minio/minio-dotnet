@@ -32,7 +32,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                Console.Out.WriteLine("Running example for API: CopyObjectAsync");
+                Console.WriteLine("Running example for API: CopyObjectAsync");
 
                 // Optionally pass copy conditions to replace metadata on destination object with custom metadata
                 CopyConditions copyCond = new CopyConditions();
@@ -50,8 +50,8 @@ namespace Minio.Examples.Cases
                                                 destObjectName, 
                                                 copyConditions:copyCond,
                                                 metadata: metadata);
-                Console.Out.WriteLine("Copied object {0} from bucket {1} to bucket {2}", fromObjectName, fromBucketName, destBucketName);
-                Console.Out.WriteLine();    
+                Console.WriteLine("Copied object {0} from bucket {1} to bucket {2}", fromObjectName, fromBucketName, destBucketName);
+                Console.WriteLine();    
             }
             catch (Exception e)
             {

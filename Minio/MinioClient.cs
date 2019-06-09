@@ -354,7 +354,7 @@ namespace Minio
             if (this.trace)
             {
                 var fullUrl = this.restClient.BuildUri(request);
-                Console.Out.WriteLine("Full URL of Request {0}", fullUrl);
+                Console.WriteLine("Full URL of Request {0}", fullUrl);
             }
 
             IRestResponse response = await this.restClient.ExecuteTaskAsync(request, cancellationToken);

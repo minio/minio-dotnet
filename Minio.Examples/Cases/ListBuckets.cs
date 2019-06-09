@@ -27,13 +27,13 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                Console.Out.WriteLine("Running example for API: ListBucketsAsync");
+                Console.WriteLine("Running example for API: ListBucketsAsync");
                 var list = await minio.ListBucketsAsync();
                 foreach (Bucket bucket in list.Buckets)
                 {
-                    Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
+                    Console.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
                 }
-                Console.Out.WriteLine();
+                Console.WriteLine();
             }
             catch (Exception e)
             {

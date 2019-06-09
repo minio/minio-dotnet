@@ -229,7 +229,7 @@ namespace Minio.Examples
             }
             catch (MinioException ex)
             {
-                Console.Out.WriteLine(ex.Message);
+                Console.WriteLine(ex.Message);
             }
         }
     }

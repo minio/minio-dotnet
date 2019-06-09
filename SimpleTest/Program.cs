@@ -50,7 +50,7 @@ namespace SimpleTest
             var list = getListBucketsTask.Result;
             foreach (Bucket bucket in list.Buckets)
             {
-                Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
+                Console.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
             }
 
             //Supply a new bucket name
@@ -59,7 +59,7 @@ namespace SimpleTest
             var bucketExistTask = minio.BucketExistsAsync("mynewbucket");
             Task.WaitAll(bucketExistTask);
             var found = bucketExistTask.Result;
-            Console.Out.WriteLine("bucket was " + found);
+            Console.WriteLine("bucket was " + found);
             Console.ReadLine();
         }
 
@@ -68,13 +68,13 @@ namespace SimpleTest
             if (exceptionToHandle is ArgumentNullException)
             {
                 //I'm handling the ArgumentNullException.
-                Console.Out.WriteLine("Handling the ArgumentNullException.");
+                Console.WriteLine("Handling the ArgumentNullException.");
                 //I handled this Exception, return true.
                 return true;
             }
 
             //I'm only handling ArgumentNullExceptions.
-            Console.Out.WriteLine(string.Format("I'm not handling the {0}.", exceptionToHandle.GetType()));
+            Console.WriteLine(string.Format("I'm not handling the {0}.", exceptionToHandle.GetType()));
             //I didn't handle this Exception, return false.
             return false;
         }

@@ -32,11 +32,11 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                Console.Out.WriteLine("Running example for API: GetObjectAsync");
+                Console.WriteLine("Running example for API: GetObjectAsync");
                 File.Delete(fileName);
                 await minio.GetObjectAsync(bucketName, objectName, fileName, sse: sse);
                 Console.WriteLine("Downloaded the file " + fileName + " from bucket " + bucketName);
-                Console.Out.WriteLine();
+                Console.WriteLine();
             }
             catch (Exception e)
             {

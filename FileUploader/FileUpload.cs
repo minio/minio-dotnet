@@ -42,7 +42,7 @@ namespace FileUploader
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
+                Console.WriteLine(ex.Message);
             }
             Console.ReadLine();
         }
@@ -70,11 +70,11 @@ namespace FileUploader
                     await minio.MakeBucketAsync(bucketName, location);
                 }
                 await minio.PutObjectAsync(bucketName, objectName, filePath, contentType);
-                Console.Out.WriteLine("Successfully uploaded " + objectName);
+                Console.WriteLine("Successfully uploaded " + objectName);
             }
             catch (Exception e)
             {
-                Console.Out.WriteLine(e);
+                Console.WriteLine(e);
             }
         }
     }

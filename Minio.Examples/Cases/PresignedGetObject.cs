@@ -30,11 +30,11 @@ namespace Minio.Examples.Cases
             {
                 var reqParams = new Dictionary<string, string> { {"response-content-type", "application/json" } };
                 string presigned_url = await client.PresignedGetObjectAsync(bucketName, objectName, 1000, reqParams);
-                Console.Out.WriteLine(presigned_url);
+                Console.WriteLine(presigned_url);
             } 
             catch (Exception e)
             {
-                Console.Out.WriteLine("Exception ", e.Message);
+                Console.WriteLine("Exception ", e.Message);
             }
         }
     }

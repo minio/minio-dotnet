@@ -27,10 +27,10 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                Console.Out.WriteLine("Running example for API: BucketExistsAsync");
+                Console.WriteLine("Running example for API: BucketExistsAsync");
                 bool found = await minio.BucketExistsAsync(bucketName);
-                Console.Out.WriteLine((found ? "Found" : "Couldn't find ") + "bucket " + bucketName);
-                Console.Out.WriteLine();
+                Console.WriteLine((found ? "Found" : "Couldn't find ") + "bucket " + bucketName);
+                Console.WriteLine();
             }
             catch (Exception e)
             {

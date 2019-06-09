@@ -40,11 +40,11 @@ namespace Minio.Examples.Cases
                 {
                     if (filestream.Length < (5 * MB))
                     {
-                        Console.Out.WriteLine("Running example for API: PutObjectAsync with Stream");
+                        Console.WriteLine("Running example for API: PutObjectAsync with Stream");
                     }
                     else
                     {
-                        Console.Out.WriteLine("Running example for API: PutObjectAsync with Stream and MultiPartUpload");
+                        Console.WriteLine("Running example for API: PutObjectAsync with Stream and MultiPartUpload");
                     }
                     var metaData = new Dictionary<string, string>
                     {
@@ -59,8 +59,8 @@ namespace Minio.Examples.Cases
                                                sse:sse);
                 }
             
-                Console.Out.WriteLine("Uploaded object " + objectName + " to bucket " + bucketName);
-                Console.Out.WriteLine();
+                Console.WriteLine("Uploaded object " + objectName + " to bucket " + bucketName);
+                Console.WriteLine();
             }
             catch (Exception e)
             {

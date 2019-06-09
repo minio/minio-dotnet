@@ -28,10 +28,10 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                Console.Out.WriteLine("Running example for API: RemoveObjectAsync");
+                Console.WriteLine("Running example for API: RemoveObjectAsync");
                 await minio.RemoveObjectAsync(bucketName, objectName);
-                Console.Out.WriteLine("Removed object " + objectName + " from bucket " + bucketName + " successfully");
-                Console.Out.WriteLine();
+                Console.WriteLine("Removed object " + objectName + " from bucket " + bucketName + " successfully");
+                Console.WriteLine();
             }
             catch (Exception e)
             {

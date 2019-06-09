@@ -27,12 +27,12 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                Console.Out.WriteLine("Running example for API: SetPolicyAsync");
+                Console.WriteLine("Running example for API: SetPolicyAsync");
                 string policyJson = $@"{{""Version"":""2012-10-17"",""Statement"":[{{""Action"":[""s3:GetBucketLocation""],""Effect"":""Allow"",""Principal"":{{""AWS"":[""*""]}},""Resource"":[""arn:aws:s3:::{bucketName}""],""Sid"":""""}},{{""Action"":[""s3:ListBucket""],""Condition"":{{""StringEquals"":{{""s3:prefix"":[""foo"",""prefix/""]}}}},""Effect"":""Allow"",""Principal"":{{""AWS"":[""*""]}},""Resource"":[""arn:aws:s3:::{bucketName}""],""Sid"":""""}},{{""Action"":[""s3:GetObject""],""Effect"":""Allow"",""Principal"":{{""AWS"":[""*""]}},""Resource"":[""arn:aws:s3:::{bucketName}/foo*"",""arn:aws:s3:::{bucketName}/prefix/*""],""Sid"":""""}}]}}";
                 // Change policy type parameter
                 await minio.SetPolicyAsync(bucketName, policyJson);
-                Console.Out.WriteLine("Policy " + policyJson + " set for the bucket " + bucketName + " successfully");
-                Console.Out.WriteLine();
+                Console.WriteLine("Policy " + policyJson + " set for the bucket " + bucketName + " successfully");
+                Console.WriteLine();
             }
             catch (Exception e)
             {
