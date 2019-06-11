@@ -15,8 +15,8 @@
  */
 
 using System;
-using System.Threading.Tasks;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
@@ -31,7 +31,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                Console.Out.WriteLine("Running example for API: GetObjectAsync");
+                Console.WriteLine("Running example for API: GetObjectAsync");
                 // Check whether the object exists using StatObjectAsync(). If the object is not found,
                 // StatObjectAsync() will throw an exception.
                 await minio.StatObjectAsync(bucketName, objectName);
@@ -50,7 +50,7 @@ namespace Minio.Examples.Cases
                     Console.WriteLine("Successfully downloaded object with requested offset and length {0} into file", writtenInfo.Length);
                     stream.Dispose();
                 });
-                Console.Out.WriteLine();
+                Console.WriteLine();
             }
             catch (Exception e)
             {

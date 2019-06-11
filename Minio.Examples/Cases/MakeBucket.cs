@@ -22,22 +22,20 @@ namespace Minio.Examples.Cases
     public class MakeBucket
     {
         // Make a bucket
-        public async static Task Run(Minio.MinioClient minio,
+        public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name")
         {
             try
             {
-                Console.Out.WriteLine("Running example for API: MakeBucketAsync");
+                Console.WriteLine("Running example for API: MakeBucketAsync");
                 await minio.MakeBucketAsync(bucketName);
-                Console.Out.WriteLine("Created bucket " + bucketName);
-                Console.Out.WriteLine();
+                Console.WriteLine("Created bucket " + bucketName);
+                Console.WriteLine();
             } 
             catch (Exception e)
             {
                 Console.WriteLine("[Bucket]  Exception: {0}", e);
             }
         }
-
-        
     }
 }

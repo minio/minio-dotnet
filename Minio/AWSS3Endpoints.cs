@@ -76,7 +76,7 @@ namespace Minio
             string endpoint = null;
             if (region != null)
             {
-                AWSS3Endpoints.Instance.endpoints.TryGetValue(region, out endpoint);
+                Instance.endpoints.TryGetValue(region, out endpoint);
             }
             if (endpoint == null)
             {

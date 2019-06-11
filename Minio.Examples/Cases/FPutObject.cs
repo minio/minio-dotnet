@@ -23,20 +23,20 @@ namespace Minio.Examples.Cases
     {
 
         // Upload object to bucket from file
-        public async static Task Run(Minio.MinioClient minio, 
+        public async static Task Run(MinioClient minio, 
                                       string bucketName = "my-bucket-name",
                                       string objectName = "my-object-name",
                                       string fileName = "from where")
         {
             try
             {
-                Console.Out.WriteLine("Running example for API: PutObjectAsync with FileName");
+                Console.WriteLine("Running example for API: PutObjectAsync with FileName");
                 await minio.PutObjectAsync(bucketName,
                                                 objectName, 
                                                 fileName,
                                                 contentType: "application/octet-stream");
-                Console.Out.WriteLine("Uploaded object " + objectName + " to bucket " + bucketName);
-                Console.Out.WriteLine();
+                Console.WriteLine("Uploaded object " + objectName + " to bucket " + bucketName);
+                Console.WriteLine();
             }
             catch (Exception e)
             {

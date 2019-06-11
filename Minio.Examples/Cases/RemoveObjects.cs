@@ -30,7 +30,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                Console.Out.WriteLine("Running example for API: RemoveObjectAsync");
+                Console.WriteLine("Running example for API: RemoveObjectAsync");
                 IObservable<DeleteError> observable = await minio.RemoveObjectAsync(bucketName, objectsList);
                 IDisposable subscription = observable.Subscribe(
                    deleteError => Console.WriteLine("Object: {0}", deleteError.Key),

@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Net;
-using System.Configuration;
 using Minio.Exceptions;
-using Minio;
+using System;
+using System.Net;
+
 namespace Minio.Tests
 {
     /// <summary>
@@ -152,10 +151,5 @@ namespace Minio.Tests
         {
             new MinioClient("s3-us-west-1.amazonaws.com");
         }
-
-       
     }
 }
-
-
-

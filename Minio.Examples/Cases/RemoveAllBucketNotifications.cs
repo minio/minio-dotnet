@@ -16,26 +16,23 @@
 
 using System;
 using System.Threading.Tasks;
-using Minio.DataModel;
-using System.Xml.Serialization;
-using System.IO;
 
 namespace Minio.Examples.Cases
 {
     class RemoveAllBucketNotifications
     {
         // Removes all bucket notifications
-        public async static Task Run(Minio.MinioClient minio, 
+        public async static Task Run(MinioClient minio, 
                                      string bucketName = "my-bucket-name")
         {
             try
             {
-                Console.Out.WriteLine("Running example for API: RemoveAllBucketNotificationAsync");
+                Console.WriteLine("Running example for API: RemoveAllBucketNotificationAsync");
                 
                 await minio.RemoveAllBucketNotificationsAsync(bucketName);
 
-                Console.Out.WriteLine("Notifications successfully removed from the bucket " + bucketName);
-                Console.Out.WriteLine();
+                Console.WriteLine("Notifications successfully removed from the bucket " + bucketName);
+                Console.WriteLine();
             }
             catch (Exception e)
             {

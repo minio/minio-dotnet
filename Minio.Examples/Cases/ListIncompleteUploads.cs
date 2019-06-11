@@ -17,20 +17,19 @@
 using Minio.DataModel;
 using System;
 
-
 namespace Minio.Examples.Cases
 {
     class ListIncompleteUploads
     {
         // List incomplete uploads on the bucket matching specified prefix
-        public static void Run(Minio.MinioClient minio,
+        public static void Run(MinioClient minio,
                                string bucketName = "my-bucket-name", 
-                                   string prefix = "my-object-name",
-                                  bool recursive = true)
+                               string prefix = "my-object-name",
+                               bool recursive = true)
         {
             try
             {
-                Console.Out.WriteLine("Running example for API: ListIncompleteUploads");
+                Console.WriteLine("Running example for API: ListIncompleteUploads");
 
                 IObservable<Upload> observable = minio.ListIncompleteUploads(bucketName, prefix, recursive);
 
@@ -39,7 +38,7 @@ namespace Minio.Examples.Cases
                     ex => Console.WriteLine("OnError: {0}", ex.Message),
                     () => Console.WriteLine("Listed the pending uploads to bucket " + bucketName));
 
-                Console.Out.WriteLine();
+                Console.WriteLine();
             }
             catch (Exception e)
             {

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-using System.Net;
 using Minio;
 using Minio.DataModel;
+using System;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace SimpleTest
 {
@@ -30,7 +30,6 @@ namespace SimpleTest
                                     | SecurityProtocolType.Tls11
                                     | SecurityProtocolType.Tls12;
 
-
             /// Note: s3 AccessKey and SecretKey needs to be added in App.config file
             /// See instructions in README.md on running examples for more information.
             var minio = new MinioClient("play.min.io:9000",
@@ -38,6 +37,7 @@ namespace SimpleTest
                                              "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG").WithSSL();
 
             var getListBucketsTask = minio.ListBucketsAsync();
+
             try
             {
                 Task.WaitAll(getListBucketsTask); // block while the task completes
@@ -46,11 +46,11 @@ namespace SimpleTest
             {
                 aggEx.Handle(HandleBatchExceptions);
             }
-            var list = getListBucketsTask.Result;
 
+            var list = getListBucketsTask.Result;
             foreach (Bucket bucket in list.Buckets)
             {
-                Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
+                Console.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
             }
 
             //Supply a new bucket name
@@ -59,26 +59,24 @@ namespace SimpleTest
             var bucketExistTask = minio.BucketExistsAsync("mynewbucket");
             Task.WaitAll(bucketExistTask);
             var found = bucketExistTask.Result;
-            Console.Out.WriteLine("bucket was " + found);
+            Console.WriteLine("bucket was " + found);
             Console.ReadLine();
         }
+
         private static bool HandleBatchExceptions(Exception exceptionToHandle)
         {
             if (exceptionToHandle is ArgumentNullException)
             {
                 //I'm handling the ArgumentNullException.
-                Console.Out.WriteLine("Handling the ArgumentNullException.");
+                Console.WriteLine("Handling the ArgumentNullException.");
                 //I handled this Exception, return true.
                 return true;
             }
-            else
-            {
-                //I'm only handling ArgumentNullExceptions.
-                Console.Out.WriteLine(string.Format("I'm not handling the {0}.", exceptionToHandle.GetType()));
-                //I didn't handle this Exception, return false.
-                return false;
-            }
-        }
 
+            //I'm only handling ArgumentNullExceptions.
+            Console.WriteLine(string.Format("I'm not handling the {0}.", exceptionToHandle.GetType()));
+            //I didn't handle this Exception, return false.
+            return false;
+        }
     }
 }

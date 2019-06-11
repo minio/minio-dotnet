@@ -28,15 +28,11 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                Console.Out.WriteLine("Running example for: set custom request logger");
-
+                Console.WriteLine("Running example for: set custom request logger");
                 minio.SetTraceOn(new MyRequestLogger());
-
                 await minio.ListBucketsAsync();
-
                 minio.SetTraceOff();
-
-                Console.Out.WriteLine();
+                Console.WriteLine();
             }
             catch (Exception e)
             {
@@ -59,7 +55,7 @@ namespace Minio.Examples.Cases
             sb.AppendLine("Response: ");
             sb.Append(responseToLog.content);
 
-            Console.Out.WriteLine(sb.ToString());
+            Console.WriteLine(sb.ToString());
         }
     }
 }

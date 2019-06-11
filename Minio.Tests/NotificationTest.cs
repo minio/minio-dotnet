@@ -1,8 +1,7 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
+using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Minio.Tests
@@ -14,9 +13,8 @@ namespace Minio.Tests
     public class NotificationTest
     {
         [TestMethod]
-        public void TestNotificationStringHydration()        {
-            
-     
+        public void TestNotificationStringHydration()
+        {
             string notificationString = "<NotificationConfiguration xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\"><TopicConfiguration><Id>YjVkM2Y0YmUtNGI3NC00ZjQyLWEwNGItNDIyYWUxY2I0N2M4 </Id><Arn>arnstring</Arn><Topic> arn:aws:sns:us-east-1:account-id:s3notificationtopic2 </Topic><Event> s3:ReducedRedundancyLostObject </Event><Event> s3:ObjectCreated: *</Event></TopicConfiguration></NotificationConfiguration>";
 
             try
@@ -55,6 +53,7 @@ namespace Minio.Tests
             Assert.IsTrue(qConfigs.Exists(t => t.Equals(config1)));
             Assert.IsFalse(qConfigs.Exists(t => t.Equals(config3)));
         }
+
         [TestMethod]
         public void TestQueueConfigRemoveElement()
         {

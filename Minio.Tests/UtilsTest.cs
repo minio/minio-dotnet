@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minio.Exceptions;
-using System.Collections.Generic;
-using Minio.Helper;
 using Minio.DataModel;
-using System.Xml.Serialization;
+using Minio.Exceptions;
+using Minio.Helper;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Xml.Serialization;
 
 namespace Minio.Tests
 {
@@ -62,6 +63,7 @@ namespace Minio.Tests
                 }
             }
         }
+
         [TestMethod]
         public void TestEmptyObjectName()
         {
@@ -96,6 +98,7 @@ namespace Minio.Tests
             string objName = TestHelper.GetRandomName(15);
             utils.validateObjectName(objName);
         }
+
         [TestMethod]
         public void TestEmptyFile()
         {
@@ -124,7 +127,7 @@ namespace Minio.Tests
         [TestMethod]
         public void TestValidPartSize1()
         {
-           // { partSize = 550502400, partCount = 9987, lastPartSize = 241172480 }
+            // { partSize = 550502400, partCount = 9987, lastPartSize = 241172480 }
             dynamic partSizeObject = utils.CalculateMultiPartSize(5497558138880);
             double partSize = partSizeObject.partSize;
             double partCount = partSizeObject.partCount;
@@ -137,7 +140,7 @@ namespace Minio.Tests
         [TestMethod]
         public void TestValidPartSize2()
         {
-             dynamic partSizeObject = utils.CalculateMultiPartSize(5000000000);
+            dynamic partSizeObject = utils.CalculateMultiPartSize(5000000000);
             double partSize = partSizeObject.partSize;
             double partCount = partSizeObject.partCount;
             double lastPartSize = partSizeObject.lastPartSize;
@@ -154,8 +157,8 @@ namespace Minio.Tests
             Assert.IsTrue(utils.CaseInsensitiveContains("abcdef", "ef"));
             Assert.IsTrue(utils.CaseInsensitiveContains("AbCdEF", "Bc"));
             Assert.IsFalse(utils.CaseInsensitiveContains("abc", "xyz"));
-
         }
+
         [TestMethod]
         public void TestIsAmazonEndpoint()
         {
@@ -177,6 +180,7 @@ namespace Minio.Tests
             Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("192.168.12.1"));
             Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("storage.googleapis.com"));
         }
+
         [TestMethod]
         public  void TestBucketConfiguration()
         {
@@ -184,8 +188,9 @@ namespace Minio.Tests
             XmlSerializer xs = new XmlSerializer(typeof(CreateBucketConfiguration));
             StringWriter writer = new StringWriter();
             xs.Serialize(writer, config);
-            Console.Out.WriteLine(writer.ToString());
+            Console.WriteLine(writer.ToString());
         }
+
         [TestMethod]
         public void TestisValidEndpoint()
         {

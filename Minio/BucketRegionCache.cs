@@ -110,7 +110,7 @@ namespace Minio
                     XDocument root = XDocument.Parse(response.Content);
                     location = root.Root.Value;
                 }
-                if (location == null || location == "")
+                if (string.IsNullOrEmpty(location))
                 {
                     region = "us-east-1";
                 }
