@@ -79,7 +79,7 @@ namespace Minio
 
             sb.AppendLine("- - - - - - - - - - END RESPONSE - - - - - - - - - -");
 
-            Console.Out.WriteLine(sb.ToString());
+            Console.WriteLine(sb.ToString());
         }
     }
 }

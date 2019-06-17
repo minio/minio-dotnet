@@ -39,7 +39,7 @@ var getListBucketsTask = minio.ListBucketsAsync();
 // Iterate over the list of buckets.
 foreach (Bucket bucket in getListBucketsTask.Result.Buckets)
 {
-    Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
+    Console.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
 }
 
 ```
@@ -70,7 +70,7 @@ namespace FileUploader
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
+                Console.WriteLine(ex.Message);
             }
             Console.ReadLine();
         }
@@ -94,7 +94,7 @@ namespace FileUploader
                 }
                 // Upload a file to bucket.
                 await minio.PutObjectAsync(bucketName, objectName, filePath, contentType);
-                Console.Out.WriteLine("Successfully uploaded " + objectName );
+                Console.WriteLine("Successfully uploaded " + objectName );
             }
             catch (MinioException e)
             {

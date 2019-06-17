@@ -13,15 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System;
-using System.Text;
-using System.Collections.Generic;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Net;
-using System.Configuration;
-using Minio.Exceptions;
-using Minio;
-using Minio.Helper;
+using System.Collections.Generic;
+
 namespace Minio.Tests
 {
     [TestClass]
@@ -40,11 +35,11 @@ namespace Minio.Tests
                 {"mybucket-s3-us-west-1.amazonaws.com", "us-west-1"},
                 {"wests3iss.s3-us-west-1.amazonaws.com", "us-west-1"},
             };
+
             foreach (KeyValuePair<string, string> testCase in endpoint2Region)
             {
                 Assert.AreEqual(Regions.GetRegionFromEndpoint(testCase.Key), testCase.Value);
             }
         }
     }
-   
 }

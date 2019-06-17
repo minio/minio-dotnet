@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
+using Minio.DataModel;
 using System;
 using System.Threading.Tasks;
-
-using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
     class CopyObject
     {
         // Copy object from one bucket to another
-        public async static Task Run(Minio.MinioClient minio,
+        public async static Task Run(MinioClient minio,
                                      string fromBucketName = "from-bucket-name",
                                      string fromObjectName = "from-object-name",
                                      string destBucketName = "dest-bucket",
@@ -34,7 +33,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                Console.Out.WriteLine("Running example for API: CopyObjectAsync");
+                Console.WriteLine("Running example for API: CopyObjectAsync");
                 // Optionally pass copy conditions
                 await minio.CopyObjectAsync(fromBucketName, 
                                                 fromObjectName, 
@@ -43,14 +42,13 @@ namespace Minio.Examples.Cases
                                                 copyConditions:null,
                                                 sseSrc: sseSrc,
                                                 sseDest: sseDest);
-                Console.Out.WriteLine("Copied object {0} from bucket {1} to bucket {2}", fromObjectName, fromBucketName, destBucketName);
-                Console.Out.WriteLine();    
+                Console.WriteLine("Copied object {0} from bucket {1} to bucket {2}", fromObjectName, fromBucketName, destBucketName);
+                Console.WriteLine();    
             }
             catch (Exception e)
             {
                 Console.WriteLine("[Bucket]  Exception: {0}", e);
             }
         }
-
     }
 }

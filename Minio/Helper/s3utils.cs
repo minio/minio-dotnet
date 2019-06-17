@@ -88,7 +88,9 @@ namespace Minio.Helper
         internal static bool IsValidIP(string ip)
         {
             if (string.IsNullOrEmpty(ip))
+            {
                 return false;
+            }
 
             string[] splitValues = ip.Split('.');
             if (splitValues.Length != 4)

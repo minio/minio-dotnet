@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
 
 namespace Minio.Tests
@@ -27,10 +24,9 @@ namespace Minio.Tests
         private static Random rnd = new Random();
 
         // Generate a random string
-        public static String GetRandomName(int length = 5)
+        public static string GetRandomName(int length = 5)
         {
             string characters = "0123456789abcdefghijklmnopqrstuvwxyz";
-          
             StringBuilder result = new StringBuilder(length);
 
             for (int i = 0; i < length; i++)

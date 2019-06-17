@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
+using Minio.DataModel;
 using System;
 using System.Threading.Tasks;
-using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
     class StatObject
     {
         // Get stats on a object
-        public async static Task Run(Minio.MinioClient minio, 
+        public async static Task Run(MinioClient minio, 
                                      string bucketName = "my-bucket-name",
                                      string bucketObject = "my-object-name")
         {
             try
             {
-                Console.Out.WriteLine("Running example for API: StatObjectAsync");
+                Console.WriteLine("Running example for API: StatObjectAsync");
                 ObjectStat statObject = await minio.StatObjectAsync(bucketName, bucketObject);
-                Console.Out.WriteLine("Details of the object " + bucketObject + " are " + statObject);
-                Console.Out.WriteLine();
+                Console.WriteLine("Details of the object " + bucketObject + " are " + statObject);
+                Console.WriteLine();
             }
             catch (Exception e)
             {

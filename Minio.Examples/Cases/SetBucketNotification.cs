@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
+using Minio.DataModel;
 using System;
 using System.Threading.Tasks;
-using Minio.DataModel;
-using System.Xml.Serialization;
-using System.IO;
-using System.Collections.Generic;
 
 namespace Minio.Examples.Cases
 {
@@ -27,12 +24,12 @@ namespace Minio.Examples.Cases
     {
         // Set bucket notifications. The resource ARN needs to exist on AWS with correct permissions.
         // For further info: see http://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html
-        public async static Task Run(Minio.MinioClient minio, 
+        public async static Task Run(MinioClient minio, 
                                      string bucketName = "my-bucket-name")
         {
             try
             {
-                Console.Out.WriteLine("Running example for API: SetBucketNotificationAsync");
+                Console.WriteLine("Running example for API: SetBucketNotificationAsync");
                 BucketNotification notification = new BucketNotification();
 
                 // Uncomment the code below and change Arn and event types to configure.
@@ -55,11 +52,10 @@ namespace Minio.Examples.Cases
                 queueConfiguration.AddEvents(new List<EventType>() { EventType.ObjectCreatedCompleteMultipartUpload });
                 notification.AddQueue(queueConfiguration);
                 */
-                await minio.SetBucketNotificationsAsync(bucketName, 
-                                               notification);
+                await minio.SetBucketNotificationsAsync(bucketName, notification);
              
-                Console.Out.WriteLine("Notifications set for the bucket " + bucketName + "were set successfully");
-                Console.Out.WriteLine();
+                Console.WriteLine("Notifications set for the bucket " + bucketName + "were set successfully");
+                Console.WriteLine();
             }
             catch (Exception e)
             {
