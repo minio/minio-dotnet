@@ -141,7 +141,7 @@ namespace Minio.DataModel
                 using (XmlWriter writer = XmlWriter.Create(ms, settings))
                 {
                     XmlSerializerNamespaces names = new XmlSerializerNamespaces();
-                    names.Add("", "http://s3.amazonaws.com/doc/2006-03-01/");
+                    names.Add(string.Empty, "http://s3.amazonaws.com/doc/2006-03-01/");
 
                     XmlSerializer cs = new XmlSerializer(typeof(BucketNotification));
                     cs.Serialize(writer, this, names);

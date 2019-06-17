@@ -115,7 +115,7 @@ namespace Minio.DataModel
 
         public SSEKMS(string key, Dictionary<string, string> context = null)
         {
-            if (key == "")
+            if (key == string.Empty)
             {
                 throw new ArgumentException("KMS Key cannot be empty", nameof(key));
             }

@@ -25,20 +25,20 @@ namespace Minio.DataModel
     public class DeleteObjectsRequest
     {
         [XmlElement("Quiet")]
-        public bool quiet { get;  set; }
+        public bool Quiet { get; set; }
         [XmlElement("Object")]
-        public List<DeleteObject> objects { get; set; }
+        public List<DeleteObject> Objects { get; set; }
 
         public DeleteObjectsRequest(List<DeleteObject> objectsList, bool quiet = true)
         {
-            this.quiet = quiet;
-            this.objects = objectsList;
+            this.Quiet = quiet;
+            this.Objects = objectsList;
         }
 
         public DeleteObjectsRequest()
         {
-            this.quiet = true;
-            this.objects = new List<DeleteObject>();
+            this.Quiet = true;
+            this.Objects = new List<DeleteObject>();
         }
     }
 }

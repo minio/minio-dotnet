@@ -83,15 +83,15 @@ namespace Minio
                 string release = "minio-dotnet/1.0.9";
 #if NET46
                 string arch = Environment.Is64BitOperatingSystem ? "x86_64" : "x86";
-                return string.Format("MinIO ({0};{1}) {2}", Environment.OSVersion, arch, release);
+                return $"MinIO ({Environment.OSVersion};{arch}) {release}";
 #else
                 string arch = RuntimeInformation.OSArchitecture.ToString();
-                return string.Format("MinIO ({0};{1}) {2}", RuntimeInformation.OSDescription, arch, release);
+                return $"MinIO ({RuntimeInformation.OSDescription};{arch}) {release}";
 #endif
             }
         }
 
-        private string CustomUserAgent = "";
+        private string CustomUserAgent = string.Empty;
 
         /// <summary>
         /// Returns the User-Agent header for the request
@@ -112,15 +112,16 @@ namespace Minio
         private async Task<string> GetRegion(string bucketName)
         {
             // Use user specified region in client constructor if present
-            if (this.Region != "")
+            if (this.Region != string.Empty)
             {
                 return this.Region;
             }
+
             // pick region from endpoint if present
             string region = Regions.GetRegionFromEndpoint(this.Endpoint);
 
             // Pick region from location HEAD request
-            if (region == "")
+            if (region == string.Empty)
             {
                 if (!BucketRegionCache.Instance.Exists(bucketName))
                 {
@@ -132,7 +133,7 @@ namespace Minio
                 }
             }
             // Default to us-east-1 if region could not be found
-            return (region == "") ? "us-east-1" : region;
+            return (region == string.Empty) ? "us-east-1" : region;
         }
 
         /// <summary>
@@ -152,13 +153,14 @@ namespace Minio
                                 string contentType = "application/octet-stream",
                                 object body = null, string resourcePath = null)
         {
-            string region = "";
+            string region = string.Empty;
             if (bucketName != null)
             {
                 utils.ValidateBucketName(bucketName);
                 // Fetch correct region for bucket
                 region = await GetRegion(bucketName).ConfigureAwait(false);
             }
+
             if (objectName != null)
             {
                 utils.ValidateObjectName(objectName);
@@ -171,7 +173,7 @@ namespace Minio
 
             // This section reconstructs the url with scheme followed by location specific endpoint (s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
-            string resource = "";
+            string resource = string.Empty;
             bool usePathStyle = false;
             if (bucketName != null)
             {
@@ -281,10 +283,12 @@ namespace Minio
             {
                 throw new ArgumentException("Appname cannot be null or empty", nameof(appName));
             }
+
             if (string.IsNullOrEmpty(appVersion))
             {
                 throw new ArgumentException("Appversion cannot be null or empty", nameof(appVersion));
             }
+
             this.CustomUserAgent = appName + "/" + appVersion;
         }
 
@@ -357,7 +361,7 @@ namespace Minio
             if (this.trace)
             {
                 var fullUrl = this.restClient.BuildUri(request);
-                Console.WriteLine("Full URL of Request {0}", fullUrl);
+                Console.WriteLine($"Full URL of Request {fullUrl}");
             }
 
             IRestResponse response = await this.restClient.ExecuteTaskAsync(request, cancellationToken);
@@ -376,6 +380,7 @@ namespace Minio
             {
                 throw new ConnectionException("Response is nil. Please report this issue https://github.com/minio/minio-dotnet/issues");
             }
+
             if (HttpStatusCode.Redirect.Equals(response.StatusCode) || HttpStatusCode.TemporaryRedirect.Equals(response.StatusCode) || HttpStatusCode.MovedPermanently.Equals(response.StatusCode))
             {
                 throw new RedirectionException("Redirection detected. Please report this issue https://github.com/minio/minio-dotnet/issues");
@@ -419,7 +424,7 @@ namespace Minio
                             errorResponse.Code = "NoSuchKey";
                             var bucketName = response.Request.Resource.Split('/')[0];
                             var objectName = response.Request.Resource.Split('/')[1];
-                            if (objectName == "")
+                            if (objectName == string.Empty)
                             {
                                 e = new BucketNotFoundException(bucketName, "Not found.");
                             }
@@ -432,7 +437,7 @@ namespace Minio
                         {
                             var resource = response.Request.Resource.Split('/')[0];
 
-                            if (isAWS && isVirtual && response.Request.Resource != "")
+                            if (isAWS && isVirtual && response.Request.Resource != string.Empty)
                             {
                                 errorResponse.Code = "NoSuchKey";
                                 e = new ObjectNotFoundException(resource, "Not found.");
@@ -504,15 +509,18 @@ namespace Minio
                 DateTime now = DateTime.Now;
                 LogRequest(response.Request, response, (now - startTime).TotalMilliseconds);
             }
+
             if (handlers == null)
             {
                 throw new ArgumentNullException(nameof(handlers));
             }
+
             // Run through handlers passed to take up error handling
             foreach (var handler in handlers)
             {
                 handler(response);
             }
+
             // Fall back default error handler
             _defaultErrorHandlingDelegate(response);
         }

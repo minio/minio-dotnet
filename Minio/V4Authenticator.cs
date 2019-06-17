@@ -96,8 +96,9 @@ namespace Minio
             {
                 return this.region;
             }
+
             string region = Regions.GetRegionFromEndpoint(url);
-            return (region == "") ? "us-east-1" : region;
+            return (region == string.Empty) ? "us-east-1" : region;
         }
 
         /// <summary>
@@ -286,7 +287,7 @@ namespace Minio
             {
                 signingDate = reqDate.Value;
             }
-            string requestQuery = "";
+            string requestQuery = string.Empty;
             string path = request.Resource;
 
             if (string.IsNullOrWhiteSpace(region))
@@ -354,7 +355,7 @@ namespace Minio
                 canonicalStringList.AddLast("host:" + client.BaseUrl.Host);
             }
 
-            canonicalStringList.AddLast("");
+            canonicalStringList.AddLast(string.Empty);
             canonicalStringList.AddLast("host");
             canonicalStringList.AddLast("UNSIGNED-PAYLOAD");
 
@@ -381,7 +382,7 @@ namespace Minio
             }
             canonicalStringList.AddLast(path[0]);
 
-            string query = "";
+            string query = string.Empty;
             // QUERY
             if (path.Length == 2)
             {
@@ -408,7 +409,7 @@ namespace Minio
             {
                 canonicalStringList.AddLast(header + ":" + s3utils.TrimAll(headersToSign[header]));
             }
-            canonicalStringList.AddLast("");
+            canonicalStringList.AddLast(string.Empty);
             canonicalStringList.AddLast(string.Join(";", headersToSign.Keys));
             if (headersToSign.Keys.Contains("x-amz-content-sha256"))
             {

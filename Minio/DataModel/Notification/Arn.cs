@@ -70,7 +70,7 @@ namespace Minio.DataModel
             this.Region = region;
             this.AccountID = accountId;
             this.Resource = resource;
-            this.arnString = "arn:" + this.Partition + ":" + this.Service + ":" + this.Region + ":" + this.AccountID + ":" + this.Resource;
+            this.arnString = $"arn:{this.Partition}:{this.Service}:{this.Region}:{this.AccountID}:{this.Resource}";
         }
 
         public override string ToString() => arnString;

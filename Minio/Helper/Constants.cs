@@ -18,37 +18,61 @@ namespace Minio.Helper
 {
     internal static class Constants
     {
-        // Maximum number of parts.
+        /// <summary>
+        /// Maximum number of parts
+        /// </summary>
         public static int MaxParts = 10000;
-        // Minimum part size.
+
+        /// <summary>
+        /// Minimum part size
+        /// </summary>
         public static long MinimumPartSize = 5 * 1024L * 1024L;
-        // Maximum part size.
+
+        /// <summary>
+        /// Maximum part size
+        /// </summary>
         public static long MaximumPartSize = 5 * 1024L * 1024L * 1024L;
-        // Maximum streaming object size.
+
+        /// <summary>
+        /// Maximum streaming object size
+        /// </summary>
         public static long MaximumStreamObjectSize = MaxParts * MinimumPartSize;
-        // maxSinglePutObjectSize - maximum size 5GiB of object per PUT
-        // operation.
+
+        /// <summary>
+        /// maxSinglePutObjectSize - maximum size 5GiB of object per PUT operation
+        /// </summary>
         public static long MaxSinglePutObjectSize = 1024L * 1024L * 1024L * 5;
 
-        // maxSingleCopyObjectSize - 5GiB
+        /// <summary>
+        /// maxSingleCopyObjectSize - 5GiB
+        /// </summary>
         public static long MaxSingleCopyObjectSize = 1024L * 1024L * 1024L * 5;
-        // maxMultipartPutObjectSize - maximum size 5TiB of object for
-        // Multipart operation.
+
+        /// <summary>
+        /// maxMultipartPutObjectSize - maximum size 5TiB of object for Multipart operation
+        /// </summary>
         public static long MaxMultipartPutObjectSize = 1024L * 1024L * 1024L * 1024L * 5;
 
-        // optimalReadBufferSize - optimal buffer 5MiB used for reading
-        // through Read operation.
+        /// <summary>
+        /// OptimalReadBufferSize - optimal buffer 5MiB used for reading through Read operation
+        /// </summary>
         public static long OptimalReadBufferSize = 1024L * 1024L * 5;
 
         public static int DefaultExpiryTime = 7 * 24 * 3600;
 
-        // SSEGenericHeader is the AWS SSE header used for SSE-S3 and SSE-KMS.
+        /// <summary>
+        /// SSEGenericHeader is the AWS SSE header used for SSE-S3 and SSE-KMS.
+        /// </summary>
         public static string SSEGenericHeader = "X-Amz-Server-Side-Encryption";
 
-        // SSEKMSKeyId is the AWS SSE KMS Key-Id.
+        /// <summary>
+        /// SSEKMSKeyId is the AWS SSE KMS Key-Id
+        /// </summary>
         public static string SSEKMSKeyId = "X-Amz-Server-Side-Encryption-Aws-Kms-Key-Id";
 
-        // SSEKMSContext is the AWS SSE KMS Context.
+        /// <summary>
+        /// SSEKMSContext is the AWS SSE KMS Context.
+        /// </summary>
         public static string SSEKMSContext = "X-Amz-Server-Side-Encryption-Context";
     }
 }

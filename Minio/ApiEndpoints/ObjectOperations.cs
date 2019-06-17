@@ -291,7 +291,7 @@ namespace Minio
                 }
                 numPartsUploaded += 1;
                 string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, metaData, sseHeaders, cancellationToken).ConfigureAwait(false);
-                totalParts[partNumber - 1] = new Part { PartNumber = partNumber, ETag = etag, size = (long)expectedReadSize };
+                totalParts[partNumber - 1] = new Part { PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize };
             }
 
             // This shouldn't happen where stream size is known.
@@ -336,12 +336,10 @@ namespace Minio
             }
 
             var completeMultipartUploadXml = new XElement("CompleteMultipartUpload", parts);
-
             var bodyString = completeMultipartUploadXml.ToString();
-
             var body = System.Text.Encoding.UTF8.GetBytes(bodyString);
 
-            request.AddParameter("application/xml", body, RestSharp.ParameterType.RequestBody);
+            request.AddParameter("application/xml", body, ParameterType.RequestBody);
 
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
@@ -385,10 +383,10 @@ namespace Minio
         /// <returns></returns>
         private async Task<Tuple<ListPartsResult, List<Part>>> GetListPartsAsync(string bucketName, string objectName, string uploadId, int partNumberMarker, CancellationToken cancellationToken)
         {
-            var resourcePath = "?uploadId=" + uploadId;
+            var resourcePath = $"?uploadId={uploadId}";
             if (partNumberMarker > 0)
             {
-                resourcePath += "&part-number-marker=" + partNumberMarker;
+                resourcePath += $"&part-number-marker={partNumberMarker}";
             }
             resourcePath += "&max-parts=1000";
             var request = await this.CreateRequest(Method.GET, bucketName,
@@ -401,17 +399,19 @@ namespace Minio
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             ListPartsResult listPartsResult = null;
             using (var stream = new MemoryStream(contentBytes))
+            {
                 listPartsResult = (ListPartsResult)new XmlSerializer(typeof(ListPartsResult)).Deserialize(stream);
+            }
 
             XDocument root = XDocument.Parse(response.Content);
 
-            var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Part")
-                           select new Part
-                           {
-                               PartNumber = int.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}PartNumber").Value, CultureInfo.CurrentCulture),
-                               ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value.Replace("\"", ""),
-                               size = long.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture)
-                           });
+            var uploads = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Part")
+                          select new Part
+                          {
+                              PartNumber = int.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}PartNumber").Value, CultureInfo.CurrentCulture),
+                              ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value.Replace("\"", string.Empty),
+                              Size = long.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture)
+                          };
 
             return Tuple.Create(listPartsResult, uploads.ToList());
         }
@@ -441,7 +441,9 @@ namespace Minio
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             InitiateMultipartUploadResult newUpload = null;
             using (var stream = new MemoryStream(contentBytes))
+            {
                 newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult)).Deserialize(stream);
+            }
             return newUpload.UploadId;
         }
 
@@ -459,11 +461,12 @@ namespace Minio
         /// <returns></returns>
         private async Task<string> PutObjectAsync(string bucketName, string objectName, string uploadId, int partNumber, byte[] data, Dictionary<string, string> metaData, Dictionary<string, string> sseHeaders, CancellationToken cancellationToken)
         {
-            var resource = "";
+            var resource = string.Empty;
             if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
             {
                 resource += "?uploadId=" + uploadId + "&partNumber=" + partNumber;
             }
+
             // For multi-part upload requests, metadata needs to be passed in the NewMultiPartUpload request
             string contentType = metaData["Content-Type"];
             if (uploadId != null)
@@ -518,19 +521,19 @@ namespace Minio
             // null values are treated as empty strings.
             if (delimiter == null)
             {
-                delimiter = "";
+                delimiter = string.Empty;
             }
             if (prefix == null)
             {
-                prefix = "";
+                prefix = string.Empty;
             }
             if (keyMarker == null)
             {
-                keyMarker = "";
+                keyMarker = string.Empty;
             }
             if (uploadIdMarker == null)
             {
-                uploadIdMarker = "";
+                uploadIdMarker = string.Empty;
             }
 
             queries.Add("uploads");
@@ -549,17 +552,19 @@ namespace Minio
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             ListMultipartUploadsResult listBucketResult = null;
             using (var stream = new MemoryStream(contentBytes))
+            {
                 listBucketResult = (ListMultipartUploadsResult)new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(stream);
+            }
 
             XDocument root = XDocument.Parse(response.Content);
 
-            var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
-                           select new Upload
-                           {
-                               Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
-                               UploadId = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}UploadId").Value,
-                               Initiated = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Initiated").Value
-                           });
+            var uploads = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
+                          select new Upload
+                          {
+                              Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
+                              UploadId = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}UploadId").Value,
+                              Initiated = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Initiated").Value
+                          };
 
             return Tuple.Create(listBucketResult, uploads.ToList());
         }
@@ -578,6 +583,7 @@ namespace Minio
             {
                 return this.listIncompleteUploads(bucketName, prefix, null, cancellationToken);
             }
+
             return this.listIncompleteUploads(bucketName, prefix, "/", cancellationToken);
         }
 
@@ -642,7 +648,7 @@ namespace Minio
         private async Task RemoveUploadAsync(string bucketName, string objectName, string uploadId, CancellationToken cancellationToken)
         {
             // var resourcePath = "/" + utils.UrlEncode(objectName) + "?uploadId=" + uploadId;
-            var resourcePath = "?uploadId=" + uploadId;
+            var resourcePath = $"?uploadId={uploadId}";
 
             var request = await this.CreateRequest(Method.DELETE, bucketName,
                                                      objectName: objectName,
@@ -696,7 +702,9 @@ namespace Minio
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             DeleteObjectsResult deleteResult = null;
             using (var stream = new MemoryStream(contentBytes))
+            {
                 deleteResult = (DeleteObjectsResult)new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(stream);
+            }
 
             if (deleteResult == null)
             {
@@ -718,6 +726,7 @@ namespace Minio
             {
                 return null;
             }
+
             utils.ValidateBucketName(bucketName);
             List<DeleteObject> objectList;
             return Observable.Create<DeleteError>(
@@ -748,7 +757,9 @@ namespace Minio
                           }
                       }
                       if (i >= objectNames.Count())
+                      {
                           process = !process;
+                      }
                   }
               });
         }
@@ -776,7 +787,7 @@ namespace Minio
             // Extract stats from response
             long size = 0;
             DateTime lastModified = new DateTime();
-            string etag = "";
+            string etag = string.Empty;
             string contentType = null;
             var metaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -795,7 +806,7 @@ namespace Minio
                 }
                 else if (parameter.Name.Equals("ETag", StringComparison.OrdinalIgnoreCase))
                 {
-                    etag = parameter.Value.ToString().Replace("\"", "");
+                    etag = parameter.Value.ToString().Replace("\"", string.Empty);
                 }
                 else if (parameter.Name.Equals("Content-Type", StringComparison.OrdinalIgnoreCase))
                 {
@@ -835,9 +846,15 @@ namespace Minio
                 totalRead += curRead;
             }
 
-            if (totalRead == 0) return null;
+            if (totalRead == 0)
+            {
+                return null;
+            }
 
-            if (totalRead == currentPartSize) return result;
+            if (totalRead == currentPartSize)
+            {
+                return result;
+            }
 
             byte[] truncatedResult = new byte[totalRead];
             for (int i = 0; i < totalRead; i++)
@@ -895,7 +912,7 @@ namespace Minio
             Dictionary<string, string> m = metadata;
             if (copyConditions != null && !copyConditions.HasReplaceMetadataDirective())
             {
-                m = srcStats.metaData;
+                m = srcStats.MetaData;
             }
 
             if (m != null)
@@ -915,7 +932,9 @@ namespace Minio
             long copySize = (srcByteRangeSize == 0) ? srcStats.Size : srcByteRangeSize;
 
             if ((srcByteRangeSize > srcStats.Size) || ((srcByteRangeSize > 0) && (copyConditions.byteRangeEnd >= srcStats.Size)))
+            {
                 throw new ArgumentException("Specified byte range (" + copyConditions.byteRangeStart.ToString() + "-" + copyConditions.byteRangeEnd.ToString() + ") does not fit within source object (size=" + srcStats.Size.ToString() + ")");
+            }
 
             if ((copySize > Constants.MaxSingleCopyObjectSize) || (srcByteRangeSize > 0 && (srcByteRangeSize != srcStats.Size)))
             {
@@ -985,9 +1004,14 @@ namespace Minio
             using (var stream = new MemoryStream(contentBytes))
             {
                 if (type == typeof(CopyObjectResult))
+                {
                     copyResult = (CopyObjectResult)new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream);
+                }
+
                 if (type == typeof(CopyPartResult))
+                {
                     copyResult = (CopyPartResult)new XmlSerializer(typeof(CopyPartResult)).Deserialize(stream);
+                }
             }
 
             return copyResult;
@@ -1035,18 +1059,25 @@ namespace Minio
                 CopyConditions partCondition = copyConditions.Clone();
                 partCondition.byteRangeStart = (long)partSize * (partNumber - 1) + partCondition.byteRangeStart;
                 if (partNumber < partCount)
+                {
                     partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)partSize - 1;
+                }
                 else
+                {
                     partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)lastPartSize - 1;
-                var resource = "";
+                }
+
+                var resource = string.Empty;
                 if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
                 {
                     resource += "?uploadId=" + uploadId + "&partNumber=" + partNumber;
                 }
+
                 var customHeader = new Dictionary<string, string>
                 {
                     { "x-amz-copy-source-range", "bytes=" + partCondition.byteRangeStart.ToString() + "-" + partCondition.byteRangeEnd.ToString() }
                 };
+
                 if (sseSrc != null && sseSrc is SSECopy)
                 {
                     sseSrc.Marshal(customHeader);
@@ -1057,7 +1088,7 @@ namespace Minio
                 }
                 CopyPartResult cpPartResult = (CopyPartResult)await this.CopyObjectRequestAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, customHeader, resource, cancellationToken, typeof(CopyPartResult)).ConfigureAwait(false);
 
-                totalParts[partNumber - 1] = new Part { PartNumber = partNumber, ETag = cpPartResult.ETag, size = (long)expectedReadSize };
+                totalParts[partNumber - 1] = new Part { PartNumber = partNumber, ETag = cpPartResult.ETag, Size = (long)expectedReadSize };
             }
 
             Dictionary<int, string> etags = new Dictionary<int, string>();
@@ -1140,10 +1171,12 @@ namespace Minio
             {
                 region = await BucketRegionCache.Instance.Update(this, policy.Bucket).ConfigureAwait(false);
             }
+
             if (region == null)
             {
                 region = BucketRegionCache.Instance.Region(policy.Bucket);
             }
+
             // Set Target URL
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, bucketName: policy.Bucket, region: region, usePathStyle: false);
             SetTargetURL(requestUrl);

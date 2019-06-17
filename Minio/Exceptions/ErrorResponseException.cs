@@ -38,6 +38,6 @@ namespace Minio.Exceptions
             this.ErrorCode = errorcode;
         }
 
-        public override string ToString() => this.message + ": " + base.ToString();
+        public override string ToString() => $"{this.message}: {base.ToString()}";
     }
 }

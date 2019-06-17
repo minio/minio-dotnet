@@ -122,7 +122,9 @@ namespace Minio.DataModel
             {
                 if (item.Key.Equals("x-amz-metadata-directive", StringComparison.OrdinalIgnoreCase) &&
                     item.Value.ToUpper().Equals("REPLACE"))
+                {
                     return true;
+                }
             }
             return false;
         }
@@ -137,7 +139,9 @@ namespace Minio.DataModel
         public void SetByteRange(long firstByte, long lastByte)
         {
             if ((firstByte < 0) || (lastByte < firstByte))
+            {
                 throw new ArgumentException("Range start less than zero or range end less than range start");
+            }
 
             this.byteRangeStart = firstByte;
             this.byteRangeEnd = lastByte;

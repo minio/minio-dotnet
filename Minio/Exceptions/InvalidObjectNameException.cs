@@ -25,6 +25,6 @@ namespace Minio.Exceptions
             this.objectName = objectName;
         }
 
-        public override string ToString() => this.objectName + ": " + base.ToString();
+        public override string ToString() => $"{this.objectName}: {base.ToString()}";
     }
 }

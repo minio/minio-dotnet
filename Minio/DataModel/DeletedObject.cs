@@ -23,15 +23,15 @@ namespace Minio.DataModel
     public class DeletedObject
     {
         [XmlElement("Key")]
-        public string key { get; set; }
+        public string Key { get; set; }
 
         [XmlElement("VersionId")]
-        public string versionId { get; set; }
+        public string VersionId { get; set; }
 
         [XmlElement("DeleteMarker")]
-        public string deleteMarker { get; set; }
+        public string DeleteMarker { get; set; }
 
         [XmlElement("DeleteMarkerVersionId")]
-        public string deleteMarkerVersionId { get; set; }
+        public string DeleteMarkerVersionId { get; set; }
     }
 }

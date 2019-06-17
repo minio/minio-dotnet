@@ -66,7 +66,7 @@ namespace Minio
         {
             if (location == "us-east-1")
             {
-                if (this.Region != "")
+                if (this.Region != string.Empty)
                 {
                     location = this.Region;
                 }
@@ -147,7 +147,7 @@ namespace Minio
                   var delimiter = "/";
                   if (recursive)
                   {
-                      delimiter = "";
+                      delimiter = string.Empty;
                   }
 
                   while (isRunning)
@@ -187,13 +187,19 @@ namespace Minio
 
             // null values are treated as empty strings.
             if (delimiter == null)
-                delimiter = "";
+            {
+                delimiter = string.Empty;
+            }
 
             if (prefix == null)
-                prefix = "";
+            {
+                prefix = string.Empty;
+            }
 
             if (marker == null)
-                marker = "";
+            {
+                marker = string.Empty;
+            }
 
             queries.Add("delimiter=" + Uri.EscapeDataString(delimiter));
             queries.Add("prefix=" + Uri.EscapeDataString(prefix));
@@ -218,22 +224,22 @@ namespace Minio
 
             XDocument root = XDocument.Parse(response.Content);
 
-            var items = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
-                         select new Item
-                         {
-                             Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
-                             LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
-                             ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value,
-                             Size = ulong.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture),
-                             IsDir = false
-                         });
+            var items = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
+                        select new Item
+                        {
+                            Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
+                            LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
+                            ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value,
+                            Size = ulong.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture),
+                            IsDir = false
+                        };
 
-            var prefixes = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}CommonPrefixes")
-                            select new Item
-                            {
-                                Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Prefix").Value,
-                                IsDir = true
-                            });
+            var prefixes = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}CommonPrefixes")
+                           select new Item
+                           {
+                               Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Prefix").Value,
+                               IsDir = true
+                           };
 
             items = items.Concat(prefixes);
 
@@ -250,7 +256,7 @@ namespace Minio
         {
             IRestResponse response = null;
 
-            var path = bucketName + "?policy";
+            var path = $"{bucketName}?policy";
 
             var request = await this.CreateRequest(Method.GET, bucketName,
                                  contentType: "application/json",

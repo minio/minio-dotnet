@@ -44,7 +44,7 @@ namespace Minio
                     region = matches[0].Groups[0].Value;
                 }
             }
-            return region ?? "";
+            return region ?? string.Empty;
         }
     }
 }
