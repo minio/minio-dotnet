@@ -43,7 +43,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Name of object to retrieve</param>
         /// <param name="offset">offset of the object from where stream will start </param>
-        /// <param name="length"> length of object to read in from the stream</param>
+        /// <param name="length">length of object to read in from the stream</param>
         /// <param name="cb">A stream will be passed to the callback</param>
         /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -109,7 +109,7 @@ namespace Minio
         Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        ///  Copy a source object into a new destination object.
+        /// Copy a source object into a new destination object.
         /// </summary>
         /// <param name="bucketName"> Bucket name where the object to be copied exists.</param>
         /// <param name="objectName">Object name source to be copied.</param>
@@ -154,8 +154,8 @@ namespace Minio
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds.</param>
-        /// <param name="reqParams">optional override response headers</param>
-        /// <param name="reqDate">optional request date and time in UTC</param>
+        /// <param name="reqParams">Optional override response headers</param>
+        /// <param name="reqDate">Optional request date and time in UTC</param>
         Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null);
 
         /// <summary>
@@ -170,6 +170,8 @@ namespace Minio
         /// <summary>
         /// Presigned post policy
         /// </summary>
+        /// <param name="policy"></param>
+        /// <returns></returns>
         Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy);
     }
 }

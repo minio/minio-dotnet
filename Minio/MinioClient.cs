@@ -92,7 +92,10 @@ namespace Minio
         }
 
         private string CustomUserAgent = "";
-        // returns the User-Agent header for the request
+
+        /// <summary>
+        /// Returns the User-Agent header for the request
+        /// </summary>
         private string FullUserAgent
         {
             get
@@ -152,13 +155,13 @@ namespace Minio
             string region = "";
             if (bucketName != null)
             {
-                utils.validateBucketName(bucketName);
+                utils.ValidateBucketName(bucketName);
                 // Fetch correct region for bucket
                 region = await GetRegion(bucketName).ConfigureAwait(false);
             }
             if (objectName != null)
             {
-                utils.validateObjectName(objectName);
+                utils.ValidateObjectName(objectName);
             }
 
             // Start with user specified endpoint
@@ -286,7 +289,7 @@ namespace Minio
         }
 
         /// <summary>
-        ///  Creates and returns an Cloud Storage client
+        /// Creates and returns an Cloud Storage client
         /// </summary>
         /// <param name="endpoint">Location of the server, supports HTTP and HTTPS</param>
         /// <param name="accessKey">Access Key for authenticated requests (Optional, can be omitted for anonymous requests)</param>
@@ -345,7 +348,7 @@ namespace Minio
         /// </summary>
         /// <param name="errorHandlers">List of handlers to override default handling</param>
         /// <param name="request">request</param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>IRESTResponse</returns>
         internal async Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {

@@ -74,15 +74,22 @@ namespace Minio
         public async Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (offset < 0)
+            {
                 throw new ArgumentException("Offset should be zero or greater", nameof(offset));
+            }
+
             if (length < 0)
+            {
                 throw new ArgumentException("Length should be greater than zero", nameof(length));
+            }
 
             await StatObjectAsync(bucketName, objectName, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             var headerMap = new Dictionary<string, string>();
             if (length > 0)
+            {
                 headerMap.Add("Range", "bytes=" + offset.ToString() + "-" + (offset + length - 1).ToString());
+            }
 
             if (sse != null && sse.GetType().Equals(EncryptionType.SSE_C))
             {
@@ -207,8 +214,8 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.validateBucketName(bucketName);
-            utils.validateObjectName(objectName);
+            utils.ValidateBucketName(bucketName);
+            utils.ValidateObjectName(objectName);
             var sseHeaders = new Dictionary<string, string>();
 
             if (metaData == null)
@@ -342,8 +349,8 @@ namespace Minio
         /// <summary>
         /// Returns an async observable of parts corresponding to a uploadId for a specific bucket and objectName
         /// </summary>
-        /// <param name="bucketName"></param>
-        /// <param name="objectName"></param>
+        /// <param name="bucketName">Bucket Name</param>
+        /// <param name="objectName">Object Name</param>
         /// <param name="uploadId"></param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
@@ -370,8 +377,8 @@ namespace Minio
         /// <summary>
         /// Gets the list of parts corresponding to a uploadId for given bucket and object
         /// </summary>
-        /// <param name="bucketName"></param>
-        /// <param name="objectName"></param>
+        /// <param name="bucketName">Bucket Name</param>
+        /// <param name="objectName">Object Name</param>
         /// <param name="uploadId"></param>
         /// <param name="partNumberMarker"></param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -412,8 +419,8 @@ namespace Minio
         /// <summary>
         /// Start a new multi-part upload request
         /// </summary>
-        /// <param name="bucketName"></param>
-        /// <param name="objectName"></param>
+        /// <param name="bucketName">Bucket Name</param>
+        /// <param name="objectName">Object Name</param>
         /// <param name="metaData"></param>
         /// <param name="sseHeaders"> Server-side encryption options</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -441,8 +448,8 @@ namespace Minio
         /// <summary>
         /// Upload object part to bucket for particular uploadId
         /// </summary>
-        /// <param name="bucketName"></param>
-        /// <param name="objectName"></param>
+        /// <param name="bucketName">Bucket Name</param>
+        /// <param name="objectName">Object Name</param>
         /// <param name="uploadId"></param>
         /// <param name="partNumber"></param>
         /// <param name="data"></param>
@@ -492,7 +499,7 @@ namespace Minio
         /// <summary>
         /// Get list of multi-part uploads matching particular uploadIdMarker
         /// </summary>
-        /// <param name="bucketName">bucketName</param>
+        /// <param name="bucketName">Bucket Name</param>
         /// <param name="prefix">prefix</param>
         /// <param name="keyMarker"></param>
         /// <param name="uploadIdMarker"></param>
@@ -627,7 +634,7 @@ namespace Minio
         /// <summary>
         /// Remove object with matching uploadId from bucket
         /// </summary>
-        /// <param name="bucketName"></param>
+        /// <param name="bucketName">Bucket Name</param>
         /// <param name="objectName"></param>
         /// <param name="uploadId"></param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -662,9 +669,9 @@ namespace Minio
         /// <summary>
         /// private helper method to remove list of objects from bucket
         /// </summary>
-        /// <param name="bucketName"></param>
+        /// <param name="bucketName">Bucket Name</param>
         /// <param name="objectsList"></param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         private async Task<List<DeleteError>> removeObjectsAsync(string bucketName, List<DeleteObject> objectsList, CancellationToken cancellationToken)
         {
@@ -701,7 +708,7 @@ namespace Minio
         /// <summary>
         /// Removes multiple objects from a specific bucket
         /// </summary>
-        /// <param name="bucketName">Bucket to  remove objects from</param>
+        /// <param name="bucketName">Bucket to remove objects from</param>
         /// <param name="objectNames">List of object keys to remove.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
@@ -711,7 +718,7 @@ namespace Minio
             {
                 return null;
             }
-            utils.validateBucketName(bucketName);
+            utils.ValidateBucketName(bucketName);
             List<DeleteObject> objectList;
             return Observable.Create<DeleteError>(
               async obs =>
@@ -726,7 +733,7 @@ namespace Minio
                       while (i < count)
                       {
                           string objectName = objectNames.ElementAt(i);
-                          utils.validateObjectName(objectName);
+                          utils.ValidateObjectName(objectName);
                           objectList.Add(new DeleteObject(objectName));
                           i++;
                           if (i % 1000 == 0)
@@ -841,16 +848,16 @@ namespace Minio
         }
 
         /// <summary>
-        ///  Copy a source object into a new destination object.
+        /// Copy a source object into a new destination object.
         /// </summary>
-        /// <param name="bucketName"> Bucket name where the object to be copied exists.</param>
+        /// <param name="bucketName">Bucket name where the object to be copied exists.</param>
         /// <param name="objectName">Object name source to be copied.</param>
         /// <param name="destBucketName">Bucket name where the object will be copied to.</param>
         /// <param name="destObjectName">Object name to be created, if not provided uses source object name as destination object name.</param>
-        /// <param name="copyConditions">optionally can take a key value CopyConditions as well for conditionally attempting copyObject.</param>
+        /// <param name="copyConditions">Optionally can take a key value CopyConditions as well for conditionally attempting copyObject.</param>
         /// <param name="metadata">Optional Object metadata to be stored. Defaults to null.</param>
-        /// <param name="sseSrc"> Optional source encryption options.Defaults to null. </param>
-        /// <param name="sseDest"> Optional destination encryption options.Defaults to null. </param>
+        /// <param name="sseSrc">Optional source encryption options.Defaults to null. </param>
+        /// <param name="sseDest">Optional destination encryption options.Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         public async Task CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken))
@@ -929,17 +936,17 @@ namespace Minio
         }
 
         /// <summary>
-        ///  Create the copy request, execute it and
+        /// Create the copy request, execute it and
         /// </summary>
-        /// <param name="bucketName"> Bucket name where the object to be copied exists.</param>
+        /// <param name="bucketName">Bucket name where the object to be copied exists.</param>
         /// <param name="objectName">Object name source to be copied.</param>
         /// <param name="destBucketName">Bucket name where the object will be copied to.</param>
         /// <param name="destObjectName">Object name to be created, if not provided uses source object name as destination object name.</param>
         /// <param name="copyConditions">optionally can take a key value CopyConditions as well for conditionally attempting copyObject.</param>
         /// <param name="customHeaders">optional custom header to specify byte range</param>
-        /// <param name="resource"> optional string to specify upload id and part number </param>
+        /// <param name="resource">Optional string to specify upload id and part number </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <param name="type"> type of XML serialization to be applied on the server response</param>
+        /// <param name="type">Type of XML serialization to be applied on the server response</param>
         /// <returns></returns>
         private async Task<object> CopyObjectRequestAsync(string bucketName, string objectName, string destBucketName, string destObjectName, CopyConditions copyConditions, Dictionary<string, string> customHeaders, string resource, CancellationToken cancellationToken, Type type)
         {
@@ -989,16 +996,16 @@ namespace Minio
         /// <summary>
         /// Make a multi part copy upload for objects larger than 5GB or if CopyCondition specifies a byte range.
         /// </summary>
-        /// <param name="bucketName"> source bucket name</param>
-        /// <param name="objectName"> source object name</param>
-        /// <param name="destBucketName"> destination bucket name</param>
-        /// <param name="destObjectName"> destination object name</param>
-        /// <param name="copyConditions"> copyconditions </param>
-        /// <param name="copySize"> size of copy upload</param>
-        /// <param name="metadata"> optional metadata on the destination side</param>
-        /// <param name="sseSrc"> optional Server-side encryption options </param>
-        /// <param name="sseDest"> optional Server-side encryption options </param>
-        /// <param name="cancellationToken"> optional cancellation token</param>
+        /// <param name="bucketName">source bucket name</param>
+        /// <param name="objectName">source object name</param>
+        /// <param name="destBucketName">destination bucket name</param>
+        /// <param name="destObjectName">destination object name</param>
+        /// <param name="copyConditions">copyconditions </param>
+        /// <param name="copySize">size of copy upload</param>
+        /// <param name="metadata">optional metadata on the destination side</param>
+        /// <param name="sseSrc">optional Server-side encryption options</param>
+        /// <param name="sseDest">optional Server-side encryption options</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         private async Task MultipartCopyUploadAsync(string bucketName, string objectName, string destBucketName, string destObjectName, CopyConditions copyConditions, long copySize, Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -1105,8 +1112,10 @@ namespace Minio
         }
 
         /// <summary>
-        ///  Presigned post policy
+        /// Presigned post policy
         /// </summary>
+        /// <param name="policy"></param>
+        /// <returns></returns>
         public async Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy)
         {
             string region = null;

@@ -256,6 +256,7 @@ namespace Minio
                                  contentType: "application/json",
                                  resourcePath: "?policy")
                             .ConfigureAwait(false);
+
             string policyString = null;
             response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
@@ -289,12 +290,12 @@ namespace Minio
         /// <summary>
         /// Gets notification configuration for this bucket
         /// </summary>
-        /// <param name="bucketName"> bucket name</param>
-        /// <param name="cancellationToken"> Optional cancellation token</param>
+        /// <param name="bucketName">Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         public async Task<BucketNotification> GetBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.validateBucketName(bucketName);
+            utils.ValidateBucketName(bucketName);
             var request = await this.CreateRequest(Method.GET,
                                                bucketName,
                                                resourcePath: "?notification")
@@ -311,13 +312,13 @@ namespace Minio
         /// <summary>
         /// Sets the notification configuration for this bucket
         /// </summary>
-        /// <param name="bucketName"> bucket name</param>
-        /// <param name="notification">notification object with configuration to be set on the server</param>
-        /// <param name="cancellationToken"> Optional cancellation token</param>
+        /// <param name="bucketName">Bucket name</param>
+        /// <param name="notification">Notification object with configuration to be set on the server</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         public async Task SetBucketNotificationsAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.validateBucketName(bucketName);
+            utils.ValidateBucketName(bucketName);
             var request = await this.CreateRequest(Method.PUT, bucketName,
                                            resourcePath: "?notification")
                                 .ConfigureAwait(false);
@@ -332,12 +333,12 @@ namespace Minio
         /// <summary>
         /// Removes all bucket notification configurations stored on the server.
         /// </summary>
-        /// <param name="bucketName"> bucket name </param>
-        /// <param name="cancellationToken"> optional cancellation token</param>
+        /// <param name="bucketName">Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         public Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.validateBucketName(bucketName);
+            utils.ValidateBucketName(bucketName);
             BucketNotification notification = new BucketNotification();
             return SetBucketNotificationsAsync(bucketName, notification, cancellationToken);
         }

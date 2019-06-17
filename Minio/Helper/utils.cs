@@ -36,11 +36,11 @@ namespace Minio
         private static Regex invalidDotBucketName = new Regex("`/./.");
 
         /// <summary>
-        /// isValidBucketName - verify bucket name in accordance with
-        ///  - http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html
+        /// IsValidBucketName - verify bucket name in accordance with
+        /// http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html
         /// </summary>
         /// <param name="bucketName">Bucket to test existence of</param>
-        internal static void validateBucketName(string bucketName)
+        internal static void ValidateBucketName(string bucketName)
         {
             if (bucketName.Trim() == "")
             {
@@ -71,9 +71,9 @@ namespace Minio
                 throw new InvalidBucketNameException(bucketName, "Bucket name contains invalid characters.");
             }
         }
-        // isValidObjectName - verify object name in accordance with
-        //   - http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
-        internal static void validateObjectName(string objectName)
+        // IsValidObjectName - verify object name in accordance with
+        // http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
+        internal static void ValidateObjectName(string objectName)
         {
             if (objectName.Trim() == "")
             {
