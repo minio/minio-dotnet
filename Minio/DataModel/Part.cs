@@ -22,9 +22,10 @@ namespace Minio.DataModel
     public class Part
     {
         private string etag;
+
         public int PartNumber { get; set; }
-        public long size { get; set; }
-        public DateTime lastModified { get; set; }
+        public long Size { get; set; }
+        public DateTime LastModified { get; set; }
 
         public string ETag
         {
@@ -36,7 +37,7 @@ namespace Minio.DataModel
             {
                 if (value != null)
                 {
-                    etag = value.Replace("\"", "");
+                    etag = value.Replace("\"", string.Empty);
                 }
                 else
                 {
@@ -45,6 +46,6 @@ namespace Minio.DataModel
             }
         }
 
-        public long PartSize() => size;
+        public long PartSize() => Size;
     }
 }

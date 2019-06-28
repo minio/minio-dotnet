@@ -48,6 +48,7 @@ namespace Minio.DataModel
             {
                 throw new ArgumentException("Object key cannot be null or empty", nameof(key));
             }
+
             this.policies.Add(Tuple.Create("eq", "$key", key));
             this.formData.Add("key", key);
             this.Key = key;
@@ -63,6 +64,7 @@ namespace Minio.DataModel
             {
                 throw new ArgumentException("Object key prefix cannot be null or empty", nameof(keyStartsWith));
             }
+
             this.policies.Add(Tuple.Create("starts-with", "$key", keyStartsWith));
             this.formData.Add("key", keyStartsWith);
         }
@@ -77,6 +79,7 @@ namespace Minio.DataModel
             {
                 throw new ArgumentException("Bucket name cannot be null or empty", nameof(bucket));
             }
+
             this.policies.Add(Tuple.Create("eq", "$bucket", bucket));
             this.formData.Add("bucket", bucket);
             this.Bucket = bucket;
@@ -92,6 +95,7 @@ namespace Minio.DataModel
             {
                 throw new ArgumentException("Content-Type argument cannot be null or empty", nameof(contentType));
             }
+
             this.policies.Add(Tuple.Create("eq", "$Content-Type", contentType));
             this.formData.Add("Content-Type", contentType);
         }
@@ -106,6 +110,7 @@ namespace Minio.DataModel
             {
                 throw new ArgumentException("Content-Encoding argument cannot be null or empty", nameof(contentEncoding));
             }
+
             this.policies.Add(Tuple.Create("eq", "$Content-Encoding", contentEncoding));
             this.formData.Add("Content-Encoding", contentEncoding);
         }
@@ -120,6 +125,7 @@ namespace Minio.DataModel
             {
                 throw new ArgumentException("Negative Content length", nameof(contentLength));
             }
+
             this.policies.Add(Tuple.Create("content-length-range", contentLength.ToString(), contentLength.ToString()));
         }
 
@@ -134,10 +140,12 @@ namespace Minio.DataModel
             {
                 throw new ArgumentException("Negative start or end range");
             }
+
             if (startRange > endRange)
             {
                 throw new ArgumentException("Start range is greater than end range", nameof(startRange));
             }
+
             this.policies.Add(Tuple.Create("content-length-range", startRange.ToString(), endRange.ToString()));
         }
 
@@ -161,7 +169,9 @@ namespace Minio.DataModel
         public void SetSuccessStatusAction(string status)
         {
             if (string.IsNullOrEmpty(status))
+            {
                 throw new ArgumentException("Status is Empty", nameof(status));
+            }
 
             this.policies.Add(Tuple.Create("eq", "$success_action_status", status));
             this.formData.Add("success_action_status", status);
@@ -175,11 +185,17 @@ namespace Minio.DataModel
         public void SetUserMetadata(string key, string value)
         {
             if (string.IsNullOrEmpty(key))
+            {
                 throw new ArgumentException("Key is Empty", nameof(key));
+            }
+
             if (string.IsNullOrEmpty(value))
+            {
                 throw new ArgumentException("Value is Empty", nameof(value));
-            string headerName = "x-amz-meta-" + key;
-            this.policies.Add(Tuple.Create("eq", "$" + headerName, value));
+            }
+
+            string headerName = $"x-amz-meta-{key}";
+            this.policies.Add(Tuple.Create("eq", $"${headerName}", value));
             this.formData.Add(headerName, value);
         }
 
@@ -193,6 +209,7 @@ namespace Minio.DataModel
             {
                 throw new ArgumentException("Algorithm argument cannot be null or empty", nameof(algorithm));
             }
+
             this.policies.Add(Tuple.Create("eq", "$x-amz-algorithm", algorithm));
             this.formData.Add("x-amz-algorithm", algorithm);
         }
@@ -207,6 +224,7 @@ namespace Minio.DataModel
             {
                 throw new ArgumentException("credential argument cannot be null or empty", nameof(credential));
             }
+
             this.policies.Add(Tuple.Create("eq", "$x-amz-credential", credential));
             this.formData.Add("x-amz-credential", credential);
         }
@@ -244,21 +262,21 @@ namespace Minio.DataModel
         /// Serialize policy into JSON string.
         /// </summary>
         /// <returns>Serialized JSON policy</returns>
-        private byte[] marshalJSON()
+        private byte[] MarshalJSON()
         {
             List<string> policyList = new List<string>();
-            StringBuilder sb = new StringBuilder();
-
             foreach (var policy in this.policies)
             {
                 policyList.Add("[\"" + policy.Item1 + "\",\"" + policy.Item2 + "\",\"" + policy.Item3 + "\"]");
             }
+
             // expiration and policies will never be empty because of checks at PresignedPostPolicy()
+            StringBuilder sb = new StringBuilder();
             sb.Append("{");
             sb.Append("\"expiration\":\"").Append(this.expiration.ToString("yyyy-MM-ddTHH:mm:ss.000Z")).Append("\"").Append(",");
             sb.Append("\"conditions\":[").Append(string.Join(",", policyList)).Append("]");
             sb.Append("}");
-            return System.Text.Encoding.UTF8.GetBytes(sb.ToString());
+            return Encoding.UTF8.GetBytes(sb.ToString());
         }
 
         /// <summary>
@@ -267,7 +285,7 @@ namespace Minio.DataModel
         /// <returns>Base64 encoded string of JSON policy</returns>
         public string Base64()
         {
-            byte[] policyStrBytes = this.marshalJSON();
+            byte[] policyStrBytes = this.MarshalJSON();
             return Convert.ToBase64String(policyStrBytes);
         }
 

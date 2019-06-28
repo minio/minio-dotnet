@@ -43,6 +43,6 @@ namespace Minio.Exceptions
         public ErrorResponse Response { get; set; }
         public string XmlError { get; set; }
 
-        public override string ToString() => this.message + ": " + base.ToString();
+        public override string ToString() => $"{this.message}: {base.ToString()}";
     }
 }

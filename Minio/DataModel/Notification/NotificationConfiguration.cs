@@ -52,18 +52,24 @@ namespace Minio.DataModel
         public void AddEvents(List<EventType> evnt)
         {
             if (this.Events == null)
+            {
                 this.Events = new List<EventType>();
+            }
+
             this.Events.AddRange(evnt);
         }
 
         /// <summary>
-        ///  AddFilterSuffix sets the suffix configuration to the current notification config
+        /// AddFilterSuffix sets the suffix configuration to the current notification config
         /// </summary>
         /// <param name="suffix"></param>
         public void AddFilterSuffix(string suffix)
         {
             if (this.Filter == null)
+            {
                 this.Filter = new Filter();
+            }
+
             FilterRule newFilterRule = new FilterRule("suffix", suffix);
             // Replace any suffix rule if existing and add to the list otherwise
             for (int i = 0; i < this.Filter.S3Key.FilterRules.Count; i++)
@@ -78,13 +84,16 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        ///  AddFilterPrefix sets the prefix configuration to the current notification config
+        /// AddFilterPrefix sets the prefix configuration to the current notification config
         /// </summary>
         /// <param name="prefix"></param>
         public void AddFilterPrefix(string prefix)
         {
             if (this.Filter == null)
+            {
                 this.Filter = new Filter();
+            }
+
             FilterRule newFilterRule = new FilterRule("prefix", prefix);
             // Replace any prefix rule if existing and add to the list otherwise
             for (int i = 0; i < this.Filter.S3Key.FilterRules.Count; i++)

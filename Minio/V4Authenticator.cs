@@ -39,30 +39,30 @@ namespace Minio
         //
         // Excerpts from @lsegal - https://github.com/aws/aws-sdk-js/issues/659#issuecomment-120477258
         //
-        //  User-Agent:
+        // User-Agent:
         //
-        //      This is ignored from signing because signing this causes problems with generating pre-signed URLs
-        //      (that are executed by other agents) or when customers pass requests through proxies, which may
-        //      modify the user-agent.
+        //     This is ignored from signing because signing this causes problems with generating pre-signed URLs
+        //     (that are executed by other agents) or when customers pass requests through proxies, which may
+        //     modify the user-agent.
         //
-        //  Content-Length:
+        // Content-Length:
         //
-        //      This is ignored from signing because generating a pre-signed URL should not provide a content-length
-        //      constraint, specifically when vending a S3 pre-signed PUT URL. The corollary to this is that when
-        //      sending regular requests (non-pre-signed), the signature contains a checksum of the body, which
-        //      implicitly validates the payload length (since changing the number of bytes would change the checksum)
-        //      and therefore this header is not valuable in the signature.
+        //     This is ignored from signing because generating a pre-signed URL should not provide a content-length
+        //     constraint, specifically when vending a S3 pre-signed PUT URL. The corollary to this is that when
+        //     sending regular requests (non-pre-signed), the signature contains a checksum of the body, which
+        //     implicitly validates the payload length (since changing the number of bytes would change the checksum)
+        //     and therefore this header is not valuable in the signature.
         //
-        //  Content-Type:
+        // Content-Type:
         //
-        //      Signing this header causes quite a number of problems in browser environments, where browsers
-        //      like to modify and normalize the content-type header in different ways. There is more information
-        //      on this in https://github.com/aws/aws-sdk-js/issues/244. Avoiding this field simplifies logic
-        //      and reduces the possibility of future bugs
+        //     Signing this header causes quite a number of problems in browser environments, where browsers
+        //     like to modify and normalize the content-type header in different ways. There is more information
+        //     on this in https://github.com/aws/aws-sdk-js/issues/244. Avoiding this field simplifies logic
+        //     and reduces the possibility of future bugs
         //
-        //  Authorization:
+        // Authorization:
         //
-        //      Is skipped for obvious reasons
+        //     Is skipped for obvious reasons
         //
         private static HashSet<string> ignoredHeaders = new HashSet<string>
         {
@@ -96,8 +96,9 @@ namespace Minio
             {
                 return this.region;
             }
+
             string region = Regions.GetRegionFromEndpoint(url);
-            return (region == "") ? "us-east-1" : region;
+            return (region == string.Empty) ? "us-east-1" : region;
         }
 
         /// <summary>
@@ -286,7 +287,7 @@ namespace Minio
             {
                 signingDate = reqDate.Value;
             }
-            string requestQuery = "";
+            string requestQuery = string.Empty;
             string path = request.Resource;
 
             if (string.IsNullOrWhiteSpace(region))
@@ -354,7 +355,7 @@ namespace Minio
                 canonicalStringList.AddLast("host:" + client.BaseUrl.Host);
             }
 
-            canonicalStringList.AddLast("");
+            canonicalStringList.AddLast(string.Empty);
             canonicalStringList.AddLast("host");
             canonicalStringList.AddLast("UNSIGNED-PAYLOAD");
 
@@ -381,7 +382,7 @@ namespace Minio
             }
             canonicalStringList.AddLast(path[0]);
 
-            string query = "";
+            string query = string.Empty;
             // QUERY
             if (path.Length == 2)
             {
@@ -408,7 +409,7 @@ namespace Minio
             {
                 canonicalStringList.AddLast(header + ":" + s3utils.TrimAll(headersToSign[header]));
             }
-            canonicalStringList.AddLast("");
+            canonicalStringList.AddLast(string.Empty);
             canonicalStringList.AddLast(string.Join(";", headersToSign.Keys));
             if (headersToSign.Keys.Contains("x-amz-content-sha256"))
             {

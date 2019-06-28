@@ -36,7 +36,7 @@ namespace Minio.DataModel
             {
                 if (value != null)
                 {
-                    etag = value.Replace("\"", "");
+                    etag = value.Replace("\"", string.Empty);
                 }
                 else
                 {

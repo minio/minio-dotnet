@@ -29,7 +29,7 @@ namespace Minio.Exceptions
 
         public override string ToString()
         {
-            return this.bucketName + " :" + this.objectName + ": " + base.ToString();
+            return $"{this.bucketName} :{this.objectName}: {base.ToString()}";
         }
     }
 }

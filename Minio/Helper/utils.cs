@@ -36,13 +36,13 @@ namespace Minio
         private static Regex invalidDotBucketName = new Regex("`/./.");
 
         /// <summary>
-        /// isValidBucketName - verify bucket name in accordance with
-        ///  - http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html
+        /// IsValidBucketName - verify bucket name in accordance with
+        /// http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html
         /// </summary>
         /// <param name="bucketName">Bucket to test existence of</param>
-        internal static void validateBucketName(string bucketName)
+        internal static void ValidateBucketName(string bucketName)
         {
-            if (bucketName.Trim() == "")
+            if (bucketName.Trim() == string.Empty)
             {
                 throw new InvalidBucketNameException(bucketName, "Bucket name cannot be empty.");
             }
@@ -71,11 +71,11 @@ namespace Minio
                 throw new InvalidBucketNameException(bucketName, "Bucket name contains invalid characters.");
             }
         }
-        // isValidObjectName - verify object name in accordance with
-        //   - http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
-        internal static void validateObjectName(string objectName)
+        // IsValidObjectName - verify object name in accordance with
+        // http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
+        internal static void ValidateObjectName(string objectName)
         {
-            if (objectName.Trim() == "")
+            if (objectName.Trim() == string.Empty)
             {
                 throw new InvalidObjectNameException(objectName, "Object name cannot be empty.");
             }
@@ -145,14 +145,14 @@ namespace Minio
             return encodedPathBuf.ToString();
         }
 
-        internal static bool isAnonymousClient(string accessKey, string secretKey)
+        internal static bool IsAnonymousClient(string accessKey, string secretKey)
         {
-            return secretKey == "" || accessKey == "";
+            return secretKey == string.Empty || accessKey == string.Empty;
         }
 
         internal static void ValidateFile(string filePath, string contentType = null)
         {
-            if (filePath == null || filePath == "")
+            if (string.IsNullOrEmpty(filePath))
             {
                 throw new ArgumentException("empty file name is not allowed", nameof(filePath));
             }
@@ -238,10 +238,12 @@ namespace Minio
             {
                 size = Constants.MaximumStreamObjectSize;
             }
+
             if (size > Constants.MaxMultipartPutObjectSize)
             {
                 throw new EntityTooLargeException("Your proposed upload size " + size + " exceeds the maximum allowed object size " + Constants.MaxMultipartPutObjectSize);
             }
+
             double partSize = (double)Math.Ceiling((decimal)size / Constants.MaxParts);
             partSize = (double)Math.Ceiling((decimal)partSize / Constants.MinimumPartSize) * Constants.MinimumPartSize;
             double partCount = Math.Ceiling(size / partSize);

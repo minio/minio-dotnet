@@ -35,7 +35,10 @@ namespace Minio.DataModel
             get
             {
                 if (this.filterRules == null)
+                {
                     this.filterRules = new List<FilterRule>();
+                }
+
                 return this.filterRules;
             }
             set

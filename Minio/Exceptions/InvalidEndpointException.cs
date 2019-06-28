@@ -37,7 +37,7 @@ namespace Minio.Exceptions
             }
             else
             {
-                return this.endpoint + ": " + base.ToString();
+                return $"{this.endpoint}: {base.ToString()}";
             }
         }
     }

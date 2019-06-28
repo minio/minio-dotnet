@@ -37,7 +37,7 @@ namespace Minio.DataModel
             this.LastModified = lastModified;
             this.ETag = etag;
             this.ContentType = contentType;
-            this.metaData = metadata;
+            this.MetaData = metadata;
         }
 
         public string ObjectName { get; private set; }
@@ -45,11 +45,11 @@ namespace Minio.DataModel
         public DateTime LastModified { get; private set;  }
         public string ETag { get; private set; }
         public string ContentType { get; private set; }
-        public Dictionary<string, string> metaData { get; private set; }
+        public Dictionary<string, string> MetaData { get; private set; }
 
         public override string ToString()
         {
-            return string.Format("{0} : Size({1}) LastModified({2}) ETag({3}) Content-Type({4})", this.ObjectName, this.Size, this.LastModified, this.ETag, this.ContentType);
+            return $"{this.ObjectName} : Size({this.Size}) LastModified({this.LastModified}) ETag({this.ETag}) Content-Type({this.ContentType})";
         }
     }
 }

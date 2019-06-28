@@ -24,6 +24,6 @@ namespace Minio.DataModel
     public class CopyPartResult
     {
         public string ETag { get; set; }
-        public string lastModified { get; set; }
+        public string LastModified { get; set; }
     }
 }
