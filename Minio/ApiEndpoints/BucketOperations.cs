@@ -139,7 +139,7 @@ namespace Minio
         public IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = false, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Observable.Create<Item>(
-              async obs =>
+              async (obs, ct) =>
               {
                   bool isRunning = true;
                   string marker = null;
@@ -150,25 +150,29 @@ namespace Minio
                       delimiter = string.Empty;
                   }
 
-                  while (isRunning)
-                  {
-                      Tuple<ListBucketResult, List<Item>> result = await GetObjectListAsync(bucketName, prefix, delimiter, marker, cancellationToken).ConfigureAwait(false);
-                      Item lastItem = null;
-                      foreach (Item item in result.Item2)
-                      {
-                          lastItem = item;
-                          obs.OnNext(item);
-                      }
-                      if (result.Item1.NextMarker != null)
-                      {
-                          marker = result.Item1.NextMarker;
-                      }
-                      else if (lastItem != null)
-                      {
-                          marker = lastItem.Key;
-                      }
-                      isRunning = result.Item1.IsTruncated;
+                  using(var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct)) {
+                    while (isRunning)
+                    {
+                        Tuple<ListBucketResult, List<Item>> result = await GetObjectListAsync(bucketName, prefix, delimiter, marker, cts.Token).ConfigureAwait(false);
+                        Item lastItem = null;
+                        foreach (Item item in result.Item2)
+                        {
+                            lastItem = item;
+                            obs.OnNext(item);
+                        }
+                        if (result.Item1.NextMarker != null)
+                        {
+                            marker = result.Item1.NextMarker;
+                        }
+                        else if (lastItem != null)
+                        {
+                            marker = lastItem.Key;
+                        }
+                        isRunning = result.Item1.IsTruncated;
+                        cts.Token.ThrowIfCancellationRequested();
+                    }
                   }
+
               });
         }
 
