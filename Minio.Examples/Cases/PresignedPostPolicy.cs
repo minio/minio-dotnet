@@ -37,14 +37,14 @@ namespace Minio.Examples.Cases
                 string curlCommand = "curl -X POST ";
                 foreach (KeyValuePair<string, string> pair in tuple.Item2)
                 {
-                    curlCommand = curlCommand + string.Format(" -F {0}={1}", pair.Key, pair.Value);
+                    curlCommand = curlCommand + $" -F {pair.Key}={pair.Value}";
                 }
                 curlCommand = curlCommand + " -F file=@/etc/bashrc " + tuple.Item1; // https://s3.amazonaws.com/my-bucketname";
                 Console.WriteLine(curlCommand);
             }
             catch (Exception e)
             {
-                Console.WriteLine("Exception ", e.Message);
+                Console.WriteLine($"Exception {e.Message}");
             }
         }
     }

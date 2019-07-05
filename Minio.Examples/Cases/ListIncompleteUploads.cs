@@ -34,15 +34,15 @@ namespace Minio.Examples.Cases
                 IObservable<Upload> observable = minio.ListIncompleteUploads(bucketName, prefix, recursive);
 
                 IDisposable subscription = observable.Subscribe(
-                    item => Console.WriteLine("OnNext: {0}", item.Key),
-                    ex => Console.WriteLine("OnError: {0}", ex.Message),
-                    () => Console.WriteLine("Listed the pending uploads to bucket " + bucketName));
+                    item => Console.WriteLine($"OnNext: {item.Key}"),
+                    ex => Console.WriteLine($"OnError: {ex.Message}"),
+                    () => Console.WriteLine($"Listed the pending uploads to bucket {bucketName}"));
 
                 Console.WriteLine();
             }
             catch (Exception e)
             {
-                Console.WriteLine("Exception: {0}", e);
+                Console.WriteLine($"Exception: {e}");
             }
         }
     }

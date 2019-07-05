@@ -31,12 +31,12 @@ namespace Minio.Examples.Cases
                 
                 await minio.RemoveAllBucketNotificationsAsync(bucketName);
 
-                Console.WriteLine("Notifications successfully removed from the bucket " + bucketName);
+                Console.WriteLine($"Notifications successfully removed from the bucket {bucketName}");
                 Console.WriteLine();
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Bucket]  Exception: {0}", e);
+                Console.WriteLine($"[Bucket]  Exception: {e}");
             }
         }
     }

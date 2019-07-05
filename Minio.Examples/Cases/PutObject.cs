@@ -46,25 +46,27 @@ namespace Minio.Examples.Cases
                     {
                         Console.WriteLine("Running example for API: PutObjectAsync with Stream and MultiPartUpload");
                     }
+
                     var metaData = new Dictionary<string, string>
                     {
                         { "X-Amz-Meta-Test", "Test  Test" }
                     };
+
                     await minio.PutObjectAsync(bucketName,
                                                objectName,
                                                filestream,
                                                filestream.Length,
                                                "application/octet-stream",
                                                metaData: metaData,
-                                               sse:sse);
+                                               sse: sse);
                 }
             
-                Console.WriteLine("Uploaded object " + objectName + " to bucket " + bucketName);
+                Console.WriteLine($"Uploaded object {objectName} to bucket {bucketName}");
                 Console.WriteLine();
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Bucket]  Exception: {0}", e);
+                Console.WriteLine($"[Bucket]  Exception: {e}");
             }
         }
     }

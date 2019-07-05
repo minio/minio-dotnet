@@ -28,11 +28,11 @@ namespace Minio.Examples.Cases
             try
             {
                 await minio.RemoveBucketAsync(bucketName);
-                Console.WriteLine("Removed the bucket " + bucketName + " successfully");
+                Console.WriteLine($"Removed the bucket {bucketName} successfully");
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Bucket]  Exception: {0}", e);
+                Console.WriteLine($"[Bucket]  Exception: {e}");
             }
         }
     }

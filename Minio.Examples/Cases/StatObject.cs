@@ -31,12 +31,12 @@ namespace Minio.Examples.Cases
             {
                 Console.WriteLine("Running example for API: StatObjectAsync");
                 ObjectStat statObject = await minio.StatObjectAsync(bucketName, bucketObject);
-                Console.WriteLine("Details of the object " + bucketObject + " are " + statObject);
+                Console.WriteLine($"Details of the object {bucketObject} are {statObject}");
                 Console.WriteLine();
             }
             catch (Exception e)
             {
-                Console.WriteLine("[StatObject] {0}-{1}  Exception: {2}", bucketName, bucketObject, e);
+                Console.WriteLine($"[StatObject] {bucketName}-{bucketObject} Exception: {e}");
             }
         }
     }
