@@ -8,7 +8,7 @@ MinIO Client SDK provides higher level APIs for MinIO and Amazon S3 compatible c
 
 ## Install from NuGet
 
-To install [MinIO](https://www.nuget.org/packages/Minio/) .NET package, run the following command in Nuget Package Manager Console.
+To install [MinIO .NET package](https://www.nuget.org/packages/Minio/), run the following command in Nuget Package Manager Console.
 ```powershell
 PM> Install-Package Minio
 ```
