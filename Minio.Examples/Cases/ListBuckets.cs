@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
 using System;
 using System.Threading.Tasks;
 
@@ -29,15 +28,15 @@ namespace Minio.Examples.Cases
             {
                 Console.WriteLine("Running example for API: ListBucketsAsync");
                 var list = await minio.ListBucketsAsync();
-                foreach (Bucket bucket in list.Buckets)
+                foreach (var bucket in list.Buckets)
                 {
-                    Console.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
+                    Console.WriteLine($"{bucket.Name} {bucket.CreationDateDateTime}");
                 }
                 Console.WriteLine();
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Bucket]  Exception: {0}", e);
+                Console.WriteLine($"[Bucket]  Exception: {e}");
             }
         }
     }

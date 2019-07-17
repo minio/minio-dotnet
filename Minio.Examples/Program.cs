@@ -45,8 +45,8 @@ namespace Minio.Examples
         // Generate a random string
         public static string GetRandomName()
         {
-            string characters = "0123456789abcdefghijklmnopqrstuvwxyz";
-            StringBuilder result = new StringBuilder(5);
+            var characters = "0123456789abcdefghijklmnopqrstuvwxyz";
+            var result = new StringBuilder(5);
             for (int i = 0; i < 5; i++)
             {
                 result.Append(characters[rnd.Next(characters.Length)]);
@@ -60,6 +60,7 @@ namespace Minio.Examples
             string accessKey = null;
             string secretKey = null;
             bool enableHTTPS = false;
+
             if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
             {
                 endPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");
@@ -156,9 +157,10 @@ namespace Minio.Examples
                 Cases.PutObject.Run(minioClient, bucketName, objectName, bigFileName).Wait();
 
                 // Specify SSE-C encryption options
-                Aes aesEncryption = Aes.Create();
+                var aesEncryption = Aes.Create();
                 aesEncryption.KeySize = 256;
                 aesEncryption.GenerateKey();
+
                 var ssec = new SSEC(aesEncryption.Key);
                 // Specify SSE-C source side encryption for Copy operations
                 var sseCpy = new SSECopy(aesEncryption.Key);

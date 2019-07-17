@@ -35,7 +35,7 @@ namespace Minio.Examples.Cases
                 Console.WriteLine("Running example for API: CopyObjectAsync");
 
                 // Optionally pass copy conditions to replace metadata on destination object with custom metadata
-                CopyConditions copyCond = new CopyConditions();
+                var copyCond = new CopyConditions();
                 copyCond.SetReplaceMetadataDirective();
 
                 // set custom metadata
@@ -44,18 +44,20 @@ namespace Minio.Examples.Cases
                     { "Content-Type", "application/css" },
                     { "X-Amz-Meta-Mynewkey", "my-new-value" }
                 };
+
                 await minio.CopyObjectAsync(fromBucketName, 
                                                 fromObjectName, 
                                                 destBucketName, 
                                                 destObjectName, 
                                                 copyConditions:copyCond,
                                                 metadata: metadata);
-                Console.WriteLine("Copied object {0} from bucket {1} to bucket {2}", fromObjectName, fromBucketName, destBucketName);
+
+                Console.WriteLine($"Copied object {fromObjectName} from bucket {fromBucketName} to bucket {destBucketName}");
                 Console.WriteLine();    
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Bucket]  Exception: {0}", e);
+                Console.WriteLine($"[Bucket]  Exception: {e}");
             }
         }
     }

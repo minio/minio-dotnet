@@ -19,7 +19,6 @@ using System;
 
 namespace Minio.Examples.Cases
 {
-
     class ListObjects
     {
         // List objects matching optional prefix in a specified bucket.
@@ -34,15 +33,15 @@ namespace Minio.Examples.Cases
                 IObservable<Item> observable = minio.ListObjectsAsync(bucketName, prefix, recursive);
 
                 IDisposable subscription = observable.Subscribe(
-                    item => Console.WriteLine("Object: {0}", item.Key),
-                    ex => Console.WriteLine("OnError: {0}", ex),
-                    () => Console.WriteLine("Listed all objects in bucket " + bucketName + "\n"));
+                    item => Console.WriteLine($"Object: {item.Key}"),
+                    ex => Console.WriteLine($"OnError: {ex}"),
+                    () => Console.WriteLine($"Listed all objects in bucket {bucketName}\n"));
 
                 // subscription.Dispose();
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Bucket]  Exception: {0}", e);
+                Console.WriteLine($"[Bucket]  Exception: {e}");
             }
         }
     }

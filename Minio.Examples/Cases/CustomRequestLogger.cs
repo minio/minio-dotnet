@@ -36,7 +36,7 @@ namespace Minio.Examples.Cases
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Bucket]  Exception: {0}", e);
+                Console.WriteLine($"[Bucket]  Exception: {e}");
             }
         }
     }

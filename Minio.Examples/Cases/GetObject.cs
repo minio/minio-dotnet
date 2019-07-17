@@ -36,12 +36,12 @@ namespace Minio.Examples.Cases
                      // Uncomment to print the file on output console
                     // stream.CopyTo(Console.OpenStandardOutput());
                 });
-                Console.WriteLine("Downloaded the file " + fileName + " in bucket " + bucketName);
+                Console.WriteLine($"Downloaded the file {fileName} in bucket {bucketName}");
                 Console.WriteLine();
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Bucket]  Exception: {0}", e);
+                Console.WriteLine($"[Bucket]  Exception: {e}");
             }
         }
     }

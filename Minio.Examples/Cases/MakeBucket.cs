@@ -29,12 +29,12 @@ namespace Minio.Examples.Cases
             {
                 Console.WriteLine("Running example for API: MakeBucketAsync");
                 await minio.MakeBucketAsync(bucketName);
-                Console.WriteLine("Created bucket " + bucketName);
+                Console.WriteLine($"Created bucket {bucketName}");
                 Console.WriteLine();
             } 
             catch (Exception e)
             {
-                Console.WriteLine("[Bucket]  Exception: {0}", e);
+                Console.WriteLine($"[Bucket]  Exception: {e}");
             }
         }
     }

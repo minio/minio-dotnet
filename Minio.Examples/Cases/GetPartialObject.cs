@@ -43,18 +43,18 @@ namespace Minio.Examples.Cases
                     var fileStream = File.Create(fileName);
                     stream.CopyTo(fileStream);
                     fileStream.Dispose();
-                    FileInfo writtenInfo = new FileInfo(fileName);
+                    var writtenInfo = new FileInfo(fileName);
                     long file_read_size = writtenInfo.Length;
                     // Uncomment to print the file on output console
                     // stream.CopyTo(Console.OpenStandardOutput());
-                    Console.WriteLine("Successfully downloaded object with requested offset and length {0} into file", writtenInfo.Length);
+                    Console.WriteLine($"Successfully downloaded object with requested offset and length {writtenInfo.Length} into file");
                     stream.Dispose();
                 });
                 Console.WriteLine();
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Bucket]  Exception: {0}", e);
+                Console.WriteLine($"[Bucket]  Exception: {e}");
             }
         }
     }
