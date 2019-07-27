@@ -150,29 +150,29 @@ namespace Minio
             return secretKey == string.Empty || accessKey == string.Empty;
         }
 
-        //internal static void ValidateFile(string filePath, string contentType = null)
-        //{
-        //    if (string.IsNullOrEmpty(filePath))
-        //    {
-        //        throw new ArgumentException("empty file name is not allowed", nameof(filePath));
-        //    }
+        internal static void ValidateFile(string filePath, string contentType = null)
+        {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                throw new ArgumentException("empty file name is not allowed", nameof(filePath));
+            }
 
-        //    string fileName = Path.GetFileName(filePath);
-        //    bool fileExists = File.Exists(filePath);
-        //    if (fileExists)
-        //    {
-        //        FileAttributes attr = File.GetAttributes(filePath);
-        //        if (attr.HasFlag(FileAttributes.Directory))
-        //        {
-        //            throw new ArgumentException($"'{fileName}': not a regular file", nameof(filePath));
-        //        }
-        //    }
+            string fileName = Path.GetFileName(filePath);
+            bool fileExists = File.Exists(filePath);
+            if (fileExists)
+            {
+                FileAttributes attr = File.GetAttributes(filePath);
+                if (attr.HasFlag(FileAttributes.Directory))
+                {
+                    throw new ArgumentException($"'{fileName}': not a regular file", nameof(filePath));
+                }
+            }
 
-        //    if (contentType == null)
-        //    {
-        //        contentType = GetContentType(filePath);
-        //    }
-        //}
+            if (contentType == null)
+            {
+                contentType = GetContentType(filePath);
+            }
+        }
 
         internal static string GetContentType(string fileName)
         {
@@ -241,7 +241,7 @@ namespace Minio
 
             if (size > Constants.MaxMultipartPutObjectSize)
             {
-                throw new EntityTooLargeException("Your proposed upload size " + size + " exceeds the maximum allowed object size " + Constants.MaxMultipartPutObjectSize);
+                throw new EntityTooLargeException($"Your proposed upload size {size} exceeds the maximum allowed object size {Constants.MaxMultipartPutObjectSize}");
             }
 
             double partSize = (double)Math.Ceiling((decimal)size / Constants.MaxParts);
