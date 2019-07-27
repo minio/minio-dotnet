@@ -35,7 +35,7 @@ namespace Minio
             Regex endpointrgx = new Regex("^([a-z0-9][a-z0-9\\.\\-]{1,61}[a-z0-9])*?.?s3[.\\-]?(.*?)\\.amazonaws\\.com$", RegexOptions.IgnoreCase);
             Regex regionrgx = new Regex("^(s3[.\\-])?(.*?)$");
             MatchCollection matches = endpointrgx.Matches(endpoint);
-            if ((matches.Count > 0) && (matches[0].Groups.Count > 1))
+            if (matches.Count > 0 && matches[0].Groups.Count > 1)
             {
                 string regionStr = matches[0].Groups[2].Value;
                 matches = regionrgx.Matches(regionStr);

@@ -55,7 +55,7 @@ namespace Minio
             if (s3utils.IsAmazonEndPoint(endPoint))
             {
                 // Fetch new host based on the bucket location.
-                host = AWSS3Endpoints.Instance.endpoint(region);
+                host = AWSS3Endpoints.Instance.Endpoint(region);
                 if (!usePathStyle)
                 {
                     string prefix = (bucketName != null) ? utils.UrlEncode(bucketName) + "." : "";

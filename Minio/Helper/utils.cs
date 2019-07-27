@@ -150,29 +150,29 @@ namespace Minio
             return secretKey == string.Empty || accessKey == string.Empty;
         }
 
-        internal static void ValidateFile(string filePath, string contentType = null)
-        {
-            if (string.IsNullOrEmpty(filePath))
-            {
-                throw new ArgumentException("empty file name is not allowed", nameof(filePath));
-            }
+        //internal static void ValidateFile(string filePath, string contentType = null)
+        //{
+        //    if (string.IsNullOrEmpty(filePath))
+        //    {
+        //        throw new ArgumentException("empty file name is not allowed", nameof(filePath));
+        //    }
 
-            string fileName = Path.GetFileName(filePath);
-            bool fileExists = File.Exists(filePath);
-            if (fileExists)
-            {
-                FileAttributes attr = File.GetAttributes(filePath);
-                if (attr.HasFlag(FileAttributes.Directory))
-                {
-                    throw new ArgumentException("'" + fileName + "': not a regular file", nameof(filePath));
-                }
-            }
+        //    string fileName = Path.GetFileName(filePath);
+        //    bool fileExists = File.Exists(filePath);
+        //    if (fileExists)
+        //    {
+        //        FileAttributes attr = File.GetAttributes(filePath);
+        //        if (attr.HasFlag(FileAttributes.Directory))
+        //        {
+        //            throw new ArgumentException($"'{fileName}': not a regular file", nameof(filePath));
+        //        }
+        //    }
 
-            if (contentType == null)
-            {
-                contentType = GetContentType(filePath);
-            }
-        }
+        //    if (contentType == null)
+        //    {
+        //        contentType = GetContentType(filePath);
+        //    }
+        //}
 
         internal static string GetContentType(string fileName)
         {
@@ -206,7 +206,7 @@ namespace Minio
             File.Move(sourceFileName, destFileName);
         }
 
-        internal static bool isSupersetOf(IList<string> l1, IList<string> l2)
+        internal static bool IsSupersetOf(IList<string> l1, IList<string> l2)
         {
             if (l2 == null)
             {
