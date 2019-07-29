@@ -123,7 +123,7 @@ namespace Minio
             long length = objectStat.Size;
             string etag = objectStat.ETag;
 
-            string tempFileName = fileName + "." + etag + ".part.minio";
+            string tempFileName = $"{fileName}.{etag}.part.minio";
 
             bool tempFileExists = File.Exists(tempFileName);
 
@@ -249,7 +249,7 @@ namespace Minio
                 var bytes = ReadFull(data, (int)size);
                 if (bytes != null && bytes.Length != (int)size)
                 {
-                    throw new UnexpectedShortReadException("Data read " + bytes.Length + " is shorter than the size " + size + " of input buffer.");
+                    throw new UnexpectedShortReadException($"Data read {bytes.Length} is shorter than the size {size} of input buffer.");
                 }
                 await this.PutObjectAsync(bucketName, objectName, null, 0, bytes, metaData, sseHeaders, cancellationToken).ConfigureAwait(false);
                 return;
@@ -320,7 +320,7 @@ namespace Minio
         /// <returns></returns>
         private async Task CompleteMultipartUploadAsync(string bucketName, string objectName, string uploadId, Dictionary<int, string> etags, CancellationToken cancellationToken)
         {
-            string resourcePath = "?uploadId=" + uploadId;
+            string resourcePath = $"?uploadId={uploadId}";
             var request = await this.CreateRequest(Method.POST, bucketName,
                                                      objectName: objectName,
                                                      resourcePath: resourcePath)
@@ -464,7 +464,7 @@ namespace Minio
             var resource = string.Empty;
             if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
             {
-                resource += "?uploadId=" + uploadId + "&partNumber=" + partNumber;
+                resource += $"?uploadId={uploadId}&partNumber={partNumber}";
             }
 
             // For multi-part upload requests, metadata needs to be passed in the NewMultiPartUpload request
@@ -892,7 +892,7 @@ namespace Minio
                 throw new ArgumentException("Destination bucket name cannot be empty", nameof(destBucketName));
             }
             // Escape source object path.
-            string sourceObjectPath = bucketName + "/" + utils.UrlEncode(objectName);
+            string sourceObjectPath = $"{bucketName}/{utils.UrlEncode(objectName)}";
 
             // Destination object name is optional, if empty default to source object name.
             if (destObjectName == null)
@@ -1070,7 +1070,7 @@ namespace Minio
                 var resource = string.Empty;
                 if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
                 {
-                    resource += "?uploadId=" + uploadId + "&partNumber=" + partNumber;
+                    resource += $"?uploadId={uploadId}&partNumber={partNumber}";
                 }
 
                 var customHeader = new Dictionary<string, string>

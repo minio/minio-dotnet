@@ -164,7 +164,7 @@ namespace Minio
                 FileAttributes attr = File.GetAttributes(filePath);
                 if (attr.HasFlag(FileAttributes.Directory))
                 {
-                    throw new ArgumentException("'" + fileName + "': not a regular file", nameof(filePath));
+                    throw new ArgumentException($"'{fileName}': not a regular file", nameof(filePath));
                 }
             }
 
@@ -206,7 +206,7 @@ namespace Minio
             File.Move(sourceFileName, destFileName);
         }
 
-        internal static bool isSupersetOf(IList<string> l1, IList<string> l2)
+        internal static bool IsSupersetOf(IList<string> l1, IList<string> l2)
         {
             if (l2 == null)
             {
@@ -241,7 +241,7 @@ namespace Minio
 
             if (size > Constants.MaxMultipartPutObjectSize)
             {
-                throw new EntityTooLargeException("Your proposed upload size " + size + " exceeds the maximum allowed object size " + Constants.MaxMultipartPutObjectSize);
+                throw new EntityTooLargeException($"Your proposed upload size {size} exceeds the maximum allowed object size {Constants.MaxMultipartPutObjectSize}");
             }
 
             double partSize = (double)Math.Ceiling((decimal)size / Constants.MaxParts);

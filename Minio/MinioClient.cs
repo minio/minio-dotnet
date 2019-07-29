@@ -289,7 +289,7 @@ namespace Minio
                 throw new ArgumentException("Appversion cannot be null or empty", nameof(appVersion));
             }
 
-            this.CustomUserAgent = appName + "/" + appVersion;
+            this.CustomUserAgent = $"{appName}/{appVersion}";
         }
 
         /// <summary>
@@ -325,7 +325,7 @@ namespace Minio
         {
             this.Secure = true;
             Uri secureUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
-            SetTargetURL(secureUrl);
+            this.SetTargetURL(secureUrl);
             return this;
         }
 
@@ -356,7 +356,7 @@ namespace Minio
         /// <returns>IRESTResponse</returns>
         internal async Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
-            DateTime startTime = DateTime.Now;
+            var startTime = DateTime.Now;
             // Logs full url when HTTPtracing is enabled.
             if (this.trace)
             {
@@ -366,7 +366,7 @@ namespace Minio
 
             IRestResponse response = await this.restClient.ExecuteTaskAsync(request, cancellationToken);
 
-            HandleIfErrorResponse(response, errorHandlers, startTime);
+            this.HandleIfErrorResponse(response, errorHandlers, startTime);
             return response;
         }
 

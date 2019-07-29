@@ -71,7 +71,7 @@ namespace Minio
         /// </summary>
         /// <param name="region"></param>
         /// <returns></returns>
-        public string endpoint(string region)
+        public string Endpoint(string region)
         {
             string endpoint = null;
             if (region != null)
