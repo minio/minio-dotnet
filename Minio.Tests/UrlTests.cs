@@ -32,7 +32,7 @@ namespace Minio.Tests
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                     | SecurityProtocolType.Tls11
                                     | SecurityProtocolType.Tls12;
-            var minio = new MinioClient("play.min.io:9000",
+            var minio = new MinioClient("play.min.io",
                 "Q3AM3UQ867SPQQA43P2F",
                 "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG");
 

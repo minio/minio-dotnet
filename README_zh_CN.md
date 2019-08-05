@@ -22,13 +22,13 @@ MinIO client需要以下4个参数来连接与Amazon S3兼容的对象存储服�
 | secretKey | Secret key是你账户的密码。 |
 | secure | true代表使用HTTPS。 |
 
-下面示例中使用运行在 [https://play.min.io:9000](https://play.min.io:9000) 上的MinIO服务，你可以用这个服务来开发和测试。示例中的访问凭据是公开的。
+下面示例中使用运行在 [https://play.min.io](https://play.min.io) 上的MinIO服务，你可以用这个服务来开发和测试。示例中的访问凭据是公开的。
 
 ```cs
 using Minio;
 
 // Initialize the client with access credentials.
-private static MinioClient minio = new MinioClient("play.min.io:9000",
+private static MinioClient minio = new MinioClient("play.min.io",
                 "Q3AM3UQ867SPQQA43P2F",
                 "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
                 ).WithSSL();
@@ -60,7 +60,7 @@ namespace FileUploader
     {
         static void Main(string[] args)
         {
-            var endpoint  = "play.min.io:9000";
+            var endpoint  = "play.min.io";
             var accessKey = "Q3AM3UQ867SPQQA43P2F";
             var secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
             try

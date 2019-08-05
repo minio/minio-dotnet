@@ -5,7 +5,7 @@
 ## MinIO
 
 ```cs
-var minioClient = new MinioClient("play.min.io:9000",
+var minioClient = new MinioClient("play.min.io",
                                        "Q3AM3UQ867SPQQA43P2F",
                                        "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
                                  ).WithSSL();
@@ -48,7 +48,7 @@ __参数__
 |---|---|---|
 | `endpoint`  |  _string_ | endPoint是一个URL，域名，IPv4或者IPv6地址。以下是合法的endpoints: |
 | | |s3.amazonaws.com |
-| | |play.min.io:9000 |
+| | |play.min.io |
 | | |localhost |
 | | |play.min.io|
 | `accessKey`   | _string_   |accessKey类似于用户ID，用于唯一标识你的账户。可选，为空代表匿名访问。 |
@@ -70,10 +70,10 @@ __示例__
 
 ```cs
 // 1. public MinioClient(String endpoint)
-MinioClient minioClient = new MinioClient("play.min.io:9000");
+MinioClient minioClient = new MinioClient("play.min.io");
 
 // 2. public MinioClient(String endpoint, String accessKey, String secretKey)
-MinioClient minioClient = new MinioClient("play.min.io:9000",
+MinioClient minioClient = new MinioClient("play.min.io",
                                           accessKey:"Q3AM3UQ867SPQQA43P2F",
                                           secretKey:"zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
                                           ).WithSSL();

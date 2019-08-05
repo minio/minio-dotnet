@@ -32,7 +32,7 @@ namespace SimpleTest
 
             /// Note: s3 AccessKey and SecretKey needs to be added in App.config file
             /// See instructions in README.md on running examples for more information.
-            var minio = new MinioClient("play.min.io:9000",
+            var minio = new MinioClient("play.min.io",
                                              "Q3AM3UQ867SPQQA43P2F",
                                              "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG").WithSSL();
 

@@ -5,7 +5,7 @@
 ## MinIO
 
 ```cs
-var minioClient = new MinioClient("play.min.io:9000",
+var minioClient = new MinioClient("play.min.io",
                                        "Q3AM3UQ867SPQQA43P2F",
                                        "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
                                  ).WithSSL();
@@ -49,7 +49,7 @@ __Parameters__
 |---|---|---|
 | `endpoint`  |  _string_ | endPoint is an URL, domain name, IPv4 address or IPv6 address.Valid endpoints are listed below: |
 | | |s3.amazonaws.com |
-| | |play.min.io:9000 |
+| | |play.min.io |
 | | |localhost |
 | | |play.min.io|
 | `accessKey`   | _string_   |accessKey is like user-id that uniquely identifies your account.This field is optional and can be omitted for anonymous access. |
@@ -77,10 +77,10 @@ __Example__
 
 ```cs
 // 1. public MinioClient(String endpoint)
-MinioClient minioClient = new MinioClient("play.min.io:9000");
+MinioClient minioClient = new MinioClient("play.min.io");
 
 // 2. public MinioClient(String endpoint, String accessKey, String secretKey)
-MinioClient minioClient = new MinioClient("play.min.io:9000",
+MinioClient minioClient = new MinioClient("play.min.io",
                                           accessKey:"Q3AM3UQ867SPQQA43P2F",
                                           secretKey:"zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
                                           ).WithSSL();
