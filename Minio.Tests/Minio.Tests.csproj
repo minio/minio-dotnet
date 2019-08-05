@@ -2,6 +2,8 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
     <IsPackable>False</IsPackable>
+    <AssemblyOriginatorKeyFile>..\Minio.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>
