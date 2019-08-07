@@ -6,11 +6,15 @@
     <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
     <DebugType>embedded</DebugType>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <Optimize>true</Optimize>
+    <AssemblyOriginatorKeyFile>..\Minio.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
   </PropertyGroup>
 
   <PropertyGroup Label="Package">
     <Product>Minio</Product>
-    <Version>3.0.13</Version>
+    <Version>3.1.0</Version>
     <Description>Minio .NET SDK for Amazon S3 Compatible Cloud Storage.</Description>
     <Copyright>Copyright (c) 2018.  All rights reserved.</Copyright>
     <Authors>Minio, Inc.</Authors>
