@@ -156,7 +156,7 @@ namespace Minio
         private string GetAuthorizationHeader(string signedHeaders, string signature, DateTime signingDate, string region)
         {
             var scope = this.GetScope(region, signingDate);
-            return $"AWS4-HMAC-SHA256 Credential={this.accessKey}/{scope}/, SignedHeaders={signedHeaders} Signature={signature}";
+            return $"AWS4-HMAC-SHA256 Credential={this.accessKey}/{scope}, SignedHeaders={signedHeaders}, Signature={signature}";
         }
 
         /// <summary>
