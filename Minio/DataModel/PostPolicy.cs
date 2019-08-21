@@ -136,7 +136,7 @@ namespace Minio.DataModel
         /// <param name="endRange"></param>
         public void SetContentRange(long startRange, long endRange)
         {
-            if ((startRange <= 0) || (endRange <= 0))
+            if ((startRange < 0) || (endRange < 0))
             {
                 throw new ArgumentException("Negative start or end range");
             }
