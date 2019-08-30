@@ -274,7 +274,7 @@ namespace Minio
             using (var stream = new MemoryStream(contentBytes))
             using (var streamReader = new StreamReader(stream))
             {
-                policyString = await streamReader.ReadToEndAsync();
+                policyString = await streamReader.ReadToEndAsync().ConfigureAwait(false);
             }
             return policyString;
         }
