@@ -209,6 +209,7 @@ namespace Minio
             queries.Add("prefix=" + Uri.EscapeDataString(prefix));
             queries.Add("max-keys=1000");
             queries.Add("marker=" + Uri.EscapeDataString(marker));
+            queries.Add("encoding-type=url");
 
             string query = string.Join("&", queries);
 
