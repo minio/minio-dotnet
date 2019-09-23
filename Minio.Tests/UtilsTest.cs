@@ -89,7 +89,7 @@ namespace Minio.Tests
             {
                 Assert.AreEqual(ex.message, "Object name cannot be greater than 1024 characters.");
             }
-
+            
         }
 
         [TestMethod]
