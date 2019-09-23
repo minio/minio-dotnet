@@ -158,15 +158,16 @@ namespace Minio
                         foreach (Item item in result.Item2)
                         {
                             lastItem = item;
+                            item.Key = Uri.UnescapeDataString(item.Key);
                             obs.OnNext(item);
                         }
                         if (result.Item1.NextMarker != null)
                         {
-                            marker = result.Item1.NextMarker;
+                            marker = Uri.UnescapeDataString(result.Item1.NextMarker);
                         }
                         else if (lastItem != null)
                         {
-                            marker = lastItem.Key;
+                            marker = Uri.UnescapeDataString(lastItem.Key);
                         }
                         isRunning = result.Item1.IsTruncated;
                         cts.Token.ThrowIfCancellationRequested();
