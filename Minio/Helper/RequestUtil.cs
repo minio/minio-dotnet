@@ -136,7 +136,7 @@ namespace Minio
                     return false;
                 }
 
-                Regex validLabel = new Regex("^[a-zA-Z0-9]([A-Za-z0-9-]*[a-zA-Z0-9])?$");
+                Regex validLabel = new Regex("^[a-zA-Z0-9]([A-Za-z0-9-_]*[a-zA-Z0-9])?$");
 
                 if (!validLabel.IsMatch(label))
                 {
