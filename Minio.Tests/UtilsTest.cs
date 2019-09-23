@@ -89,7 +89,7 @@ namespace Minio.Tests
             {
                 Assert.AreEqual(ex.message, "Object name cannot be greater than 1024 characters.");
             }
-            
+
         }
 
         [TestMethod]
@@ -195,6 +195,8 @@ namespace Minio.Tests
         public void TestisValidEndpoint()
         {
             Assert.IsTrue(RequestUtil.IsValidEndpoint("a.b.c"));
+            Assert.IsTrue(RequestUtil.IsValidEndpoint("a_b_c"));
+            Assert.IsTrue(RequestUtil.IsValidEndpoint("a_b.c"));
             Assert.IsFalse(RequestUtil.IsValidEndpoint("_a.b.c"));
             Assert.IsFalse(RequestUtil.IsValidEndpoint("a.b_.c"));
             Assert.IsFalse(RequestUtil.IsValidEndpoint("a.b.c."));
