@@ -29,6 +29,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using System.Web;
 
 namespace Minio
 {
@@ -158,16 +159,16 @@ namespace Minio
                         foreach (Item item in result.Item2)
                         {
                             lastItem = item;
-                            item.Key = Uri.UnescapeDataString(item.Key);
+                            item.Key = HttpUtility.UrlDecode(item.Key);
                             obs.OnNext(item);
                         }
                         if (result.Item1.NextMarker != null)
                         {
-                            marker = Uri.UnescapeDataString(result.Item1.NextMarker);
+                            marker = HttpUtility.UrlDecode(result.Item1.NextMarker);
                         }
                         else if (lastItem != null)
                         {
-                            marker = Uri.UnescapeDataString(lastItem.Key);
+                            marker = HttpUtility.UrlDecode(lastItem.Key);
                         }
                         isRunning = result.Item1.IsTruncated;
                         cts.Token.ThrowIfCancellationRequested();
