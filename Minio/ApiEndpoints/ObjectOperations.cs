@@ -246,7 +246,7 @@ namespace Minio
             // for sizes less than 5Mb , put a single object
             if (size < Constants.MinimumPartSize && size >= 0)
             {
-                var bytes = ReadFull(data, (int)size);
+                var bytes = await ReadFullAsync(data, (int)size).ConfigureAwait(false);
                 if (bytes != null && bytes.Length != (int)size)
                 {
                     throw new UnexpectedShortReadException($"Data read {bytes.Length} is shorter than the size {size} of input buffer.");
@@ -279,7 +279,7 @@ namespace Minio
             int numPartsUploaded = 0;
             for (partNumber = 1; partNumber <= partCount; partNumber++)
             {
-                byte[] dataToCopy = ReadFull(data, (int)partSize);
+                byte[] dataToCopy = await ReadFullAsync(data, (int)partSize).ConfigureAwait(false);
                 if (dataToCopy == null && numPartsUploaded > 0)
                 {
                     break;
@@ -827,14 +827,14 @@ namespace Minio
         /// <param name="data"></param>
         /// <param name="currentPartSize"></param>
         /// <returns>bytes read in a byte array</returns>
-        internal byte[] ReadFull(Stream data, int currentPartSize)
+        internal async Task<byte[]> ReadFullAsync(Stream data, int currentPartSize)
         {
             byte[] result = new byte[currentPartSize];
             int totalRead = 0;
             while (totalRead < currentPartSize)
             {
                 byte[] curData = new byte[currentPartSize - totalRead];
-                int curRead = data.Read(curData, 0, currentPartSize - totalRead);
+                int curRead = await data.ReadAsync(curData, 0, currentPartSize - totalRead).ConfigureAwait(false);
                 if (curRead == 0)
                 {
                     break;
