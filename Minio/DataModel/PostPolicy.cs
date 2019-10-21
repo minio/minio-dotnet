@@ -86,6 +86,21 @@ namespace Minio.DataModel
         }
 
         /// <summary>
+        /// Set cache control
+        /// </summary>
+        /// <param name="cacheControl">CacheControl for the policy</param>
+        public void SetCacheControl(string cacheControl)
+        {
+            if (string.IsNullOrEmpty(cacheControl))
+            {
+                throw new ArgumentException("Cache-Control argument cannot be null or empty", nameof(cacheControl));
+            }
+
+            this.policies.Add(Tuple.Create("eq", "$Cache-Control", cacheControl));
+            this.formData.Add("Cache-Control", cacheControl);
+        }
+
+        /// <summary>
         /// Set content type policy.
         /// </summary>
         /// <param name="contentType">ContentType for the policy</param>
