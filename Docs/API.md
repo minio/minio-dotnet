@@ -797,7 +797,7 @@ __Parameters__
 | ``data``  | _Stream_  | Stream to upload |
 | ``size``  | _long_    | size of stream   |
 | ``contentType``  | _string_ | Content type of the file. Defaults to "application/octet-stream" |
-| ``metaData``  | _Dictionary<string,string>_ | Dictionary of metadata headers. Defaults to null. |
+| ``metaData``  | _Dictionary<string,string>_ | Dictionary of metadata headers. Defaults to null. **Note**: All custom metadata must have the prefix `x-amz-meta-`. Example: If we want to store a metadata called `user-id`, the key must be `x-amz-meta-user-id`. |
 | ``sse``    | _ServerSideEncryption_ | Server-side encryption option | Optional parameter. Defaults to null |
 
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
@@ -860,7 +860,7 @@ __Parameters__
 | ``objectName``  | _string_  | Object name in the bucket |
 | ``fileName``  | _string_  | File to upload |
 | ``contentType``  | _string_ | Content type of the file. Defaults to " |
-| ``metadata``  | _Dictionary<string,string>_ | Dictionary of meta data headers and their values.Defaults to null.|
+| ``metadata``  | _Dictionary<string,string>_ | Dictionary of meta data headers and their values. Defaults to null. **Note**: All custom metadata must have the prefix `x-amz-meta-`. Example: If we want to store a metadata called `user-id`, the key must be `x-amz-meta-user-id`.|
 | ``sse``    | _ServerSideEncryption_ | Server-side encryption option | Optional parameter. Defaults to null |
 
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
@@ -883,7 +883,13 @@ The maximum size of a single object is limited to 5TB. putObject transparently u
 ```cs
 try
 {
-    await minio.PutObjectAsync("mybucket", "island.jpg", "/mnt/photos/island.jpg", contentType: "application/octet-stream");
+    var metadata = new Dictionary<string, string>
+    {
+    	// Note: custom metadata must start with `x-amz-meta-`
+    	{ "x-amz-meta-resolution", "1980x1080" }
+    };
+    
+    await minio.PutObjectAsync("mybucket", "island.jpg", "/mnt/photos/island.jpg", contentType: "image/jpeg", metaData: metadata);
     Console.WriteLine("island.jpg is uploaded successfully");
 }
 catch(MinioException e)
@@ -891,6 +897,8 @@ catch(MinioException e)
     Console.WriteLine("Error occurred: " + e);
 }
 ```
+
+
 <a name="statObject"></a>
 ### StatObjectAsync(string bucketName, string objectName, ServerSideEncryption sse)
 
