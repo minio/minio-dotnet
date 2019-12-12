@@ -446,7 +446,7 @@ namespace Minio.Functional.Tests
             string contentType = "custom/contenttype";
             var metaData = new Dictionary<string, string>
             {
-                { "x-amz-meta-customheader", "minio   dotnet" }
+                { "customheader", "minio   dotnet" }
             };
             var args = new Dictionary<string, string>
             {
@@ -455,7 +455,7 @@ namespace Minio.Functional.Tests
                 { "contentType", contentType },
                 { "data", "1B" },
                 { "size", "1B" },
-                { "metaData", "x-amz-meta-customheader:minio-dotnet" }
+                { "metaData", "customheader:minio-dotnet" }
             };
             try
             {
@@ -464,8 +464,7 @@ namespace Minio.Functional.Tests
                 Assert.IsTrue(statObject != null);
                 Assert.IsTrue(statObject.MetaData != null);
                 var statMeta = new Dictionary<string, string>(statObject.MetaData, StringComparer.OrdinalIgnoreCase);
-
-                Assert.IsTrue(statMeta.ContainsKey("x-amz-meta-customheader"));
+                Assert.IsTrue(statMeta.ContainsKey("X-Amz-Meta-Customheader"));
                 Assert.IsTrue(statObject.MetaData.ContainsKey("Content-Type") && statObject.MetaData["Content-Type"].Equals("custom/contenttype"));
                 await TearDown(minio, bucketName);
                 new MintLogger(nameof(PutObject_Test4), putObjectSignature1, "Tests whether PutObject with different content-type passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
@@ -1311,7 +1310,7 @@ namespace Minio.Functional.Tests
                 {
                     await minio.PutObjectAsync(bucketName,
                                             objectName,
-                                            filestream, filestream.Length, metaData:new Dictionary<string, string>{{"X-Amz-Meta-Orig", "orig-val with  spaces"}});
+                                            filestream, filestream.Length, metaData:new Dictionary<string, string>{{"Orig", "orig-val with  spaces"}});
                 }
                 ObjectStat stats = await minio.StatObjectAsync(bucketName, objectName);
 
@@ -1324,7 +1323,7 @@ namespace Minio.Functional.Tests
                 var metadata = new Dictionary<string, string>
                 {
                     { "Content-Type", "application/css" },
-                    { "X-Amz-Meta-Mynewkey", "test   test" }
+                    { "Mynewkey", "test   test" }
                 };
                 await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions:copyCond, metadata: metadata);
 

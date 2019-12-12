@@ -42,7 +42,7 @@ namespace Minio.Examples.Cases
                 var metadata = new Dictionary<string, string>
                 {
                     { "Content-Type", "application/css" },
-                    { "X-Amz-Meta-Mynewkey", "my-new-value" }
+                    { "Mynewkey", "my-new-value" }
                 };
 
                 await minio.CopyObjectAsync(fromBucketName, 
