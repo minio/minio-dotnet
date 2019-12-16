@@ -30,7 +30,7 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 | [`listObjects`](#listObjects)  | [`removeObject`](#removeObject) |   |  [`removeAllBucketNotification`](#removeAllBucketNotification) |
 | [`listIncompleteUploads`](#listIncompleteUploads)  | [`removeObjects`](#removeObjects) |   |   |
 | | [`removeIncompleteUpload`](#removeIncompleteUpload) |   |   |
-
+| | [`selectObjectContent`](#selectObjectContent) |   |   |
 
 ## 1. Constructors
 
@@ -1122,6 +1122,81 @@ try
     Console.WriteLine("successfully removed all incomplete upload session of my-bucketname/my-objectname");
 }
 catch(MinioException e)
+{
+    Console.WriteLine("Error occurred: " + e);
+}
+```
+
+<a name="selectObjectContent"></a>
+### SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts)
+
+`Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts, CancellationToken cancellationToken = default(CancellationToken))`
+
+Downloads an object as a stream.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``bucketName``  | _string_ | Name of the bucket  |
+| ``objectName``  | _string_  | Object name in the bucket |
+| ``opts``    | SelectObjectOptions | options for SelectObjectContent async | Required parameter. |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task``: Task callback returns a SelectResponseStream containing select results.  | Listed Exceptions: |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
+|        | ``ConnectionException`` : upon connection error.            |
+|        | ``InternalClientException`` : upon internal library error.        |
+|        | ``ArgumentException`` : upon invalid response format |
+|        | ``IOException`` : insufficient data |
+
+
+__Example__
+
+
+```cs
+try
+{
+    var opts = new SelectObjectOptions()
+    {
+        ExpressionType = QueryExpressionType.SQL,
+        Expression = "select count(*) from s3object",
+        InputSerialization = new SelectObjectInputSerialization()
+        {
+            CompressionType = SelectCompressionType.NONE,
+            CSV = new CSVInputOptions()
+            {
+                FileHeaderInfo = CSVFileHeaderInfo.None,
+                RecordDelimiter = "\n",
+                FieldDelimiter = ",",
+            }                    
+        },
+        OutputSerialization = new SelectObjectOutputSerialization()
+        {
+            CSV = new CSVOutputOptions()
+            {
+                RecordDelimiter = "\n",
+                FieldDelimiter =  ",",
+            }
+        }
+    };
+
+    var resp = await  minio.SelectObjectContentAsync(bucketName, objectName, opts);
+    resp.Payload.CopyTo(Console.OpenStandardOutput());
+    Console.WriteLine("Bytes scanned:" + resp.Stats.BytesScanned);
+    Console.WriteLine("Bytes returned:" + resp.Stats.BytesReturned);
+    Console.WriteLine("Bytes processed:" + resp.Stats.BytesProcessed);
+    if (resp.Progress != null)
+    {
+        Console.WriteLine("Progress :" + resp.Progress.BytesProcessed);
+    }
+}
+catch (MinioException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }

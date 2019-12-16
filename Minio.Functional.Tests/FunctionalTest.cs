@@ -1,6 +1,6 @@
 ﻿/*
 * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
-* (C) 2017, 2018, 2019 MinIO, Inc.
+* (C) 2017, 2018, 2019, 2020 MinIO, Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -66,6 +66,7 @@ namespace Minio.Functional.Tests
         private const string getBucketNotificationSignature = "Task<BucketNotification> GetBucketNotificationAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))";
         private const string setBucketNotificationSignature = "Task SetBucketNotificationAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeAllBucketsNotificationSignature = "Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string selectObjectSignature = "Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts, CancellationToken cancellationToken = default(CancellationToken))";
 
         // Create a file of given size from random byte array or optionally create a symbolic link
         // to the dataFileName residing in MINT_DATA_DIR
@@ -2652,6 +2653,78 @@ namespace Minio.Functional.Tests
             {
                 new MintLogger("GetBucketPolicy_Test1", getBucketPolicySignature, "Tests whether GetBucketPolicy passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
+        }
+
+        #endregion
+
+        #region Select Object Content
+
+        internal async static Task SelectObjectContent_Test(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomObjectName(10);
+            string outFileName = "outFileName";
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "fileName", outFileName },
+            };
+            try
+            {
+                await Setup_Test(minio, bucketName);
+                StringBuilder csvString = new StringBuilder();
+                csvString.AppendLine("Employee,Manager,Group");
+                csvString.AppendLine("Employee4,Employee2,500");
+                csvString.AppendLine("Employee3,Employee1,500");
+                csvString.AppendLine("Employee1,,1000");
+                csvString.AppendLine("Employee5,Employee1,500");
+                csvString.AppendLine("Employee2,Employee1,800");
+                var csvBytes = System.Text.Encoding.UTF8.GetBytes(csvString.ToString());
+                using (var stream = new MemoryStream(csvBytes))
+                {
+                    await minio.PutObjectAsync(bucketName,
+                                            objectName,
+                                            stream, stream.Length, null);
+
+                }
+                var opts = new SelectObjectOptions()
+                {
+                    ExpressionType = QueryExpressionType.SQL,
+                    Expression = "select * from s3object",
+                    InputSerialization = new SelectObjectInputSerialization()
+                    {
+                        CompressionType = SelectCompressionType.NONE,
+                        CSV = new CSVInputOptions()
+                        {
+                            FileHeaderInfo = CSVFileHeaderInfo.None,
+				            RecordDelimiter = "\n",
+				            FieldDelimiter = ",",
+                        }
+                    },
+                    OutputSerialization = new SelectObjectOutputSerialization()
+                    {
+                        CSV = new CSVOutputOptions()
+                        {
+                            RecordDelimiter = "\n",
+                            FieldDelimiter =  ",",
+                        }
+                    }
+                };
+
+                var resp = await  minio.SelectObjectContentAsync(bucketName, objectName, opts);
+                var output = await new StreamReader(resp.Payload).ReadToEndAsync();
+                Assert.AreEqual(output,csvString.ToString());
+                await minio.RemoveObjectAsync(bucketName, objectName);
+                await TearDown(minio, bucketName);
+                new MintLogger("SelectObjectContent_Test", selectObjectSignature, "Tests whether SelectObjectContent passes for a select query", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (MinioException ex)
+            {
+                new MintLogger("SelectObjectContent_Test", selectObjectSignature, "Tests whether SelectObjectContent passes for a select query", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
+            }
+
         }
 
         #endregion
