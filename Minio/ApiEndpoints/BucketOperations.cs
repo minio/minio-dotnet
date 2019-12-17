@@ -129,6 +129,44 @@ namespace Minio
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
+#if NETSTANDARD2_1
+
+        public async IAsyncEnumerable<Item> ListObjectEnumerableAsync(string bucketName, string prefix = null,
+            bool recursive = false, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            bool isRunning = true;
+            string marker = null;
+
+            var delimiter = "/";
+            if (recursive)
+            {
+                delimiter = string.Empty;
+            }
+            while (isRunning)
+            {
+                Tuple<ListBucketResult, List<Item>> result = await GetObjectListAsync(bucketName, prefix, delimiter, marker, cancellationToken).ConfigureAwait(false);
+                Item lastItem = null;
+                foreach (Item item in result.Item2)
+                {
+                    lastItem = item;
+                    item.Key = HttpUtility.UrlDecode(item.Key);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    yield return item;
+                }
+                if (result.Item1.NextMarker != null)
+                {
+                    marker = HttpUtility.UrlDecode(result.Item1.NextMarker);
+                }
+                else if (lastItem != null)
+                {
+                    marker = HttpUtility.UrlDecode(lastItem.Key);
+                }
+                isRunning = result.Item1.IsTruncated;
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+        }
+#endif
+
         /// <summary>
         /// List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
         /// </summary>
