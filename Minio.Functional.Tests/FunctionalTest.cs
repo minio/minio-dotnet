@@ -446,8 +446,7 @@ namespace Minio.Functional.Tests
             string contentType = "custom/contenttype";
             var metaData = new Dictionary<string, string>
             {
-                { "customheader", "minio   dotnet" },
-                { "x-amz-acl", "public-read" }
+                { "customheader", "minio   dotnet" }
             };
             var args = new Dictionary<string, string>
             {
@@ -467,8 +466,6 @@ namespace Minio.Functional.Tests
                 var statMeta = new Dictionary<string, string>(statObject.MetaData, StringComparer.OrdinalIgnoreCase);
                 Assert.IsTrue(statMeta.ContainsKey("X-Amz-Meta-Customheader"));
                 Assert.IsTrue(statObject.MetaData.ContainsKey("Content-Type") && statObject.MetaData["Content-Type"].Equals("custom/contenttype"));
-                Assert.IsTrue(statObject.MetaData.ContainsKey("x-amz-acl"));
-                Assert.AreEqual("public-read", statObject.MetaData["x-amz-acl"]);
                 await TearDown(minio, bucketName);
                 new MintLogger(nameof(PutObject_Test4), putObjectSignature1, "Tests whether PutObject with different content-type passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
