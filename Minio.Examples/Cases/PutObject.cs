@@ -49,7 +49,7 @@ namespace Minio.Examples.Cases
 
                     var metaData = new Dictionary<string, string>
                     {
-                        { "X-Amz-Meta-Test", "Test  Test" }
+                        { "Test-Metadata", "Test  Test" }
                     };
 
                     await minio.PutObjectAsync(bucketName,

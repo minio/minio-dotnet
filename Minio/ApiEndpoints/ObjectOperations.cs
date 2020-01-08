@@ -34,6 +34,8 @@ namespace Minio
 {
     public partial class MinioClient : IObjectOperations
     {
+        List<string> supportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type", "x-amz-acl" };
+
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
@@ -216,16 +218,22 @@ namespace Minio
         {
             utils.ValidateBucketName(bucketName);
             utils.ValidateObjectName(objectName);
-            var sseHeaders = new Dictionary<string, string>();
 
-            if (metaData == null)
-            {
-                metaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var sseHeaders = new Dictionary<string, string>();
+            var meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (metaData != null) {
+                foreach (KeyValuePair<string, string> p in metaData)
+                {
+                    var key = p.Key;
+                    if (!supportedHeaders.Contains(p.Key) && !p.Key.ToLower().StartsWith("x-amz-meta-"))
+                    {
+                        key = "x-amz-meta-" + key.ToLower();
+                    }
+                    meta[key] = p.Value;
+
+                }
             }
-            else
-            {
-                metaData = new Dictionary<string, string>(metaData, StringComparer.OrdinalIgnoreCase);
-            }
+            
             if (sse != null)
             {
                 sse.Marshal(sseHeaders);
@@ -234,9 +242,9 @@ namespace Minio
             {
                 contentType = "application/octet-stream";
             }
-            if (!metaData.ContainsKey("Content-Type"))
+            if (!meta.ContainsKey("Content-Type"))
             {
-                metaData["Content-Type"] = contentType;
+                meta["Content-Type"] = contentType;
             }
             if (data == null)
             {
@@ -251,7 +259,7 @@ namespace Minio
                 {
                     throw new UnexpectedShortReadException($"Data read {bytes.Length} is shorter than the size {size} of input buffer.");
                 }
-                await this.PutObjectAsync(bucketName, objectName, null, 0, bytes, metaData, sseHeaders, cancellationToken).ConfigureAwait(false);
+                await this.PutObjectAsync(bucketName, objectName, null, 0, bytes, meta, sseHeaders, cancellationToken).ConfigureAwait(false);
                 return;
             }
             // For all sizes greater than 5MiB do multipart.
@@ -262,7 +270,7 @@ namespace Minio
             double lastPartSize = multiPartInfo.lastPartSize;
             Part[] totalParts = new Part[(int)partCount];
 
-            string uploadId = await this.NewMultipartUploadAsync(bucketName, objectName, metaData, sseHeaders, cancellationToken).ConfigureAwait(false);
+            string uploadId = await this.NewMultipartUploadAsync(bucketName, objectName, meta, sseHeaders, cancellationToken).ConfigureAwait(false);
 
             // Remove SSE-S3 and KMS headers during PutObjectPart operations.
             if (sse != null &&
@@ -290,7 +298,7 @@ namespace Minio
                     expectedReadSize = lastPartSize;
                 }
                 numPartsUploaded += 1;
-                string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, metaData, sseHeaders, cancellationToken).ConfigureAwait(false);
+                string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, meta, sseHeaders, cancellationToken).ConfigureAwait(false);
                 totalParts[partNumber - 1] = new Part { PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize };
             }
 
@@ -789,9 +797,6 @@ namespace Minio
             string contentType = null;
             var metaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            // Supported headers for object.
-            List<string> supportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type" };
-
             foreach (Parameter parameter in response.Headers)
             {
                 if (parameter.Name.Equals("Content-Length", StringComparison.OrdinalIgnoreCase))
@@ -813,7 +818,7 @@ namespace Minio
                 }
                 else if (supportedHeaders.Contains(parameter.Name.ToLower()) || parameter.Name.ToLower().StartsWith("x-amz-meta-"))
                 {
-                    metaData[parameter.Name] = parameter.Value.ToString();
+                    metaData[parameter.Name] = parameter.Value.ToString().ToLower().Replace("x-amz-meta-", string.Empty);
                 }
             }
             return new ObjectStat(objectName, size, lastModified, etag, contentType, metaData);
@@ -917,7 +922,12 @@ namespace Minio
             {
                 foreach (var item in m)
                 {
-                    meta[item.Key] = item.Value;
+                    var key = item.Key;
+                    if (!supportedHeaders.Contains(key) && !key.ToLower().StartsWith("x-amz-meta-"))
+                    {
+                        key = "x-amz-meta-" + key.ToLower();
+                    }
+                    meta[key] = item.Value;
                 }
             }
 

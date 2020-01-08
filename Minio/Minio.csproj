@@ -14,7 +14,7 @@
 
   <PropertyGroup Label="Package">
     <Product>Minio</Product>
-    <Version>3.1.8</Version>
+    <Version>3.1.9</Version>
     <Description>Minio .NET SDK for Amazon S3 Compatible Cloud Storage.</Description>
     <Copyright>Copyright (c) 2018.  All rights reserved.</Copyright>
     <Authors>Minio, Inc.</Authors>
