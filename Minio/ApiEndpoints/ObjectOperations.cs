@@ -46,7 +46,7 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            await StatObjectAsync(bucketName, objectName, sse: sse, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await GetStatsResponseAsync(bucketName, objectName, sse: sse, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             var headers = new Dictionary<string, string>();
             if (sse != null && sse.GetType().Equals(EncryptionType.SSE_C))
@@ -85,7 +85,7 @@ namespace Minio
                 throw new ArgumentException("Length should be greater than zero", nameof(length));
             }
 
-            await StatObjectAsync(bucketName, objectName, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await GetStatsResponseAsync(bucketName, objectName, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             var headerMap = new Dictionary<string, string>();
             if (length > 0)
@@ -772,6 +772,7 @@ namespace Minio
               });
         }
 
+
         /// <summary>
         /// Tests the object's existence and returns metadata about existing objects.
         /// </summary>
@@ -780,7 +781,22 @@ namespace Minio
         /// <param name="sse"> Server-side encryption option.Defaults to null</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Facts about the object</returns>
-        public async Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<ObjectStat> StatObjectAsync(string bucketName, string objectName,  ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var response = await GetStatsResponseAsync(bucketName, objectName, sse , cancellationToken).ConfigureAwait(false);
+            return ParseStatsResponseObject(response, objectName);
+        }
+
+        /// <summary>
+        /// Gets Stats Response for an object without parsing it to ObjectStat
+        /// Throws exception if object doesn't exist
+        /// </summary>
+        /// <param name="bucketName">Bucket to test object in</param>
+        /// <param name="objectName">Name of the object to stat</param>
+        /// <param name="sse"> Server-side encryption option.Defaults to null</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>IRestResponse that can be parsed to  ObjectStat</returns>
+        internal async Task<IRestResponse> GetStatsResponseAsync(string bucketName, string objectName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             var headerMap = new Dictionary<string, string>();
 
@@ -788,9 +804,23 @@ namespace Minio
             {
                 sse.Marshal(headerMap);
             }
-            var request = await this.CreateRequest(Method.HEAD, bucketName, objectName: objectName, headerMap: headerMap).ConfigureAwait(false);
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var request = await this
+                .CreateRequest(Method.HEAD, bucketName, objectName: objectName, headerMap: headerMap)
+                .ConfigureAwait(false);
+
+            return  await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Extracts Stats from response to StatsObject
+        /// </summary>
+        /// <param name="response">Response from GetStatsResponseAsync</param>
+        /// <param name="objectName">Name of the object to stat</param>
+        /// <returns></returns>
+        internal ObjectStat ParseStatsResponseObject(IRestResponse response, string objectName)
+        {
+            if (response == null) throw new ArgumentNullException(nameof(response));
 
             // Extract stats from response
             long size = 0;
