@@ -1,6 +1,6 @@
 ﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
- * (C) 2017, 2018, 2019 MinIO, Inc.
+ * (C) 2017, 2018, 2019, 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -180,6 +180,42 @@ namespace Minio
                 }
                 utils.MoveWithReplace(tempFileName, fileName);
             }, sse, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Select an object's content. The object will be streamed to the callback given by the user.
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Name of object to retrieve</param>
+        /// <param name="opts">Select Object options</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        public async Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts,CancellationToken cancellationToken = default(CancellationToken))
+        {
+            utils.ValidateBucketName(bucketName);
+            utils.ValidateObjectName(objectName);
+            if (opts == null)
+            {
+                throw new ArgumentException("Options cannot be null", nameof(opts));
+            }
+            Dictionary<string,string> sseHeaders = null;
+            if (opts.SSE != null)
+            {
+                sseHeaders = new Dictionary<string,string>();
+                opts.SSE.Marshal(sseHeaders);
+            }
+            var selectReqBytes = System.Text.Encoding.UTF8.GetBytes(opts.MarshalXML());
+
+            string resourcePath = "?select=&select-type=2";
+            var request = await this.CreateRequest(Method.POST, bucketName,
+                                                    objectName: objectName,
+                                                    resourcePath: resourcePath,
+                                                    headerMap: sseHeaders)
+                                    .ConfigureAwait(false);
+
+            request.AddParameter("application/xml", selectReqBytes, ParameterType.RequestBody);
+
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            return new SelectResponseStream(new MemoryStream(response.RawBytes));
         }
 
         /// <summary>

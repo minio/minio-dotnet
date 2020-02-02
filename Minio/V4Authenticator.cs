@@ -1,5 +1,5 @@
 ﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017, 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ using RestSharp.Authenticators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Security.Cryptography;
 
 namespace Minio
@@ -383,22 +384,22 @@ namespace Minio
             // QUERY
             if (path.Length == 2)
             {
-                var parameterString = path[1];
-                var parameterList = parameterString.Split('&');
-                var sortedQueries = new SortedSet<string>();
-                foreach (string individualParameterString in parameterList)
+                var queryParams = path[1].Split('&').Select(p => p.Split('='))
+                                                     .ToDictionary(kv => kv[0],
+                                                                   kv => kv.Length > 1
+                                                                        ? kv[1] : "");
+
+                var sb = new StringBuilder();
+                var queryKeys = new List<string>(queryParams.Keys);
+                queryKeys.Sort(StringComparer.Ordinal);
+                foreach (var p in queryKeys)
                 {
-                    if (individualParameterString.Contains('='))
-                    {
-                        string[] splitQuery = individualParameterString.Split(new char[] { '=' }, 2);
-                        sortedQueries.Add(splitQuery[0] + "=" + splitQuery[1]);
-                    }
-                    else
-                    {
-                        sortedQueries.Add($"{individualParameterString}=");
-                    }
+                    if (sb.Length > 0)
+                        sb.Append("&");
+                    sb.AppendFormat("{0}={1}", p, queryParams[p]);
                 }
-                query = string.Join("&", sortedQueries);
+
+                query = sb.ToString();
             }
             canonicalStringList.AddLast(query);
 
