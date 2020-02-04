@@ -18,6 +18,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
 using Minio.Exceptions;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -53,6 +54,7 @@ namespace Minio.Functional.Tests
         private const string getObjectSignature3 = "Task GetObjectAsync(string bucketName, string objectName, string fileName, CancellationToken cancellationToken = default(CancellationToken))";
         private const string putObjectSignature1 = "Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType, Dictionary<string, string> metaData=null, CancellationToken cancellationToken = default(CancellationToken))";
         private const string putObjectSignature2 = "Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null, Dictionary<string, string> metaData=null, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string listenBucketNotificationsSignature = "IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events, string prefix, string suffix, CancellationToken cancellationToken = default(CancellationToken))";
         private const string statObjectSignature = "Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))";
         private const string copyObjectSignature = "Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeObjectSignature1 = "Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))";
@@ -2652,6 +2654,82 @@ namespace Minio.Functional.Tests
             catch (MinioException ex)
             {
                 new MintLogger("GetBucketPolicy_Test1", getBucketPolicySignature, "Tests whether GetBucketPolicy passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
+            }
+        }
+        #endregion
+
+
+        #region Bucket Notifications
+
+        internal async static Task ListenBucketNotificationsAsync_Test1(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomObjectName(10);
+            string contentType = "application/octet-stream";
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
+                { "size", "1MB" }
+            };
+            try
+            {
+                Console.WriteLine($"ListenBucketNotificationsAsync starting: bucketName={bucketName}");
+
+                await Setup_Test(minio, bucketName);
+                // Thread.Sleep(10 * 1000);
+                Console.WriteLine($"ListenBucketNotificationsAsync starting: bucketName={bucketName}");
+
+                var received = new List<MinioNotificationRaw>();
+
+                IObservable<MinioNotificationRaw> events = minio.ListenBucketNotificationsAsync(bucketName, new List<EventType> { EventType.ObjectCreatedAll });
+                IDisposable subscription = events.Subscribe(
+                    ev => {
+                        Console.WriteLine($"ListenBucketNotificationsAsync received: " + ev.json);
+                        received.Add(ev);
+                    },
+                    ex => throw ex,
+                    // ex => new MintLogger(nameof(ListenBucketNotificationsAsync_Test1), listenBucketNotificationsSignature, "ListenBucketNotificationsAsync_Test1", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log(),
+                    () => Console.WriteLine($"ListenBucketNotificationsAsync finished"));
+                Thread.Sleep(2 * 1000);
+
+                await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
+
+                await TearDown(minio, bucketName);
+                subscription.Dispose();
+
+                // wait for notifications
+                var testOutcome = TestStatus.FAIL;
+                for (int attempt = 0; attempt < 10; attempt++) {
+
+                    if (received.Count > 0) {
+                        MinioNotification notification = JsonConvert.DeserializeObject<MinioNotification>(received[0].json);
+
+                        Console.WriteLine($"   round-trip deserialisation: {JsonConvert.SerializeObject(notification, Formatting.Indented)}");
+
+                        Assert.AreEqual(1, notification.Records.Length);
+                        Assert.AreEqual("s3:ObjectCreated:Put", notification.Records[0].eventName);
+                        Assert.AreEqual(bucketName, notification.Records[0].s3.bucketMeta.name);
+                        Assert.AreEqual(objectName, System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key));
+                        Assert.AreEqual(contentType, notification.Records[0].s3.objectMeta.contentType);
+                        Console.WriteLine("PASSED");
+                        testOutcome = TestStatus.PASS;
+                        break;
+                    } else {
+                        Console.WriteLine($"ListenBucketNotificationsAsync: waiting for notification (t={attempt})");
+                    }
+
+                    Thread.Sleep(2000);
+                }
+                Console.WriteLine($"outcome: {testOutcome}");
+
+                new MintLogger(nameof(ListenBucketNotificationsAsync_Test1), listenBucketNotificationsSignature, "Tests whether ListenBucketNotifications passes for small object", testOutcome, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                new MintLogger(nameof(ListenBucketNotificationsAsync_Test1), listenBucketNotificationsSignature, "Tests whether ListenBucketNotifications passes for small object", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
 
