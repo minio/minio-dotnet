@@ -126,6 +126,9 @@ namespace Minio.Examples
                 // List all the buckets on the server
                 Cases.ListBuckets.Run(minioClient).Wait();
 
+                // Start listening for bucket notifications
+                Cases.ListenBucketNotifications.Run(minioClient, bucketName, new List<EventType> { EventType.ObjectCreatedAll });
+
                 // Put an object to the new bucket
                 Cases.PutObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
 
@@ -189,7 +192,7 @@ namespace Minio.Examples
                 Cases.SetBucketPolicy.Run(minioClient, bucketName).Wait();
                 // Get the policy for given bucket
                 Cases.GetBucketPolicy.Run(minioClient, bucketName).Wait();
- 
+
                 // Set bucket notifications
                 Cases.SetBucketNotification.Run(minioClient, bucketName).Wait();
 

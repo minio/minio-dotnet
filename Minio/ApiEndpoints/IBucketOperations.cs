@@ -17,6 +17,7 @@
 
 using Minio.DataModel;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -108,6 +109,15 @@ namespace Minio
         /// <returns></returns>
         Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
 
-        // Task ListenBucketNotificationsAsync(string bucketName, string prefix = "", string suffix = "", List<Notification> events, CancellationToken cancellationToken = default(CancellationToken));
+        /// <summary>
+        /// Subscribes to bucket change notifications (a Minio-only extension)
+        /// </summary>
+        /// <param name="bucketName">Bucket to get notifications from</param>
+        /// <param name="events">Events to listen for</param>
+        /// <param name="prefix">Filter keys starting with this prefix</param>
+        /// <param name="suffix">Filter keys ending with this suffix</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>An observable of JSON-based notification events</returns>
+        IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events, string prefix = "", string suffix = "", CancellationToken cancellationToken = default(CancellationToken));
     }
 }
