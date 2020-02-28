@@ -77,6 +77,8 @@ namespace Minio.Functional.Tests
                 Environment.Exit(0);
             }
 
+            FunctionalTest.ListenBucketNotificationsAsync_Test1(minioClient).Wait();
+
             // Check if bucket exists
             FunctionalTest.BucketExists_Test(minioClient).Wait();
 

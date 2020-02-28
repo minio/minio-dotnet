@@ -29,7 +29,7 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 | [`removeBucket`](#removeBucket)  | [`statObject`](#statObject) |   | [`getBucketNotification`](#getBucketNotification)  |
 | [`listObjects`](#listObjects)  | [`removeObject`](#removeObject) |   |  [`removeAllBucketNotification`](#removeAllBucketNotification) |
 | [`listIncompleteUploads`](#listIncompleteUploads)  | [`removeObjects`](#removeObjects) |   |   |
-| | [`removeIncompleteUpload`](#removeIncompleteUpload) |   |   |
+| [`listenBucketNotifications`](#listenBucketNotifications) | [`removeIncompleteUpload`](#removeIncompleteUpload) |   |   |
 | | [`selectObjectContent`](#selectObjectContent) |   |   |
 
 ## 1. Constructors
@@ -398,6 +398,54 @@ try
     {
         Console.WriteLine("mybucket does not exist");
     }
+}
+catch (MinioException e)
+{
+    Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
+<a name="listenBucketNotifications"></a>
+### ListenBucketNotificationsAsync(string bucketName, IList<EventType> events, string prefix = "", string suffix = "")
+
+`IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events, string prefix = "", string suffix = "", CancellationToken cancellationToken = default(CancellationToken))`
+
+Subscribes to bucket change notifications (a Minio-only extension)
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``bucketName``  | _string_  | Bucket to get notifications from  |
+| ``events``  | _IList< EventType >_  | Events to listen for |
+| ``prefix``  | _string_  | Filter keys starting with this prefix |
+| ``suffix``  | _string_  | Filter keys ending with this suffix |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+|Return Type	  | Exceptions	  |
+|:--- |:--- |
+| ``IObservable<MinioNotificationRaw>``: an Observable of _MinioNotificationRaw_, which contain the raw JSON notifications. Use the _MinioNotification_ class to deserialise using the JSON library of your choice. | _None_  |
+
+
+__Example__
+
+
+```cs
+try
+{
+    var events = new List<EventType> { EventType.ObjectCreatedAll };
+    var prefix = null;
+    var suffix = null;
+    IObservable<MinioNotificationRaw> observable = minioClient.ListenBucketNotificationsAsync(bucketName, events, prefix, suffix);
+
+    IDisposable subscription = observable.Subscribe(
+        notification => Console.WriteLine($"Notification: {notification.json}"),
+        ex => Console.WriteLine($"OnError: {ex}"),
+        () => Console.WriteLine($"Stopped listening for bucket notifications\n"));
+
 }
 catch (MinioException e)
 {

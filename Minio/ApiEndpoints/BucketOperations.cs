@@ -355,5 +355,86 @@ namespace Minio
             BucketNotification notification = new BucketNotification();
             return SetBucketNotificationsAsync(bucketName, notification, cancellationToken);
         }
+
+        /// <summary>
+        /// Subscribes to bucket change notifications (a Minio-only extension)
+        /// </summary>
+        /// <param name="bucketName">Bucket to get notifications from</param>
+        /// <param name="events">Events to listen for</param>
+        /// <param name="prefix">Filter keys starting with this prefix</param>
+        /// <param name="suffix">Filter keys ending with this suffix</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>An observable of JSON-based notification events</returns>
+        public IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events, string prefix = "", string suffix = "", CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return Observable.Create<MinioNotificationRaw>(
+                async (obs, ct) =>
+                {
+                    bool isRunning = true;
+
+                    using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
+                    {
+                        while (isRunning)
+                        {
+                            var queries = new List<string>();
+                            queries.Add("prefix=" + Uri.EscapeDataString(prefix));
+                            queries.Add("suffix=" + Uri.EscapeDataString(suffix));
+                            foreach (var eventType in events)
+                            {
+                                queries.Add("events=" + Uri.EscapeDataString(eventType.value));
+                            }
+                            string query = string.Join("&", queries);
+
+                            var request = await this.CreateRequest(Method.GET,
+                                                                    bucketName,
+                                                                    resourcePath: "?" + query)
+                                                        .ConfigureAwait(false);
+
+                            var startTime = DateTime.Now;
+                            // Logs full url when HTTPtracing is enabled (as in MinioClient.ExecuteTaskAsync)
+                            if (this.trace)
+                            {
+                                var fullUrl = this.restClient.BuildUri(request);
+                                Console.WriteLine($"Full URL of Request {fullUrl}");
+                            }
+
+                            request.ResponseWriter = responseStream =>
+                            {
+                                using (responseStream)
+                                {
+                                    var sr = new StreamReader(responseStream);
+                                    while (true)
+                                    {
+                                        string line = sr.ReadLine();
+                                        if (this.trace)
+                                        {
+                                            Console.WriteLine("== ListenBucketNotificationsAsync read line ==");
+                                            Console.WriteLine(line);
+                                            Console.WriteLine("==============================================");
+                                        }
+                                        if (line == null)
+                                        {
+                                            break;
+                                        }
+                                        string trimmed = line.Trim();
+                                        if (trimmed.Length > 2)
+                                        {
+                                            obs.OnNext(new MinioNotificationRaw(trimmed));
+                                        }
+                                    }
+                                }
+                            };
+
+
+                            IRestResponse response = await this.restClient.ExecuteTaskAsync(request, cancellationToken).ConfigureAwait(false);
+                            this.HandleIfErrorResponse(response, this.NoErrorHandlers, startTime);
+
+                            cts.Token.ThrowIfCancellationRequested();
+                        }
+                    }
+
+              });
+
+        }
     }
 }
