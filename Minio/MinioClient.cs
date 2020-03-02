@@ -342,7 +342,7 @@ namespace Minio
         /// <summary>
         /// Uses the set timeout for all requests if this method is invoked on client object
         /// </summary>
-        /// <param name="timeout">Timeout in miliseconds.</param>
+        /// <param name="timeout">Timeout in milliseconds.</param>
         /// <returns></returns>
         public MinioClient WithTimeout(int timeout)
         {
