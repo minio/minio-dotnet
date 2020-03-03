@@ -340,6 +340,17 @@ namespace Minio
         }
 
         /// <summary>
+        /// Uses the set timeout for all requests if this method is invoked on client object
+        /// </summary>
+        /// <param name="timeout">Timeout in milliseconds.</param>
+        /// <returns></returns>
+        public MinioClient WithTimeout(int timeout)
+        {
+            this.restClient.Timeout = timeout;
+            return this;
+        }
+
+        /// <summary>
         /// Sets endpoint URL on the client object that request will be made against
         /// </summary>
         internal void SetTargetURL(Uri uri)
