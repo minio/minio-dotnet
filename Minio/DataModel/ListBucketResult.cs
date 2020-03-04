@@ -32,5 +32,6 @@ namespace Minio.DataModel
         public string MaxKeys { get; set; }
         public string Delimiter { get; set; }
         public bool IsTruncated { get; set; }
+        public string EncodingType { get; set; }
     }
 }
