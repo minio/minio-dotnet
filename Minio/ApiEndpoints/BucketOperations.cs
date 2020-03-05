@@ -159,16 +159,33 @@ namespace Minio
                         foreach (Item item in result.Item2)
                         {
                             lastItem = item;
-                            item.Key = HttpUtility.UrlDecode(item.Key);
+                            if (result.Item1.EncodingType == "url")
+                            {
+                                item.Key = HttpUtility.UrlDecode(item.Key);
+                            }
                             obs.OnNext(item);
                         }
                         if (result.Item1.NextMarker != null)
                         {
-                            marker = HttpUtility.UrlDecode(result.Item1.NextMarker);
+                            if (result.Item1.EncodingType == "url")
+                            {
+                                marker = HttpUtility.UrlDecode(result.Item1.NextMarker);
+                            }
+                            else
+                            {
+                                marker = result.Item1.NextMarker;
+                            }
                         }
                         else if (lastItem != null)
                         {
-                            marker = HttpUtility.UrlDecode(lastItem.Key);
+                            if (result.Item1.EncodingType == "url")
+                            {
+                                marker = HttpUtility.UrlDecode(lastItem.Key);
+                            }
+                            else
+                            {
+                                marker = lastItem.Key;
+                            }
                         }
                         isRunning = result.Item1.IsTruncated;
                         cts.Token.ThrowIfCancellationRequested();
