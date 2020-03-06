@@ -34,7 +34,7 @@ namespace Minio
 {
     public partial class MinioClient : IObjectOperations
     {
-        List<string> supportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type", "x-amz-acl" };
+        private readonly List<string> supportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type", "x-amz-acl", "content-disposition" };
 
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
