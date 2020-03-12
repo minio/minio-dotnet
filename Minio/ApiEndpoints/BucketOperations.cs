@@ -63,8 +63,14 @@ namespace Minio
         /// <param name="location">Region</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns> Task </returns>
+        /// <exception cref="InvalidBucketNameException">When bucketName is null</exception>
         public async Task MakeBucketAsync(string bucketName, string location = "us-east-1", CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (bucketName == null)
+            {
+                throw new InvalidBucketNameException(bucketName, "buckentName cannot be null");
+            }
+
             if (location == "us-east-1")
             {
                 if (this.Region != string.Empty)
