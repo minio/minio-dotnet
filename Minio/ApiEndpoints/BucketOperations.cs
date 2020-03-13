@@ -68,7 +68,7 @@ namespace Minio
         {
             if (bucketName == null)
             {
-                throw new InvalidBucketNameException(bucketName, "buckentName cannot be null");
+                throw new InvalidBucketNameException(bucketName, "bucketName cannot be null");
             }
 
             if (location == "us-east-1")
