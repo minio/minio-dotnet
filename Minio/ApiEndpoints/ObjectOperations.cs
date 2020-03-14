@@ -34,7 +34,7 @@ namespace Minio
 {
     public partial class MinioClient : IObjectOperations
     {
-        List<string> supportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type", "x-amz-acl" };
+        private readonly List<string> supportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type", "x-amz-acl", "content-disposition" };
 
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
@@ -261,9 +261,9 @@ namespace Minio
                 foreach (KeyValuePair<string, string> p in metaData)
                 {
                     var key = p.Key;
-                    if (!supportedHeaders.Contains(p.Key) && !p.Key.ToLower().StartsWith("x-amz-meta-"))
+                    if (!supportedHeaders.Contains(p.Key, StringComparer.OrdinalIgnoreCase) && !p.Key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
                     {
-                        key = "x-amz-meta-" + key.ToLower();
+                        key = "x-amz-meta-" + key.ToLowerInvariant();
                     }
                     meta[key] = p.Value;
 
@@ -884,9 +884,9 @@ namespace Minio
                     contentType = parameter.Value.ToString();
                     metaData["Content-Type"] = contentType;
                 }
-                else if (supportedHeaders.Contains(parameter.Name.ToLower()) || parameter.Name.ToLower().StartsWith("x-amz-meta-"))
+                else if (supportedHeaders.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase) || parameter.Name.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
                 {
-                    metaData[parameter.Name] = parameter.Value.ToString().ToLower().Replace("x-amz-meta-", string.Empty);
+                    metaData[parameter.Name] = parameter.Value.ToString().ToLowerInvariant().Replace("x-amz-meta-", string.Empty);
                 }
             }
             return new ObjectStat(objectName, size, lastModified, etag, contentType, metaData);
@@ -991,9 +991,9 @@ namespace Minio
                 foreach (var item in m)
                 {
                     var key = item.Key;
-                    if (!supportedHeaders.Contains(key) && !key.ToLower().StartsWith("x-amz-meta-"))
+                    if (!supportedHeaders.Contains(key, StringComparer.OrdinalIgnoreCase) && !key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
                     {
-                        key = "x-amz-meta-" + key.ToLower();
+                        key = "x-amz-meta-" + key.ToLowerInvariant();
                     }
                     meta[key] = item.Value;
                 }
