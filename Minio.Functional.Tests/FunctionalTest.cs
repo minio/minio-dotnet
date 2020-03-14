@@ -300,6 +300,28 @@ namespace Minio.Functional.Tests
             }
         }
 
+        internal async static Task MakeBucket_Test5(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = null;
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName", bucketName },
+                { "region", "us-east-1" },
+            };
+
+            try
+            {
+                await Assert.ThrowsExceptionAsync<InvalidBucketNameException>(() =>
+                    minio.MakeBucketAsync(bucketName));
+                new MintLogger(nameof(MakeBucket_Test5), makeBucketSignature, "Tests whether MakeBucket throws InvalidBucketNameException when bucketName is null", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
+            }
+            catch (MinioException ex)
+            {
+                new MintLogger(nameof(MakeBucket_Test5), makeBucketSignature, "Tests whether MakeBucket throws InvalidBucketNameException when bucketName is null", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
+            }
+        }
+
         #endregion
 
         internal async static Task RemoveBucket_Test1(MinioClient minio)

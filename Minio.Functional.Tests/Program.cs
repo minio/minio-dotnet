@@ -85,6 +85,8 @@ namespace Minio.Functional.Tests
             // Create a new bucket
             FunctionalTest.MakeBucket_Test1(minioClient).Wait();
             FunctionalTest.MakeBucket_Test2(minioClient).Wait();
+            FunctionalTest.MakeBucket_Test5(minioClient).Wait();
+
             if (useAWS)
             {
                 FunctionalTest.MakeBucket_Test3(minioClient).Wait();
