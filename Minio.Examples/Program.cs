@@ -220,6 +220,9 @@ namespace Minio.Examples
                 // Delete the object
                 Cases.RemoveObject.Run(minioClient, destBucketName, objectName).Wait();
 
+                // Retry on failure
+                Cases.RetryPolicyObject.Run(minioClient, destBucketName, objectName).Wait();
+
                 // Tracing request with custom logger
                 Cases.CustomRequestLogger.Run(minioClient).Wait();
 

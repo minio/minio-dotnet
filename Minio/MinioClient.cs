@@ -52,6 +52,8 @@ namespace Minio
         internal RestClient restClient;
         // Custom authenticator for RESTSharp
         internal V4Authenticator authenticator;
+        // Handler for task retry policy
+        internal RetryPolicyHandlingDelegate retryPolicyHandler;
 
         // Cache holding bucket to region mapping for buckets seen so far.
         internal BucketRegionCache regionCache;
@@ -351,6 +353,17 @@ namespace Minio
         }
 
         /// <summary>
+        /// Allows to add retry policy handler
+        /// </summary>
+        /// <param name="retryPolicyHandler">Delegate that will wrap execution of <see cref="IRestRequest"/> requests.</param>
+        /// <returns></returns>
+        public MinioClient WithRetryPolicy(RetryPolicyHandlingDelegate retryPolicyHandler)
+        {
+            this.retryPolicyHandler = retryPolicyHandler;
+            return this;
+        }
+
+        /// <summary>
         /// Sets endpoint URL on the client object that request will be made against
         /// </summary>
         internal void SetTargetURL(Uri uri)
@@ -365,7 +378,13 @@ namespace Minio
         /// <param name="request">request</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>IRESTResponse</returns>
-        internal async Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        internal Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ExecuteWithRetry(
+                () => ExecuteTaskCoreAsync(errorHandlers, request, cancellationToken));
+        }
+
+        private async Task<IRestResponse> ExecuteTaskCoreAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             var startTime = DateTime.Now;
             // Logs full url when HTTPtracing is enabled.
@@ -591,7 +610,18 @@ namespace Minio
 
             this.logger.LogRequest(requestToLog, responseToLog, durationMs);
         }
+
+        private Task<IRestResponse> ExecuteWithRetry(
+            Func<Task<IRestResponse>> executeRequestCallback)
+        {
+            return retryPolicyHandler == null
+                ? executeRequestCallback()
+                : retryPolicyHandler(executeRequestCallback);
+        }
     }
 
     internal delegate void ApiResponseErrorHandlingDelegate(IRestResponse response);
+
+    public delegate Task<IRestResponse> RetryPolicyHandlingDelegate(
+        Func<Task<IRestResponse>> executeRequestCallback);
 }
