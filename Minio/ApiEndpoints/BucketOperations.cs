@@ -130,7 +130,7 @@ namespace Minio
         /// <returns>Task</returns>
         public async Task RemoveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var request = await this.CreateRequest(Method.DELETE, bucketName, resourcePath: null).ConfigureAwait(false);
+            var request = await this.CreateRequest(Method.DELETE, bucketName).ConfigureAwait(false);
 
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
@@ -212,8 +212,7 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix, string delimiter, string marker, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var queries = new List<string>();
-
+            var queryMap = new Dictionary<string,string>();
             // null values are treated as empty strings.
             if (delimiter == null)
             {
@@ -229,20 +228,16 @@ namespace Minio
             {
                 marker = string.Empty;
             }
-
-            queries.Add("delimiter=" + Uri.EscapeDataString(delimiter));
-            queries.Add("prefix=" + Uri.EscapeDataString(prefix));
-            queries.Add("max-keys=1000");
-            queries.Add("marker=" + Uri.EscapeDataString(marker));
-            queries.Add("encoding-type=url");
-
-            string query = string.Join("&", queries);
-
+            
             var request = await this.CreateRequest(Method.GET,
-                                                     bucketName,
-                                                     resourcePath: "?" + query)
+                                                     bucketName)
                                         .ConfigureAwait(false);
-
+            request.AddQueryParameter("delimiter",Uri.EscapeDataString(delimiter));
+            request.AddQueryParameter("prefix", Uri.EscapeDataString(prefix));
+            request.AddQueryParameter("max-keys", "1000");
+            request.AddQueryParameter("marker",Uri.EscapeDataString(marker));
+            request.AddQueryParameter("encoding-type","url");
+  
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
@@ -286,13 +281,10 @@ namespace Minio
         {
             IRestResponse response = null;
 
-            var path = $"{bucketName}?policy";
-
             var request = await this.CreateRequest(Method.GET, bucketName,
-                                 contentType: "application/json",
-                                 resourcePath: "?policy")
+                                 contentType: "application/json")
                             .ConfigureAwait(false);
-
+            request.AddQueryParameter("policy","");
             string policyString = null;
             response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
@@ -315,11 +307,10 @@ namespace Minio
         public async Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default(CancellationToken))
         {
             var request = await this.CreateRequest(Method.PUT, bucketName,
-                                           resourcePath: "?policy",
-                                           contentType: "application/json",
-                                           body: policyJson)
+                                           contentType: "application/json")
                                 .ConfigureAwait(false);
-
+            request.AddQueryParameter("policy","");
+            request.AddJsonBody(policyJson);
             IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
@@ -333,9 +324,9 @@ namespace Minio
         {
             utils.ValidateBucketName(bucketName);
             var request = await this.CreateRequest(Method.GET,
-                                               bucketName,
-                                               resourcePath: "?notification")
+                                               bucketName)
                                     .ConfigureAwait(false);
+            request.AddQueryParameter("notification","");
 
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
@@ -355,13 +346,14 @@ namespace Minio
         public async Task SetBucketNotificationsAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken))
         {
             utils.ValidateBucketName(bucketName);
-            var request = await this.CreateRequest(Method.PUT, bucketName,
-                                           resourcePath: "?notification")
+            var request = await this.CreateRequest(Method.PUT, bucketName)
                                 .ConfigureAwait(false);
+            request.AddQueryParameter("notification","");
 
-            request.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
-            request.RequestFormat = DataFormat.Xml;
-            request.AddBody(notification);
+            var bodyString = notification.ToString();
+
+            var body = System.Text.Encoding.UTF8.GetBytes(bodyString);
+            request.AddParameter("application/xml", body, RestSharp.ParameterType.RequestBody);
 
             IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
@@ -399,19 +391,15 @@ namespace Minio
                     {
                         while (isRunning)
                         {
-                            var queries = new List<string>();
-                            queries.Add("prefix=" + Uri.EscapeDataString(prefix));
-                            queries.Add("suffix=" + Uri.EscapeDataString(suffix));
+                            var request = await this.CreateRequest(Method.GET,
+                                                                    bucketName)
+                                                        .ConfigureAwait(false);
+                            request.AddQueryParameter("prefix",prefix);
+                            request.AddQueryParameter("sufffix",suffix);
                             foreach (var eventType in events)
                             {
-                                queries.Add("events=" + Uri.EscapeDataString(eventType.value));
+                                request.AddQueryParameter("events",eventType.value);
                             }
-                            string query = string.Join("&", queries);
-
-                            var request = await this.CreateRequest(Method.GET,
-                                                                    bucketName,
-                                                                    resourcePath: "?" + query)
-                                                        .ConfigureAwait(false);
 
                             var startTime = DateTime.Now;
                             // Logs full url when HTTPtracing is enabled (as in MinioClient.ExecuteTaskAsync)

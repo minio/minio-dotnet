@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Web;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -270,6 +271,7 @@ namespace Minio
 
             authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, this.Region, this.SessionToken);
             restClient.Authenticator = authenticator;
+            restClient.UseUrlEncoder(s => HttpUtility.UrlEncode(s));
         }
 
         /// <summary>

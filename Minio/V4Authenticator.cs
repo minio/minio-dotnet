@@ -122,6 +122,7 @@ namespace Minio
             string canonicalRequestHash = this.BytesToHex(this.ComputeSha256(canonicalRequestBytes));
             string region = this.GetRegion(client.BaseUrl.Host);
             string stringToSign = this.GetStringToSign(region, signingDate, canonicalRequestHash);
+
             byte[] signingKey = this.GenerateSigningKey(region, signingDate);
 
             byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(stringToSign);
@@ -379,28 +380,25 @@ namespace Minio
                 path[0] = $"/{path[0]}";
             }
             canonicalStringList.AddLast(path[0]);
-
             string query = string.Empty;
-            // QUERY
-            if (path.Length == 2)
+            Dictionary<string,string> queryParams = new Dictionary<string,string>();
+
+            foreach (var p in request.Parameters)
             {
-                var queryParams = path[1].Split('&').Select(p => p.Split('='))
-                                                     .ToDictionary(kv => kv[0],
-                                                                   kv => kv.Length > 1
-                                                                        ? kv[1] : "");
-
-                var sb = new StringBuilder();
-                var queryKeys = new List<string>(queryParams.Keys);
-                queryKeys.Sort(StringComparer.Ordinal);
-                foreach (var p in queryKeys)
-                {
-                    if (sb.Length > 0)
-                        sb.Append("&");
-                    sb.AppendFormat("{0}={1}", p, queryParams[p]);
-                }
-
-                query = sb.ToString();
+                if (p.Type == ParameterType.QueryString){
+                    queryParams.Add((string)p.Name, Uri.EscapeDataString((string)p.Value));
+                } 
             }
+            var sb1 = new StringBuilder();
+            var queryKeys = new List<string>(queryParams.Keys);
+            queryKeys.Sort(StringComparer.Ordinal);
+            foreach (var p in queryKeys)
+            {
+                if (sb1.Length > 0)
+                    sb1.Append("&");
+                sb1.AppendFormat("{0}={1}", p, queryParams[p]);
+            }
+            query = sb1.ToString();
             canonicalStringList.AddLast(query);
 
             foreach (string header in headersToSign.Keys)
@@ -536,11 +534,11 @@ namespace Minio
                 {
                     return;
                 }
-
-                bool isMultiDeleteRequest = false;
-                if (request.Method == Method.POST && request.Resource.EndsWith("?delete"))
+                var isMultiDeleteRequest = false;
+                if (request.Method == Method.POST)
                 {
-                    isMultiDeleteRequest = true;
+                    var deleteParm = request.Parameters.Any(p => p.Name.Equals("delete",StringComparison.OrdinalIgnoreCase));
+                    isMultiDeleteRequest = !(deleteParm == null) || (deleteParm.Equals(null));
                 }
 
                 // For insecure, authenticated requests set sha256 header instead of MD5.
