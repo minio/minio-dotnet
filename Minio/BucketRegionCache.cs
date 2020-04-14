@@ -94,13 +94,13 @@ namespace Minio
             && client.SecretKey != null && !Instance.Exists(bucketName))
             {
                 string location = null;
-                var path = utils.UrlEncode(bucketName) + "?location";
+                var path = utils.UrlEncode(bucketName);
                 // Initialize client
                 Uri requestUrl = RequestUtil.MakeTargetURL(client.BaseUrl, client.Secure);
                 client.SetTargetURL(requestUrl);
 
                 var request = new RestRequest(path, Method.GET);
-
+                request.AddQueryParameter("location","");
                 var response = await client.ExecuteTaskAsync(client.NoErrorHandlers, request).ConfigureAwait(false);
 
                 if (HttpStatusCode.OK.Equals(response.StatusCode))
