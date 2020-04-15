@@ -14,7 +14,7 @@
 
   <PropertyGroup Label="Package">
     <Product>Minio</Product>
-    <Version>3.1.11</Version>
+    <Version>3.1.12</Version>
     <Description>Minio .NET SDK for Amazon S3 Compatible Cloud Storage.</Description>
     <Copyright>Copyright (c) 2018.  All rights reserved.</Copyright>
     <Authors>Minio, Inc.</Authors>
@@ -36,7 +36,7 @@
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="All" />
     <PackageReference Include="AsyncFixer" Version="1.1.6" PrivateAssets="All" />
 
-    <PackageReference Include="RestSharp" Version="106.3.1" />
+    <PackageReference Include="RestSharp" Version="106.10.1" />
     <PackageReference Include="System.Reactive.Linq" Version="4.0.0" />
   </ItemGroup>
 
