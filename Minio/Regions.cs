@@ -18,9 +18,9 @@ using System.Text.RegularExpressions;
 
 namespace Minio
 {
-    public static class Regions
-    {
-        private static readonly Regex endpointRegex = new Regex(@".*s3[.\-]?(.*?)\.amazonaws\.com$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+	public static class Regions
+	{
+		private static readonly Regex endpointRegex = new Regex(@"s3[.\-](.*?)\.amazonaws\.com$", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.RightToLeft);
 
         /// <summary>
         /// Get corresponding region for input host.
