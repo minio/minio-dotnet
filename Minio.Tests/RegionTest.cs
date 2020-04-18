@@ -30,6 +30,8 @@ namespace Minio.Tests
         [DataRow("s3.us-west-1.amazonaws.com", "us-west-1")]
         [DataRow("mybucket-s3-us-west-1.amazonaws.com", "us-west-1")]
         [DataRow("wests3iss.s3-us-west-1.amazonaws.com", "us-west-1")]
+        [DataRow("test.s3-s3.bucket.s3-us-west-1.amazonaws.com", "us-west-1")]
+        [DataRow("test-s3.s3-bucket.s3-us-west-1.amazonaws.com", "us-west-1")]
         public void TestGetRegion(string endpoint, string expectedRegion)
         {
             Assert.AreEqual(Regions.GetRegionFromEndpoint(endpoint), expectedRegion);
