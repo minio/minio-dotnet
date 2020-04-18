@@ -34,7 +34,7 @@ namespace Minio.Tests
         [DataRow("test-s3.s3-bucket.s3-us-west-1.amazonaws.com", "us-west-1")]
         public void TestGetRegion(string endpoint, string expectedRegion)
         {
-            Assert.AreEqual(Regions.GetRegionFromEndpoint(endpoint), expectedRegion);
+            Assert.AreEqual(expectedRegion, Regions.GetRegionFromEndpoint(endpoint));
         }
     }
 }
