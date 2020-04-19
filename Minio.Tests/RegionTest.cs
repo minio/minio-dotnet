@@ -22,24 +22,19 @@ namespace Minio.Tests
     [TestClass]
     public class TestRegion
     {
-        [TestMethod]
-        public void TestGetRegion()
+        [DataTestMethod]
+        [DataRow("s3.us-east-2.amazonaws.com", "us-east-2")]
+        [DataRow("s3.amazonaws.com", "")]
+        [DataRow("testbucket.s3-ca-central-1.amazonaws.com", "ca-central-1")]
+        [DataRow("mybucket-s3-us-east-2.amazonaws.com", "us-east-2")]
+        [DataRow("s3.us-west-1.amazonaws.com", "us-west-1")]
+        [DataRow("mybucket-s3-us-west-1.amazonaws.com", "us-west-1")]
+        [DataRow("wests3iss.s3-us-west-1.amazonaws.com", "us-west-1")]
+        [DataRow("test.s3-s3.bucket.s3-us-west-1.amazonaws.com", "us-west-1")]
+        [DataRow("test-s3.s3-bucket.s3-us-west-1.amazonaws.com", "us-west-1")]
+        public void TestGetRegion(string endpoint, string expectedRegion)
         {
-            var endpoint2Region = new Dictionary<string, string>
-            {
-                {"s3.us-east-2.amazonaws.com", "us-east-2"},
-                {"s3.amazonaws.com", ""},
-                {"testbucket.s3-ca-central-1.amazonaws.com", "ca-central-1"},
-                {"mybucket-s3-us-east-2.amazonaws.com", "us-east-2"},
-                {"s3.us-west-1.amazonaws.com", "us-west-1"},
-                {"mybucket-s3-us-west-1.amazonaws.com", "us-west-1"},
-                {"wests3iss.s3-us-west-1.amazonaws.com", "us-west-1"},
-            };
-
-            foreach (KeyValuePair<string, string> testCase in endpoint2Region)
-            {
-                Assert.AreEqual(Regions.GetRegionFromEndpoint(testCase.Key), testCase.Value);
-            }
+            Assert.AreEqual(expectedRegion, Regions.GetRegionFromEndpoint(endpoint));
         }
     }
 }
