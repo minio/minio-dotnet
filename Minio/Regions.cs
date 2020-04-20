@@ -18,11 +18,9 @@ using System.Text.RegularExpressions;
 
 namespace Minio
 {
-    public class Regions
-    {
-        private Regions()
-        {
-        }
+	public static class Regions
+	{
+		private static readonly Regex endpointRegex = new Regex(@"s3[.\-](.*?)\.amazonaws\.com$", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.RightToLeft);
 
         /// <summary>
         /// Get corresponding region for input host.
@@ -31,20 +29,14 @@ namespace Minio
         /// <returns>Region corresponding to the endpoint. Default is 'us-east-1'</returns>
         public static string GetRegionFromEndpoint(string endpoint)
         {
-            string region = null;
-            Regex endpointrgx = new Regex("^([a-z0-9][a-z0-9\\.\\-]{1,61}[a-z0-9])*?.?s3[.\\-]?(.*?)\\.amazonaws\\.com$", RegexOptions.IgnoreCase);
-            Regex regionrgx = new Regex("^(s3[.\\-])?(.*?)$");
-            MatchCollection matches = endpointrgx.Matches(endpoint);
-            if (matches.Count > 0 && matches[0].Groups.Count > 1)
+            Match match = endpointRegex.Match(endpoint);
+
+            if (match.Success)
             {
-                string regionStr = matches[0].Groups[2].Value;
-                matches = regionrgx.Matches(regionStr);
-                if (matches.Count > 0 && matches[0].Groups.Count > 1)
-                {
-                    region = matches[0].Groups[0].Value;
-                }
+                return match.Groups[1].Value;
             }
-            return region ?? string.Empty;
+
+            return string.Empty;
         }
     }
 }
