@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-using Minio.DataModel.Tracing;
-using Minio.Exceptions;
-using Minio.Helper;
-using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Web;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using System.Xml.Serialization;
+
+using Minio.DataModel.Tracing;
+using Minio.Exceptions;
+using Minio.Helper;
+
+using RestSharp;
 
 namespace Minio
 {
@@ -520,6 +522,12 @@ namespace Minio
                     XmlError = response.Content
                 };
             }
+            if (response.StatusCode.Equals(HttpStatusCode.NotFound)
+                && response.Request.Method.Equals(Method.GET) && errResponse.Code == "NoSuchBucket")
+            {
+                throw new BucketNotFoundException(errResponse.BucketName, "Not found.");
+
+            }
 
             throw new MinioException(errResponse.Message)
             {
@@ -613,12 +621,7 @@ namespace Minio
 
             this.logger.LogRequest(requestToLog, responseToLog, durationMs);
         }
-            if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-                && response.Request.Method.Equals(Method.GET) && errResponse.Code == "NoSuchBucket")
-            {
-                    throw new BucketNotFoundException(errResponse.BucketName, "Not found.");
 
-            }
         private Task<IRestResponse> ExecuteWithRetry(
             Func<Task<IRestResponse>> executeRequestCallback)
         {
