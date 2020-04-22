@@ -613,7 +613,12 @@ namespace Minio
 
             this.logger.LogRequest(requestToLog, responseToLog, durationMs);
         }
+            if (response.StatusCode.Equals(HttpStatusCode.NotFound)
+                && response.Request.Method.Equals(Method.GET) && errResponse.Code == "NoSuchBucket")
+            {
+                    throw new BucketNotFoundException(errResponse.BucketName, "Not found.");
 
+            }
         private Task<IRestResponse> ExecuteWithRetry(
             Func<Task<IRestResponse>> executeRequestCallback)
         {
