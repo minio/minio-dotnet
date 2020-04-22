@@ -47,7 +47,9 @@ namespace Minio.Tests
         [TestMethod]
         public async Task TestRetryPolicyOnFailure()
         {
-            var client = new MinioClient("example.com");
+            var client = new MinioClient("play.min.io",
+                                         "Q3AM3UQ867SPQQA43P2F",
+                                         "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG").WithSSL();
 
             int invokeCount = 0;
             var retryCount = 3;
