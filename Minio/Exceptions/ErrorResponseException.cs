@@ -20,24 +20,10 @@ namespace Minio.Exceptions
 {
     public class ErrorResponseException : MinioException
     {
-        private readonly string ErrorCode;
-
-        public ErrorResponseException(IRestResponse response)
-            : base($"MinIO API responded with status code={response.StatusCode}, response={response.ErrorMessage}, content={response.Content}")
+        public ErrorResponseException(ErrorResponse errorResponse, IRestResponse serverResponse) :
+            base(serverResponse)
         {
-            this.response = response;
+            Response = errorResponse;
         }
-
-        public ErrorResponseException()
-        {
-        }
-
-        public ErrorResponseException(string message, string errorcode) : base($"MinIO API responded with message={message}")
-        {
-            this.message = message;
-            this.ErrorCode = errorcode;
-        }
-
-        public override string ToString() => $"{this.message}: {base.ToString()}";
     }
 }

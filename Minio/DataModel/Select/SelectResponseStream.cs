@@ -180,7 +180,7 @@ namespace Minio.DataModel
                         string errorMessage = null;
                         headerMap.TryGetValue(":error-code", out errorCode);
                         headerMap.TryGetValue(":error-message", out errorMessage);
-                        throw new MinioException(errorCode + ":" + errorMessage);
+                        throw new SelectObjectContentException(errorCode + ":" + errorMessage);
                     }
                 }
                 if (headerMap.TryGetValue(":event-type", out value))

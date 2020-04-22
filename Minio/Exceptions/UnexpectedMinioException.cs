@@ -19,15 +19,10 @@ using System;
 namespace Minio.Exceptions
 {
     [Serializable]
-    public class BucketNotFoundException : MinioException
+    public class UnexpectedMinioException : MinioException
     {
-        private readonly string bucketName;
-
-        public BucketNotFoundException(string bucketName, string message) : base(message)
+        public UnexpectedMinioException(string message) : base(message)
         {
-            this.bucketName = bucketName;
         }
-
-        public override string ToString() => $"{this.bucketName}: {base.ToString()}";
     }
 }

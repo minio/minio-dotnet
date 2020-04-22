@@ -73,7 +73,7 @@ namespace Minio.Tests
             }
             catch (InvalidObjectNameException ex)
             {
-                Assert.AreEqual(ex.message, "Object name cannot be empty.");
+                Assert.AreEqual(ex.ServerMessage, "Object name cannot be empty.");
             }
         }
 
@@ -87,7 +87,7 @@ namespace Minio.Tests
             }
             catch (InvalidObjectNameException ex)
             {
-                Assert.AreEqual(ex.message, "Object name cannot be greater than 1024 characters.");
+                Assert.AreEqual(ex.ServerMessage, "Object name cannot be greater than 1024 characters.");
             }
             
         }
@@ -120,7 +120,7 @@ namespace Minio.Tests
             }
             catch (EntityTooLargeException ex)
             {
-                Assert.AreEqual(ex.message, "Your proposed upload size 5000000000000000000 exceeds the maximum allowed object size " + Constants.MaxMultipartPutObjectSize);
+                Assert.AreEqual(ex.ServerMessage, "Your proposed upload size 5000000000000000000 exceeds the maximum allowed object size " + Constants.MaxMultipartPutObjectSize);
             }
         }
 

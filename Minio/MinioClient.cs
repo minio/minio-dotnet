@@ -391,7 +391,7 @@ namespace Minio
         {
             if (response == null)
             {
-                throw new ConnectionException("Response is nil. Please report this issue https://github.com/minio/minio-dotnet/issues");
+                throw new ConnectionException("Response is nil. Please report this issue https://github.com/minio/minio-dotnet/issues", response);
             }
 
             if (HttpStatusCode.Redirect.Equals(response.StatusCode) || HttpStatusCode.TemporaryRedirect.Equals(response.StatusCode) || HttpStatusCode.MovedPermanently.Equals(response.StatusCode))
@@ -401,85 +401,120 @@ namespace Minio
 
             if (string.IsNullOrWhiteSpace(response.Content))
             {
-                ErrorResponse errorResponse = new ErrorResponse();
-
-                if (HttpStatusCode.Forbidden.Equals(response.StatusCode) || HttpStatusCode.NotFound.Equals(response.StatusCode) ||
-                    HttpStatusCode.MethodNotAllowed.Equals(response.StatusCode) || HttpStatusCode.NotImplemented.Equals(response.StatusCode))
-                {
-                    MinioException e = null;
-
-                    foreach (Parameter parameter in response.Headers)
-                    {
-                        if (parameter.Name.Equals("x-amz-id-2", StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            errorResponse.HostId = parameter.Value.ToString();
-                        }
-                        if (parameter.Name.Equals("x-amz-request-id", StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            errorResponse.RequestId = parameter.Value.ToString();
-                        }
-                        if (parameter.Name.Equals("x-amz-bucket-region", StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            errorResponse.BucketRegion = parameter.Value.ToString();
-                        }
-                    }
-
-                    errorResponse.Resource = response.Request.Resource;
-                    var resourceSplits = response.Request.Resource.Split('/');
-
-                    if (HttpStatusCode.NotFound.Equals(response.StatusCode))
-                    {
-                        int pathLength = resourceSplits.Count();
-                        bool isAWS = response.ResponseUri.Host.EndsWith("s3.amazonaws.com");
-                        bool isVirtual = isAWS && !response.ResponseUri.Host.StartsWith("s3.amazonaws.com");
-
-                        if (pathLength > 1)
-                        {
-                            errorResponse.Code = "NoSuchKey";
-                            var bucketName = resourceSplits[0];
-                            var objectName = String.Join("/", resourceSplits.Skip(1));
-                            if (objectName == string.Empty)
-                            {
-                                e = new BucketNotFoundException(bucketName, "Not found.");
-                            }
-                            else
-                            {
-                                e = new ObjectNotFoundException(objectName, "Not found.");
-                            }
-                        }
-                        else if (pathLength == 1)
-                        {
-                            var resource = resourceSplits[0];
-
-                            if (isAWS && isVirtual && response.Request.Resource != string.Empty)
-                            {
-                                errorResponse.Code = "NoSuchKey";
-                                e = new ObjectNotFoundException(resource, "Not found.");
-                            }
-                            else
-                            {
-                                errorResponse.Code = "NoSuchBucket";
-                                BucketRegionCache.Instance.Remove(resource);
-                                e = new BucketNotFoundException(resource, "Not found.");
-                            }
-                        }
-                        else
-                        {
-                            e = new InternalClientException("404 without body resulted in path with less than two components");
-                        }
-                    }
-                    else if (HttpStatusCode.Forbidden.Equals(response.StatusCode))
-                    {
-                        errorResponse.Code = "Forbidden";
-                        e = new AccessDeniedException("Access denied on the resource: " + response.Request.Resource);
-                    }
-                    e.Response = errorResponse;
-                    throw e;
-                }
-                throw new InternalClientException("Unsuccessful response from server without XML error: " + response.ErrorMessage);
+                ParseErrorNoContent(response);
+                return;
             }
 
-            if (response.StatusCode.Equals(HttpStatusCode.NotFound) && response.Request.Resource.EndsWith("?location")
+            ParseErrorFromContent(response);
+        }
+
+        private static void ParseErrorNoContent(IRestResponse response)
+        {
+            if (HttpStatusCode.Forbidden.Equals(response.StatusCode)
+                || HttpStatusCode.BadRequest.Equals(response.StatusCode)
+                || HttpStatusCode.NotFound.Equals(response.StatusCode)
+                || HttpStatusCode.MethodNotAllowed.Equals(response.StatusCode)
+                || HttpStatusCode.NotImplemented.Equals(response.StatusCode))
+            {
+                ParseWellKnownErrorNoContent(response);
+            }
+
+            if (response.StatusCode == 0)
+                throw new ConnectionException("Connection error: " + response.ErrorMessage, response);
+
+            throw new InternalClientException("Unsuccessful response from server without XML error: " + response.ErrorMessage, response);
+        }
+
+        private static void ParseWellKnownErrorNoContent(IRestResponse response)
+        {
+            MinioException error = null;
+            ErrorResponse errorResponse = new ErrorResponse();
+
+            foreach (Parameter parameter in response.Headers)
+            {
+                if (parameter.Name.Equals("x-amz-id-2", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    errorResponse.HostId = parameter.Value.ToString();
+                }
+
+                if (parameter.Name.Equals("x-amz-request-id", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    errorResponse.RequestId = parameter.Value.ToString();
+                }
+
+                if (parameter.Name.Equals("x-amz-bucket-region", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    errorResponse.BucketRegion = parameter.Value.ToString();
+                }
+            }
+
+            errorResponse.Resource = response.Request.Resource;
+
+            // zero, one or two segments
+            var resourceSplits = response.Request.Resource.Split(new[] { '/' }, 2, StringSplitOptions.RemoveEmptyEntries);
+
+            if (HttpStatusCode.NotFound.Equals(response.StatusCode))
+            {
+                int pathLength = resourceSplits.Length;
+                bool isAWS = response.ResponseUri.Host.EndsWith("s3.amazonaws.com");
+                bool isVirtual = isAWS && !response.ResponseUri.Host.StartsWith("s3.amazonaws.com");
+
+                if (pathLength > 1)
+                {
+                    var objectName = resourceSplits[1];
+                    errorResponse.Code = "NoSuchKey";
+                    error = new ObjectNotFoundException(objectName, "Not found.");
+                }
+                else if (pathLength == 1)
+                {
+                    var resource = resourceSplits[0];
+
+                    if (isAWS && isVirtual && response.Request.Resource != string.Empty)
+                    {
+                        errorResponse.Code = "NoSuchKey";
+                        error = new ObjectNotFoundException(resource, "Not found.");
+                    }
+                    else
+                    {
+                        errorResponse.Code = "NoSuchBucket";
+                        BucketRegionCache.Instance.Remove(resource);
+                        error = new BucketNotFoundException(resource, "Not found.");
+                    }
+                }
+                else
+                {
+                    error = new InternalClientException("404 without body resulted in path with less than two components", response);
+                }
+            }
+            else if (HttpStatusCode.BadRequest.Equals(response.StatusCode))
+            {
+                int pathLength = resourceSplits.Length;
+
+                if (pathLength > 1)
+                {
+                    var objectName = resourceSplits[1];
+                    errorResponse.Code = "InvalidObjectName";
+                    error = new InvalidObjectNameException(objectName, "Invalid object name.");
+                }
+                else
+                {
+                    error = new InternalClientException("400 without body resulted in path with less than two components", response);
+                }
+            }
+            else if (HttpStatusCode.Forbidden.Equals(response.StatusCode))
+            {
+                errorResponse.Code = "Forbidden";
+                error = new AccessDeniedException("Access denied on the resource: " + response.Request.Resource);
+            }
+
+            error.Response = errorResponse;
+            throw error;
+        }
+
+        private static void ParseErrorFromContent(IRestResponse response)
+        {
+            if (response.StatusCode.Equals(HttpStatusCode.NotFound)
+                && response.Request.Resource.EndsWith("?location")
                 && response.Request.Method.Equals(Method.GET))
             {
                 var bucketName = response.Request.Resource.Split('?')[0];
@@ -492,17 +527,25 @@ namespace Minio
             ErrorResponse errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream);
 
             // Handle XML response for Bucket Policy not found case
-            if (response.StatusCode.Equals(HttpStatusCode.NotFound) && response.Request.Resource.EndsWith("?policy")
-                && response.Request.Method.Equals(Method.GET) && errResponse.Code == "NoSuchBucketPolicy")
+            if (response.StatusCode.Equals(HttpStatusCode.NotFound)
+                && response.Request.Resource.EndsWith("?policy")
+                && response.Request.Method.Equals(Method.GET)
+                && errResponse.Code == "NoSuchBucketPolicy")
             {
-                throw new ErrorResponseException(errResponse.Message, errResponse.Code)
+                throw new ErrorResponseException(errResponse, response)
                 {
-                    Response = errResponse,
                     XmlError = response.Content
                 };
             }
 
-            throw new MinioException(errResponse.Message)
+            if (response.StatusCode.Equals(HttpStatusCode.NotFound)
+                && response.Request.Method.Equals(Method.GET)
+                && errResponse.Code == "NoSuchBucket")
+            {
+                throw new BucketNotFoundException(errResponse.BucketName, "Not found.");
+            }
+
+            throw new UnexpectedMinioException(errResponse.Message)
             {
                 Response = errResponse,
                 XmlError = response.Content

@@ -1185,7 +1185,7 @@ namespace Minio.Functional.Tests
             }
             catch (MinioException ex)
             {
-                if (ex.message.Equals("A header you provided implies functionality that is not implemented"))
+                if (ex.ServerMessage.Equals("A header you provided implies functionality that is not implemented"))
                 {
                     new MintLogger("CopyObject_Test5", copyObjectSignature, "Tests whether CopyObject  multi-part copy upload for large files works", TestStatus.NA, (DateTime.Now - startTime), args:args).Log();
                 }
@@ -1664,7 +1664,7 @@ namespace Minio.Functional.Tests
                 }
                 catch (ObjectNotFoundException ex)
                 {
-                    Assert.AreEqual(ex.message, "Not found.");
+                    Assert.AreEqual(ex.ServerMessage, "Not found.");
                 }
 
                 await TearDown(minio, bucketName);

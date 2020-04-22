@@ -21,10 +21,6 @@ namespace Minio.Exceptions
     [Serializable]
     public class AccessDeniedException : MinioException
     {
-        public AccessDeniedException()
-        {
-        }
-
         public AccessDeniedException(string message) : base(message)
         {
         }
