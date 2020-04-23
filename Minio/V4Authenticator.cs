@@ -65,7 +65,7 @@ namespace Minio
         //
         //     Is skipped for obvious reasons
         //
-        private static HashSet<string> ignoredHeaders = new HashSet<string>
+        private static HashSet<string> ignoredHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "authorization",
             "content-length",
@@ -132,7 +132,7 @@ namespace Minio
             string signature = this.BytesToHex(signatureBytes);
 
             string authorization = this.GetAuthorizationHeader(signedHeaders, signature, signingDate, region);
-            request.AddHeader("Authorization", authorization);
+            request.AddOrUpdateParameter("Authorization", authorization, ParameterType.HttpHeader);
         }
 
         /// <summary>
@@ -449,7 +449,7 @@ namespace Minio
         /// <param name="signingDate">Date for signature to be signed</param>
         private void SetDateHeader(IRestRequest request, DateTime signingDate)
         {
-            request.AddHeader("x-amz-date", signingDate.ToString("yyyyMMddTHHmmssZ"));
+            request.AddOrUpdateParameter("x-amz-date", signingDate.ToString("yyyyMMddTHHmmssZ"), ParameterType.HttpHeader);
         }
 
         /// <summary>
@@ -459,7 +459,7 @@ namespace Minio
         /// <param name="hostUrl">Host url</param>
         private void SetHostHeader(IRestRequest request, string hostUrl)
         {
-            request.AddHeader("Host", hostUrl);
+            request.AddOrUpdateParameter("Host", hostUrl, ParameterType.HttpHeader);
         }
 
         /// <summary>
@@ -471,7 +471,7 @@ namespace Minio
         {
             if (!string.IsNullOrEmpty(sessionToken))
             {
-                request.AddHeader("X-Amz-Security-Token", sessionToken);
+                request.AddOrUpdateParameter("X-Amz-Security-Token", sessionToken, ParameterType.HttpHeader);
             }
         }
 
@@ -486,7 +486,7 @@ namespace Minio
             // No need to compute SHA256 if endpoint scheme is https
             if (isSecure)
             {
-                request.AddHeader("x-amz-content-sha256", "UNSIGNED-PAYLOAD");
+                request.AddOrUpdateParameter("x-amz-content-sha256", "UNSIGNED-PAYLOAD", ParameterType.HttpHeader);
                 return;
             }
             if (request.Method == Method.PUT || request.Method.Equals(Method.POST))
@@ -494,7 +494,7 @@ namespace Minio
                 var bodyParameter = request.Parameters.FirstOrDefault(p => p.Type.Equals(ParameterType.RequestBody));
                 if (bodyParameter == null)
                 {
-                    request.AddHeader("x-amz-content-sha256", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+                    request.AddOrUpdateParameter("x-amz-content-sha256", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", ParameterType.HttpHeader);
                     return;
                 }
                 byte[] body = null;
@@ -513,11 +513,11 @@ namespace Minio
                 var sha256 = SHA256.Create();
                 byte[] hash = sha256.ComputeHash(body);
                 string hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
-                request.AddHeader("x-amz-content-sha256", hex);
+                request.AddOrUpdateParameter("x-amz-content-sha256", hex, ParameterType.HttpHeader);
             }
             else
             {
-                request.AddHeader("x-amz-content-sha256", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+                request.AddOrUpdateParameter("x-amz-content-sha256", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", ParameterType.HttpHeader);
             }
         }
 
@@ -565,7 +565,7 @@ namespace Minio
                 byte[] hash = md5.ComputeHash(body);
 
                 string base64 = Convert.ToBase64String(hash);
-                request.AddHeader("Content-MD5", base64);
+                request.AddOrUpdateParameter("Content-MD5", base64, ParameterType.HttpHeader);
             }
         }
     }
