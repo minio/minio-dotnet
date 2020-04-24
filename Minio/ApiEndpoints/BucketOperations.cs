@@ -401,14 +401,6 @@ namespace Minio
                                 request.AddQueryParameter("events",eventType.value);
                             }
 
-                            var startTime = DateTime.Now;
-                            // Logs full url when HTTPtracing is enabled (as in MinioClient.ExecuteTaskAsync)
-                            if (this.trace)
-                            {
-                                var fullUrl = this.restClient.BuildUri(request);
-                                Console.WriteLine($"Full URL of Request {fullUrl}");
-                            }
-
                             request.ResponseWriter = responseStream =>
                             {
                                 using (responseStream)
@@ -436,9 +428,7 @@ namespace Minio
                                 }
                             };
 
-
-                            IRestResponse response = await this.restClient.ExecuteTaskAsync(request, cancellationToken).ConfigureAwait(false);
-                            this.HandleIfErrorResponse(response, this.NoErrorHandlers, startTime);
+                            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
                             cts.Token.ThrowIfCancellationRequested();
                         }
