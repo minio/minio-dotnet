@@ -558,12 +558,6 @@ namespace Minio
                     XmlError = response.Content
                 };
             }
-            if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-                && response.Request.Method.Equals(Method.GET) && errResponse.Code == "NoSuchBucket")
-            {
-                throw new BucketNotFoundException(errResponse.BucketName, "Not found.");
-
-            }
 
             if (response.StatusCode.Equals(HttpStatusCode.NotFound)
                 && response.Request.Method.Equals(Method.GET)
