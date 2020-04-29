@@ -15,16 +15,15 @@
  * limitations under the License.
  */
 
-using RestSharp;
+using System;
 
 namespace Minio.Exceptions
 {
-    public class ErrorResponseException : MinioException
+    [Serializable]
+    public class SelectObjectContentException : MinioException
     {
-        public ErrorResponseException(ErrorResponse errorResponse, IRestResponse serverResponse) :
-            base(serverResponse)
+        public SelectObjectContentException(string message) : base(message)
         {
-            Response = errorResponse;
         }
     }
 }

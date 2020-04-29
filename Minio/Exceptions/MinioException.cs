@@ -1,5 +1,6 @@
 ﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
+ * (C) 2017, 2018, 2019, 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +16,7 @@
  */
 
 using System;
+
 using RestSharp;
 
 namespace Minio.Exceptions
@@ -22,27 +24,44 @@ namespace Minio.Exceptions
     [Serializable]
     public class MinioException : Exception
     {
-        public string message { get; set; }
-        public IRestResponse response { get; set; }
-
-        public MinioException(IRestResponse response)
-            : base($"MinIO API responded with status code={response.StatusCode}, response={response.ErrorMessage}, content={response.Content}")
+        private static string GetMessage(string message, IRestResponse serverResponse)
         {
-            this.response = response;
+            if (serverResponse == null && string.IsNullOrEmpty(message))
+                throw new ArgumentNullException(nameof(message));
+
+            if (serverResponse == null)
+                return $"MinIO API responded with message={message}";
+
+            if (message == null)
+                return $"MinIO API responded with status code={serverResponse.StatusCode}, response={serverResponse.ErrorMessage}, content={serverResponse.Content}";
+
+            return $"MinIO API responded with message={message}. Status code={serverResponse.StatusCode}, response={serverResponse.ErrorMessage}, content={serverResponse.Content}";
         }
 
-        public MinioException()
+        public MinioException(IRestResponse serverResponse)
+            : this(null, serverResponse)
         {
         }
 
-        public MinioException(string message) : base($"MinIO API responded with message={message}")
+        public MinioException(string message)
+            : this(message, null)
         {
-            this.message = message;
         }
 
-        public ErrorResponse Response { get; set; }
-        public string XmlError { get; set; }
+        public MinioException(string message, IRestResponse serverResponse)
+            : base(GetMessage(message, serverResponse))
+        {
+            this.ServerMessage = message;
+            this.ServerResponse = serverResponse;
 
-        public override string ToString() => $"{this.message}: {base.ToString()}";
+        }
+
+        public string ServerMessage { get; }
+
+        public IRestResponse ServerResponse { get; }
+
+        public ErrorResponse Response { get; internal set; }
+
+        public string XmlError { get; internal set; }
     }
 }

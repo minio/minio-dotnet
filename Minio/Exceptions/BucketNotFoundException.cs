@@ -1,5 +1,6 @@
 ﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
+ * (C) 2017, 2018, 2019, 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +23,6 @@ namespace Minio.Exceptions
     public class BucketNotFoundException : MinioException
     {
         private readonly string bucketName;
-
-        public BucketNotFoundException()
-        {
-        }
 
         public BucketNotFoundException(string bucketName, string message) : base(message)
         {
