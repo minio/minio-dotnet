@@ -576,10 +576,10 @@ namespace Minio
 
             var request = await this.CreateRequest(Method.GET, bucketName).ConfigureAwait(false);
             request.AddQueryParameter("uploads","");
-            request.AddQueryParameter("prefix" , Uri.EscapeDataString(prefix));
-            request.AddQueryParameter("delimiter" ,Uri.EscapeDataString(delimiter));
-            request.AddQueryParameter("key-marker" , Uri.EscapeDataString(keyMarker));
-            request.AddQueryParameter("upload-id-marker" ,Uri.EscapeDataString(uploadIdMarker));
+            request.AddQueryParameter("prefix",prefix);
+            request.AddQueryParameter("delimiter",delimiter);
+            request.AddQueryParameter("key-marker",keyMarker);
+            request.AddQueryParameter("upload-id-marker",uploadIdMarker);
             request.AddQueryParameter("max-uploads","1000");
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 

@@ -232,10 +232,10 @@ namespace Minio
             var request = await this.CreateRequest(Method.GET,
                                                      bucketName)
                                         .ConfigureAwait(false);
-            request.AddQueryParameter("delimiter",Uri.EscapeDataString(delimiter));
-            request.AddQueryParameter("prefix", Uri.EscapeDataString(prefix));
+            request.AddQueryParameter("delimiter",delimiter);
+            request.AddQueryParameter("prefix",prefix);
             request.AddQueryParameter("max-keys", "1000");
-            request.AddQueryParameter("marker",Uri.EscapeDataString(marker));
+            request.AddQueryParameter("marker",marker);
             request.AddQueryParameter("encoding-type","url");
   
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
