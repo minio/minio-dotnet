@@ -434,8 +434,8 @@ catch (MinioException e)
 ```
 
 <a name="setBucketPolicy"></a>
-### SetPolicyAsync(string bucketName, string objectPrefix, PolicyType policyType)
-`Task SetPolicyAsync(string bucketName, string objectPrefix, PolicyType policyType, CancellationToken cancellationToken = default(CancellationToken))`
+### SetPolicyAsync(string bucketName, string policyJson)
+`Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default(CancellationToken))`
 
 针对存储桶和对象前缀设置访问策略。
 
@@ -444,8 +444,7 @@ __参数__
 | 参数    | 类型    | 描述    |
 |:--- |:--- |:--- |
 | ``bucketName``  | _string_  | 存储桶名称。  |
-| ``objectPrefix``  | _string_  | 对象前缀。 |
-| ``PolicyType``  | _PolicyType_  | 要设置的策略。 |
+| ``PolicyJson``  | _string_  | 要设置的策略。 |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | 可选参数。默认是default(CancellationToken) |
 
 
@@ -456,7 +455,6 @@ __参数__
 |        | ``ConnectionException`` : 连接异常。            |
 |        | ``InternalClientException`` : 内部错误。        |
 |        | ``InvalidBucketNameException `` : 无效的存储桶名称。       |
-|        | ``InvalidObjectPrefixException`` : 无效的对象前缀。        |
 
 
 
@@ -465,7 +463,8 @@ __示例__
 ```cs
 try
 {
-    await minioClient.SetPolicyAsync("myBucket", "uploads",PolicyType.WRITE_ONLY);
+    string policyJson = $@"{{""Version"":""2012-10-17"",""Statement"":[{{""Action"":[""s3:GetBucketLocation""],""Effect"":""Allow"",""Principal"":{{""AWS"":[""*""]}},""Resource"":[""arn:aws:s3:::{bucketName}""],""Sid"":""""}},{{""Action"":[""s3:ListBucket""],""Condition"":{{""StringEquals"":{{""s3:prefix"":[""foo"",""prefix/""]}}}},""Effect"":""Allow"",""Principal"":{{""AWS"":[""*""]}},""Resource"":[""arn:aws:s3:::{bucketName}""],""Sid"":""""}},{{""Action"":[""s3:GetObject""],""Effect"":""Allow"",""Principal"":{{""AWS"":[""*""]}},""Resource"":[""arn:aws:s3:::{bucketName}/foo*"",""arn:aws:s3:::{bucketName}/prefix/*""],""Sid"":""""}}]}}";
+    await minioClient.SetPolicyAsync("myBucket", policyJson);
 }
 catch (MinioException e)
 {
