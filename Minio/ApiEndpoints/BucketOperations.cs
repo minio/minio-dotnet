@@ -108,6 +108,10 @@ namespace Minio
         {
             try
             {
+                if (bucketName == null)
+                {
+                    throw new InvalidBucketNameException(bucketName, "bucketName cannot be null");
+                }
                 var request = await this.CreateRequest(Method.HEAD, bucketName).ConfigureAwait(false);
                 var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             }
