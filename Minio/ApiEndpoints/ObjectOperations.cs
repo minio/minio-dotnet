@@ -47,8 +47,6 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            await StatObjectAsync(bucketName, objectName, sse: sse, cancellationToken: cancellationToken).ConfigureAwait(false);
-
             var headers = new Dictionary<string, string>();
             if (sse != null && sse.GetType().Equals(EncryptionType.SSE_C))
             {
@@ -85,8 +83,6 @@ namespace Minio
             {
                 throw new ArgumentException("Length should be greater than zero", nameof(length));
             }
-
-            await StatObjectAsync(bucketName, objectName, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             var headerMap = new Dictionary<string, string>();
             if (length > 0)
