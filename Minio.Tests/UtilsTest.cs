@@ -30,6 +30,7 @@ namespace Minio.Tests
     public class UtilsTest
     {
         [TestMethod]
+        [ExpectedException(typeof(InvalidBucketNameException))]
         public void TestValidBucketName()
         {
             var testCases = new List<KeyValuePair<string, InvalidBucketNameException>>
@@ -57,15 +58,13 @@ namespace Minio.Tests
                 catch (InvalidBucketNameException ex)
                 {
                     Assert.AreEqual(ex.Message, expectedException.Message);
-                }
-                catch (Exception)
-                {
-                    Assert.Fail();
+                    throw;
                 }
             }
         }
 
         [TestMethod]
+        [ExpectedException(typeof(InvalidObjectNameException))]
         public void TestEmptyObjectName()
         {
             try
@@ -75,6 +74,7 @@ namespace Minio.Tests
             catch (InvalidObjectNameException ex)
             {
                 Assert.AreEqual(ex.ServerMessage, "Object name cannot be empty.");
+                throw;
             }
         }
 
@@ -101,18 +101,26 @@ namespace Minio.Tests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
         public void TestEmptyFile()
         {
-            try
-            {
-                utils.ValidateFile("");
-            }
-            catch (ArgumentException)
-            {
-            }
+            utils.ValidateFile("");
         }
 
         [TestMethod]
+        public void TestFileWithoutExtension()
+        {
+            utils.ValidateFile("xxxx");
+        }
+
+        [TestMethod]
+        public void TestFileWithExtension()
+        {
+            utils.ValidateFile("xxxx.xml");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(EntityTooLargeException))]
         public void TestInvalidPartSize()
         {
             try
@@ -122,6 +130,7 @@ namespace Minio.Tests
             catch (EntityTooLargeException ex)
             {
                 Assert.AreEqual(ex.ServerMessage, "Your proposed upload size 5000000000000000000 exceeds the maximum allowed object size " + Constants.MaxMultipartPutObjectSize);
+                throw;
             }
         }
 
