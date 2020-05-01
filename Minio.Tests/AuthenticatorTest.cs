@@ -19,6 +19,7 @@ using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Minio.DataModel;
 
 namespace Minio.Tests
 {
@@ -86,6 +87,42 @@ namespace Minio.Tests
             authenticator.Authenticate(restClient, request);
             Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
             Assert.IsFalse(hasPayloadHeader(request, "Content-Md5"));
+        }
+
+        [TestMethod]
+        public void TestPresignedPostPolicy()
+        {
+            DateTime requestDate = new DateTime(2020, 05, 01, 15, 45, 33, DateTimeKind.Utc);
+            var authenticator = new V4Authenticator(false, "my-access-key", "secretkey");
+
+            var policy = new PostPolicy();
+            policy.SetBucket("bucket-name");
+            policy.SetKey("object-name");
+
+            policy.SetAlgorithm("AWS4-HMAC-SHA256");
+            var region = "mock-location";
+            policy.SetCredential(authenticator.GetCredentialString(requestDate, region));
+            policy.SetDate(requestDate);
+            policy.SetSessionToken(null);
+
+            string policyBase64 = policy.Base64();
+            string signature = authenticator.PresignPostSignature(region, requestDate, policyBase64);
+
+            policy.SetPolicy(policyBase64);
+            policy.SetSignature(signature);
+
+            var headers = new Dictionary<string, string>
+            {
+                {"bucket", "bucket-name"},
+                {"key", "object-name"},
+                {"x-amz-algorithm", "AWS4-HMAC-SHA256"},
+                {"x-amz-credential", "my-access-key/20200501/mock-location/s3/aws4_request"},
+                {"x-amz-date", "20200501T154533Z"},
+                {"policy", "eyJleHBpcmF0aW9uIjoiMDAwMS0wMS0wMVQwMDowMDowMC4wMDBaIiwiY29uZGl0aW9ucyI6W1siZXEiLCIkYnVja2V0IiwiYnVja2V0LW5hbWUiXSxbImVxIiwiJGtleSIsIm9iamVjdC1uYW1lIl0sWyJlcSIsIiR4LWFtei1hbGdvcml0aG0iLCJBV1M0LUhNQUMtU0hBMjU2Il0sWyJlcSIsIiR4LWFtei1jcmVkZW50aWFsIiwibXktYWNjZXNzLWtleS8yMDIwMDUwMS9tb2NrLWxvY2F0aW9uL3MzL2F3czRfcmVxdWVzdCJdLFsiZXEiLCIkeC1hbXotZGF0ZSIsIjIwMjAwNTAxVDE1NDUzM1oiXV19"},
+                {"x-amz-signature", "ec6dad862909ee905cfab3ef87ede0e666eebd6b8f00d28e5df104a8fcbd4027"},
+            };
+
+            CollectionAssert.AreEquivalent(headers, policy.GetFormData());
         }
 
         private Tuple<string, object> GetHeaderKV(IRestRequest request, string headername)
