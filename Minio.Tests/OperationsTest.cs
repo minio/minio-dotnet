@@ -52,7 +52,7 @@ namespace Minio.Tests
             var signedUrl = await client.PresignedGetObjectAsync("bucket", "object-name", 3600, null, _requestDate);
 
             Assert.AreEqual(
-                "http://localhost:9001/bucket/object-name?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=my-access-key%2F20200501%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200501T154533Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&&X-Amz-Signature=6dfd01cd302737c58c80e9ca1ec4abaa34e85d9ab3156d5704ea7b88bc9bdd37",
+                "http://localhost:9001/bucket/object-name?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=my-access-key%2F20200501%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200501T154533Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=6dfd01cd302737c58c80e9ca1ec4abaa34e85d9ab3156d5704ea7b88bc9bdd37",
                 signedUrl);
         }
 

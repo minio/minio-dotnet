@@ -310,7 +310,7 @@ namespace Minio
 
             SortedDictionary<string, string> headersToSign = this.GetHeadersToSign(request);
             string canonicalRequest = this.GetPresignCanonicalRequest(client, request, requestQuery, headersToSign);
-            string headers = string.Join("&", headersToSign.Select(p => p.Key + "=" + utils.UrlEncode(p.Value)));
+            string headers = string.Concat(headersToSign.Select(p => $"&{p.Key}={utils.UrlEncode(p.Value)}"));
             byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = this.BytesToHex(ComputeSha256(canonicalRequestBytes));
             string stringToSign = this.GetStringToSign(region, signingDate, canonicalRequestHash);
@@ -320,7 +320,7 @@ namespace Minio
             string signature = this.BytesToHex(signatureBytes);
 
             // Return presigned url.
-            return $"{client.BaseUrl}{path}?{requestQuery}&{headers}&X-Amz-Signature={signature}";
+            return $"{client.BaseUrl}{path}?{requestQuery}{headers}&X-Amz-Signature={signature}";
         }
 
         /// <summary>
