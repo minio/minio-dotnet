@@ -23,9 +23,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Web;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -36,6 +36,9 @@ namespace Minio
     public partial class MinioClient : IObjectOperations
     {
         private readonly List<string> supportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type", "x-amz-acl", "content-disposition" };
+
+        public static readonly Regex valueReplaceRegex = new Regex(@"^x-amz-meta-",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
@@ -840,7 +843,7 @@ namespace Minio
                 }
                 else if (supportedHeaders.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase) || parameter.Name.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
                 {
-                    metaData[parameter.Name] = parameter.Value.ToString().ToLowerInvariant().Replace("x-amz-meta-", string.Empty);
+                    metaData[parameter.Name] = valueReplaceRegex.Replace(parameter.Value.ToString(), string.Empty);
                 }
             }
             return new ObjectStat(objectName, size, lastModified, etag, contentType, metaData);
