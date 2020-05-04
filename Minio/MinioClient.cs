@@ -53,7 +53,7 @@ namespace Minio
         internal bool Secure { get; private set; }
 
         // RESTSharp client
-        internal RestClient restClient;
+        internal IRestClient restClient;
         // Custom authenticator for RESTSharp
         internal V4Authenticator authenticator;
         // Handler for task retry policy
