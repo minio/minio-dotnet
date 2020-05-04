@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Minio.DataModel;
+using Moq;
 
 namespace Minio.Tests
 {
@@ -123,6 +124,70 @@ namespace Minio.Tests
             };
 
             CollectionAssert.AreEquivalent(headers, policy.GetFormData());
+        }
+
+        [TestMethod]
+        public void GetPresignCanonicalRequestTest()
+        {
+            var authenticator = new V4Authenticator(false, "my-access-key", "my-secret-key");
+
+            var request = new Uri(
+                "http://localhost:9001/bucket/object-name?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=my-access-key%2F20200501%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200501T154533Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host");
+            var headersToSign = new SortedDictionary<string, string>(StringComparer.Ordinal)
+            {
+                {"X-Special".ToLowerInvariant(), "special"},
+                {"Content-Language".ToLowerInvariant(), "en"},
+            };
+
+            var canonicalRequest = authenticator.GetPresignCanonicalRequest(Method.PUT, request, headersToSign);
+            Assert.AreEqual(string.Join('\n', new[]
+                {
+                    "PUT",
+                    "/bucket/object-name",
+                    "X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=my-access-key%2F20200501%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200501T154533Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&content-language=en&x-special=special",
+                    "host:localhost:9001",
+                    "",
+                    "host",
+                    "UNSIGNED-PAYLOAD"
+                }),
+                canonicalRequest);
+
+        }
+
+        private static Mock<IRestClient> MockRestClient(string baseUrl)
+        {
+            var restClient = new Mock<IRestClient>(MockBehavior.Strict);
+            restClient.SetupProperty(rc => rc.BaseUrl, new Uri(baseUrl, UriKind.Absolute));
+            restClient.Setup(rc => rc.BuildUri(It.IsAny<IRestRequest>()))
+                .Returns((IRestRequest rr) => new RestClient(baseUrl).BuildUri(rr));
+            return restClient;
+        }
+
+        [TestMethod]
+        public void GetPresignCanonicalRequestWithParametersTest()
+        {
+            var authenticator = new V4Authenticator(false, "my-access-key", "my-secret-key");
+
+            var request = new Uri(
+                "http://localhost:9001/bucket/object-name?uploadId=upload-id&partNumber=1&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=my-access-key%2F20200501%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200501T154533Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host");
+            var headersToSign = new SortedDictionary<string, string>(StringComparer.Ordinal)
+            {
+                {"X-Special".ToLowerInvariant(), "special"},
+                {"Content-Language".ToLowerInvariant(), "en"},
+            };
+
+            var canonicalRequest = authenticator.GetPresignCanonicalRequest(Method.PUT, request, headersToSign);
+            Assert.AreEqual(string.Join('\n', new[]
+                {
+                    "PUT",
+                    "/bucket/object-name",
+                    "X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=my-access-key%2F20200501%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200501T154533Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&content-language=en&partNumber=1&uploadId=upload-id&x-special=special",
+                    "host:localhost:9001",
+                    "",
+                    "host",
+                    "UNSIGNED-PAYLOAD"
+                }),
+                canonicalRequest);
         }
 
         private Tuple<string, object> GetHeaderKV(IRestRequest request, string headername)

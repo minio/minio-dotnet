@@ -35,6 +35,8 @@ namespace Minio
         private readonly string region;
         private readonly string sessionToken;
 
+        private readonly string sha256EmptyFileHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+
         internal bool isAnonymous { get; private set; }
         internal bool isSecure { get; private set; }
         //
@@ -281,22 +283,27 @@ namespace Minio
         /// <returns>Presigned url</returns>
         internal string PresignURL(IRestClient client, IRestRequest request, int expires, string region = "", string sessionToken = "", DateTime? reqDate = null)
         {
-            var signingDate = DateTime.UtcNow;
-
-            if (reqDate.HasValue)
-            {
-                signingDate = reqDate.Value;
-            }
-            string requestQuery = string.Empty;
-            string path = request.Resource;
+            var signingDate = reqDate ?? DateTime.UtcNow;
 
             if (string.IsNullOrWhiteSpace(region))
             {
                 region = this.GetRegion(client.BaseUrl.Host);
             }
 
-            this.SetSessionTokenHeader(request, sessionToken);
-            requestQuery = "X-Amz-Algorithm=AWS4-HMAC-SHA256&";
+            Uri requestUri = client.BuildUri(request);
+            string requestQuery = requestUri.Query;
+
+            SortedDictionary<string, string> headersToSign = this.GetHeadersToSign(request);
+            if (!string.IsNullOrEmpty(sessionToken))
+            {
+                headersToSign["X-Amz-Security-Token"] = sessionToken;
+            }
+
+            if (requestQuery.Length > 0)
+            {
+                requestQuery += "&";
+            }
+            requestQuery += "X-Amz-Algorithm=AWS4-HMAC-SHA256&";
             requestQuery += "X-Amz-Credential="
                 + Uri.EscapeDataString(this.accessKey + "/" + this.GetScope(region, signingDate))
                 + "&";
@@ -308,8 +315,8 @@ namespace Minio
                 + "&";
             requestQuery += "X-Amz-SignedHeaders=host";
 
-            SortedDictionary<string, string> headersToSign = this.GetHeadersToSign(request);
-            string canonicalRequest = this.GetPresignCanonicalRequest(client, request, requestQuery, headersToSign);
+            var presignUri = new UriBuilder(requestUri) {Query = requestQuery}.Uri;
+            string canonicalRequest = this.GetPresignCanonicalRequest(request.Method, presignUri, headersToSign);
             string headers = string.Concat(headersToSign.Select(p => $"&{p.Key}={utils.UrlEncode(p.Value)}"));
             byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = this.BytesToHex(ComputeSha256(canonicalRequestBytes));
@@ -320,45 +327,54 @@ namespace Minio
             string signature = this.BytesToHex(signatureBytes);
 
             // Return presigned url.
-            return $"{client.BaseUrl}{path}?{requestQuery}{headers}&X-Amz-Signature={signature}";
+            var signedUri = new UriBuilder(presignUri) {Query = $"{requestQuery}{headers}&X-Amz-Signature={signature}"};
+            return signedUri.ToString();
         }
 
         /// <summary>
         /// Get presign canonical request.
         /// </summary>
-        /// <param name="client">Instantiated client object</param>
-        /// <param name="request">Instantiated request object</param>
-        /// <param name="requestQuery">Additional request query params</param>
-        /// <param name="headersToSign"></param>
+        /// <param name="requestMethod">HTTP method used for this request</param>
+        /// <param name="uri">Full url for this request, including all query parameters except for headers and X-Amz-Signature</param>
         /// <returns>Presigned canonical request</returns>
-        internal string GetPresignCanonicalRequest(IRestClient client, IRestRequest request, string requestQuery, SortedDictionary<string, string> headersToSign)
+        internal string GetPresignCanonicalRequest(Method requestMethod, Uri uri, SortedDictionary<string, string> headersToSign)
         {
             var canonicalStringList = new LinkedList<string>();
             // METHOD
-            canonicalStringList.AddLast(request.Method.ToString());
+            canonicalStringList.AddLast(requestMethod.ToString());
 
-            string path = request.Resource;
-            if (!path.StartsWith("/"))
-            {
-                path = $"/{path}";
-            }
+            string path = uri.AbsolutePath;
+
             canonicalStringList.AddLast(path);
-            string query = headersToSign.Aggregate(requestQuery, (pv, cv) => $"{pv}&{utils.UrlEncode(cv.Key)}={utils.UrlEncode(s3utils.TrimAll(cv.Value))}");
+            var queryParams = uri.Query.TrimStart('?').Split('&').ToList();
+            queryParams.AddRange(headersToSign.Select(cv =>
+                $"{utils.UrlEncode(cv.Key)}={utils.UrlEncode(s3utils.TrimAll(cv.Value))}"));
+            queryParams.Sort(StringComparer.Ordinal);
+            string query = string.Join("&", queryParams);
             canonicalStringList.AddLast(query);
-            if (client.BaseUrl.Port > 0 && (client.BaseUrl.Port != 80 && client.BaseUrl.Port != 443))
-            {
-                canonicalStringList.AddLast($"host:{client.BaseUrl.Host}:{client.BaseUrl.Port}");
-            }
-            else
-            {
-                canonicalStringList.AddLast($"host:{client.BaseUrl.Host}");
-            }
+            var canonicalHost = GetCanonicalHost(uri);
+            canonicalStringList.AddLast($"host:{canonicalHost}");
 
             canonicalStringList.AddLast(string.Empty);
             canonicalStringList.AddLast("host");
             canonicalStringList.AddLast("UNSIGNED-PAYLOAD");
 
             return string.Join("\n", canonicalStringList);
+        }
+
+        private static string GetCanonicalHost(Uri url)
+        {
+            string canonicalHost;
+            if (url.Port > 0 && (url.Port != 80 && url.Port != 443))
+            {
+                canonicalHost = $"{url.Host}:{url.Port}";
+            }
+            else
+            {
+                canonicalHost = url.Host;
+            }
+
+            return canonicalHost;
         }
 
         /// <summary>
@@ -413,7 +429,7 @@ namespace Minio
             }
             else
             {
-                canonicalStringList.AddLast("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+                canonicalStringList.AddLast(sha256EmptyFileHash);
             }
 
             return string.Join("\n", canonicalStringList);
@@ -428,7 +444,7 @@ namespace Minio
         {
             var headers = request.Parameters.Where(p => p.Type.Equals(ParameterType.HttpHeader)).ToList();
 
-            var sortedHeaders = new SortedDictionary<string, string>();
+            var sortedHeaders = new SortedDictionary<string, string>(StringComparer.Ordinal);
             foreach (Parameter header in headers)
             {
                 string headerName = header.Name.ToLower();
@@ -494,7 +510,7 @@ namespace Minio
                 var bodyParameter = request.Parameters.FirstOrDefault(p => p.Type.Equals(ParameterType.RequestBody));
                 if (bodyParameter == null)
                 {
-                    request.AddOrUpdateParameter("x-amz-content-sha256", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", ParameterType.HttpHeader);
+                    request.AddOrUpdateParameter("x-amz-content-sha256", sha256EmptyFileHash, ParameterType.HttpHeader);
                     return;
                 }
                 byte[] body = null;
@@ -517,7 +533,7 @@ namespace Minio
             }
             else
             {
-                request.AddOrUpdateParameter("x-amz-content-sha256", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", ParameterType.HttpHeader);
+                request.AddOrUpdateParameter("x-amz-content-sha256", sha256EmptyFileHash, ParameterType.HttpHeader);
             }
         }
 
