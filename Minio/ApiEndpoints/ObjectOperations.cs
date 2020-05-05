@@ -25,7 +25,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -36,9 +35,6 @@ namespace Minio
     public partial class MinioClient : IObjectOperations
     {
         private readonly List<string> supportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type", "x-amz-acl", "content-disposition" };
-
-        public static readonly Regex valueReplaceRegex = new Regex(@"^x-amz-meta-",
-            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
@@ -841,9 +837,14 @@ namespace Minio
                     contentType = parameter.Value.ToString();
                     metaData["Content-Type"] = contentType;
                 }
-                else if (supportedHeaders.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase) || parameter.Name.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
+                else if (supportedHeaders.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
                 {
-                    metaData[parameter.Name] = valueReplaceRegex.Replace(parameter.Value.ToString(), string.Empty);
+                    metaData[parameter.Name] = parameter.Value.ToString();
+                }
+                else if (parameter.Name.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
+                {
+                    metaData[parameter.Name] = parameter.Value.ToString();
+                    metaData[parameter.Name.Substring("x-amz-meta-".Length)] = parameter.Value.ToString();
                 }
             }
             return new ObjectStat(objectName, size, lastModified, etag, contentType, metaData);
