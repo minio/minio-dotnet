@@ -529,36 +529,6 @@ namespace Minio.Functional.Tests
             }
         }
 
-        internal async static Task PutObject_Test6(MinioClient minio)
-        {
-            DateTime startTime = DateTime.Now;
-            string bucketName = GetRandomName(15);
-            string objectName = "parallelput";
-            var args = new Dictionary<string, string>
-            {
-                { "bucketName", bucketName },
-                { "objectName", objectName },
-                { "data", "10KB" },
-                { "size", "10KB" },
-            };
-            try
-            {
-                await Setup_Test(minio, bucketName);
-                Task[] tasks = new Task[7];
-                for (int i = 0; i < 7; i++) {
-                    tasks[i] = PutObject_Task(minio, bucketName, objectName, null, null, 0, null, rsg.GenerateStreamFromSeed(10*KB));
-                }
-                await Task.WhenAll(tasks);
-                await minio.RemoveObjectAsync(bucketName, objectName);
-                await TearDown(minio, bucketName);
-                new MintLogger(nameof(PutObject_Test6), putObjectSignature1, "Tests thread safety of minioclient on a parallel put operation", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
-            }
-            catch (Exception ex)
-            {
-                new MintLogger(nameof(PutObject_Test6), putObjectSignature1, "Tests thread safety of minioclient on a parallel put operation", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
-            }
-        }
-
         internal async static Task PutObject_Test7(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
