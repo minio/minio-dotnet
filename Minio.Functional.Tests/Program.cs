@@ -105,7 +105,6 @@ namespace Minio.Functional.Tests
             FunctionalTest.PutObject_Test3(minioClient).Wait();
             FunctionalTest.PutObject_Test4(minioClient).Wait();
             FunctionalTest.PutObject_Test5(minioClient).Wait();
-            FunctionalTest.PutObject_Test6(minioClient).Wait();
             FunctionalTest.PutObject_Test7(minioClient).Wait();
             FunctionalTest.PutObject_Test8(minioClient).Wait();
 
