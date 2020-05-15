@@ -843,7 +843,6 @@ namespace Minio
                 }
                 else if (parameter.Name.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
                 {
-                    metaData[parameter.Name] = parameter.Value.ToString();
                     metaData[parameter.Name.Substring("x-amz-meta-".Length)] = parameter.Value.ToString();
                 }
             }
