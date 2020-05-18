@@ -489,7 +489,7 @@ namespace Minio.Functional.Tests
                 Assert.IsTrue(statObject != null);
                 Assert.IsTrue(statObject.MetaData != null);
                 var statMeta = new Dictionary<string, string>(statObject.MetaData, StringComparer.OrdinalIgnoreCase);
-                Assert.IsTrue(statMeta.ContainsKey("X-Amz-Meta-Customheader"));
+                Assert.IsTrue(statMeta.ContainsKey("Customheader"));
                 Assert.IsTrue(statObject.MetaData.ContainsKey("Content-Type") && statObject.MetaData["Content-Type"].Equals("custom/contenttype"));
                 await TearDown(minio, bucketName);
                 new MintLogger(nameof(PutObject_Test4), putObjectSignature1, "Tests whether PutObject with different content-type passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
@@ -1309,7 +1309,7 @@ namespace Minio.Functional.Tests
                 }
                 ObjectStat stats = await minio.StatObjectAsync(bucketName, objectName);
 
-                Assert.IsTrue(stats.MetaData["X-Amz-Meta-Orig"] != null) ;
+                Assert.IsTrue(stats.MetaData["Orig"] != null) ;
 
                 CopyConditions copyCond = new CopyConditions();
                 copyCond.SetReplaceMetadataDirective();
@@ -1323,7 +1323,7 @@ namespace Minio.Functional.Tests
                 await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions:copyCond, metadata: metadata);
 
                 ObjectStat dstats = await minio.StatObjectAsync(destBucketName, destObjectName);
-                Assert.IsTrue(dstats.MetaData["X-Amz-Meta-Mynewkey"] != null);
+                Assert.IsTrue(dstats.MetaData["Mynewkey"] != null);
                 await minio.RemoveObjectAsync(bucketName, objectName);
                 await minio.RemoveObjectAsync(destBucketName, destObjectName);
 
