@@ -489,7 +489,7 @@ namespace Minio.Functional.Tests
                 Assert.IsTrue(statObject != null);
                 Assert.IsTrue(statObject.MetaData != null);
                 var statMeta = new Dictionary<string, string>(statObject.MetaData, StringComparer.OrdinalIgnoreCase);
-                Assert.IsTrue(statMeta.ContainsKey("X-Amz-Meta-Customheader"));
+                Assert.IsTrue(statMeta.ContainsKey("Customheader"));
                 Assert.IsTrue(statObject.MetaData.ContainsKey("Content-Type") && statObject.MetaData["Content-Type"].Equals("custom/contenttype"));
                 await TearDown(minio, bucketName);
                 new MintLogger(nameof(PutObject_Test4), putObjectSignature1, "Tests whether PutObject with different content-type passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
@@ -526,36 +526,6 @@ namespace Minio.Functional.Tests
             catch (Exception ex)
             {
                 new MintLogger(nameof(PutObject_Test5), putObjectSignature1, "Tests whether PutObject with no content-type passes for small object", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
-            }
-        }
-
-        internal async static Task PutObject_Test6(MinioClient minio)
-        {
-            DateTime startTime = DateTime.Now;
-            string bucketName = GetRandomName(15);
-            string objectName = "parallelput";
-            var args = new Dictionary<string, string>
-            {
-                { "bucketName", bucketName },
-                { "objectName", objectName },
-                { "data", "10KB" },
-                { "size", "10KB" },
-            };
-            try
-            {
-                await Setup_Test(minio, bucketName);
-                Task[] tasks = new Task[7];
-                for (int i = 0; i < 7; i++) {
-                    tasks[i] = PutObject_Task(minio, bucketName, objectName, null, null, 0, null, rsg.GenerateStreamFromSeed(10*KB));
-                }
-                await Task.WhenAll(tasks);
-                await minio.RemoveObjectAsync(bucketName, objectName);
-                await TearDown(minio, bucketName);
-                new MintLogger(nameof(PutObject_Test6), putObjectSignature1, "Tests thread safety of minioclient on a parallel put operation", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
-            }
-            catch (Exception ex)
-            {
-                new MintLogger(nameof(PutObject_Test6), putObjectSignature1, "Tests thread safety of minioclient on a parallel put operation", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
 
@@ -1339,7 +1309,7 @@ namespace Minio.Functional.Tests
                 }
                 ObjectStat stats = await minio.StatObjectAsync(bucketName, objectName);
 
-                Assert.IsTrue(stats.MetaData["X-Amz-Meta-Orig"] != null) ;
+                Assert.IsTrue(stats.MetaData["Orig"] != null) ;
 
                 CopyConditions copyCond = new CopyConditions();
                 copyCond.SetReplaceMetadataDirective();
@@ -1353,7 +1323,7 @@ namespace Minio.Functional.Tests
                 await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions:copyCond, metadata: metadata);
 
                 ObjectStat dstats = await minio.StatObjectAsync(destBucketName, destObjectName);
-                Assert.IsTrue(dstats.MetaData["X-Amz-Meta-Mynewkey"] != null);
+                Assert.IsTrue(dstats.MetaData["Mynewkey"] != null);
                 await minio.RemoveObjectAsync(bucketName, objectName);
                 await minio.RemoveObjectAsync(destBucketName, destObjectName);
 

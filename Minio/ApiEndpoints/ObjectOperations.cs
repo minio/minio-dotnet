@@ -23,7 +23,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Web;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
@@ -838,9 +837,13 @@ namespace Minio
                     contentType = parameter.Value.ToString();
                     metaData["Content-Type"] = contentType;
                 }
-                else if (supportedHeaders.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase) || parameter.Name.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
+                else if (supportedHeaders.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
                 {
-                    metaData[parameter.Name] = parameter.Value.ToString().ToLowerInvariant().Replace("x-amz-meta-", string.Empty);
+                    metaData[parameter.Name] = parameter.Value.ToString();
+                }
+                else if (parameter.Name.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
+                {
+                    metaData[parameter.Name.Substring("x-amz-meta-".Length)] = parameter.Value.ToString();
                 }
             }
             return new ObjectStat(objectName, size, lastModified, etag, contentType, metaData);
