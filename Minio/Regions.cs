@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
+using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 
 namespace Minio
 {
-	public static class Regions
-	{
-		private static readonly Regex endpointRegex = new Regex(@"s3[.\-](.*?)\.amazonaws\.com$", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.RightToLeft);
+    public static class Regions
+    {
+        private static readonly Regex endpointRegex = new Regex(@"s3[.\-](.*?)\.amazonaws\.com$", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.RightToLeft);
+        private static readonly ConcurrentDictionary<string, string> cache = new ConcurrentDictionary<string, string>();
 
         /// <summary>
         /// Get corresponding region for input host.
@@ -28,6 +30,11 @@ namespace Minio
         /// <param name="endpoint">S3 API endpoint</param>
         /// <returns>Region corresponding to the endpoint. Default is 'us-east-1'</returns>
         public static string GetRegionFromEndpoint(string endpoint)
+        {
+            return cache.GetOrAdd(endpoint, GetRegionFromEndpointImpl);
+        }
+
+        private static string GetRegionFromEndpointImpl(string endpoint)
         {
             Match match = endpointRegex.Match(endpoint);
 

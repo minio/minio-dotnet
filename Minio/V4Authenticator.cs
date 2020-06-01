@@ -93,14 +93,14 @@ namespace Minio
             this.sessionToken = sessionToken;
         }
 
-        private string GetRegion(string url)
+        private string GetRegion(string endpoint)
         {
             if (!string.IsNullOrEmpty(this.region))
             {
                 return this.region;
             }
 
-            string region = Regions.GetRegionFromEndpoint(url);
+            string region = Regions.GetRegionFromEndpoint(endpoint);
             return (region == string.Empty) ? "us-east-1" : region;
         }
 
