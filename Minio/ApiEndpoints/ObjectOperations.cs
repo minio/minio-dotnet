@@ -243,25 +243,48 @@ namespace Minio
         }
 
         /// <summary>
-        /// Creates an object from inputstream
+        /// Creates an object from file input stream
         /// </summary>
         /// <param name="bucketName">Bucket to create object in</param>
         /// <param name="objectName">Key of the new object</param>
         /// <param name="data">Stream of bytes to send</param>
-        /// <param name="size">Total size of bytes to be written, must match with data's length</param>
+        /// <param name="size">Total size of bytes to be written, must match stream length</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
         /// <param name="metaData">Object metadata to be stored. Defaults to null.</param>
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        public Task PutObjectAsync(string bucketName, string objectName, Stream data, long size,
+            string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return PutObjectAsync(bucketName, objectName, data, size,
+                new MinioPutObjectOptions {ContentType = contentType, MetaData = metaData, ServerSideEncryption = sse},
+                cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates an object from file input stream
+        /// </summary>
+        /// <param name="bucketName">Bucket to create object in</param>
+        /// <param name="objectName">Key of the new object</param>
+        /// <param name="data">Stream of bytes to send</param>
+        /// <param name="size">Total size of bytes to be written, must match stream length</param>
+        /// <param name="options">Allows user to set optional custom metadata, content headers, encryption keys, and transfer limits. Can be null.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, MinioPutObjectOptions options, CancellationToken cancellationToken)
         {
             utils.ValidateBucketName(bucketName);
             utils.ValidateObjectName(objectName);
 
+            if (options == null)
+            {
+                options = new MinioPutObjectOptions();
+            }
+
             var sseHeaders = new Dictionary<string, string>();
             var meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            if (metaData != null) {
-                foreach (KeyValuePair<string, string> p in metaData)
+            if (options.MetaData != null) {
+                foreach (KeyValuePair<string, string> p in options.MetaData)
                 {
                     var key = p.Key;
                     if (!supportedHeaders.Contains(p.Key, StringComparer.OrdinalIgnoreCase) && !p.Key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
@@ -273,16 +296,17 @@ namespace Minio
                 }
             }
             
-            if (sse != null)
+            if (options.ServerSideEncryption != null)
             {
-                sse.Marshal(sseHeaders);
-            }
-            if (string.IsNullOrWhiteSpace(contentType))
-            {
-                contentType = "application/octet-stream";
+                options.ServerSideEncryption.Marshal(sseHeaders);
             }
             if (!meta.ContainsKey("Content-Type"))
             {
+                string contentType = options.ContentType;
+                if (string.IsNullOrWhiteSpace(contentType))
+                {
+                    contentType = "application/octet-stream";
+                }
                 meta["Content-Type"] = contentType;
             }
             if (data == null)
@@ -290,8 +314,8 @@ namespace Minio
                 throw new ArgumentNullException(nameof(data), "Invalid input stream, cannot be null");
             }
 
-            // for sizes less than 5Mb , put a single object
-            if (size < Constants.MinimumPartSize && size >= 0)
+            // for sizes less than minimum , put a single object
+            if (size < options.PartSize && size >= 0)
             {
                 var bytes = await ReadFullAsync(data, (int)size).ConfigureAwait(false);
                 if (bytes != null && bytes.Length != (int)size)
@@ -301,27 +325,24 @@ namespace Minio
                 await this.PutObjectAsync(bucketName, objectName, null, 0, bytes, meta, sseHeaders, cancellationToken).ConfigureAwait(false);
                 return;
             }
-            // For all sizes greater than 5MiB do multipart.
+            // For all sizes greater do multipart.
 
-            dynamic multiPartInfo = utils.CalculateMultiPartSize(size);
-            double partSize = multiPartInfo.partSize;
-            double partCount = multiPartInfo.partCount;
-            double lastPartSize = multiPartInfo.lastPartSize;
-            Part[] totalParts = new Part[(int)partCount];
+            (long partSize, int partCount, long lastPartSize) = utils.CalculateMultiPartSize(size, options.PartSize ?? MinioPutObjectOptions.DefaultUploadPartSize);
+            Part[] totalParts = new Part[partCount];
 
             string uploadId = await this.NewMultipartUploadAsync(bucketName, objectName, meta, sseHeaders, cancellationToken).ConfigureAwait(false);
 
             // Remove SSE-S3 and KMS headers during PutObjectPart operations.
-            if (sse != null &&
-               (sse.GetType().Equals(EncryptionType.SSE_S3) ||
-                sse.GetType().Equals(EncryptionType.SSE_KMS)))
+            if (options.ServerSideEncryption != null &&
+               (options.ServerSideEncryption.GetType().Equals(EncryptionType.SSE_S3) ||
+                options.ServerSideEncryption.GetType().Equals(EncryptionType.SSE_KMS)))
             {
                 sseHeaders.Remove(Constants.SSEGenericHeader);
                 sseHeaders.Remove(Constants.SSEKMSContext);
                 sseHeaders.Remove(Constants.SSEKMSKeyId);
             }
 
-            double expectedReadSize = partSize;
+            long expectedReadSize = partSize;
             int partNumber;
             int numPartsUploaded = 0;
             for (partNumber = 1; partNumber <= partCount; partNumber++)
@@ -338,7 +359,7 @@ namespace Minio
                 }
                 numPartsUploaded += 1;
                 string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, meta, sseHeaders, cancellationToken).ConfigureAwait(false);
-                totalParts[partNumber - 1] = new Part { PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize };
+                totalParts[partNumber - 1] = new Part { PartNumber = partNumber, ETag = etag, Size = expectedReadSize };
             }
 
             // This shouldn't happen where stream size is known.
@@ -1080,14 +1101,10 @@ namespace Minio
         /// <returns></returns>
         private async Task MultipartCopyUploadAsync(string bucketName, string objectName, string destBucketName, string destObjectName, CopyConditions copyConditions, long copySize, Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            // For all sizes greater than 5GB or if Copy byte range specified in conditions and byte range larger
-            // than minimum part size (5 MB) do multipart.
+            // For all sizes greater than 5GB or if Copy byte range specified in conditions do multipart.
 
-            dynamic multiPartInfo = utils.CalculateMultiPartSize(copySize);
-            double partSize = multiPartInfo.partSize;
-            double partCount = multiPartInfo.partCount;
-            double lastPartSize = multiPartInfo.lastPartSize;
-            Part[] totalParts = new Part[(int)partCount];
+            (long partSize, int partCount, long lastPartSize) = utils.CalculateMultiPartSize(copySize, defaultServerTransferPartSize);
+            Part[] totalParts = new Part[partCount];
 
             var sseHeaders = new Dictionary<string, string>();
             if (sseDest != null)
@@ -1099,19 +1116,19 @@ namespace Minio
             string uploadId = await this.NewMultipartUploadAsync(destBucketName, destObjectName, metadata, sseHeaders, cancellationToken).ConfigureAwait(false);
 
             // Upload each part
-            double expectedReadSize = partSize;
+            long expectedReadSize = partSize;
             int partNumber;
             for (partNumber = 1; partNumber <= partCount; partNumber++)
             {
                 CopyConditions partCondition = copyConditions.Clone();
-                partCondition.byteRangeStart = (long)partSize * (partNumber - 1) + partCondition.byteRangeStart;
+                partCondition.byteRangeStart = partSize * (partNumber - 1) + partCondition.byteRangeStart;
                 if (partNumber < partCount)
                 {
-                    partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)partSize - 1;
+                    partCondition.byteRangeEnd = partCondition.byteRangeStart + partSize - 1;
                 }
                 else
                 {
-                    partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)lastPartSize - 1;
+                    partCondition.byteRangeEnd = partCondition.byteRangeStart + lastPartSize - 1;
                 }
 
                 var queryMap = new Dictionary<string,string>();
@@ -1136,7 +1153,7 @@ namespace Minio
                 }
                 CopyPartResult cpPartResult = (CopyPartResult)await this.CopyObjectRequestAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, customHeader, queryMap, cancellationToken, typeof(CopyPartResult)).ConfigureAwait(false);
 
-                totalParts[partNumber - 1] = new Part { PartNumber = partNumber, ETag = cpPartResult.ETag, Size = (long)expectedReadSize };
+                totalParts[partNumber - 1] = new Part { PartNumber = partNumber, ETag = cpPartResult.ETag, Size = expectedReadSize };
             }
 
             Dictionary<int, string> etags = new Dictionary<int, string>();

@@ -62,6 +62,8 @@ namespace Minio
         // Cache holding bucket to region mapping for buckets seen so far.
         internal BucketRegionCache regionCache;
 
+        private readonly long defaultServerTransferPartSize;
+
         private IRequestLogger logger;
 
         // Enables HTTP tracing if set to true
@@ -309,15 +311,26 @@ namespace Minio
         /// <param name="sessionToken">Optional session token</param>
         /// <returns>Client initialized with user credentials</returns>
         public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region = "", string sessionToken = "")
+            : this(new MinioClientConfig {Endpoint = endpoint, AccessKey = accessKey, SecretKey = secretKey, Region = region, SessionToken = sessionToken})
         {
-            this.Secure = false;
+        }
+
+        /// <summary>
+        /// Creates and returns an Cloud Storage client 
+        /// </summary>
+        /// <param name="config">Configuration overrides</param>
+        /// <returns>Client initialized with user credentials</returns>
+        public MinioClient(MinioClientConfig config)
+        {
+            this.Secure = config.Secure;
 
             // Save user entered credentials
-            this.BaseUrl = endpoint;
-            this.AccessKey = accessKey;
-            this.SecretKey = secretKey;
-            this.SessionToken = sessionToken;
-            this.Region = region;
+            this.BaseUrl = config.Endpoint;
+            this.AccessKey = config.AccessKey;
+            this.SecretKey = config.SecretKey;
+            this.SessionToken = config.SessionToken;
+            this.Region = config.Region;
+            this.defaultServerTransferPartSize = config.DefaultServerTransferPartSize;
             // Instantiate a region cache
             this.regionCache = BucketRegionCache.Instance;
 

@@ -64,12 +64,23 @@ namespace Minio
         /// <param name="bucketName">Bucket to create object in</param>
         /// <param name="objectName">Key of the new object</param>
         /// <param name="data">Stream of file to upload</param>
-        /// <param name="size">Size of stream</param>
+        /// <param name="size">Total size of bytes to be written, must match stream length</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
         /// <param name="metaData">Optional Object metadata to be stored. Defaults to null.</param>
         /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Creates an object from file input stream
+        /// </summary>
+        /// <param name="bucketName">Bucket to create object in</param>
+        /// <param name="objectName">Key of the new object</param>
+        /// <param name="data">Stream of bytes to send</param>
+        /// <param name="size">Total size of bytes to be written, must match stream length</param>
+        /// <param name="options">Allows user to set optional custom metadata, content headers, encryption keys, and transfer limits. Can be null.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, MinioPutObjectOptions options, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes an object with given name in specific bucket

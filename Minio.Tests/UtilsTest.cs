@@ -29,6 +29,8 @@ namespace Minio.Tests
     [TestClass]
     public class UtilsTest
     {
+        private const long minimumPartSize = 5 * 1024L * 1024L;
+
         [TestMethod]
         [ExpectedException(typeof(InvalidBucketNameException))]
         public void TestValidBucketName()
@@ -125,7 +127,7 @@ namespace Minio.Tests
         {
             try
             {
-                Object multiparts = utils.CalculateMultiPartSize(5000000000000000000);
+                (long partSize, int partCount, long lastPartSize) multiparts = utils.CalculateMultiPartSize(5_000_000_000_000_000_000, minimumPartSize);
             }
             catch (EntityTooLargeException ex)
             {
@@ -138,25 +140,28 @@ namespace Minio.Tests
         public void TestValidPartSize1()
         {
             // { partSize = 550502400, partCount = 9987, lastPartSize = 241172480 }
-            dynamic partSizeObject = utils.CalculateMultiPartSize(5497558138880);
-            double partSize = partSizeObject.partSize;
-            double partCount = partSizeObject.partCount;
-            double lastPartSize = partSizeObject.lastPartSize;
-            Assert.AreEqual(partSize, 550502400);
-            Assert.AreEqual(partCount, 9987);
-            Assert.AreEqual(lastPartSize, 241172480);
+            (long partSize, int partCount, long lastPartSize) = utils.CalculateMultiPartSize(5_497_558_138_880, minimumPartSize);
+            Assert.AreEqual(partSize, 550_502_400);
+            Assert.AreEqual(partCount, 9_987);
+            Assert.AreEqual(lastPartSize, 241_172_480);
         }
 
         [TestMethod]
         public void TestValidPartSize2()
         {
-            dynamic partSizeObject = utils.CalculateMultiPartSize(5000000000);
-            double partSize = partSizeObject.partSize;
-            double partCount = partSizeObject.partCount;
-            double lastPartSize = partSizeObject.lastPartSize;
-            Assert.AreEqual(partSize, 5242880);
+            (long partSize, int partCount, long lastPartSize) = utils.CalculateMultiPartSize(5_000_000_000, minimumPartSize);
+            Assert.AreEqual(partSize, 5_242_880);
             Assert.AreEqual(partCount, 954);
-            Assert.AreEqual(lastPartSize, 3535360);
+            Assert.AreEqual(lastPartSize, 3_535_360);
+        }
+
+        [TestMethod]
+        public void TestValidPartSize3()
+        {
+            (long partSize, int partCount, long lastPartSize) = utils.CalculateMultiPartSize(5_000_000_000, 512 * 1024L * 1024L);
+            Assert.AreEqual(partSize, 536_870_912);
+            Assert.AreEqual(partCount, 10);
+            Assert.AreEqual(lastPartSize, 168_161_792);
         }
 
         [TestMethod]

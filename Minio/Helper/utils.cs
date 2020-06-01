@@ -18,7 +18,6 @@ using Minio.Exceptions;
 using Minio.Helper;
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -230,9 +229,10 @@ namespace Minio
         /// <summary>
         /// Calculate part size and number of parts required.
         /// </summary>
-        /// <param name="size"></param>
-        /// <returns></returns>
-        public static object CalculateMultiPartSize(long size)
+        /// <param name="size">total object bytes</param>
+        /// <param name="minimumPartSize">minimum desired part size in bytes</param>
+        /// <returns>Tuple of values needed for multipart transfers</returns>
+        internal static (long partSize, int partCount, long lastPartSize) CalculateMultiPartSize(long size, long minimumPartSize)
         {
             if (size == -1)
             {
@@ -244,15 +244,11 @@ namespace Minio
                 throw new EntityTooLargeException($"Your proposed upload size {size} exceeds the maximum allowed object size {Constants.MaxMultipartPutObjectSize}");
             }
 
-            double partSize = (double)Math.Ceiling((decimal)size / Constants.MaxParts);
-            partSize = (double)Math.Ceiling((decimal)partSize / Constants.MinimumPartSize) * Constants.MinimumPartSize;
-            double partCount = Math.Ceiling(size / partSize);
-            double lastPartSize = size - (partCount - 1) * partSize;
-            dynamic obj = new ExpandoObject();
-            obj.partSize = partSize;
-            obj.partCount = partCount;
-            obj.lastPartSize = lastPartSize;
-            return obj;
+            long partSize = (long)Math.Ceiling((decimal)size / Constants.MaxParts);
+            partSize = (long)Math.Ceiling((decimal)partSize / minimumPartSize) * minimumPartSize;
+            int partCount = (int)Math.Ceiling((decimal)size / partSize);
+            long lastPartSize = size - (partCount - 1) * partSize;
+            return (partSize, partCount, lastPartSize);
         }
 
         /// <summary>
