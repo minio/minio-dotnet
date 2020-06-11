@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017, 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
+using System.Web;
 
 namespace Minio
 {
@@ -111,6 +112,8 @@ namespace Minio
         /// <param name="request">Instantiated IRestRequest object</param>
         public void Authenticate(IRestClient client, IRestRequest request)
         {
+            var serviceType = request.Parameters.Any(p => p.Value as string == "AssumeRole") ? ServiceType.STS : ServiceType.S3;
+
             DateTime signingDate = DateTime.UtcNow;
             this.SetContentMd5(request);
             this.SetContentSha256(request);
@@ -123,9 +126,8 @@ namespace Minio
             byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = this.BytesToHex(this.ComputeSha256(canonicalRequestBytes));
             string region = this.GetRegion(client.BaseUrl.Host);
-            string stringToSign = this.GetStringToSign(region, signingDate, canonicalRequestHash);
-
-            byte[] signingKey = this.GenerateSigningKey(region, signingDate);
+            string stringToSign = this.GetStringToSign(region, signingDate, canonicalRequestHash, serviceType);
+            byte[] signingKey = this.GenerateSigningKey(region, signingDate, serviceType);
 
             byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(stringToSign);
 
@@ -133,7 +135,7 @@ namespace Minio
 
             string signature = this.BytesToHex(signatureBytes);
 
-            string authorization = this.GetAuthorizationHeader(signedHeaders, signature, signingDate, region);
+            string authorization = this.GetAuthorizationHeader(signedHeaders, signature, signingDate, region, serviceType);
             request.AddOrUpdateParameter("Authorization", authorization, ParameterType.HttpHeader);
         }
 
@@ -143,9 +145,9 @@ namespace Minio
         /// <param name="signingDate">Signature initiated date</param>
         /// <param name="region">Region for the credential string</param>
         /// <returns>Credential string for the authorization header</returns>
-        public string GetCredentialString(DateTime signingDate, string region)
+        public string GetCredentialString(DateTime signingDate, string region, string serviceType)
         {
-            var scope = this.GetScope(region, signingDate);
+            var scope = this.GetScope(region, signingDate, serviceType);
             return $"{this.accessKey}/{scope}";
         }
 
@@ -157,9 +159,9 @@ namespace Minio
         /// <param name="signingDate">Date for signature to be signed</param>
         /// <param name="region">Requested region</param>
         /// <returns>Fully formed authorization header</returns>
-        private string GetAuthorizationHeader(string signedHeaders, string signature, DateTime signingDate, string region)
+        private string GetAuthorizationHeader(string signedHeaders, string signature, DateTime signingDate, string region, string serviceType)
         {
-            var scope = this.GetScope(region, signingDate);
+            var scope = this.GetScope(region, signingDate, serviceType);
             return $"AWS4-HMAC-SHA256 Credential={this.accessKey}/{scope}, SignedHeaders={signedHeaders}, Signature={signature}";
         }
 
@@ -179,7 +181,7 @@ namespace Minio
         /// <param name="region">Requested region</param>
         /// <param name="signingDate">Date for signature to be signed</param>
         /// <returns>bytes of computed hmac</returns>
-        private byte[] GenerateSigningKey(string region, DateTime signingDate)
+        private byte[] GenerateSigningKey(string region, DateTime signingDate, string serviceType)
         {
             byte[] formattedDateBytes = System.Text.Encoding.UTF8.GetBytes(signingDate.ToString("yyyMMdd"));
             byte[] formattedKeyBytes = System.Text.Encoding.UTF8.GetBytes($"AWS4{this.secretKey}");
@@ -188,7 +190,7 @@ namespace Minio
             byte[] regionBytes = System.Text.Encoding.UTF8.GetBytes(region);
             byte[] dateRegionKey = this.SignHmac(dateKey, regionBytes);
 
-            byte[] serviceBytes = System.Text.Encoding.UTF8.GetBytes("s3");
+            byte[] serviceBytes = System.Text.Encoding.UTF8.GetBytes(serviceType);
             byte[] dateRegionServiceKey = this.SignHmac(dateRegionKey, serviceBytes);
 
             byte[] requestBytes = System.Text.Encoding.UTF8.GetBytes("aws4_request");
@@ -215,9 +217,9 @@ namespace Minio
         /// <param name="signingDate">Date for signature to be signed</param>
         /// <param name="canonicalRequestHash">Hexadecimal encoded sha256 checksum of canonicalRequest</param>
         /// <returns>String to sign</returns>
-        private string GetStringToSign(string region, DateTime signingDate, string canonicalRequestHash)
+        private string GetStringToSign(string region, DateTime signingDate, string canonicalRequestHash, string serviceType)
         {
-            var scope = this.GetScope(region, signingDate);
+            var scope = this.GetScope(region, signingDate, serviceType);
             return $"AWS4-HMAC-SHA256\n{signingDate:yyyyMMddTHHmmssZ}\n{scope}\n{canonicalRequestHash}";
         }
 
@@ -227,9 +229,9 @@ namespace Minio
         /// <param name="region">Requested region</param>
         /// <param name="signingDate">Date for signature to be signed</param>
         /// <returns>Scope string</returns>
-        private string GetScope(string region, DateTime signingDate)
+        private string GetScope(string region, DateTime signingDate, string serviceType)
         {
-            return $"{signingDate:yyyyMMdd}/{region}/s3/aws4_request";
+            return $"{signingDate:yyyyMMdd}/{region}/{serviceType}/aws4_request";
         }
 
         /// <summary>
@@ -262,7 +264,7 @@ namespace Minio
         /// <returns>Computed signature</returns>
         public string PresignPostSignature(string region, DateTime signingDate, string policyBase64)
         {
-            byte[] signingKey = this.GenerateSigningKey(region, signingDate);
+            byte[] signingKey = this.GenerateSigningKey(region, signingDate, ServiceType.S3);
             byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(policyBase64);
 
             byte[] signatureBytes = this.SignHmac(signingKey, stringToSignBytes);
@@ -305,7 +307,7 @@ namespace Minio
             }
             requestQuery += "X-Amz-Algorithm=AWS4-HMAC-SHA256&";
             requestQuery += "X-Amz-Credential="
-                + Uri.EscapeDataString(this.accessKey + "/" + this.GetScope(region, signingDate))
+                + Uri.EscapeDataString(this.accessKey + "/" + this.GetScope(region, signingDate, ServiceType.S3))
                 + "&";
             requestQuery += "X-Amz-Date="
                 + signingDate.ToString("yyyyMMddTHHmmssZ")
@@ -320,8 +322,8 @@ namespace Minio
             string headers = string.Concat(headersToSign.Select(p => $"&{p.Key}={utils.UrlEncode(p.Value)}"));
             byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = this.BytesToHex(ComputeSha256(canonicalRequestBytes));
-            string stringToSign = this.GetStringToSign(region, signingDate, canonicalRequestHash);
-            byte[] signingKey = this.GenerateSigningKey(region, signingDate);
+            string stringToSign = this.GetStringToSign(region, signingDate, canonicalRequestHash, ServiceType.S3);
+            byte[] signingKey = this.GenerateSigningKey(region, signingDate, ServiceType.S3);
             byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(stringToSign);
             byte[] signatureBytes = this.SignHmac(signingKey, stringToSignBytes);
             string signature = this.BytesToHex(signatureBytes);
@@ -401,7 +403,8 @@ namespace Minio
 
             foreach (var p in request.Parameters)
             {
-                if (p.Type == ParameterType.QueryString){
+                if (p.Type == ParameterType.QueryString)
+                {
                     queryParams.Add((string)p.Name, Uri.EscapeDataString((string)p.Value));
                 } 
             }
@@ -505,36 +508,64 @@ namespace Minio
                 request.AddOrUpdateParameter("x-amz-content-sha256", "UNSIGNED-PAYLOAD", ParameterType.HttpHeader);
                 return;
             }
-            if (request.Method == Method.PUT || request.Method.Equals(Method.POST))
+
+            var bodyBytes = GetRequestPayloadBytes(request);
+            var hexedHashedBody = BytesToHex(ComputeSha256(bodyBytes));
+
+            request.AddOrUpdateParameter("x-amz-content-sha256", hexedHashedBody, ParameterType.HttpHeader);
+        }
+
+        private static byte[] GetRequestPayloadBytes(IRestRequest request)
+        {
+            byte[] body = Array.Empty<byte>();
+
+            var bodyParameter = request.Parameters.FirstOrDefault(p => p.Type.Equals(ParameterType.RequestBody));
+            if (bodyParameter == null)
             {
-                var bodyParameter = request.Parameters.FirstOrDefault(p => p.Type.Equals(ParameterType.RequestBody));
-                if (bodyParameter == null)
+                // Url-encoded case
+                var urlEncodedParameters = request.Parameters.Where(p => p.Type == ParameterType.GetOrPost).ToArray();
+                if (urlEncodedParameters.Any())
                 {
-                    request.AddOrUpdateParameter("x-amz-content-sha256", sha256EmptyFileHash, ParameterType.HttpHeader);
-                    return;
+                    var urlEncodedBody = GetParametersAsString(urlEncodedParameters);
+                    body = Encoding.UTF8.GetBytes(urlEncodedBody);
                 }
-                byte[] body = null;
-                if (bodyParameter.Value is string)
-                {
-                    body = System.Text.Encoding.UTF8.GetBytes(bodyParameter.Value as string);
-                }
-                if (bodyParameter.Value is byte[])
-                {
-                    body = bodyParameter.Value as byte[];
-                }
-                if (body == null)
-                {
-                    body = new byte[0];
-                }
-                var sha256 = SHA256.Create();
-                byte[] hash = sha256.ComputeHash(body);
-                string hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
-                request.AddOrUpdateParameter("x-amz-content-sha256", hex, ParameterType.HttpHeader);
             }
             else
             {
-                request.AddOrUpdateParameter("x-amz-content-sha256", sha256EmptyFileHash, ParameterType.HttpHeader);
+                if (bodyParameter.Value is string s)
+                {
+                    return Encoding.UTF8.GetBytes(s);
+                }
+                if (bodyParameter.Value is byte[])
+                {
+                    return bodyParameter.Value as byte[];
+                }
             }
+
+            return body;
+        }
+
+        internal static string GetParametersAsString(Parameter[] parameterCollection)
+        {
+            var stringBuilder = new StringBuilder();
+            var sortedParameters = parameterCollection
+                .OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            foreach (var parameter in sortedParameters)
+            {
+                var key = parameter.Name;
+                var data = parameter.Value.ToString();
+                if (data != null)
+                {
+                    stringBuilder.Append(key);
+                    stringBuilder.Append('=');
+                    stringBuilder.Append(HttpUtility.UrlEncode(data));
+                    stringBuilder.Append('&');
+                }
+            }
+            string str = stringBuilder.ToString();
+            return str.Length == 0 ? string.Empty : str.Remove(str.Length - 1);
         }
 
         /// <summary>

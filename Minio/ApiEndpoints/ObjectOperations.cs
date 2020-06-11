@@ -1231,7 +1231,7 @@ namespace Minio
             DateTime signingDate = DateTime.UtcNow;
 
             policy.SetAlgorithm("AWS4-HMAC-SHA256");
-            policy.SetCredential(this.authenticator.GetCredentialString(signingDate, region));
+            policy.SetCredential(this.authenticator.GetCredentialString(signingDate, region, ServiceType.S3));
             policy.SetDate(signingDate);
             policy.SetSessionToken(this.SessionToken);
             string policyBase64 = policy.Base64();

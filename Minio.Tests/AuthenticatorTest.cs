@@ -102,7 +102,7 @@ namespace Minio.Tests
 
             policy.SetAlgorithm("AWS4-HMAC-SHA256");
             var region = "mock-location";
-            policy.SetCredential(authenticator.GetCredentialString(requestDate, region));
+            policy.SetCredential(authenticator.GetCredentialString(requestDate, region, ServiceType.S3));
             policy.SetDate(requestDate);
             policy.SetSessionToken(null);
 
