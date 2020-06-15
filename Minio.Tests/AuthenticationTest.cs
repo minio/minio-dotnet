@@ -26,6 +26,9 @@ namespace Minio.Tests
     [TestClass]
     public class AuthenticationTest
     {
+        // Assume role is allowed only for non-root user by design. So we need non-root user to test this functionality.
+        // This particular user has been created using user 'Q3AM3UQ867SPQQA43P2F'
+        // and policy {"Version": "2012-10-17","Statement": [{"Action": ["s3:*"], "Effect": "Allow", "Resource": ["arn:aws:s3:::*"]}]}
         private const string AssumeRoleAccessKey = "Q3AM3UQ867SPQQA43P2F-assumerole";
         private const string AssumeRoleSecretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG-assumerole";
         private const string PlayMinioEndpoint = "play.min.io";

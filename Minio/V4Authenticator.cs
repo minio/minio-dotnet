@@ -126,6 +126,7 @@ namespace Minio
             string canonicalRequestHash = this.BytesToHex(this.ComputeSha256(canonicalRequestBytes));
             string region = this.GetRegion(client.BaseUrl.Host);
             string stringToSign = this.GetStringToSign(region, signingDate, canonicalRequestHash, serviceType);
+
             byte[] signingKey = this.GenerateSigningKey(region, signingDate, serviceType);
 
             byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(stringToSign);
@@ -140,7 +141,14 @@ namespace Minio
 
         private static string DeriveServiceType(IRestRequest request)
         {
-            return request.Parameters.Any(p => p.Value as string == "AssumeRole") ? ServiceType.STS : ServiceType.S3;
+            return request.Parameters.Any(p =>
+            {
+                if (p.Value is string value)
+                {
+                    return value.Equals("AssumeRole", StringComparison.InvariantCultureIgnoreCase);
+                }
+                return false;
+            }) ? ServiceType.STS : ServiceType.S3;
         }
 
         /// <summary>
@@ -512,7 +520,7 @@ namespace Minio
             if (this.isAnonymous)
                 return;
             // No need to compute SHA256 if endpoint scheme is https
-            if (isSecure && serviceType == ServiceType.S3)
+            if (isSecure && serviceType.Equals(ServiceType.S3, StringComparison.InvariantCultureIgnoreCase))
             {
                 request.AddOrUpdateParameter("x-amz-content-sha256", "UNSIGNED-PAYLOAD", ParameterType.HttpHeader);
                 return;
