@@ -26,7 +26,7 @@ namespace Minio
         public async Task<AssumeRoleResult> AssumeRoleAsync(
             string policy = null,
             TimeSpan? duration = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             var request = new RestRequest("/", Method.POST);
 

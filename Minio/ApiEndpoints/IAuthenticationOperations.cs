@@ -22,6 +22,6 @@ namespace Minio
         Task<AssumeRoleResult> AssumeRoleAsync(
             string policy = null,
             TimeSpan? duration = null,
-            CancellationToken cancellationToken = default);
+            CancellationToken cancellationToken = default(CancellationToken));
     }
 }
