@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2017, 2018, 2019, 2020 MinIO, Inc.
  *
@@ -267,16 +267,23 @@ namespace Minio
             this.uri = RequestUtil.GetEndpointURL(this.BaseUrl, this.Secure);
             RequestUtil.ValidateEndpoint(this.uri, this.Endpoint);
 
+            this.authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, this.Region, this.SessionToken);
+
             // Initialize a new REST client. This uri will be modified if region specific endpoint/virtual style request
             // is decided upon while constructing a request for Amazon.
-            restClient = new RestSharp.RestClient(this.uri)
+            var oldRestClient = restClient;
+            this.restClient = new RestClient(this.uri)
             {
                 UserAgent = this.FullUserAgent
             };
-
-            authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, this.Region, this.SessionToken);
-            restClient.Authenticator = authenticator;
-            restClient.UseUrlEncoder(s => HttpUtility.UrlEncode(s));
+            this.restClient.Authenticator = authenticator;
+            this.restClient.UseUrlEncoder(s => HttpUtility.UrlEncode(s));
+            if (oldRestClient != null)
+            {
+                this.restClient.Proxy = oldRestClient.Proxy;
+                this.restClient.Timeout = oldRestClient.Timeout;
+                this.restClient.BaseUrl = oldRestClient.BaseUrl;
+            }
         }
 
         /// <summary>
@@ -369,6 +376,24 @@ namespace Minio
         }
 
         /// <summary>
+        /// Updates authentication credentials.
+        /// </summary>
+        public MinioClient WithCredentials(
+            string accessKey = "",
+            string secretKey = "",
+            string sessionToken = "")
+        {
+            // Save user entered credentials
+            this.AccessKey = accessKey;
+            this.SecretKey = secretKey;
+            this.SessionToken = sessionToken;
+
+            this.InitClient();
+
+            return this;
+        }
+
+        /// <summary>
         /// Sets endpoint URL on the client object that request will be made against
         /// </summary>
         internal void SetTargetURL(Uri uri)
@@ -419,6 +444,11 @@ namespace Minio
             if (HttpStatusCode.Redirect.Equals(response.StatusCode) || HttpStatusCode.TemporaryRedirect.Equals(response.StatusCode) || HttpStatusCode.MovedPermanently.Equals(response.StatusCode))
             {
                 throw new RedirectionException("Redirection detected. Please report this issue https://github.com/minio/minio-dotnet/issues");
+            }
+
+            if (HttpStatusCode.Forbidden.Equals(response.StatusCode))
+            {
+                throw new ForbiddenException("Operation is forbidden:" + response.ErrorMessage);
             }
 
             if (string.IsNullOrWhiteSpace(response.Content))

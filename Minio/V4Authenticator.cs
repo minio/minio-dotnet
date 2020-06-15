@@ -112,11 +112,10 @@ namespace Minio
         /// <param name="request">Instantiated IRestRequest object</param>
         public void Authenticate(IRestClient client, IRestRequest request)
         {
-            var serviceType = request.Parameters.Any(p => p.Value as string == "AssumeRole") ? ServiceType.STS : ServiceType.S3;
-
+            var serviceType = DeriveServiceType(request);
             DateTime signingDate = DateTime.UtcNow;
             this.SetContentMd5(request);
-            this.SetContentSha256(request);
+            this.SetContentSha256(request, serviceType);
             this.SetHostHeader(request, client.BaseUrl.Host + ":" + client.BaseUrl.Port);
             this.SetDateHeader(request, signingDate);
             this.SetSessionTokenHeader(request, this.sessionToken);
@@ -139,11 +138,17 @@ namespace Minio
             request.AddOrUpdateParameter("Authorization", authorization, ParameterType.HttpHeader);
         }
 
+        private static string DeriveServiceType(IRestRequest request)
+        {
+            return request.Parameters.Any(p => p.Value as string == "AssumeRole") ? ServiceType.STS : ServiceType.S3;
+        }
+
         /// <summary>
-        /// Get credential string of form {ACCESSID}/date/region/s3/aws4_request.
+        /// Get credential string of form {ACCESSID}/date/region/serviceType/aws4_request.
         /// </summary>
         /// <param name="signingDate">Signature initiated date</param>
         /// <param name="region">Region for the credential string</param>
+        /// <param name="serviceType">Service type for the credential string</param>
         /// <returns>Credential string for the authorization header</returns>
         public string GetCredentialString(DateTime signingDate, string region, string serviceType)
         {
@@ -158,6 +163,7 @@ namespace Minio
         /// <param name="signature">Hexadecimally encoded computed signature</param>
         /// <param name="signingDate">Date for signature to be signed</param>
         /// <param name="region">Requested region</param>
+        /// <param name="serviceType">Service type for signature to be signed</param>
         /// <returns>Fully formed authorization header</returns>
         private string GetAuthorizationHeader(string signedHeaders, string signature, DateTime signingDate, string region, string serviceType)
         {
@@ -180,6 +186,7 @@ namespace Minio
         /// </summary>
         /// <param name="region">Requested region</param>
         /// <param name="signingDate">Date for signature to be signed</param>
+        /// <param name="serviceType">Service type for signature to be signed</param>
         /// <returns>bytes of computed hmac</returns>
         private byte[] GenerateSigningKey(string region, DateTime signingDate, string serviceType)
         {
@@ -216,6 +223,7 @@ namespace Minio
         /// <param name="region">Requested region</param>
         /// <param name="signingDate">Date for signature to be signed</param>
         /// <param name="canonicalRequestHash">Hexadecimal encoded sha256 checksum of canonicalRequest</param>
+        /// <param name="serviceType">Service type for signature to be signed</param>
         /// <returns>String to sign</returns>
         private string GetStringToSign(string region, DateTime signingDate, string canonicalRequestHash, string serviceType)
         {
@@ -228,6 +236,7 @@ namespace Minio
         /// </summary>
         /// <param name="region">Requested region</param>
         /// <param name="signingDate">Date for signature to be signed</param>
+        /// <param name="serviceType">Accessed service type</param>
         /// <returns>Scope string</returns>
         private string GetScope(string region, DateTime signingDate, string serviceType)
         {
@@ -498,12 +507,12 @@ namespace Minio
         /// Set 'x-amz-content-sha256' http header.
         /// </summary>
         /// <param name="request">Instantiated request object</param>
-        private void SetContentSha256(IRestRequest request)
+        private void SetContentSha256(IRestRequest request, string serviceType)
         {
             if (this.isAnonymous)
                 return;
             // No need to compute SHA256 if endpoint scheme is https
-            if (isSecure)
+            if (isSecure && serviceType == ServiceType.S3)
             {
                 request.AddOrUpdateParameter("x-amz-content-sha256", "UNSIGNED-PAYLOAD", ParameterType.HttpHeader);
                 return;
