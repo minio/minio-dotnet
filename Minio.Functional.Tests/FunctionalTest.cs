@@ -188,6 +188,34 @@ namespace Minio.Functional.Tests
             }
         }
 
+        internal async static Task EnableDisableVersioning_Test(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName();
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName", bucketName },
+            };
+
+            try
+            {
+                await minio.MakeBucketAsync(bucketName);
+                bool found = await minio.BucketExistsAsync(bucketName);
+                Assert.IsTrue(found);
+                await minio.EnableVersioningAsync(bucketName);
+                bool enabled = await minio.IsVersioningEnabledAsync(bucketName);
+                Assert.IsTrue(enabled);
+                await minio.DisableVersioningAsync(bucketName);
+                enabled = await minio.IsVersioningEnabledAsync(bucketName);
+                Assert.IsFalse(enabled);
+                await minio.RemoveBucketAsync(bucketName);
+                new MintLogger(nameof(BucketExists_Test), bucketExistsSignature, "Tests whether Enable and Disable Versioning passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (MinioException ex)
+            {
+                new MintLogger(nameof(BucketExists_Test), bucketExistsSignature, "Tests whether BucketExists passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
+            }
+        }
         #region Make Bucket
 
         internal async static Task MakeBucket_Test1(MinioClient minio)

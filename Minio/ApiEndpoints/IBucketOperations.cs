@@ -119,5 +119,29 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>An observable of JSON-based notification events</returns>
         IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events, string prefix = "", string suffix = "", CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Check if versioning is enabled on a bucket
+        /// </summary>
+        /// <param name="bucketName">Name of the bucket</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task that returns true if versioning is enabled on the bucket</returns>
+        Task<bool> IsVersioningEnabledAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Enable versioning on a bucket
+        /// </summary>
+        /// <param name="bucketName">Name of the bucket</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task</returns>
+        Task EnableVersioningAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Disable versioning on a bucket
+        /// </summary>
+        /// <param name="bucketName">Name of the bucket</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task</returns>
+        Task DisableVersioningAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

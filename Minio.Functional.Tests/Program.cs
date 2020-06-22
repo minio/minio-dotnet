@@ -82,6 +82,9 @@ namespace Minio.Functional.Tests
             // Check if bucket exists
             FunctionalTest.BucketExists_Test(minioClient).Wait();
 
+            // Check if versioning can be enabled and disabled on the bucket. Also check enable/disable status.
+            FunctionalTest.EnableDisableVersioning_Test(minioClient).Wait();
+
             // Create a new bucket
             FunctionalTest.MakeBucket_Test1(minioClient).Wait();
             FunctionalTest.MakeBucket_Test2(minioClient).Wait();

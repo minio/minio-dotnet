@@ -19,10 +19,13 @@ using Minio.Helper;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace Minio
 {
@@ -831,5 +834,55 @@ namespace Minio
                 {".zip", "application/zip"}
             };
         }
+        /// <summary>
+        /// Marshal XML to return marshelelled serialization of the object passed. 
+        /// object - Object to be serialized.
+        /// nmspc - XML Namespace used for the object serialization
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="nmspc"></param>
+        /// <returns>XML Serialized Marshalled result of the object </returns>
+
+        public static string MarshalXML(object obj, string nmspc)
+        {
+            XmlSerializer xs = null;
+            XmlWriterSettings settings = null;
+            XmlSerializerNamespaces ns = null;
+
+            XmlWriter xw = null;
+
+            String str = String.Empty;
+
+            try
+            {
+                settings = new XmlWriterSettings();
+                settings.OmitXmlDeclaration = true;
+
+                ns = new XmlSerializerNamespaces();
+                ns.Add("", nmspc);
+
+                StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
+
+                xs = new XmlSerializer(obj.GetType());
+                xw = XmlWriter.Create(sw, settings);
+                xs.Serialize(xw, obj, ns);
+                xw.Flush();
+
+                str = sw.ToString();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                if (xw != null)
+                {
+                    xw.Close();
+                }
+            }
+            return str;
+        }
+
     }
 }

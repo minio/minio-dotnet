@@ -1,6 +1,6 @@
 ﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
- * (C) 2017, 2018, 2019 MinIO, Inc.
+ * (C) 2017, 2018, 2019, 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,11 +88,13 @@ namespace Minio
                 XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer(),
                 RequestFormat = DataFormat.Xml
             };
+
             // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
             if (location != "us-east-1")
             {
                 CreateBucketConfiguration config = new CreateBucketConfiguration(location);
-                request.AddBody(config);
+                string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+                request.AddParameter("text/xml", body, ParameterType.RequestBody);
             }
 
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
@@ -440,6 +442,121 @@ namespace Minio
 
               });
 
+        }
+
+        /// <summary>
+        /// Check if versioning is enabled on a bucket
+        /// </summary>
+        /// <param name="bucketName">Name of the new bucket</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>An observable</returns>
+        public async Task<bool> IsVersioningEnabledAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+         {
+            try
+            {
+                if (bucketName == null)
+                {
+                    throw new InvalidBucketNameException(bucketName, "bucketName cannot be null");
+                }
+                var request = await this.CreateRequest(Method.GET, bucketName).ConfigureAwait(false);
+                request.AddQueryParameter("versioning","");
+                var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+                var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+                VersioningConfiguration config = null;
+                if (HttpStatusCode.OK.Equals(response.StatusCode))
+                {
+                    using (var stream = new MemoryStream(contentBytes))
+                    {
+                        config = (VersioningConfiguration)new XmlSerializer(typeof(VersioningConfiguration)).Deserialize(stream);
+                    }
+                    if ( config != null && config.Status != null ) {
+                        return config.Status.Equals("Enabled");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.GetType() == typeof(BucketNotFoundException))
+                {
+                    return false;
+                }
+                throw;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Enable versioning on a bucket
+        /// </summary>
+        /// <param name="bucketName">Name of the new bucket</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task that returns true if versioning is enabled on the bucket</returns>
+        public async Task EnableVersioningAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            // Set Target URL
+            try
+            {
+                if (bucketName == null)
+                {
+                    throw new InvalidBucketNameException(bucketName, "bucketName cannot be null");
+                }
+                Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, bucketName);
+                SetTargetURL(requestUrl);
+                VersioningConfiguration config = new VersioningConfiguration(true);
+                var request = new RestRequest("/" + bucketName, Method.PUT)
+                {
+                    XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer()
+                    {
+                        Namespace = "http://s3.amazonaws.com/doc/2006-03-01/",
+                        ContentType = "application/xml"
+                    },
+                    RequestFormat = DataFormat.Xml
+                };
+                string body = utils.MarshalXML(config, request.XmlSerializer.Namespace);
+                request.AddQueryParameter("versioning","");
+                request.AddParameter("text/xml", body, ParameterType.RequestBody);
+                var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        /// <summary>
+        /// Disable versioning on a bucket
+        /// </summary>
+        /// <param name="bucketName">Name of the new bucket</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task that returns true if versioning is enabled on the bucket</returns>
+        public async Task DisableVersioningAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            try
+            {
+                if (bucketName == null)
+                {
+                    throw new InvalidBucketNameException(bucketName, "bucketName cannot be null");
+                }
+                Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
+                SetTargetURL(requestUrl);
+                VersioningConfiguration config = new VersioningConfiguration(false);
+                var request = new RestRequest("/" + bucketName, Method.PUT)
+                {
+                    XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer()
+                    {
+                        Namespace = "http://s3.amazonaws.com/doc/2006-03-01/",
+                        ContentType = "application/xml"
+                    },
+                    RequestFormat = DataFormat.Xml
+                };
+                string body = utils.MarshalXML(config, request.XmlSerializer.Namespace);
+                request.AddQueryParameter("versioning", "");
+                request.AddParameter("text/xml", body, ParameterType.RequestBody);
+                var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }
