@@ -126,7 +126,7 @@ namespace Minio
         /// <param name="bucketName">Name of the bucket</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task that returns true if versioning is enabled on the bucket</returns>
-        Task<bool> IsVersioningEnabledAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
+        Task<VersioningConfiguration> GetVersioningInfoAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Enable versioning on a bucket
@@ -142,6 +142,6 @@ namespace Minio
         /// <param name="bucketName">Name of the bucket</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task</returns>
-        Task DisableVersioningAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
+        Task SuspendVersioningAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

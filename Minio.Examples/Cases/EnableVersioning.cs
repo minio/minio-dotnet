@@ -16,6 +16,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
@@ -29,7 +30,8 @@ namespace Minio.Examples.Cases
             {
                 Console.WriteLine("Running example for API: EnableVersioning, ");
                 await minio.EnableVersioningAsync(bucketName);
-                bool enabled = await minio.IsVersioningEnabledAsync(bucketName);
+                VersioningConfiguration vc = await minio.GetVersioningInfoAsync(bucketName);
+                bool enabled = (vc != null && vc.Status == "Enabled");
                 Console.WriteLine(( enabled? "Versioning Enabled" : "Versioning could not be enabled") + " for bucket " + bucketName);
                 Console.WriteLine();
             }

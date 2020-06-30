@@ -834,6 +834,7 @@ namespace Minio
                 {".zip", "application/zip"}
             };
         }
+
         /// <summary>
         /// Marshal XML to return marshelelled serialization of the object passed. 
         /// object - Object to be serialized.

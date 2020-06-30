@@ -16,10 +16,11 @@
 
 using System;
 using System.Threading.Tasks;
+using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
-    class VersioningEnabled
+    class GetVersioningInfo
     {
         // Check if Versioning is Enabled on a bucket
         public async static Task Run(MinioClient minio,
@@ -27,9 +28,10 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                Console.WriteLine("Running example for API: VersioningEnabled, ");
-                bool enabled = await minio.IsVersioningEnabledAsync(bucketName);
-                Console.WriteLine("Versioning, " + (enabled ? "Enabled" : "Not Enabled ") + " for bucket " + bucketName);
+                Console.WriteLine("Running example for API: GetVersioningInfo, ");
+                VersioningConfiguration vc = await minio.GetVersioningInfoAsync(bucketName);
+                bool enabled = (vc != null && vc.Status == "Enabled");
+                Console.WriteLine("Versioning, " + (enabled? "Enabled" : "Not Enabled ") + " for bucket " + bucketName);
                 Console.WriteLine();
             }
             catch (Exception e)

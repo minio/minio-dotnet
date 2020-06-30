@@ -445,12 +445,12 @@ namespace Minio
         }
 
         /// <summary>
-        /// Check if versioning is enabled on a bucket
+        /// Get Versioning Info on a bucket
         /// </summary>
         /// <param name="bucketName">Name of the new bucket</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>An observable</returns>
-        public async Task<bool> IsVersioningEnabledAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<VersioningConfiguration> GetVersioningInfoAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
          {
             try
             {
@@ -469,20 +469,18 @@ namespace Minio
                     {
                         config = (VersioningConfiguration)new XmlSerializer(typeof(VersioningConfiguration)).Deserialize(stream);
                     }
-                    if ( config != null && config.Status != null ) {
-                        return config.Status.Equals("Enabled");
-                    }
+                    return config;
                 }
             }
             catch (Exception ex)
             {
                 if (ex.GetType() == typeof(BucketNotFoundException))
                 {
-                    return false;
+                    return null;
                 }
                 throw;
             }
-            return false;
+            return null;
         }
 
         /// <summary>
@@ -523,12 +521,12 @@ namespace Minio
             }
         }
         /// <summary>
-        /// Disable versioning on a bucket
+        /// Suspend versioning on a bucket
         /// </summary>
         /// <param name="bucketName">Name of the new bucket</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task that returns true if versioning is enabled on the bucket</returns>
-        public async Task DisableVersioningAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task SuspendVersioningAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
             try
             {

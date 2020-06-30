@@ -203,10 +203,12 @@ namespace Minio.Functional.Tests
                 bool found = await minio.BucketExistsAsync(bucketName);
                 Assert.IsTrue(found);
                 await minio.EnableVersioningAsync(bucketName);
-                bool enabled = await minio.IsVersioningEnabledAsync(bucketName);
+                VersioningConfiguration vc = await minio.GetVersioningInfoAsync(bucketName);
+                bool enabled = (vc != null && vc.Status == "Enabled");
                 Assert.IsTrue(enabled);
-                await minio.DisableVersioningAsync(bucketName);
-                enabled = await minio.IsVersioningEnabledAsync(bucketName);
+                await minio.SuspendVersioningAsync(bucketName);
+                vc = await minio.GetVersioningInfoAsync(bucketName);
+                enabled = (vc != null && vc.Status == "Enabled");
                 Assert.IsFalse(enabled);
                 await minio.RemoveBucketAsync(bucketName);
                 new MintLogger(nameof(BucketExists_Test), bucketExistsSignature, "Tests whether Enable and Disable Versioning passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();

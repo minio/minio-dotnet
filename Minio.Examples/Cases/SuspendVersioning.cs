@@ -16,20 +16,22 @@
 
 using System;
 using System.Threading.Tasks;
+using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
-    class DisableVersioning
+    class SuspendVersioning
     {
-        // Check if a bucket exists
+        // Disable Versioning on a bucket
         public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name")
         {
             try
             {
-                Console.WriteLine("Running example for API: DisableVersioning, ");
-                await minio.DisableVersioningAsync(bucketName);
-                bool enabled = await minio.IsVersioningEnabledAsync(bucketName);
+                Console.WriteLine("Running example for API: SuspendVersioning, ");
+                await minio.SuspendVersioningAsync(bucketName);
+                VersioningConfiguration vc = await minio.GetVersioningInfoAsync(bucketName);
+                bool enabled = (vc != null && vc.Status == "Enabled");
                 Console.WriteLine(( enabled? "Versioning still Enabled" : "Disabled Versioning") + " for bucket " + bucketName);
                 Console.WriteLine();
             }
