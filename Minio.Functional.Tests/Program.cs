@@ -146,6 +146,9 @@ namespace Minio.Functional.Tests
             FunctionalTest.CopyObject_Test7(minioClient).Wait();
             FunctionalTest.CopyObject_Test8(minioClient).Wait();
 
+            // Test Object LegalHold tests
+            FunctionalTest.EnableDisableObjectLegalHold_Test(minioClient).Wait();
+
             // Test SetPolicyAsync function
             FunctionalTest.SetBucketPolicy_Test1(minioClient).Wait();
 

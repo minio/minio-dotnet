@@ -181,5 +181,37 @@ namespace Minio
         /// <param name="policy"></param>
         /// <returns></returns>
         Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy);
+
+        /// <summary>
+        /// Check if legal hold is enabled on an object in the mentioned bucket
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Key of object to retrieve</param>
+        /// <param name="versionId">Version ID of the object</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task that returns true if legal hold is enabled on the bucket</returns>
+        Task<bool> IsObjectLegalHoldEnabledAsync(string bucketName, string objectName, string versionId, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Check if legal hold is enabled on an object in the mentioned bucket
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Key of object to retrieve</param>
+        /// <param name="versionId">Version ID of the object</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task that returns after legal hold is enabled on the bucket or throws error</returns>
+        Task EnableObjectLegalHoldAsync(string bucketName, string objectName, string versionId, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Check if legal hold is enabled on an object in the mentioned bucket
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Key of object to retrieve</param>
+        /// <param name="versionId">Version ID of the object</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task that returns after legal hold is disabled on the bucket or throws error</returns>
+        Task DisableObjectLegalHoldAsync(string bucketName, string objectName, string versionId, CancellationToken cancellationToken = default(CancellationToken));
+
+
     }
 }

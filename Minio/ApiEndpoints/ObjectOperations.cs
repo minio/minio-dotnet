@@ -24,7 +24,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reactive.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -503,8 +505,8 @@ namespace Minio
         /// <param name="metaData"></param>
         /// <param name="sseHeaders">Server-side encryption headers if any </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <returns></returns>
         private async Task<string> PutObjectAsync(string bucketName, string objectName, string uploadId, int partNumber, byte[] data, Dictionary<string, string> metaData, Dictionary<string, string> sseHeaders, CancellationToken cancellationToken)
+        /// <returns></returns>
         {
             // For multi-part upload requests, metadata needs to be passed in the NewMultiPartUpload request
             string contentType = metaData["Content-Type"];
@@ -929,7 +931,6 @@ namespace Minio
             }
             // Escape source object path.
             string sourceObjectPath = $"{bucketName}/{utils.UrlEncode(objectName)}";
-
             // Destination object name is optional, if empty default to source object name.
             if (destObjectName == null)
             {
@@ -1242,5 +1243,143 @@ namespace Minio
 
             return Tuple.Create(this.restClient.BaseUrl.AbsoluteUri, policy.GetFormData());
         }
+
+        /// <summary>
+        /// Check if legal hold is enabled on an object in the mentioned bucket
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Key of object to retrieve</param>
+        /// <param name="versionId">Version ID of the object</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task that returns true if legal hold is enabled on the bucket</returns>
+        public async Task<bool> IsObjectLegalHoldEnabledAsync(string bucketName, string objectName, string versionId, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (bucketName == null)
+            {
+                throw new InvalidBucketNameException(bucketName, "bucketName cannot be null");
+            }
+
+            var request = await this.CreateRequest(Method.GET, bucketName,
+                                                     objectName: objectName)
+                                    .ConfigureAwait(false);
+            request.AddQueryParameter("legal-hold", "");
+            if( versionId != null && versionId != "" )
+            {
+                request.AddQueryParameter("versionId", versionId);
+            }
+            try
+            {
+                var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+                ObjectLegalHoldConfiguration lhRes = null;
+                if (HttpStatusCode.OK.Equals(response.StatusCode))
+                {
+                    using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(response.Content)))
+                    {
+                        lhRes = (ObjectLegalHoldConfiguration)new XmlSerializer(typeof(ObjectLegalHoldConfiguration)).Deserialize(stream);
+                    }
+                    if( lhRes == null || lhRes.Status == null )
+                    {
+                        return false; 
+                    }
+                    return lhRes.Status.ToLower().Equals("on");
+                }
+            }
+            catch (UnexpectedMinioException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Enable Legal Hold(Status ON) on a bucket
+        /// </summary>
+        /// <param name="bucketName">Name of the new bucket</param>
+        /// <param name="objectName">Key of object to retrieve</param>
+        /// <param name="versionId">Version ID of the object</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task that returns true if legal hold is enabled on the bucket</returns>
+        
+        public async Task EnableObjectLegalHoldAsync(string bucketName,  string objectName, string versionId, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            // Set Target URL
+            try
+            {
+                if (bucketName == null)
+                {
+                    throw new InvalidBucketNameException(bucketName, "Bucket Name cannot be null");
+                }
+                Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, bucketName: bucketName);
+                SetTargetURL(requestUrl);
+                ObjectLegalHoldConfiguration config = new ObjectLegalHoldConfiguration(true);
+                string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+                var request = await this.CreateRequest(Method.PUT, bucketName,
+                                                     objectName: objectName)
+                                        .ConfigureAwait(false);
+                request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+                if( versionId != null && versionId != "" )
+                {
+                    request.AddQueryParameter("versionId", versionId);
+                }
+                request.AddQueryParameter("legal-hold", "");
+                var md5 = MD5.Create();
+                byte[] hash = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(body));
+                string base64 = Convert.ToBase64String(hash);
+                request.AddOrUpdateParameter("Content-MD5", base64, ParameterType.HttpHeader);
+                var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        /// <summary>
+        /// Disable Legal Hold (Status OFF) on a bucket
+        /// </summary>
+        /// <param name="bucketName">Name of the new bucket</param>
+        /// <param name="objectName">Key of object to retrieve</param>
+        /// <param name="versionId">Version ID of the object</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task that returns after legal hold is disabled on the bucket or throws error</returns>
+        public async Task DisableObjectLegalHoldAsync(string bucketName,  string objectName, string versionId, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            // Set Target URL
+            try
+            {
+                if (bucketName == null)
+                {
+                    throw new InvalidBucketNameException(bucketName, "Bucket Name cannot be null");
+                }
+                Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, bucketName: bucketName);
+                SetTargetURL(requestUrl);
+                ObjectLegalHoldConfiguration config = new ObjectLegalHoldConfiguration(false);
+                string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+                var request = await this.CreateRequest(Method.PUT, bucketName,
+                                                     objectName: objectName)
+                                        .ConfigureAwait(false);
+                request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+                if( versionId != null && versionId != "" )
+                {
+                    request.AddQueryParameter("versionId", versionId);
+                }
+                request.AddQueryParameter("legal-hold", "");
+                var md5 = MD5.Create();
+                byte[] hash = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(body));
+                string base64 = Convert.ToBase64String(hash);
+                request.AddOrUpdateParameter("Content-MD5", base64, ParameterType.HttpHeader);
+                var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+
     }
 }

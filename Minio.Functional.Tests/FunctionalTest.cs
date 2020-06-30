@@ -188,6 +188,40 @@ namespace Minio.Functional.Tests
             }
         }
 
+        internal async static Task EnableDisableObjectLegalHold_Test(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName();
+            string objectName = GetRandomObjectName(10);
+            string contentType = "application/octet-stream";
+            string versionId = GetRandomName(length: 60);
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
+                { "size", "1MB" }
+            };
+
+            try
+            {
+                await Setup_Test(minio, bucketName);
+                await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
+                await minio.EnableObjectLegalHoldAsync(bucketName, objectName, versionId);
+                bool enabled = await minio.IsObjectLegalHoldEnabledAsync(bucketName, objectName, versionId);
+                Assert.IsTrue(enabled);
+                await minio.DisableObjectLegalHoldAsync(bucketName, objectName, versionId);
+                enabled = await minio.IsObjectLegalHoldEnabledAsync(bucketName, objectName, versionId);
+                Assert.IsFalse(enabled);
+                await TearDown(minio, bucketName);
+                new MintLogger(nameof(BucketExists_Test), bucketExistsSignature, "Tests whether Enable and Disable Object Legal Hold passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (MinioException ex)
+            {
+                new MintLogger(nameof(BucketExists_Test), bucketExistsSignature, "Tests whether BucketExists passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
+            }
+        }
+
         #region Make Bucket
 
         internal async static Task MakeBucket_Test1(MinioClient minio)
