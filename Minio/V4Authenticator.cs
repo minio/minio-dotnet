@@ -328,6 +328,10 @@ namespace Minio
 
             // Return presigned url.
             var signedUri = new UriBuilder(presignUri) {Query = $"{requestQuery}{headers}&X-Amz-Signature={signature}"};
+            if (signedUri.Uri.IsDefaultPort)
+            {
+               signedUri.Port = -1;
+            }
             return signedUri.ToString();
         }
 
