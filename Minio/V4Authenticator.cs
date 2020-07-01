@@ -114,7 +114,11 @@ namespace Minio
             DateTime signingDate = DateTime.UtcNow;
             this.SetContentMd5(request);
             this.SetContentSha256(request);
-            this.SetHostHeader(request, client.BaseUrl.Host + ":" + client.BaseUrl.Port);
+            if (client.BaseUrl.Port == 80 || client.BaseUrl.Port == 443) {
+                this.SetHostHeader(request, client.BaseUrl.Host);
+            } else {
+                this.SetHostHeader(request, client.BaseUrl.Host + ":" + client.BaseUrl.Port);
+            }
             this.SetDateHeader(request, signingDate);
             this.SetSessionTokenHeader(request, this.sessionToken);
             SortedDictionary<string, string> headersToSign = this.GetHeadersToSign(request);
