@@ -573,6 +573,13 @@ namespace Minio
 
                 // All anonymous access requests get Content-MD5 header set.
                 byte[] body = null;
+                if (bodyParameter.Value is XElement)
+                {
+                    bodyParameter.DataFormat = DataFormat.None;
+                    /// After next line bodyParameter.Value is string
+                    /// and next if will be executed
+                    bodyParameter.Value = request.XmlSerializer.Serialize(bodyParameter.Value);
+                }
                 if (bodyParameter.Value is string)
                 {
                     body = System.Text.Encoding.UTF8.GetBytes(bodyParameter.Value as string);
