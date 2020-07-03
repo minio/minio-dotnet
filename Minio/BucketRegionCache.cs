@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-using RestSharp;
 using System;
 using System.Collections.Concurrent;
-using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -97,19 +96,17 @@ namespace Minio
                 var path = utils.UrlEncode(bucketName);
                 // Initialize client
                 Uri requestUrl = RequestUtil.MakeTargetURL(client.BaseUrl, client.Secure);
-                client.SetTargetURL(requestUrl);
 
-                var request = new RestRequest(path, Method.GET);
-                request.AddQueryParameter("location","");
-                var response = await client.ExecuteTaskAsync(client.NoErrorHandlers, request).ConfigureAwait(false);
+                var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, requestUrl, path);
+                requestBuilder.AddQueryParameter("location","");
+                var response = await client.ExecuteTaskAsync(client.NoErrorHandlers, requestBuilder).ConfigureAwait(false);
 
                 if (HttpStatusCode.OK.Equals(response.StatusCode))
                 {
-                    var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-                    var stream = new MemoryStream(contentBytes);
                     XDocument root = XDocument.Parse(response.Content);
                     location = root.Root.Value;
                 }
+
                 if (string.IsNullOrEmpty(location))
                 {
                     region = "us-east-1";

@@ -17,13 +17,13 @@
 
 using Minio.DataModel;
 using Minio.Exceptions;
-using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,19 +40,22 @@ namespace Minio
         /// </summary>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task with an iterator lazily populated with objects</returns>
-        public async Task<ListAllMyBucketsResult> ListBucketsAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<ListAllMyBucketsResult> ListBucketsAsync(
+            CancellationToken cancellationToken = default)
         {
-            var request = await this.CreateRequest(Method.GET, resourcePath: "/").ConfigureAwait(false);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var request = await this.CreateRequest(HttpMethod.Get, resourcePath: "/").ConfigureAwait(false);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken)
+                .ConfigureAwait(false);
 
             ListAllMyBucketsResult bucketList = new ListAllMyBucketsResult();
             if (HttpStatusCode.OK.Equals(response.StatusCode))
             {
-                var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-                using (var stream = new MemoryStream(contentBytes))
-                    bucketList = (ListAllMyBucketsResult)new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream);
+                using (var stream = new MemoryStream(response.ContentBytes))
+                    bucketList =
+                        (ListAllMyBucketsResult) new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream);
                 return bucketList;
             }
+
             return bucketList;
         }
 
@@ -64,7 +67,8 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns> Task </returns>
         /// <exception cref="InvalidBucketNameException">When bucketName is null</exception>
-        public async Task MakeBucketAsync(string bucketName, string location = "us-east-1", CancellationToken cancellationToken = default(CancellationToken))
+        public async Task MakeBucketAsync(string bucketName, string location = "us-east-1",
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             if (bucketName == null)
             {
@@ -81,21 +85,17 @@ namespace Minio
 
             // Set Target URL
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, location);
-            SetTargetURL(requestUrl);
 
-            var request = new RestRequest("/" + bucketName, Method.PUT)
-            {
-                XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer(),
-                RequestFormat = DataFormat.Xml
-            };
+            var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Put, requestUrl, "/" + bucketName);
             // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
             if (location != "us-east-1")
             {
                 CreateBucketConfiguration config = new CreateBucketConfiguration(location);
-                request.AddBody(config);
+                requestBuilder.AddXmlBody(config.ToXml());
             }
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestBuilder, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -104,7 +104,8 @@ namespace Minio
         /// <param name="bucketName">Bucket to test existence of</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task that returns true if exists and user has access</returns>
-        public async Task<bool> BucketExistsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<bool> BucketExistsAsync(string bucketName,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             try
             {
@@ -112,8 +113,10 @@ namespace Minio
                 {
                     throw new InvalidBucketNameException(bucketName, "bucketName cannot be null");
                 }
-                var request = await this.CreateRequest(Method.HEAD, bucketName).ConfigureAwait(false);
-                var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+
+                var request = await this.CreateRequest(HttpMethod.Head, bucketName).ConfigureAwait(false);
+                var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken)
+                    .ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -121,8 +124,10 @@ namespace Minio
                 {
                     return false;
                 }
+
                 throw;
             }
+
             return true;
         }
 
@@ -132,11 +137,13 @@ namespace Minio
         /// <param name="bucketName">Name of bucket to remove</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task</returns>
-        public async Task RemoveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task RemoveBucketAsync(string bucketName,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
-            var request = await this.CreateRequest(Method.DELETE, bucketName).ConfigureAwait(false);
+            var request = await this.CreateRequest(HttpMethod.Delete, bucketName).ConfigureAwait(false);
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -147,62 +154,69 @@ namespace Minio
         /// <param name="recursive">Set to true to recursively list all objects</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>An observable of items that client can subscribe to</returns>
-        public IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = false, CancellationToken cancellationToken = default(CancellationToken))
+        public IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = false,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             return Observable.Create<Item>(
-              async (obs, ct) =>
-              {
-                  bool isRunning = true;
-                  string marker = null;
+                async (obs, ct) =>
+                {
+                    bool isRunning = true;
+                    string marker = null;
 
-                  var delimiter = "/";
-                  if (recursive)
-                  {
-                      delimiter = string.Empty;
-                  }
-
-                  using(var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct)) {
-                    while (isRunning)
+                    var delimiter = "/";
+                    if (recursive)
                     {
-                        Tuple<ListBucketResult, List<Item>> result = await GetObjectListAsync(bucketName, prefix, delimiter, marker, cts.Token).ConfigureAwait(false);
-                        Item lastItem = null;
-                        foreach (Item item in result.Item2)
-                        {
-                            lastItem = item;
-                            if (result.Item1.EncodingType == "url")
-                            {
-                                item.Key = HttpUtility.UrlDecode(item.Key);
-                            }
-                            obs.OnNext(item);
-                        }
-                        if (result.Item1.NextMarker != null)
-                        {
-                            if (result.Item1.EncodingType == "url")
-                            {
-                                marker = HttpUtility.UrlDecode(result.Item1.NextMarker);
-                            }
-                            else
-                            {
-                                marker = result.Item1.NextMarker;
-                            }
-                        }
-                        else if (lastItem != null)
-                        {
-                            if (result.Item1.EncodingType == "url")
-                            {
-                                marker = HttpUtility.UrlDecode(lastItem.Key);
-                            }
-                            else
-                            {
-                                marker = lastItem.Key;
-                            }
-                        }
-                        isRunning = result.Item1.IsTruncated;
-                        cts.Token.ThrowIfCancellationRequested();
+                        delimiter = string.Empty;
                     }
-                  }
 
-              });
+                    using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
+                    {
+                        while (isRunning)
+                        {
+                            Tuple<ListBucketResult, List<Item>> result =
+                                await GetObjectListAsync(bucketName, prefix, delimiter, marker, cts.Token)
+                                    .ConfigureAwait(false);
+                            Item lastItem = null;
+                            foreach (Item item in result.Item2)
+                            {
+                                lastItem = item;
+                                if (result.Item1.EncodingType == "url")
+                                {
+                                    item.Key = HttpUtility.UrlDecode(item.Key);
+                                }
+
+                                obs.OnNext(item);
+                            }
+
+                            if (result.Item1.NextMarker != null)
+                            {
+                                if (result.Item1.EncodingType == "url")
+                                {
+                                    marker = HttpUtility.UrlDecode(result.Item1.NextMarker);
+                                }
+                                else
+                                {
+                                    marker = result.Item1.NextMarker;
+                                }
+                            }
+                            else if (lastItem != null)
+                            {
+                                if (result.Item1.EncodingType == "url")
+                                {
+                                    marker = HttpUtility.UrlDecode(lastItem.Key);
+                                }
+                                else
+                                {
+                                    marker = lastItem.Key;
+                                }
+                            }
+
+                            isRunning = result.Item1.IsTruncated;
+                            cts.Token.ThrowIfCancellationRequested();
+                        }
+                    }
+
+                });
         }
 
         /// <summary>
@@ -214,9 +228,10 @@ namespace Minio
         /// <param name="marker">marks location in the iterator sequence</param>
         /// <returns>Task with a tuple populated with objects</returns>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix, string delimiter, string marker, CancellationToken cancellationToken = default(CancellationToken))
+        private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix,
+            string delimiter, string marker, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var queryMap = new Dictionary<string,string>();
+            var queryMap = new Dictionary<string, string>();
             // null values are treated as empty strings.
             if (delimiter == null)
             {
@@ -232,43 +247,44 @@ namespace Minio
             {
                 marker = string.Empty;
             }
-            
-            var request = await this.CreateRequest(Method.GET,
-                                                     bucketName)
-                                        .ConfigureAwait(false);
-            request.AddQueryParameter("delimiter",delimiter);
-            request.AddQueryParameter("prefix",prefix);
-            request.AddQueryParameter("max-keys", "1000");
-            request.AddQueryParameter("marker",marker);
-            request.AddQueryParameter("encoding-type","url");
-  
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+            var request = await this.CreateRequest(HttpMethod.Get,
+                    bucketName)
+                .ConfigureAwait(false);
+            request.AddQueryParameter("delimiter", delimiter);
+            request.AddQueryParameter("prefix", prefix);
+            request.AddQueryParameter("max-keys", "1000");
+            request.AddQueryParameter("marker", marker);
+            request.AddQueryParameter("encoding-type", "url");
+
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken)
+                .ConfigureAwait(false);
+
             ListBucketResult listBucketResult = null;
-            using (var stream = new MemoryStream(contentBytes))
+            using (var stream = new MemoryStream(response.ContentBytes))
             {
-                listBucketResult = (ListBucketResult)new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream);
+                listBucketResult = (ListBucketResult) new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream);
             }
 
             XDocument root = XDocument.Parse(response.Content);
 
             var items = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
-                        select new Item
-                        {
-                            Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
-                            LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
-                            ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value,
-                            Size = ulong.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture),
-                            IsDir = false
-                        };
+                select new Item
+                {
+                    Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
+                    LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
+                    ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value,
+                    Size = ulong.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value,
+                        CultureInfo.CurrentCulture),
+                    IsDir = false
+                };
 
             var prefixes = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}CommonPrefixes")
-                           select new Item
-                           {
-                               Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Prefix").Value,
-                               IsDir = true
-                           };
+                select new Item
+                {
+                    Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Prefix").Value,
+                    IsDir = true
+                };
 
             items = items.Concat(prefixes);
 
@@ -281,23 +297,22 @@ namespace Minio
         /// <param name="bucketName">Bucket name.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task that returns the Bucket policy as a json string</returns>
-        public async Task<string> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<string> GetPolicyAsync(string bucketName,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
-            IRestResponse response = null;
-
-            var request = await this.CreateRequest(Method.GET, bucketName,
-                                 contentType: "application/json")
-                            .ConfigureAwait(false);
-            request.AddQueryParameter("policy","");
+            var request = await this.CreateRequest(HttpMethod.Get, bucketName,
+                    contentType: "application/json")
+                .ConfigureAwait(false);
+            request.AddQueryParameter("policy", "");
             string policyString = null;
-            response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-
-            using (var stream = new MemoryStream(contentBytes))
-            using (var streamReader = new StreamReader(stream))
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken)
+                .ConfigureAwait(false);
+            using (var contentStream = new MemoryStream(response.ContentBytes))
+            using (var streamReader = new StreamReader(contentStream))
             {
                 policyString = await streamReader.ReadToEndAsync().ConfigureAwait(false);
             }
+
             return policyString;
         }
 
@@ -308,14 +323,16 @@ namespace Minio
         /// <param name="policyJson">Policy json as string </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task to set a policy</returns>
-        public async Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task SetPolicyAsync(string bucketName, string policyJson,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
-            var request = await this.CreateRequest(Method.PUT, bucketName,
-                                           contentType: "application/json")
-                                .ConfigureAwait(false);
-            request.AddQueryParameter("policy","");
-            request.AddJsonBody(policyJson);
-            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var requestBuilder = await this.CreateRequest(HttpMethod.Put, bucketName,
+                    contentType: "application/json")
+                .ConfigureAwait(false);
+            requestBuilder.AddQueryParameter("policy", "");
+            requestBuilder.AddJsonBody(policyJson);
+            _ = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestBuilder, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -324,19 +341,20 @@ namespace Minio
         /// <param name="bucketName">Bucket name</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public async Task<BucketNotification> GetBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<BucketNotification> GetBucketNotificationsAsync(string bucketName,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             utils.ValidateBucketName(bucketName);
-            var request = await this.CreateRequest(Method.GET,
-                                               bucketName)
-                                    .ConfigureAwait(false);
-            request.AddQueryParameter("notification","");
+            var request = await this.CreateRequest(HttpMethod.Get,
+                    bucketName)
+                .ConfigureAwait(false);
+            request.AddQueryParameter("notification", "");
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-            using (var stream = new MemoryStream(contentBytes))
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken)
+                .ConfigureAwait(false);
+            using (var contentStream = new MemoryStream(response.ContentBytes))
             {
-                return (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(stream);
+                return (BucketNotification) new XmlSerializer(typeof(BucketNotification)).Deserialize(contentStream);
             }
         }
 
@@ -347,19 +365,18 @@ namespace Minio
         /// <param name="notification">Notification object with configuration to be set on the server</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public async Task SetBucketNotificationsAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task SetBucketNotificationsAsync(string bucketName, BucketNotification notification,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             utils.ValidateBucketName(bucketName);
-            var request = await this.CreateRequest(Method.PUT, bucketName)
-                                .ConfigureAwait(false);
-            request.AddQueryParameter("notification","");
+            var request = await this.CreateRequest(HttpMethod.Put, bucketName)
+                .ConfigureAwait(false);
+            request.AddQueryParameter("notification", "");
 
             var bodyString = notification.ToString();
+            request.AddXmlBody(bodyString);
 
-            var body = System.Text.Encoding.UTF8.GetBytes(bodyString);
-            request.AddParameter("application/xml", body, RestSharp.ParameterType.RequestBody);
-
-            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            _ = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -368,7 +385,8 @@ namespace Minio
         /// <param name="bucketName">Bucket name</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        public Task RemoveAllBucketNotificationsAsync(string bucketName,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             utils.ValidateBucketName(bucketName);
             BucketNotification notification = new BucketNotification();
@@ -384,7 +402,9 @@ namespace Minio
         /// <param name="suffix">Filter keys ending with this suffix</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>An observable of JSON-based notification events</returns>
-        public IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events, string prefix = "", string suffix = "", CancellationToken cancellationToken = default(CancellationToken))
+        public IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName,
+            IList<EventType> events, string prefix = "", string suffix = "",
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             return Observable.Create<MinioNotificationRaw>(
                 async (obs, ct) =>
@@ -395,51 +415,48 @@ namespace Minio
                     {
                         while (isRunning)
                         {
-                            var request = await this.CreateRequest(Method.GET,
-                                                                    bucketName)
-                                                        .ConfigureAwait(false);
-                            request.AddQueryParameter("prefix",prefix);
-                            request.AddQueryParameter("sufffix",suffix);
+                            var request = await this.CreateRequest(HttpMethod.Get,
+                                    bucketName)
+                                .ConfigureAwait(false);
+                            request.AddQueryParameter("prefix", prefix);
+                            request.AddQueryParameter("sufffix", suffix);
                             foreach (var eventType in events)
                             {
-                                request.AddQueryParameter("events",eventType.value);
+                                request.AddQueryParameter("events", eventType.value);
                             }
 
-                            request.ResponseWriter = responseStream =>
+                            var response =
+                                await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+
+                            using (response.ContentStream)
                             {
-                                using (responseStream)
+                                var sr = new StreamReader(response.ContentStream);
+                                while (true)
                                 {
-                                    var sr = new StreamReader(responseStream);
-                                    while (true)
+                                    string line = sr.ReadLine();
+                                    if (this.trace)
                                     {
-                                        string line = sr.ReadLine();
-                                        if (this.trace)
-                                        {
-                                            Console.WriteLine("== ListenBucketNotificationsAsync read line ==");
-                                            Console.WriteLine(line);
-                                            Console.WriteLine("==============================================");
-                                        }
-                                        if (line == null)
-                                        {
-                                            break;
-                                        }
-                                        string trimmed = line.Trim();
-                                        if (trimmed.Length > 2)
-                                        {
-                                            obs.OnNext(new MinioNotificationRaw(trimmed));
-                                        }
+                                        Console.WriteLine("== ListenBucketNotificationsAsync read line ==");
+                                        Console.WriteLine(line);
+                                        Console.WriteLine("==============================================");
+                                    }
+                                    if (line == null)
+                                    {
+                                        break;
+                                    }
+                                    string trimmed = line.Trim();
+                                    if (trimmed.Length > 2)
+                                    {
+                                        obs.OnNext(new MinioNotificationRaw(trimmed));
                                     }
                                 }
-                            };
-
-                            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+                            }
 
                             cts.Token.ThrowIfCancellationRequested();
                         }
                     }
 
-              });
-
+                });
         }
     }
 }

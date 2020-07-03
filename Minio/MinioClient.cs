@@ -20,17 +20,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using System.Xml.Serialization;
-
 using Minio.DataModel.Tracing;
 using Minio.Exceptions;
 using Minio.Helper;
-
-using RestSharp;
 
 namespace Minio
 {
@@ -52,10 +49,6 @@ namespace Minio
         // Indicates if we are using HTTPS or not
         internal bool Secure { get; private set; }
 
-        // RESTSharp client
-        internal IRestClient restClient;
-        // Custom authenticator for RESTSharp
-        internal V4Authenticator authenticator;
         // Handler for task retry policy
         internal RetryPolicyHandlingDelegate retryPolicyHandler;
 
@@ -66,6 +59,8 @@ namespace Minio
 
         // Enables HTTP tracing if set to true
         private bool trace = false;
+
+        private int requestTimeout;
 
         private const string RegistryAuthHeaderKey = "X-Registry-Auth";
 
@@ -102,7 +97,7 @@ namespace Minio
         /// <summary>
         /// Returns the User-Agent header for the request
         /// </summary>
-        private string FullUserAgent
+        public string FullUserAgent
         {
             get
             {
@@ -143,8 +138,8 @@ namespace Minio
         }
 
         /// <summary>
-        /// Constructs a RestRequest. For AWS, this function has the side-effect of overriding the baseUrl
-        /// in the RestClient with region specific host path or virtual style path.
+        /// Constructs a HttpRequestMessage builder. For AWS, this function has the side-effect of overriding the baseUrl
+        /// in the HttpClient with region specific host path or virtual style path.
         /// </summary>
         /// <param name="method">HTTP method</param>
         /// <param name="bucketName">Bucket Name</param>
@@ -153,11 +148,14 @@ namespace Minio
         /// <param name="contentType">Content Type</param>
         /// <param name="body">request body</param>
         /// <param name="resourcePath">query string</param>
-        /// <returns>A RestRequest</returns>
-        internal async Task<RestRequest> CreateRequest(Method method, string bucketName = null, string objectName = null,
-                                Dictionary<string, string> headerMap = null,
-                                string contentType = "application/octet-stream",
-                                object body = null, string resourcePath = null)
+        /// <returns>A HttpRequestMessage builder</returns>
+        internal async Task<HttpRequestMessageBuilder> CreateRequest(
+            HttpMethod method,
+            string bucketName = null, 
+            string objectName = null,
+            Dictionary<string, string> headerMap = null,
+            string contentType = "application/octet-stream",
+            byte[] body = null, string resourcePath = null)
         {
             string region = string.Empty;
             if (bucketName != null)
@@ -172,11 +170,6 @@ namespace Minio
                 utils.ValidateObjectName(objectName);
             }
 
-            // Start with user specified endpoint
-            string host = this.BaseUrl;
-
-            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region, sessionToken: this.SessionToken);
-
             // This section reconstructs the url with scheme followed by location specific endpoint (s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
             string resource = string.Empty;
@@ -187,7 +180,7 @@ namespace Minio
                 {
                     usePathStyle = false;
 
-                    if (method == Method.PUT && objectName == null && resourcePath == null)
+                    if (method == HttpMethod.Put && objectName == null && resourcePath == null)
                     {
                         // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
                         usePathStyle = true;
@@ -216,7 +209,6 @@ namespace Minio
 
             // Set Target URL
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, bucketName, region, usePathStyle);
-            SetTargetURL(requestUrl);
 
             if (objectName != null)
             {
@@ -229,54 +221,22 @@ namespace Minio
                 resource += resourcePath;
             }
 
-            RestRequest request = new RestRequest(resource, method);
+            var messageBuilder = new HttpRequestMessageBuilder(method, requestUrl, resource);
 
             if (body != null)
             {
-                request.AddParameter(contentType, body, RestSharp.ParameterType.RequestBody);
+                messageBuilder.SetBody(body);
             }
 
             if (headerMap != null)
             {
                 foreach (var entry in headerMap)
                 {
-                    request.AddHeader(entry.Key, entry.Value);
+                    messageBuilder.AddHeaderParameter(entry.Key, entry.Value);
                 }
             }
 
-            return request;
-        }
-
-        /// <summary>
-        /// This method initializes a new RESTClient. The host URI for Amazon is set to virtual hosted style
-        /// if usePathStyle is false. Otherwise path style URL is constructed.
-        /// </summary>
-        internal void InitClient()
-        {
-            if (string.IsNullOrEmpty(this.BaseUrl))
-            {
-                throw new InvalidEndpointException("Endpoint cannot be empty.");
-            }
-
-            string host = this.BaseUrl;
-
-            var scheme = this.Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
-
-            // This is the actual url pointed to for all HTTP requests
-            this.Endpoint = string.Format("{0}://{1}", scheme, host);
-            this.uri = RequestUtil.GetEndpointURL(this.BaseUrl, this.Secure);
-            RequestUtil.ValidateEndpoint(this.uri, this.Endpoint);
-
-            // Initialize a new REST client. This uri will be modified if region specific endpoint/virtual style request
-            // is decided upon while constructing a request for Amazon.
-            restClient = new RestSharp.RestClient(this.uri)
-            {
-                UserAgent = this.FullUserAgent
-            };
-
-            authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, this.Region, this.SessionToken);
-            restClient.Authenticator = authenticator;
-            restClient.UseUrlEncoder(s => HttpUtility.UrlEncode(s));
+            return messageBuilder;
         }
 
         /// <summary>
@@ -321,7 +281,17 @@ namespace Minio
             // Instantiate a region cache
             this.regionCache = BucketRegionCache.Instance;
 
-            this.InitClient();
+            if (string.IsNullOrEmpty(this.BaseUrl))
+            {
+                throw new InvalidEndpointException("Endpoint cannot be empty.");
+            }
+
+            string host = this.BaseUrl;
+            var scheme = this.Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
+            // This is the actual url pointed to for all HTTP requests
+            this.Endpoint = string.Format("{0}://{1}", scheme, host);
+            this.uri = RequestUtil.GetEndpointURL(this.BaseUrl, this.Secure);
+            RequestUtil.ValidateEndpoint(this.uri, this.Endpoint);
         }
 
         /// <summary>
@@ -332,7 +302,6 @@ namespace Minio
         {
             this.Secure = true;
             Uri secureUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
-            this.SetTargetURL(secureUrl);
             return this;
         }
 
@@ -342,7 +311,7 @@ namespace Minio
         /// <returns></returns>
         public MinioClient WithProxy(IWebProxy proxy)
         {
-            this.restClient.Proxy = proxy;
+            // todo implement proxy;
             return this;
         }
 
@@ -353,7 +322,7 @@ namespace Minio
         /// <returns></returns>
         public MinioClient WithTimeout(int timeout)
         {
-            this.restClient.Timeout = timeout;
+            requestTimeout = timeout;
             return this;
         }
 
@@ -369,47 +338,80 @@ namespace Minio
         }
 
         /// <summary>
-        /// Sets endpoint URL on the client object that request will be made against
-        /// </summary>
-        internal void SetTargetURL(Uri uri)
-        {
-            this.restClient.BaseUrl = uri;
-        }
-
-        /// <summary>
-        /// Actual doer that executes the REST request to the server
+        /// Actual doer that executes the http request to the server
         /// </summary>
         /// <param name="errorHandlers">List of handlers to override default handling</param>
-        /// <param name="request">request</param>
+        /// <param name="requestBuilder">The build of HttpRequestMessage builder</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <returns>IRESTResponse</returns>
-        internal Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        /// <returns>Response result</returns>
+        internal Task<ResponseResult> ExecuteTaskAsync(
+            IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
+            HttpRequestMessageBuilder requestBuilder,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             return ExecuteWithRetry(
-                () => ExecuteTaskCoreAsync(errorHandlers, request, cancellationToken));
+                () => ExecuteTaskCoreAsync(errorHandlers, requestBuilder, cancellationToken));
         }
 
-        private async Task<IRestResponse> ExecuteTaskCoreAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        private async Task<ResponseResult> ExecuteTaskCoreAsync(
+            IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
+            HttpRequestMessageBuilder requestBuilder,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             var startTime = DateTime.Now;
             // Logs full url when HTTPtracing is enabled.
             if (this.trace)
             {
-                var fullUrl = this.restClient.BuildUri(request);
+                var fullUrl = requestBuilder.RequestUri;
                 Console.WriteLine($"Full URL of Request {fullUrl}");
             }
 
-            IRestResponse response = await this.restClient.ExecuteTaskAsync(request, cancellationToken).ConfigureAwait(false);
+            var httpClient = new HttpClient();
+            var v4Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region,
+                sessionToken: this.SessionToken);
 
-            this.HandleIfErrorResponse(response, errorHandlers, startTime);
-            return response;
+            httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization",
+                v4Authenticator.Authenticate(requestBuilder));
+            httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", this.FullUserAgent);
+
+            foreach (var item in requestBuilder.HeaderParameters)
+            {
+                if (!httpClient.DefaultRequestHeaders.TryAddWithoutValidation(item.Key, item.Value))
+                {
+                    requestBuilder.BodyParameters.Add(item.Key, item.Value);
+                }
+            }
+            var request = requestBuilder.Request;
+            ResponseResult responseResult;
+            try
+            {
+                if (requestTimeout > 0)
+                {
+                    httpClient.Timeout = new TimeSpan(0, 0, 0, 0, requestTimeout);
+                }
+                var response = await httpClient
+                    .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                    .ConfigureAwait(false);
+                responseResult = new ResponseResult(request, response);
+            }
+            catch (OperationCanceledException )
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                responseResult = new ResponseResult(request ,e);
+            }
+
+            this.HandleIfErrorResponse(responseResult, errorHandlers, startTime);
+            return responseResult;
         }
 
         /// <summary>
         /// Parse response errors if any and return relevant error messages
         /// </summary>
         /// <param name="response"></param>
-        internal static void ParseError(IRestResponse response)
+        internal static void ParseError(ResponseResult response)
         {
             if (response == null)
             {
@@ -430,7 +432,7 @@ namespace Minio
             ParseErrorFromContent(response);
         }
 
-        private static void ParseErrorNoContent(IRestResponse response)
+        private static void ParseErrorNoContent(ResponseResult response)
         {
             if (HttpStatusCode.Forbidden.Equals(response.StatusCode)
                 || HttpStatusCode.BadRequest.Equals(response.StatusCode)
@@ -442,44 +444,47 @@ namespace Minio
             }
 
             if (response.StatusCode == 0)
-                throw new ConnectionException("Connection error: " + response.ErrorMessage, response);
+                throw new ConnectionException("Connection error" , response);
 
-            throw new InternalClientException("Unsuccessful response from server without XML error: " + response.ErrorMessage, response);
+            throw new InternalClientException(
+                "Unsuccessful response from server without XML", response);
         }
 
-        private static void ParseWellKnownErrorNoContent(IRestResponse response)
+        private static void ParseWellKnownErrorNoContent(ResponseResult response)
         {
             MinioException error = null;
             ErrorResponse errorResponse = new ErrorResponse();
 
-            foreach (Parameter parameter in response.Headers)
+            foreach (var parameter in response.Headers)
             {
-                if (parameter.Name.Equals("x-amz-id-2", StringComparison.CurrentCultureIgnoreCase))
+                if (parameter.Key.Equals("x-amz-id-2", StringComparison.CurrentCultureIgnoreCase))
                 {
                     errorResponse.HostId = parameter.Value.ToString();
                 }
 
-                if (parameter.Name.Equals("x-amz-request-id", StringComparison.CurrentCultureIgnoreCase))
+                if (parameter.Key.Equals("x-amz-request-id", StringComparison.CurrentCultureIgnoreCase))
                 {
                     errorResponse.RequestId = parameter.Value.ToString();
                 }
 
-                if (parameter.Name.Equals("x-amz-bucket-region", StringComparison.CurrentCultureIgnoreCase))
+                if (parameter.Key.Equals("x-amz-bucket-region", StringComparison.CurrentCultureIgnoreCase))
                 {
                     errorResponse.BucketRegion = parameter.Value.ToString();
                 }
             }
 
-            errorResponse.Resource = response.Request.Resource;
+            var pathAndQuery = response.Request.RequestUri.PathAndQuery;
+            var host = response.Request.RequestUri.Host;
+            errorResponse.Resource = pathAndQuery;
 
             // zero, one or two segments
-            var resourceSplits = response.Request.Resource.Split(new[] { '/' }, 2, StringSplitOptions.RemoveEmptyEntries);
+            var resourceSplits = pathAndQuery.Split(new[] { '/' }, 2, StringSplitOptions.RemoveEmptyEntries);
 
             if (HttpStatusCode.NotFound.Equals(response.StatusCode))
             {
                 int pathLength = resourceSplits.Length;
-                bool isAWS = response.ResponseUri.Host.EndsWith("s3.amazonaws.com");
-                bool isVirtual = isAWS && !response.ResponseUri.Host.StartsWith("s3.amazonaws.com");
+                bool isAWS = host.EndsWith("s3.amazonaws.com");
+                bool isVirtual = isAWS && !host.StartsWith("s3.amazonaws.com");
 
                 if (pathLength > 1)
                 {
@@ -491,7 +496,7 @@ namespace Minio
                 {
                     var resource = resourceSplits[0];
 
-                    if (isAWS && isVirtual && response.Request.Resource != string.Empty)
+                    if (isAWS && isVirtual && pathAndQuery != string.Empty)
                     {
                         errorResponse.Code = "NoSuchKey";
                         error = new ObjectNotFoundException(resource, "Not found.");
@@ -526,37 +531,38 @@ namespace Minio
             else if (HttpStatusCode.Forbidden.Equals(response.StatusCode))
             {
                 errorResponse.Code = "Forbidden";
-                error = new AccessDeniedException("Access denied on the resource: " + response.Request.Resource);
+                error = new AccessDeniedException("Access denied on the resource: " + pathAndQuery);
             }
 
             error.Response = errorResponse;
             throw error;
         }
 
-        private static void ParseErrorFromContent(IRestResponse response)
+        private static void ParseErrorFromContent(ResponseResult response)
         {
             if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-                && response.Request.Resource.EndsWith("?location")
-                && response.Request.Method.Equals(Method.GET))
+                && response.Request.RequestUri.PathAndQuery.EndsWith("?location")
+                && response.Request.Method.Equals(HttpMethod.Get))
             {
-                var bucketName = response.Request.Resource.Split('?')[0];
+                var bucketName = response.Request.RequestUri.PathAndQuery.Split('?')[0];
                 BucketRegionCache.Instance.Remove(bucketName);
                 throw new BucketNotFoundException(bucketName, "Not found.");
             }
 
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+            var contentBytes = response.ContentBytes;
+            var contentString = response.Content;
             var stream = new MemoryStream(contentBytes);
             ErrorResponse errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream);
 
             // Handle XML response for Bucket Policy not found case
             if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-                && response.Request.Resource.EndsWith("?policy")
-                && response.Request.Method.Equals(Method.GET)
+                && response.Request.RequestUri.PathAndQuery.EndsWith("?policy")
+                && response.Request.Method.Equals(HttpMethod.Get)
                 && errResponse.Code == "NoSuchBucketPolicy")
             {
                 throw new ErrorResponseException(errResponse, response)
                 {
-                    XmlError = response.Content
+                    XmlError = contentString
                 };
             }
 
@@ -569,7 +575,7 @@ namespace Minio
             throw new UnexpectedMinioException(errResponse.Message)
             {
                 Response = errResponse,
-                XmlError = response.Content
+                XmlError = contentString
             };
         }
 
@@ -579,7 +585,7 @@ namespace Minio
         /// <param name="response"></param>
         /// <param name="handlers"></param>
         /// <param name="startTime"></param>
-        private void HandleIfErrorResponse(IRestResponse response, IEnumerable<ApiResponseErrorHandlingDelegate> handlers, DateTime startTime)
+        private void HandleIfErrorResponse(ResponseResult response, IEnumerable<ApiResponseErrorHandlingDelegate> handlers, DateTime startTime)
         {
             // Logs Response if HTTP tracing is enabled
             if (this.trace)
@@ -626,32 +632,31 @@ namespace Minio
         /// <param name="request"></param>
         /// <param name="response"></param>
         /// <param name="durationMs"></param>
-        private void LogRequest(IRestRequest request, IRestResponse response, double durationMs)
+        private void LogRequest(HttpRequestMessage request, ResponseResult response, double durationMs)
         {
             var requestToLog = new RequestToLog
             {
-                resource = request.Resource,
+                resource = request.RequestUri.PathAndQuery,
                 // Parameters are custom anonymous objects in order to have the parameter type as a nice string
                 // otherwise it will just show the enum value
-                parameters = request.Parameters.Select(parameter => new RequestParameter
+                parameters = request.Headers.Select(parameter => new RequestParameter
                 {
-                    name = parameter.Name,
+                    name = parameter.Key,
                     value = parameter.Value,
-                    type = parameter.Type.ToString()
                 }),
                 // ToString() here to have the method as a nice string otherwise it will just show the enum value
                 method = request.Method.ToString(),
                 // This will generate the actual Uri used in the request
-                uri = restClient.BuildUri(request)
+                uri = request.RequestUri
             };
 
             var responseToLog = new ResponseToLog
             {
                 statusCode = response.StatusCode,
                 content = response.Content,
-                headers = response.Headers,
+                headers = response.Headers.ToDictionary(o => o.Key, o => string.Join(Environment.NewLine, o.Value)),
                 // The Uri that actually responded (could be different from the requestUri if a redirection occurred)
-                responseUri = response.ResponseUri,
+                responseUri = response.Request.RequestUri,
                 errorMessage = response.ErrorMessage,
                 durationMs = durationMs
             };
@@ -659,8 +664,8 @@ namespace Minio
             this.logger.LogRequest(requestToLog, responseToLog, durationMs);
         }
 
-        private Task<IRestResponse> ExecuteWithRetry(
-            Func<Task<IRestResponse>> executeRequestCallback)
+        private Task<ResponseResult> ExecuteWithRetry(
+            Func<Task<ResponseResult>> executeRequestCallback)
         {
             return retryPolicyHandler == null
                 ? executeRequestCallback()
@@ -668,8 +673,8 @@ namespace Minio
         }
     }
 
-    internal delegate void ApiResponseErrorHandlingDelegate(IRestResponse response);
+    internal delegate void ApiResponseErrorHandlingDelegate(ResponseResult response);
 
-    public delegate Task<IRestResponse> RetryPolicyHandlingDelegate(
-        Func<Task<IRestResponse>> executeRequestCallback);
+    public delegate Task<ResponseResult> RetryPolicyHandlingDelegate(
+        Func<Task<ResponseResult>> executeRequestCallback);
 }

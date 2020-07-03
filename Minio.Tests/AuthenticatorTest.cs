@@ -15,10 +15,10 @@
  */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using Minio.DataModel;
 using Moq;
 
@@ -34,10 +34,9 @@ namespace Minio.Tests
             var authenticator = new V4Authenticator(false, null, null);
             Assert.IsTrue(authenticator.isAnonymous);
           
-            IRestClient restClient = new RestClient("http://localhost:9000");
-            IRestRequest request = new RestRequest("bucketname/objectname", RestSharp.Method.PUT);
-            request.AddBody("body of request");
-            authenticator.Authenticate(restClient, request);
+            var request = new HttpRequestMessageBuilder( HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
+            request.AddJsonBody("[]");
+            authenticator.Authenticate(request);
             Assert.IsFalse(hasPayloadHeader(request, "x-amz-content-sha256"));
             Assert.IsTrue(hasPayloadHeader(request, "Content-MD5"));
         }
@@ -49,10 +48,9 @@ namespace Minio.Tests
             var authenticator = new V4Authenticator(true, null, null);
             Assert.IsTrue(authenticator.isAnonymous);
 
-            IRestClient restClient = new RestClient("http://localhost:9000");
-            IRestRequest request = new RestRequest("bucketname/objectname", RestSharp.Method.PUT);
-            request.AddBody("body of request");
-            authenticator.Authenticate(restClient, request);
+            var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
+            request.AddJsonBody("[]");
+            authenticator.Authenticate(request);
             Assert.IsFalse(hasPayloadHeader(request, "x-amz-content-sha256"));
             Assert.IsTrue(hasPayloadHeader(request, "Content-MD5"));
         }
@@ -65,14 +63,13 @@ namespace Minio.Tests
             Assert.IsTrue(authenticator.isSecure);
             Assert.IsFalse(authenticator.isAnonymous);
 
-            IRestClient restClient = new RestClient("http://localhost:9000");
-            IRestRequest request = new RestRequest("bucketname/objectname", RestSharp.Method.PUT);
-            request.AddBody("body of request");
-            authenticator.Authenticate(restClient, request);
+            var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
+            request.AddJsonBody("[]");
+            authenticator.Authenticate(request);
             Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
             Assert.IsTrue(hasPayloadHeader(request, "Content-Md5"));
-            Tuple<string, object> match = GetHeaderKV(request, "x-amz-content-sha256");
-            Assert.IsTrue(match != null && ((string)match.Item2).Equals("UNSIGNED-PAYLOAD"));
+            Tuple<string, string> match = GetHeaderKV(request, "x-amz-content-sha256");
+            Assert.IsTrue(match != null && match.Item2.Equals("UNSIGNED-PAYLOAD"));
         }
 
         [TestMethod]
@@ -82,10 +79,9 @@ namespace Minio.Tests
             var authenticator = new V4Authenticator(false, "accesskey", "secretkey");
             Assert.IsFalse(authenticator.isSecure);
             Assert.IsFalse(authenticator.isAnonymous);
-            IRestClient restClient = new RestClient("http://localhost:9000");
-            IRestRequest request = new RestRequest("bucketname/objectname", RestSharp.Method.PUT);
-            request.AddBody("body of request");
-            authenticator.Authenticate(restClient, request);
+            var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
+            request.AddJsonBody("[]");
+            authenticator.Authenticate(request);
             Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
             Assert.IsFalse(hasPayloadHeader(request, "Content-Md5"));
         }
@@ -139,7 +135,7 @@ namespace Minio.Tests
                 {"Content-Language".ToLowerInvariant(), "en"},
             };
 
-            var canonicalRequest = authenticator.GetPresignCanonicalRequest(Method.PUT, request, headersToSign);
+            var canonicalRequest = authenticator.GetPresignCanonicalRequest(HttpMethod.Put, request, headersToSign);
             Assert.AreEqual(string.Join('\n', new[]
                 {
                     "PUT",
@@ -152,15 +148,6 @@ namespace Minio.Tests
                 }),
                 canonicalRequest);
 
-        }
-
-        private static Mock<IRestClient> MockRestClient(string baseUrl)
-        {
-            var restClient = new Mock<IRestClient>(MockBehavior.Strict);
-            restClient.SetupProperty(rc => rc.BaseUrl, new Uri(baseUrl, UriKind.Absolute));
-            restClient.Setup(rc => rc.BuildUri(It.IsAny<IRestRequest>()))
-                .Returns((IRestRequest rr) => new RestClient(baseUrl).BuildUri(rr));
-            return restClient;
         }
 
         [TestMethod]
@@ -176,7 +163,7 @@ namespace Minio.Tests
                 {"Content-Language".ToLowerInvariant(), "en"},
             };
 
-            var canonicalRequest = authenticator.GetPresignCanonicalRequest(Method.PUT, request, headersToSign);
+            var canonicalRequest = authenticator.GetPresignCanonicalRequest(HttpMethod.Put, request, headersToSign);
             Assert.AreEqual(string.Join('\n', new[]
                 {
                     "PUT",
@@ -190,24 +177,19 @@ namespace Minio.Tests
                 canonicalRequest);
         }
 
-        private Tuple<string, object> GetHeaderKV(IRestRequest request, string headername)
+        private Tuple<string, string> GetHeaderKV(HttpRequestMessageBuilder request, string headername)
         {
-            var headers = request.Parameters.Where(p => p.Type.Equals(ParameterType.HttpHeader)).ToList();
-            List<string> headerKeys = new List<string>();
-            foreach (Parameter header in headers)
+            var key = request.HeaderParameters.Keys.FirstOrDefault(o => o.ToLower() == headername.ToLower());
+            if (key != null)
             {
-                string headerName = header.Name.ToLower();
-                if (headerName.Contains(headername.ToLower()))
-                {
-                    return Tuple.Create(headerName, header.Value);
-                }
+                return Tuple.Create(key, request.HeaderParameters[key]);
             }
             return null;
         }
 
-        private bool hasPayloadHeader(IRestRequest request, string headerName)
+        private bool hasPayloadHeader(HttpRequestMessageBuilder request, string headerName)
         {
-            Tuple<string, object> match = GetHeaderKV(request, headerName);
+            Tuple<string, string> match = GetHeaderKV(request, headerName);
             return match != null;
         }
     }

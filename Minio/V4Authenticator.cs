@@ -15,11 +15,10 @@
  */
 
 using Minio.Helper;
-using RestSharp;
-using RestSharp.Authenticators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Security.Cryptography;
 
@@ -28,7 +27,7 @@ namespace Minio
     /// <summary>
     /// V4Authenticator implements IAuthenticator interface.
     /// </summary>
-    internal class V4Authenticator : IAuthenticator
+    internal class V4Authenticator
     {
         private readonly string accessKey;
         private readonly string secretKey;
@@ -107,26 +106,30 @@ namespace Minio
         /// <summary>
         /// Implements Authenticate interface method for IAuthenticator.
         /// </summary>
-        /// <param name="client">Instantiated IRestClient object</param>
-        /// <param name="request">Instantiated IRestRequest object</param>
-        public void Authenticate(IRestClient client, IRestRequest request)
+        /// <param name="requestBuilder">Instantiated IRestRequest object</param>
+        public string Authenticate(HttpRequestMessageBuilder requestBuilder)
         {
             DateTime signingDate = DateTime.UtcNow;
-            this.SetContentMd5(request);
-            this.SetContentSha256(request);
-            if (client.BaseUrl.Port == 80 || client.BaseUrl.Port == 443) {
-                this.SetHostHeader(request, client.BaseUrl.Host);
-            } else {
-                this.SetHostHeader(request, client.BaseUrl.Host + ":" + client.BaseUrl.Port);
+            this.SetContentMd5(requestBuilder);
+            this.SetContentSha256(requestBuilder);
+            var requestUri = requestBuilder.RequestUri;
+
+            if (requestUri.Port == 80 || requestUri.Port == 443)
+            {
+                this.SetHostHeader(requestBuilder, requestUri.Host);
             }
-            this.SetDateHeader(request, signingDate);
-            this.SetSessionTokenHeader(request, this.sessionToken);
-            SortedDictionary<string, string> headersToSign = this.GetHeadersToSign(request);
+            else
+            {
+                this.SetHostHeader(requestBuilder, requestUri.Host + ":" + requestUri.Port);
+            }
+            this.SetDateHeader(requestBuilder, signingDate);
+            this.SetSessionTokenHeader(requestBuilder, this.sessionToken);
+            SortedDictionary<string, string> headersToSign = this.GetHeadersToSign(requestBuilder);
             string signedHeaders = this.GetSignedHeaders(headersToSign);
-            string canonicalRequest = this.GetCanonicalRequest(request, headersToSign);
+            string canonicalRequest = this.GetCanonicalRequest(requestBuilder, headersToSign);
             byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = this.BytesToHex(this.ComputeSha256(canonicalRequestBytes));
-            string region = this.GetRegion(client.BaseUrl.Host);
+            string region = this.GetRegion(requestUri.Host);
             string stringToSign = this.GetStringToSign(region, signingDate, canonicalRequestHash);
 
             byte[] signingKey = this.GenerateSigningKey(region, signingDate);
@@ -138,7 +141,7 @@ namespace Minio
             string signature = this.BytesToHex(signatureBytes);
 
             string authorization = this.GetAuthorizationHeader(signedHeaders, signature, signingDate, region);
-            request.AddOrUpdateParameter("Authorization", authorization, ParameterType.HttpHeader);
+            return authorization;
         }
 
         /// <summary>
@@ -278,26 +281,25 @@ namespace Minio
         /// <summary>
         /// Presigns any input client object with a requested expiry.
         /// </summary>
-        /// <param name="client">Instantiated client</param>
-        /// <param name="request">Instantiated request</param>
+        /// <param name="requestBuilder">Instantiated requestBuilder</param>
         /// <param name="expires">Expiration in seconds</param>
         /// <param name="region">Region of storage</param>
         /// <param name="sessionToken">Value for session token</param>
-        /// <param name="reqDate"> Optional request date and time in UTC</param>
+        /// <param name="reqDate"> Optional requestBuilder date and time in UTC</param>
         /// <returns>Presigned url</returns>
-        internal string PresignURL(IRestClient client, IRestRequest request, int expires, string region = "", string sessionToken = "", DateTime? reqDate = null)
+        internal string PresignURL(HttpRequestMessageBuilder requestBuilder, int expires, string region = "", string sessionToken = "", DateTime? reqDate = null)
         {
             var signingDate = reqDate ?? DateTime.UtcNow;
 
             if (string.IsNullOrWhiteSpace(region))
             {
-                region = this.GetRegion(client.BaseUrl.Host);
+                region = this.GetRegion(requestBuilder.RequestUri.Host);
             }
 
-            Uri requestUri = client.BuildUri(request);
+            Uri requestUri = requestBuilder.RequestUri;
             string requestQuery = requestUri.Query;
 
-            SortedDictionary<string, string> headersToSign = this.GetHeadersToSign(request);
+            SortedDictionary<string, string> headersToSign = this.GetHeadersToSign(requestBuilder);
             if (!string.IsNullOrEmpty(sessionToken))
             {
                 headersToSign["X-Amz-Security-Token"] = sessionToken;
@@ -319,8 +321,8 @@ namespace Minio
                 + "&";
             requestQuery += "X-Amz-SignedHeaders=host";
 
-            var presignUri = new UriBuilder(requestUri) {Query = requestQuery}.Uri;
-            string canonicalRequest = this.GetPresignCanonicalRequest(request.Method, presignUri, headersToSign);
+            var presignUri = new UriBuilder(requestUri) { Query = requestQuery }.Uri;
+            string canonicalRequest = this.GetPresignCanonicalRequest(requestBuilder.Method, presignUri, headersToSign);
             string headers = string.Concat(headersToSign.Select(p => $"&{p.Key}={utils.UrlEncode(p.Value)}"));
             byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = this.BytesToHex(ComputeSha256(canonicalRequestBytes));
@@ -331,21 +333,21 @@ namespace Minio
             string signature = this.BytesToHex(signatureBytes);
 
             // Return presigned url.
-            var signedUri = new UriBuilder(presignUri) {Query = $"{requestQuery}{headers}&X-Amz-Signature={signature}"};
+            var signedUri = new UriBuilder(presignUri) { Query = $"{requestQuery}{headers}&X-Amz-Signature={signature}" };
             if (signedUri.Uri.IsDefaultPort)
             {
-               signedUri.Port = -1;
+                signedUri.Port = -1;
             }
             return signedUri.ToString();
         }
 
         /// <summary>
-        /// Get presign canonical request.
+        /// Get presign canonical requestBuilder.
         /// </summary>
-        /// <param name="requestMethod">HTTP method used for this request</param>
-        /// <param name="uri">Full url for this request, including all query parameters except for headers and X-Amz-Signature</param>
-        /// <returns>Presigned canonical request</returns>
-        internal string GetPresignCanonicalRequest(Method requestMethod, Uri uri, SortedDictionary<string, string> headersToSign)
+        /// <param name="requestMethod">HTTP method used for this requestBuilder</param>
+        /// <param name="uri">Full url for this requestBuilder, including all query parameters except for headers and X-Amz-Signature</param>
+        /// <returns>Presigned canonical requestBuilder</returns>
+        internal string GetPresignCanonicalRequest(HttpMethod requestMethod, Uri uri, SortedDictionary<string, string> headersToSign)
         {
             var canonicalStringList = new LinkedList<string>();
             // METHOD
@@ -386,33 +388,27 @@ namespace Minio
         }
 
         /// <summary>
-        /// Get canonical request.
+        /// Get canonical requestBuilder.
         /// </summary>
-        /// <param name="request">Instantiated request object</param>
+        /// <param name="requestBuilder">Instantiated requestBuilder object</param>
         /// <param name="headersToSign">Dictionary of http headers to be signed</param>
         /// <returns>Canonical Request</returns>
-        private string GetCanonicalRequest(IRestRequest request,
+        private string GetCanonicalRequest(HttpRequestMessageBuilder requestBuilder,
             SortedDictionary<string, string> headersToSign)
         {
             var canonicalStringList = new LinkedList<string>();
             // METHOD
-            canonicalStringList.AddLast(request.Method.ToString());
+            canonicalStringList.AddLast(requestBuilder.Method.ToString());
 
-            string[] path = request.Resource.Split(new char[] { '?' }, 2);
+            var resource = requestBuilder.RequestUri.PathAndQuery;
+            string[] path = resource.Split(new char[] { '?' }, 2);
             if (!path[0].StartsWith("/"))
             {
                 path[0] = $"/{path[0]}";
             }
             canonicalStringList.AddLast(path[0]);
-            string query = string.Empty;
-            Dictionary<string,string> queryParams = new Dictionary<string,string>();
-
-            foreach (var p in request.Parameters)
-            {
-                if (p.Type == ParameterType.QueryString){
-                    queryParams.Add((string)p.Name, Uri.EscapeDataString((string)p.Value));
-                } 
-            }
+            Dictionary<string, string> queryParams =
+                requestBuilder.QueryParameters.ToDictionary(o => o.Key, o => Uri.EscapeDataString(o.Value));
             var sb1 = new StringBuilder();
             var queryKeys = new List<string>(queryParams.Keys);
             queryKeys.Sort(StringComparer.Ordinal);
@@ -422,7 +418,7 @@ namespace Minio
                     sb1.Append("&");
                 sb1.AppendFormat("{0}={1}", p, queryParams[p]);
             }
-            query = sb1.ToString();
+            var query = sb1.ToString();
             canonicalStringList.AddLast(query);
 
             foreach (string header in headersToSign.Keys)
@@ -446,17 +442,17 @@ namespace Minio
         /// <summary>
         /// Get headers to be signed.
         /// </summary>
-        /// <param name="request">Instantiated requesst</param>
+        /// <param name="requestBuilder">Instantiated requesst</param>
         /// <returns>Sorted dictionary of headers to be signed</returns>
-        private SortedDictionary<string, string> GetHeadersToSign(IRestRequest request)
+        private SortedDictionary<string, string> GetHeadersToSign(HttpRequestMessageBuilder requestBuilder)
         {
-            var headers = request.Parameters.Where(p => p.Type.Equals(ParameterType.HttpHeader)).ToList();
-
+            var headers = requestBuilder.HeaderParameters.ToList();
             var sortedHeaders = new SortedDictionary<string, string>(StringComparer.Ordinal);
-            foreach (Parameter header in headers)
+            foreach (var header in headers)
             {
-                string headerName = header.Name.ToLower();
-                string headerValue = header.Value.ToString();
+                string headerName = header.Key.ToLower();
+                string headerValue = header.Value;
+
                 if (!ignoredHeaders.Contains(headerName))
                 {
                     sortedHeaders.Add(headerName, headerValue);
@@ -469,127 +465,93 @@ namespace Minio
         /// <summary>
         /// Sets 'x-amz-date' http header.
         /// </summary>
-        /// <param name="request">Instantiated request object</param>
+        /// <param name="requestBuilder">Instantiated requestBuilder object</param>
         /// <param name="signingDate">Date for signature to be signed</param>
-        private void SetDateHeader(IRestRequest request, DateTime signingDate)
+        private void SetDateHeader(HttpRequestMessageBuilder requestBuilder, DateTime signingDate)
         {
-            request.AddOrUpdateParameter("x-amz-date", signingDate.ToString("yyyyMMddTHHmmssZ"), ParameterType.HttpHeader);
+            requestBuilder.AddHeaderParameter("x-amz-date", signingDate.ToString("yyyyMMddTHHmmssZ"));
         }
 
         /// <summary>
         /// Set 'Host' http header.
         /// </summary>
-        /// <param name="request">Instantiated request object</param>
+        /// <param name="requestBuilder">Instantiated requestBuilder object</param>
         /// <param name="hostUrl">Host url</param>
-        private void SetHostHeader(IRestRequest request, string hostUrl)
+        private void SetHostHeader(HttpRequestMessageBuilder requestBuilder, string hostUrl)
         {
-            request.AddOrUpdateParameter("Host", hostUrl, ParameterType.HttpHeader);
+            requestBuilder.AddHeaderParameter("Host", hostUrl);
         }
 
         /// <summary>
         /// Set 'X-Amz-Security-Token' http header.
         /// </summary>
-        /// <param name="request">Instantiated request object</param>
+        /// <param name="requestBuilder">Instantiated requestBuilder object</param>
         /// <param name="sessionToken">session token</param>
-        private void SetSessionTokenHeader(IRestRequest request, string sessionToken)
+        private void SetSessionTokenHeader(HttpRequestMessageBuilder requestBuilder, string sessionToken)
         {
             if (!string.IsNullOrEmpty(sessionToken))
             {
-                request.AddOrUpdateParameter("X-Amz-Security-Token", sessionToken, ParameterType.HttpHeader);
+                requestBuilder.AddHeaderParameter("X-Amz-Security-Token", sessionToken);
             }
         }
 
         /// <summary>
         /// Set 'x-amz-content-sha256' http header.
         /// </summary>
-        /// <param name="request">Instantiated request object</param>
-        private void SetContentSha256(IRestRequest request)
+        /// <param name="requestBuilder">Instantiated requestBuilder object</param>
+        private void SetContentSha256(HttpRequestMessageBuilder requestBuilder)
         {
             if (this.isAnonymous)
                 return;
             // No need to compute SHA256 if endpoint scheme is https
             if (isSecure)
             {
-                request.AddOrUpdateParameter("x-amz-content-sha256", "UNSIGNED-PAYLOAD", ParameterType.HttpHeader);
+                requestBuilder.AddHeaderParameter("x-amz-content-sha256", "UNSIGNED-PAYLOAD");
                 return;
             }
-            if (request.Method == Method.PUT || request.Method.Equals(Method.POST))
+            if (requestBuilder.Method == HttpMethod.Put || requestBuilder.Method.Equals(HttpMethod.Post))
             {
-                var bodyParameter = request.Parameters.FirstOrDefault(p => p.Type.Equals(ParameterType.RequestBody));
-                if (bodyParameter == null)
-                {
-                    request.AddOrUpdateParameter("x-amz-content-sha256", sha256EmptyFileHash, ParameterType.HttpHeader);
-                    return;
-                }
-                byte[] body = null;
-                if (bodyParameter.Value is string)
-                {
-                    body = System.Text.Encoding.UTF8.GetBytes(bodyParameter.Value as string);
-                }
-                if (bodyParameter.Value is byte[])
-                {
-                    body = bodyParameter.Value as byte[];
-                }
+                var body = requestBuilder.Content;
                 if (body == null)
                 {
-                    body = new byte[0];
+                    requestBuilder.AddHeaderParameter("x-amz-content-sha256", sha256EmptyFileHash);
+                    return;
                 }
                 var sha256 = SHA256.Create();
                 byte[] hash = sha256.ComputeHash(body);
                 string hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
-                request.AddOrUpdateParameter("x-amz-content-sha256", hex, ParameterType.HttpHeader);
+                requestBuilder.AddHeaderParameter("x-amz-content-sha256", hex);
             }
             else
             {
-                request.AddOrUpdateParameter("x-amz-content-sha256", sha256EmptyFileHash, ParameterType.HttpHeader);
+                requestBuilder.AddHeaderParameter("x-amz-content-sha256", sha256EmptyFileHash);
             }
         }
 
         /// <summary>
         /// Set 'Content-MD5' http header.
         /// </summary>
-        /// <param name="request">Instantiated request object</param>
-        private void SetContentMd5(IRestRequest request)
+        private void SetContentMd5(HttpRequestMessageBuilder requestBuilder)
         {
-            if (request.Method == Method.PUT || request.Method.Equals(Method.POST))
+            if (requestBuilder.Method == HttpMethod.Put || requestBuilder.Method.Equals(HttpMethod.Post))
             {
-                var bodyParameter = request.Parameters.FirstOrDefault(p => p.Type.Equals(ParameterType.RequestBody));
-                if (bodyParameter == null)
+                var body = requestBuilder.Content;
+                if (body == null)
                 {
                     return;
                 }
-                var isMultiDeleteRequest = false;
-                if (request.Method == Method.POST)
-                {
-                    var deleteParm = request.Parameters.Any(p => p.Name.Equals("delete",StringComparison.OrdinalIgnoreCase));
-                    isMultiDeleteRequest = !(deleteParm == null) || (deleteParm.Equals(null));
-                }
-
                 // For insecure, authenticated requests set sha256 header instead of MD5.
-                if (!isSecure && !isAnonymous && !isMultiDeleteRequest)
+                if (!isSecure && !isAnonymous)
                 {
                     return;
                 }
 
                 // All anonymous access requests get Content-MD5 header set.
-                byte[] body = null;
-                if (bodyParameter.Value is string)
-                {
-                    body = System.Text.Encoding.UTF8.GetBytes(bodyParameter.Value as string);
-                }
-                if (bodyParameter.Value is byte[])
-                {
-                    body = bodyParameter.Value as byte[];
-                }
-                if (body == null)
-                {
-                    body = new byte[0];
-                }
                 var md5 = MD5.Create();
                 byte[] hash = md5.ComputeHash(body);
 
                 string base64 = Convert.ToBase64String(hash);
-                request.AddOrUpdateParameter("Content-MD5", base64, ParameterType.HttpHeader);
+                requestBuilder.AddHeaderParameter("Content-MD5", base64);
             }
         }
     }

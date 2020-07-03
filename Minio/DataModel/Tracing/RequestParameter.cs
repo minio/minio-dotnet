@@ -20,6 +20,5 @@ namespace Minio.DataModel.Tracing
     {
         public string name { get; internal set; }
         public object value { get; internal set; }
-        public string type { get; internal set; }
     }
 }
