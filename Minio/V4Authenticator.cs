@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Security.Cryptography;
+using System.Xml.Linq;
 
 namespace Minio
 {
