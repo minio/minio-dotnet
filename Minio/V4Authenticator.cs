@@ -347,6 +347,7 @@ namespace Minio
         /// </summary>
         /// <param name="requestMethod">HTTP method used for this requestBuilder</param>
         /// <param name="uri">Full url for this requestBuilder, including all query parameters except for headers and X-Amz-Signature</param>
+        /// <param name="headersToSign">The key-value of headers.</param>
         /// <returns>Presigned canonical requestBuilder</returns>
         internal string GetPresignCanonicalRequest(HttpMethod requestMethod, Uri uri, SortedDictionary<string, string> headersToSign)
         {

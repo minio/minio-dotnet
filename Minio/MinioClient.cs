@@ -329,8 +329,7 @@ namespace Minio
         /// <summary>
         /// Allows to add retry policy handler
         /// </summary>
-        /// <param name="retryPolicyHandler">Delegate that will wrap execution of <see cref="IRestRequest"/> requests.</param>
-        /// <returns></returns>
+        /// <param name="retryPolicyHandler">Delegate that will wrap execution of http client requests.</param>
         public MinioClient WithRetryPolicy(RetryPolicyHandlingDelegate retryPolicyHandler)
         {
             this.retryPolicyHandler = retryPolicyHandler;
