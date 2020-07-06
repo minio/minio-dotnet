@@ -562,8 +562,7 @@ namespace Minio
                 var isMultiDeleteRequest = false;
                 if (request.Method == Method.POST)
                 {
-                    var deleteParm = request.Parameters.Any(p => p.Name.Equals("delete",StringComparison.OrdinalIgnoreCase));
-                    isMultiDeleteRequest = !(deleteParm == null) || (deleteParm.Equals(null));
+                    isMultiDeleteRequest = request.Parameters.Any(p => p.Name.Equals("delete",StringComparison.OrdinalIgnoreCase));
                 }
 
                 // For insecure, authenticated requests set sha256 header instead of MD5.
