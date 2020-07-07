@@ -461,11 +461,10 @@ namespace Minio
                 var request = await this.CreateRequest(Method.GET, bucketName).ConfigureAwait(false);
                 request.AddQueryParameter("versioning","");
                 var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-                var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
                 VersioningConfiguration config = null;
                 if (HttpStatusCode.OK.Equals(response.StatusCode))
                 {
-                    using (var stream = new MemoryStream(contentBytes))
+                    using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(response.Content)))
                     {
                         config = (VersioningConfiguration)new XmlSerializer(typeof(VersioningConfiguration)).Deserialize(stream);
                     }

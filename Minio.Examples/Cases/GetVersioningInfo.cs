@@ -30,9 +30,25 @@ namespace Minio.Examples.Cases
             {
                 Console.WriteLine("Running example for API: GetVersioningInfo, ");
                 VersioningConfiguration vc = await minio.GetVersioningInfoAsync(bucketName);
-                bool enabled = (vc != null && vc.Status == "Enabled");
-                Console.WriteLine("Versioning, " + (enabled? "Enabled" : "Not Enabled ") + " for bucket " + bucketName);
-                Console.WriteLine();
+                if ( vc == null )
+                {
+                    Console.WriteLine("Versioning Configuration not available for bucket " + bucketName);
+                    Console.WriteLine();
+                    return;
+                }
+                if ( vc.IsNotVersioned() )
+                {
+                    Console.WriteLine("Versioning Configuration shows that versioning hasn't been enabled before for bucket " + bucketName);
+                    Console.WriteLine();
+                } else if ( vc.IsVersioningEnabled() )
+                {
+                    Console.WriteLine("Versioning Configuration shows that versioning is enabled for bucket " + bucketName);
+                    Console.WriteLine();
+                } else if ( vc.IsVersioningSuspended() )
+                {
+                    Console.WriteLine("Versioning Configuration shows that versioning has been suspended  for bucket " + bucketName);
+                    Console.WriteLine();
+                }
             }
             catch (Exception e)
             {

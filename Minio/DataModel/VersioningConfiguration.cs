@@ -29,22 +29,42 @@ namespace Minio.DataModel
             this.MfaDelete = null;
         }
 
-        public VersioningConfiguration(bool enable = true)
+        public VersioningConfiguration(bool enable = true )
         {
             if (enable)
             {
                 this.Status = "Enabled";
-                this.MfaDelete = "Enabled";
             }
             else
             {
                 this.Status = "Suspended";
-                this.MfaDelete = "Disabled";
             }
+            this.MfaDelete = "Disabled";
+        }
+
+        public VersioningConfiguration(VersioningConfiguration vc)
+        {
+            this.Status = vc.Status;
+            this.MfaDelete = vc.MfaDelete;
         }
 
         [XmlElement]
         public string Status { get; set; }
         public string MfaDelete { get; set; }
+
+        public bool IsNotVersioned()
+        {
+            return this.Status == null;
+        }
+
+        public bool IsVersioningEnabled()
+        {
+            return this.Status != null && this.Status.ToLower().Equals("enabled");
+        }
+
+        public bool IsVersioningSuspended()
+        {
+            return this.Status != null && this.Status.ToLower().Equals("suspended");
+        }
     }
 }

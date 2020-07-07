@@ -723,12 +723,9 @@ namespace Minio
                                        new XElement("Key", obj.Key)));
             }
 
-            var deleteObjectsRequest = new XElement("DeleteObject", objects,
+            var deleteObjectsRequest = new XElement("Delete", objects,
                                         new XElement("Quiet", true));
 
-            var bodyString = deleteObjectsRequest.ToString();
-
-            var body = System.Text.Encoding.UTF8.GetBytes(bodyString);
             request.AddXmlBody(deleteObjectsRequest);
             request.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
             request.RequestFormat = DataFormat.Xml;

@@ -1,5 +1,5 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,20 +20,27 @@ using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
-    class SuspendVersioning
+    class EnableSuspendVersioning
     {
-        // Disable Versioning on a bucket
+        // Enable Versioning on a bucket
         public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name")
         {
             try
             {
-                Console.WriteLine("Running example for API: SuspendVersioning, ");
-                await minio.SuspendVersioningAsync(bucketName);
+                Console.WriteLine("Running example for API: EnableVersioning, ");
+                await minio.EnableVersioningAsync(bucketName);
                 VersioningConfiguration vc = await minio.GetVersioningInfoAsync(bucketName);
-                bool enabled = (vc != null && vc.Status == "Enabled");
-                Console.WriteLine(( enabled? "Versioning still Enabled" : "Disabled Versioning") + " for bucket " + bucketName);
+                Console.WriteLine("Versioning " + (vc != null && vc.IsVersioningEnabled()? "has been ":"has NOT been ") + "enabled.");
                 Console.WriteLine();
+
+                if ( vc != null && vc.IsVersioningEnabled() )
+                {
+                    await minio.SuspendVersioningAsync(bucketName);
+                    vc = await minio.GetVersioningInfoAsync(bucketName);
+                    Console.WriteLine("Versioning " + (vc != null && vc.IsVersioningSuspended()? "has been ":"has NOT been ") + "suspended.");
+                    Console.WriteLine();
+                }
             }
             catch (Exception e)
             {
