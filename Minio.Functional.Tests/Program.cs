@@ -17,11 +17,41 @@
 
 using System;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace Minio.Functional.Tests
 {
     class Program
     {
+
+        public static async Task<MinioClient> GetSecureMinioClientFromBuilder(string endPoint, string accessKey, string secretKey)
+        {
+            if (string.IsNullOrEmpty(endPoint))
+            {
+                return null;
+            }
+            int posColon = endPoint.LastIndexOf(':');
+            if ( posColon != -1 )
+            {
+                int port = Int32.Parse(endPoint.Substring(posColon+1, (endPoint.Length - posColon - 1)));
+                endPoint = endPoint.Substring(0, posColon);
+                return await MinioClient.NewClient().WithCredentials(accessKey, secretKey).WithEndpoint(endPoint, port, true).BuildAsync();
+            }
+            return await MinioClient.NewClient().WithCredentials(accessKey, secretKey).WithEndpoint(endPoint).WithSSL().BuildAsync();
+        }
+
+        public static async Task<MinioClient> GetMinioClientFromBuilder(string endPoint, string accessKey, string secretKey)
+        {
+            int posColon = endPoint.LastIndexOf(':');
+            if ( posColon != -1 )
+            {
+                int port = Int32.Parse(endPoint.Substring(posColon+1, (endPoint.Length - posColon - 1)));
+                endPoint = endPoint.Substring(0, posColon);
+                return await MinioClient.NewClient().WithCredentials(accessKey, secretKey).WithEndpoint(endPoint, port, false).BuildAsync();
+            }
+            return await MinioClient.NewClient().WithCredentials(accessKey, secretKey).WithEndpoint(endPoint).BuildAsync();
+        }
+
         public static void Main(string[] args)
         {
             string endPoint = null;
@@ -51,10 +81,9 @@ namespace Minio.Functional.Tests
             MinioClient minioClient = null;
             if (enableHttps == "1")
                 // WithSSL() enables SSL support in MinIO client
-                minioClient = new MinioClient(endPoint, accessKey, secretKey).WithSSL();
+                minioClient = GetSecureMinioClientFromBuilder(endPoint, accessKey, secretKey).Result;
             else
-                minioClient = new MinioClient(endPoint, accessKey, secretKey);
-
+                minioClient = GetMinioClientFromBuilder(endPoint, accessKey, secretKey).Result;
             // Assign parameters before starting the test
             string bucketName = FunctionalTest.GetRandomName();
             string objectName = FunctionalTest.GetRandomName();
@@ -87,6 +116,7 @@ namespace Minio.Functional.Tests
             FunctionalTest.MakeBucket_Test2(minioClient).Wait();
             FunctionalTest.MakeBucket_Test5(minioClient).Wait();
 
+            /*
             if (useAWS)
             {
                 FunctionalTest.MakeBucket_Test3(minioClient).Wait();
@@ -182,7 +212,7 @@ namespace Minio.Functional.Tests
                 FunctionalTest.EncryptedCopyObject_Test3(minioClient).Wait();
                 FunctionalTest.EncryptedCopyObject_Test4(minioClient).Wait();
             }
-
+            */
         }
     }
 }

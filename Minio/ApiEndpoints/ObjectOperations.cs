@@ -1166,7 +1166,7 @@ namespace Minio
                                                     headerMap: reqParams)
                                     .ConfigureAwait(false);
 
-            return this.authenticator.PresignURL(this.restClient, request, expiresInt, Region, this.SessionToken, reqDate);
+            return this.authenticator.PresignURL(this.restClient, request, expiresInt, this.GetMinioClientArgs().Region, this.SessionToken, reqDate);
         }
 
         /// <summary>
@@ -1184,7 +1184,7 @@ namespace Minio
                 throw new InvalidExpiryRangeException("expiry range should be between 1 and " + Constants.DefaultExpiryTime.ToString());
             }
             var request = await this.CreateRequest(Method.PUT, bucketName, objectName: objectName).ConfigureAwait(false);
-            return this.authenticator.PresignURL(this.restClient, request, expiresInt, Region, this.SessionToken);
+            return this.authenticator.PresignURL(this.restClient, request, expiresInt, this.GetMinioClientArgs().Region, this.SessionToken);
         }
 
         /// <summary>
@@ -1223,7 +1223,7 @@ namespace Minio
             }
 
             // Set Target URL
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, bucketName: policy.Bucket, region: region, usePathStyle: false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.GetMinioClientArgs().BaseUrl, this.GetMinioClientArgs().Secure, bucketName: policy.Bucket, region: region, usePathStyle: false);
             SetTargetURL(requestUrl);
             DateTime signingDate = DateTime.UtcNow;
 

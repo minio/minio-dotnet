@@ -22,6 +22,7 @@ using System.IO;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Minio.Examples
 {
@@ -52,6 +53,30 @@ namespace Minio.Examples
                 result.Append(characters[rnd.Next(characters.Length)]);
             }
             return "minio-dotnet-example-" + result.ToString();
+        }
+
+        public static async Task<MinioClient> GetSecureMinioClientFromBucketBuilder(string endPoint, string accessKey, string secretKey)
+        {
+            int posColon = endPoint.LastIndexOf(':');
+            if ( posColon != -1 )
+            {
+                int port = Int32.Parse(endPoint.Substring(posColon+1, (endPoint.Length - posColon - 1)));
+                endPoint = endPoint.Substring(0, posColon);
+                return await MinioClient.NewClient().WithCredentials(accessKey, secretKey).WithEndpoint(endPoint, port, true).BuildAsync();
+            }
+            return await MinioClient.NewClient().WithCredentials(accessKey, secretKey).WithEndpoint(endPoint).WithSSL().BuildAsync();
+        }
+
+        public static async Task<MinioClient> GetMinioClientFromBucketBuilder(string endPoint, string accessKey, string secretKey)
+        {
+            int posColon = endPoint.LastIndexOf(':');
+            if ( !endPoint.Contains("http") && posColon != -1 )
+            {
+                int port = Int32.Parse(endPoint.Substring(posColon+1, (endPoint.Length - posColon - 1)));
+                endPoint = endPoint.Substring(0, posColon);
+                return await MinioClient.NewClient().WithEndpoint(endPoint, port, false).WithCredentials(accessKey, secretKey).BuildAsync();
+            }
+            return await MinioClient.NewClient().WithEndpoint(endPoint).WithCredentials(accessKey, secretKey).BuildAsync();
         }
 
         public static void Main(string[] args)
@@ -86,11 +111,11 @@ namespace Minio.Examples
             MinioClient minioClient = null;
             if (enableHTTPS)
             {
-                minioClient = new MinioClient(endPoint, accessKey, secretKey).WithSSL();
+                minioClient = GetSecureMinioClientFromBucketBuilder(endPoint, accessKey, secretKey).Result;
             }
             else
             {
-                minioClient = new MinioClient(endPoint, accessKey, secretKey);
+                minioClient = GetMinioClientFromBucketBuilder(endPoint, accessKey, secretKey).Result;
             }
 
             try
@@ -116,6 +141,7 @@ namespace Minio.Examples
                 // Set HTTP Tracing Off
                 // minioClient.SetTraceOff();
                 // Check if bucket exists
+
                 Cases.BucketExists.Run(minioClient, bucketName).Wait();
 
                 // Create a new bucket
@@ -129,6 +155,9 @@ namespace Minio.Examples
                 // Start listening for bucket notifications
                 Cases.ListenBucketNotifications.Run(minioClient, bucketName, new List<EventType> { EventType.ObjectCreatedAll });
 
+                // Check on Bucket Versioning
+                Cases.EnableSuspendVersioning.Run(minioClient, bucketName).Wait();
+                Cases.GetVersioningInfo.Run(minioClient, bucketName).Wait();
                 // Put an object to the new bucket
                 Cases.PutObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
 

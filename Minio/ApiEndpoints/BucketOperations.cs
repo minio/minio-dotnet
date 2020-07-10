@@ -1,6 +1,6 @@
 ﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
- * (C) 2017, 2018, 2019 MinIO, Inc.
+ * (C) 2017, 2018, 2019, 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ namespace Minio
         /// <returns>Task with an iterator lazily populated with objects</returns>
         public async Task<ListAllMyBucketsResult> ListBucketsAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
+            this.CheckBucketArgs();
             var request = await this.CreateRequest(Method.GET, resourcePath: "/").ConfigureAwait(false);
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
@@ -70,32 +71,81 @@ namespace Minio
             {
                 throw new InvalidBucketNameException(bucketName, "bucketName cannot be null");
             }
+            this.CheckBucketArgs();
+            this.BucketMinioClientArgs.BucketName = bucketName;
+            this.BucketMinioClientArgs.SetLocation(location);
+            await this.ProcessMakeBucketResponse(this.GetMakeBucketRequest(), cancellationToken);
+        }
 
-            if (location == "us-east-1")
+
+        // EnableVersioning with the respective NewClient
+        /// <summary>
+        /// Returns true if the specified bucketName exists, otherwise returns false.
+        /// </summary>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task that returns true if exists and user has access</returns>
+        public async Task  EnableVersioningAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            this.CheckBucketArgs();
+            if ( this.BucketMinioClientArgs.VersioningSuspended && !this.BucketMinioClientArgs.VersioningEnabled )
             {
-                if (this.Region != string.Empty)
-                {
-                    location = this.Region;
-                }
+                throw new InvalidMinioOperationException(this.BucketMinioClientArgs.BucketName, "Versioning has to be enabled to be suspended.");
             }
-
-            // Set Target URL
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, location);
-            SetTargetURL(requestUrl);
-
-            var request = new RestRequest("/" + bucketName, Method.PUT)
+            if ( string.IsNullOrEmpty(this.BucketMinioClientArgs.BucketName) )
             {
-                XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer(),
-                RequestFormat = DataFormat.Xml
-            };
-            // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
-            if (location != "us-east-1")
-            {
-                CreateBucketConfiguration config = new CreateBucketConfiguration(location);
-                request.AddBody(config);
+
             }
+            this.BucketMinioClientArgs.VersioningEnabled = true;
+            this.BucketMinioClientArgs.VersioningSuspended = false;
+            var request = await this.GetVersioningRequest(true).ConfigureAwait(false);
+            await this.ProcessVersioningResponse(request, cancellationToken).ConfigureAwait(false);
+        }
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        // EnableVersioning with the respective NewClient
+        /// <summary>
+        /// Returns true if the specified bucketName exists, otherwise returns false.
+        /// </summary>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task that returns true if exists and user has access</returns>
+        public async Task  SuspendVersioningAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            this.CheckBucketArgs();
+            if ( this.BucketMinioClientArgs.VersioningSuspended && !this.BucketMinioClientArgs.VersioningEnabled )
+            {
+                throw new InvalidMinioOperationException(this.BucketMinioClientArgs.BucketName, "Versioning has to be enabled to be suspended.");
+            }
+            if ( string.IsNullOrEmpty(this.BucketMinioClientArgs.BucketName) )
+            {
+                throw new InvalidBucketNameException(this.BucketMinioClientArgs.BucketName, " Bucket name can't be null or empty.");
+            }
+            this.BucketMinioClientArgs.VersioningEnabled = true;
+            this.BucketMinioClientArgs.VersioningSuspended = true;
+            var request = await this.GetVersioningRequest(true).ConfigureAwait(false);
+            await this.ProcessVersioningResponse(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        // EnableVersioning with the respective NewClient
+        /// <summary>
+        /// Returns true if the specified bucketName exists, otherwise returns false.
+        /// </summary>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task that returns true if exists and user has access</returns>
+        public async Task<VersioningConfiguration>  GetVersioningInfoAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            this.CheckBucketArgs();
+            if ( this.BucketMinioClientArgs.VersioningSuspended && !this.BucketMinioClientArgs.VersioningEnabled )
+            {
+                throw new InvalidMinioOperationException(this.BucketMinioClientArgs.BucketName, "Versioning has to be enabled to be suspended.");
+            }
+            if ( string.IsNullOrEmpty(this.BucketMinioClientArgs.BucketName) )
+            {
+                throw new InvalidBucketNameException(this.BucketMinioClientArgs.BucketName, " Bucket name can't be null or empty.");
+            }
+            this.BucketMinioClientArgs.VersioningEnabled = false;
+            this.BucketMinioClientArgs.VersioningSuspended = false;
+            var request = await this.GetVersioningRequest(true).ConfigureAwait(false);
+            VersioningConfiguration vc = await this.ProcessVersioningResponse(request, cancellationToken).ConfigureAwait(false);
+            return vc;
         }
 
         /// <summary>
@@ -112,6 +162,7 @@ namespace Minio
                 {
                     throw new InvalidBucketNameException(bucketName, "bucketName cannot be null");
                 }
+                this.CheckBucketArgs();
                 var request = await this.CreateRequest(Method.HEAD, bucketName).ConfigureAwait(false);
                 var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             }
@@ -134,6 +185,7 @@ namespace Minio
         /// <returns>Task</returns>
         public async Task RemoveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
+            this.CheckBucketArgs();
             var request = await this.CreateRequest(Method.DELETE, bucketName).ConfigureAwait(false);
 
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
@@ -149,6 +201,7 @@ namespace Minio
         /// <returns>An observable of items that client can subscribe to</returns>
         public IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = false, CancellationToken cancellationToken = default(CancellationToken))
         {
+            this.CheckBucketArgs();
             return Observable.Create<Item>(
               async (obs, ct) =>
               {
@@ -216,6 +269,7 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix, string delimiter, string marker, CancellationToken cancellationToken = default(CancellationToken))
         {
+            this.CheckBucketArgs();
             var queryMap = new Dictionary<string,string>();
             // null values are treated as empty strings.
             if (delimiter == null)
@@ -283,6 +337,7 @@ namespace Minio
         /// <returns>Task that returns the Bucket policy as a json string</returns>
         public async Task<string> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
+            this.CheckBucketArgs();
             IRestResponse response = null;
 
             var request = await this.CreateRequest(Method.GET, bucketName,
@@ -310,6 +365,7 @@ namespace Minio
         /// <returns>Task to set a policy</returns>
         public async Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default(CancellationToken))
         {
+            this.CheckBucketArgs();
             var request = await this.CreateRequest(Method.PUT, bucketName,
                                            contentType: "application/json")
                                 .ConfigureAwait(false);
@@ -327,6 +383,8 @@ namespace Minio
         public async Task<BucketNotification> GetBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
             utils.ValidateBucketName(bucketName);
+            this.CheckListenBucketNotificationArgs();
+            this.ListenNotificationMinioClientArgs.BktClientArgs.BucketName = bucketName;
             var request = await this.CreateRequest(Method.GET,
                                                bucketName)
                                     .ConfigureAwait(false);
@@ -350,6 +408,9 @@ namespace Minio
         public async Task SetBucketNotificationsAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken))
         {
             utils.ValidateBucketName(bucketName);
+            this.CheckListenBucketNotificationArgs();
+            this.ListenNotificationMinioClientArgs.BktClientArgs.BucketName = bucketName;
+            // TODO: Assign this.ListenNotificationMinioClientArgs.Events
             var request = await this.CreateRequest(Method.PUT, bucketName)
                                 .ConfigureAwait(false);
             request.AddQueryParameter("notification","");
@@ -371,6 +432,8 @@ namespace Minio
         public Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
             utils.ValidateBucketName(bucketName);
+            this.CheckListenBucketNotificationArgs();
+            this.ListenNotificationMinioClientArgs.BktClientArgs.BucketName = bucketName;
             BucketNotification notification = new BucketNotification();
             return SetBucketNotificationsAsync(bucketName, notification, cancellationToken);
         }
@@ -386,6 +449,11 @@ namespace Minio
         /// <returns>An observable of JSON-based notification events</returns>
         public IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events, string prefix = "", string suffix = "", CancellationToken cancellationToken = default(CancellationToken))
         {
+            this.CheckListenBucketNotificationArgs();
+            this.ListenNotificationMinioClientArgs.BktClientArgs.BucketName = bucketName;
+            //this.ListenNotificationMinioClientArgs.Events = events;
+            this.ListenNotificationMinioClientArgs.Prefix = prefix;
+            this.ListenNotificationMinioClientArgs.Suffix = suffix;
             return Observable.Create<MinioNotificationRaw>(
                 async (obs, ct) =>
                 {
@@ -440,6 +508,120 @@ namespace Minio
 
               });
 
+        }
+        /// <summary>
+        /// Get Versioning Info on a bucket
+        /// </summary>
+        /// <param name="bucketName">Name of the new bucket</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>An observable</returns>
+        public async Task<VersioningConfiguration> GetVersioningInfoAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+         {
+            this.CheckBucketArgs();
+            try
+            {
+                if (bucketName == null)
+                {
+                    throw new InvalidBucketNameException(bucketName, "bucketName cannot be null");
+                }
+                var request = await this.CreateRequest(Method.GET, bucketName).ConfigureAwait(false);
+                request.AddQueryParameter("versioning","");
+                var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+                VersioningConfiguration config = null;
+                if (HttpStatusCode.OK.Equals(response.StatusCode))
+                {
+                    using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(response.Content)))
+                    {
+                        config = (VersioningConfiguration)new XmlSerializer(typeof(VersioningConfiguration)).Deserialize(stream);
+                    }
+                    return config;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.GetType() == typeof(BucketNotFoundException))
+                {
+                    return null;
+                }
+                throw;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Enable versioning on a bucket
+        /// </summary>
+        /// <param name="bucketName">Name of the new bucket</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task that returns true if versioning is enabled on the bucket</returns>
+        public async Task EnableVersioningAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            this.CheckBucketArgs();
+            // Set Target URL
+            try
+            {
+                if (bucketName == null)
+                {
+                    throw new InvalidBucketNameException(bucketName, "bucketName cannot be null");
+                }
+                Uri requestUrl = RequestUtil.MakeTargetURL(this.GetMinioClientArgs().BaseUrl, this.GetMinioClientArgs().Secure, bucketName);
+                SetTargetURL(requestUrl);
+                VersioningConfiguration config = new VersioningConfiguration(true);
+                var request = new RestRequest("/" + bucketName, Method.PUT)
+                {
+                    XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer()
+                    {
+                        Namespace = "http://s3.amazonaws.com/doc/2006-03-01/",
+                        ContentType = "application/xml"
+                    },
+                    RequestFormat = DataFormat.Xml
+                };
+                string body = utils.MarshalXML(config, request.XmlSerializer.Namespace);
+                request.AddQueryParameter("versioning","");
+                request.AddParameter("text/xml", body, ParameterType.RequestBody);
+                var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        /// <summary>
+        /// Suspend versioning on a bucket
+        /// </summary>
+        /// <param name="bucketName">Name of the new bucket</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task that returns true if versioning is enabled on the bucket</returns>
+        public async Task SuspendVersioningAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            this.CheckBucketArgs();
+            try
+            {
+                if (bucketName == null)
+                {
+                    throw new InvalidBucketNameException(bucketName, "bucketName cannot be null");
+                }
+                Uri requestUrl = RequestUtil.MakeTargetURL(this.GetMinioClientArgs().GetBaseUrl(), this.GetMinioClientArgs().GetIfSecure());
+                SetTargetURL(requestUrl);
+                VersioningConfiguration config = new VersioningConfiguration(false);
+                var request = new RestRequest("/" + bucketName, Method.PUT)
+                {
+                    XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer()
+                    {
+                        Namespace = "http://s3.amazonaws.com/doc/2006-03-01/",
+                        ContentType = "application/xml"
+                    },
+                    RequestFormat = DataFormat.Xml
+                };
+                string body = utils.MarshalXML(config, request.XmlSerializer.Namespace);
+                request.AddQueryParameter("versioning", "");
+                request.AddParameter("text/xml", body, ParameterType.RequestBody);
+                var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }

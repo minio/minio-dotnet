@@ -27,6 +27,10 @@ namespace Minio.Helper
 
         internal static bool IsAmazonEndPoint(string endpoint)
         {
+            if (string.IsNullOrEmpty(endpoint))
+            {
+                return false;
+            }
             if (IsAmazonChinaEndPoint(endpoint))
             {
                 return true;
@@ -44,6 +48,10 @@ namespace Minio.Helper
         // For more info https://aws.amazon.com/about-aws/whats-new/2013/12/18/announcing-the-aws-china-beijing-region/
         internal static bool IsAmazonChinaEndPoint(string endpoint)
         {
+            if (string.IsNullOrEmpty(endpoint))
+            {
+                return false;
+            }
             return endpoint == "s3.cn-north-1.amazonaws.com.cn";
         }
 
@@ -52,7 +60,7 @@ namespace Minio.Helper
         // would support this.
         internal static bool IsVirtualHostSupported(Uri endpointURL, string bucketName)
         {
-            if (endpointURL == null)
+            if (endpointURL == null || string.IsNullOrEmpty(bucketName))
             {
                 return false;
             }

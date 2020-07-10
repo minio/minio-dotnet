@@ -16,6 +16,7 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -36,21 +37,8 @@ namespace Minio
 {
     public partial class MinioClient
     {
-        // Save Credentials from user
-        internal string AccessKey { get; private set; }
-        internal string SecretKey { get; private set; }
-        internal string BaseUrl { get; private set; }
-
-        // Reconstructed endpoint with scheme and host.In the case of Amazon, this url
-        // is the virtual style path or location based endpoint
-        internal string Endpoint { get; private set; }
-        internal string Region;
+        private bool initDone;
         internal string SessionToken { get; private set; }
-        // Corresponding URI for above endpoint
-        internal Uri uri;
-
-        // Indicates if we are using HTTPS or not
-        internal bool Secure { get; private set; }
 
         // RESTSharp client
         internal IRestClient restClient;
@@ -59,10 +47,6 @@ namespace Minio
         // Handler for task retry policy
         internal RetryPolicyHandlingDelegate retryPolicyHandler;
 
-        // Cache holding bucket to region mapping for buckets seen so far.
-        internal BucketRegionCache regionCache;
-
-        private IRequestLogger logger;
 
         // Enables HTTP tracing if set to true
         private bool trace = false;
@@ -71,6 +55,12 @@ namespace Minio
 
         internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers = Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
 
+        public MinioClientArgs MinioClientArgs { get; set; }
+        public BucketClientArgs BucketMinioClientArgs { get; set; }
+        public ObjectClientArgs ObjectMinioClientArgs { get; set; }
+        public EncryptionClientArgs EncryptionMinioClientArgs { get; set; }
+        public ListenBucketNotificationArgs ListenNotificationMinioClientArgs { get; set; }
+        public ObjectReadPropertiesArgs ObjectReadPropertiesClientArgs { get; set; }
         /// <summary>
         /// Default error handling delegate
         /// </summary>
@@ -117,14 +107,15 @@ namespace Minio
         /// <returns></returns>
         private async Task<string> GetRegion(string bucketName)
         {
+            MinioClientArgs mca = this.GetMinioClientArgs();
             // Use user specified region in client constructor if present
-            if (this.Region != string.Empty)
+            if (mca != null && mca.Region != string.Empty)
             {
-                return this.Region;
+                return mca.Region;
             }
 
             // pick region from endpoint if present
-            string region = Regions.GetRegionFromEndpoint(this.Endpoint);
+            string region = Regions.GetRegionFromEndpoint(mca.Endpoint);
 
             // Pick region from location HEAD request
             if (region == string.Empty)
@@ -160,6 +151,7 @@ namespace Minio
                                 object body = null, string resourcePath = null)
         {
             string region = string.Empty;
+            
             if (bucketName != null)
             {
                 utils.ValidateBucketName(bucketName);
@@ -171,11 +163,11 @@ namespace Minio
             {
                 utils.ValidateObjectName(objectName);
             }
+            MinioClientArgs mca = this.GetMinioClientArgs();
 
             // Start with user specified endpoint
-            string host = this.BaseUrl;
-
-            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region, sessionToken: this.SessionToken);
+            string host = mca.BaseUrl;
+            this.restClient.Authenticator = new V4Authenticator(mca.Secure, mca.AccessKey, mca.SecretKey, region: mca.Region, sessionToken: this.SessionToken);
 
             // This section reconstructs the url with scheme followed by location specific endpoint (s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
@@ -183,7 +175,7 @@ namespace Minio
             bool usePathStyle = false;
             if (bucketName != null)
             {
-                if (s3utils.IsAmazonEndPoint(this.BaseUrl))
+                if (s3utils.IsAmazonEndPoint(mca.BaseUrl))
                 {
                     usePathStyle = false;
 
@@ -197,7 +189,7 @@ namespace Minio
                         // use path style for location query
                         usePathStyle = true;
                     }
-                    else if (bucketName != null && bucketName.Contains(".") && this.Secure)
+                    else if (bucketName != null && bucketName.Contains(".") && mca.Secure)
                     {
                         // use path style where '.' in bucketName causes SSL certificate validation error
                         usePathStyle = true;
@@ -215,7 +207,7 @@ namespace Minio
             }
 
             // Set Target URL
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, bucketName, region, usePathStyle);
+            Uri requestUrl = RequestUtil.MakeTargetURL(mca.BaseUrl, mca.Secure, bucketName, region, usePathStyle);
             SetTargetURL(requestUrl);
 
             if (objectName != null)
@@ -253,30 +245,53 @@ namespace Minio
         /// </summary>
         internal void InitClient()
         {
-            if (string.IsNullOrEmpty(this.BaseUrl))
+            MinioClientArgs mca = this.GetMinioClientArgs();
+            if ( mca == null )
             {
-                throw new InvalidEndpointException("Endpoint cannot be empty.");
+                initDone = false;
+                return;
+            }
+            if (string.IsNullOrEmpty(mca.BaseUrl))
+            {
+                initDone = false;
+                return;
+            }
+            if (string.IsNullOrEmpty(mca.AccessKey) || string.IsNullOrEmpty(mca.SecretKey) )
+            {
+                initDone = false;
+                return;
+            }
+            if (string.IsNullOrEmpty(mca.Endpoint))
+            {
+                initDone = false;
+                return;
             }
 
-            string host = this.BaseUrl;
+            string host = mca.BaseUrl;
 
-            var scheme = this.Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
+            var scheme = mca.Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
 
             // This is the actual url pointed to for all HTTP requests
-            this.Endpoint = string.Format("{0}://{1}", scheme, host);
-            this.uri = RequestUtil.GetEndpointURL(this.BaseUrl, this.Secure);
-            RequestUtil.ValidateEndpoint(this.uri, this.Endpoint);
+            if ( !mca.Endpoint.Contains("http") )
+            {
+                mca.Endpoint = string.Format("{0}://{1}", scheme, host);
+            }
+            // mca.Endpoint = host;
+
+            mca.uri = RequestUtil.GetEndpointURL(mca.BaseUrl, mca.Secure);
+            RequestUtil.ValidateEndpoint(mca.uri, mca.Endpoint);
 
             // Initialize a new REST client. This uri will be modified if region specific endpoint/virtual style request
             // is decided upon while constructing a request for Amazon.
-            restClient = new RestSharp.RestClient(this.uri)
+            restClient = new RestSharp.RestClient(mca.uri)
             {
                 UserAgent = this.FullUserAgent
             };
-
-            authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, this.Region, this.SessionToken);
+            authenticator = new V4Authenticator(mca.Secure, mca.AccessKey, mca.SecretKey, mca.Region, this.SessionToken);
             restClient.Authenticator = authenticator;
             restClient.UseUrlEncoder(s => HttpUtility.UrlEncode(s));
+
+            initDone = true;
         }
 
         /// <summary>
@@ -308,20 +323,38 @@ namespace Minio
         /// <param name="region">Optional custom region</param>
         /// <param name="sessionToken">Optional session token</param>
         /// <returns>Client initialized with user credentials</returns>
+        [Obsolete("Use appropriate Builder object and call Build() or BuildAsync()")]
         public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region = "", string sessionToken = "")
         {
-            this.Secure = false;
+            if ( this.MinioClientArgs == null )
+            {
+                this.MinioClientArgs = new MinioClientArgs();
+            }
+            this.MinioClientArgs.Secure = false;
 
             // Save user entered credentials
-            this.BaseUrl = endpoint;
-            this.AccessKey = accessKey;
-            this.SecretKey = secretKey;
+            this.MinioClientArgs.BaseUrl = endpoint;
+            this.MinioClientArgs.AccessKey = accessKey;
+            this.MinioClientArgs.SecretKey = secretKey;
             this.SessionToken = sessionToken;
-            this.Region = region;
+            this.MinioClientArgs.Region = region;
             // Instantiate a region cache
-            this.regionCache = BucketRegionCache.Instance;
-
+            this.MinioClientArgs.RegionCache = BucketRegionCache.Instance;
+            if ( !endpoint.Contains("http") )
+            {
+                var scheme = this.MinioClientArgs.Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
+                this.MinioClientArgs.Endpoint = string.Format("{0}://{1}", scheme, this.MinioClientArgs.BaseUrl);
+            }
+            else
+            {
+                this.MinioClientArgs.Endpoint = endpoint;
+            }
             this.InitClient();
+        }
+
+        public bool InitDone()
+        {
+            return initDone;
         }
 
         /// <summary>
@@ -330,8 +363,13 @@ namespace Minio
         /// <returns></returns>
         public MinioClient WithSSL()
         {
-            this.Secure = true;
-            Uri secureUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
+            MinioClientArgs mca = this.GetMinioClientArgs();
+            mca.Secure = true;
+            if ( string.IsNullOrEmpty(mca.BaseUrl) )
+            {
+                throw new ArgumentNullException("BaseUrl is not assigned.");
+            }
+            Uri secureUrl = RequestUtil.MakeTargetURL(mca.BaseUrl, mca.Secure);
             this.SetTargetURL(secureUrl);
             return this;
         }
@@ -340,6 +378,7 @@ namespace Minio
         /// Uses webproxy for all requests if this method is invoked on client object
         /// </summary>
         /// <returns></returns>
+        [Obsolete("Use appropriate Builder object and call Build() or BuildAsync()")]
         public MinioClient WithProxy(IWebProxy proxy)
         {
             this.restClient.Proxy = proxy;
@@ -351,6 +390,7 @@ namespace Minio
         /// </summary>
         /// <param name="timeout">Timeout in milliseconds.</param>
         /// <returns></returns>
+        [Obsolete("Use appropriate Builder object and call Build() or BuildAsync()")]
         public MinioClient WithTimeout(int timeout)
         {
             this.restClient.Timeout = timeout;
@@ -362,6 +402,7 @@ namespace Minio
         /// </summary>
         /// <param name="retryPolicyHandler">Delegate that will wrap execution of <see cref="IRestRequest"/> requests.</param>
         /// <returns></returns>
+        [Obsolete("Use appropriate Builder object and call Build() or BuildAsync()")]
         public MinioClient WithRetryPolicy(RetryPolicyHandlingDelegate retryPolicyHandler)
         {
             this.retryPolicyHandler = retryPolicyHandler;
@@ -396,7 +437,6 @@ namespace Minio
             if (this.trace)
             {
                 var fullUrl = this.restClient.BuildUri(request);
-                Console.WriteLine($"Full URL of Request {fullUrl}");
             }
 
             IRestResponse response = await this.restClient.ExecuteTaskAsync(request, cancellationToken).ConfigureAwait(false);
@@ -608,7 +648,8 @@ namespace Minio
         /// </summary>
         public void SetTraceOn(IRequestLogger logger = null)
         {
-            this.logger = logger ?? new DefaultRequestLogger();
+            MinioClientArgs mca = this.GetMinioClientArgs();
+            mca.Logger = logger ?? new DefaultRequestLogger();
             this.trace = true;
         }
 
@@ -656,7 +697,7 @@ namespace Minio
                 durationMs = durationMs
             };
 
-            this.logger.LogRequest(requestToLog, responseToLog, durationMs);
+            this.GetMinioClientArgs().Logger.LogRequest(requestToLog, responseToLog, durationMs);
         }
 
         private Task<IRestResponse> ExecuteWithRetry(

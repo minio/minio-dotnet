@@ -90,13 +90,13 @@ namespace Minio
         {
             string region = null;
 
-            if (bucketName != null && client.AccessKey != null
-            && client.SecretKey != null && !Instance.Exists(bucketName))
+            if (bucketName != null && client.GetMinioClientArgs().AccessKey != null
+            && client.GetMinioClientArgs().SecretKey != null && !Instance.Exists(bucketName))
             {
                 string location = null;
                 var path = utils.UrlEncode(bucketName);
                 // Initialize client
-                Uri requestUrl = RequestUtil.MakeTargetURL(client.BaseUrl, client.Secure);
+                Uri requestUrl = RequestUtil.MakeTargetURL(client.GetMinioClientArgs().BaseUrl, client.GetMinioClientArgs().Secure);
                 client.SetTargetURL(requestUrl);
 
                 var request = new RestRequest(path, Method.GET);

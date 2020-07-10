@@ -23,12 +23,12 @@ namespace Minio.Examples.Cases
     {
         // Make a bucket
         public async static Task Run(MinioClient minio,
-                                     string bucketName = "my-bucket-name")
+                                     string bucketName = "my-bucket-name", string loc = "us-east-1")
         {
             try
             {
                 Console.WriteLine("Running example for API: MakeBucketAsync");
-                await minio.MakeBucketAsync(bucketName);
+                await minio.MakeBucketAsync(bucketName, loc);
                 Console.WriteLine($"Created bucket {bucketName}");
                 Console.WriteLine();
             } 

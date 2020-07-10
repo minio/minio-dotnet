@@ -31,7 +31,8 @@ namespace Minio.Tests
         public async Task TestNoConnectionError()
         {
             // invalid uri
-            var minio = new MinioClient("localhost:12121");
+            // var minio = new MinioClient("localhost:12121");
+            var minio = await MinioClient.NewClient().WithEndpoint("localhost:12121").WithCredentials("minio", "minio").BuildAsync();
 
             var ex = await Assert.ThrowsExceptionAsync<ConnectionException>(() => minio.BucketExistsAsync("test"));
             Assert.IsNotNull(ex.ServerResponse);
@@ -41,7 +42,8 @@ namespace Minio.Tests
         public async Task TestInvalidBucketNameError()
         {
             var badName = new string('A', 260);
-            var minio = new MinioClient("play.min.io", "Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG");
+            // var minio = new MinioClient("play.min.io", "Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG");
+            var minio = await MinioClient.NewClient().WithEndpoint("play.min.io").WithCredentials("Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG").BuildAsync();
             await Assert.ThrowsExceptionAsync<InvalidBucketNameException>(() => minio.BucketExistsAsync(badName));
         }
 
@@ -50,7 +52,8 @@ namespace Minio.Tests
         {
             var badName = new string('A', 260);
             var bucketName = Guid.NewGuid().ToString("N");
-            var minio = new MinioClient("play.min.io", "Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG");
+            // var minio = new MinioClient("play.min.io", "Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG");
+            var minio = await MinioClient.NewClient().WithEndpoint("play.min.io").WithCredentials("Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG").BuildAsync();
 
             try
             {

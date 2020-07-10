@@ -87,41 +87,39 @@ namespace Minio.Tests
         [TestMethod]
         public void TestWithoutPort()
         {
-            new MinioClient("localhost");
+            MinioClient.NewClient().WithEndpoint("localhost");
         }
 
         [TestMethod]
         public void TestWithTrailingSlash()
         {
-            new MinioClient("localhost:9000/");
+            MinioClient.NewClient().WithEndpoint("localhost:9000/");
         }
 
         [TestMethod]
         [ExpectedException(typeof(InvalidEndpointException))]
         public void TestUrlFailsWithMalformedScheme()
         {
-            new MinioClient("http://localhost:9000");
+            MinioClient.NewClient().WithEndpoint("http//localhost:9000");
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidEndpointException))]
-        public void TestUrlFailsWithPath()
+        public void TestUrlWithPath()
         {
-            new MinioClient("localhost:9000/foo");
+            MinioClient.NewClient().WithEndpoint("localhost:9000/foo");
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidEndpointException))]
-        public void TestUrlFailsWithQuery()
+        public void TestUrlWithQuery()
         {
-            new MinioClient("localhost:9000/?foo=bar");
+            MinioClient.NewClient().WithEndpoint("localhost:9000/?foo=bar");
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void TestSetAppInfoFailsNullApp()
         {
-            var client = new MinioClient("localhost:9000");
+            var client = MinioClient.NewClient().WithEndpoint("localhost:9000");
             client.SetAppInfo(null, "1.2.2");
         }
 
@@ -129,27 +127,27 @@ namespace Minio.Tests
         [ExpectedException(typeof(ArgumentException))]
         public void TestSetAppInfoFailsNullVersion()
         {
-            var client = new MinioClient("localhost:9000");
+            var client = MinioClient.NewClient().WithEndpoint("localhost:9000");
             client.SetAppInfo("Hello-App", null);
         }
 
         [TestMethod]
         public void TestSetAppInfoSuccess()
         {
-            var client = new MinioClient("localhost:9000");
+            var client = MinioClient.NewClient().WithEndpoint("localhost:9000");
             client.SetAppInfo("Hello-App", "1.2.1");
         }
 
         [TestMethod]
         public void TestEndpointSuccess()
         {
-            new MinioClient("s3.amazonaws.com");
+            MinioClient.NewClient().WithEndpoint("s3.amazonaws.com");
         }
 
         [TestMethod]
         public void TestEndpointSuccess2()
         {
-            new MinioClient("s3-us-west-1.amazonaws.com");
+            MinioClient.NewClient().WithEndpoint("s3-us-west-1.amazonaws.com");
         }
     }
 }
