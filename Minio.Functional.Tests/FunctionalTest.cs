@@ -2705,7 +2705,6 @@ namespace Minio.Functional.Tests
                         Assert.AreEqual("s3:ObjectCreated:Put", notification.Records[0].eventName);
                         if (notification.Records[0].s3.bucketMeta != null)
                         {
-                            // todo s3 is null, how to complete this test.
                             Assert.AreEqual(bucketName, notification.Records[0].s3.bucketMeta.name);
                         }
                         Assert.AreEqual(objectName, System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key));
