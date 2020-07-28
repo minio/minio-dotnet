@@ -60,15 +60,26 @@ namespace Minio.Examples
             string accessKey = null;
             string secretKey = null;
             bool enableHTTPS = false;
+            int port = 80;
 
             if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
             {
                 endPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");
+                int posColon = endPoint.LastIndexOf(':');
+                if ( posColon != -1 )
+                {
+                    port = Int32.Parse(endPoint.Substring(posColon+1, (endPoint.Length - posColon - 1)));
+                    endPoint = endPoint.Substring(0, posColon);
+                }
                 accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
                 secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
                 if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") != null)
                 {
                     enableHTTPS = Environment.GetEnvironmentVariable("ENABLE_HTTPS").Equals("1");
+                    if ( enableHTTPS && port == 80 )
+                    {
+                        port = 443;
+                    }
                 }
             }
             else
@@ -77,6 +88,7 @@ namespace Minio.Examples
                 accessKey = "Q3AM3UQ867SPQQA43P2F";
                 secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
                 enableHTTPS = true;
+                port = 443;
             }
 
             ServicePointManager.ServerCertificateValidationCallback +=
@@ -84,15 +96,10 @@ namespace Minio.Examples
 
             // WithSSL() enables SSL support in MinIO client
             MinioClient minioClient = null;
-            if (enableHTTPS)
-            {
-                minioClient = new MinioClient(endPoint, accessKey, secretKey).WithSSL();
-            }
-            else
-            {
-                minioClient = new MinioClient(endPoint, accessKey, secretKey);
-            }
-
+            minioClient = new MinioClient()
+                                    .WithEndpoint(endPoint, port, enableHTTPS)
+                                    .WithCredentials(accessKey, secretKey)
+                                    .Build();
             try
             {
                 // Assign parameters before starting the test 
@@ -123,6 +130,10 @@ namespace Minio.Examples
  
                 Cases.MakeBucket.Run(minioClient, destBucketName).Wait();
 
+                //Versioning tests
+                Cases.GetVersioningInfo.Run(minioClient, bucketName).Wait();
+                Cases.EnableSuspendVersioning.Run(minioClient, bucketName).Wait();
+                Cases.GetVersioningInfo.Run(minioClient, bucketName).Wait();
                 // List all the buckets on the server
                 Cases.ListBuckets.Run(minioClient).Wait();
 
@@ -227,6 +238,7 @@ namespace Minio.Examples
                 Cases.CustomRequestLogger.Run(minioClient).Wait();
 
                 // Remove the buckets
+                Console.WriteLine();
                 Cases.RemoveBucket.Run(minioClient, bucketName).Wait();
                 Cases.RemoveBucket.Run(minioClient, destBucketName).Wait();
 

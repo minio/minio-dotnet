@@ -57,6 +57,93 @@ namespace Minio
         }
 
         /// <summary>
+        /// Check if a private bucket with the given name exists.
+        /// </summary>
+        /// <param name="args">BucketExistsArgs Arguments Object which has bucket identifier information - bucket name, region</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        /// <exception cref="InvalidBucketOperationException">When Args object or another setting is wrong</exception>
+        public async Task<bool> BucketExistsAsync(BucketExistsArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            try
+            {
+                args.Validate();
+                this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region, sessionToken: this.SessionToken);
+                var request = args.GetRequest(this.BaseUrl, this.restClient.Authenticator);
+                await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                if ( ex.GetType() == typeof(BucketNotFoundException) )
+                {
+                    return false;
+                }
+                throw;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Remove the bucket with the given name.
+        /// </summary>
+        /// <param name="args">RemoveBucketArgs Arguments Object which has bucket identifier information like bucket name .etc.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        /// <exception cref="InvalidBucketOperationException">When Args object or another setting is wrong</exception>
+        public async Task RemoveBucketAsync(RemoveBucketArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region, sessionToken: this.SessionToken);
+            var request = args.GetRequest(this.BaseUrl, this.restClient.Authenticator);
+            this.SetTargetURL(args.GetRequestURL(this.BaseUrl));
+            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+        }
+
+        /// <summary>
+        /// Create a bucket with the given name.
+        /// </summary>
+        /// <param name="args">MakeBucketArgs Arguments Object that has bucket info like name, region, location. etc</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
+        /// <exception cref="InvalidBucketOperationException">When Args object or another setting is wrong</exception>
+        public async Task MakeBucketAsync(MakeBucketArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            await this.ExecuteTaskAsync(this.NoErrorHandlers, args.GetRequest(), cancellationToken);
+        }
+
+        /// <param name="args">GetVersioningInfoArgs Arguments Object that has the info like bucket name, region. </param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> VersioningConfiguration with information populated from response </returns>
+        /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
+        /// <exception cref="InvalidBucketOperationException">When Args object or another setting is wrong</exception>
+        public async Task<VersioningConfiguration> GetVersioningInfoAsync(GetVersioningInfoArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region, sessionToken: this.SessionToken);
+            var request = args.GetRequest(this.BaseUrl, this.restClient.Authenticator);
+            this.SetTargetURL(args.GetRequestURL(this.BaseUrl));
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            VersioningConfiguration vc = args.ProcessResponse(response);
+
+            return vc;
+        }
+
+        /// <param name="args">SetVersioningArgs Arguments Object with information like Bucket name, Versioning configuration</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
+        /// <exception cref="InvalidBucketOperationException">When Args object or another setting is wrong</exception>
+        public async Task  SetVersioningAsync(SetVersioningArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            var request = args.GetRequest(this.BaseUrl, new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region, sessionToken: this.SessionToken));
+            this.SetTargetURL(args.GetRequestURL(this.BaseUrl));
+            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Create a private bucket with the given name.
         /// </summary>
         /// <param name="bucketName">Name of the new bucket</param>

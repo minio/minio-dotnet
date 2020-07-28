@@ -67,6 +67,9 @@ namespace Minio
         // Enables HTTP tracing if set to true
         private bool trace = false;
 
+        // To be used with builder methods for completion of InitClient method
+        private bool InitDone;
+
         private const string RegistryAuthHeaderKey = "X-Registry-Auth";
 
         internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers = Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
@@ -248,7 +251,7 @@ namespace Minio
         }
 
         /// <summary>
-        /// This method initializes a new RESTClient. The host URI for Amazon is set to virtual hosted style
+        /// The Init method used with MinioClient constructor with multiple arguments. The host URI for Amazon is set to virtual hosted style
         /// if usePathStyle is false. Otherwise path style URL is constructed.
         /// </summary>
         internal void InitClient()
@@ -257,13 +260,57 @@ namespace Minio
             {
                 throw new InvalidEndpointException("Endpoint cannot be empty.");
             }
+            string host = this.BaseUrl;
+
+            var scheme = this.Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
+            // This is the actual url pointed to for all HTTP requests
+            this.Endpoint = string.Format("{0}://{1}", scheme, host);
+            Init();
+        }
+
+        /// <summary>
+        /// The Init method used with MinioClient constructor with multiple arguments. The host URI for Amazon is set to virtual hosted style
+        /// if usePathStyle is false. Otherwise path style URL is constructed.
+        /// </summary>
+        internal void InitClientBuilder()
+        {
+            // Instantiate a region cache
+            this.regionCache = BucketRegionCache.Instance;
+            this.Region = "";
+            this.SessionToken = "";
+
+            if (string.IsNullOrEmpty(this.BaseUrl))
+            {
+                InitDone = false;
+                return;
+            }
+            if (string.IsNullOrEmpty(this.AccessKey) || string.IsNullOrEmpty(this.SecretKey) )
+            {
+                InitDone = false;
+                return;
+            }
 
             string host = this.BaseUrl;
 
             var scheme = this.Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
 
-            // This is the actual url pointed to for all HTTP requests
-            this.Endpoint = string.Format("{0}://{1}", scheme, host);
+            if ( !this.BaseUrl.Contains("http") )
+            {
+               this.Endpoint = string.Format("{0}://{1}", scheme, host);
+            }
+            else
+            {
+                this.Endpoint = host;
+            }
+            Init();
+        }
+
+        /// <summary>
+        /// This method initializes a new RESTClient. It is called by other Inits
+        /// </summary>
+
+        internal void Init()
+        {
             this.uri = RequestUtil.GetEndpointURL(this.BaseUrl, this.Secure);
             RequestUtil.ValidateEndpoint(this.uri, this.Endpoint);
 
@@ -277,6 +324,8 @@ namespace Minio
             authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, this.Region, this.SessionToken);
             restClient.Authenticator = authenticator;
             restClient.UseUrlEncoder(s => HttpUtility.UrlEncode(s));
+
+            InitDone = true;
         }
 
         /// <summary>
@@ -302,12 +351,22 @@ namespace Minio
         /// <summary>
         /// Creates and returns an Cloud Storage client
         /// </summary>
+        /// <returns>Client with no arguments to be used with other builder methods</returns>
+        public MinioClient()
+        {
+            InitDone = false;
+        }
+
+        /// <summary>
+        /// Creates and returns an Cloud Storage client
+        /// </summary>
         /// <param name="endpoint">Location of the server, supports HTTP and HTTPS</param>
         /// <param name="accessKey">Access Key for authenticated requests (Optional, can be omitted for anonymous requests)</param>
         /// <param name="secretKey">Secret Key for authenticated requests (Optional, can be omitted for anonymous requests)</param>
         /// <param name="region">Optional custom region</param>
         /// <param name="sessionToken">Optional session token</param>
         /// <returns>Client initialized with user credentials</returns>
+        [Obsolete("Use appropriate Builder object and call Build() or BuildAsync()")]
         public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region = "", string sessionToken = "")
         {
             this.Secure = false;
@@ -374,6 +433,14 @@ namespace Minio
         internal void SetTargetURL(Uri uri)
         {
             this.restClient.BaseUrl = uri;
+        }
+
+        /// <summary>
+        /// Get If we are using a secure connection
+        /// </summary>
+        public bool IsSecure()
+        {
+            return this.Secure;
         }
 
         /// <summary>

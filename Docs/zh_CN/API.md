@@ -29,7 +29,10 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 | [`removeBucket`](#removeBucket)  | [`statObject`](#statObject) |   | [`getBucketNotification`](#getBucketNotification)  |
 | [`listObjects`](#listObjects)  | [`removeObject`](#removeObject) |   |  [`removeAllBucketNotification`](#removeAllBucketNotification) |
 | [`listIncompleteUploads`](#listIncompleteUploads)  | [`removeObjects`](#removeObjects) |   |   |
-| | [`removeIncompleteUpload`](#removeIncompleteUpload) |   |   |
+| [`listenBucketNotifications`](#listenBucketNotifications) | [`removeIncompleteUpload`](#removeIncompleteUpload) |   |   |
+| [`setVersioning`](#setVersioning)  | [`selectObjectContent`](#selectObjectContent) |   |   |
+| [`getVersioningInfo`](#getVersioningInfo)  |  |   |   |
+
 
 
 ## 1. 构造函数
