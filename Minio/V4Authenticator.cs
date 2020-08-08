@@ -406,22 +406,22 @@ namespace Minio
             }
             canonicalStringList.AddLast(path[0]);
             string query = string.Empty;
-            Dictionary<string,string> queryParams = new Dictionary<string,string>();
+            var queryParams = new List<KeyValuePair<string, string>>();
 
             foreach (var p in request.Parameters)
             {
                 if (p.Type == ParameterType.QueryString){
-                    queryParams.Add((string)p.Name, Uri.EscapeDataString((string)p.Value));
+                    queryParams.Add(new KeyValuePair<string, string>(p.Name, Uri.EscapeDataString((string)p.Value)));
                 } 
             }
             var sb1 = new StringBuilder();
-            var queryKeys = new List<string>(queryParams.Keys);
-            queryKeys.Sort(StringComparer.Ordinal);
-            foreach (var p in queryKeys)
+            queryParams = queryParams.OrderBy(_ => _.Key)
+                .ThenBy(_ => _.Value).ToList();
+            foreach (var p in queryParams)
             {
                 if (sb1.Length > 0)
                     sb1.Append("&");
-                sb1.AppendFormat("{0}={1}", p, queryParams[p]);
+                sb1.AppendFormat("{0}={1}", p.Key, p.Value);
             }
             query = sb1.ToString();
             canonicalStringList.AddLast(query);
