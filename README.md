@@ -191,3 +191,6 @@ $ dotnet run
 ## Explore Further
 * [Complete Documentation](https://docs.min.io)
 * [MinIO .NET SDK API Reference](https://docs.min.io/docs/dotnet-client-api-reference)
+
+## Video Tutorial
+* [Setup with docker and upload and view file tutorial](https://www.udemy.com/course/media-server-aspnet-core-31)
