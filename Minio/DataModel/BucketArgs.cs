@@ -14,92 +14,20 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections;
-using Minio.Exceptions;
-
 namespace Minio
 {
-    public class BucketArgs: Args
+    public class BucketArgs : Args
     {
         internal string BucketName { get; set; }
-        internal string Location { get; set; }
-        internal string Region { get; set; }
-        internal bool Secure { get; set; }
-        internal string LifecycleConfig { get; set; }
-        // <String, String>
-        internal Hashtable TagKeyValue { get; set; }
-        internal bool Versioned { get; set; }
-        internal bool VersioningEnabled { get; set; }
-        internal bool VersioningSuspended { get; set; }
+        protected BucketArgs(string bucketName)
+        {
+            BucketName = bucketName;
+        }
 
-        public new void Validate()
+
+        public virtual void Validate()
         {
             utils.ValidateBucketName(this.BucketName);
         }
-        public BucketArgs WithBucket(string bucket)
-        {
-            this.BucketName = bucket;
-            return this;
-        }
-
-        public BucketArgs WithRegion(string reg)
-        {
-            this.Region = reg;
-            return this;
-        }
-
-        public BucketArgs WithLocation(string loc)
-        {
-            this.Location = loc;
-            return this;
-        }
-
-        public BucketArgs WithLifecycleConfig(string lc)
-        {
-            this.LifecycleConfig = lc;
-            return this;
-        }
-
-        public BucketArgs WithTags(Hashtable t)
-        {
-            this.TagKeyValue = CloneHashTable(t);
-            return this;
-        }
-
-        public BucketArgs WithVersioningEnabled()
-        {
-            this.VersioningEnabled = true;
-            this.VersioningSuspended = false;
-            if ( !this.Versioned )
-            {
-                this.Versioned = true;
-            }
-            return this;
-        }
-
-        public BucketArgs WithVersioningSuspended()
-        {
-            this.VersioningEnabled = false;
-            this.VersioningSuspended = true;
-            if ( !this.Versioned )
-            {
-                this.Versioned = true;
-            }
-            return this;
-        }
-        public BucketArgs WithSSL(bool secure=true)
-        {
-            this.Secure = secure;
-            return this;
-        }
-
-        public System.Uri GetRequestURL(string baseURL)
-        {
-            // Use Path Style set to false - Just the default
-            return RequestUtil.MakeTargetURL(baseURL, this.Secure, this.BucketName, this.Region, false);
-        }
-
-
     }
 }

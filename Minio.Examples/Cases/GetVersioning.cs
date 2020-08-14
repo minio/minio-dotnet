@@ -20,40 +20,25 @@ using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
-    class GetVersioningInfo
+    class GetVersioning
     {
         // Check if Versioning is Enabled on a bucket
         public async static Task Run(MinioClient minio,
-                                     string bucketName = "my-bucket-name",
-                                     string region="us-east-1")
+                                     string bucketName = "my-bucket-name")
         {
-            var args = new GetVersioningInfoArgs()
-                                .WithBucket(bucketName)
-                                .WithRegion(region)
-                                .WithSSL(minio.IsSecure());
+            var args = new GetVersioningArgs(bucketName);
 
             try
             {
-                Console.WriteLine("Running example for API: GetVersioningInfo, ");
-                VersioningConfiguration vc = await minio.GetVersioningInfoAsync(args);
-                if ( vc == null )
+                Console.WriteLine("Running example for API: GetVersioning, ");
+                VersioningConfiguration config = await minio.GetVersioningAsync(args);
+                if ( config == null )
                 {
                     Console.WriteLine("Versioning Configuration not available for bucket " + bucketName);
                     Console.WriteLine();
                     return;
                 }
-                if ( vc.IsNotVersioned() )
-                {
-                    Console.WriteLine("Versioning Configuration shows that versioning hasn't been enabled before for bucket " + bucketName);
-                }
-                else if ( vc.IsVersioningEnabled() )
-                {
-                    Console.WriteLine("Versioning Configuration shows that versioning is enabled for bucket " + bucketName);
-                }
-                else if ( vc.IsVersioningSuspended() )
-                {
-                    Console.WriteLine("Versioning Configuration shows that versioning has been suspended  for bucket " + bucketName);
-                }
+                Console.WriteLine("Versioning Configuration Status " + config.Status + " for bucket " + bucketName);
                 Console.WriteLine();
 
             }

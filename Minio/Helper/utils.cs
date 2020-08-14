@@ -45,7 +45,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to test existence of</param>
         internal static void ValidateBucketName(string bucketName)
         {
-            if (bucketName.Trim() == string.Empty)
+            if (string.IsNullOrEmpty(bucketName))
             {
                 throw new InvalidBucketNameException(bucketName, "Bucket name cannot be empty.");
             }

@@ -25,13 +25,13 @@ namespace Minio.DataModel
     {
         public VersioningConfiguration()
         {
-            this.Status = null;
-            this.MfaDelete = null;
+            this.Status = "Off";
+            this.MfaDelete = "Disabled";
         }
 
-        public VersioningConfiguration(bool enable = true )
+        public VersioningConfiguration(bool enableVersioning = true )
         {
-            if (enable)
+            if (enableVersioning)
             {
                 this.Status = "Enabled";
             }
@@ -39,7 +39,6 @@ namespace Minio.DataModel
             {
                 this.Status = "Suspended";
             }
-            this.MfaDelete = "Disabled";
         }
 
         public VersioningConfiguration(VersioningConfiguration vc)
@@ -49,22 +48,7 @@ namespace Minio.DataModel
         }
 
         [XmlElement]
-        public string Status { get; set; }
-        public string MfaDelete { get; set; }
-
-        public bool IsNotVersioned()
-        {
-            return this.Status == null;
-        }
-
-        public bool IsVersioningEnabled()
-        {
-            return this.Status != null && this.Status.ToLower().Equals("enabled");
-        }
-
-        public bool IsVersioningSuspended()
-        {
-            return this.Status != null && this.Status.ToLower().Equals("suspended");
-        }
+        public string Status { get;  set; }
+        public string MfaDelete { get;  set; }
     }
 }

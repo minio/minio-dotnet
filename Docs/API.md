@@ -31,7 +31,7 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 | [`listIncompleteUploads`](#listIncompleteUploads)  | [`removeObjects`](#removeObjects) |   |   |
 | [`listenBucketNotifications`](#listenBucketNotifications) | [`removeIncompleteUpload`](#removeIncompleteUpload) |   |   |
 | [`setVersioning`](#setVersioning)  | [`selectObjectContent`](#selectObjectContent) |   |   |
-| [`getVersioningInfo`](#getVersioningInfo)  |  |   |   |
+| [`getVersioning`](#getVersioning)  |  |   |   |
 
 ## 1. Constructors
 
@@ -185,12 +185,12 @@ MinioClient minioClient = new MinioClient()
 MinioClient s3Client = new MinioClient("s3.amazonaws.com").WithSSL();
 
 // 2. public MinioClient(String endpoint, String accessKey, String secretKey)
-MinioClient s3Client = new MinioClient("s3.amazonaws.com:80",
+MinioClient s3Client = new MinioClient("s3.amazonaws.com",
                                        accessKey:"YOUR-ACCESSKEYID",
                                        secretKey:"YOUR-SECRETACCESSKEY").WithSSL();
 // 3. Using Builder with public MinioClient(), Endpoint, Credentials & Secure connection
 MinioClient minioClient = new MinioClient()
-                                    .WithEndpoint("s3.amazonaws.com:80")
+                                    .WithEndpoint("s3.amazonaws.com")
                                     .WithCredentials("YOUR-ACCESSKEYID", "YOUR-SECRETACCESSKEY")
                                     .WithSSL()
                                     .Build()
@@ -258,7 +258,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``args``  | _MakeBucketArgs_ | MakeBucketArgs Arguments Object that has bucket info like name, region, location.  |
+| ``args``  | _MakeBucketArgs_ | Arguments Object - name, location.  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 | Return Type	  | Exceptions	  |
@@ -395,7 +395,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``args``  | _BucketExistsArgs_  | BucketExistsArgs Arguments Object which has bucket identifier information - bucket name, region.  |
+| ``args``  | _BucketExistsArgs_  | Argument object - bucket name.  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -497,7 +497,7 @@ __Parameters__
  
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``args``  | _RemoveBucketArgs_  | RemoveBucketArgs Arguments Object which has bucket identifier information like bucket name  |
+| ``args``  | _RemoveBucketArgs_  | Arguments Object - bucket name  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -537,10 +537,10 @@ catch(MinioException e)
 }
 ```
 
-<a name="getVersioningInfo"></a>
-### public async Task<VersioningConfiguration> GetVersioningInfoAsync(GetVersioningInfoArgs args)
+<a name="getVersioning"></a>
+### public async Task<VersioningConfiguration> GetVersioningAsync(GetVersioningArgs args)
 
-`Task<VersioningConfiguration> GetVersioningInfoAsync(GetVersioningInfoArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+`Task<VersioningConfiguration> GetVersioningAsync(GetVersioningArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 Get versioning information for a bucket.
 
@@ -549,7 +549,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``args``  | _GetVersioningInfoArgs_  | GetVersioningInfoArgs Arguments Object that has the info like bucket name, region. |
+| ``args``  | _GetVersioningArgs_  | Arguments Object - bucket name. |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -568,10 +568,8 @@ try
     bool found = minioClient.BucketExistsAsync(bktExistsArgs);
     if (found)
     {
-        var args = new GetVersioningInfoArgs()
-                                .WithBucket("mybucket")
-                                .WithRegion(region)
-                                .WithSSL(minio.IsSecure());
+        var args = new GetVersioningArgs("mybucket")
+                                .WithSSL();
         VersioningConfiguration vc = await minio.GetVersioningInfoAsync(args);
     }
     else
@@ -598,7 +596,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``args``  | _SetVersioningArgs_  | SetVersioningArgs Arguments Object that has the info like bucket name, region. |
+| ``args``  | _SetVersioningArgs_  | Arguments Object - bucket name, versioning status. |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -617,10 +615,8 @@ try
     bool found = minioClient.BucketExistsAsync(bktExistsArgs);
     if (found)
     {
-        var args = new SetVersioningArgs()
-                                .WithBucket("mybucket")
-                                .WithRegion(region)
-                                .WithSSL(minio.IsSecure())
+        var args = new SetVersioningArgs("mybucket")
+                                .WithSSL()
                                 .WithVersioningEnabled();
 
         await minio.SetVersioningAsync(setArgs);

@@ -272,6 +272,7 @@ namespace Minio
 
                 }
             }
+            
             if (sse != null)
             {
                 sse.Marshal(sseHeaders);

@@ -47,20 +47,10 @@ namespace Minio
             this.QueryParams = CloneHashTable(h);
             return this;
         }
-        public void Validate()
-        {
-        }
 
-        public RestRequest GetRequest()
+        public virtual RestRequest BuildRequest(RestRequest req)
         {
-            return null;
-        }
-        public RestRequest GetRequest(string baseUrl, RestSharp.Authenticators.IAuthenticator authenticator)
-        {
-            return null;
-        }
-        public void ProcessResponse()
-        {
+            return req;
         }
     }
 }

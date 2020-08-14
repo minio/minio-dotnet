@@ -149,7 +149,7 @@ namespace Minio
         }
 
         internal static RestRequest CreateRequest(string baseURL, RestSharp.Method method, RestSharp.Authenticators.IAuthenticator authenticator,
-                        string bucketName = null, bool secure=false, string region="", string objectName = null,
+                        string bucketName = null, bool secure=false, string objectName = null,
                         Dictionary<string, string> headerMap = null,
                         string contentType = "application/octet-stream",
                         object body = null, string resourcePath = null)

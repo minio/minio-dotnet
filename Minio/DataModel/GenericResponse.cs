@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
+using System.Net;
+
 namespace Minio
 {
-    public class ObjectArgs : BucketArgs
+    public class GenericResponse
     {
-        internal string ObjectName { get; set; }
-        internal string VersionId { get; set; }
 
-        public ObjectArgs WithObjectName(string o)
+        internal string ResponseContent { get; private set; }
+        internal HttpStatusCode ResponseStatusCode { get; private set; }
+        internal GenericResponse(HttpStatusCode statusCode, string responseContent)
         {
-            this.ObjectName = o;
-            return this;
-        }
-        public ObjectArgs WithVersionID(string v)
-        {
-            this.VersionId = v;
-            return this;
+            this.ResponseContent = responseContent;
+            this.ResponseStatusCode = ResponseStatusCode;
         }
     }
 }

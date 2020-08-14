@@ -200,7 +200,8 @@ namespace Minio.Tests
         public void TestWithUrl()
         {
             new MinioClient()
-                    .WithEndpoint("localhost", 9000, false)
+                    .WithEndpoint("localhost", 9000)
+                    .WithCredentials("minio", "minio")
                     .Build();
         }
 
@@ -209,6 +210,7 @@ namespace Minio.Tests
         {
             new MinioClient()
                     .WithEndpoint("localhost")
+                    .WithCredentials("minio", "minio")
                     .Build();
         }
 
@@ -216,7 +218,8 @@ namespace Minio.Tests
         public void TestWithTrailingSlash()
         {
             new MinioClient()
-                    .WithEndpoint("localhost", 9000, false)
+                    .WithEndpoint("localhost", 9000)
+                    .WithCredentials("minio", "minio")
                     .Build();
         }
 
@@ -225,7 +228,8 @@ namespace Minio.Tests
         public void TestUrlFailsWithMalformedScheme()
         {
             new MinioClient()
-                    .WithEndpoint("htp://localhost", 9000, false)
+                    .WithEndpoint("htp://localhost", 9000)
+                    .WithCredentials("minio", "minio")
                     .Build();
         }
 
@@ -235,6 +239,7 @@ namespace Minio.Tests
         {
             new MinioClient()
                     .WithEndpoint("localhost:9000/foo")
+                    .WithCredentials("minio", "minio")
                     .Build();
         }
 
@@ -244,6 +249,7 @@ namespace Minio.Tests
         {
             new MinioClient()
                     .WithEndpoint("localhost:9000/?foo=bar")
+                    .WithCredentials("minio", "minio")
                     .Build();
         }
 
@@ -252,7 +258,8 @@ namespace Minio.Tests
         public void TestSetAppInfoFailsNullApp()
         {
             var client = new MinioClient()
-                                .WithEndpoint("localhost", 9000, false)
+                                .WithEndpoint("localhost", 9000)
+                                .WithCredentials("minio", "minio")
                                 .Build();
             client.SetAppInfo(null, "1.2.2");
         }
@@ -262,7 +269,8 @@ namespace Minio.Tests
         public void TestSetAppInfoFailsNullVersion()
         {
             var client =new MinioClient()
-                                .WithEndpoint("localhost", 9000, false)
+                                .WithEndpoint("localhost", 9000)
+                                .WithCredentials("minio", "minio")
                                 .Build();
             client.SetAppInfo("Hello-App", null);
         }
@@ -271,7 +279,8 @@ namespace Minio.Tests
         public void TestSetAppInfoSuccess()
         {
             var client = new MinioClient()
-                                .WithEndpoint("localhost", 9000, false)
+                                .WithEndpoint("localhost", 9000)
+                                .WithCredentials("minio", "minio")
                                 .Build();
             client.SetAppInfo("Hello-App", "1.2.1");
         }
@@ -281,6 +290,7 @@ namespace Minio.Tests
         {
             new MinioClient()
                     .WithEndpoint("s3.amazonaws.com")
+                    .WithCredentials("minio", "minio")
                     .Build();
         }
     }

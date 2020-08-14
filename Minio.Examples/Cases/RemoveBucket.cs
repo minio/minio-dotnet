@@ -23,16 +23,12 @@ namespace Minio.Examples.Cases
     {
         // Remove a bucket
         public async static Task Run(MinioClient minio, 
-                                     string bucketName = "my-bucket-name",
-                                     string region="us-east-1")
+                                     string bucketName = "my-bucket-name")
         {
             try
             {
                 await minio.RemoveBucketAsync(
-                    new RemoveBucketArgs()
-                            .WithBucket(bucketName)
-                            .WithRegion(region)
-                            .WithSSL(minio.IsSecure())
+                                new RemoveBucketArgs(bucketName)
                 );
                 Console.WriteLine($"Removed the bucket {bucketName} successfully");
             }

@@ -24,35 +24,20 @@ namespace Minio.Examples.Cases
     {
         // Enable Versioning on a bucket
         public async static Task Run(MinioClient minio,
-                                     string bucketName = "my-bucket-name",
-                                     string region="us-east-1")
+                                     string bucketName = "my-bucket-name")
         {
             try
             {
                 Console.WriteLine("Running example for API: EnableSuspendVersioning, ");
-                var setArgs = new SetVersioningArgs()
-                                        .WithBucket(bucketName)
-                                        .WithRegion(region)
-                                        .WithSSL(minio.IsSecure())
+                // First Enable the Versioning.
+                var setArgs = new SetVersioningArgs(bucketName)
                                         .WithVersioningEnabled();
-                var getArgs = new GetVersioningInfoArgs()
-                                        .WithBucket(bucketName)
-                                        .WithRegion(region)
-                                        .WithSSL(minio.IsSecure());
-
                 await minio.SetVersioningAsync(setArgs);
-                VersioningConfiguration vc = await minio.GetVersioningInfoAsync(getArgs);
-                Console.WriteLine("Versioning " + (vc != null && vc.IsVersioningEnabled()? "has been ":"has NOT been ") + "enabled for " + bucketName + ".");
-                Console.WriteLine();
-
+                Console.WriteLine("Versioning Enable operation called for bucket " + bucketName);
+                // Next Suspend the Versioning.
                 setArgs = setArgs.WithVersioningSuspended();
-                if ( vc != null )
-                {
-                    await minio.SetVersioningAsync(setArgs);
-                    vc = await minio.GetVersioningInfoAsync(getArgs);
-                    Console.WriteLine("Versioning " + (vc != null && vc.IsVersioningSuspended()? "has been ":"has NOT been ") + "suspended for " + bucketName + ".");
-                    Console.WriteLine();
-                }
+                await minio.SetVersioningAsync(setArgs);
+                Console.WriteLine("Versioning Suspend operation called for bucket " + bucketName);
             }
             catch (Exception e)
             {

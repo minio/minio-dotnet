@@ -23,141 +23,65 @@ using RestSharp;
 
 namespace Minio
 {
-    public class GetVersioningInfoArgs : BucketArgs
+    public class GetVersioningArgs : BucketArgs
     {
-        public GetVersioningInfoArgs()
+        public GetVersioningArgs(string bucketName)
+                    : base(bucketName)
         {
-        }
-        public new GetVersioningInfoArgs WithBucket(string bucket)
-        {
-            return (GetVersioningInfoArgs)(base.WithBucket(bucket));
-        }
-        public new void Validate()
-        {
-            utils.ValidateBucketName(this.BucketName);
         }
 
-        public new RestRequest GetRequest(string baseUrl, RestSharp.Authenticators.IAuthenticator authenticator)
+        public override RestRequest BuildRequest(RestRequest req)
         {
-            RestRequest request = RequestUtil.CreateRequest(baseUrl, Method.GET, authenticator, this.BucketName, this.Secure, this.Region);
-            request.AddQueryParameter("versioning","");
-            return request;
+            req.AddQueryParameter("versioning","");
+            return req;
         }
-
-        public VersioningConfiguration ProcessResponse(RestSharp.IRestResponse response)
-        {
-            VersioningConfiguration config = null;
-            if (HttpStatusCode.OK.Equals(response.StatusCode))
-            {
-                using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(response.Content)))
-                {
-                    config = (VersioningConfiguration)new XmlSerializer(typeof(VersioningConfiguration)).Deserialize(stream);
-                }
-                return config;
-            }
-            return null;
-        }
-        public new GetVersioningInfoArgs WithSSL(bool secure=true)
-        {
-            return (GetVersioningInfoArgs)(base.WithSSL(secure));
-        }
-        public new GetVersioningInfoArgs WithRegion(string reg)
-        {
-            return (GetVersioningInfoArgs)(base.WithRegion(reg));
-        }
-
-
-        public new System.Uri GetRequestURL(string baseURL)
-        {
-            // Request is GET.
-            bool usePathStyle = false;
-            if (this.BucketName != null && this.BucketName.Contains(".") && this.Secure)
-            {
-                // The '.' in bucket name causes an SSL Validation error.
-                usePathStyle = true;
-            }
-
-            return RequestUtil.MakeTargetURL(baseURL, this.Secure, this.BucketName, this.Region, usePathStyle);
-        }
-
     }
 
     public class SetVersioningArgs : BucketArgs
     {
-        public new SetVersioningArgs WithBucket(string bucket)
+        internal VersioningStatus CurrentVersioningStatus;
+        internal enum VersioningStatus : ushort
         {
-            return (SetVersioningArgs)(base.WithBucket(bucket));
+            Off = 0,
+            Enabled = 1,
+            Suspended = 2,
         }
-
-        public SetVersioningArgs()
+        public SetVersioningArgs(string bucketName)
+                    : base(bucketName)
         {
+            this.CurrentVersioningStatus = VersioningStatus.Off;
         }
-
-
-        public new void Validate()
+        public override void Validate()
         {
             utils.ValidateBucketName(this.BucketName);
-            if ( !this.Versioned && (this.VersioningEnabled || this.VersioningSuspended) )
+            if (this.CurrentVersioningStatus > VersioningStatus.Suspended )
             {
-                throw new UnexpectedMinioException("For VersioningEnabled or VersioningSuspended to be enabled, enable Versioned.");
-            }
-            if ( this.Versioned && !this.VersioningEnabled && !this.VersioningSuspended )
-            {
-                throw new UnexpectedMinioException("If Versioned is enabled, either VersioningEnabled or VersioningSuspended has to be enabled.");
+                throw new UnexpectedMinioException("CurrentVersioningStatus invalid value .");
             }
         }
 
-        public new SetVersioningArgs WithVersioningEnabled()
+        public SetVersioningArgs WithVersioningEnabled()
         {
-            this.Versioned = true;
-            this.VersioningEnabled = true;
-            this.VersioningSuspended = false;
+            this.CurrentVersioningStatus = VersioningStatus.Enabled;
             return this;
         }
 
-        public new SetVersioningArgs WithVersioningSuspended()
+        public SetVersioningArgs WithVersioningSuspended()
         {
-            this.Versioned = true;
-            this.VersioningEnabled = false;
-            this.VersioningSuspended = true;
+            this.CurrentVersioningStatus = VersioningStatus.Suspended;
             return this;
         }
 
-        public new RestRequest GetRequest(string baseUrl, RestSharp.Authenticators.IAuthenticator authenticator)
+        public override RestRequest BuildRequest(RestRequest req)
         {
-            RestRequest request = new RestRequest("/" + this.BucketName, Method.PUT)
-            {
-                XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer()
-                {
-                    Namespace = "http://s3.amazonaws.com/doc/2006-03-01/",
-                    ContentType = "application/xml"
-                },
-                RequestFormat = DataFormat.Xml
-            };
-            bool versioning = false;
-            if ( this.VersioningEnabled )
-            {
-                versioning = !this.VersioningSuspended;
-            }
-            VersioningConfiguration config = new VersioningConfiguration(versioning);
-            string body = utils.MarshalXML(config, request.XmlSerializer.Namespace);
-            request.AddQueryParameter("versioning","");
-            request.AddParameter("text/xml", body, ParameterType.RequestBody);
-            return request;
-        }
-
-        public new System.Uri GetRequestURL(string baseURL)
-        {
-            // Use Path Style set to true - Method.PUT, No object name, no Resource Path
-            return RequestUtil.MakeTargetURL(baseURL, this.Secure, this.BucketName, this.Region, true);
-        }
-        public new SetVersioningArgs WithSSL(bool secure=true)
-        {
-            return (SetVersioningArgs)(base.WithSSL(secure));
-        }
-        public new SetVersioningArgs WithRegion(string reg)
-        {
-            return (SetVersioningArgs)(base.WithRegion(reg));
+            VersioningConfiguration config = new VersioningConfiguration((this.CurrentVersioningStatus == VersioningStatus.Enabled));
+            req.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
+            req.XmlSerializer.Namespace = "http://s3.amazonaws.com/doc/2006-03-01/";
+            req.XmlSerializer.ContentType = "application/xml";
+            string body = utils.MarshalXML(config, req.XmlSerializer.Namespace);
+            req.AddQueryParameter("versioning","");
+            req.AddParameter("text/xml", body, ParameterType.RequestBody);
+            return req;
         }
     }
 }

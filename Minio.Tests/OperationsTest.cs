@@ -44,7 +44,10 @@ namespace Minio.Tests
         [TestMethod]
         public async Task PresignedGetObject()
         {
-            var client = new MinioClient(endpoint:"localhost:9001", "my-access-key", "my-secret-key");
+            var client = new MinioClient()
+                                    .WithCredentials("my-access-key", "my-secret-key")
+                                    .WithEndpoint("localhost", 9001)
+                                    .Build();
 
             Mock<IRestClient> restClient = MockRestClient(client.restClient.BaseUrl);
             client.restClient = restClient.Object;
@@ -59,7 +62,10 @@ namespace Minio.Tests
         [TestMethod]
         public async Task PresignedGetObjectWithHeaders()
         {
-            var client = new MinioClient(endpoint:"localhost:9001", "my-access-key", "my-secret-key");
+            var client = new MinioClient()
+                                    .WithEndpoint("localhost", 9001)
+                                    .WithCredentials("my-access-key", "my-secret-key")
+                                    .Build();
 
             Mock<IRestClient> restClient = MockRestClient(client.restClient.BaseUrl);
             client.restClient = restClient.Object;

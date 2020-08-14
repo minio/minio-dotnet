@@ -51,9 +51,16 @@ namespace Minio.Functional.Tests
             MinioClient minioClient = null;
             if (enableHttps == "1")
                 // WithSSL() enables SSL support in MinIO client
-                minioClient = new MinioClient(endPoint, accessKey, secretKey).WithSSL();
+                minioClient = new MinioClient()
+                                        .WithSSL()
+                                        .WithCredentials(accessKey, secretKey)
+                                        .WithEndpoint(endPoint)
+                                        .Build();
             else
-                minioClient = new MinioClient(endPoint, accessKey, secretKey);
+                minioClient = new MinioClient()
+                                        .WithCredentials(accessKey, secretKey)
+                                        .WithEndpoint(endPoint)
+                                        .Build();
 
             // Assign parameters before starting the test
             string bucketName = FunctionalTest.GetRandomName();

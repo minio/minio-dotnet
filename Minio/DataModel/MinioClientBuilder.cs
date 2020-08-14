@@ -27,18 +27,13 @@ namespace Minio
         MinioClient WithCredentials(string accessKey, string secretKey);
         MinioClient WithRegion(string region);
         MinioClient WithEndpoint(Uri url);
-        MinioClient WithEndpoint(string endpoint, int port, bool secure);
+        MinioClient WithEndpoint(string endpoint, int port);
         MinioClient WithEndpoint(string endpoint);
+        MinioClient WithSessionToken(string sessiontoken);
     }
 
     public partial class MinioClient : IMinioClient
     {
-        internal bool IsAwsHost { get; private set; }
-        internal bool IsAwsChinaHost { get; private set; }
-        internal bool IsAcceleratedHost { get; private set; }
-        internal bool IsDualStackHost { get; private set; }
-        internal bool UseVirtualStyle { get; private set; }
-        internal string RegionInUrl { get; private set; }
         internal IWebProxy Proxy { get; private set; }
 
         private void SetBaseURL(Uri url)
@@ -51,16 +46,6 @@ namespace Minio
             {
                 this.BaseUrl = url.Host + ":" + url.Port;
             }
-            this.IsAwsHost = BuilderUtil.IsAwsEndpoint(url.Host);
-            this.IsAwsChinaHost = false;
-            if ( this.IsAwsHost )
-            {
-                this.IsAcceleratedHost = BuilderUtil.IsAwsAccelerateEndpoint(url.Host);
-                this.IsDualStackHost = BuilderUtil.IsAwsDualStackEndpoint(url.Host);
-                this.RegionInUrl = BuilderUtil.ExtractRegion(url.Host);
-                this.UseVirtualStyle = true;
-                this.IsAwsChinaHost = BuilderUtil.IsChineseDomain(url.Host);
-            }
         }
         private Uri GetBaseUrl(string endpoint)
         {
@@ -68,38 +53,38 @@ namespace Minio
             {
                 throw new ArgumentException(String.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint),"endpoint");
             }
-            if (!endpoint.Contains("http") && !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
-            {
-                throw new InvalidEndpointException(String.Format("{0} is invalid hostname.", endpoint),"endpoint");
-            }
-
             if (endpoint.EndsWith("/"))
             {
                 endpoint = endpoint.Substring(0, endpoint.Length - 1);
             }
+            if (!endpoint.StartsWith("http") && !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
+            {
+                throw new InvalidEndpointException(String.Format("{0} is invalid hostname.", endpoint),"endpoint");
+            }
             string conn_url;
-            if (endpoint.Contains("http"))
+            if (endpoint.StartsWith("http"))
             {
                 throw new InvalidEndpointException(String.Format("{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),"endpoint");
             }
             string enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
             string scheme = (enable_https != null && enable_https.Equals("1"))? "https://":"http://";
             conn_url = scheme + endpoint;
+            string hostnameOfUri = string.Empty;
             Uri url = null;
             try
             {
                 url = new Uri(conn_url);
-                string hostnameOfUri = url.Authority;
-
-                if (!BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
-                {
-                    throw new InvalidEndpointException(String.Format("{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),"endpoint");
-                }
+                hostnameOfUri = url.Authority;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine(" - " + ex.GetType().ToString());
+                throw;
             }
+            if ( !String.IsNullOrEmpty(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
+            {
+                throw new InvalidEndpointException(String.Format("{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),"endpoint");
+            }
+
             return url;
         }
 
@@ -107,32 +92,21 @@ namespace Minio
         {
             this.BaseUrl = endpoint;
             SetBaseURL(GetBaseUrl(endpoint));
-            if (!InitDone)
-            {
-                InitClientBuilder();
-            }
             return this;
         }
 
-        public MinioClient WithEndpoint(string endpoint, int port, bool secure)
+        public MinioClient WithEndpoint(string endpoint, int port)
         {
             if (port < 1 || port > 65535)
             {
                 throw new ArgumentException(String.Format("Port {0} is not a number between 1 and 65535",port), "port");
             }
-            var url = GetBaseUrl(endpoint + ":" + port);
-            SetBaseURL(url);
-            this.Secure = secure;
-            if (!InitDone)
-            {
-                InitClientBuilder();
-            }
-            return this;
+            return WithEndpoint(endpoint + ":" + port);
         }
 
         public MinioClient WithEndpoint(Uri url)
         {
-            if (url != null )
+            if (url == null )
             {
                 throw new ArgumentException(String.Format("URL is null. Can't create endpoint."));
             }
@@ -145,33 +119,50 @@ namespace Minio
             {
                 throw new ArgumentException(String.Format("{0} the region value can't be null or empty.", region),"region");
             }
-            this.RegionInUrl = region;
-            if (!InitDone)
-            {
-                InitClientBuilder();
-            }
+            this.Region = region;
             return this;
         }
 
-        public MinioClient WithCredentials(String accessKey, String secretKey)
+        public MinioClient WithCredentials(string accessKey, string secretKey)
         {
             this.AccessKey = accessKey;
             this.SecretKey = secretKey;
-            if (!InitDone)
-            {
-                InitClientBuilder();
-            }
+            return this;
+        }
+
+        public MinioClient WithSessionToken(string st)
+        {
+            this.SessionToken = st;
             return this;
         }
 
         public MinioClient Build()
         {
-            if (!InitDone)
+            // Instantiate a region cache
+            this.regionCache = BucketRegionCache.Instance;
+            if (string.IsNullOrEmpty(this.BaseUrl))
             {
-                InitClientBuilder();
+                throw new MinioException("Endpoint not initialized.");
             }
+            if (string.IsNullOrEmpty(this.AccessKey) || string.IsNullOrEmpty(this.SecretKey) )
+            {
+                throw new MinioException("User Access Credentials not initialized.");
+            }
+
+            string host = this.BaseUrl;
+
+            var scheme = this.Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
+
+            if ( !this.BaseUrl.StartsWith("http") )
+            {
+               this.Endpoint = string.Format("{0}://{1}", scheme, host);
+            }
+            else
+            {
+                this.Endpoint = host;
+            }
+            Init();
             return this;
         }
-
     }
 }

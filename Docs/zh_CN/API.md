@@ -31,7 +31,7 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 | [`listIncompleteUploads`](#listIncompleteUploads)  | [`removeObjects`](#removeObjects) |   |   |
 | [`listenBucketNotifications`](#listenBucketNotifications) | [`removeIncompleteUpload`](#removeIncompleteUpload) |   |   |
 | [`setVersioning`](#setVersioning)  | [`selectObjectContent`](#selectObjectContent) |   |   |
-| [`getVersioningInfo`](#getVersioningInfo)  |  |   |   |
+| [`getVersioning`](#getVersioning)  |  |   |   |
 
 
 

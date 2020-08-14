@@ -96,10 +96,21 @@ namespace Minio.Examples
 
             // WithSSL() enables SSL support in MinIO client
             MinioClient minioClient = null;
-            minioClient = new MinioClient()
-                                    .WithEndpoint(endPoint, port, enableHTTPS)
-                                    .WithCredentials(accessKey, secretKey)
-                                    .Build();
+            if ( enableHTTPS )
+            {
+                minioClient = new MinioClient()
+                                        .WithEndpoint(endPoint, port)
+                                        .WithCredentials(accessKey, secretKey)
+                                        .WithSSL()
+                                        .Build();
+            }
+            else
+            {
+                minioClient = new MinioClient()
+                                        .WithEndpoint(endPoint, port)
+                                        .WithCredentials(accessKey, secretKey)
+                                        .Build();
+            }
             try
             {
                 // Assign parameters before starting the test 
@@ -131,9 +142,9 @@ namespace Minio.Examples
                 Cases.MakeBucket.Run(minioClient, destBucketName).Wait();
 
                 //Versioning tests
-                Cases.GetVersioningInfo.Run(minioClient, bucketName).Wait();
+                Cases.GetVersioning.Run(minioClient, bucketName).Wait();
                 Cases.EnableSuspendVersioning.Run(minioClient, bucketName).Wait();
-                Cases.GetVersioningInfo.Run(minioClient, bucketName).Wait();
+                Cases.GetVersioning.Run(minioClient, bucketName).Wait();
                 // List all the buckets on the server
                 Cases.ListBuckets.Run(minioClient).Wait();
 
