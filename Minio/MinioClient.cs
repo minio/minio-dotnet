@@ -63,6 +63,7 @@ namespace Minio
         private int requestTimeout;
 
         private const string RegistryAuthHeaderKey = "X-Registry-Auth";
+        private HttpClient HttpClient { get; } = new HttpClient();
 
         internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers = Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
 
@@ -365,20 +366,30 @@ namespace Minio
                 Console.WriteLine($"Full URL of Request {fullUrl}");
             }
 
-            var httpClient = new HttpClient();
+            
             var v4Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region,
                 sessionToken: this.SessionToken);
 
-            httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization",
-                v4Authenticator.Authenticate(requestBuilder));
-            httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", this.FullUserAgent);
+
+            void EnsureHeader(string key, string value)
+            {
+                if (this.HttpClient.DefaultRequestHeaders.Contains(key))
+                {
+                    this.HttpClient.DefaultRequestHeaders.Remove(key);
+                }
+
+                if (!this.HttpClient.DefaultRequestHeaders.TryAddWithoutValidation(key, value))
+                {
+                    requestBuilder.BodyParameters.Add(key, value);
+                }
+            }
+
+            EnsureHeader("Authorization", v4Authenticator.Authenticate(requestBuilder));
+            EnsureHeader("User-Agent", this.FullUserAgent);
 
             foreach (var item in requestBuilder.HeaderParameters)
             {
-                if (!httpClient.DefaultRequestHeaders.TryAddWithoutValidation(item.Key, item.Value))
-                {
-                    requestBuilder.BodyParameters.Add(item.Key, item.Value);
-                }
+                EnsureHeader(item.Key, item.Value);
             }
             var request = requestBuilder.Request;
             ResponseResult responseResult;
@@ -386,9 +397,9 @@ namespace Minio
             {
                 if (requestTimeout > 0)
                 {
-                    httpClient.Timeout = new TimeSpan(0, 0, 0, 0, requestTimeout);
+                    this.HttpClient.Timeout = new TimeSpan(0, 0, 0, 0, requestTimeout);
                 }
-                var response = await httpClient
+                var response = await this.HttpClient
                     .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                     .ConfigureAwait(false);
                 responseResult = new ResponseResult(request, response);
