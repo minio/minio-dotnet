@@ -269,7 +269,8 @@ namespace Minio
         /// <param name="region">Optional custom region</param>
         /// <param name="sessionToken">Optional session token</param>
         /// <returns>Client initialized with user credentials</returns>
-        public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region = "", string sessionToken = "")
+        public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region = "",
+            string sessionToken = "")
         {
             this.Secure = false;
 
@@ -293,6 +294,8 @@ namespace Minio
             this.Endpoint = string.Format("{0}://{1}", scheme, host);
             this.uri = RequestUtil.GetEndpointURL(this.BaseUrl, this.Secure);
             RequestUtil.ValidateEndpoint(this.uri, this.Endpoint);
+
+            this.HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", this.FullUserAgent);
         }
 
         /// <summary>
@@ -366,31 +369,10 @@ namespace Minio
                 Console.WriteLine($"Full URL of Request {fullUrl}");
             }
 
-            
-            var v4Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region,
-                sessionToken: this.SessionToken);
+            var v4Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, this.Region,
+                this.SessionToken);
 
-
-            void EnsureHeader(string key, string value)
-            {
-                if (this.HttpClient.DefaultRequestHeaders.Contains(key))
-                {
-                    this.HttpClient.DefaultRequestHeaders.Remove(key);
-                }
-
-                if (!this.HttpClient.DefaultRequestHeaders.TryAddWithoutValidation(key, value))
-                {
-                    requestBuilder.BodyParameters.Add(key, value);
-                }
-            }
-
-            EnsureHeader("Authorization", v4Authenticator.Authenticate(requestBuilder));
-            EnsureHeader("User-Agent", this.FullUserAgent);
-
-            foreach (var item in requestBuilder.HeaderParameters)
-            {
-                EnsureHeader(item.Key, item.Value);
-            }
+            requestBuilder.AddHeaderParameter("Authorization", v4Authenticator.Authenticate(requestBuilder));
             var request = requestBuilder.Request;
             ResponseResult responseResult;
             try

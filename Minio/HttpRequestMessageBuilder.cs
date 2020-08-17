@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Web;
+using Minio.Exceptions;
 
 namespace Minio
 {
@@ -42,20 +43,27 @@ namespace Minio
                     requestUriBuilder.Query = query.ToString();
 
                 }
+
                 var requestUri = requestUriBuilder.Uri;
                 var request = new HttpRequestMessage(this.Method, requestUri);
 
                 if (this.Content != null)
                 {
                     request.Content = new ByteArrayContent(this.Content);
+                }
 
-                    if (this.BodyParameters.Any())
+                foreach (var parameter in this.HeaderParameters)
+                {
+                    request.Headers.TryAddWithoutValidation(parameter.Key, parameter.Value);
+                }
+
+                foreach (var parameter in this.BodyParameters)
+                {
+                    if (request.Content == null)
                     {
-                        foreach (var parameter in this.BodyParameters)
-                        {
-                            request.Content.Headers.TryAddWithoutValidation(parameter.Key, parameter.Value);
-                        }
+                        throw new MinioException("Can not send empty content.");
                     }
+                    request.Content.Headers.TryAddWithoutValidation(parameter.Key, parameter.Value);
                 }
 
                 return request;
@@ -98,7 +106,19 @@ namespace Minio
 
         public void AddHeaderParameter(string key, string value)
         {
-            this.HeaderParameters[key] = value;
+            if (key == this.ContentTypeKey)
+            {
+                this.BodyParameters.Add(key, value);
+            }
+            else
+            {
+                this.HeaderParameters[key] = value;
+            }
+        }
+
+        public void AddBodyParameter(string key, string value)
+        {
+            this.BodyParameters.Add(key, value);
         }
 
         public void AddQueryParameter(string key, string value)
@@ -114,13 +134,15 @@ namespace Minio
         public void AddXmlBody(string body)
         {
             this.SetBody(Encoding.UTF8.GetBytes(body));
-            this.BodyParameters.Add("Content-Type", "application/xml");
+            this.BodyParameters.Add(this.ContentTypeKey, "application/xml");
         }
 
         public void AddJsonBody(string body)
         {
             this.SetBody(Encoding.UTF8.GetBytes(body));
-            this.BodyParameters.Add("Content-Type", "application/json");
+            this.BodyParameters.Add(this.ContentTypeKey, "application/json");
         }
+
+        private string ContentTypeKey => "Content-Type";
     }
 }

@@ -55,6 +55,7 @@ namespace Minio.Tests
                 var helloData = Encoding.UTF8.GetBytes("hello world");
                 var helloStream = new MemoryStream();
                 helloStream.Write(helloData);
+                helloStream.Seek(0, SeekOrigin.Begin);
                 await client.PutObjectAsync(bucket, objectName, helloStream, helloData.Length);
             }
 

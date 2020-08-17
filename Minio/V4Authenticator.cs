@@ -553,7 +553,7 @@ namespace Minio
                 byte[] hash = md5.ComputeHash(body);
 
                 string base64 = Convert.ToBase64String(hash);
-                requestBuilder.AddHeaderParameter("Content-MD5", base64);
+                requestBuilder.AddBodyParameter("Content-MD5", base64);
             }
         }
     }

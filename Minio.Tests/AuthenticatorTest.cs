@@ -179,10 +179,14 @@ namespace Minio.Tests
 
         private Tuple<string, string> GetHeaderKV(HttpRequestMessageBuilder request, string headername)
         {
-            var key = request.HeaderParameters.Keys.FirstOrDefault(o => o.ToLower() == headername.ToLower());
+            var parameters = request.HeaderParameters.Union(request.BodyParameters)
+                .ToDictionary(o => o.Key, o => o.Value);
+
+            var key = parameters.FirstOrDefault(o => o.Key.ToLower() == headername.ToLower()).Key;
+
             if (key != null)
             {
-                return Tuple.Create(key, request.HeaderParameters[key]);
+                return Tuple.Create(key, parameters[key]);
             }
             return null;
         }
