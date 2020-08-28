@@ -1,5 +1,5 @@
-﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+/*
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,28 @@
 
 using System;
 using System.Threading.Tasks;
+using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
-    class BucketExists
+    class EnableSuspendVersioning
     {
-        // Check if a bucket exists
+        // Enable Versioning on a bucket
         public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name")
         {
             try
             {
-                Console.WriteLine("Running example for API: BucketExistsAsync");
-                BucketExistsArgs args = new BucketExistsArgs(bucketName);
-                bool found = await minio.BucketExistsAsync(args);
-                Console.WriteLine((found ? "Found" : "Couldn't find ") + "bucket " + bucketName);
-                Console.WriteLine();
+                Console.WriteLine("Running example for API: EnableSuspendVersioning, ");
+                // First Enable the Versioning.
+                var setArgs = new SetVersioningArgs(bucketName)
+                                        .WithVersioningEnabled();
+                await minio.SetVersioningAsync(setArgs);
+                Console.WriteLine("Versioning Enable operation called for bucket " + bucketName);
+                // Next Suspend the Versioning.
+                setArgs = setArgs.WithVersioningSuspended();
+                await minio.SetVersioningAsync(setArgs);
+                Console.WriteLine("Versioning Suspend operation called for bucket " + bucketName);
             }
             catch (Exception e)
             {

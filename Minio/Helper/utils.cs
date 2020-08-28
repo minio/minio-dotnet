@@ -19,10 +19,13 @@ using Minio.Helper;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace Minio
 {
@@ -42,7 +45,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to test existence of</param>
         internal static void ValidateBucketName(string bucketName)
         {
-            if (bucketName.Trim() == string.Empty)
+            if (string.IsNullOrEmpty(bucketName))
             {
                 throw new InvalidBucketNameException(bucketName, "Bucket name cannot be empty.");
             }
@@ -830,6 +833,47 @@ namespace Minio
                 {".z", "application/x-compress"},
                 {".zip", "application/zip"}
             };
+        }
+
+        public static string MarshalXML(object obj, string nmspc)
+        {
+            XmlSerializer xs = null;
+            XmlWriterSettings settings = null;
+            XmlSerializerNamespaces ns = null;
+
+            XmlWriter xw = null;
+
+            String str = String.Empty;
+
+            try
+            {
+                settings = new XmlWriterSettings();
+                settings.OmitXmlDeclaration = true;
+
+                ns = new XmlSerializerNamespaces();
+                ns.Add("", nmspc);
+
+                StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
+
+                xs = new XmlSerializer(obj.GetType());
+                xw = XmlWriter.Create(sw, settings);
+                xs.Serialize(xw, obj, ns);
+                xw.Flush();
+
+                str = sw.ToString();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                if (xw != null)
+                {
+                    xw.Close();
+                }
+            }
+            return str;
         }
     }
 }

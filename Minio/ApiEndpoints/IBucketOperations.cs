@@ -16,6 +16,7 @@
  */
 
 using Minio.DataModel;
+using Minio.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -26,12 +27,21 @@ namespace Minio
     public interface IBucketOperations
     {
         /// <summary>
+        /// Create a bucket with the given name.
+        /// </summary>
+        /// <param name="args">MakeBucketArgs Arguments Object that has bucket info like name, location. etc</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
+        Task MakeBucketAsync(MakeBucketArgs args, CancellationToken cancellationToken = default(CancellationToken));
+        /// <summary>
         /// Create a private bucket with the given name.
         /// </summary>
         /// <param name="bucketName">Name of the new bucket</param>
         /// <param name="location">Region</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task</returns>
+        [Obsolete("Use MakeBucketAsync method with MakeBucketArgs object. Refer MakeBucket example code.")]        
         Task MakeBucketAsync(string bucketName, string location = "us-east-1", CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -42,12 +52,31 @@ namespace Minio
         Task<ListAllMyBucketsResult> ListBucketsAsync(CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
+        /// Check if a private bucket with the given name exists.
+        /// </summary>
+        /// <param name="args">BucketExistsArgs Arguments Object which has bucket identifier information - bucket name, region</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        Task<bool> BucketExistsAsync(BucketExistsArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
         /// Returns true if the specified bucketName exists, otherwise returns false.
         /// </summary>
         /// <param name="bucketName">Bucket to test existence of</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task that returns true if exists and user has access</returns>
+        [Obsolete("Use BucketExistsAsync method with BucketExistsArgs object. Refer BucketExists example code.")]
         Task<bool> BucketExistsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Remove the bucket with the given name.
+        /// </summary>
+        /// <param name="args">RemoveBucketArgs Arguments Object which has bucket identifier information like bucket name .etc.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
+        [Obsolete("Use RemoveBucketAsync method with RemoveBucketArgs object. Refer RemoveBucket example code.")]
+        Task RemoveBucketAsync(RemoveBucketArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Remove a bucket
@@ -119,5 +148,23 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>An observable of JSON-based notification events</returns>
         IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events, string prefix = "", string suffix = "", CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Get Versioning information on the bucket with given bucket name
+        /// </summary>
+        /// <param name="args">GetVersioningArgs takes bucket as argument. </param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> GetVersioningResponse with information populated from REST response </returns>
+        /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
+        Task<VersioningConfiguration> GetVersioningAsync(GetVersioningArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Set Versioning as specified on the bucket with given bucket name
+        /// </summary>
+        /// <param name="args">SetVersioningArgs Arguments Object with information like Bucket name, Versioning configuration</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
+        Task  SetVersioningAsync(SetVersioningArgs args, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

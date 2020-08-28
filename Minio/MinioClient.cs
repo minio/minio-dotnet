@@ -146,6 +146,19 @@ namespace Minio
         /// Constructs a RestRequest. For AWS, this function has the side-effect of overriding the baseUrl
         /// in the RestClient with region specific host path or virtual style path.
         /// </summary>
+        /// <param name="args">The child object of BucketArgs class, args with populated values. From Input</param>
+        /// <param name="method">The Method needed to call with this request object</param>
+        /// <returns>A RestRequest</returns>
+        internal async Task<RestRequest> CreateRequest(BucketArgs args, Method method)
+        {
+            RestRequest request = await this.CreateRequest(method, args.BucketName);
+            return args.BuildRequest(request);
+        }
+
+        /// <summary>
+        /// Constructs a RestRequest. For AWS, this function has the side-effect of overriding the baseUrl
+        /// in the RestClient with region specific host path or virtual style path.
+        /// </summary>
         /// <param name="method">HTTP method</param>
         /// <param name="bucketName">Bucket Name</param>
         /// <param name="objectName">Object Name</param>
@@ -154,6 +167,7 @@ namespace Minio
         /// <param name="body">request body</param>
         /// <param name="resourcePath">query string</param>
         /// <returns>A RestRequest</returns>
+        /// <exception cref="BucketNotFoundException">When bucketName is invalid</exception>
         internal async Task<RestRequest> CreateRequest(Method method, string bucketName = null, string objectName = null,
                                 Dictionary<string, string> headerMap = null,
                                 string contentType = "application/octet-stream",
@@ -163,7 +177,6 @@ namespace Minio
             if (bucketName != null)
             {
                 utils.ValidateBucketName(bucketName);
-                // Fetch correct region for bucket
                 region = await GetRegion(bucketName).ConfigureAwait(false);
             }
 
@@ -175,7 +188,7 @@ namespace Minio
             // Start with user specified endpoint
             string host = this.BaseUrl;
 
-            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region, sessionToken: this.SessionToken);
+            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: string.IsNullOrEmpty(this.Region)?region:this.Region, sessionToken: this.SessionToken);
 
             // This section reconstructs the url with scheme followed by location specific endpoint (s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
@@ -247,8 +260,9 @@ namespace Minio
             return request;
         }
 
+
         /// <summary>
-        /// This method initializes a new RESTClient. The host URI for Amazon is set to virtual hosted style
+        /// The Init method used with MinioClient constructor with multiple arguments. The host URI for Amazon is set to virtual hosted style
         /// if usePathStyle is false. Otherwise path style URL is constructed.
         /// </summary>
         internal void InitClient()
@@ -257,13 +271,25 @@ namespace Minio
             {
                 throw new InvalidEndpointException("Endpoint cannot be empty.");
             }
-
+            else if ( this.Secure && this.restClient != null && this.restClient.BaseUrl == null )
+            {
+                Uri secureUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
+                this.SetTargetURL(secureUrl);
+            }
             string host = this.BaseUrl;
 
             var scheme = this.Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
-
             // This is the actual url pointed to for all HTTP requests
             this.Endpoint = string.Format("{0}://{1}", scheme, host);
+            Init();
+        }
+
+        /// <summary>
+        /// This method initializes a new RESTClient. It is called by other Inits
+        /// </summary>
+
+        internal void Init()
+        {
             this.uri = RequestUtil.GetEndpointURL(this.BaseUrl, this.Secure);
             RequestUtil.ValidateEndpoint(this.uri, this.Endpoint);
 
@@ -302,12 +328,23 @@ namespace Minio
         /// <summary>
         /// Creates and returns an Cloud Storage client
         /// </summary>
+        /// <returns>Client with no arguments to be used with other builder methods</returns>
+        public MinioClient()
+        {
+            this.Region = "";
+            this.SessionToken = "";
+        }
+
+        /// <summary>
+        /// Creates and returns an Cloud Storage client
+        /// </summary>
         /// <param name="endpoint">Location of the server, supports HTTP and HTTPS</param>
         /// <param name="accessKey">Access Key for authenticated requests (Optional, can be omitted for anonymous requests)</param>
         /// <param name="secretKey">Secret Key for authenticated requests (Optional, can be omitted for anonymous requests)</param>
         /// <param name="region">Optional custom region</param>
         /// <param name="sessionToken">Optional session token</param>
         /// <returns>Client initialized with user credentials</returns>
+        [Obsolete("Use appropriate Builder object and call Build() or BuildAsync()")]
         public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region = "", string sessionToken = "")
         {
             this.Secure = false;
@@ -331,10 +368,15 @@ namespace Minio
         public MinioClient WithSSL()
         {
             this.Secure = true;
+            if (string.IsNullOrEmpty(this.BaseUrl))
+            {
+                return this;
+            }
             Uri secureUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
             this.SetTargetURL(secureUrl);
             return this;
         }
+
 
         /// <summary>
         /// Uses webproxy for all requests if this method is invoked on client object
@@ -343,8 +385,10 @@ namespace Minio
         public MinioClient WithProxy(IWebProxy proxy)
         {
             this.restClient.Proxy = proxy;
+            this.Proxy = proxy;
             return this;
         }
+
 
         /// <summary>
         /// Uses the set timeout for all requests if this method is invoked on client object
@@ -373,8 +417,16 @@ namespace Minio
         /// </summary>
         internal void SetTargetURL(Uri uri)
         {
+            if ( this.restClient == null )
+            {
+                restClient = new RestSharp.RestClient(uri)
+                {
+                    UserAgent = this.FullUserAgent
+                };
+            }
             this.restClient.BaseUrl = uri;
         }
+
 
         /// <summary>
         /// Actual doer that executes the REST request to the server
