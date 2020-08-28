@@ -145,6 +145,14 @@ namespace Minio.Examples
                 Cases.GetVersioning.Run(minioClient, bucketName).Wait();
                 Cases.EnableSuspendVersioning.Run(minioClient, bucketName).Wait();
                 Cases.GetVersioning.Run(minioClient, bucketName).Wait();
+                //Legal Hold Tests
+                string tempObjectName = GetRandomName();
+                string tempBucketName = GetRandomName();
+                Cases.MakeBucketWithLock.Run(minioClient, tempBucketName).Wait();
+                Cases.PutObject.Run(minioClient, tempBucketName, tempObjectName, smallFileName).Wait();
+                Cases.SetLegalHold.Run(minioClient, tempBucketName, tempObjectName, null).Wait();
+                Cases.GetLegalHold.Run(minioClient, tempBucketName, tempObjectName, null).Wait();
+
                 // List all the buckets on the server
                 Cases.ListBuckets.Run(minioClient).Wait();
 

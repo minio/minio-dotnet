@@ -69,6 +69,10 @@ namespace Minio.Functional.Tests
         private const string setBucketNotificationSignature = "Task SetBucketNotificationAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeAllBucketsNotificationSignature = "Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))";
         private const string selectObjectSignature = "Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string getVersioningSignature = "Task<VersioningConfiguration> GetVersioningAsync(GetVersioningArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string setVersioningSignature = "Task SetVersioningAsync(SetVersioningArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string getLegalHoldSignature = "Task<bool> GetObjectLegalHoldAsync(GetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string setLegalHoldSignature = "Task SetObjectLegalHoldAsync(SetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken))";
 
         // Create a file of given size from random byte array or optionally create a symbolic link
         // to the dataFileName residing in MINT_DATA_DIR
@@ -2820,5 +2824,81 @@ namespace Minio.Functional.Tests
         }
 
         #endregion
+
+        #region Versioning Status
+
+        internal async static Task VersioningStatus_Test1(MinioClient minioClient)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            SetVersioningArgs enableArgs = new SetVersioningArgs(bucketName)
+                                                        .WithVersioningEnabled();
+            SetVersioningArgs suspendArgs = new SetVersioningArgs(bucketName)
+                                                        .WithVersioningSuspended();
+            GetVersioningArgs getArgs = new GetVersioningArgs(bucketName);
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName", bucketName },
+            };
+            try
+            {
+                await Setup_Test(minioClient, bucketName);
+                // Enable versioning
+                await minioClient.SetVersioningAsync(enableArgs);
+                VersioningConfiguration vc = await minioClient.GetVersioningAsync(getArgs);
+                Assert.IsTrue(vc.Status.ToLower().Equals("enabled"));
+                 // Suspend versioning
+                await minioClient.SetVersioningAsync(suspendArgs);
+                vc = await minioClient.GetVersioningAsync(getArgs);
+                Assert.IsTrue(vc.Status.ToLower().Equals("suspended"));
+                new MintLogger("VersioningStatus_Test1", setVersioningSignature, "Tests whether Versioning passes for both enable/suspend operations.", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (MinioException ex)
+            {
+                new MintLogger(nameof(VersioningStatus_Test1), setVersioningSignature, "Tests whether Versioning passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
+            }
+
+        }
+
+        #endregion
+        #region Legal Hold Test
+        internal async static Task LegalHold_Test1(MinioClient minioClient)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomObjectName(10);
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+            };
+
+            SetObjectLegalHoldArgs setArgs = new SetObjectLegalHoldArgs(bucketName, objectName)
+                                                            .WithLegalHold(true);
+            GetObjectLegalHoldArgs getArgs = new GetObjectLegalHoldArgs(bucketName, objectName);
+            try
+            {
+                await Setup_Test(minioClient, bucketName);
+                //Put Object for the test
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
+                    await minioClient.PutObjectAsync(bucketName,
+                                                objectName,
+                                                filestream, filestream.Length, null);
+
+                // Enable versioning
+                await minioClient.SetObjectLegalHoldAsync(setArgs);
+                Assert.IsTrue(await minioClient.GetObjectLegalHoldAsync(getArgs));
+                setArgs.WithLegalHold(false);
+                await minioClient.SetObjectLegalHoldAsync(setArgs);
+                Assert.IsFalse(await minioClient.GetObjectLegalHoldAsync(getArgs));
+                new MintLogger("LegalHold_Test1", setLegalHoldSignature, "Tests whether LegalHold passes for both enable/disable operations.", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (MinioException ex)
+            {
+                new MintLogger(nameof(LegalHold_Test1), setLegalHoldSignature, "Tests whether LegalHold passes for both enable/disable operations.", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
+            }
+        }
+        #endregion
+
     }
 }

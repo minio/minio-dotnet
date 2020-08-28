@@ -37,15 +37,22 @@ namespace Minio
 
     public class MakeBucketArgs : BucketArgs
     {
+        internal string Location { get; set; }
+        internal bool ObjectLock { get; set; }
         public MakeBucketArgs(string bucketName)
                     : base(bucketName)
         {
         }
 
-        internal string Location { get; set; }
         public MakeBucketArgs WithLocation(string loc)
         {
             this.Location = loc;
+            return this;
+        }
+
+        public MakeBucketArgs WithObjectLock()
+        {
+            this.ObjectLock = true;
             return this;
         }
 
@@ -54,11 +61,15 @@ namespace Minio
             request.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
             request.RequestFormat = DataFormat.Xml;
             // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
-            if (this.Location != "us-east-1")
+            if ( this.Location != "us-east-1" )
             {
                 CreateBucketConfiguration config = new CreateBucketConfiguration(this.Location);
                 string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
                 request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+            }
+            if ( this.ObjectLock )
+            {
+                request.AddOrUpdateParameter("X-Amz-Bucket-Object-Lock-Enabled", "true", ParameterType.HttpHeader);
             }
             return request;
         }

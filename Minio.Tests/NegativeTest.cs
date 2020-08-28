@@ -16,6 +16,7 @@
  */
 
 using System;
+using System.Net;
 using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -63,10 +64,20 @@ namespace Minio.Tests
 
             try
             {
+                const int tryCount = 5;
                 await minio.MakeBucketAsync(new MakeBucketArgs(bucketName));
 
                 var ex = await Assert.ThrowsExceptionAsync<InvalidObjectNameException>(
                     () => minio.StatObjectAsync(bucketName, badName));
+                for(int i=0;
+                        i < tryCount &&
+                            (ex.ServerResponse != null &&
+                                ex.ServerResponse.StatusCode.Equals(HttpStatusCode.ServiceUnavailable)); ++i)
+                {
+                    ex = await Assert.ThrowsExceptionAsync<InvalidObjectNameException>(
+                        () => minio.StatObjectAsync(bucketName, badName));
+
+                }
                 Assert.AreEqual(ex.Response.Code, "InvalidObjectName");
 
                 ex = await Assert.ThrowsExceptionAsync<InvalidObjectNameException>(

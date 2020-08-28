@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
-    public class MakeBucket
+    public class MakeBucketWithLock
     {
         // Make a bucket
         public async static Task Run(MinioClient minio,
@@ -31,8 +31,9 @@ namespace Minio.Examples.Cases
                 await minio.MakeBucketAsync(
                     new MakeBucketArgs(bucketName)
                         .WithLocation(loc)
+                        .WithObjectLock()
                 );
-                Console.WriteLine($"Created bucket {bucketName}");
+                Console.WriteLine($"Created bucket {bucketName} with lock.");
                 Console.WriteLine();
             } 
             catch (Exception e)

@@ -190,6 +190,7 @@ namespace Minio.Functional.Tests
                 FunctionalTest.EncryptedCopyObject_Test4(minioClient).Wait();
             }
 
+            FunctionalTest.VersioningStatus_Test1(minioClient).Wait();
         }
     }
 }
