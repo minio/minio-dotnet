@@ -20,10 +20,14 @@ using RestSharp;
 
 namespace Minio
 {
-    public class Args
+    public abstract class Args
     {
         internal Hashtable Headers { get; set; }
         internal Hashtable QueryParams { get; set; }
+
+        // RequestMethod will be the HTTP Method for request variable which is of type RestRequest.
+        // Will be one of the type - HEAD, GET, PUT, DELETE. etc.
+        internal Method RequestMethod { get; set; }
 
         public static Hashtable CloneHashTable(Hashtable h)
         {

@@ -26,13 +26,14 @@ namespace Minio.Examples.Cases
         public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name")
         {
-            var args = new GetVersioningArgs(bucketName);
+            var args = new GetVersioningArgs()
+                                    .WithBucket(bucketName);
 
             try
             {
                 Console.WriteLine("Running example for API: GetVersioning, ");
                 VersioningConfiguration config = await minio.GetVersioningAsync(args);
-                if ( config == null )
+                if (config == null)
                 {
                     Console.WriteLine("Versioning Configuration not available for bucket " + bucketName);
                     Console.WriteLine();

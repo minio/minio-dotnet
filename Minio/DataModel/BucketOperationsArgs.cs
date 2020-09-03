@@ -19,33 +19,40 @@ using RestSharp;
 
 namespace Minio
 {
-    public class BucketExistsArgs: BucketArgs
+    public class BucketExistsArgs: BucketArgs<BucketExistsArgs>
     {
-        public BucketExistsArgs(string bucketName)
-                :base(bucketName)
+        public BucketExistsArgs()
         {
+            this.RequestMethod = Method.HEAD;
         }
     }
 
-    public class RemoveBucketArgs : BucketArgs
+    public class RemoveBucketArgs : BucketArgs<RemoveBucketArgs>
     {
-        public RemoveBucketArgs(string bucketName)
-                    : base (bucketName)
+        public RemoveBucketArgs()
         {
+            this.RequestMethod = Method.DELETE;
         }
     }
 
-    public class MakeBucketArgs : BucketArgs
+    public class MakeBucketArgs : BucketArgs<MakeBucketArgs>
     {
-        public MakeBucketArgs(string bucketName)
-                    : base(bucketName)
-        {
-        }
-
         internal string Location { get; set; }
+        internal bool ObjectLock { get; set; }
+        public MakeBucketArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
         public MakeBucketArgs WithLocation(string loc)
         {
             this.Location = loc;
+            return this;
+        }
+
+        public MakeBucketArgs WithObjectLock()
+        {
+            this.ObjectLock = true;
             return this;
         }
 
@@ -59,6 +66,10 @@ namespace Minio
                 CreateBucketConfiguration config = new CreateBucketConfiguration(this.Location);
                 string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
                 request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+            }
+            if (this.ObjectLock)
+            {
+                request.AddOrUpdateParameter("X-Amz-Bucket-Object-Lock-Enabled", "true", ParameterType.HttpHeader);
             }
             return request;
         }

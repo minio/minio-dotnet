@@ -66,7 +66,7 @@ namespace Minio.Examples
             {
                 endPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");
                 int posColon = endPoint.LastIndexOf(':');
-                if ( posColon != -1 )
+                if (posColon != -1)
                 {
                     port = Int32.Parse(endPoint.Substring(posColon+1, (endPoint.Length - posColon - 1)));
                     endPoint = endPoint.Substring(0, posColon);
@@ -76,7 +76,7 @@ namespace Minio.Examples
                 if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") != null)
                 {
                     enableHTTPS = Environment.GetEnvironmentVariable("ENABLE_HTTPS").Equals("1");
-                    if ( enableHTTPS && port == 80 )
+                    if (enableHTTPS && port == 80)
                     {
                         port = 443;
                     }
@@ -96,7 +96,7 @@ namespace Minio.Examples
 
             // WithSSL() enables SSL support in MinIO client
             MinioClient minioClient = null;
-            if ( enableHTTPS )
+            if (enableHTTPS)
             {
                 minioClient = new MinioClient()
                                         .WithEndpoint(endPoint, port)
@@ -120,6 +120,7 @@ namespace Minio.Examples
                 string objectName = GetRandomName();
                 string destBucketName = GetRandomName();
                 string destObjectName = GetRandomName();
+                string lockBucketName = GetRandomName();
                 List<string> objectsList = new List<string>();
                 for (int i = 0; i < 10; i++)
                 {
@@ -140,6 +141,11 @@ namespace Minio.Examples
                 Cases.MakeBucket.Run(minioClient, bucketName).Wait();
  
                 Cases.MakeBucket.Run(minioClient, destBucketName).Wait();
+
+                // Bucket with Lock tests
+                Cases.MakeBucketWithLock.Run(minioClient, lockBucketName).Wait();
+                Cases.BucketExists.Run(minioClient, lockBucketName).Wait();
+                Cases.RemoveBucket.Run(minioClient, lockBucketName).Wait();
 
                 //Versioning tests
                 Cases.GetVersioning.Run(minioClient, bucketName).Wait();

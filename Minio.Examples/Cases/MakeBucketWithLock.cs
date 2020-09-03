@@ -1,5 +1,5 @@
-﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+/*
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,21 +19,24 @@ using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
-    class BucketExists
+    public class MakeBucketWithLock
     {
-        // Check if a bucket exists
+        // Make a bucket
         public async static Task Run(MinioClient minio,
-                                     string bucketName = "my-bucket-name")
+                                     string bucketName = "my-bucket-name", string loc = "us-east-1")
         {
             try
             {
-                Console.WriteLine("Running example for API: BucketExistsAsync");
-                BucketExistsArgs args = new BucketExistsArgs()
-                                                    .WithBucket(bucketName);
-                bool found = await minio.BucketExistsAsync(args);
-                Console.WriteLine((found ? "Found" : "Couldn't find ") + "bucket " + bucketName);
+                Console.WriteLine("Running example for API: MakeBucketAsync");
+                await minio.MakeBucketAsync(
+                    new MakeBucketArgs()
+                        .WithBucket(bucketName)
+                        .WithLocation(loc)
+                        .WithObjectLock()
+                );
+                Console.WriteLine($"Created bucket {bucketName} with lock.");
                 Console.WriteLine();
-            }
+            } 
             catch (Exception e)
             {
                 Console.WriteLine($"[Bucket]  Exception: {e}");
