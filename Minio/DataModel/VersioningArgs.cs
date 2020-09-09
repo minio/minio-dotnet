@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-using System.IO;
-using System.Net;
-using System.Xml.Serialization;
 using Minio.DataModel;
 using Minio.Exceptions;
 using RestSharp;
 
 namespace Minio
 {
-    public class GetVersioningArgs : BucketArgs
+    public class GetVersioningArgs : BucketArgs<GetVersioningArgs>
     {
-        public GetVersioningArgs(string bucketName)
-                    : base(bucketName)
+        public GetVersioningArgs()
         {
+            this.RequestMethod = Method.GET;
         }
 
         public override RestRequest BuildRequest(RestRequest req)
@@ -37,7 +34,7 @@ namespace Minio
         }
     }
 
-    public class SetVersioningArgs : BucketArgs
+    public class SetVersioningArgs : BucketArgs<SetVersioningArgs>
     {
         internal VersioningStatus CurrentVersioningStatus;
         internal enum VersioningStatus : ushort
@@ -46,9 +43,9 @@ namespace Minio
             Enabled = 1,
             Suspended = 2,
         }
-        public SetVersioningArgs(string bucketName)
-                    : base(bucketName)
+        public SetVersioningArgs()
         {
+            this.RequestMethod = Method.PUT;
             this.CurrentVersioningStatus = VersioningStatus.Off;
         }
         public override void Validate()

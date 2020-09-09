@@ -60,7 +60,7 @@ namespace Minio
             }
             catch (Exception ex)
             {
-                if ( ex.GetType() == typeof(BucketNotFoundException) )
+                if (ex.GetType() == typeof(BucketNotFoundException))
                 {
                     return false;
                 }
@@ -103,7 +103,7 @@ namespace Minio
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, args.Location);
             SetTargetURL(requestUrl);
             // Set Authenticator, if necessary.
-            if ( string.IsNullOrEmpty(this.Region) && !s3utils.IsAmazonEndPoint(this.BaseUrl) && args.Location != "us-east-1" && this.restClient != null )
+            if (string.IsNullOrEmpty(this.Region) && !s3utils.IsAmazonEndPoint(this.BaseUrl) && args.Location != "us-east-1" && this.restClient != null)
             {
                 this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: args.Location, sessionToken: this.SessionToken);
             }
@@ -121,7 +121,7 @@ namespace Minio
         public async Task<VersioningConfiguration> GetVersioningAsync(GetVersioningArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            RestRequest request = await this.CreateRequest(args, Method.GET).ConfigureAwait(false);
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
             IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             GetVersioningResponse versioningResponse = new GetVersioningResponse(response.StatusCode, response.Content);
             return versioningResponse.VersioningConfig;
@@ -138,7 +138,7 @@ namespace Minio
         public async Task  SetVersioningAsync(SetVersioningArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            RestRequest request = await this.CreateRequest(args, Method.PUT).ConfigureAwait(false);
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
             await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
@@ -175,7 +175,8 @@ namespace Minio
         [Obsolete("Use MakeBucketAsync method with MakeBucketArgs object. Refer MakeBucket example code.")]
         public async Task MakeBucketAsync(string bucketName, string location = "us-east-1", CancellationToken cancellationToken = default(CancellationToken))
         {
-            MakeBucketArgs args = new MakeBucketArgs(bucketName)
+            MakeBucketArgs args = new MakeBucketArgs()
+                                            .WithBucket(bucketName)
                                             .WithLocation(location);
             await this.MakeBucketAsync(args, cancellationToken);
         }
@@ -189,7 +190,8 @@ namespace Minio
         [Obsolete("Use BucketExistsAsync method with BucketExistsArgs object. Refer BucketExists example code.")]
         public async Task<bool> BucketExistsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            BucketExistsArgs args = new BucketExistsArgs(bucketName);
+            BucketExistsArgs args = new BucketExistsArgs()
+                                                .WithBucket(bucketName);
             return await BucketExistsAsync(args, cancellationToken);
         }
 
@@ -202,7 +204,9 @@ namespace Minio
         [Obsolete("Use RemoveBucketAsync method with RemoveBucketArgs object. Refer RemoveBucket example code.")]
         public async Task RemoveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            await RemoveBucketAsync(new RemoveBucketArgs(bucketName), cancellationToken);
+            RemoveBucketArgs args = new RemoveBucketArgs()
+                                                .WithBucket(bucketName);
+            await RemoveBucketAsync(args, cancellationToken);
         }
 
         /// <summary>

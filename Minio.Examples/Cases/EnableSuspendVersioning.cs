@@ -16,7 +16,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
@@ -30,7 +29,8 @@ namespace Minio.Examples.Cases
             {
                 Console.WriteLine("Running example for API: EnableSuspendVersioning, ");
                 // First Enable the Versioning.
-                var setArgs = new SetVersioningArgs(bucketName)
+                var setArgs = new SetVersioningArgs()
+                                        .WithBucket(bucketName)
                                         .WithVersioningEnabled();
                 await minio.SetVersioningAsync(setArgs);
                 Console.WriteLine("Versioning Enable operation called for bucket " + bucketName);

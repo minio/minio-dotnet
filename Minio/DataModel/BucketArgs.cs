@@ -16,15 +16,19 @@
 
 namespace Minio
 {
-    public class BucketArgs : Args
+    public abstract class BucketArgs<T> : Args 
+                where T : BucketArgs<T>
     {
         internal string BucketName { get; set; }
-        protected BucketArgs(string bucketName)
+        protected BucketArgs()
         {
-            BucketName = bucketName;
         }
 
-
+        public T WithBucket(string bucket)
+        {
+            this.BucketName = bucket;
+            return (T)this;
+        }
         public virtual void Validate()
         {
             utils.ValidateBucketName(this.BucketName);

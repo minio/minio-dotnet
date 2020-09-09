@@ -169,9 +169,12 @@ namespace Minio.Functional.Tests
         {
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName();
-            MakeBucketArgs mbArgs = new MakeBucketArgs(bucketName);
-            BucketExistsArgs beArgs = new BucketExistsArgs(bucketName);
-            RemoveBucketArgs rbArgs = new RemoveBucketArgs(bucketName);
+            MakeBucketArgs mbArgs = new MakeBucketArgs()
+                                                .WithBucket(bucketName);
+            BucketExistsArgs beArgs = new BucketExistsArgs()
+                                                .WithBucket(bucketName);
+            RemoveBucketArgs rbArgs = new RemoveBucketArgs()
+                                                .WithBucket(bucketName);
             var args = new Dictionary<string, string>
             {
                 { "bucketName", bucketName },
@@ -197,9 +200,12 @@ namespace Minio.Functional.Tests
         {
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(length: 60);
-            MakeBucketArgs mbArgs = new MakeBucketArgs(bucketName);
-            BucketExistsArgs beArgs = new BucketExistsArgs(bucketName);
-            RemoveBucketArgs rbArgs = new RemoveBucketArgs(bucketName);
+            MakeBucketArgs mbArgs = new MakeBucketArgs()
+                                                .WithBucket(bucketName);
+            BucketExistsArgs beArgs = new BucketExistsArgs()
+                                                .WithBucket(bucketName);
+            RemoveBucketArgs rbArgs = new RemoveBucketArgs()
+                                                .WithBucket(bucketName);
             var args = new Dictionary<string, string>
             {
                 { "bucketName", bucketName },
@@ -224,9 +230,12 @@ namespace Minio.Functional.Tests
         {
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(length: 10) + ".withperiod";
-            MakeBucketArgs mbArgs = new MakeBucketArgs(bucketName);
-            BucketExistsArgs beArgs = new BucketExistsArgs(bucketName);
-            RemoveBucketArgs rbArgs = new RemoveBucketArgs(bucketName);
+            MakeBucketArgs mbArgs = new MakeBucketArgs()
+                                                .WithBucket(bucketName);
+            BucketExistsArgs beArgs = new BucketExistsArgs()
+                                                .WithBucket(bucketName);
+            RemoveBucketArgs rbArgs = new RemoveBucketArgs()
+                                                .WithBucket(bucketName);
             var args = new Dictionary<string, string>
             {
                 { "bucketName", bucketName },
@@ -254,10 +263,13 @@ namespace Minio.Functional.Tests
                 return;
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(length: 60);
-            MakeBucketArgs mbArgs = new MakeBucketArgs(bucketName)
+            MakeBucketArgs mbArgs = new MakeBucketArgs()
+                                            .WithBucket(bucketName)
                                             .WithLocation("eu-central-1");
-            BucketExistsArgs beArgs = new BucketExistsArgs(bucketName);
-            RemoveBucketArgs rbArgs = new RemoveBucketArgs(bucketName);
+            BucketExistsArgs beArgs = new BucketExistsArgs()
+                                                .WithBucket(bucketName);
+            RemoveBucketArgs rbArgs = new RemoveBucketArgs()
+                                                .WithBucket(bucketName);
             var args = new Dictionary<string, string>
             {
                 { "bucketName", bucketName },
@@ -290,10 +302,13 @@ namespace Minio.Functional.Tests
                 return;
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(length: 20) + ".withperiod";
-            MakeBucketArgs mbArgs = new MakeBucketArgs(bucketName)
+            MakeBucketArgs mbArgs = new MakeBucketArgs()
+                                            .WithBucket(bucketName)
                                             .WithLocation("us-west-2");
-            BucketExistsArgs beArgs = new BucketExistsArgs(bucketName);
-            RemoveBucketArgs rbArgs = new RemoveBucketArgs(bucketName);
+            BucketExistsArgs beArgs = new BucketExistsArgs()
+                                                .WithBucket(bucketName);
+            RemoveBucketArgs rbArgs = new RemoveBucketArgs()
+                                                .WithBucket(bucketName); 
             var args = new Dictionary<string, string>
             {
                 { "bucketName", bucketName },
@@ -329,12 +344,44 @@ namespace Minio.Functional.Tests
             try
             {
                 await Assert.ThrowsExceptionAsync<InvalidBucketNameException>(() =>
-                    minio.MakeBucketAsync(new MakeBucketArgs(bucketName)));
+                    minio.MakeBucketAsync(new MakeBucketArgs()
+                                                .WithBucket(bucketName)));
                 new MintLogger(nameof(MakeBucket_Test5), makeBucketSignature, "Tests whether MakeBucket throws InvalidBucketNameException when bucketName is null", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (MinioException ex)
             {
                 new MintLogger(nameof(MakeBucket_Test5), makeBucketSignature, "Tests whether MakeBucket throws InvalidBucketNameException when bucketName is null", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
+            }
+        }
+
+        internal async static Task MakeBucketLock_Test1(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(length: 60);
+            MakeBucketArgs mbArgs = new MakeBucketArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObjectLock();
+            BucketExistsArgs beArgs = new BucketExistsArgs()
+                                                .WithBucket(bucketName);
+            RemoveBucketArgs rbArgs = new RemoveBucketArgs()
+                                                .WithBucket(bucketName);
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName", bucketName },
+                { "region", "us-east-1" },
+            };
+
+            try
+            {
+                await minio.MakeBucketAsync(mbArgs);
+                bool found = await minio.BucketExistsAsync(beArgs);
+                Assert.IsTrue(found);
+                await minio.RemoveBucketAsync(rbArgs);
+                new MintLogger(nameof(MakeBucket_Test1), makeBucketSignature, "Tests whether MakeBucket with Lock passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (MinioException ex)
+            {
+                new MintLogger(nameof(MakeBucket_Test1), makeBucketSignature, "Tests whether MakeBucket with Lock passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
 
@@ -344,9 +391,12 @@ namespace Minio.Functional.Tests
         {
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(length: 20);
-            MakeBucketArgs mbArgs = new MakeBucketArgs(bucketName);
-            BucketExistsArgs beArgs = new BucketExistsArgs(bucketName);
-            RemoveBucketArgs rbArgs = new RemoveBucketArgs(bucketName);
+            MakeBucketArgs mbArgs = new MakeBucketArgs()
+                                                .WithBucket(bucketName);
+            BucketExistsArgs beArgs = new BucketExistsArgs()
+                                                .WithBucket(bucketName);
+            RemoveBucketArgs rbArgs = new RemoveBucketArgs()
+                                                .WithBucket(bucketName);
             var args = new Dictionary<string, string>
             {
                 { "bucketName", bucketName },
@@ -390,8 +440,10 @@ namespace Minio.Functional.Tests
 
         internal async static Task Setup_Test(MinioClient minio, string bucketName)
         {
-            MakeBucketArgs mbArgs = new MakeBucketArgs(bucketName);
-            BucketExistsArgs beArgs = new BucketExistsArgs(bucketName);
+            MakeBucketArgs mbArgs = new MakeBucketArgs()
+                                                .WithBucket(bucketName);
+            BucketExistsArgs beArgs = new BucketExistsArgs()
+                                                .WithBucket(bucketName);
             await minio.MakeBucketAsync(mbArgs);
             bool found = await minio.BucketExistsAsync(beArgs);
             Assert.IsTrue(found);
@@ -399,7 +451,8 @@ namespace Minio.Functional.Tests
 
         internal async static Task TearDown(MinioClient minio, string bucketName)
         {
-            RemoveBucketArgs rbArgs = new RemoveBucketArgs(bucketName);
+            RemoveBucketArgs rbArgs = new RemoveBucketArgs()
+                                                .WithBucket(bucketName);
             await minio.RemoveBucketAsync(rbArgs);
         }
 
