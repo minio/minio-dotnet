@@ -15,8 +15,15 @@
  */
 
 using Minio.DataModel;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Reactive.Linq;
+using System.Web;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 
 namespace Minio
@@ -38,6 +45,169 @@ namespace Minio
                     this.VersioningConfig = (VersioningConfiguration)new XmlSerializer(typeof(VersioningConfiguration)).Deserialize(stream);
                 }
             }
+        }
+    }
+
+    internal class ListObjectsItemResponse
+    {
+        internal Item BucketObjectsLastItem;
+        internal IObserver<Item> ItemObservable;
+        internal string NextMarker { get; private set; }
+
+        internal ListObjectsItemResponse(ListObjectsArgs args, Tuple<ListBucketResult, List<Item>> objectList, IObserver<Item> obs)
+        {
+            this.ItemObservable = obs;
+            string marker = string.Empty;
+            foreach (Item item in objectList.Item2)
+            {
+                this.BucketObjectsLastItem = item;
+                if (objectList.Item1.EncodingType == "url")
+                {
+                    item.Key = HttpUtility.UrlDecode(item.Key);
+                }
+                this.ItemObservable.OnNext(item);
+            }
+            if (objectList.Item1.NextMarker != null)
+            {
+                if (objectList.Item1.EncodingType == "url")
+                {
+                    NextMarker = HttpUtility.UrlDecode(objectList.Item1.NextMarker);
+                }
+                else
+                {
+                    NextMarker = objectList.Item1.NextMarker;
+                }
+            }
+            else if (this.BucketObjectsLastItem != null)
+            {
+                if (objectList.Item1.EncodingType == "url")
+                {
+                    NextMarker = HttpUtility.UrlDecode(this.BucketObjectsLastItem.Key);
+                }
+                else
+                {
+                    NextMarker = this.BucketObjectsLastItem.Key;
+                }
+            }
+        }
+    }
+
+    internal class ListObjectVersionResponse
+    {
+        internal VersionItem BucketObjectsLastItem;
+        internal IObserver<VersionItem> ItemObservable;
+        internal string NextMarker { get; private set; }
+
+        internal ListObjectVersionResponse(ListObjectsArgs args, Tuple<ListVersionsResult, List<VersionItem>> objectList, IObserver<VersionItem> obs)
+        {
+            this.ItemObservable = obs;
+            string marker = string.Empty;
+            foreach (VersionItem item in objectList.Item2)
+            {
+                this.BucketObjectsLastItem = item;
+                if (objectList.Item1.EncodingType == "url")
+                {
+                    item.Key = HttpUtility.UrlDecode(item.Key);
+                }
+                this.ItemObservable.OnNext(item);
+            }
+            if (objectList.Item1.NextMarker != null)
+            {
+                if (objectList.Item1.EncodingType == "url")
+                {
+                    NextMarker = HttpUtility.UrlDecode(objectList.Item1.NextMarker);
+                }
+                else
+                {
+                    NextMarker = objectList.Item1.NextMarker;
+                }
+            }
+            else if (this.BucketObjectsLastItem != null)
+            {
+                if (objectList.Item1.EncodingType == "url")
+                {
+                    NextMarker = HttpUtility.UrlDecode(this.BucketObjectsLastItem.Key);
+                }
+                else
+                {
+                    NextMarker = this.BucketObjectsLastItem.Key;
+                }
+            }
+        }
+    }
+
+    internal class GetObjectsListResponse : GenericResponse
+    {
+        internal ListBucketResult BucketResult;
+        internal Tuple<ListBucketResult, List<Item>> ObjectsTuple;
+        internal GetObjectsListResponse(HttpStatusCode statusCode, string responseContent)
+                    : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) ||
+                    !HttpStatusCode.OK.Equals(statusCode))
+            {
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                this.BucketResult = (ListBucketResult)new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream);
+            }
+            XDocument root = XDocument.Parse(responseContent);
+            var items = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
+                        select new Item
+                        {
+                            Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
+                            LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
+                            ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value,
+                            Size = ulong.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture),
+                            IsDir = false
+                        };
+            var prefixes = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}CommonPrefixes")
+                           select new Item
+                           {
+                               Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Prefix").Value,
+                               IsDir = true
+                           };
+            items = items.Concat(prefixes);
+            this.ObjectsTuple = Tuple.Create(this.BucketResult, items.ToList());
+        }
+    }
+
+    internal class GetObjectsVersionsListResponse : GenericResponse
+    {
+        internal ListVersionsResult BucketResult;
+        internal Tuple<ListVersionsResult, List<VersionItem>> ObjectsTuple;
+        internal GetObjectsVersionsListResponse(HttpStatusCode statusCode, string responseContent)
+                    : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) ||
+                    !HttpStatusCode.OK.Equals(statusCode))
+            {
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                this.BucketResult = (ListVersionsResult)new XmlSerializer(typeof(ListVersionsResult)).Deserialize(stream);
+            }
+            XDocument root = XDocument.Parse(responseContent);
+            var items = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Version")
+                        select new VersionItem
+                        {
+                            Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
+                            LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
+                            ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value,
+                            VersionId = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}VersionId").Value,
+                            Size = ulong.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture),
+                            IsDir = false
+                        };
+            var prefixes = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}CommonPrefixes")
+                           select new VersionItem
+                           {
+                               Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Prefix").Value,
+                               IsDir = true
+                           };
+            items = items.Concat(prefixes);
+            this.ObjectsTuple = Tuple.Create(this.BucketResult, items.ToList());
         }
     }
 }

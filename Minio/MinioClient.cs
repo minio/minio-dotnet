@@ -165,7 +165,7 @@ namespace Minio
         internal async Task<RestRequest> CreateRequest<T>(BucketArgs<T> args) where T : BucketArgs<T>
         {
             this.ArgsCheck(args);
-            RestRequest request = await this.CreateRequest(args.RequestMethod, args.BucketName);
+            RestRequest request = await this.CreateRequest(args.RequestMethod, args.BucketName).ConfigureAwait(false);
             return args.BuildRequest(request);
         }
 
