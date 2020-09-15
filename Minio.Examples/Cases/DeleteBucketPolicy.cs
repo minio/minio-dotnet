@@ -1,5 +1,5 @@
-﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2020 MinIO, Inc.
+/*
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,20 +19,19 @@ using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
-    class GetBucketPolicy
+    class DeleteBucketPolicy
     {
-        // Get bucket policy 
+        // Set bucket policy
         public async static Task Run(MinioClient minio, 
-                                     string bucketName = "my-bucket-name",
-                                     string prefix = "")
+                                     string bucketName = "my-bucket-name")
         {
             try
             {
-                var args = new GetPolicyArgs()
+                Console.WriteLine("Running example for API: SetPolicyAsync");
+                var args = new RemovePolicyArgs()
                                     .WithBucket(bucketName);
-                Console.WriteLine("Running example for API: GetPolicyAsync");
-                string policyJson = await minio.GetPolicyAsync(args);
-                Console.WriteLine($"Current Policy is {policyJson} for bucket {bucketName}");
+                await minio.RemovePolicyAsync(args);
+                Console.WriteLine($"Policy previously set for the bucket {bucketName} successfully");
                 Console.WriteLine();
             }
             catch (Exception e)

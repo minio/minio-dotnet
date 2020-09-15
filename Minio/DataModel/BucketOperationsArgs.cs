@@ -15,6 +15,7 @@
  */
 
 using Minio.DataModel;
+using Minio.Exceptions;
 using RestSharp;
 
 namespace Minio
@@ -71,6 +72,56 @@ namespace Minio
             {
                 request.AddOrUpdateParameter("X-Amz-Bucket-Object-Lock-Enabled", "true", ParameterType.HttpHeader);
             }
+            return request;
+        }
+    }
+
+    public class GetPolicyArgs : BucketArgs<GetPolicyArgs>
+    {
+        public GetPolicyArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("policy","");
+            return request;
+        }
+    }
+
+    public class SetPolicyArgs : BucketArgs<SetPolicyArgs>
+    {
+        internal string PolicyJsonString { get; private set; }
+        public SetPolicyArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            if (string.IsNullOrEmpty(this.PolicyJsonString))
+            {
+                new MinioException("SetPolicyArgs needs the policy to be set to the right JSON contents.");
+            }
+            request.AddQueryParameter("policy","");
+            request.AddJsonBody(this.PolicyJsonString);
+            return request;
+        }
+        public SetPolicyArgs WithPolicy(string policy)
+        {
+            this.PolicyJsonString = policy;
+            return this;
+        }
+    }
+
+    public class RemovePolicyArgs : BucketArgs<RemovePolicyArgs>
+    {
+        public RemovePolicyArgs()
+        {
+            this.RequestMethod = Method.DELETE;
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("policy","");
             return request;
         }
     }
