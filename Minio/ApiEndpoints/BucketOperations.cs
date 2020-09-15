@@ -142,9 +142,8 @@ namespace Minio
             await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
-
         /// <summary>
-        /// List all objects in a bucket
+        /// List all the buckets for the current Endpoint URL
         /// </summary>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task with an iterator lazily populated with objects</returns>
@@ -152,17 +151,10 @@ namespace Minio
         {
             var request = await this.CreateRequest(Method.GET, resourcePath: "/").ConfigureAwait(false);
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-
-            ListAllMyBucketsResult bucketList = new ListAllMyBucketsResult();
-            if (HttpStatusCode.OK.Equals(response.StatusCode))
-            {
-                var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-                using (var stream = new MemoryStream(contentBytes))
-                    bucketList = (ListAllMyBucketsResult)new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream);
-                return bucketList;
-            }
-            return bucketList;
+            ListBucketsResponse listBucketsResponse = new ListBucketsResponse(response.StatusCode, response.Content);
+            return listBucketsResponse.BucketsResult;
         }
+
 
         /// <summary>
         /// Create a private bucket with the given name.
