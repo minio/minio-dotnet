@@ -20,16 +20,12 @@ using Minio.Exceptions;
 using RestSharp;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using System.Xml.Serialization;
-using System.Web;
 using Minio.Helper;
 
 namespace Minio
@@ -142,9 +138,8 @@ namespace Minio
             await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
-
         /// <summary>
-        /// List all objects in a bucket
+        /// List all the buckets for the current Endpoint URL
         /// </summary>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task with an iterator lazily populated with objects</returns>
@@ -152,16 +147,8 @@ namespace Minio
         {
             var request = await this.CreateRequest(Method.GET, resourcePath: "/").ConfigureAwait(false);
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-
-            ListAllMyBucketsResult bucketList = new ListAllMyBucketsResult();
-            if (HttpStatusCode.OK.Equals(response.StatusCode))
-            {
-                var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-                using (var stream = new MemoryStream(contentBytes))
-                    bucketList = (ListAllMyBucketsResult)new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream);
-                return bucketList;
-            }
-            return bucketList;
+            ListBucketsResponse listBucketsResponse = new ListBucketsResponse(response.StatusCode, response.Content);
+            return listBucketsResponse.BucketsResult;
         }
 
 
@@ -179,7 +166,8 @@ namespace Minio
                   bool isRunning = true;
                   var delimiter = (args.Recursive)? string.Empty: "/";
                   string marker = string.Empty;
-                  using(var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct)) {
+                  using(var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
+                  {
                     while (isRunning)
                     {
                         GetObjectListArgs goArgs = new GetObjectListArgs()

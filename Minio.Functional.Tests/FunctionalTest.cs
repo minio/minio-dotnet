@@ -149,7 +149,6 @@ namespace Minio.Functional.Tests
             PutObject_Test1(minioClient).Wait();
             PutObject_Test2(minioClient).Wait();
             ListObjects_Test1(minioClient).Wait();
-            ListObjectVersions_Test1(minioClient).Wait();
             RemoveObject_Test1(minioClient).Wait();
             CopyObject_Test1(minioClient).Wait();
 
@@ -452,7 +451,7 @@ namespace Minio.Functional.Tests
             Assert.IsTrue(found);
         }
 
-        internal async static Task Setup_Version_Test(MinioClient minio, string bucketName)
+        internal async static Task Setup_WithLock_Test(MinioClient minio, string bucketName)
         {
             MakeBucketArgs mbArgs = new MakeBucketArgs()
                                                 .WithBucket(bucketName)
@@ -1932,7 +1931,6 @@ namespace Minio.Functional.Tests
             }
         }
 
-
         internal async static Task ListObjects_Test2(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -2082,7 +2080,7 @@ namespace Minio.Functional.Tests
             };
             try
             {
-                await Setup_Version_Test(minio, bucketName);
+                await Setup_WithLock_Test(minio, bucketName);
                 Task[] tasks = new Task[4];
                 for (int i = 0; i < 4; i++) {
                     tasks[i] = PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
