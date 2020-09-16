@@ -16,6 +16,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Minio.Exceptions;
 
 namespace Minio.Examples.Cases
 {
@@ -27,11 +28,21 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                Console.WriteLine("Running example for API: SetPolicyAsync");
+                Console.WriteLine("Running example for API: DeletePolicyAsync");
                 var args = new RemovePolicyArgs()
                                     .WithBucket(bucketName);
                 await minio.RemovePolicyAsync(args);
-                Console.WriteLine($"Policy previously set for the bucket {bucketName} successfully");
+                Console.WriteLine($"Policy previously set for the bucket {bucketName} removed.");
+                try
+                {
+                    var getArgs = new GetPolicyArgs()
+                                        .WithBucket(bucketName);
+                    string policy = await minio.GetPolicyAsync(getArgs);
+                }
+                catch(UnexpectedMinioException e)
+                {
+                    Console.WriteLine($"GetPolicy operation for {bucketName} result: {e.ServerMessage}");
+                }
                 Console.WriteLine();
             }
             catch (Exception e)

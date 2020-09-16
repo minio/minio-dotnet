@@ -25,18 +25,34 @@ namespace Minio
     {
         internal VersioningConfiguration VersioningConfig { get; set; }
         internal GetVersioningResponse(HttpStatusCode statusCode, string responseContent)
-            : base(statusCode, responseContent)
+                    : base(statusCode, responseContent)
         {
-            if ( string.IsNullOrEmpty(responseContent) )
+            if (string.IsNullOrEmpty(responseContent) ||
+                    !HttpStatusCode.OK.Equals(statusCode))
             {
                 return;
             }
-            if (HttpStatusCode.OK.Equals(statusCode))
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
             {
-                using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
-                {
-                    this.VersioningConfig = (VersioningConfiguration)new XmlSerializer(typeof(VersioningConfiguration)).Deserialize(stream);
-                }
+                this.VersioningConfig = (VersioningConfiguration)new XmlSerializer(typeof(VersioningConfiguration)).Deserialize(stream);
+            }
+        }
+    }
+
+    internal class ListBucketsResponse : GenericResponse
+    {
+        internal ListAllMyBucketsResult BucketsResult;
+        internal ListBucketsResponse(HttpStatusCode statusCode, string responseContent)
+                    : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) ||
+                    !HttpStatusCode.OK.Equals(statusCode))
+            {
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                this.BucketsResult = (ListAllMyBucketsResult)new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream);
             }
         }
     }
@@ -64,16 +80,5 @@ namespace Minio
             }
             Initialize();
         }
-    }
-
-    internal class SetPolicyResponse : GenericResponse
-    {
-        internal string PolicyJsonString { get; private set; }
-
-        internal SetPolicyResponse(HttpStatusCode statusCode, string responseContent)
-            : base(statusCode, responseContent)
-        {
-        }
-
     }
 }

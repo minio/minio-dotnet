@@ -2717,8 +2717,11 @@ namespace Minio.Functional.Tests
                                             .WithPolicy(policyJson);
                 var getPolicyArgs = new GetPolicyArgs()
                                             .WithBucket(bucketName);
+                var rmPolicyArgs = new RemovePolicyArgs()
+                                            .WithBucket(bucketName);
                 await minio.SetPolicyAsync(setPolicyArgs);
                 string policy = await minio.GetPolicyAsync(getPolicyArgs);
+                await minio.RemovePolicyAsync(rmPolicyArgs);
                 await minio.RemoveObjectAsync(bucketName, objectName);
 
                 await TearDown(minio, bucketName);
