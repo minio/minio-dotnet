@@ -56,4 +56,29 @@ namespace Minio
             }
         }
     }
+    internal class GetPolicyResponse : GenericResponse
+    {
+        internal string PolicyJsonString { get; private set; }
+
+        private async void Initialize()
+        {
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(ResponseContent)))
+            using (var streamReader = new StreamReader(stream))
+            {
+                this.PolicyJsonString =  await streamReader.ReadToEndAsync()
+                                                    .ConfigureAwait(false);
+            }
+        }
+
+        internal GetPolicyResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) ||
+                    !HttpStatusCode.OK.Equals(statusCode))
+            {
+                return;
+            }
+            Initialize();
+        }
+    }
 }

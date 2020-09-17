@@ -143,6 +143,52 @@ namespace Minio
         }
 
         /// <summary>
+        /// Returns current policy stored on the server for this bucket
+        /// </summary>
+        /// <param name="args">GetPolicyArgs object has information like Bucket name.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task that returns the Bucket policy as a json string</returns>
+        /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
+        /// <exception cref="UnexpectedMinioException">When a policy is not set</exception>
+        public async Task<string> GetPolicyAsync(GetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            GetPolicyResponse getPolicyResponse = new GetPolicyResponse(response.StatusCode, response.Content);
+            return getPolicyResponse.PolicyJsonString;
+        }
+
+
+        /// <summary>
+        /// Sets the current bucket policy
+        /// </summary>
+        /// <param name="args">SetPolicyArgs object has information like Bucket name and the policy to set in Json format</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task to set a policy</returns>
+        public async Task SetPolicyAsync(SetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// Removes the current bucket policy
+        /// </summary>
+        /// <param name="args">RemovePolicyArgs object has information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task to set a policy</returns>
+        /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
+        /// <exception cref="UnexpectedMinioException">When a policy is not set</exception>
+        public async Task RemovePolicyAsync(RemovePolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// List all objects in a bucket
         /// List all the buckets for the current Endpoint URL
         /// </summary>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -337,6 +383,7 @@ namespace Minio
             return Tuple.Create(listBucketResult, items.ToList());
         }
 
+
         /// <summary>
         /// Returns current policy stored on the server for this bucket
         /// </summary>
@@ -345,23 +392,11 @@ namespace Minio
         /// <returns>Task that returns the Bucket policy as a json string</returns>
         public async Task<string> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            IRestResponse response = null;
-
-            var request = await this.CreateRequest(Method.GET, bucketName,
-                                 contentType: "application/json")
-                            .ConfigureAwait(false);
-            request.AddQueryParameter("policy","");
-            string policyString = null;
-            response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-
-            using (var stream = new MemoryStream(contentBytes))
-            using (var streamReader = new StreamReader(stream))
-            {
-                policyString = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-            }
-            return policyString;
+            GetPolicyArgs args = new GetPolicyArgs()
+                                            .WithBucket(bucketName);
+            return await this.GetPolicyAsync(args, cancellationToken);
         }
+
 
         /// <summary>
         /// Sets the current bucket policy
@@ -372,12 +407,10 @@ namespace Minio
         /// <returns>Task to set a policy</returns>
         public async Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var request = await this.CreateRequest(Method.PUT, bucketName,
-                                           contentType: "application/json")
-                                .ConfigureAwait(false);
-            request.AddQueryParameter("policy","");
-            request.AddJsonBody(policyJson);
-            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            SetPolicyArgs args = new SetPolicyArgs()
+                                            .WithBucket(bucketName)
+                                            .WithPolicy(policyJson);
+            await this.SetPolicyAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -499,9 +532,7 @@ namespace Minio
                             cts.Token.ThrowIfCancellationRequested();
                         }
                     }
-
               });
-
         }
     }
 }
