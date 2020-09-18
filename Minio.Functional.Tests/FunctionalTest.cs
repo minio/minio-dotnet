@@ -65,8 +65,8 @@ namespace Minio.Functional.Tests
         private const string presignedGetObjectSignature = "Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null)";
         private const string presignedPutObjectSignature = "Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)";
         private const string presignedPostPolicySignature = "Task<Dictionary<string, string>> PresignedPostPolicyAsync(PostPolicy policy)";
-        private const string getBucketPolicySignature = "Task<string> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string setBucketPolicySignature = "Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string getBucketPolicySignature = "Task<string> GetPolicyAsync(GetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string setBucketPolicySignature = "Task SetPolicyAsync(SetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string getBucketNotificationSignature = "Task<BucketNotification> GetBucketNotificationAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))";
         private const string setBucketNotificationSignature = "Task SetBucketNotificationAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeAllBucketsNotificationSignature = "Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))";
@@ -2504,7 +2504,9 @@ namespace Minio.Functional.Tests
                 }
 
                 // Validate
-                string policy = await minio.GetPolicyAsync(bucketName);
+                var policyArgs = new GetPolicyArgs()
+                                            .WithBucket(bucketName);
+                string policy = await minio.GetPolicyAsync(policyArgs);
                 await minio.RemoveObjectAsync(bucketName, objectName);
                 await TearDown(minio, bucketName);
                 new MintLogger("PresignedPostPolicy_Test1", presignedPostPolicySignature, "Tests whether PresignedPostPolicy url applies policy on server", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
@@ -2790,9 +2792,16 @@ namespace Minio.Functional.Tests
                     await minio.PutObjectAsync(bucketName,
                                                 objectName,
                                                 filestream, filestream.Length, null);
-                await minio.SetPolicyAsync(bucketName,
-                                    policyJson);
-                string policy = await minio.GetPolicyAsync(bucketName);
+                var setPolicyArgs = new SetPolicyArgs()
+                                            .WithBucket(bucketName)
+                                            .WithPolicy(policyJson);
+                var getPolicyArgs = new GetPolicyArgs()
+                                            .WithBucket(bucketName);
+                var rmPolicyArgs = new RemovePolicyArgs()
+                                            .WithBucket(bucketName);
+                await minio.SetPolicyAsync(setPolicyArgs);
+                string policy = await minio.GetPolicyAsync(getPolicyArgs);
+                await minio.RemovePolicyAsync(rmPolicyArgs);
                 await minio.RemoveObjectAsync(bucketName, objectName);
 
                 await TearDown(minio, bucketName);

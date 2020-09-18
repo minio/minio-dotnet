@@ -844,8 +844,8 @@ catch (MinioException e)
 ```
 
 <a name="getBucketPolicy"></a>
-### GetPolicyAsync(string bucketName)
-`Task<String> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))`
+### GetPolicyAsync(GetPolicyArgs args)
+`Task<String> GetPolicyAsync(GetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 Get bucket policy.
 
@@ -854,7 +854,7 @@ __Parameters__
 
 |Param   | Type   | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket.  |
+| ``args``  | _GetPolicyArgs_  | GetPolicyArgs object encapsulating bucket name.  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -875,8 +875,10 @@ __Example__
 ```cs
 try
 {
-    String policyJson = await minioClient.GetPolicyAsync("myBucket");
-    Console.WriteLine("Current policy: " + policy.GetType().ToString());
+    GetPolicyArgs args = new GetPolicyArgs()
+                                    .WithBucket("myBucket");
+    String policyJson = await minioClient.GetPolicyAsync(args);
+    Console.WriteLine("Current policy: " + policyJson);
 }
 catch (MinioException e)
 {
@@ -885,8 +887,8 @@ catch (MinioException e)
 ```
 
 <a name="setBucketPolicy"></a>
-### SetPolicyAsync(string bucketName, string policyJson)
-`Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default(CancellationToken))`
+### SetPolicyAsync(SetPolicyArgs args)
+`Task SetPolicyAsync(SetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 Set policy on bucket.
 
@@ -894,8 +896,7 @@ __Parameters__
 
 |Param   | Type   | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket  |
-| ``policyJson``  | _string_  | Policy as a json string |
+| ``args``  | _SetPolicyArgs_  | SetPolicyArgs object encapsulating bucket name, Policy as a json string.  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -916,7 +917,10 @@ __Example__
 try
 {
     string policyJson = $@"{{""Version"":""2012-10-17"",""Statement"":[{{""Action"":[""s3:GetBucketLocation""],""Effect"":""Allow"",""Principal"":{{""AWS"":[""*""]}},""Resource"":[""arn:aws:s3:::{bucketName}""],""Sid"":""""}},{{""Action"":[""s3:ListBucket""],""Condition"":{{""StringEquals"":{{""s3:prefix"":[""foo"",""prefix/""]}}}},""Effect"":""Allow"",""Principal"":{{""AWS"":[""*""]}},""Resource"":[""arn:aws:s3:::{bucketName}""],""Sid"":""""}},{{""Action"":[""s3:GetObject""],""Effect"":""Allow"",""Principal"":{{""AWS"":[""*""]}},""Resource"":[""arn:aws:s3:::{bucketName}/foo*"",""arn:aws:s3:::{bucketName}/prefix/*""],""Sid"":""""}}]}}";
-    await minioClient.SetPolicyAsync("myBucket", policyJson);
+    SetPolicyArgs args = new SetPolicyArgs()
+                                    .WithBucket("myBucket")
+                                    .WithPolicy(policyJson);
+    await minioClient.SetPolicyAsync(args);
 }
 catch (MinioException e)
 {
