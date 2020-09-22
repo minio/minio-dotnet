@@ -48,6 +48,8 @@ namespace Minio.Functional.Tests
         private const string bucketExistsSignature = "Task<bool> BucketExistsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeBucketSignature = "Task RemoveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))";
         private const string listObjectsSignature = "IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = false, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string listObjectVersionsSignature = "IObservable<VersionItem> ListObjectVersionsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+
         private const string listIncompleteUploadsSignature = "IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix, bool recursive, CancellationToken cancellationToken = default(CancellationToken))";
         private const string getObjectSignature1 = "Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, CancellationToken cancellationToken = default(CancellationToken))";
         private const string getObjectSignature2 = "Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, CancellationToken cancellationToken = default(CancellationToken))";
@@ -442,6 +444,18 @@ namespace Minio.Functional.Tests
         {
             MakeBucketArgs mbArgs = new MakeBucketArgs()
                                                 .WithBucket(bucketName);
+            BucketExistsArgs beArgs = new BucketExistsArgs()
+                                                .WithBucket(bucketName);
+            await minio.MakeBucketAsync(mbArgs);
+            bool found = await minio.BucketExistsAsync(beArgs);
+            Assert.IsTrue(found);
+        }
+
+        internal async static Task Setup_WithLock_Test(MinioClient minio, string bucketName)
+        {
+            MakeBucketArgs mbArgs = new MakeBucketArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObjectLock();
             BucketExistsArgs beArgs = new BucketExistsArgs()
                                                 .WithBucket(bucketName);
             await minio.MakeBucketAsync(mbArgs);
@@ -2049,22 +2063,88 @@ namespace Minio.Functional.Tests
             }
         }
 
-        internal async static Task ListObjects_Test(MinioClient minio, string bucketName, string prefix, int numObjects, bool recursive = true)
+
+        internal async static Task ListObjectVersions_Test1(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string prefix = "minix";
+            string objectName = prefix + GetRandomName(10);
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "prefix", prefix },
+                { "recursive", "false" },
+                { "versions", "true" }
+            };
+            try
+            {
+                await Setup_WithLock_Test(minio, bucketName);
+                Task[] tasks = new Task[4];
+                for (int i = 0; i < 4; i++) {
+                    tasks[i] = PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
+                    tasks[i] = PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
+                }
+                await Task.WhenAll(tasks);
+
+                ListObjects_Test(minio, bucketName, prefix, 2, false, true).Wait();
+                System.Threading.Thread.Sleep(2000);
+
+                await minio.RemoveObjectAsync(bucketName, objectName + "0");
+                await minio.RemoveObjectAsync(bucketName, objectName + "1");
+                await minio.RemoveObjectAsync(bucketName, objectName + "2");
+                await minio.RemoveObjectAsync(bucketName, objectName + "3");
+                await TearDown(minio, bucketName);
+                new MintLogger("ListObjectVersions_Test1", listObjectVersionsSignature, "Tests whether ListObjects with versions lists all objects along with all version ids for each object matching a prefix non-recursive", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (MinioException ex)
+            {
+                new MintLogger("ListObjectVersions_Test1", listObjectVersionsSignature, "Tests whether ListObjects with versions lists all objects along with all version ids for each object matching a prefix non-recursive", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
+            }
+        }
+
+
+        internal async static Task ListObjects_Test(MinioClient minio, string bucketName, string prefix, int numObjects, bool recursive = true, bool versions = false)
         {
             DateTime startTime = DateTime.Now;
             int count = 0;
-            IObservable<Item> observable = minio.ListObjectsAsync(bucketName, prefix, recursive);
-            IDisposable subscription = observable.Subscribe(
-                item =>
-                {
-                    Assert.IsTrue(item.Key.StartsWith(prefix));
-                    count += 1;
-                },
-                ex => throw ex,
-                () =>
-                {
-                    Assert.AreEqual(count, numObjects);
-                });
+            ListObjectsArgs args = new ListObjectsArgs()
+                                            .WithBucket(bucketName)
+                                            .WithPrefix(prefix)
+                                            .WithRecursive(recursive)
+                                            .WithVersions(versions);
+            if (!versions)
+            {
+                IObservable<Item> observable = minio.ListObjectsAsync(args);
+                IDisposable subscription = observable.Subscribe(
+                    item =>
+                    {
+                        Assert.IsTrue(item.Key.StartsWith(prefix));
+                        count += 1;
+                    },
+                    ex => throw ex,
+                    () =>
+                    {
+                        Assert.AreEqual(count, numObjects);
+                    });
+                return;
+            }
+            else
+            {
+                IObservable<VersionItem> observable = minio.ListObjectVersionsAsync(args);
+                IDisposable subscription = observable.Subscribe(
+                    item =>
+                    {
+                        Assert.IsTrue(item.Key.StartsWith(prefix));
+                        count += 1;
+                    },
+                    ex => throw ex,
+                    () =>
+                    {
+                        Assert.AreEqual(count, numObjects);
+                    });
+            }
         }
 
         #endregion

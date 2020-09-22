@@ -75,6 +75,79 @@ namespace Minio
             return request;
         }
     }
+    public class ListObjectsArgs : BucketArgs<ListObjectsArgs>
+    {
+        internal string Prefix;
+        internal bool Recursive;
+        internal bool Versions;
+        public ListObjectsArgs WithPrefix(string prefix)
+        {
+            this.Prefix = prefix;
+            return this;
+        }
+        public ListObjectsArgs WithRecursive(bool rec)
+        {
+            this.Recursive = rec;
+            return this;
+        }
+        public ListObjectsArgs WithVersions(bool ver)
+        {
+            this.Versions = ver;
+            return this;
+        }
+    }
+
+    public class GetObjectListArgs : BucketArgs<GetObjectListArgs>
+    {
+        internal string Delimiter { get; private set; }
+        internal string Prefix { get; private set; }
+        internal string Marker { get; private set; }
+        internal bool Versions { get; private set; }
+
+
+        public GetObjectListArgs()
+        {
+            this.RequestMethod = Method.GET;
+            // Avoiding null values. Default is empty strings.
+            this.Delimiter = string.Empty;
+            this.Prefix = string.Empty;
+            this.Marker = string.Empty;
+        }
+        public GetObjectListArgs WithDelimiter(string delim)
+        {
+            this.Delimiter = delim ?? string.Empty;
+            return this;
+        }
+        public GetObjectListArgs WithPrefix(string prefix)
+        {
+            this.Prefix = prefix ?? string.Empty;
+            return this;
+        }
+        public GetObjectListArgs WithMarker(string marker)
+        {
+            this.Marker = marker ?? string.Empty;
+            return this;
+        }
+
+        public GetObjectListArgs WithVersions(bool versions)
+        {
+            this.Versions = versions;
+            return this;
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("delimiter",this.Delimiter);
+            request.AddQueryParameter("prefix",this.Prefix);
+            request.AddQueryParameter("max-keys", "1000");
+            request.AddQueryParameter("marker",this.Marker);
+            request.AddQueryParameter("encoding-type","url");
+            if (this.Versions)
+            {
+                request.AddQueryParameter("versions", "");
+            }
+            return request;
+        }
+    }
 
     public class GetPolicyArgs : BucketArgs<GetPolicyArgs>
     {

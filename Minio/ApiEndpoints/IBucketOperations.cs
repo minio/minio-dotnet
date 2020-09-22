@@ -89,6 +89,22 @@ namespace Minio
         /// <summary>
         /// List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
         /// </summary>
+        /// <param name="args">ListObjectsArgs Arguments Object with information like Bucket name, prefix, recursive listing, versioning</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>An observable of items that client can subscribe to</returns>
+        IObservable<Item> ListObjectsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// List all objects along with versions non-recursively in a bucket with a given prefix, optionally emulating a directory
+        /// </summary>
+        /// <param name="args">ListObjectsArgs Arguments Object with information like Bucket name, prefix, recursive listing, versioning</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>An observable of items that client can subscribe to</returns>
+        IObservable<VersionItem> ListObjectVersionsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
+        /// </summary>
         /// <param name="bucketName">Bucket to list objects from</param>
         /// <param name="prefix">Filter all incomplete uploads starting with this prefix</param>
         /// <param name="recursive">List incomplete uploads recursively</param>

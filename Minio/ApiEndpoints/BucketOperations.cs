@@ -20,16 +20,12 @@ using Minio.Exceptions;
 using RestSharp;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using System.Xml.Serialization;
-using System.Web;
 using Minio.Helper;
 
 namespace Minio
@@ -203,6 +199,106 @@ namespace Minio
 
 
         /// <summary>
+        /// List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
+        /// </summary>
+        /// <param name="args">ListObjectsArgs Arguments Object with information like Bucket name, prefix, recursive listing, versioning</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>An observable of items that client can subscribe to</returns>
+        public IObservable<Item> ListObjectsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return Observable.Create<Item>(
+              async (obs, ct) =>
+              {
+                  bool isRunning = true;
+                  var delimiter = (args.Recursive)? string.Empty: "/";
+                  string marker = string.Empty;
+                  using(var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
+                  {
+                    while (isRunning)
+                    {
+                        GetObjectListArgs goArgs = new GetObjectListArgs()
+                                                            .WithBucket(args.BucketName)
+                                                            .WithPrefix(args.Prefix)
+                                                            .WithDelimiter(delimiter)
+                                                            .WithVersions(false)
+                                                            .WithMarker(marker);
+                        Tuple<ListBucketResult, List<Item>> objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
+                        ListObjectsItemResponse listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);
+                        marker = listObjectsItemResponse.NextMarker;
+                        isRunning = objectList.Item1.IsTruncated;
+                        cts.Token.ThrowIfCancellationRequested();
+                    }
+                  }
+              });
+        }
+
+
+        /// <summary>
+        /// List all objects along with versions non-recursively in a bucket with a given prefix, optionally emulating a directory
+        /// </summary>
+        /// <param name="args">ListObjectsArgs Arguments Object with information like Bucket name, prefix, recursive listing, versioning</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>An observable of items that client can subscribe to</returns>
+        public IObservable<VersionItem> ListObjectVersionsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return Observable.Create<VersionItem>(
+              async (obs, ct) =>
+              {
+                  bool isRunning = true;
+                  var delimiter = (args.Recursive) ? string.Empty : "/";
+                  string marker = string.Empty;
+                  using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
+                  {
+                      while (isRunning)
+                      {
+                          GetObjectListArgs goArgs = new GetObjectListArgs()
+                                                              .WithBucket(args.BucketName)
+                                                              .WithPrefix(args.Prefix)
+                                                              .WithDelimiter(delimiter)
+                                                              .WithVersions(args.Versions)
+                                                              .WithMarker(marker);
+                          Tuple<ListVersionsResult, List<VersionItem>> objectList = await this.GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
+                          ListObjectVersionResponse listObjectsItemResponse = new ListObjectVersionResponse(args, objectList, obs);
+                          marker = listObjectsItemResponse.NextMarker;
+                          isRunning = objectList.Item1.IsTruncated;
+                          cts.Token.ThrowIfCancellationRequested();
+                      }
+                  }
+              });
+        }
+
+
+        /// <summary>
+        /// Gets the list of objects in the bucket filtered by prefix
+        /// </summary>
+        /// <param name="args">GetObjectListArgs Arguments Object with information like Bucket name, prefix, delimiter, marker, versions(get version IDs of the objects)</param>
+        /// <returns>Task with a tuple populated with objects</returns>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(GetObjectListArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            GetObjectsListResponse getObjectsListResponse = new GetObjectsListResponse(response.StatusCode, response.Content);
+            return getObjectsListResponse.ObjectsTuple;
+        }
+
+
+        /// <summary>
+        /// Gets the list of objects along with version IDs in the bucket filtered by prefix
+        /// </summary>
+        /// <param name="args">GetObjectListArgs Arguments Object with information like Bucket name, prefix, delimiter, marker, versions(get version IDs of the objects)</param>
+        /// <returns>Task with a tuple populated with objects</returns>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        private async Task<Tuple<ListVersionsResult, List<VersionItem>>> GetObjectVersionsListAsync(GetObjectListArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            GetObjectsVersionsListResponse getObjectsListResponse = new GetObjectsVersionsListResponse(response.StatusCode, response.Content);
+            return getObjectsListResponse.ObjectsTuple;
+        }
+
+
+        /// <summary>
         /// Create a private bucket with the given name.
         /// </summary>
         /// <param name="bucketName">Name of the new bucket</param>
@@ -257,60 +353,11 @@ namespace Minio
         /// <returns>An observable of items that client can subscribe to</returns>
         public IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = false, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Observable.Create<Item>(
-              async (obs, ct) =>
-              {
-                  bool isRunning = true;
-                  string marker = null;
-
-                  var delimiter = "/";
-                  if (recursive)
-                  {
-                      delimiter = string.Empty;
-                  }
-
-                  using(var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct)) {
-                    while (isRunning)
-                    {
-                        Tuple<ListBucketResult, List<Item>> result = await GetObjectListAsync(bucketName, prefix, delimiter, marker, cts.Token).ConfigureAwait(false);
-                        Item lastItem = null;
-                        foreach (Item item in result.Item2)
-                        {
-                            lastItem = item;
-                            if (result.Item1.EncodingType == "url")
-                            {
-                                item.Key = HttpUtility.UrlDecode(item.Key);
-                            }
-                            obs.OnNext(item);
-                        }
-                        if (result.Item1.NextMarker != null)
-                        {
-                            if (result.Item1.EncodingType == "url")
-                            {
-                                marker = HttpUtility.UrlDecode(result.Item1.NextMarker);
-                            }
-                            else
-                            {
-                                marker = result.Item1.NextMarker;
-                            }
-                        }
-                        else if (lastItem != null)
-                        {
-                            if (result.Item1.EncodingType == "url")
-                            {
-                                marker = HttpUtility.UrlDecode(lastItem.Key);
-                            }
-                            else
-                            {
-                                marker = lastItem.Key;
-                            }
-                        }
-                        isRunning = result.Item1.IsTruncated;
-                        cts.Token.ThrowIfCancellationRequested();
-                    }
-                  }
-
-              });
+            ListObjectsArgs args = new ListObjectsArgs()
+                                            .WithBucket(bucketName)
+                                            .WithPrefix(prefix)
+                                            .WithRecursive(recursive);
+            return this.ListObjectsAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -326,61 +373,12 @@ namespace Minio
         {
             var queryMap = new Dictionary<string,string>();
             // null values are treated as empty strings.
-            if (delimiter == null)
-            {
-                delimiter = string.Empty;
-            }
-
-            if (prefix == null)
-            {
-                prefix = string.Empty;
-            }
-
-            if (marker == null)
-            {
-                marker = string.Empty;
-            }
-            
-            var request = await this.CreateRequest(Method.GET,
-                                                     bucketName)
-                                        .ConfigureAwait(false);
-            request.AddQueryParameter("delimiter",delimiter);
-            request.AddQueryParameter("prefix",prefix);
-            request.AddQueryParameter("max-keys", "1000");
-            request.AddQueryParameter("marker",marker);
-            request.AddQueryParameter("encoding-type","url");
-  
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-            ListBucketResult listBucketResult = null;
-            using (var stream = new MemoryStream(contentBytes))
-            {
-                listBucketResult = (ListBucketResult)new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream);
-            }
-
-            XDocument root = XDocument.Parse(response.Content);
-
-            var items = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
-                        select new Item
-                        {
-                            Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
-                            LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
-                            ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value,
-                            Size = ulong.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture),
-                            IsDir = false
-                        };
-
-            var prefixes = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}CommonPrefixes")
-                           select new Item
-                           {
-                               Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Prefix").Value,
-                               IsDir = true
-                           };
-
-            items = items.Concat(prefixes);
-
-            return Tuple.Create(listBucketResult, items.ToList());
+            GetObjectListArgs args = new GetObjectListArgs()
+                                            .WithBucket(bucketName)
+                                            .WithPrefix(prefix)
+                                            .WithDelimiter(delimiter)
+                                            .WithMarker(marker);
+            return await this.GetObjectListAsync(args, cancellationToken);
         }
 
 
