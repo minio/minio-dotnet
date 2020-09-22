@@ -74,10 +74,19 @@ namespace Minio
         /// <summary>
         /// Removes an object with given name in specific bucket
         /// </summary>
+        /// <param name="args">RemoveObjectArgs Arguments Object encapsulates information like - bucket name, object name, whether delete all versions</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        Task RemoveObjectAsync(RemoveObjectArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Removes an object with given name in specific bucket
+        /// </summary>
         /// <param name="bucketName">Bucket to remove object from</param>
         /// <param name="objectName">Key of object to remove</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        [Obsolete("Use RemoveObjectAsync method with RemoveObjectArgs object. Refer RemoveObjectAsync example code.")]
         Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>

@@ -36,6 +36,60 @@ namespace Minio
     {
         private readonly List<string> supportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type", "x-amz-acl", "content-disposition" };
 
+
+        /// <summary>
+        /// Removes an object with given name in specific bucket
+        /// </summary>
+        /// <param name="args">RemoveObjectArgs Arguments Object encapsulates information like - bucket name, object name, optional list of versions to be deleted</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task</returns>
+        public async Task RemoveObjectAsync(RemoveObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request =  null;
+            if (string.IsNullOrEmpty(args.VersionId))
+            {
+                request = await this.CreateRequest(Method.DELETE, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            }
+            else
+            {
+                request = await this.CreateRequest(args).ConfigureAwait(false);
+            }
+            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+        }
+
+
+        /// <summary>
+        /// Removes multiple objects from a specific bucket
+        /// </summary>
+        /// <param name="args">RemoveObjectArgs Arguments Object encapsulates information like - bucket name, List of objects, optional list of versions (for each object) to be deleted</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Observable that returns delete error while deleting objects if any</returns>
+        public async Task<IObservable<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            List<DeleteError> fullErrorsList = new List<DeleteError>();
+            int count = (args.ObjectNames.Count > 0)?args.ObjectNames.Count:args.ObjectNamesVersions.Count;
+            if (args.ObjectNamesVersions.Count > 0)
+            {
+                fullErrorsList = await removeObjectVersionsHelper(args, fullErrorsList, cancellationToken);
+            }
+            else
+            {
+                fullErrorsList = await removeObjectsHelper(args, fullErrorsList, cancellationToken);
+            }
+
+            return Observable.Create<DeleteError>(
+              async obs =>
+              {
+                foreach (DeleteError error in fullErrorsList)
+                {
+                    obs.OnNext(error);
+                }
+              });
+        }
+
+
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
@@ -699,51 +753,12 @@ namespace Minio
         /// <returns></returns>
         public async Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var request = await this.CreateRequest(Method.DELETE, bucketName, objectName: objectName).ConfigureAwait(false);
-
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            RemoveObjectArgs args = new RemoveObjectArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObject(objectName);
+            await this.RemoveObjectAsync(args);
         }
 
-        /// <summary>
-        /// private helper method to remove list of objects from bucket
-        /// </summary>
-        /// <param name="bucketName">Bucket Name</param>
-        /// <param name="objectsList"></param>
-        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <returns></returns>
-        private async Task<List<DeleteError>> removeObjectsAsync(string bucketName, List<DeleteObject> objectsList, CancellationToken cancellationToken)
-        {
-            var request = await this.CreateRequest(Method.POST, bucketName).ConfigureAwait(false);
-            request.AddQueryParameter("delete","");
-            List<XElement> objects = new List<XElement>();
-
-            foreach (var obj in objectsList)
-            {
-                objects.Add(new XElement("Object",
-                                       new XElement("Key", obj.Key)));
-            }
-
-            var deleteObjectsRequest = new XElement("Delete", objects,
-                                        new XElement("Quiet", true));
-
-            request.AddXmlBody(deleteObjectsRequest);
-            request.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
-            request.RequestFormat = DataFormat.Xml;
-
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-            DeleteObjectsResult deleteResult = null;
-            using (var stream = new MemoryStream(contentBytes))
-            {
-                deleteResult = (DeleteObjectsResult)new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(stream);
-            }
-
-            if (deleteResult == null)
-            {
-                return new List<DeleteError>();
-            }
-            return deleteResult.ErrorList();
-        }
 
         /// <summary>
         /// Removes multiple objects from a specific bucket
@@ -754,46 +769,15 @@ namespace Minio
         /// <returns></returns>
         public async Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectNames, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (objectNames == null)
+            List<string> objects = new List<string>();
+            foreach(var obj in objectNames)
             {
-                return null;
+                objects.Add(obj);
             }
-
-            utils.ValidateBucketName(bucketName);
-            List<DeleteObject> objectList;
-            return Observable.Create<DeleteError>(
-              async obs =>
-              {
-                  bool process = true;
-                  int count = objectNames.Count();
-                  int i = 0;
-
-                  while (process)
-                  {
-                      objectList = new List<DeleteObject>();
-                      while (i < count)
-                      {
-                          string objectName = objectNames.ElementAt(i);
-                          utils.ValidateObjectName(objectName);
-                          objectList.Add(new DeleteObject(objectName));
-                          i++;
-                          if (i % 1000 == 0)
-                              break;
-                      }
-                      if (objectList.Count > 0)
-                      {
-                          var errorsList = await removeObjectsAsync(bucketName, objectList, cancellationToken).ConfigureAwait(false);
-                          foreach (DeleteError error in errorsList)
-                          {
-                              obs.OnNext(error);
-                          }
-                      }
-                      if (i >= objectNames.Count())
-                      {
-                          process = !process;
-                      }
-                  }
-              });
+            RemoveObjectsArgs args = new RemoveObjectsArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObjects(objects);
+            return await this.RemoveObjectsAsync(args, cancellationToken);
         }
 
         /// <summary>

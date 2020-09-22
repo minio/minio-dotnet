@@ -24,13 +24,23 @@ namespace Minio.Examples.Cases
         // Remove an object from a bucket
         public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name", 
-                                     string objectName = "my-object-name")
+                                     string objectName = "my-object-name",
+                                     string versionId = null)
         {
             try
             {
+                RemoveObjectArgs args = new RemoveObjectArgs()
+                                    .WithBucket(bucketName)
+                                    .WithObject(objectName);
+                string versions = "";
+                if (!string.IsNullOrEmpty(versionId))
+                {
+                    args = args.WithVersionId(versionId);
+                    versions = ", with version ID " + versionId + " ";
+                }
                 Console.WriteLine("Running example for API: RemoveObjectAsync");
-                await minio.RemoveObjectAsync(bucketName, objectName);
-                Console.WriteLine($"Removed object {objectName} from bucket {bucketName} successfully");
+                await minio.RemoveObjectAsync(args);
+                Console.WriteLine($"Removed object {objectName} from bucket {bucketName}{versions} successfully");
                 Console.WriteLine();
             }
             catch (Exception e)

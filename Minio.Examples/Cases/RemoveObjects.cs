@@ -26,19 +26,39 @@ namespace Minio.Examples.Cases
         // Remove a list of objects from a bucket
         public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name",
-                                     List<string> objectsList = null)
+                                     List<string> objectsList = null,
+                                     List<Tuple<string, List<string>>> objectsVersionsList = null)
         {
             try
             {
-                Console.WriteLine("Running example for API: RemoveObjectAsync");
-                IObservable<DeleteError> observable = await minio.RemoveObjectAsync(bucketName, objectsList);
+                Console.WriteLine("Running example for API: RemoveObjectsAsync");
+                if (objectsList != null)
+                {
+                    RemoveObjectsArgs objArgs = new RemoveObjectsArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObjects(objectsList);
+                    IObservable<DeleteError> objectsOservable = await minio.RemoveObjectsAsync(objArgs).ConfigureAwait(false);
+                    IDisposable objectsSubscription = objectsOservable.Subscribe(
+                        objDeleteError => Console.WriteLine($"Object: {objDeleteError.Key}"),
+                            ex => Console.WriteLine($"OnError: {ex}"),
+                            () =>
+                            {
+                                Console.WriteLine($"Listed all delete errors for remove objects on {bucketName}\n");
+                            });
+                    return;
+                }
+                RemoveObjectsArgs objVersionsArgs = new RemoveObjectsArgs()
+                                                                .WithBucket(bucketName)
+                                                                .WithObjectsVersions(objectsVersionsList);
+                IObservable<DeleteError> observable = await minio.RemoveObjectsAsync(objVersionsArgs).ConfigureAwait(false);
                 IDisposable subscription = observable.Subscribe(
-                   deleteError => Console.WriteLine($"Object: {deleteError.Key}"),
-                   ex => Console.WriteLine($"OnError: {ex}"),
-                   () =>
-                   {
-                       Console.WriteLine($"Listed all delete errors for remove objects on {bucketName}\n");
-                   });
+                    objVerDeleteError => Console.WriteLine($"Object: {objVerDeleteError.Key} " +
+                        $"Object Version: {objVerDeleteError.VersionId}"),
+                        ex => Console.WriteLine($"OnError: {ex}"),
+                        () =>
+                        {
+                            Console.WriteLine($"Listed all delete errors for remove objects with versions on {bucketName}\n");
+                        });
             }
             catch (Exception e)
             {
