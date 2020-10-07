@@ -299,6 +299,77 @@ namespace Minio
 
 
         /// <summary>
+        /// Gets notification configuration for this bucket
+        /// </summary>
+        /// <param name="args">GetBucketNotificationsArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        public async Task<BucketNotification> GetBucketNotificationsAsync(GetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            GetBucketNotificationsResponse getBucketNotificationsResponse = new GetBucketNotificationsResponse(response.StatusCode, response.Content);
+            return getBucketNotificationsResponse.BucketNotificationConfiguration;
+        }
+
+        /// <summary>
+        /// Sets the notification configuration for this bucket
+        /// </summary>
+        /// <param name="args">SetBucketNotificationsArgs Arguments Object with information like Bucket name, notification object with configuration to set</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        public async Task SetBucketNotificationsAsync(SetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+
+
+        /// <summary>
+        /// Removes all bucket notification configurations stored on the server.
+        /// </summary>
+        /// <param name="args">RemoveAllBucketNotificationsArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        public async Task RemoveAllBucketNotificationsAsync(RemoveAllBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// Subscribes to bucket change notifications (a Minio-only extension)
+        /// </summary>
+	    /// <param name="args">ListenBucketNotificationsArgs Arguments Object with information like Bucket name, listen events, prefix filter keys, suffix fileter keys</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>An observable of JSON-based notification events</returns>
+        public IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(ListenBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return Observable.Create<MinioNotificationRaw>(
+                async (obs, ct) =>
+                {
+                    bool isRunning = true;
+
+                    int i = 0;
+                    using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
+                    {
+                        while (isRunning)
+                        {
+                            args = args.WithNotificationObserver(obs)
+                                       .WithEnableTrace(this.trace);
+                            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+                            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+                            Console.WriteLine(i++);
+                            cts.Token.ThrowIfCancellationRequested();
+                        }
+                    }
+              });
+        }
+
+
+        /// <summary>
         /// Create a private bucket with the given name.
         /// </summary>
         /// <param name="bucketName">Name of the new bucket</param>

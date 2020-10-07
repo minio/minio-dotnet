@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+using System;
+using System.Collections.Generic;
+using System.IO;
 using Minio.DataModel;
 using Minio.Exceptions;
 using RestSharp;
@@ -196,6 +199,145 @@ namespace Minio
         {
             request.AddQueryParameter("policy","");
             return request;
+        }
+    }
+
+    public class GetBucketNotificationsArgs : BucketArgs<GetBucketNotificationsArgs>
+    {
+        public GetBucketNotificationsArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("notification","");
+            return request;
+        }
+    }
+    public class SetBucketNotificationsArgs : BucketArgs<SetBucketNotificationsArgs>
+    {
+        internal BucketNotification BucketNotificationConfiguration { private set; get; }
+        public SetBucketNotificationsArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            if (this.BucketNotificationConfiguration == null)
+            {
+                throw new UnexpectedMinioException("Cannot BuildRequest for SetBucketNotificationsArgs. BucketNotification configuration not assigned");
+            }
+            request.AddQueryParameter("notification","");
+            var body = System.Text.Encoding.UTF8.GetBytes(BucketNotificationConfiguration.ToString());
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+            return request;
+        }
+        public SetBucketNotificationsArgs WithBucketNotificationConfiguration(BucketNotification config)
+        {
+            this.BucketNotificationConfiguration = config;
+            return this;
+        }
+    }
+
+    public class RemoveAllBucketNotificationsArgs : BucketArgs<RemoveAllBucketNotificationsArgs>
+    {
+        public RemoveAllBucketNotificationsArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("notification","");
+            BucketNotification bucketNotificationConfiguration = new BucketNotification();
+            var body = System.Text.Encoding.UTF8.GetBytes(bucketNotificationConfiguration.ToString());
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+
+            return request;
+        }
+    }
+
+    public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotificationsArgs>
+    {
+        internal string Prefix { get; private set; }
+        internal string Suffix { get; private set; }
+        internal List<EventType> Events { get; private set; }
+        internal IObserver<MinioNotificationRaw> NotificationObserver { get; private set; }
+        public bool EnableTrace { get; private set; }
+
+        public ListenBucketNotificationsArgs()
+        {
+            this.RequestMethod = Method.GET;
+            this.EnableTrace = false;
+            this.Events = new List<EventType>();
+            this.Prefix="";
+            this.Suffix="";
+        }
+
+        public ListenBucketNotificationsArgs WithNotificationObserver(IObserver<MinioNotificationRaw> obs)
+        {
+            this.NotificationObserver = obs;
+            return this;
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("prefix",this.Prefix);
+            request.AddQueryParameter("suffix",this.Suffix);
+            foreach (var eventType in this.Events)
+            {
+                request.AddQueryParameter("events",eventType.value);
+            }
+            request.ResponseWriter = responseStream =>
+            {
+                using (responseStream)
+                {
+                    var sr = new StreamReader(responseStream);
+                    while (true)
+                    {
+                        string line = sr.ReadLine();
+                        if (this.EnableTrace)
+                        {
+                            Console.WriteLine("== ListenBucketNotificationsAsync read line ==");
+                            Console.WriteLine(line);
+                            Console.WriteLine("==============================================");
+                        }
+                        if (line == null)
+                        {
+                            break;
+                        }
+                        string trimmed = line.Trim();
+                        if (trimmed.Length > 2)
+                        {
+                            this.NotificationObserver.OnNext(new MinioNotificationRaw(trimmed));
+                        }
+                    }
+                }
+            };
+
+            return request;
+        }
+
+        internal ListenBucketNotificationsArgs WithEnableTrace(bool trace)
+        {
+            this.EnableTrace = trace;
+            return this;
+        }
+
+        public ListenBucketNotificationsArgs WithPrefix(string prefix)
+        {
+            this.Prefix = prefix;
+            return this;
+        }
+
+        public ListenBucketNotificationsArgs WithSuffix(string suffix)
+        {
+            this.Suffix = suffix;
+            return this;
+        }
+    
+        public ListenBucketNotificationsArgs WithEvents(List<EventType> events)
+        {
+            this.Events.AddRange(events);
+            return this;
         }
     }
 }

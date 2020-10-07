@@ -29,7 +29,9 @@ namespace Minio.Examples.Cases
             try
             {
                 Console.WriteLine("Running example for API: GetBucketNotificationsAsync");
-                BucketNotification notifications = await minio.GetBucketNotificationsAsync(bucketName);
+                GetBucketNotificationsArgs args = new GetBucketNotificationsArgs()
+                                                                .WithBucket(bucketName);
+                BucketNotification notifications = await minio.GetBucketNotificationsAsync(args);
                 Console.WriteLine($"Notifications is {notifications.ToXML()} for bucket {bucketName}");
                 Console.WriteLine();
             }
