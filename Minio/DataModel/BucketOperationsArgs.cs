@@ -138,7 +138,7 @@ namespace Minio
         {
             request.AddQueryParameter("delimiter",this.Delimiter);
             request.AddQueryParameter("prefix",this.Prefix);
-            request.AddQueryParameter("max-keys", "1000");
+            request.AddQueryParameter("max-keys", "999");
             request.AddQueryParameter("marker",this.Marker);
             request.AddQueryParameter("encoding-type","url");
             if (this.Versions)
