@@ -30,8 +30,15 @@ namespace Minio.Examples.Cases
             try
             {
                 Console.WriteLine("Running example for API: StatObjectAsync");
-                ObjectStat statObject = await minio.StatObjectAsync(bucketName, bucketObject);
-                Console.WriteLine($"Details of the object {bucketObject} are {statObject}");
+                StatObjectArgs args = new StatObjectArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObject(bucketObject);
+                ObjectStat statObject = await minio.StatObjectAsync(args);
+                ConsoleColor currentColor = Console.ForegroundColor;
+                Console.WriteLine($"Details of the object {bucketObject} are");
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
+                Console.WriteLine($"{statObject}");
+                Console.ForegroundColor = currentColor;
                 Console.WriteLine();
             }
             catch (Exception e)
