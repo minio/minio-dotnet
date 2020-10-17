@@ -15,21 +15,28 @@
  */
 
 using System.Collections.Generic;
-using RestSharp;
-using System.Linq;
+using Minio.DataModel;
 
 namespace Minio
 {
-    public abstract class Args
+    public abstract class EncryptionArgs<T> : ObjectArgs<T>
+                        where T : EncryptionArgs<T>
     {
+        internal ServerSideEncryption SSE { get; private set; }
+        internal Dictionary<string,string> SSEHeaders { get; private set; }
+        internal string CustomerKeyMD5 { get; private set; }
 
-        // RequestMethod will be the HTTP Method for request variable which is of type RestRequest.
-        // Will be one of the type - HEAD, GET, PUT, DELETE. etc.
-        internal Method RequestMethod { get; set; }
-
-        public virtual RestRequest BuildRequest(RestRequest request)
+        public EncryptionArgs()
         {
-            return request;
+            this.SSEHeaders = new Dictionary<string, string>();
+        }
+
+        public T WithServerSideEncryption(ServerSideEncryption sse)
+        {
+            this.SSE = sse;
+            this.SSE?.Marshal(SSEHeaders);
+            this.CustomerKeyMD5 = this.SSE?.GetCustomerKeyMD5();
+            return (T)this;
         }
     }
 }

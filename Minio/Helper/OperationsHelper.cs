@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
+using System;
 using System.Collections.Generic;
-using RestSharp;
 using System.Linq;
 
 namespace Minio
 {
-    public abstract class Args
+    public class OperationsUtil
     {
-
-        // RequestMethod will be the HTTP Method for request variable which is of type RestRequest.
-        // Will be one of the type - HEAD, GET, PUT, DELETE. etc.
-        internal Method RequestMethod { get; set; }
-
-        public virtual RestRequest BuildRequest(RestRequest request)
+        private static readonly List<string> SupportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type", "x-amz-acl", "content-disposition" };
+        internal static bool IsSupportedHeader(string hdr, IEqualityComparer<string> comparer = null)
         {
-            return request;
+            comparer = comparer ?? StringComparer.OrdinalIgnoreCase;
+            return SupportedHeaders.Contains(hdr, comparer);
         }
     }
 }

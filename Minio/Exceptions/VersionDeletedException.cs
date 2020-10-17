@@ -14,22 +14,17 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-using RestSharp;
-using System.Linq;
-
-namespace Minio
+namespace Minio.Exceptions
 {
-    public abstract class Args
+    public class VersionDeletedException : MinioException
     {
+        private readonly string versionId;
 
-        // RequestMethod will be the HTTP Method for request variable which is of type RestRequest.
-        // Will be one of the type - HEAD, GET, PUT, DELETE. etc.
-        internal Method RequestMethod { get; set; }
-
-        public virtual RestRequest BuildRequest(RestRequest request)
+        public VersionDeletedException(string vid, string message) : base(message)
         {
-            return request;
+            this.versionId = vid;
         }
+
+        public override string ToString() => $"{this.versionId}: {base.ToString()}";
     }
 }
