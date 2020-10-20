@@ -51,9 +51,9 @@ namespace Minio.Functional.Tests
         private const string listObjectVersionsSignature = "IObservable<VersionItem> ListObjectVersionsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
 
         private const string listIncompleteUploadsSignature = "IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix, bool recursive, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string getObjectSignature1 = "Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string getObjectSignature2 = "Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string getObjectSignature3 = "Task GetObjectAsync(string bucketName, string objectName, string fileName, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string getObjectSignature1 = "Task GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string getObjectSignature2 = "Task GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string getObjectSignature3 = "Task GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string putObjectSignature1 = "Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType, Dictionary<string, string> metaData=null, CancellationToken cancellationToken = default(CancellationToken))";
         private const string putObjectSignature2 = "Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null, Dictionary<string, string> metaData=null, CancellationToken cancellationToken = default(CancellationToken))";
         private const string listenBucketNotificationsSignature = "IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events, string prefix, string suffix, CancellationToken cancellationToken = default(CancellationToken))";
@@ -733,18 +733,22 @@ namespace Minio.Functional.Tests
                                             filestream.Length,
                                             contentType, sse: ssec);
 
-                    await minio.GetObjectAsync(bucketName, objectName,
-                    (stream) =>
-                    {
-                        var fileStream = File.Create(tempFileName);
-                        stream.CopyTo(fileStream);
-                        fileStream.Dispose();
-                        FileInfo writtenInfo = new FileInfo(tempFileName);
-                        file_read_size = writtenInfo.Length;
+                    GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                            .WithBucket(bucketName)
+                                                            .WithObject(objectName)
+                                                            .WithServerSideEncryption(ssec)
+                                                            .WithCallbackStream((stream) =>
+                                                                                {
+                                                                                    var fileStream = File.Create(tempFileName);
+                                                                                    stream.CopyTo(fileStream);
+                                                                                    fileStream.Dispose();
+                                                                                    FileInfo writtenInfo = new FileInfo(tempFileName);
+                                                                                    file_read_size = writtenInfo.Length;
 
-                        Assert.AreEqual(file_read_size, file_write_size);
-                        File.Delete(tempFileName);
-                    }, sse:ssec);
+                                                                                    Assert.AreEqual(file_read_size, file_write_size);
+                                                                                    File.Delete(tempFileName);
+                                                                                });
+                    await minio.GetObjectAsync(getObjectArgs);
                     await minio.StatObjectAsync(bucketName, objectName, sse:ssec);
                     await minio.RemoveObjectAsync(bucketName, objectName);
                 }
@@ -792,18 +796,22 @@ namespace Minio.Functional.Tests
                                             filestream.Length,
                                             contentType, sse: ssec);
 
-                    await minio.GetObjectAsync(bucketName, objectName,
-                    (stream) =>
-                    {
-                        var fileStream = File.Create(tempFileName);
-                        stream.CopyTo(fileStream);
-                        fileStream.Dispose();
-                        FileInfo writtenInfo = new FileInfo(tempFileName);
-                        file_read_size = writtenInfo.Length;
+                    GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                            .WithBucket(bucketName)
+                                                            .WithObject(objectName)
+                                                            .WithServerSideEncryption(ssec)
+                                                            .WithCallbackStream((stream) =>
+                                                                                {
+                                                                                    var fileStream = File.Create(tempFileName);
+                                                                                    stream.CopyTo(fileStream);
+                                                                                    fileStream.Dispose();
+                                                                                    FileInfo writtenInfo = new FileInfo(tempFileName);
+                                                                                    file_read_size = writtenInfo.Length;
 
-                        Assert.AreEqual(file_read_size, file_write_size);
-                        File.Delete(tempFileName);
-                    }, sse:ssec);
+                                                                                    Assert.AreEqual(file_read_size, file_write_size);
+                                                                                    File.Delete(tempFileName);
+                                                                                });
+                    await minio.GetObjectAsync(getObjectArgs);
                     await minio.StatObjectAsync(bucketName, objectName, sse:ssec);
                     await minio.RemoveObjectAsync(bucketName, objectName);
                 }
@@ -849,18 +857,21 @@ namespace Minio.Functional.Tests
                                             filestream.Length,
                                             contentType, sse: sses3);
 
-                    await minio.GetObjectAsync(bucketName, objectName,
-                    (stream) =>
-                    {
-                        var fileStream = File.Create(tempFileName);
-                        stream.CopyTo(fileStream);
-                        fileStream.Dispose();
-                        FileInfo writtenInfo = new FileInfo(tempFileName);
-                        file_read_size = writtenInfo.Length;
+                    GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                            .WithBucket(bucketName)
+                                                            .WithObject(objectName)
+                                                            .WithCallbackStream((stream) =>
+                                                                                {
+                                                                                    var fileStream = File.Create(tempFileName);
+                                                                                    stream.CopyTo(fileStream);
+                                                                                    fileStream.Dispose();
+                                                                                    FileInfo writtenInfo = new FileInfo(tempFileName);
+                                                                                    file_read_size = writtenInfo.Length;
 
-                        Assert.AreEqual(file_read_size, file_write_size);
-                        File.Delete(tempFileName);
-                    });
+                                                                                    Assert.AreEqual(file_read_size, file_write_size);
+                                                                                    File.Delete(tempFileName);
+                                                                                });
+                    await minio.GetObjectAsync(getObjectArgs);
                     await minio.StatObjectAsync(bucketName, objectName);
                     await minio.RemoveObjectAsync(bucketName, objectName);
                 }
@@ -931,18 +942,21 @@ namespace Minio.Functional.Tests
                                             size,
                                             contentType,
                                             metaData: metaData);
-                await minio.GetObjectAsync(bucketName, objectName,
-                (stream) =>
-                {
-                    var fileStream = File.Create(tempFileName);
-                    stream.CopyTo(fileStream);
-                    fileStream.Dispose();
-                    FileInfo writtenInfo = new FileInfo(tempFileName);
-                    file_read_size = writtenInfo.Length;
+                GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName)
+                                                        .WithCallbackStream((stream) =>
+                                                                            {
+                                                                                var fileStream = File.Create(tempFileName);
+                                                                                stream.CopyTo(fileStream);
+                                                                                fileStream.Dispose();
+                                                                                FileInfo writtenInfo = new FileInfo(tempFileName);
+                                                                                file_read_size = writtenInfo.Length;
 
-                    Assert.AreEqual(file_read_size, file_write_size);
-                    File.Delete(tempFileName);
-                });
+                                                                                Assert.AreEqual(file_read_size, file_write_size);
+                                                                                File.Delete(tempFileName);
+                                                                            });
+                await minio.GetObjectAsync(getObjectArgs);
                 statObject = await minio.StatObjectAsync(bucketName, objectName);
                 Assert.IsNotNull(statObject);
                 Assert.AreEqual(statObject.ObjectName, objectName);
@@ -1019,7 +1033,11 @@ namespace Minio.Functional.Tests
                 await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName);
                 string outFileName = "outFileName";
 
-                await minio.GetObjectAsync(destBucketName, destObjectName, outFileName);
+                GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                        .WithBucket(destBucketName)
+                                                        .WithObject(destObjectName)
+                                                        .WithFile(outFileName);
+                await minio.GetObjectAsync(getObjectArgs);
                 File.Delete(outFileName);
                 await minio.RemoveObjectAsync(bucketName, objectName);
                 await minio.RemoveObjectAsync(destBucketName, destObjectName);
@@ -1124,7 +1142,11 @@ namespace Minio.Functional.Tests
                 ObjectStat dstats = await minio.StatObjectAsync(destBucketName, destObjectName);
                 Assert.IsNotNull(dstats);
                 Assert.AreEqual(dstats.ObjectName, destObjectName);
-                await minio.GetObjectAsync(destBucketName, destObjectName, outFileName);
+                GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                        .WithBucket(destBucketName)
+                                                        .WithObject(destObjectName)
+                                                        .WithFile(outFileName);
+                await minio.GetObjectAsync(getObjectArgs);
                 File.Delete(outFileName);
 
                 await minio.RemoveObjectAsync(bucketName, objectName);
@@ -1175,7 +1197,11 @@ namespace Minio.Functional.Tests
                 await minio.CopyObjectAsync(bucketName, objectName, destBucketName);
                 string outFileName = "outFileName";
 
-                await minio.GetObjectAsync(bucketName, objectName, outFileName);
+                GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName)
+                                                        .WithFile(outFileName);
+                await minio.GetObjectAsync(getObjectArgs);
                 File.Delete(outFileName);
                 ObjectStat stats = await minio.StatObjectAsync(destBucketName, objectName);
                 Assert.IsNotNull(stats);
@@ -1227,7 +1253,11 @@ namespace Minio.Functional.Tests
                 await minio.CopyObjectAsync(bucketName, objectName, destBucketName, copyConditions: conditions);
                 string outFileName = "outFileName";
 
-                await minio.GetObjectAsync(bucketName, objectName, outFileName);
+                GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName)
+                                                        .WithFile(outFileName);
+                await minio.GetObjectAsync(getObjectArgs);
                 File.Delete(outFileName);
                 ObjectStat stats = await minio.StatObjectAsync(destBucketName, objectName);
                 Assert.IsNotNull(stats);
@@ -1293,7 +1323,11 @@ namespace Minio.Functional.Tests
                 ObjectStat dstats = await minio.StatObjectAsync(destBucketName, destObjectName);
                 Assert.IsNotNull(dstats);
                 Assert.AreEqual(dstats.ObjectName, destObjectName);
-                await minio.GetObjectAsync(destBucketName, destObjectName, outFileName);
+                GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                        .WithBucket(destBucketName)
+                                                        .WithObject(destObjectName)
+                                                        .WithFile(outFileName);
+                await minio.GetObjectAsync(getObjectArgs);
                 File.Delete(outFileName);
 
                 await minio.RemoveObjectAsync(bucketName, objectName);
@@ -1471,7 +1505,12 @@ namespace Minio.Functional.Tests
                 await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName, sseSrc:sseCpy, sseDest:ssecDst);
                 string outFileName = "outFileName";
 
-                await minio.GetObjectAsync(destBucketName, destObjectName, outFileName, sse:ssecDst);
+                GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                        .WithBucket(destBucketName)
+                                                        .WithObject(destObjectName)
+                                                        .WithServerSideEncryption(ssecDst)
+                                                        .WithFile(outFileName);
+                await minio.GetObjectAsync(getObjectArgs);
                 File.Delete(outFileName);
                 await minio.RemoveObjectAsync(bucketName, objectName);
                 await minio.RemoveObjectAsync(destBucketName, destObjectName);
@@ -1524,7 +1563,11 @@ namespace Minio.Functional.Tests
                 await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName, sseSrc:sseCpy, sseDest:null);
                 string outFileName = "outFileName";
 
-                await minio.GetObjectAsync(destBucketName, destObjectName, outFileName);
+                GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                        .WithBucket(destBucketName)
+                                                        .WithObject(destObjectName)
+                                                        .WithFile(outFileName);
+                await minio.GetObjectAsync(getObjectArgs);
                 File.Delete(outFileName);
                 await minio.RemoveObjectAsync(bucketName, objectName);
                 await minio.RemoveObjectAsync(destBucketName, destObjectName);
@@ -1578,7 +1621,11 @@ namespace Minio.Functional.Tests
                 await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName, sseSrc:sseCpy, sseDest:sses3);
                 string outFileName = "outFileName";
 
-                await minio.GetObjectAsync(destBucketName, destObjectName, outFileName);
+                GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                        .WithBucket(destBucketName)
+                                                        .WithObject(destObjectName)
+                                                        .WithFile(outFileName);
+                await minio.GetObjectAsync(getObjectArgs);
                 File.Delete(outFileName);
                 await minio.RemoveObjectAsync(bucketName, objectName);
                 await minio.RemoveObjectAsync(destBucketName, destObjectName);
@@ -1628,7 +1675,11 @@ namespace Minio.Functional.Tests
                 await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName, sseSrc:null, sseDest:sses3);
                 string outFileName = "outFileName";
 
-                await minio.GetObjectAsync(destBucketName, destObjectName, outFileName);
+                GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                        .WithBucket(destBucketName)
+                                                        .WithObject(destObjectName)
+                                                        .WithFile(outFileName);
+                await minio.GetObjectAsync(getObjectArgs);
                 File.Delete(outFileName);
                 await minio.RemoveObjectAsync(bucketName, objectName);
                 await minio.RemoveObjectAsync(destBucketName, destObjectName);
@@ -1675,18 +1726,21 @@ namespace Minio.Functional.Tests
                                             filestream.Length,
                                             contentType);
 
-                    await minio.GetObjectAsync(bucketName, objectName,
-                    (stream) =>
-                    {
-                        var fileStream = File.Create(tempFileName);
-                        stream.CopyTo(fileStream);
-                        fileStream.Dispose();
-                        FileInfo writtenInfo = new FileInfo(tempFileName);
-                        file_read_size = writtenInfo.Length;
+                    GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                            .WithBucket(bucketName)
+                                                            .WithObject(objectName)
+                                                            .WithCallbackStream((stream) =>
+                                                                                {
+                                                                                    var fileStream = File.Create(tempFileName);
+                                                                                    stream.CopyTo(fileStream);
+                                                                                    fileStream.Dispose();
+                                                                                    FileInfo writtenInfo = new FileInfo(tempFileName);
+                                                                                    file_read_size = writtenInfo.Length;
 
-                        Assert.AreEqual(file_read_size, file_write_size);
-                        File.Delete(tempFileName);
-                    });
+                                                                                    Assert.AreEqual(file_read_size, file_write_size);
+                                                                                    File.Delete(tempFileName);
+                                                                                });
+                    await minio.GetObjectAsync(getObjectArgs);
 
                     await minio.RemoveObjectAsync(bucketName, objectName);
                 }
@@ -1718,7 +1772,11 @@ namespace Minio.Functional.Tests
                 await Setup_Test(minio, bucketName);
                 try
                 {
-                    await minio.GetObjectAsync(bucketName, objectName, fileName);
+                    GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                            .WithBucket(bucketName)
+                                                            .WithObject(objectName)
+                                                            .WithFile(fileName);
+                    await minio.GetObjectAsync(getObjectArgs);
 
                 }
                 catch (ObjectNotFoundException ex)
@@ -1764,18 +1822,23 @@ namespace Minio.Functional.Tests
                                             filestream.Length,
                                             contentType);
 
-                    await minio.GetObjectAsync(bucketName, objectName, 1024L, file_write_size,
-                    (stream) =>
-                    {
-                        var fileStream = File.Create(tempFileName);
-                        stream.CopyTo(fileStream);
-                        fileStream.Dispose();
-                        FileInfo writtenInfo = new FileInfo(tempFileName);
-                        file_read_size = writtenInfo.Length;
+                    GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                            .WithBucket(bucketName)
+                                                            .WithObject(objectName)
+                                                            .WithLengthAndOffset(1024L, file_write_size)
+                                                            .WithCallbackStream((stream) =>
+                                                                                {
+                                                                                    var fileStream = File.Create(tempFileName);
+                                                                                    stream.CopyTo(fileStream);
+                                                                                    fileStream.Dispose();
+                                                                                    FileInfo writtenInfo = new FileInfo(tempFileName);
+                                                                                    file_read_size = writtenInfo.Length;
 
-                        Assert.AreEqual(file_read_size, file_write_size);
-                        File.Delete(tempFileName);
-                    });
+                                                                                    Assert.AreEqual(file_read_size, file_write_size);
+                                                                                    File.Delete(tempFileName);
+                                                                                });
+
+                    await minio.GetObjectAsync(getObjectArgs);
 
                     await minio.RemoveObjectAsync(bucketName, objectName);
                 }
@@ -1811,7 +1874,11 @@ namespace Minio.Functional.Tests
                                             filestream, filestream.Length, null);
 
                 }
-                await minio.GetObjectAsync(bucketName, objectName, outFileName);
+                GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName)
+                                                        .WithFile(outFileName);
+                await minio.GetObjectAsync(getObjectArgs);
                 File.Delete(outFileName);
                 await minio.RemoveObjectAsync(bucketName, objectName);
                 await TearDown(minio, bucketName);

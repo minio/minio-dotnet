@@ -14,22 +14,17 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-using RestSharp;
-using System.Linq;
 
 namespace Minio
 {
-    public abstract class Args
+    public abstract class ObjectVersionArgs<T> : EncryptionArgs<T>
+                            where T : ObjectVersionArgs<T>
     {
-
-        // RequestMethod will be the HTTP Method for request variable which is of type RestRequest.
-        // Will be one of the type - HEAD, GET, PUT, DELETE. etc.
-        internal Method RequestMethod { get; set; }
-
-        public virtual RestRequest BuildRequest(RestRequest request)
+        internal string VersionId { get; set; }
+        public T WithVersionId(string vid)
         {
-            return request;
+            this.VersionId = vid;
+            return (T)this;
         }
     }
 }

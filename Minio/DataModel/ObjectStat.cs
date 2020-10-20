@@ -29,8 +29,10 @@ namespace Minio.DataModel
         /// <param name="lastModified">Last when object was modified</param>
         /// <param name="etag">Unique entity tag for the object</param>
         /// <param name="contentType">Object content type</param>
+        /// <param name="versionId">Object Version ID</param>
+        /// <param name="deleteMarker">Object Version ID delete marker</param>
         /// <param name="metadata"></param>
-        public ObjectStat(string objectName, long size, DateTime lastModified, string etag, string contentType, Dictionary<string, string> metadata)
+        public ObjectStat(string objectName, long size, DateTime lastModified, string etag, string contentType, string versionId, bool deleteMarker, Dictionary<string, string> metadata)
         {
             this.ObjectName = objectName;
             this.Size = size;
@@ -38,6 +40,8 @@ namespace Minio.DataModel
             this.ETag = etag;
             this.ContentType = contentType;
             this.MetaData = metadata;
+            this.VersionId = versionId;
+            this.DeleteMarker = deleteMarker;
         }
 
         public string ObjectName { get; private set; }
@@ -46,9 +50,20 @@ namespace Minio.DataModel
         public string ETag { get; private set; }
         public string ContentType { get; private set; }
         public Dictionary<string, string> MetaData { get; private set; }
+        public string VersionId { get; private set; }
+        public bool DeleteMarker { get; private set; }
 
         public override string ToString()
         {
+            if (!string.IsNullOrEmpty(this.VersionId))
+            {
+                string versionInfo = $"Version ID({this.VersionId})";
+                if (this.DeleteMarker)
+                {
+                    versionInfo = $"Version ID({this.VersionId}, deleted)";
+                }
+                return $"{this.ObjectName} : {versionInfo} Size({this.Size}) LastModified({this.LastModified}) ETag({this.ETag}) Content-Type({this.ContentType})";
+            }
             return $"{this.ObjectName} : Size({this.Size}) LastModified({this.LastModified}) ETag({this.ETag}) Content-Type({this.ContentType})";
         }
     }

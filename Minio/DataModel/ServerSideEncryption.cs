@@ -38,6 +38,8 @@ namespace Minio.DataModel
         EncryptionType GetType();
         // Marshals the Server-side encryption headers into dictionary
         void Marshal(Dictionary<string, string> headers);
+        //Get the Key MD5
+        string GetCustomerKeyMD5();
     }
 
     /// <summary>
@@ -66,6 +68,11 @@ namespace Minio.DataModel
                 throw new ArgumentException("Secret key needs to be a 256 bit AES Key", nameof(key));
             }
             this.key = key;
+        }
+
+        public string GetCustomerKeyMD5()
+        {
+            return utils.getMD5SumStr(this.key);
         }
     }
 
@@ -102,6 +109,11 @@ namespace Minio.DataModel
             headers.Add(Constants.SSEGenericHeader, "AES256");
             return;
         }
+
+        public string GetCustomerKeyMD5()
+        {
+            return null;
+        }
     }
 
     /// <summary>
@@ -134,6 +146,11 @@ namespace Minio.DataModel
                 headers.Add(Constants.SSEKMSContext, this.marshalContext());
             }
             return;
+        }
+
+        public string GetCustomerKeyMD5()
+        {
+            return null;
         }
 
         /// <summary>

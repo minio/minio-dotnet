@@ -14,21 +14,36 @@
  * limitations under the License.
  */
 
+using System.Collections.Generic;
+
 namespace Minio
 {
     public abstract class BucketArgs<T> : Args 
                 where T : BucketArgs<T>
     {
         internal string BucketName { get; set; }
-        protected BucketArgs()
-        {
-        }
+        internal Dictionary<string, string> HeaderMap { get; set; }
 
+        public BucketArgs()
+        {
+            this.HeaderMap = new Dictionary<string, string>();
+        }
         public T WithBucket(string bucket)
         {
             this.BucketName = bucket;
             return (T)this;
         }
+
+        public T WithHeaders(Dictionary<string, string> headers)
+        {
+            this.HeaderMap = this.HeaderMap ?? new Dictionary<string, string>();
+            foreach (string key in headers.Keys)
+            {
+                this.HeaderMap.Add(key, headers[key]);
+            }
+            return (T)this;
+        }
+
         public virtual void Validate()
         {
             utils.ValidateBucketName(this.BucketName);
