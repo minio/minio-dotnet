@@ -2974,7 +2974,6 @@ namespace Minio.Functional.Tests
             };
             try
             {
-                Console.WriteLine($"ListenBucketNotificationsAsync starting: bucketName={bucketName}");
                 await Setup_Test(minio, bucketName);
 
                 var received = new List<MinioNotificationRaw>();
@@ -2987,7 +2986,6 @@ namespace Minio.Functional.Tests
                 IObservable<MinioNotificationRaw> events = minio.ListenBucketNotificationsAsync(listenArgs);
                 subscription = events.Subscribe(
                     ev => {
-                        Console.WriteLine($"ListenBucketNotificationsAsync received: " + ev.json);
                         received.Add(ev);
                     },
                     ex => Console.WriteLine("OnError: {0}", ex.Message),
@@ -3002,9 +3000,10 @@ namespace Minio.Functional.Tests
 
                 for (int attempt = 0; attempt < 10; attempt++) {
 
+
                     if (received.Count > 0) {
 
-                        // Check if there is any unexpected error returned and
+                        // Check if there is any unexpected error returned
                         // and captured in the receivedJson list, like
                         // "NotImplemented" api error. If so, we throw an exception
                         // and skip running this test
@@ -3015,6 +3014,7 @@ namespace Minio.Functional.Tests
                             // format and it is an error.Here, we convert xml
                             // into json format.
                             string receivedJson = XmlStrToJsonStr(received[1].json);
+
 
                             // Cleanup the "Error" key encapsulating "receivedJson"
                             // data. This is required to match and convert json data
@@ -3033,13 +3033,19 @@ namespace Minio.Functional.Tests
                         }
 
                         MinioNotification notification = JsonConvert.DeserializeObject<MinioNotification>(received[0].json);
-                        // Console.WriteLine($"   round-trip deserialisation: {JsonConvert.SerializeObject(notification, Newtonsoft.Json.Formatting.Indented)}");
+
 
                         Assert.AreEqual(1, notification.Records.Length);
                         Assert.AreEqual("s3:ObjectCreated:Put", notification.Records[0].eventName);
-                        StringAssert.Equals(objectName, System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key));
-                        StringAssert.Equals(contentType, notification.Records[0].s3.objectMeta.contentType);
-                        Console.WriteLine("PASSED");
+// <<<<<<< HEAD
+//                         StringAssert.Equals(objectName, System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key));
+//                         StringAssert.Equals(contentType, notification.Records[0].s3.objectMeta.contentType);
+//                         Console.WriteLine("PASSED");
+// =======
+                        Assert.AreEqual(bucketName, notification.Records[0].s3.bucket.name);
+                        Assert.AreEqual(objectName, notification.Records[0].s3.objectMeta.key);
+                        Assert.AreEqual(contentType, notification.Records[0].s3.objectMeta.contentType);
+// >>>>>>> Fix functional test when run against minio server
                         testOutcome = TestStatus.PASS;
                         break;
                     } else {
@@ -3048,7 +3054,6 @@ namespace Minio.Functional.Tests
 
                     Thread.Sleep(2000);
                 }
-                Console.WriteLine($"outcome: {testOutcome}");
 
                 subscription.Dispose();
                 await TearDown(minio, bucketName);
