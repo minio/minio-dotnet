@@ -70,7 +70,7 @@ namespace Minio.Functional.Tests
         private const string getBucketNotificationSignature = "Task<BucketNotification> GetBucketNotificationAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))";
         private const string setBucketNotificationSignature = "Task SetBucketNotificationAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeAllBucketsNotificationSignature = "Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string selectObjectSignature = "Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string selectObjectSignature = "Task<SelectResponseStream> SelectObjectContentAsync(SelectObjectContentArgs args,CancellationToken cancellationToken = default(CancellationToken))";
 
         // Create a file of given size from random byte array or optionally create a symbolic link
         // to the dataFileName residing in MINT_DATA_DIR
@@ -2947,7 +2947,11 @@ namespace Minio.Functional.Tests
                     }
                 };
 
-                var resp = await  minio.SelectObjectContentAsync(bucketName, objectName, opts);
+                SelectObjectContentArgs selArgs = new SelectObjectContentArgs()
+                                                                .WithBucket(bucketName)
+                                                                .WithObject(objectName)
+                                                                .WithSelectObjectOptions(opts);
+                var resp = await  minio.SelectObjectContentAsync(selArgs).ConfigureAwait(false);
                 var output = await new StreamReader(resp.Payload).ReadToEndAsync();
                 Assert.AreEqual(output,csvString.ToString());
                 await minio.RemoveObjectAsync(bucketName, objectName);

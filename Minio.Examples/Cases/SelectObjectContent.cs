@@ -56,7 +56,11 @@ namespace Minio.Examples.Cases
                     }
                 };
 
-                var resp = await  minio.SelectObjectContentAsync(bucketName, objectName, opts);
+                SelectObjectContentArgs args = new SelectObjectContentArgs()
+                                                            .WithBucket(bucketName)
+                                                            .WithObject(objectName)
+                                                            .WithSelectObjectOptions(opts);
+                var resp = await minio.SelectObjectContentAsync(args);
                 resp.Payload.CopyTo(Console.OpenStandardOutput());
                 Console.WriteLine("Bytes scanned:" + resp.Stats.BytesScanned);
                 Console.WriteLine("Bytes returned:" + resp.Stats.BytesReturned);
