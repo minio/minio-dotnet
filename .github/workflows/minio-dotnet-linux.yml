@@ -1,0 +1,31 @@
+name: minio-dotnet GitHub actions Linux
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 2.1.810
+    - name: Install dependencies
+      run:  dotnet restore -v Minimal
+    - name: Build
+      run:  dotnet build -c Release
+    - name: After Build
+      run:  dotnet pack ./Minio/Minio.csproj --no-build -c Release -o ./artifacts
+    - name: Build Test
+      run:  dotnet test ./Minio.Tests/Minio.Tests.csproj -f netcoreapp2.1
+    - name: Build Functional Test
+      run:  dotnet build  Minio.Functional.Tests -c Release --framework netcoreapp2.1
+    - name: Functional Tests
+      run:  dotnet Minio.Functional.Tests/bin/Release/netcoreapp2.1/Minio.Functional.Tests.dll
