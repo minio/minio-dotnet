@@ -1,0 +1,56 @@
+name: Minio-dotnet Windows Tests
+
+on:
+  push:
+    branches: 
+    - master
+  pull_request:
+    branches: 
+    - master
+
+jobs:
+
+  build:
+
+    strategy:
+      matrix:
+        configuration: [ Release ]
+
+    runs-on: windows-latest
+    env:
+      Solution_Name: Minio.sln
+      Test_Project_Path: ./Minio.Tests/Minio.Tests.csproj -f netcoreapp2.1
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    # Install the .NET Core workload
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 2.1.810
+
+    # Add  MSBuild to the PATH:
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@2008f912f56e61277eefaac6d1888b750582aa16
+
+    # Install dependencies
+    - name: Install dependencies
+      run: dotnet restore
+
+    # Build and Execute Build tests
+    - name: Build, Build Test
+      run: |
+        dotnet build -c Release
+        dotnet pack ./Minio/Minio.csproj --no-build -c Release -o ./artifacts
+        dotnet test ./Minio.Tests/Minio.Tests.csproj -f netcoreapp2.1
+
+    # Execute all functional tests in the solution
+    - name: Execute Functional tests
+      run: |
+        dotnet build  Minio.Functional.Tests -c Release --framework netcoreapp2.1
+        dotnet Minio.Functional.Tests/bin/Release/netcoreapp2.1/Minio.Functional.Tests.dll
+
