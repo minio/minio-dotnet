@@ -342,7 +342,7 @@ namespace Minio
         /// <summary>
         /// Subscribes to bucket change notifications (a Minio-only extension)
         /// </summary>
-	    /// <param name="args">ListenBucketNotificationsArgs Arguments Object with information like Bucket name, listen events, prefix filter keys, suffix fileter keys</param>
+	    /// <param name="args">ListenBucketNotificationsArgs Arguments Object with information like Bucket name, listen events, prefix filter keys, suffix filter keys</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>An observable of JSON-based notification events</returns>
         public IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(ListenBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))
@@ -361,7 +361,6 @@ namespace Minio
                                        .WithEnableTrace(this.trace);
                             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
                             await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-                            Console.WriteLine(i++);
                             cts.Token.ThrowIfCancellationRequested();
                         }
                     }
@@ -490,18 +489,9 @@ namespace Minio
         /// <returns></returns>
         public async Task<BucketNotification> GetBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.ValidateBucketName(bucketName);
-            var request = await this.CreateRequest(Method.GET,
-                                               bucketName)
-                                    .ConfigureAwait(false);
-            request.AddQueryParameter("notification","");
-
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-            using (var stream = new MemoryStream(contentBytes))
-            {
-                return (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(stream);
-            }
+            GetBucketNotificationsArgs args = new GetBucketNotificationsArgs()
+                                                            .WithBucket(bucketName);
+            return await this.GetBucketNotificationsAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -513,17 +503,10 @@ namespace Minio
         /// <returns></returns>
         public async Task SetBucketNotificationsAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.ValidateBucketName(bucketName);
-            var request = await this.CreateRequest(Method.PUT, bucketName)
-                                .ConfigureAwait(false);
-            request.AddQueryParameter("notification","");
-
-            var bodyString = notification.ToString();
-
-            var body = System.Text.Encoding.UTF8.GetBytes(bodyString);
-            request.AddParameter("application/xml", body, RestSharp.ParameterType.RequestBody);
-
-            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            SetBucketNotificationsArgs args = new SetBucketNotificationsArgs()
+                                                                .WithBucket(bucketName)
+                                                                .WithBucketNotificationConfiguration(notification);
+            await this.SetBucketNotificationsAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -532,11 +515,11 @@ namespace Minio
         /// <param name="bucketName">Bucket name</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.ValidateBucketName(bucketName);
-            BucketNotification notification = new BucketNotification();
-            return SetBucketNotificationsAsync(bucketName, notification, cancellationToken);
+            RemoveAllBucketNotificationsArgs args = new RemoveAllBucketNotificationsArgs()
+                                                                        .WithBucket(bucketName);
+            await this.RemoveAllBucketNotificationsAsync(args, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -550,58 +533,13 @@ namespace Minio
         /// <returns>An observable of JSON-based notification events</returns>
         public IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events, string prefix = "", string suffix = "", CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Observable.Create<MinioNotificationRaw>(
-                async (obs, ct) =>
-                {
-                    bool isRunning = true;
-
-                    using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
-                    {
-                        while (isRunning)
-                        {
-                            var request = await this.CreateRequest(Method.GET,
-                                                                    bucketName)
-                                                        .ConfigureAwait(false);
-                            request.AddQueryParameter("prefix",prefix);
-                            request.AddQueryParameter("sufffix",suffix);
-                            foreach (var eventType in events)
-                            {
-                                request.AddQueryParameter("events",eventType.value);
-                            }
-
-                            request.ResponseWriter = responseStream =>
-                            {
-                                using (responseStream)
-                                {
-                                    var sr = new StreamReader(responseStream);
-                                    while (true)
-                                    {
-                                        string line = sr.ReadLine();
-                                        if (this.trace)
-                                        {
-                                            Console.WriteLine("== ListenBucketNotificationsAsync read line ==");
-                                            Console.WriteLine(line);
-                                            Console.WriteLine("==============================================");
-                                        }
-                                        if (line == null)
-                                        {
-                                            break;
-                                        }
-                                        string trimmed = line.Trim();
-                                        if (trimmed.Length > 2)
-                                        {
-                                            obs.OnNext(new MinioNotificationRaw(trimmed));
-                                        }
-                                    }
-                                }
-                            };
-
-                            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-
-                            cts.Token.ThrowIfCancellationRequested();
-                        }
-                    }
-              });
+            List<EventType> eventList = new List<EventType>(events);
+            ListenBucketNotificationsArgs args = new ListenBucketNotificationsArgs()
+                                                                    .WithBucket(bucketName)
+                                                                    .WithEvents(eventList)
+                                                                    .WithPrefix(prefix)
+                                                                    .WithSuffix(suffix);
+            return this.ListenBucketNotificationsAsync(args, cancellationToken);
         }
     }
 }

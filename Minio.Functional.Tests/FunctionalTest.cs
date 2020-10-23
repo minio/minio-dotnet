@@ -68,8 +68,8 @@ namespace Minio.Functional.Tests
         private const string getBucketPolicySignature = "Task<string> GetPolicyAsync(GetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string setBucketPolicySignature = "Task SetPolicyAsync(SetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string getBucketNotificationSignature = "Task<BucketNotification> GetBucketNotificationAsync(GetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string setBucketNotificationSignature = "Task SetBucketNotificationAsync(SetBucketNotificationsArgs, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string removeAllBucketsNotificationSignature = "Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string setBucketNotificationSignature = "Task SetBucketNotificationAsync(SetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string removeAllBucketsNotificationSignature = "Task RemoveAllBucketNotificationsAsync(RemoveAllBucketNotifications args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string selectObjectSignature = "Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts, CancellationToken cancellationToken = default(CancellationToken))";
 
         // Create a file of given size from random byte array or optionally create a symbolic link
@@ -2872,9 +2872,8 @@ namespace Minio.Functional.Tests
 
                         Assert.AreEqual(1, notification.Records.Length);
                         Assert.AreEqual("s3:ObjectCreated:Put", notification.Records[0].eventName);
-                        Assert.AreEqual(bucketName, notification.Records[0].s3.bucketMeta.name);
-                        Assert.AreEqual(objectName, System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key));
-                        Assert.AreEqual(contentType, notification.Records[0].s3.objectMeta.contentType);
+                        StringAssert.Equals(objectName, System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key));
+                        StringAssert.Equals(contentType, notification.Records[0].s3.objectMeta.contentType);
                         Console.WriteLine("PASSED");
                         testOutcome = TestStatus.PASS;
                         break;

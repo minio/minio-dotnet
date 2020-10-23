@@ -260,6 +260,7 @@ namespace Minio
             if (string.IsNullOrEmpty(responseContent) ||
                     !HttpStatusCode.OK.Equals(statusCode))
             {
+                this.BucketNotificationConfiguration = new BucketNotification();
                 return;
             }
             using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))

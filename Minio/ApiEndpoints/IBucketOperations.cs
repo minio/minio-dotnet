@@ -118,8 +118,6 @@ namespace Minio
         /// <returns></returns>
         Task SetBucketNotificationsAsync(SetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
-
-
         /// <summary>
         /// Removes all bucket notification configurations stored on the server.
         /// </summary>
@@ -127,7 +125,6 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         Task RemoveAllBucketNotificationsAsync(RemoveAllBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken));
-
 
         /// <summary>
         /// Subscribes to bucket change notifications (a Minio-only extension)

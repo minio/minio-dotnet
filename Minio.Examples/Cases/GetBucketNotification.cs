@@ -38,6 +38,7 @@ namespace Minio.Examples.Cases
             catch (Exception e)
             {
                 Console.WriteLine($"Error parsing bucket notifications - make sure that you are running this call against AWS end point: {e.Message}");
+                Console.WriteLine(e.StackTrace);
             }
         }
     }
