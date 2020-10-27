@@ -103,6 +103,38 @@ namespace Minio
         IObservable<VersionItem> ListObjectVersionsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
+        /// Gets notification configuration for this bucket
+        /// </summary>
+        /// <param name="args">GetBucketNotificationsArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        Task<BucketNotification> GetBucketNotificationsAsync(GetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Sets the notification configuration for this bucket
+        /// </summary>
+        /// <param name="args">SetBucketNotificationsArgs Arguments Object with information like Bucket name, notification object with configuration to set</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        Task SetBucketNotificationsAsync(SetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Removes all bucket notification configurations stored on the server.
+        /// </summary>
+        /// <param name="args">RemoveAllBucketNotificationsArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        Task RemoveAllBucketNotificationsAsync(RemoveAllBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Subscribes to bucket change notifications (a Minio-only extension)
+        /// </summary>
+	    /// <param name="args">ListenBucketNotificationsArgs Arguments Object with information like Bucket name, listen events, prefix filter keys, suffix fileter keys</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>An observable of JSON-based notification events</returns>
+        IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(ListenBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
         /// List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
         /// </summary>
         /// <param name="bucketName">Bucket to list objects from</param>
