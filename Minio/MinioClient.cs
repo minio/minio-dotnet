@@ -169,6 +169,28 @@ namespace Minio
             return args.BuildRequest(request);
         }
 
+
+        /// <summary>
+        /// Constructs a RestRequest using bucket/object names from Args.
+        /// Calls overloaded CreateRequest method.
+        /// </summary>
+        /// <param name="args">The child object of BucketArgs class, args with populated values from Input</param>
+        /// <returns>A RestRequest</returns>
+        internal async Task<RestRequest> CreateRequest<T>(ObjectArgs<T> args) where T : ObjectArgs<T>
+        {
+            this.ArgsCheck(args);
+            RestRequest request = await this.CreateRequest(args.RequestMethod,
+                                                args.BucketName,
+                                                args.ObjectName,
+                                                args.MergedHeaders(),
+                                                args.ContentType,
+                                                args.RequestBody,
+                                                args.ResourcePath).ConfigureAwait(false);
+
+            return args.BuildRequest(request);
+        }
+
+
         /// <summary>
         /// Constructs a RestRequest. For AWS, this function has the side-effect of overriding the baseUrl
         /// in the RestClient with region specific host path or virtual style path.
