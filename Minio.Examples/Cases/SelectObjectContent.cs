@@ -16,7 +16,6 @@
 using Minio.DataModel;
 
 using System;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
@@ -32,35 +31,35 @@ namespace Minio.Examples.Cases
             try
             {
                 Console.WriteLine("Running example for API: SelectObjectContentAsync");
-                var opts = new SelectObjectOptions()
-                {
-                    ExpressionType = QueryExpressionType.SQL,
-                    Expression = "select count(*) from s3object",
-                    InputSerialization = new SelectObjectInputSerialization()
+
+                QueryExpressionType queryType = QueryExpressionType.SQL;
+                string queryExpr = "select count(*) from s3object";
+                SelectObjectInputSerialization inputSerialization = new SelectObjectInputSerialization()
                     {
                         CompressionType = SelectCompressionType.NONE,
                         CSV = new CSVInputOptions()
                         {
                             FileHeaderInfo = CSVFileHeaderInfo.None,
-				            RecordDelimiter = "\n",
-				            FieldDelimiter = ",",
+                            RecordDelimiter = "\n",
+                            FieldDelimiter = ",",
                         }                    
-                    },
-                    OutputSerialization = new SelectObjectOutputSerialization()
+                    };
+                SelectObjectOutputSerialization outputSerialization = new SelectObjectOutputSerialization()
                     {
                         CSV = new CSVOutputOptions()
                         {
                             RecordDelimiter = "\n",
                             FieldDelimiter =  ",",
                         }
-                    }
-                };
-
+                    };
                 SelectObjectContentArgs args = new SelectObjectContentArgs()
                                                             .WithBucket(bucketName)
                                                             .WithObject(objectName)
-                                                            .WithSelectObjectOptions(opts);
-                var resp = await minio.SelectObjectContentAsync(args);
+                                                            .WithExpressionType(queryType)
+                                                            .WithQueryExpression(queryExpr)
+                                                            .WithInputSerialization(inputSerialization)
+                                                            .WithOutputSerialization(outputSerialization);
+                SelectResponseStream resp = await minio.SelectObjectContentAsync(args);
                 resp.Payload.CopyTo(Console.OpenStandardOutput());
                 Console.WriteLine("Bytes scanned:" + resp.Stats.BytesScanned);
                 Console.WriteLine("Bytes returned:" + resp.Stats.BytesReturned);

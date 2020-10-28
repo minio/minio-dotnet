@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Net;
 using Minio.DataModel;
-using RestSharp;
 
 namespace Minio
 {
     internal class SelectObjectContentResponse : GenericResponse
     {
-        internal SelectResponseStream SelectStream { get; private set; }
+        internal SelectResponseStream ResponseStream { get; private set; }
         internal SelectObjectContentResponse(HttpStatusCode statusCode, string responseContent, byte[] responseRawBytes)
                     : base(statusCode, responseContent)
         {
-            this.SelectStream = new SelectResponseStream(new MemoryStream(responseRawBytes));
+            this.ResponseStream = new SelectResponseStream(new MemoryStream(responseRawBytes));
         }
 
     }

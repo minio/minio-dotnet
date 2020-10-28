@@ -179,13 +179,15 @@ namespace Minio
         internal async Task<RestRequest> CreateRequest<T>(ObjectArgs<T> args) where T : ObjectArgs<T>
         {
             this.ArgsCheck(args);
+            string contentType = "application/octet-stream";
+            args.HeaderMap?.TryGetValue("Content-Type", out contentType);
             RestRequest request = await this.CreateRequest(args.RequestMethod,
                                                 args.BucketName,
                                                 args.ObjectName,
-                                                args.MergedHeaders(),
-                                                args.ContentType,
+                                                args.HeaderMap,
+                                                contentType,
                                                 args.RequestBody,
-                                                args.ResourcePath).ConfigureAwait(false);
+                                                null).ConfigureAwait(false);
             return args.BuildRequest(request);
         }
 

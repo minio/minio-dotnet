@@ -797,9 +797,9 @@ catch (MinioException e)
 
 
 <a name="listenBucketNotifications"></a>
-### ListenBucketNotificationsAsync(string bucketName, IList<EventType> events, string prefix = "", string suffix = "")
+### ListenBucketNotificationsAsync(ListenBucketNotificationsArgs args)
 
-`IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events, string prefix = "", string suffix = "", CancellationToken cancellationToken = default(CancellationToken))`
+`IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(ListenBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 Subscribes to bucket change notifications (a Minio-only extension)
 
@@ -808,10 +808,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Bucket to get notifications from  |
-| ``events``  | _IList< EventType >_  | Events to listen for |
-| ``prefix``  | _string_  | Filter keys starting with this prefix |
-| ``suffix``  | _string_  | Filter keys ending with this suffix |
+| ``args``  | _ListenBucketNotificationsArgs_  | ListenBucketNotificationsArgs object - encapsulates bucket name, list of events, prefix, suffix. |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -829,7 +826,12 @@ try
     var events = new List<EventType> { EventType.ObjectCreatedAll };
     var prefix = null;
     var suffix = null;
-    IObservable<MinioNotificationRaw> observable = minioClient.ListenBucketNotificationsAsync(bucketName, events, prefix, suffix);
+    ListenBucketNotificationsArgs args = new ListenBucketNotificationsArgs()
+                                                            .WithBucket(bucketName)
+                                                            .WithEvents(events)
+                                                            .WithPrefix(prefix)
+                                                            .WithSuffix(suffix);
+    IObservable<MinioNotificationRaw> observable = minioClient.ListenBucketNotificationsAsync(args);
 
     IDisposable subscription = observable.Subscribe(
         notification => Console.WriteLine($"Notification: {notification.json}"),
@@ -930,8 +932,8 @@ catch (MinioException e)
 
 
 <a name="setBucketNotification"></a>
-### SetBucketNotificationAsync(string bucketName, BucketNotification notification)
-`Task SetBucketNotificationAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken))`
+### SetBucketNotificationAsync(SetBucketNotificationsArgs args)
+`Task SetBucketNotificationAsync(SetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 Sets notification configuration for a given bucket
 
@@ -939,8 +941,7 @@ __Parameters__
 
 |Param   | Type   | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket  |
-| ``notification``  | _BucketNotification_  | Notifications to apply |
+| ``args``  | _SetBucketNotificationsArgs_  | SetBucketNotificationsArgs object encapsulating bucket name, notification configuration object.  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -972,9 +973,11 @@ try
     queueConfiguration.AddEvents(new List<EventType>() { EventType.ObjectCreatedCompleteMultipartUpload });
     notification.AddQueue(queueConfiguration);
 
-    await minio.SetBucketNotificationsAsync(bucketName,
-                                        notification);
-    Console.WriteLine("Notifications set for the bucket " + bucketName + " successfully");
+    SetBucketNotificationsArgs args = new SetBucketNotificationsArgs()
+                                                    .WithBucket(bucketName)
+                                                    .WithBucketNotificationConfiguration(notification);
+    await minio.SetBucketNotificationsAsync(args);
+    Console.WriteLine("Notifications set for the bucket " + args.BucketName + " successfully");
 }
 catch (MinioException e)
 {
@@ -983,8 +986,8 @@ catch (MinioException e)
 ```
 
 <a name="getBucketNotification"></a>
-### GetBucketNotificationAsync(string bucketName)
-`Task<BucketNotification> GetBucketNotificationAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))`
+### GetBucketNotificationAsync(GetBucketNotificationsArgs args)
+`Task<BucketNotification> GetBucketNotificationAsync(GetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 Get bucket notification configuration
 
@@ -993,7 +996,7 @@ __Parameters__
 
 |Param   | Type   | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket.  |
+| ``args``  | _GetBucketNotificationsArgs_  | GetBucketNotificationsArgs object encapsulating bucket name.  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -1014,7 +1017,9 @@ __Example__
 ```cs
 try
 {
-    BucketNotification notifications = await minioClient.GetBucketNotificationAsync(bucketName);
+    GetBucketNotificationsArgs args = new GetBucketNotificationsArgs()
+                                                    .WithBucket(bucketName);
+    BucketNotification notifications = await minioClient.GetBucketNotificationAsync(args);
     Console.WriteLine("Notifications is " + notifications.ToXML());
 }
 catch (MinioException e)
@@ -1024,8 +1029,8 @@ catch (MinioException e)
 ```
 
 <a name="removeAllBucketNotification"></a>
-### RemoveAllBucketNotificationsAsync(string bucketName)
-`Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))`
+### RemoveAllBucketNotificationsAsync(RemoveAllBucketNotificationsArgs args)
+`Task RemoveAllBucketNotificationsAsync(RemoveAllBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 Remove all notification configurations set on the bucket
 
@@ -1034,7 +1039,7 @@ __Parameters__
 
 |Param   | Type   | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket.  |
+| ``args``  | _RemoveAllBucketNotificationsArgs_  | RemoveAllBucketNotificationsArgs args encapsulating the bucket name.  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -1055,7 +1060,9 @@ __Example__
 ```cs
 try
 {
-    await minioClient.RemoveAllBucketNotificationsAsync(bucketName);
+    RemoveAllBucketNotificationsArgs args = new RemoveAllBucketNotificationsArgs()
+                                                                .WithBucket(bucketName);
+    await minioClient.RemoveAllBucketNotificationsAsync(args);
     Console.WriteLine("Notifications successfully removed from the bucket " + bucketName);
 }
 catch (MinioException e)
@@ -1571,9 +1578,9 @@ catch(MinioException e)
 ```
 
 <a name="selectObjectContent"></a>
-### SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts)
+### SelectObjectContentAsync(SelectObjectContentArgs args)
 
-`Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts, CancellationToken cancellationToken = default(CancellationToken))`
+`Task<SelectResponseStream> SelectObjectContentAsync(SelectObjectContentArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 Downloads an object as a stream.
 
@@ -1583,9 +1590,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_ | Name of the bucket  |
-| ``objectName``  | _string_  | Object name in the bucket |
-| ``opts``    | SelectObjectOptions | options for SelectObjectContent async | Required parameter. |
+| ``args``    | _SelectObjectContentArgs_ | options for SelectObjectContent async | Required parameter. |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -1629,7 +1634,11 @@ try
         }
     };
 
-    var resp = await  minio.SelectObjectContentAsync(bucketName, objectName, opts);
+    SelectObjectContentArgs args = SelectObjectContentArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObject(objectName)
+                                                .WithSelectObjectOptions(opts);
+    var resp = await  minio.SelectObjectContentAsync(args);
     resp.Payload.CopyTo(Console.OpenStandardOutput());
     Console.WriteLine("Bytes scanned:" + resp.Stats.BytesScanned);
     Console.WriteLine("Bytes returned:" + resp.Stats.BytesReturned);

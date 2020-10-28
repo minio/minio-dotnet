@@ -47,7 +47,7 @@ namespace Minio
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
             IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             SelectObjectContentResponse selectObjectContentResponse = new SelectObjectContentResponse(response.StatusCode, response.Content, response.RawBytes);
-            return selectObjectContentResponse.SelectStream;
+            return selectObjectContentResponse.ResponseStream;
         }
 
 
@@ -214,7 +214,11 @@ namespace Minio
             SelectObjectContentArgs args = new SelectObjectContentArgs()
                                                         .WithBucket(bucketName)
                                                         .WithObject(objectName)
-                                                        .WithSelectObjectOptions(opts);
+                                                        .WithExpressionType(opts.ExpressionType)
+                                                        .WithQueryExpression(opts.Expression)
+                                                        .WithInputSerialization(opts.InputSerialization)
+                                                        .WithOutputSerialization(opts.OutputSerialization)
+                                                        .WithRequestProgress(opts.RequestProgress);
             return await this.SelectObjectContentAsync(args, cancellationToken).ConfigureAwait(false);
         }
 
