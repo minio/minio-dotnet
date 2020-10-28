@@ -251,4 +251,22 @@ namespace Minio
             Initialize();
         }
     }
+    internal class GetBucketNotificationsResponse : GenericResponse
+    {
+        internal BucketNotification BucketNotificationConfiguration { set; get; }
+        internal GetBucketNotificationsResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) ||
+                    !HttpStatusCode.OK.Equals(statusCode))
+            {
+                this.BucketNotificationConfiguration = new BucketNotification();
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                this.BucketNotificationConfiguration = (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(stream);
+            }
+        }
+    }
 }

@@ -90,6 +90,7 @@ namespace Minio
         /// <returns></returns>
         private async Task<Dictionary<int, string>> PutObjectPartAsync(PutObjectPartArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
+            args.Validate();
             dynamic multiPartInfo = utils.CalculateMultiPartSize(args.ObjectSize);
             double partSize = multiPartInfo.partSize;
             double partCount = multiPartInfo.partCount;
@@ -112,7 +113,7 @@ namespace Minio
                 }
                 numPartsUploaded += 1;
                 PutObjectArgs putObjectArgs = new PutObjectArgs(args)
-                                                        .WithObjectBody(dataToCopy)
+                                                        .WithBody(dataToCopy)
                                                         .WithUploadId(args.UploadId)
                                                         .WithPartNumber(partNumber);
                 string etag = await this.PutObjectSinglePartAsync(putObjectArgs, cancellationToken).ConfigureAwait(false);
@@ -146,8 +147,7 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         public async Task PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
-            args.Validate();
-            if (args.ObjectSize < Constants.MinimumPartSize && args.ObjectSize >= 0)
+            if (args.ObjectSize < Constants.MinimumPartSize && args.ObjectSize >= 0 && args.ObjectStreamData != null)
             {
                 var bytes = await ReadFullAsync(args.ObjectStreamData, (int)args.ObjectSize).ConfigureAwait(false);
                 if (bytes != null && bytes.Length != (int)args.ObjectSize)
@@ -155,7 +155,7 @@ namespace Minio
                     throw new UnexpectedShortReadException($"Data read {bytes.Length} is shorter than the size {args.ObjectSize} of input buffer.");
                 }
                 args = args
-                        .WithObjectBody(bytes)
+                        .WithBody(bytes)
                         .WithStreamData(null)
                         .WithObjectSize(bytes.Length);
                 await this.PutObjectSinglePartAsync(args, cancellationToken).ConfigureAwait(false);
@@ -173,12 +173,30 @@ namespace Minio
                                                             .WithBucket(args.BucketName)
                                                             .WithObject(args.ObjectName)
                                                             .WithObjectSize(args.ObjectSize)
-                                                            .WithStreamData(args.ObjectStreamData)
                                                             .WithContentType(args.ContentType)
                                                             .WithUploadId(uploadId)
+                                                            .WithStreamData(args.ObjectStreamData)
+                                                            .WithBody(args.RequestBody)
                                                             .WithHeaders(args.MergedHeaders())
                                                             .WithSSEHeaders(args.SSEHeaders);
-            Dictionary<int, string> etags = await this.PutObjectPartAsync(putObjectPartArgs, cancellationToken).ConfigureAwait(false);
+            Dictionary<int, string> etags = null;
+            if (!string.IsNullOrEmpty(args.FileName))
+            {
+                FileInfo fileInfo = new FileInfo(args.FileName);
+                long size = fileInfo.Length;
+                using (FileStream fileStream = new FileStream(args.FileName, FileMode.Open, FileAccess.Read))
+                {
+                    putObjectPartArgs = putObjectPartArgs
+                                                .WithStreamData(fileStream)
+                                                .WithObjectSize(fileStream.Length)
+                                                .WithBody(null);
+                    etags = await this.PutObjectPartAsync(putObjectPartArgs, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                etags = await this.PutObjectPartAsync(putObjectPartArgs, cancellationToken).ConfigureAwait(false);
+            }
             CompleteMultipartUploadArgs completeMultipartUploadArgs = new CompleteMultipartUploadArgs()
                                                                                         .WithBucket(args.BucketName)
                                                                                         .WithObject(args.ObjectName)
@@ -475,7 +493,7 @@ namespace Minio
                                                         .WithUploadId()
                                                         .WithPartNumber(0)
                                                         .WithObjectSize(size)
-                                                        .WithObjectBody(bytes)
+                                                        .WithBody(bytes)
                                                         .WithStreamData(data)
                                                         .WithSSEHeaders(sseHeaders)
                                                         .WithServerSideEncryption(sse);

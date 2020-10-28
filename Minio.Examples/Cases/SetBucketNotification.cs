@@ -31,6 +31,9 @@ namespace Minio.Examples.Cases
             {
                 Console.WriteLine("Running example for API: SetBucketNotificationAsync");
                 var notification = new BucketNotification();
+                SetBucketNotificationsArgs args = new SetBucketNotificationsArgs()
+                                                                .WithBucket(bucketName)
+                                                                .WithBucketNotificationConfiguration(notification);
 
                 // Uncomment the code below and change Arn and event types to configure.
                 /* 
@@ -52,7 +55,7 @@ namespace Minio.Examples.Cases
                 queueConfiguration.AddEvents(new List<EventType>() { EventType.ObjectCreatedCompleteMultipartUpload });
                 notification.AddQueue(queueConfiguration);
                 */
-                await minio.SetBucketNotificationsAsync(bucketName, notification);
+                await minio.SetBucketNotificationsAsync(args);
              
                 Console.WriteLine("Notifications set for the bucket {bucketName} were set successfully");
                 Console.WriteLine();

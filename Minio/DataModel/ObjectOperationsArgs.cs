@@ -132,6 +132,11 @@ namespace Minio
         {
             return (PutObjectPartArgs)base.WithUploadId(id);
         }
+
+        public new PutObjectPartArgs WithBody(object data)
+        {
+            return (PutObjectPartArgs)base.WithBody(data);
+        }
     }
 
     public class CompleteMultipartUploadArgs: ObjectArgs<CompleteMultipartUploadArgs>
@@ -176,7 +181,6 @@ namespace Minio
             request.XmlSerializer.Namespace = "http://s3.amazonaws.com/doc/2006-03-01/";
             request.XmlSerializer.ContentType = "application/xml";
             string body = utils.MarshalXML(completeMultipartUploadXml, "http://s3.amazonaws.com/doc/2006-03-01/");
-            Console.WriteLine("CompleteMultipartUploadArgs config " + body);
             request.AddParameter("text/xml", body, ParameterType.RequestBody);
             return request;
         }
@@ -186,7 +190,6 @@ namespace Minio
         internal string UploadId { get; private set; }
         internal ServerSideEncryption SSE { get; set; }
         internal int PartNumber { get; set; }
-        internal byte[] ObjectData { get; set; }
         internal Dictionary<string, string> SSEHeaders { get; set; }
         internal string FileName { get; set; }
         internal long ObjectSize { get; set; }
@@ -207,7 +210,6 @@ namespace Minio
             this.ExtraQueryParams = args.ExtraQueryParams;
             this.FileName = args.UploadId;
             this.HeaderMap = args.HeaderMap;
-            this.ObjectData = args.ObjectData;
             this.ObjectName = args.ObjectName;
             this.ObjectSize = args.ObjectSize;
             this.PartNumber = args.PartNumber;
@@ -236,7 +238,7 @@ namespace Minio
         {
             request = base.BuildRequest(request);
             this.HeaderMap = this.HeaderMap ?? new Dictionary<string, string>();
-            if (this.SSE != null)
+            if (this.SSE != null && this.SSEHeaders != null)
             {
                 this.SSE.Marshal(this.SSEHeaders);
             }
@@ -253,10 +255,10 @@ namespace Minio
                 request.AddQueryParameter("uploadId",$"{this.UploadId}");
                 request.AddQueryParameter("partNumber",$"{this.PartNumber}");
             }
-            if (this.ObjectData != null)
+            if (this.RequestBody != null)
             {
                 var sha256 = SHA256.Create();
-                byte[] hash = sha256.ComputeHash((byte[])this.ObjectData);
+                byte[] hash = sha256.ComputeHash((byte[])this.RequestBody);
                 string hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
                 request.AddOrUpdateParameter("x-amz-content-sha256", hex, ParameterType.HttpHeader);
             }
@@ -313,12 +315,6 @@ namespace Minio
             return this;
         }
 
-        public PutObjectArgs WithObjectBody(byte[] data)
-        {
-            this.RequestBody = data;
-            return this;
-        }
-
         public PutObjectArgs WithServerSideEncryption(ServerSideEncryption sse)
         {
             this.SSE = sse;
@@ -328,9 +324,6 @@ namespace Minio
         public PutObjectArgs WithFileName(string file)
         {
             this.FileName = file;
-            FileInfo fileInfo = new FileInfo(file);
-            this.ObjectSize = fileInfo.Length;
-            this.ObjectStreamData = new FileStream(file, FileMode.Open, FileAccess.Read);
             return this;
         }
 
