@@ -16,7 +16,6 @@
 
 using System.Collections.Generic;
 using RestSharp;
-using System.Linq;
 
 namespace Minio
 {

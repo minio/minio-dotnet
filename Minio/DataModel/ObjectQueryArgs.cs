@@ -22,22 +22,22 @@ namespace Minio
     public abstract class ObjectQueryArgs<T> : EncryptionArgs<T>
                                     where T: ObjectQueryArgs<T>
     {
-        internal string MatchETag { get; private set; }
-        internal string NotMatchETag { get; private set; }
-        internal DateTime ModifiedSince { get; private set; }
-        internal DateTime UnModifiedSince { get; private set; }
+        internal string MatchETag { get; set; }
+        internal string NotMatchETag { get; set; }
+        internal DateTime ModifiedSince { get; set; }
+        internal DateTime UnModifiedSince { get; set; }
 
         public virtual new void Validate()
         {
             base.Validate();
             if (!string.IsNullOrEmpty(this.MatchETag) && !string.IsNullOrEmpty(this.NotMatchETag))
             {
-                throw new InvalidOperationException("Cannot set both " + nameof(MatchETag) + " and " + nameof(NotMatchETag) + " for query.");
+                throw new InvalidOperationException("Invalid to set both query parameters " + nameof(MatchETag) + " and " + nameof(NotMatchETag));
             }
             if((this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
                 && (this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime)))
             {
-                throw new InvalidOperationException("Cannot set both " + nameof(ModifiedSince) + " and " + nameof(UnModifiedSince) + " for query.");
+                throw new InvalidOperationException("Invalid to set both query parameters " + nameof(ModifiedSince) + " and " + nameof(UnModifiedSince));
             }
         }
 

@@ -22,9 +22,9 @@ namespace Minio
     public abstract class EncryptionArgs<T> : ObjectArgs<T>
                         where T : EncryptionArgs<T>
     {
-        internal ServerSideEncryption SSE { get; private set; }
-        internal Dictionary<string,string> SSEHeaders { get; private set; }
-        internal string CustomerKeyMD5 { get; private set; }
+        internal ServerSideEncryption SSE { get; set; }
+        internal Dictionary<string,string> SSEHeaders { get; set; }
+        internal string CustomerKeyMD5 { get; set; }
 
         public EncryptionArgs()
         {

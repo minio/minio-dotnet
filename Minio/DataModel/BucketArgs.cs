@@ -24,6 +24,11 @@ namespace Minio
         internal string BucketName { get; set; }
         internal Dictionary<string, string> HeaderMap { get; set; }
 
+        public BucketArgs()
+        {
+            this.HeaderMap = new Dictionary<string, string>();
+        }
+
         public T WithBucket(string bucket)
         {
             this.BucketName = bucket;

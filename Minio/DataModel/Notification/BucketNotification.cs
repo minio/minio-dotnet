@@ -148,11 +148,9 @@ namespace Minio.DataModel
 
                     ms.Flush();
                     ms.Seek(0, SeekOrigin.Begin);
-                    using (StreamReader sr = new StreamReader(ms))
-                    {
-                        var xml = sr.ReadToEnd();
-                        return xml;
-                    }
+                    var sr = new StreamReader(ms);
+                    var xml = sr.ReadToEnd();
+                    return xml;
                 }
             }
         }

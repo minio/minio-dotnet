@@ -17,8 +17,6 @@
 using System;
 using RestSharp;
 
-using Minio.DataModel;
-
 namespace Minio
 {
     public class StatVersionArgs : ObjectVersionArgs<StatVersionArgs>
@@ -87,12 +85,6 @@ namespace Minio
         public StatObjectArgs WithVersionId(string vid)
         {
             this.VersionArgs.WithVersionId(vid);
-            return this;
-        }
-
-        public StatObjectArgs WithStatVersionArgs(StatVersionArgs versionArgs)
-        {
-            this.VersionArgs.WithVersionId(versionArgs.VersionId);
             return this;
         }
     }
