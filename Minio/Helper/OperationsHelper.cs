@@ -51,7 +51,7 @@ namespace Minio
         /// <param name="fullErrorsList">Full List of DeleteError objects. The error list from this call will be added to the full list.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        private async Task<List<DeleteError>> callRemoveObjectVersions(RemoveObjectsArgs args, List<Tuple<string, List<string>>> objVersions, List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
+        private async Task<List<DeleteError>> callRemoveObjectVersions(RemoveObjectsArgs args, List<Tuple<string, string>> objVersions, List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
         {
             RemoveObjectsArgs iterArgs = new RemoveObjectsArgs()
                                                 .WithBucket(args.BucketName)
@@ -83,71 +83,38 @@ namespace Minio
 
         private async Task<List<DeleteError>> removeObjectVersionsHelper(RemoveObjectsArgs args, List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
         {
-            int listIndex = 0;
             int i = 0;
-            List<Tuple<string, List<string>>> objVersions = new List<Tuple<string, List<string>>>();
-
-            foreach(var objVerTuple in args.ObjectNamesVersions)
+            if (args.ObjectNamesVersions.Count <= 1000)
             {
-                utils.ValidateObjectName(objVerTuple.Item1);
-                if ((listIndex + objVerTuple.Item2.Count) <= 1000)
-                {
-                    objVersions.Add(objVerTuple);
-                    i += objVerTuple.Item2.Count;
-                    listIndex += objVerTuple.Item2.Count;
-                    if (listIndex == 1000)
-                    {
-                        listIndex = 0;
-                        fullErrorsList.AddRange(await callRemoveObjectVersions(args, objVersions, fullErrorsList, cancellationToken));
-                        objVersions.Clear();
-                    }
-                }
-                // Once we make the iteration count for remove as 1000.
-                // Check what is remaining in the tuple list.
-                // Remaining is more than 1000.
-                else if ((listIndex + objVerTuple.Item2.Count) > 1000)
-                {
-                    List<string> curItemList = new List<string>();
-                    curItemList.AddRange(objVerTuple.Item2);
-                    string objectName = objVerTuple.Item1;
-                    List<string> objVersionList = new List<string>();
-                    // Fill until count is 1000.
-                    objVersionList.AddRange(curItemList.GetRange(0, (1000 - (listIndex + 1))));
-                    curItemList.RemoveRange(0, (1000 - (listIndex + 1)));
-                    objVersions.Add(new Tuple<string, List<string>>(objectName, objVersionList));
-                    // objectVersions has 1000 <object-name, version id> pairs now. Call Remove.
-                    var errorList = await callRemoveObjectVersions(args, objVersions, fullErrorsList, cancellationToken).ConfigureAwait(false);
-                    fullErrorsList.AddRange(errorList);
-                    int curItemListCount = curItemList.Count;
-                    // Since we only get this one iteration, we'll empty the rest of the items in the list in batches of 1000 or less.
-                    while (curItemListCount > 0)
-                    {
-                        Tuple<string, List<string>> tpl;
-                        if (curItemListCount >= 1000)
-                        {
-                            tpl = new Tuple<string, List<string>>(objVerTuple.Item1, curItemList.GetRange(0, 1000));
-                            objVersions.Add(tpl);
-                            curItemList.RemoveRange(0, 1000);
-                            curItemListCount = curItemList.Count;
-                        }
-                        else
-                        {
-                            tpl = new Tuple<string, List<string>>(objVerTuple.Item1, curItemList.GetRange(0, curItemListCount));
-                            objVersions.Add(tpl);
-                            curItemList.Clear();
-                            curItemListCount = 0;
-                        }
-                        if (objVersions.Count > 0)
-                        {
-                            errorList = await callRemoveObjectVersions(args, objVersions, fullErrorsList, cancellationToken).ConfigureAwait(false);
-                            fullErrorsList.AddRange(errorList);
-                        }
-                    }
-                }
+                fullErrorsList.AddRange(await callRemoveObjectVersions(args, args.ObjectNamesVersions, fullErrorsList, cancellationToken));
+                return fullErrorsList;
             }
-            if (objVersions.Count > 0)
+            else
             {
-                fullErrorsList.AddRange(await callRemoveObjectVersions(args, objVersions, fullErrorsList, cancellationToken));
+                List<Tuple<string, string>> curItemList = new List<Tuple<string, string>>(args.ObjectNamesVersions.GetRange(0, 1000));
+                int curItemListCount = curItemList.Count;
+                int deletedCount = 0;
+                while (curItemListCount > 0)
+                {
+                    Console.WriteLine("curItemList.Count " + curItemList.Count);
+                    var errorList = await callRemoveObjectVersions(args, curItemList, fullErrorsList, cancellationToken).ConfigureAwait(false);
+                    deletedCount += curItemList.Count;
+                    fullErrorsList.AddRange(errorList);
+                    curItemList.Clear();
+                    if ((args.ObjectNamesVersions.Count - deletedCount) <= 0)
+                    {
+                        break;
+                    }
+                    if ((args.ObjectNamesVersions.Count - deletedCount) <= 1000)
+                    {
+                        curItemList.AddRange(args.ObjectNamesVersions.GetRange(curItemListCount, (args.ObjectNamesVersions.Count - deletedCount)));
+                    }
+                    else
+                    {
+                        curItemList.AddRange(args.ObjectNamesVersions.GetRange(curItemListCount, 1000));
+                    }
+                    curItemListCount = curItemList.Count;
+                }
             }
             return fullErrorsList;
         }

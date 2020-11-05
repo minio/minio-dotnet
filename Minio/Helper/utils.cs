@@ -78,7 +78,7 @@ namespace Minio
         // http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
         internal static void ValidateObjectName(string objectName)
         {
-            if (objectName.Trim() == string.Empty)
+            if (string.IsNullOrEmpty(objectName) || objectName.Trim() == string.Empty)
             {
                 throw new InvalidObjectNameException(objectName, "Object name cannot be empty.");
             }

@@ -69,7 +69,6 @@ namespace Minio
         {
             args.Validate();
             List<DeleteError> fullErrorsList = new List<DeleteError>();
-            int count = (args.ObjectNames.Count > 0)?args.ObjectNames.Count:args.ObjectNamesVersions.Count;
             if (args.ObjectNamesVersions.Count > 0)
             {
                 fullErrorsList = await removeObjectVersionsHelper(args, fullErrorsList, cancellationToken);

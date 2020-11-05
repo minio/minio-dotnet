@@ -27,7 +27,7 @@ namespace Minio.Examples.Cases
         public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name",
                                      List<string> objectsList = null,
-                                     List<Tuple<string, List<string>>> objectsVersionsList = null)
+                                     List<Tuple<string, string>> objectsVersionsList = null)
         {
             try
             {

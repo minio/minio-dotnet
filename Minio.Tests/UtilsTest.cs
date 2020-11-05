@@ -162,10 +162,8 @@ namespace Minio.Tests
         [TestMethod]
         public void TestCaseInsensitiveContains()
         {
-            Assert.IsTrue(utils.CaseInsensitiveContains("AbCdEF", "ef"));
             Assert.IsTrue(utils.CaseInsensitiveContains("ef", ""));
             Assert.IsTrue(utils.CaseInsensitiveContains("abcdef", "ef"));
-            Assert.IsTrue(utils.CaseInsensitiveContains("AbCdEF", "Bc"));
             Assert.IsFalse(utils.CaseInsensitiveContains("abc", "xyz"));
         }
 

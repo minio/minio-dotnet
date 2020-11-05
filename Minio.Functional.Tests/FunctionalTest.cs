@@ -24,6 +24,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -56,7 +58,7 @@ namespace Minio.Functional.Tests
         private const string getObjectSignature3 = "Task GetObjectAsync(string bucketName, string objectName, string fileName, CancellationToken cancellationToken = default(CancellationToken))";
         private const string putObjectSignature1 = "Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType, Dictionary<string, string> metaData=null, CancellationToken cancellationToken = default(CancellationToken))";
         private const string putObjectSignature2 = "Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null, Dictionary<string, string> metaData=null, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string listenBucketNotificationsSignature = "IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events, string prefix, string suffix, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string listenBucketNotificationsSignature = "IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(ListenBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string statObjectSignature = "Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))";
         private const string copyObjectSignature = "Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeObjectSignature1 = "Task RemoveObjectAsync(RemoveObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))";
@@ -67,9 +69,9 @@ namespace Minio.Functional.Tests
         private const string presignedPostPolicySignature = "Task<Dictionary<string, string>> PresignedPostPolicyAsync(PostPolicy policy)";
         private const string getBucketPolicySignature = "Task<string> GetPolicyAsync(GetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string setBucketPolicySignature = "Task SetPolicyAsync(SetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string getBucketNotificationSignature = "Task<BucketNotification> GetBucketNotificationAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string setBucketNotificationSignature = "Task SetBucketNotificationAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string removeAllBucketsNotificationSignature = "Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string getBucketNotificationSignature = "Task<BucketNotification> GetBucketNotificationAsync(GetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string setBucketNotificationSignature = "Task SetBucketNotificationAsync(SetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string removeAllBucketsNotificationSignature = "Task RemoveAllBucketNotificationsAsync(RemoveAllBucketNotifications args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string selectObjectSignature = "Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts, CancellationToken cancellationToken = default(CancellationToken))";
 
         // Create a file of given size from random byte array or optionally create a symbolic link
@@ -470,7 +472,7 @@ namespace Minio.Functional.Tests
             await minio.RemoveBucketAsync(rbArgs);
         }
 
-        internal async static Task RemoveObjects(MinioClient minio, string bucketName)
+        internal async static Task RemoveBucket(MinioClient minio, string bucketName)
         {
             RemoveBucketArgs rbArgs = new RemoveBucketArgs()
                                                 .WithBucket(bucketName);
@@ -2261,11 +2263,9 @@ namespace Minio.Functional.Tests
                                                             .WithBucket(bucketName)
                                                             .WithRecursive(true)
                                                             .WithVersions(true);
-                var objectsVersionsMap = new Dictionary<string, List<string>>();
                 int count = 0;
                 int numObjectVersions = 8;
                 bool finishedRemove = false;
-                List<string> versions = new List<string>();
                 IObservable<VersionItem> observable = minio.ListObjectVersionsAsync(listObjectsArgs);
                 IDisposable subscription = observable.Subscribe(
                     item =>
@@ -2413,6 +2413,74 @@ namespace Minio.Functional.Tests
             catch (MinioException ex)
             {
                 new MintLogger("RemoveObjects_Test2", removeObjectSignature2, "Tests whether RemoveObjectsAsync for multi objects delete passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
+            }
+        }
+
+        internal async static Task RemoveObjects_Test3(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomObjectName(6);
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName", bucketName },
+                { "objectNames", "[" + objectName + "0..." + objectName + "50]" },
+            };
+            try
+            {
+                int count = 50;
+                Task[] tasks = new Task[count];
+                List<string> objectsList = new List<string>();
+                await Setup_WithLock_Test(minio, bucketName);
+                for (int i = 0; i < count; i++)
+                {
+                    tasks[i] = PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(5));
+                    tasks[i] = PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(5));
+                    objectsList.Add(objectName + i.ToString());
+                }
+                Task.WhenAll(tasks).Wait();
+                System.Threading.Thread.Sleep(1000);
+                ListObjectsArgs listObjectsArgs = new ListObjectsArgs()
+                                                            .WithBucket(bucketName)
+                                                            .WithRecursive(true)
+                                                            .WithVersions(true);
+                IObservable<VersionItem> observable = minio.ListObjectVersionsAsync(listObjectsArgs);
+                List<Tuple<string, string>> objVersions = new List<Tuple<string, string>>();
+
+                IDisposable subscription = observable.Subscribe(
+                    item =>
+                    {
+                        objVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
+                    },
+                    ex => throw ex,
+                    async () =>
+                    {
+                        RemoveObjectsArgs removeObjectsArgs = new RemoveObjectsArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObjectsVersions(objVersions);
+                        IObservable<DeleteError> rmObservable = await minio.RemoveObjectsAsync(removeObjectsArgs);
+                        List<DeleteError> deList = new List<DeleteError>();
+                        IDisposable rmSub = rmObservable.Subscribe(
+                        err =>
+                        {
+                            deList.Add(err);
+                        },
+                        ex =>
+                        {
+                            throw ex;
+                        },
+                        async () =>
+                        {
+                            await TearDown(minio, bucketName).ConfigureAwait(false);
+                        });
+                    });
+
+                Thread.Sleep(2 * 1000);
+                new MintLogger("RemoveObject_Test3", removeObjectSignature2, "Tests whether RemoveObjectsAsync for multi objects/versions delete passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (MinioException ex)
+            {
+                new MintLogger("RemoveObjects_Test3", removeObjectSignature2, "Tests whether RemoveObjectsAsync for multi objects/versions delete passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
             }
         }
 
@@ -3066,7 +3134,12 @@ namespace Minio.Functional.Tests
 
                 var received = new List<MinioNotificationRaw>();
 
-                IObservable<MinioNotificationRaw> events = minio.ListenBucketNotificationsAsync(bucketName, new List<EventType> { EventType.ObjectCreatedAll });
+                List<EventType> eventsList = new List<EventType>();
+                eventsList.Add(EventType.ObjectCreatedAll);
+                ListenBucketNotificationsArgs listenArgs = new ListenBucketNotificationsArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithEvents(eventsList);
+                IObservable<MinioNotificationRaw> events = minio.ListenBucketNotificationsAsync(listenArgs);
                 IDisposable subscription = events.Subscribe(
                     ev => {
                         Console.WriteLine($"ListenBucketNotificationsAsync received: " + ev.json);
@@ -3093,9 +3166,8 @@ namespace Minio.Functional.Tests
 
                         Assert.AreEqual(1, notification.Records.Length);
                         Assert.AreEqual("s3:ObjectCreated:Put", notification.Records[0].eventName);
-                        Assert.AreEqual(bucketName, notification.Records[0].s3.bucketMeta.name);
-                        Assert.AreEqual(objectName, System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key));
-                        Assert.AreEqual(contentType, notification.Records[0].s3.objectMeta.contentType);
+                        StringAssert.Equals(objectName, System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key));
+                        StringAssert.Equals(contentType, notification.Records[0].s3.objectMeta.contentType);
                         Console.WriteLine("PASSED");
                         testOutcome = TestStatus.PASS;
                         break;
@@ -3175,11 +3247,12 @@ namespace Minio.Functional.Tests
 
                 var resp = await  minio.SelectObjectContentAsync(bucketName, objectName, opts);
                 var output = await new StreamReader(resp.Payload).ReadToEndAsync();
-                Assert.AreEqual(output,csvString.ToString());
+                StringAssert.Equals(output,csvString.ToString());
                 RemoveObjectArgs rmArgs = new RemoveObjectArgs()
                                                     .WithBucket(bucketName)
                                                     .WithObject(objectName);
                 await minio.RemoveObjectAsync(rmArgs);
+                StringAssert.Equals(output,csvString.ToString());
                 await TearDown(minio, bucketName);
                 new MintLogger("SelectObjectContent_Test", selectObjectSignature, "Tests whether SelectObjectContent passes for a select query", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }

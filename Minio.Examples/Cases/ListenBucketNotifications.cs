@@ -25,7 +25,7 @@ namespace Minio.Examples.Cases
         // Listen for notifications from a specified bucket (a Minio-only extension)
         public static void Run(MinioClient minio,
                                      string bucketName = "my-bucket-name",
-                                     IList<EventType> events = null,
+                                     List<EventType> events = null,
                                      string prefix = "",
                                      string suffix = "",
                                      bool recursive = true)
@@ -35,6 +35,11 @@ namespace Minio.Examples.Cases
                 Console.WriteLine("Running example for API: ListenBucketNotifications");
                 Console.WriteLine();
                 events = events ?? new List<EventType> { EventType.ObjectCreatedAll };
+                ListenBucketNotificationsArgs args = new ListenBucketNotificationsArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithPrefix(prefix)
+                                                                        .WithEvents(events)
+                                                                        .WithSuffix(suffix);
                 IObservable<MinioNotificationRaw> observable = minio.ListenBucketNotificationsAsync(bucketName, events, prefix, suffix);
 
                 IDisposable subscription = observable.Subscribe(
