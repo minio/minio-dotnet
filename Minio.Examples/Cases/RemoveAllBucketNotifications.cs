@@ -29,7 +29,9 @@ namespace Minio.Examples.Cases
             {
                 Console.WriteLine("Running example for API: RemoveAllBucketNotificationAsync");
                 
-                await minio.RemoveAllBucketNotificationsAsync(bucketName);
+                RemoveAllBucketNotificationsArgs args = new RemoveAllBucketNotificationsArgs()
+                                                                        .WithBucket(bucketName);
+                await minio.RemoveAllBucketNotificationsAsync(args);
 
                 Console.WriteLine($"Notifications successfully removed from the bucket {bucketName}");
                 Console.WriteLine();

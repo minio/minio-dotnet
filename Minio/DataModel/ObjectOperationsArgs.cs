@@ -100,23 +100,6 @@ namespace Minio
         }
     }
 
-    public class GetObjectEncryptionArgs : EncryptionArgs<GetObjectEncryptionArgs>
-    {
-        public GetObjectEncryptionArgs()
-        {
-            this.RequestMethod = Method.GET;
-        }
-        public override RestRequest BuildRequest(RestRequest request)
-        {
-            request = base.BuildRequest(request);
-            if (this.SSE != null)
-            {
-                //this.SSE.Marshal(this.Headers);
-            }
-            return request;
-        }
-    }
-
     public class GetObjectVersionArgs : ObjectVersionArgs<GetObjectVersionArgs>
     {
         public GetObjectVersionArgs()

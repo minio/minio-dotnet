@@ -1,4 +1,4 @@
-# 适用于与Amazon S3兼容的云存储的MinIO .NET SDK  [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io) [![Build status](https://ci.appveyor.com/api/projects/status/tvdpoypdmbuwg0me/branch/master?svg=true)](https://ci.appveyor.com/project/Harshavardhana/minio-dotnet/branch/master)
+# 适用于与Amazon S3兼容的云存储的MinIO .NET SDK  [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io)
 
 MinIO .NET Client SDK提供了简单的API来访问MinIO以及任何与Amazon S3兼容的对象存储服务。有关API和示例的完整列表，请查看[Dotnet Client API Reference](https://docs.min.io/docs/dotnet-client-api-reference)文档。本文假设你已经有VisualStudio开发环境。
 

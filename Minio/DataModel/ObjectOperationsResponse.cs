@@ -77,13 +77,4 @@ namespace Minio
             this.ObjectStatInfo = new ObjectStat(args.ObjectName, size, lastModified, etag, contentType, versionId, deleteMarker, metaData);
         }
     }
-
-
-    internal class GetObjectResponse : GenericResponse
-    {
-        internal GetObjectResponse(HttpStatusCode statusCode, string responseContent)
-                    : base(statusCode, responseContent)
-        {
-        }
-    }
 }
