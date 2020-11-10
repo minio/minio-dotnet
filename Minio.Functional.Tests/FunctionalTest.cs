@@ -70,7 +70,7 @@ namespace Minio.Functional.Tests
         private const string getBucketNotificationSignature = "Task<BucketNotification> GetBucketNotificationAsync(GetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string setBucketNotificationSignature = "Task SetBucketNotificationAsync(SetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeAllBucketsNotificationSignature = "Task RemoveAllBucketNotificationsAsync(RemoveAllBucketNotifications args, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string selectObjectSignature = "Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string selectObjectSignature = "Task<SelectResponseStream> SelectObjectContentAsync(SelectObjectContentArgs args,CancellationToken cancellationToken = default(CancellationToken))";
 
         // Create a file of given size from random byte array or optionally create a symbolic link
         // to the dataFileName residing in MINT_DATA_DIR
@@ -2927,11 +2927,8 @@ namespace Minio.Functional.Tests
                                             stream, stream.Length, null);
 
                 }
-                var opts = new SelectObjectOptions()
-                {
-                    ExpressionType = QueryExpressionType.SQL,
-                    Expression = "select * from s3object",
-                    InputSerialization = new SelectObjectInputSerialization()
+
+                var inputSerialization = new SelectObjectInputSerialization()
                     {
                         CompressionType = SelectCompressionType.NONE,
                         CSV = new CSVInputOptions()
@@ -2940,18 +2937,23 @@ namespace Minio.Functional.Tests
 				            RecordDelimiter = "\n",
 				            FieldDelimiter = ",",
                         }
-                    },
-                    OutputSerialization = new SelectObjectOutputSerialization()
+                    };
+                var outputSerialization = new SelectObjectOutputSerialization()
                     {
                         CSV = new CSVOutputOptions()
                         {
                             RecordDelimiter = "\n",
                             FieldDelimiter =  ",",
                         }
-                    }
-                };
-
-                var resp = await  minio.SelectObjectContentAsync(bucketName, objectName, opts);
+                    };
+                SelectObjectContentArgs selArgs = new SelectObjectContentArgs()
+                                                                .WithBucket(bucketName)
+                                                                .WithObject(objectName)
+                                                                .WithExpressionType(QueryExpressionType.SQL)
+                                                                .WithQueryExpression("select * from s3object")
+                                                                .WithInputSerialization(inputSerialization)
+                                                                .WithOutputSerialization(outputSerialization);
+                var resp = await  minio.SelectObjectContentAsync(selArgs).ConfigureAwait(false);
                 var output = await new StreamReader(resp.Payload).ReadToEndAsync();
                 StringAssert.Equals(output,csvString.ToString());
                 await minio.RemoveObjectAsync(bucketName, objectName);

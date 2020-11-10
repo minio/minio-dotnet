@@ -15,21 +15,32 @@
  */
 
 using System.Collections.Generic;
-using RestSharp;
 using System.Linq;
 
 namespace Minio
 {
-    public abstract class Args
+    public abstract class ObjectArgs<T> : BucketArgs<T>
+                            where T : ObjectArgs<T>
     {
+        internal string ObjectName { get; set; }
+        internal object RequestBody { get; set; }
 
-        // RequestMethod will be the HTTP Method for request variable which is of type RestRequest.
-        // Will be one of the type - HEAD, GET, PUT, DELETE. etc.
-        internal Method RequestMethod { get; set; }
-
-        public virtual RestRequest BuildRequest(RestRequest request)
+        public T WithObject(string obj)
         {
-            return request;
+            this.ObjectName = obj;
+            return (T)this;
+        }
+
+        public T WithRequestBody(object data)
+        {
+            this.RequestBody = data;
+            return (T)this;
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            utils.ValidateObjectName(this.ObjectName);
         }
     }
 }

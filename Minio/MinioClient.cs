@@ -160,7 +160,7 @@ namespace Minio
         /// Constructs a RestRequest using bucket/object names from Args.
         /// Calls overloaded CreateRequest method.
         /// </summary>
-        /// <param name="args">The child object of BucketArgs class, args with populated values from Input</param>
+        /// <param name="args">The direct descendant of BucketArgs class, args with populated values from Input</param>
         /// <returns>A RestRequest</returns>
         internal async Task<RestRequest> CreateRequest<T>(BucketArgs<T> args) where T : BucketArgs<T>
         {
@@ -168,6 +168,29 @@ namespace Minio
             RestRequest request = await this.CreateRequest(args.RequestMethod, args.BucketName).ConfigureAwait(false);
             return args.BuildRequest(request);
         }
+
+
+        /// <summary>
+        /// Constructs a RestRequest using bucket/object names from Args.
+        /// Calls overloaded CreateRequest method.
+        /// </summary>
+        /// <param name="args">The direct descendant of ObjectArgs class, args with populated values from Input</param>
+        /// <returns>A RestRequest</returns>
+        internal async Task<RestRequest> CreateRequest<T>(ObjectArgs<T> args) where T : ObjectArgs<T>
+        {
+            this.ArgsCheck(args);
+            string contentType = "application/octet-stream";
+            args.HeaderMap?.TryGetValue("Content-Type", out contentType);
+            RestRequest request = await this.CreateRequest(args.RequestMethod,
+                                                args.BucketName,
+                                                args.ObjectName,
+                                                args.HeaderMap,
+                                                contentType,
+                                                args.RequestBody,
+                                                null).ConfigureAwait(false);
+            return args.BuildRequest(request);
+        }
+
 
         /// <summary>
         /// Constructs a RestRequest. For AWS, this function has the side-effect of overriding the baseUrl
