@@ -37,8 +37,7 @@ namespace Minio.Examples.Cases
         public async static Task Run(MinioClient minio, 
                                      string bucketName = "my-bucket-name",
                                      string bucketObject = "my-object-name",
-                                     string versionID = null,
-                                     bool showMetaData = false)
+                                     string versionID = null)
         {
             try
             {
@@ -50,10 +49,7 @@ namespace Minio.Examples.Cases
                                                     .WithObject(bucketObject);
                     ObjectStat statObject = await minio.StatObjectAsync(objectStatArgs);
                     PrintStat(bucketObject, statObject);
-                    if (showMetaData)
-                    {
-                        PrintMetaData(statObject.MetaData);
-                    }
+                    PrintMetaData(statObject.MetaData);
                     return;
                 }
                 StatObjectArgs args = new StatObjectArgs()
@@ -62,10 +58,7 @@ namespace Minio.Examples.Cases
                                                 .WithVersionId(versionID);
                 ObjectStat statObjectVersion = await minio.StatObjectAsync(args);
                 PrintStat(bucketObject, statObjectVersion);
-                if (showMetaData)
-                {
-                    PrintMetaData(statObjectVersion.MetaData);
-                }
+                PrintMetaData(statObjectVersion.MetaData);
             }
             catch (MinioException me)
             {

@@ -87,35 +87,16 @@ namespace Minio
         }
     }
 
-    public class StatVersionArgs : ObjectVersionArgs<StatVersionArgs>
-    {
-        public StatVersionArgs()
-        {
-            this.RequestMethod = Method.GET;
-        }
-        public override RestRequest BuildRequest(RestRequest request)
-        {
-            request = base.BuildRequest(request);
-            if (!string.IsNullOrEmpty(this.VersionId))
-            {
-                request.AddQueryParameter("versionId", this.VersionId);
-            }
-            return request;
-        }
-    }
     public class StatObjectArgs : ObjectQueryArgs<StatObjectArgs>
     {
-        internal StatVersionArgs VersionArgs { get; set; }
         public StatObjectArgs()
         {
             this.RequestMethod = Method.HEAD;
-            this.VersionArgs = new StatVersionArgs();
         }
 
         public override RestRequest BuildRequest(RestRequest request)
         {
             request = base.BuildRequest(request);
-            request = this.VersionArgs.BuildRequest(request);
             if (!string.IsNullOrEmpty(this.MatchETag))
             {
                 request.AddOrUpdateParameter("If-Match", this.MatchETag, ParameterType.HttpHeader);
@@ -141,19 +122,13 @@ namespace Minio
             base.Validate();
             if (!string.IsNullOrEmpty(this.NotMatchETag) && !string.IsNullOrEmpty(this.MatchETag))
             {
-                throw new ArgumentException(nameof(this.NotMatchETag) + " and " + nameof(this.MatchETag) + " being set is not allowed.");
+                throw new InvalidOperationException("Invalid to set both Etag match conditions " + nameof(this.NotMatchETag) + " and " + nameof(this.MatchETag));
             }
             if ((this.ModifiedSince != null && !this.ModifiedSince.Equals(default(DateTime))) &&
                     (this.ModifiedSince != null && !this.UnModifiedSince.Equals(default(DateTime))))
             {
-                throw new ArgumentException(nameof(this.NotMatchETag) + " and " + nameof(this.MatchETag) + " being set is not allowed.");
+                throw new InvalidOperationException("Invalid to set both modified date match conditions " + nameof(this.ModifiedSince) + " and " + nameof(this.UnModifiedSince));
             }
-        }
-
-        public StatObjectArgs WithVersionId(string vid)
-        {
-            this.VersionArgs.WithVersionId(vid);
-            return this;
         }
     }
 }

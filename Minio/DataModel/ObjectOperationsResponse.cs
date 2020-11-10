@@ -50,45 +50,39 @@ namespace Minio
             string versionId = null;
             bool deleteMarker = false;
             var metaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
             foreach (Parameter parameter in responseHeaders)
             {
-                if (parameter.Name.Equals("Content-Length", StringComparison.OrdinalIgnoreCase))
+                switch(parameter.Name.ToLower())
                 {
-                    size = long.Parse(parameter.Value.ToString());
-                }
-                else if (parameter.Name.Equals("Last-Modified", StringComparison.OrdinalIgnoreCase))
-                {
-                    lastModified = DateTime.Parse(parameter.Value.ToString(), CultureInfo.InvariantCulture);
-                }
-                else if (parameter.Name.Equals("ETag", StringComparison.OrdinalIgnoreCase))
-                {
-                    etag = parameter.Value.ToString().Replace("\"", string.Empty);
-                }
-                else if (parameter.Name.Equals("Content-Type", StringComparison.OrdinalIgnoreCase))
-                {
-                    contentType = parameter.Value.ToString();
-                    metaData["Content-Type"] = contentType;
-                }
-                else if (OperationsUtil.IsSupportedHeader(parameter.Name))
-                {
-                    metaData[parameter.Name] = parameter.Value.ToString();
-                }
-                else if (parameter.Name.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
-                {
-                    metaData[parameter.Name.Substring("x-amz-meta-".Length)] = parameter.Value.ToString();
-                }
-                else if (parameter.Name.Equals("x-amz-version-id", StringComparison.OrdinalIgnoreCase))
-                {
-                    versionId = parameter.Value.ToString();
-                }
-                else if (parameter.Name.Equals("x-amz-delete-marker", StringComparison.OrdinalIgnoreCase))
-                {
-                    deleteMarker = parameter.Value.ToString().Equals("true");
-                }
-                else if (OperationsUtil.IsSupportedHeader(parameter.Name))
-                {
-                    metaData[parameter.Name] = parameter.Value.ToString();
+                    case "content-length" :
+                        size = long.Parse(parameter.Value.ToString());
+                        break;
+                    case "last-modified" :
+                        lastModified = DateTime.Parse(parameter.Value.ToString(), CultureInfo.InvariantCulture);
+                        break;
+                    case "etag" :
+                        etag = parameter.Value.ToString().Replace("\"", string.Empty);
+                        break;
+                    case "Content-Type" :
+                        contentType = parameter.Value.ToString();
+                        metaData["Content-Type"] = contentType;
+                        break;
+                    case "x-amz-version-id" :
+                        versionId = parameter.Value.ToString();
+                        break;
+                    case "x-amz-delete-marker":
+                        deleteMarker = parameter.Value.ToString().Equals("true");
+                        break;
+                    default:
+                        if (OperationsUtil.IsSupportedHeader(parameter.Name))
+                        {
+                            metaData[parameter.Name] = parameter.Value.ToString();
+                        }
+                        else if (parameter.Name.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
+                        {
+                            metaData[parameter.Name.Substring("x-amz-meta-".Length)] = parameter.Value.ToString();
+                        }
+                        break;
                 }
             }
             this.ObjectInfo = new ObjectStat(args.ObjectName, size, lastModified, etag, contentType, versionId, deleteMarker, metaData);

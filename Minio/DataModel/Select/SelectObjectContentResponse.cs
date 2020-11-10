@@ -23,7 +23,6 @@ namespace Minio.DataModel
     [Serializable]
     public class SelectObjectContentResponse
     {
-        [XmlAttribute("Prefix")]
         /// Event Stream result of SelectObjectContent
         public Action<Stream> StreamCallBack { get; set; }
 

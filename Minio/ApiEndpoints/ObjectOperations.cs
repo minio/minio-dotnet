@@ -51,6 +51,21 @@ namespace Minio
 
 
         /// <summary>
+        /// Select an object's content. The object will be streamed to the callback given by the user.
+        /// </summary>
+        /// <param name="args">SelectObjectContentArgs Arguments Object which encapsulates bucket name, object name, Select Object Options</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        public async Task<SelectResponseStream> SelectObjectContentAsync(SelectObjectContentArgs args,CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            SelectObjectContentResponse selectObjectContentResponse = new SelectObjectContentResponse(response.StatusCode, response.Content, response.RawBytes);
+            return selectObjectContentResponse.ResponseStream;
+        }
+
+
+        /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
@@ -220,32 +235,18 @@ namespace Minio
         /// <param name="objectName">Name of object to retrieve</param>
         /// <param name="opts">Select Object options</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        [Obsolete("Use SelectObjectContentAsync method with SelectObjectContentsArgs object. Refer SelectObjectContent example code.")]
         public async Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts,CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.ValidateBucketName(bucketName);
-            utils.ValidateObjectName(objectName);
-            if (opts == null)
-            {
-                throw new ArgumentException("Options cannot be null", nameof(opts));
-            }
-            Dictionary<string,string> sseHeaders = null;
-            if (opts.SSE != null)
-            {
-                sseHeaders = new Dictionary<string,string>();
-                opts.SSE.Marshal(sseHeaders);
-            }
-            var selectReqBytes = System.Text.Encoding.UTF8.GetBytes(opts.MarshalXML());
-
-            var request = await this.CreateRequest(Method.POST, bucketName,
-                                                    objectName: objectName,
-                                                    headerMap: sseHeaders)
-                                    .ConfigureAwait(false);
-            request.AddQueryParameter("select","");
-            request.AddQueryParameter("select-type","2");
-            request.AddParameter("application/xml", selectReqBytes, ParameterType.RequestBody);
-
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-            return new SelectResponseStream(new MemoryStream(response.RawBytes));
+            SelectObjectContentArgs args = new SelectObjectContentArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName)
+                                                        .WithExpressionType(opts.ExpressionType)
+                                                        .WithQueryExpression(opts.Expression)
+                                                        .WithInputSerialization(opts.InputSerialization)
+                                                        .WithOutputSerialization(opts.OutputSerialization)
+                                                        .WithRequestProgress(opts.RequestProgress);
+            return await this.SelectObjectContentAsync(args, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -831,6 +832,7 @@ namespace Minio
         /// <param name="sse"> Server-side encryption option.Defaults to null</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Facts about the object</returns>
+        [Obsolete("Use StatObjectAsync method with StatObjectArgs object. Refer StatObject & StatObjectQuery example code.")]
         public async Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             StatObjectArgs args = new StatObjectArgs()
