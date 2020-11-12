@@ -75,7 +75,7 @@ namespace Minio
                 else if (fileSize > length)
                 {
                     throw new ArgumentException("'" + args.FileName + "': object size " + length + " is smaller than file size "
-                                                       + fileSize, nameof(fileSize));
+                                                       + fileSize);
                 }
                 else if (!tempFileExists)
                 {

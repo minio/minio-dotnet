@@ -24,35 +24,83 @@ using Minio.Exceptions;
 
 namespace Minio
 {
-    public class StatVersionArgs : ObjectVersionArgs<StatVersionArgs>
+    public class SelectObjectContentArgs: EncryptionArgs<SelectObjectContentArgs>
     {
-        public StatVersionArgs()
+        private SelectObjectOptions SelectOptions;
+
+        public SelectObjectContentArgs()
         {
-            this.RequestMethod = Method.GET;
+            this.RequestMethod = Method.POST;
+            this.SelectOptions = new SelectObjectOptions();
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if (string.IsNullOrEmpty(this.SelectOptions.Expression))
+            {
+                throw new InvalidOperationException("The Expression " + nameof(this.SelectOptions.Expression) + " for Select Object Content cannot be empty.");
+            }
+            if ((this.SelectOptions.InputSerialization == null) || (this.SelectOptions.OutputSerialization == null))
+            {
+                throw new InvalidOperationException("The Input/Output serialization members for SelectObjectContentArgs should be initialized " + nameof(this.SelectOptions.InputSerialization) + " " + nameof(this.SelectOptions.OutputSerialization));
+            }
         }
         public override RestRequest BuildRequest(RestRequest request)
         {
             request = base.BuildRequest(request);
-            if (!string.IsNullOrEmpty(this.VersionId))
+            if (this.RequestBody == null)
             {
-                request.AddQueryParameter("versionId", this.VersionId);
+                this.RequestBody = System.Text.Encoding.UTF8.GetBytes(this.SelectOptions.MarshalXML());
             }
+            request.AddQueryParameter("select","");
+            request.AddQueryParameter("select-type","2");
+            request.AddParameter("application/xml", (byte[])this.RequestBody, ParameterType.RequestBody);
             return request;
         }
+
+        public SelectObjectContentArgs WithExpressionType(QueryExpressionType e)
+        {
+            this.SelectOptions.ExpressionType = e;
+            return this;
+        }
+
+        public SelectObjectContentArgs WithQueryExpression(string expr)
+        {
+            this.SelectOptions.Expression = expr;
+            return this;
+        }
+
+        public SelectObjectContentArgs WithInputSerialization(SelectObjectInputSerialization serialization)
+        {
+            this.SelectOptions.InputSerialization = serialization;
+            return this;
+        }
+
+        public SelectObjectContentArgs WithOutputSerialization(SelectObjectOutputSerialization serialization)
+        {
+            this.SelectOptions.OutputSerialization = serialization;
+            return this;
+        }
+
+        public SelectObjectContentArgs WithRequestProgress(RequestProgress requestProgress)
+        {
+            this.SelectOptions.RequestProgress = requestProgress;
+            return this;
+        }
     }
+
+
     public class StatObjectArgs : ObjectQueryArgs<StatObjectArgs>
     {
-        internal StatVersionArgs VersionArgs { get; set; }
         public StatObjectArgs()
         {
             this.RequestMethod = Method.HEAD;
-            this.VersionArgs = new StatVersionArgs();
         }
 
         public override RestRequest BuildRequest(RestRequest request)
         {
             request = base.BuildRequest(request);
-            request = this.VersionArgs.BuildRequest(request);
             if (!string.IsNullOrEmpty(this.MatchETag))
             {
                 request.AddOrUpdateParameter("If-Match", this.MatchETag, ParameterType.HttpHeader);
@@ -85,35 +133,6 @@ namespace Minio
             {
                 throw new ArgumentException(nameof(this.NotMatchETag) + " and " + nameof(this.MatchETag) + " being set is not allowed.");
             }
-        }
-
-        public StatObjectArgs WithVersionId(string vid)
-        {
-            this.VersionArgs.VersionId = vid;
-            return this;
-        }
-
-        public StatObjectArgs WithStatVersionArgs(StatVersionArgs versionArgs)
-        {
-            this.VersionArgs.WithVersionId(versionArgs.VersionId);
-            return this;
-        }
-    }
-
-    public class GetObjectVersionArgs : ObjectVersionArgs<GetObjectVersionArgs>
-    {
-        public GetObjectVersionArgs()
-        {
-            this.RequestMethod = Method.GET;
-        }
-        public override RestRequest BuildRequest(RestRequest request)
-        {
-            request = base.BuildRequest(request);
-            if (!string.IsNullOrEmpty(this.VersionId))
-            {
-                request.AddQueryParameter("versionId", this.VersionId);
-            }
-            return request;
         }
     }
 

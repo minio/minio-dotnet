@@ -19,7 +19,7 @@ using Minio.Exceptions;
 
 namespace Minio
 {
-    public abstract class ObjectQueryArgs<T> : EncryptionArgs<T>
+    public abstract class ObjectQueryArgs<T> : ObjectVersionArgs<T>
                                     where T: ObjectQueryArgs<T>
     {
         internal string MatchETag { get; set; }

@@ -24,7 +24,6 @@ namespace Minio
     {
         internal ServerSideEncryption SSE { get; set; }
         internal Dictionary<string,string> SSEHeaders { get; set; }
-        internal string CustomerKeyMD5 { get; set; }
 
         public EncryptionArgs()
         {
@@ -35,7 +34,6 @@ namespace Minio
         {
             this.SSE = sse;
             this.SSE?.Marshal(SSEHeaders);
-            this.CustomerKeyMD5 = this.SSE?.GetCustomerKeyMD5();
             return (T)this;
         }
     }

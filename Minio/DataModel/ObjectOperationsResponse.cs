@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Net;
 using Minio.DataModel;
 using RestSharp;
@@ -76,5 +77,15 @@ namespace Minio
             }
             this.ObjectStatInfo = new ObjectStat(args.ObjectName, size, lastModified, etag, contentType, versionId, deleteMarker, metaData);
         }
+    }
+    internal class SelectObjectContentResponse : GenericResponse
+    {
+        internal SelectResponseStream ResponseStream { get; private set; }
+        internal SelectObjectContentResponse(HttpStatusCode statusCode, string responseContent, byte[] responseRawBytes)
+                    : base(statusCode, responseContent)
+        {
+            this.ResponseStream = new SelectResponseStream(new MemoryStream(responseRawBytes));
+        }
+
     }
 }
