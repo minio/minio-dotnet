@@ -1634,9 +1634,9 @@ catch(MinioException e)
 ```
 
 <a name="selectObjectContent"></a>
-### SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts)
+### SelectObjectContentAsync(SelectObjectContentArgs args)
 
-`Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts, CancellationToken cancellationToken = default(CancellationToken))`
+`Task<SelectResponseStream> SelectObjectContentAsync(SelectObjectContentArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 Downloads an object as a stream.
 
@@ -1646,9 +1646,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_ | Name of the bucket  |
-| ``objectName``  | _string_  | Object name in the bucket |
-| ``opts``    | SelectObjectOptions | options for SelectObjectContent async | Required parameter. |
+| ``args``    | _SelectObjectContentArgs_ | options for SelectObjectContent async | Required parameter. |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -1692,7 +1690,11 @@ try
         }
     };
 
-    var resp = await  minio.SelectObjectContentAsync(bucketName, objectName, opts);
+    SelectObjectContentArgs args = SelectObjectContentArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObject(objectName)
+                                                .WithSelectObjectOptions(opts);
+    var resp = await  minio.SelectObjectContentAsync(args);
     resp.Payload.CopyTo(Console.OpenStandardOutput());
     Console.WriteLine("Bytes scanned:" + resp.Stats.BytesScanned);
     Console.WriteLine("Bytes returned:" + resp.Stats.BytesReturned);

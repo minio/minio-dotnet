@@ -14,22 +14,20 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-using RestSharp;
-using System.Linq;
+using System.IO;
+using System.Net;
+using Minio.DataModel;
 
 namespace Minio
 {
-    public abstract class Args
+    internal class SelectObjectContentResponse : GenericResponse
     {
-
-        // RequestMethod will be the HTTP Method for request variable which is of type RestRequest.
-        // Will be one of the type - HEAD, GET, PUT, DELETE. etc.
-        internal Method RequestMethod { get; set; }
-
-        public virtual RestRequest BuildRequest(RestRequest request)
+        internal SelectResponseStream ResponseStream { get; private set; }
+        internal SelectObjectContentResponse(HttpStatusCode statusCode, string responseContent, byte[] responseRawBytes)
+                    : base(statusCode, responseContent)
         {
-            return request;
+            this.ResponseStream = new SelectResponseStream(new MemoryStream(responseRawBytes));
         }
+
     }
 }

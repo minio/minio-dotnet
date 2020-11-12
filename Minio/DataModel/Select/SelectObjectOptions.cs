@@ -20,7 +20,6 @@ using System.Globalization;
 
 using System.Xml.Serialization;
 using System.IO;
-using System.Text;
 
 namespace Minio.DataModel
 {

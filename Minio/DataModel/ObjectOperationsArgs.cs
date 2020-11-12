@@ -19,6 +19,8 @@ using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
 
+using Minio.DataModel;
+
 namespace Minio
 {
     public class RemoveObjectArgs : ObjectArgs<RemoveObjectArgs>
@@ -142,6 +144,71 @@ namespace Minio
                 request.AddXmlBody(deleteObjectsRequest);
             }
             return request;
+        }
+    }
+    public class SelectObjectContentArgs: EncryptionArgs<SelectObjectContentArgs>
+    {
+        private SelectObjectOptions SelectOptions;
+
+        public SelectObjectContentArgs()
+        {
+            this.RequestMethod = Method.POST;
+            this.SelectOptions = new SelectObjectOptions();
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if (string.IsNullOrEmpty(this.SelectOptions.Expression))
+            {
+                throw new InvalidOperationException("The Expression " + nameof(this.SelectOptions.Expression) + " for Select Object Content cannot be empty.");
+            }
+            if ((this.SelectOptions.InputSerialization == null) || (this.SelectOptions.OutputSerialization == null))
+            {
+                throw new InvalidOperationException("The Input/Output serialization members for SelectObjectContentArgs should be initialized " + nameof(this.SelectOptions.InputSerialization) + " " + nameof(this.SelectOptions.OutputSerialization));
+            }
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request = base.BuildRequest(request);
+            if (this.RequestBody == null)
+            {
+                this.RequestBody = System.Text.Encoding.UTF8.GetBytes(this.SelectOptions.MarshalXML());
+            }
+            request.AddQueryParameter("select","");
+            request.AddQueryParameter("select-type","2");
+            request.AddParameter("application/xml", (byte[])this.RequestBody, ParameterType.RequestBody);
+            return request;
+        }
+
+        public SelectObjectContentArgs WithExpressionType(QueryExpressionType e)
+        {
+            this.SelectOptions.ExpressionType = e;
+            return this;
+        }
+
+        public SelectObjectContentArgs WithQueryExpression(string expr)
+        {
+            this.SelectOptions.Expression = expr;
+            return this;
+        }
+
+        public SelectObjectContentArgs WithInputSerialization(SelectObjectInputSerialization serialization)
+        {
+            this.SelectOptions.InputSerialization = serialization;
+            return this;
+        }
+
+        public SelectObjectContentArgs WithOutputSerialization(SelectObjectOutputSerialization serialization)
+        {
+            this.SelectOptions.OutputSerialization = serialization;
+            return this;
+        }
+
+        public SelectObjectContentArgs WithRequestProgress(RequestProgress requestProgress)
+        {
+            this.SelectOptions.RequestProgress = requestProgress;
+            return this;
         }
     }
 }
