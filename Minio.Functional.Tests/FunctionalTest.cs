@@ -63,7 +63,7 @@ namespace Minio.Functional.Tests
         private const string removeObjectSignature2 = "Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectsList, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeIncompleteUploadSignature = "Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))";
         private const string presignedGetObjectSignature = "Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null)";
-        private const string presignedPutObjectSignature = "Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)";
+        private const string presignedPutObjectSignature = "Task<string> PresignedPutObjectAsync(PresignedPutObjectArgs args)";
         private const string presignedPostPolicySignature = "Task<Dictionary<string, string>> PresignedPostPolicyAsync(PostPolicy policy)";
         private const string getBucketPolicySignature = "Task<string> GetPolicyAsync(GetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string setBucketPolicySignature = "Task SetPolicyAsync(SetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))";
@@ -2383,7 +2383,11 @@ namespace Minio.Functional.Tests
             {
                 await Setup_Test(minio, bucketName);
                 // Upload with presigned url
-                string presigned_url = await minio.PresignedPutObjectAsync(bucketName, objectName, 1000);
+                PresignedPutObjectArgs presignedPutObjectArgs = new PresignedPutObjectArgs()
+                                                                            .WithBucket(bucketName)
+                                                                            .WithObject(objectName)
+                                                                            .WithExpiry(1000);
+                string presigned_url = await minio.PresignedPutObjectAsync(presignedPutObjectArgs);
                 await UploadObjectAsync(presigned_url, fileName);
                 // Get stats for object from server
                 ObjectStat stats = await minio.StatObjectAsync(bucketName, objectName);
@@ -2430,7 +2434,11 @@ namespace Minio.Functional.Tests
                                                     objectName,
                                                     filestream, filestream.Length, null);
                     ObjectStat stats = await minio.StatObjectAsync(bucketName, objectName);
-                    string presigned_url = await minio.PresignedPutObjectAsync(bucketName, objectName, 0);
+                    PresignedPutObjectArgs presignedPutObjectArgs = new PresignedPutObjectArgs()
+                                                                                .WithBucket(bucketName)
+                                                                                .WithObject(objectName)
+                                                                                .WithExpiry(0);
+                    string presigned_url = await minio.PresignedPutObjectAsync(presignedPutObjectArgs);
                 }
                 catch (InvalidExpiryRangeException)
                 {

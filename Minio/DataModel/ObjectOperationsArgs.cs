@@ -18,6 +18,8 @@ using System;
 using RestSharp;
 
 using Minio.DataModel;
+using Minio.Exceptions;
+using Minio.Helper;
 
 namespace Minio
 {
@@ -83,6 +85,31 @@ namespace Minio
         public SelectObjectContentArgs WithRequestProgress(RequestProgress requestProgress)
         {
             this.SelectOptions.RequestProgress = requestProgress;
+            return this;
+        }
+    }
+
+    public class PresignedPutObjectArgs : ObjectArgs<PresignedPutObjectArgs>
+    {
+        internal int Expiry { get; set; }
+
+        public PresignedPutObjectArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        internal new void Validate()
+        {
+            base.Validate();
+            if (!utils.IsValidExpiry(this.Expiry))
+            {
+                throw new InvalidExpiryRangeException("Expiry range should be between 1 and " + Constants.DefaultExpiryTime.ToString());
+            }
+        }
+
+        public PresignedPutObjectArgs WithExpiry(int ex)
+        {
+            this.Expiry = ex;
             return this;
         }
     }

@@ -52,6 +52,20 @@ namespace Minio
 
 
         /// <summary>
+        /// Presigned Put url -returns a presigned url to upload an object without credentials.URL can have a maximum expiry of
+        /// upto 7 days or a minimum of 1 second.
+        /// </summary>
+        /// <param name="args">PresignedPutObjectArgs Arguments Object which encapsulates bucket, object names, expiry</param>
+        /// <returns></returns>
+        public async Task<string> PresignedPutObjectAsync(PresignedPutObjectArgs args)
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            return this.authenticator.PresignURL(this.restClient, request, args.Expiry, Region, this.SessionToken);
+        }
+
+
+        /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
@@ -1178,14 +1192,14 @@ namespace Minio
         /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds</param>
         /// <returns></returns>
+        [Obsolete("Use PresignedPutObjectAsync method with PresignedPutObjectArgs object.")]
         public async Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
         {
-            if (!utils.IsValidExpiry(expiresInt))
-            {
-                throw new InvalidExpiryRangeException("expiry range should be between 1 and " + Constants.DefaultExpiryTime.ToString());
-            }
-            var request = await this.CreateRequest(Method.PUT, bucketName, objectName: objectName).ConfigureAwait(false);
-            return this.authenticator.PresignURL(this.restClient, request, expiresInt, Region, this.SessionToken);
+            PresignedPutObjectArgs args = new PresignedPutObjectArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName)
+                                                        .WithExpiry(expiresInt);
+            return await this.PresignedPutObjectAsync(args);
         }
 
         /// <summary>
