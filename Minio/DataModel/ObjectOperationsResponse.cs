@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
+
 using Minio.DataModel;
 
 namespace Minio
@@ -30,4 +33,17 @@ namespace Minio
         }
 
     }
+    internal class PresignedPostPolicyResponse
+    {
+        internal Tuple<string, Dictionary<string, string>> URIPolicyTuple { get; private set; }
+
+        public PresignedPostPolicyResponse(PresignedPostPolicyArgs args, string absURI)
+        {
+            args.Policy.SetAlgorithm("AWS4-HMAC-SHA256");
+            args.Policy.SetDate(DateTime.UtcNow);
+            args.Policy.SetPolicy(args.Policy.Base64());
+            URIPolicyTuple = Tuple.Create(absURI, args.Policy.GetFormData());
+        }
+    }
+
 }
