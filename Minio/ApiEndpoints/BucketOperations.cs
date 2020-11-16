@@ -44,7 +44,7 @@ namespace Minio
             try
             {
                 RestRequest request = await this.CreateRequest( Method.HEAD, args.BucketName ).ConfigureAwait(false);
-                await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+                await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             }
             catch (InternalClientException ice)
             {
@@ -77,7 +77,7 @@ namespace Minio
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(Method.DELETE, args.BucketName).ConfigureAwait(false);
-            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken);
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace Minio
             {
                 this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: args.Location, sessionToken: this.SessionToken);
             }
-            await this.ExecuteTaskAsync(this.NoErrorHandlers, args.BuildRequest(request), cancellationToken);
+            await this.ExecuteAsync(this.NoErrorHandlers, args.BuildRequest(request), cancellationToken);
         }
 
 
@@ -118,7 +118,7 @@ namespace Minio
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             GetVersioningResponse versioningResponse = new GetVersioningResponse(response.StatusCode, response.Content);
             return versioningResponse.VersioningConfig;
         }
@@ -135,7 +135,7 @@ namespace Minio
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace Minio
         public async Task<string> GetPolicyAsync(GetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             GetPolicyResponse getPolicyResponse = new GetPolicyResponse(response.StatusCode, response.Content);
             return getPolicyResponse.PolicyJsonString;
         }
@@ -164,7 +164,7 @@ namespace Minio
         public async Task SetPolicyAsync(SetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -179,7 +179,7 @@ namespace Minio
         public async Task RemovePolicyAsync(RemovePolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -192,7 +192,7 @@ namespace Minio
         public async Task<ListAllMyBucketsResult> ListBucketsAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             var request = await this.CreateRequest(Method.GET, resourcePath: "/").ConfigureAwait(false);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             ListBucketsResponse listBucketsResponse = new ListBucketsResponse(response.StatusCode, response.Content);
             return listBucketsResponse.BucketsResult;
         }
@@ -277,7 +277,7 @@ namespace Minio
         private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(GetObjectListArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             GetObjectsListResponse getObjectsListResponse = new GetObjectsListResponse(response.StatusCode, response.Content);
             return getObjectsListResponse.ObjectsTuple;
         }
@@ -292,7 +292,7 @@ namespace Minio
         private async Task<Tuple<ListVersionsResult, List<VersionItem>>> GetObjectVersionsListAsync(GetObjectListArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             GetObjectsVersionsListResponse getObjectsListResponse = new GetObjectsVersionsListResponse(response.StatusCode, response.Content);
             return getObjectsListResponse.ObjectsTuple;
         }
@@ -307,7 +307,7 @@ namespace Minio
         public async Task<BucketNotification> GetBucketNotificationsAsync(GetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             GetBucketNotificationsResponse getBucketNotificationsResponse = new GetBucketNotificationsResponse(response.StatusCode, response.Content);
             return getBucketNotificationsResponse.BucketNotificationConfiguration;
         }
@@ -321,7 +321,7 @@ namespace Minio
         public async Task SetBucketNotificationsAsync(SetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -335,7 +335,7 @@ namespace Minio
         public async Task RemoveAllBucketNotificationsAsync(RemoveAllBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -360,7 +360,7 @@ namespace Minio
                             args = args.WithNotificationObserver(obs)
                                        .WithEnableTrace(this.trace);
                             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-                            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+                            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
                             cts.Token.ThrowIfCancellationRequested();
                         }
                     }

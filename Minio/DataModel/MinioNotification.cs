@@ -70,7 +70,7 @@ namespace Minio.DataModel
         public String configurationId;
 
         [DataMember]
-        public BucketMeta bucketMeta;
+        public BucketMeta bucket;
 
         [DataMember(Name = "object")]
         public ObjectMeta objectMeta; // C# won't allow the keyword 'object' as a name

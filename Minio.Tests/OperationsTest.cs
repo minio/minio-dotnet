@@ -29,8 +29,8 @@ namespace Minio.Tests
             restClient.SetupSet(rc => rc.BaseUrl = It.IsAny<Uri>()).Callback((Uri value) => baseUrl = value);
             restClient.SetupGet(rc => rc.BaseUrl).Returns(() => baseUrl);
             restClient.Setup(rc =>
-                    rc.ExecuteTaskAsync(It.Is((IRestRequest rr) => IsLocationRequest(rr)), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((IRestRequest rr, CancellationToken ct) => new RestResponse
+                    rc.ExecuteAsync(It.Is((IRestRequest rr) => IsLocationRequest(rr)), It.IsAny<Method>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((IRestRequest rr, Method meth, CancellationToken ct) => new RestResponse
                 {
                     StatusCode = HttpStatusCode.OK,
                     Content = $"<?xml version=\"1.0\" encoding=\"UTF-8\"?><GetBucketLocationOutput><LocationConstraint>{location}</LocationConstraint></GetBucketLocationOutput>"
