@@ -45,7 +45,7 @@ namespace Minio
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             SelectObjectContentResponse selectObjectContentResponse = new SelectObjectContentResponse(response.StatusCode, response.Content, response.RawBytes);
             return selectObjectContentResponse.ResponseStream;
         }
@@ -77,7 +77,7 @@ namespace Minio
                                     .ConfigureAwait(false);
             request.ResponseWriter = cb;
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace Minio
                                 .ConfigureAwait(false);
 
             request.ResponseWriter = cb;
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -211,15 +211,30 @@ namespace Minio
         [Obsolete("Use SelectObjectContentAsync method with SelectObjectContentsArgs object. Refer SelectObjectContent example code.")]
         public async Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts,CancellationToken cancellationToken = default(CancellationToken))
         {
-            SelectObjectContentArgs args = new SelectObjectContentArgs()
-                                                        .WithBucket(bucketName)
-                                                        .WithObject(objectName)
-                                                        .WithExpressionType(opts.ExpressionType)
-                                                        .WithQueryExpression(opts.Expression)
-                                                        .WithInputSerialization(opts.InputSerialization)
-                                                        .WithOutputSerialization(opts.OutputSerialization)
-                                                        .WithRequestProgress(opts.RequestProgress);
-            return await this.SelectObjectContentAsync(args, cancellationToken).ConfigureAwait(false);
+            utils.ValidateBucketName(bucketName);
+            utils.ValidateObjectName(objectName);
+            if (opts == null)
+            {
+                throw new ArgumentException("Options cannot be null", nameof(opts));
+            }
+            Dictionary<string,string> sseHeaders = null;
+            if (opts.SSE != null)
+            {
+                sseHeaders = new Dictionary<string,string>();
+                opts.SSE.Marshal(sseHeaders);
+            }
+            var selectReqBytes = System.Text.Encoding.UTF8.GetBytes(opts.MarshalXML());
+
+            var request = await this.CreateRequest(Method.POST, bucketName,
+                                                    objectName: objectName,
+                                                    headerMap: sseHeaders)
+                                    .ConfigureAwait(false);
+            request.AddQueryParameter("select","");
+            request.AddQueryParameter("select-type","2");
+            request.AddParameter("application/xml", selectReqBytes, ParameterType.RequestBody);
+
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            return new SelectResponseStream(new MemoryStream(response.RawBytes));
         }
 
         /// <summary>
@@ -388,7 +403,7 @@ namespace Minio
 
             request.AddParameter("application/xml", body, ParameterType.RequestBody);
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -440,7 +455,7 @@ namespace Minio
             }
             request.AddQueryParameter("max-parts","1000");
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             ListPartsResult listPartsResult = null;
@@ -482,7 +497,7 @@ namespace Minio
                             headerMap: metaData).ConfigureAwait(false);
             request.AddQueryParameter("uploads","");
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             InitiateMultipartUploadResult newUpload = null;
@@ -530,7 +545,7 @@ namespace Minio
                 request.AddQueryParameter("partNumber",$"{partNumber}");
             }
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             string etag = null;
             foreach (Parameter parameter in response.Headers)
@@ -585,7 +600,7 @@ namespace Minio
             request.AddQueryParameter("key-marker",keyMarker);
             request.AddQueryParameter("upload-id-marker",uploadIdMarker);
             request.AddQueryParameter("max-uploads","1000");
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             ListMultipartUploadsResult listBucketResult = null;
@@ -688,7 +703,7 @@ namespace Minio
                                                      objectName: objectName)
                                     .ConfigureAwait(false);
             request.AddQueryParameter("uploadId",$"{uploadId}");
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -702,7 +717,7 @@ namespace Minio
         {
             var request = await this.CreateRequest(Method.DELETE, bucketName, objectName: objectName).ConfigureAwait(false);
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -731,7 +746,7 @@ namespace Minio
             request.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
             request.RequestFormat = DataFormat.Xml;
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             DeleteObjectsResult deleteResult = null;
             using (var stream = new MemoryStream(contentBytes))
@@ -815,7 +830,7 @@ namespace Minio
             }
             var request = await this.CreateRequest(Method.HEAD, bucketName, objectName: objectName, headerMap: headerMap).ConfigureAwait(false);
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             // Extract stats from response
             long size = 0;
@@ -1040,7 +1055,7 @@ namespace Minio
                 }
             }
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             // Just read the result and parse content.
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
