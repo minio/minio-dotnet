@@ -86,4 +86,83 @@ namespace Minio
             return this;
         }
     }
+
+    public class ListIncompleteUploadsArgs : BucketArgs<ListIncompleteUploadsArgs>
+    {
+        internal string Prefix { get; private set; }
+        internal string Delimiter { get; private set; }
+        internal bool Recursive { get; private set; }
+        public ListIncompleteUploadsArgs()
+        {
+            this.RequestMethod = Method.GET;
+            this.Recursive = true;
+        }
+        public ListIncompleteUploadsArgs WithPrefix(string prefix)
+        {
+            this.Prefix = prefix ?? string.Empty;
+            return this;
+        }
+
+        public ListIncompleteUploadsArgs WithDelimiter(string delim)
+        {
+            this.Delimiter = delim ?? string.Empty;
+            return this;
+        }
+
+        public ListIncompleteUploadsArgs WithRecursive(bool recursive)
+        {
+            this.Recursive = recursive;
+            this.Delimiter = (recursive)? string.Empty : "/";
+            return this;
+        }
+    }
+
+    public class GetMultipartUploadsListArgs : BucketArgs<GetMultipartUploadsListArgs>
+    {
+        internal string Prefix { get; private set; }
+        internal string Delimiter { get; private set; }
+        internal string KeyMarker { get; private set; }
+        internal string UploadIdMarker { get; private set; }
+        internal uint MAX_UPLOAD_COUNT { get; private set; }
+        public GetMultipartUploadsListArgs()
+        {
+            this.RequestMethod = Method.GET;
+            this.MAX_UPLOAD_COUNT = 1000;
+        }
+        public GetMultipartUploadsListArgs WithPrefix(string prefix)
+        {
+            this.Prefix = prefix ?? string.Empty;
+            return this;
+        }
+
+        public GetMultipartUploadsListArgs WithDelimiter(string delim)
+        {
+            this.Delimiter = delim ?? string.Empty;
+            return this;
+        }
+
+        public GetMultipartUploadsListArgs WithKeyMarker(string nextKeyMarker)
+        {
+            this.KeyMarker = nextKeyMarker ?? string.Empty;
+            return this;
+        }
+
+        public GetMultipartUploadsListArgs WithUploadIdMarker(string nextUploadIdMarker)
+        {
+            this.UploadIdMarker = nextUploadIdMarker ?? string.Empty;
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request = base.BuildRequest(request);
+            request.AddQueryParameter("uploads","");
+            request.AddQueryParameter("prefix",this.Prefix);
+            request.AddQueryParameter("delimiter",this.Delimiter);
+            request.AddQueryParameter("key-marker",this.KeyMarker);
+            request.AddQueryParameter("upload-id-marker",this.UploadIdMarker);
+            request.AddQueryParameter("max-uploads",this.MAX_UPLOAD_COUNT.ToString());
+            return request;
+        }
+    }
 }
