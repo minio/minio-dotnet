@@ -1667,8 +1667,8 @@ catch (MinioException e)
 ## 4. Presigned operations
 <a name="presignedGetObject"></a>
 
-### PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null);
-`Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null)`
+### PresignedGetObjectAsync(PresignedGetObjectArgs args);
+`Task<string> PresignedGetObjectAsync(PresignedGetObjectArgs args)`
 
 Generates a presigned URL for HTTP GET operations. Browsers/Mobile clients may point to this URL to directly download objects even if the bucket is private. This presigned URL can have an associated expiration time in seconds after which it is no longer operational. The default expiry is set to 7 days.
 
@@ -1677,11 +1677,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _String_ | Name of the bucket  |
-| ``objectName``  | _String_  | Object name in the bucket |
-| ``expiresInt``  | _Integer_  | Expiry in seconds. Default expiry is set to 7 days. |
-| ``reqParams``   | _Dictionary<string,string>_ | Additional response header overrides supports response-expires, response-content-type, response-cache-control, response-content-disposition.|
-| ``reqDate``   | _DateTime?_ | Optional request date and time. Defaults to DateTime.UtcNow if unset.|
+| ``args``  | _PresignedGetObjectArgs_  | PresignedGetObjectArgs encapsulating bucket, object names, expiry, response headers & request date |
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
@@ -1697,7 +1693,11 @@ __Example__
 ```cs
 try
 {
-    String url = await minioClient.PresignedGetObjectAsync("mybucket", "myobject", 60 * 60 * 24);
+    PresignedGetObjectArgs args = new PresignedGetObjectArgs()
+                                                .WithBucket("mybucket")
+                                                .WithObject("myobject")
+                                                .WithExpiry(60 * 60 * 24);
+    String url = await minioClient.PresignedGetObjectAsync(args);
     Console.WriteLine(url);
 }
 catch(MinioException e)

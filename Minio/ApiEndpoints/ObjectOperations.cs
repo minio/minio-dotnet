@@ -66,6 +66,20 @@ namespace Minio
 
 
         /// <summary>
+        /// Presigned get url - returns a presigned url to access an object's data without credentials.URL can have a maximum expiry of
+        /// upto 7 days or a minimum of 1 second.Additionally, you can override a set of response headers using reqParams.
+        /// </summary>
+        /// <param name="args">PresignedGetObjectArgs Arguments object encapsulating bucket and object names, expiry time, response headers, request date</param>
+        /// <returns></returns>
+        public async Task<string> PresignedGetObjectAsync(PresignedGetObjectArgs args)
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            return this.authenticator.PresignURL(this.restClient, request, args.Expiry, this.Region, this.SessionToken, args.RequestDate);
+        }
+
+
+        /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
@@ -1164,16 +1178,14 @@ namespace Minio
         /// <returns></returns>
         public async Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null)
         {
-            if (!utils.IsValidExpiry(expiresInt))
-            {
-                throw new InvalidExpiryRangeException("expiry range should be between 1 and " + Constants.DefaultExpiryTime.ToString());
-            }
-            var request = await this.CreateRequest(Method.GET, bucketName,
-                                                    objectName: objectName,
-                                                    headerMap: reqParams)
-                                    .ConfigureAwait(false);
+            PresignedGetObjectArgs args = new PresignedGetObjectArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName)
+                                                        .WithHeaders(reqParams)
+                                                        .WithExpiry(expiresInt)
+                                                        .WithRequestDate(reqDate);
 
-            return this.authenticator.PresignURL(this.restClient, request, expiresInt, Region, this.SessionToken, reqDate);
+            return await this.PresignedGetObjectAsync(args);
         }
 
         /// <summary>
