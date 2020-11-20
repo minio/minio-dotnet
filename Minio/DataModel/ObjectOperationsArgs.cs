@@ -18,6 +18,8 @@ using System;
 using RestSharp;
 
 using Minio.DataModel;
+using Minio.Exceptions;
+using Minio.Helper;
 
 namespace Minio
 {
@@ -163,6 +165,38 @@ namespace Minio
             request.AddQueryParameter("upload-id-marker",this.UploadIdMarker);
             request.AddQueryParameter("max-uploads",this.MAX_UPLOAD_COUNT.ToString());
             return request;
+        }
+    }
+
+    public class PresignedGetObjectArgs : ObjectArgs<PresignedGetObjectArgs>
+    {
+        internal int Expiry { get; set; }
+        internal DateTime? RequestDate { get; set; }
+
+        public PresignedGetObjectArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if (!utils.IsValidExpiry(this.Expiry))
+            {
+                throw new InvalidExpiryRangeException("expiry range should be between 1 and " + Constants.DefaultExpiryTime.ToString());
+            }
+        }
+
+        public PresignedGetObjectArgs WithExpiry(int expiry)
+        {
+            this.Expiry = expiry;
+            return this;
+        }
+
+        public PresignedGetObjectArgs WithRequestDate(DateTime? d)
+        {
+            this.RequestDate = d;
+            return this;
         }
     }
 }
