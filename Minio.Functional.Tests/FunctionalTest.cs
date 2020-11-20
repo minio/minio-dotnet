@@ -63,7 +63,7 @@ namespace Minio.Functional.Tests
         private const string removeObjectSignature1 = "Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeObjectSignature2 = "Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectsList, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeIncompleteUploadSignature = "Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string presignedGetObjectSignature = "Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null)";
+        private const string presignedGetObjectSignature = "Task<string> PresignedGetObjectAsync(PresignedGetObjectArgs args)";
         private const string presignedPutObjectSignature = "Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)";
         private const string presignedPostPolicySignature = "Task<Dictionary<string, string>> PresignedPostPolicyAsync(PostPolicy policy)";
         private const string getBucketPolicySignature = "Task<string> GetPolicyAsync(GetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))";
@@ -2361,7 +2361,11 @@ namespace Minio.Functional.Tests
                                                 objectName,
                                                 filestream, filestream.Length, null);
                 ObjectStat stats = await minio.StatObjectAsync(bucketName, objectName);
-                string presigned_url = await minio.PresignedGetObjectAsync(bucketName, objectName, expiresInt);
+                PresignedGetObjectArgs preArgs = new PresignedGetObjectArgs()
+                                                                .WithBucket(bucketName)
+                                                                .WithObject(objectName)
+                                                                .WithExpiry(expiresInt);
+                string presigned_url = await minio.PresignedGetObjectAsync(preArgs);
                 WebRequest httpRequest = WebRequest.Create(presigned_url);
                 var response = (HttpWebResponse)(await Task<WebResponse>.Factory.FromAsync(httpRequest.BeginGetResponse, httpRequest.EndGetResponse, null));
                 Stream stream = response.GetResponseStream();
@@ -2410,7 +2414,11 @@ namespace Minio.Functional.Tests
                                                     objectName,
                                                     filestream, filestream.Length, null);
                     ObjectStat stats = await minio.StatObjectAsync(bucketName, objectName);
-                    string presigned_url = await minio.PresignedGetObjectAsync(bucketName, objectName, 0);
+                    PresignedGetObjectArgs preArgs = new PresignedGetObjectArgs()
+                                                                    .WithBucket(bucketName)
+                                                                    .WithObject(objectName)
+                                                                    .WithExpiry(0);
+                    string presigned_url = await minio.PresignedGetObjectAsync(preArgs);
                 }
                 catch (InvalidExpiryRangeException)
                 {
@@ -2456,13 +2464,19 @@ namespace Minio.Functional.Tests
                     ["response-content-type"] = "application/json",
                     ["response-content-disposition"] = "attachment;filename=MyDocument.json;"
                 };
-                string presigned_url = await minio.PresignedGetObjectAsync(bucketName, objectName, 1000, reqParams, reqDate);
+                PresignedGetObjectArgs preArgs = new PresignedGetObjectArgs()
+                                                                .WithBucket(bucketName)
+                                                                .WithObject(objectName)
+                                                                .WithExpiry(1000)
+                                                                .WithHeaders(reqParams)
+                                                                .WithRequestDate(reqDate);
+                string presigned_url = await minio.PresignedGetObjectAsync(preArgs);
                 WebRequest httpRequest = WebRequest.Create(presigned_url);
                 var response = (HttpWebResponse)(await Task<WebResponse>.Factory.FromAsync(httpRequest.BeginGetResponse, httpRequest.EndGetResponse, null));
-                Assert.AreEqual(response.ContentType, reqParams["response-content-type"]);
-                Assert.AreEqual(response.Headers["Content-Disposition"], "attachment;filename=MyDocument.json;");
-                Assert.AreEqual(response.Headers["Content-Type"], "application/json");
-                Assert.AreEqual(response.Headers["Content-Length"], stats.Size.ToString());
+                StringAssert.Equals(response.ContentType, reqParams["response-content-type"]);
+                StringAssert.Equals(response.Headers["Content-Disposition"], "attachment;filename=MyDocument.json;");
+                StringAssert.Equals(response.Headers["Content-Type"], "application/json");
+                StringAssert.Equals(response.Headers["Content-Length"], stats.Size.ToString());
                 Stream stream = response.GetResponseStream();
                 var fileStream = File.Create(downloadFile);
                 stream.CopyTo(fileStream);
