@@ -75,13 +75,19 @@ namespace Minio
                                                                             .WithPrefix(args.Prefix)
                                                                             .WithKeyMarker(nextKeyMarker)
                                                                             .WithUploadIdMarker(nextUploadIdMarker);
-                      var uploads = await this.GetMultipartUploadsListAsync(getArgs, cancellationToken).ConfigureAwait(false);
-                      if (uploads == null)
+                      Tuple<ListMultipartUploadsResult, List<Upload>> uploads = null;
+                      try
                       {
-                          nextKeyMarker = string.Empty;
-                          nextUploadIdMarker = string.Empty;
-                          obs.OnNext(null);
-                          continue;
+                          uploads = await this.GetMultipartUploadsListAsync(getArgs, cancellationToken).ConfigureAwait(false);
+                      }
+                      catch (Exception ex)
+                      {
+                          if (ex.GetType() == typeof(BucketNotFoundException))
+                          {
+                            isRunning = false;
+                            continue;
+                          }
+                          throw;
                       }
                       foreach (Upload upload in uploads.Item2)
                       {
@@ -122,6 +128,48 @@ namespace Minio
             GetMultipartUploadsListResponse getUploadResponse = new GetMultipartUploadsListResponse(response.StatusCode, response.Content);
             return getUploadResponse.UploadResult;
         }
+
+
+        /// <summary>
+        /// Remove object with matching uploadId from bucket
+        /// </summary>
+        /// <param name="args">RemoveUploadArgs Arguments Object which encapsulates bucket, object names, upload Id</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        private async Task RemoveUploadAsync(RemoveUploadArgs args, CancellationToken cancellationToken)
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// Remove incomplete uploads from a given bucket and objectName
+        /// </summary>
+        /// <param name="args">ListIncompleteUploadsArgs Arguments Object which encapsulates bucket, object names</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        public async Task RemoveIncompleteUploadAsync(RemoveIncompleteUploadArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            ListIncompleteUploadsArgs listUploadArgs = new ListIncompleteUploadsArgs()
+                                                                    .WithBucket(args.BucketName)
+                                                                    .WithPrefix(args.ObjectName);
+            var uploads = await this.ListIncompleteUploads(listUploadArgs, cancellationToken).ToArray();
+            foreach (var upload in uploads)
+            {
+                if(upload.Key.ToLower().Equals(args.ObjectName.ToLower()))
+                {
+                    RemoveUploadArgs rmArgs = new RemoveUploadArgs()
+                                                        .WithBucket(args.BucketName)
+                                                        .WithObject(args.ObjectName)
+                                                        .WithUploadId(upload.UploadId);
+                    await this.RemoveUploadAsync(rmArgs, cancellationToken).ConfigureAwait(false);
+                }
+            }
+        }
+
 
         /// Presigned get url - returns a presigned url to access an object's data without credentials.URL can have a maximum expiry of
         /// upto 7 days or a minimum of 1 second.Additionally, you can override a set of response headers using reqParams.
@@ -860,7 +908,6 @@ namespace Minio
                 else if (parameter.Name.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
                 {
                     metaData[parameter.Name.Substring("x-amz-meta-".Length)] = parameter.Value.ToString();
-                    Console.WriteLine(parameter.Name.Substring("x-amz-meta-".Length) + " - " + parameter.Value.ToString());
                 }
             }
             return new ObjectStat(objectName, size, lastModified, etag, contentType, metaData);
