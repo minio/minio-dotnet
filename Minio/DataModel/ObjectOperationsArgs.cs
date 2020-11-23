@@ -199,6 +199,52 @@ namespace Minio
             return this;
         }
     }
+
+    public class StatObjectArgs : ObjectQueryArgs<StatObjectArgs>
+    {
+        public StatObjectArgs()
+        {
+            this.RequestMethod = Method.HEAD;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request = base.BuildRequest(request);
+            if (!string.IsNullOrEmpty(this.MatchETag))
+            {
+                request.AddOrUpdateParameter("If-Match", this.MatchETag, ParameterType.HttpHeader);
+            }
+            if (!string.IsNullOrEmpty(this.NotMatchETag))
+            {
+                request.AddOrUpdateParameter("If-None-Match", this.NotMatchETag, ParameterType.HttpHeader);
+            }
+            if (this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
+            {
+                request.AddOrUpdateParameter("If-Modified-Since", this.ModifiedSince, ParameterType.HttpHeader);
+            }
+            if(this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
+            {
+                request.AddOrUpdateParameter("If-Unmodified-Since", this.UnModifiedSince, ParameterType.HttpHeader);
+            }
+            
+            return request;
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if (!string.IsNullOrEmpty(this.NotMatchETag) && !string.IsNullOrEmpty(this.MatchETag))
+            {
+                throw new InvalidOperationException("Invalid to set both Etag match conditions " + nameof(this.NotMatchETag) + " and " + nameof(this.MatchETag));
+            }
+            if ((this.ModifiedSince != null && !this.ModifiedSince.Equals(default(DateTime))) &&
+                    (this.ModifiedSince != null && !this.UnModifiedSince.Equals(default(DateTime))))
+            {
+                throw new InvalidOperationException("Invalid to set both modified date match conditions " + nameof(this.ModifiedSince) + " and " + nameof(this.UnModifiedSince));
+            }
+        }
+    }
+
     public class RemoveUploadArgs : EncryptionArgs<RemoveUploadArgs>
     {
         internal string UploadId { get; private set; }

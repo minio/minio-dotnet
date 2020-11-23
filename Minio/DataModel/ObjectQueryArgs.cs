@@ -19,13 +19,13 @@ using Minio.Exceptions;
 
 namespace Minio
 {
-    public abstract class ObjectQueryArgs<T> : EncryptionArgs<T>
+    public abstract class ObjectQueryArgs<T> : ObjectVersionArgs<T>
                                     where T: ObjectQueryArgs<T>
     {
-        internal string MatchETag { get; private set; }
-        internal string NotMatchETag { get; private set; }
-        internal DateTime ModifiedSince { get; private set; }
-        internal DateTime UnModifiedSince { get; private set; }
+        internal string MatchETag { get; set; }
+        internal string NotMatchETag { get; set; }
+        internal DateTime ModifiedSince { get; set; }
+        internal DateTime UnModifiedSince { get; set; }
 
         public virtual new void Validate()
         {
