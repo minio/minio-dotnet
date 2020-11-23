@@ -1,5 +1,5 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,21 +38,18 @@ namespace Minio.Examples.Cases
                                      string bucketObject = "my-object-name",
                                      string versionID = null,
                                      string matchEtag = null,
-                                     string notMatchEtag = null,
-                                     DateTime modifiedSince = default(DateTime),
-                                     DateTime unModifiedSince = default(DateTime))
+                                     DateTime modifiedSince = default(DateTime))
         {
             try
             {
                 Console.WriteLine("Running example for API: StatObjectAsync [with ObjectQuery]");
+
                 StatObjectArgs args = new StatObjectArgs()
                                                 .WithBucket(bucketName)
                                                 .WithObject(bucketObject)
                                                 .WithVersionId(versionID)
                                                 .WithMatchETag(matchEtag)
-                                                .WithNotMatchETag(notMatchEtag)
-                                                .WithModifiedSince(modifiedSince)
-                                                .WithUnModifiedSince(unModifiedSince);
+                                                .WithModifiedSince(modifiedSince);
                 ObjectStat statObjectVersion = await minio.StatObjectAsync(args);
                 PrintStat(bucketObject, statObjectVersion);
             }
@@ -61,7 +58,7 @@ namespace Minio.Examples.Cases
                 string objectNameInfo = $"{bucketName}-{bucketObject}";
                 if (!string.IsNullOrEmpty(versionID))
                 {
-                    objectNameInfo = objectNameInfo + $" (Version ID) {me.Response.VersionId} (Delete Marker) {me.Response.DeleteMarker}";
+                    objectNameInfo = objectNameInfo + $" (Version ID) {me.Response.VersionId} (Marked DEL) {me.Response.DeleteMarker}";
                 }
                 Console.WriteLine($"[StatObject] {objectNameInfo} Exception: {me}");
             }

@@ -18,7 +18,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using System.Linq;
 
 using Minio.DataModel;
 using System.IO;
@@ -31,14 +31,15 @@ namespace Minio
         /// <summary>
         /// private helper method to remove list of objects from bucket
         /// </summary>
-        /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name etc <param>
-        /// <param name="objectStat"> ObjectStat object encapsulates information like - object name, size, etag etc <param>
+        /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name etc </param>
+        /// <param name="objectStat"> ObjectStat object encapsulates information like - object name, size, etag etc </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         private async Task getObjectFileAsync(GetObjectArgs args, ObjectStat objectStat, CancellationToken cancellationToken = default(CancellationToken))
         {
             long length = objectStat.Size;
             string etag = objectStat.ETag;
 
+            long tempFileSize = 0;
             string tempFileName = $"{args.FileName}.{etag}.part.minio";
             if (!string.IsNullOrEmpty(args.VersionId))
             {
@@ -50,10 +51,9 @@ namespace Minio
 
             utils.ValidateFile(tempFileName);
 
-            FileInfo tempFileInfo = new FileInfo(tempFileName);
-            long tempFileSize = 0;
             if (tempFileExists)
             {
+                FileInfo tempFileInfo = new FileInfo(tempFileName);
                 tempFileSize = tempFileInfo.Length;
                 if (tempFileSize > length)
                 {
@@ -106,23 +106,24 @@ namespace Minio
         /// <summary>
         /// private helper method to remove list of objects from bucket
         /// </summary>
-        /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name etc <param>
-        /// <param name="objectStat"> ObjectStat object encapsulates information like - object name, size, etag etc <param>
+        /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name etc </param>
+        /// <param name="objectStat"> ObjectStat object encapsulates information like - object name, size, etag etc, represents Object Information </param>
+        /// <param name="cb"> Action object of type Stream, callback to send Object contents, if assigned </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         private async Task getObjectStreamAsync(GetObjectArgs args, ObjectStat objectStat, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
         {
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken);
         }
     }
 
     public class OperationsUtil
     {
+        private static readonly List<string> SupportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type", "x-amz-acl", "content-disposition" };
         internal static bool IsSupportedHeader(string hdr, IEqualityComparer<string> comparer = null)
         {
             comparer = comparer ?? StringComparer.OrdinalIgnoreCase;
-            var supportedHeaders = ImmutableArray.Create<string>(new string[]{ "cache-control", "content-encoding", "content-type", "x-amz-acl", "content-disposition" });
-            return supportedHeaders.IndexOf(hdr, comparer) != -1;
+            return SupportedHeaders.Contains(hdr, comparer);
         }
     }
 }

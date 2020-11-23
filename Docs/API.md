@@ -1109,7 +1109,10 @@ try
    // If the object is not found, statObject() throws an exception,
    // else it means that the object exists.
    // Execution is successful.
-   await minioClient.StatObjectAsync("mybucket", "myobject");
+   StatObjectArgs statObjectArgs = new StatObjectArgs()
+                                            .WithBucket("mybucket")
+                                            .WithObject("myobject");
+   await minioClient.StatObjectAsync(statObjectArgs);
 
    // Get input stream to have content of 'my-objectname' from 'my-bucketname'
    GetObjectArgs getObjectArgs = new GetObjectArgs()
@@ -1132,7 +1135,10 @@ try
    // If the object is not found, statObject() throws an exception,
    // else it means that the object exists.
    // Execution is successful.
-   await minioClient.StatObjectAsync("mybucket", "myobject");
+   StatObjectArgs statObjectArgs = new StatObjectArgs()
+                                            .WithBucket("mybucket")
+                                            .WithObject("myobject");
+   await minioClient.StatObjectAsync(statObjectArgs);
 
    // Get input stream to have content of 'my-objectname' from 'my-bucketname'
    GetObjectArgs getObjectArgs = new GetObjectArgs()
@@ -1158,7 +1164,10 @@ try
    // If the object is not found, statObjectAsync() throws an exception,
    // else it means that the object exists.
    // Execution is successful.
-   await minioClient.StatObjectAsync("mybucket", "myobject");
+   StatObjectArgs statObjectArgs = new StatObjectArgs()
+                                            .WithBucket("mybucket")
+                                            .WithObject("myobject");
+   await minioClient.StatObjectAsync(statObjectArgs);
 
    // Gets the object's data and stores it in photo.jpg
    GetObjectArgs getObjectArgs = new GetObjectArgs()
@@ -1289,9 +1298,9 @@ catch(MinioException e)
 }
 ```
 <a name="statObject"></a>
-### StatObjectAsync(string bucketName, string objectName, ServerSideEncryption sse)
+### StatObjectAsync(StatObjectArgs args)
 
-`Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
+`Task<ObjectStat> StatObjectAsync(StatObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 Gets metadata of an object.
 
@@ -1301,9 +1310,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket  |
-| ``objectName``  | _string_  | Object name in the bucket |
-| ``sse``    | _ServerSideEncryption_ | Server-side encryption option | Optional parameter. Defaults to null |
+| ``args``  | _StatObjectArgs_  | StatObjectArgs Argument Object with bucket, object names & server side encryption object  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -1323,7 +1330,10 @@ __Example__
 try
 {
    // Get the metadata of the object.
-   ObjectStat objectStat = await minioClient.StatObjectAsync("mybucket", "myobject");
+   StatObjectArgs statObjectArgs = new StatObjectArgs()
+                                            .WithBucket("mybucket")
+                                            .WithObject("myobject");
+   ObjectStat objectStat = await minioClient.StatObjectAsync(statObjectArgs);
    Console.WriteLine(objectStat);
 }
 catch(MinioException e)
@@ -1604,8 +1614,8 @@ catch (MinioException e)
 ## 4. Presigned operations
 <a name="presignedGetObject"></a>
 
-### PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null);
-`Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null)`
+### PresignedGetObjectAsync(PresignedGetObjectArgs args);
+`Task<string> PresignedGetObjectAsync(PresignedGetObjectArgs args)`
 
 Generates a presigned URL for HTTP GET operations. Browsers/Mobile clients may point to this URL to directly download objects even if the bucket is private. This presigned URL can have an associated expiration time in seconds after which it is no longer operational. The default expiry is set to 7 days.
 
@@ -1614,11 +1624,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _String_ | Name of the bucket  |
-| ``objectName``  | _String_  | Object name in the bucket |
-| ``expiresInt``  | _Integer_  | Expiry in seconds. Default expiry is set to 7 days. |
-| ``reqParams``   | _Dictionary<string,string>_ | Additional response header overrides supports response-expires, response-content-type, response-cache-control, response-content-disposition.|
-| ``reqDate``   | _DateTime?_ | Optional request date and time. Defaults to DateTime.UtcNow if unset.|
+| ``args``  | _PresignedGetObjectArgs_  | PresignedGetObjectArgs encapsulating bucket, object names, expiry, response headers & request date |
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
@@ -1634,7 +1640,11 @@ __Example__
 ```cs
 try
 {
-    String url = await minioClient.PresignedGetObjectAsync("mybucket", "myobject", 60 * 60 * 24);
+    PresignedGetObjectArgs args = new PresignedGetObjectArgs()
+                                                .WithBucket("mybucket")
+                                                .WithObject("myobject")
+                                                .WithExpiry(60 * 60 * 24);
+    String url = await minioClient.PresignedGetObjectAsync(args);
     Console.WriteLine(url);
 }
 catch(MinioException e)

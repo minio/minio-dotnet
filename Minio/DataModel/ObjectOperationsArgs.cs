@@ -21,6 +21,7 @@ using RestSharp;
 
 using Minio.DataModel;
 using Minio.Exceptions;
+using Minio.Helper;
 
 namespace Minio
 {
@@ -90,6 +91,37 @@ namespace Minio
         }
     }
 
+    public class PresignedGetObjectArgs : ObjectArgs<PresignedGetObjectArgs>
+    {
+        internal int Expiry { get; set; }
+        internal DateTime? RequestDate { get; set; }
+
+        public PresignedGetObjectArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if (!utils.IsValidExpiry(this.Expiry))
+            {
+                throw new InvalidExpiryRangeException("expiry range should be between 1 and " + Constants.DefaultExpiryTime.ToString());
+            }
+        }
+
+        public PresignedGetObjectArgs WithExpiry(int expiry)
+        {
+            this.Expiry = expiry;
+            return this;
+        }
+
+        public PresignedGetObjectArgs WithRequestDate(DateTime? d)
+        {
+            this.RequestDate = d;
+            return this;
+        }
+    }
 
     public class StatObjectArgs : ObjectQueryArgs<StatObjectArgs>
     {
@@ -126,12 +158,12 @@ namespace Minio
             base.Validate();
             if (!string.IsNullOrEmpty(this.NotMatchETag) && !string.IsNullOrEmpty(this.MatchETag))
             {
-                throw new ArgumentException(nameof(this.NotMatchETag) + " and " + nameof(this.MatchETag) + " being set is not allowed.");
+                throw new InvalidOperationException("Invalid to set both Etag match conditions " + nameof(this.NotMatchETag) + " and " + nameof(this.MatchETag));
             }
             if ((this.ModifiedSince != null && !this.ModifiedSince.Equals(default(DateTime))) &&
                     (this.ModifiedSince != null && !this.UnModifiedSince.Equals(default(DateTime))))
             {
-                throw new ArgumentException(nameof(this.NotMatchETag) + " and " + nameof(this.MatchETag) + " being set is not allowed.");
+                throw new InvalidOperationException("Invalid to set both modified date match conditions " + nameof(this.ModifiedSince) + " and " + nameof(this.UnModifiedSince));
             }
         }
     }
@@ -142,9 +174,7 @@ namespace Minio
         internal long ObjectOffset { get; private set; }
         internal long ObjectLength { get; private set; }
         internal string FileName { get; private set; }
-        private bool OffsetLengthSet { get; set; }
-        // We need to expose the value of the above VersionArgs
-        internal string VersionId { get; set; }
+        internal bool OffsetLengthSet { get; set; }
 
         public GetObjectArgs()
         {
@@ -205,23 +235,12 @@ namespace Minio
             {
                 this.HeaderMap.Add("Range", "bytes=" + offset.ToString() + "-" + (offset + length - 1).ToString());
             }
-
-            if (this.SSE != null && this.SSE.GetType().Equals(EncryptionType.SSE_C))
-            {
-                this.SSE.Marshal(this.HeaderMap);
-            }
             return this;
         }
 
         public GetObjectArgs WithFile(string file)
         {
             this.FileName = file;
-            return this;
-        }
-
-        public GetObjectArgs WithVersionId(string vid)
-        {
-            this.VersionId = vid;
             return this;
         }
     }

@@ -28,22 +28,19 @@ namespace Minio.Examples.Cases
                                      string versionId = "my-version-id",
                                      string fileName = "my-file-name",
                                      string matchEtag = null,
-                                     string notMatchEtag = null,
-                                     DateTime modifiedSince = default(DateTime),
-                                     DateTime unModifiedSince = default(DateTime))
+                                     DateTime modifiedSince = default(DateTime))
         {
             try
             {
-                Console.WriteLine("Running example for API: GetObjectAsync with Version ID");
+                string withVersionId = (string.IsNullOrEmpty(versionId))?"":" with Version ID";
+                Console.WriteLine("Running example for API: GetObjectAsync" + withVersionId);
                 GetObjectArgs args = new GetObjectArgs()
                                                 .WithBucket(bucketName)
                                                 .WithObject(objectName)
                                                 .WithVersionId(versionId)
                                                 .WithFile(fileName)
                                                 .WithMatchETag(matchEtag)
-                                                .WithNotMatchETag(notMatchEtag)
-                                                .WithModifiedSince(modifiedSince)
-                                                .WithUnModifiedSince(unModifiedSince);
+                                                .WithModifiedSince(modifiedSince);
                 await minio.GetObjectAsync(args);
                 Console.WriteLine($"Downloaded the file {fileName} for object {objectName} with given query parameters in bucket {bucketName}");
                 Console.WriteLine();
