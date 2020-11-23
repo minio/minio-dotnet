@@ -75,7 +75,7 @@ namespace Minio.Tests
                 });
 
             await Assert.ThrowsExceptionAsync<BucketNotFoundException>(
-                () => client.GetObjectAsync(Guid.NewGuid().ToString(), "", s => { }));
+                () => client.GetObjectAsync(Guid.NewGuid().ToString(), "aa", s => { }));
             Assert.AreEqual(invokeCount, retryCount);
         }
     }
