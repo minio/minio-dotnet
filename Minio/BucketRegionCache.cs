@@ -101,7 +101,7 @@ namespace Minio
 
                 var request = new RestRequest(path, Method.GET);
                 request.AddQueryParameter("location","");
-                var response = await client.ExecuteTaskAsync(client.NoErrorHandlers, request).ConfigureAwait(false);
+                var response = await client.ExecuteAsync(client.NoErrorHandlers, request).ConfigureAwait(false);
 
                 if (HttpStatusCode.OK.Equals(response.StatusCode))
                 {
