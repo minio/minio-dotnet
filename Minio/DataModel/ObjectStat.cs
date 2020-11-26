@@ -16,28 +16,67 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using RestSharp;
 
 namespace Minio.DataModel
 {
     public class ObjectStat
     {
-        /// <summary>
-        /// Object metadata information.
-        /// </summary>
-        /// <param name="objectName">Object name</param>
-        /// <param name="size">Object size</param>
-        /// <param name="lastModified">Last when object was modified</param>
-        /// <param name="etag">Unique entity tag for the object</param>
-        /// <param name="contentType">Object content type</param>
-        /// <param name="metadata"></param>
-        public ObjectStat(string objectName, long size, DateTime lastModified, string etag, string contentType, Dictionary<string, string> metadata)
+        private ObjectStat()
         {
-            this.ObjectName = objectName;
-            this.Size = size;
-            this.LastModified = lastModified;
-            this.ETag = etag;
-            this.ContentType = contentType;
-            this.MetaData = metadata;
+            MetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            ExtraHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        public static ObjectStat FromResponseHeaders(string objectName, IList<Parameter> responseHeaders)
+        {
+            if (string.IsNullOrEmpty(objectName))
+            {
+                throw new ArgumentNullException("Name of an object cannot be empty");
+            }
+            ObjectStat objInfo = new ObjectStat();
+            foreach (Parameter parameter in responseHeaders)
+            {
+                switch(parameter.Name.ToLower())
+                {
+                    case "content-length" :
+                        objInfo.Size = long.Parse(parameter.Value.ToString());
+                        break;
+                    case "last-modified" :
+                        objInfo.LastModified = DateTime.Parse(parameter.Value.ToString(), CultureInfo.InvariantCulture);
+                        break;
+                    case "etag" :
+                        objInfo.ETag = parameter.Value.ToString().Replace("\"", string.Empty);
+                        break;
+                    case "Content-Type" :
+                        objInfo.ContentType = parameter.Value.ToString();
+                        objInfo.MetaData["Content-Type"] = objInfo.ContentType;
+                        break;
+                    case "x-amz-version-id" :
+                        objInfo.VersionId = parameter.Value.ToString();
+                        break;
+                    case "x-amz-delete-marker":
+                        objInfo.DeleteMarker = parameter.Value.ToString().Equals("true");
+                        break;
+                    default:
+                        if (OperationsUtil.IsSupportedHeader(parameter.Name))
+                        {
+                            objInfo.MetaData[parameter.Name] = parameter.Value.ToString();
+                        }
+                        else if (parameter.Name.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
+                        {
+                            objInfo.MetaData[parameter.Name.Substring("x-amz-meta-".Length)] = parameter.Value.ToString();
+                        }
+                        else
+                        {
+                            objInfo.ExtraHeaders[parameter.Name] = parameter.Value.ToString();
+                        }
+                        break;
+                }
+            }
+
+            return objInfo;
         }
 
         public string ObjectName { get; private set; }
@@ -46,9 +85,21 @@ namespace Minio.DataModel
         public string ETag { get; private set; }
         public string ContentType { get; private set; }
         public Dictionary<string, string> MetaData { get; private set; }
+        public string VersionId { get; private set; }
+        public bool DeleteMarker { get; private set; }
+        public Dictionary<string, string> ExtraHeaders { get; private set; }
 
         public override string ToString()
         {
+            if (!string.IsNullOrEmpty(this.VersionId))
+            {
+                string versionInfo = $"Version ID({this.VersionId})";
+                if (this.DeleteMarker)
+                {
+                    versionInfo = $"Version ID({this.VersionId}, deleted)";
+                }
+                return $"{this.ObjectName} : {versionInfo} Size({this.Size}) LastModified({this.LastModified}) ETag({this.ETag}) Content-Type({this.ContentType})";
+            }
             return $"{this.ObjectName} : Size({this.Size}) LastModified({this.LastModified}) ETag({this.ETag}) Content-Type({this.ContentType})";
         }
     }
