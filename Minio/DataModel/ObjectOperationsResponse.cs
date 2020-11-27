@@ -16,13 +16,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Xml.Linq;
-using System.Xml.Serialization;
+using RestSharp;
 
 using Minio.DataModel;
+using System.Xml.Serialization;
 
 namespace Minio
 {
@@ -35,6 +36,18 @@ namespace Minio
             this.ResponseStream = new SelectResponseStream(new MemoryStream(responseRawBytes));
         }
 
+    }
+
+
+    internal class StatObjectResponse : GenericResponse
+    {
+        internal ObjectStat ObjectInfo { get; set; }
+        internal StatObjectResponse(HttpStatusCode statusCode, string responseContent, IList<Parameter> responseHeaders, StatObjectArgs args)
+                    : base(statusCode, responseContent)
+        {
+            // StatObjectResponse object is populated with available stats from the response.
+            this.ObjectInfo = ObjectStat.FromResponseHeaders(args.ObjectName, responseHeaders);
+        }
     }
 
     internal class GetMultipartUploadsListResponse : GenericResponse

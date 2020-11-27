@@ -34,7 +34,21 @@ namespace Minio
 {
     public partial class MinioClient : IObjectOperations
     {
-        private readonly List<string> supportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type", "x-amz-acl", "content-disposition" };
+        /// <summary>
+        /// Tests the object's existence and returns metadata about existing objects.
+        /// </summary>
+        /// <param name="args">StatObjectArgs Arguments Object encapsulates information like - bucket name, object name, server-side encryption object</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Facts about the object</returns>
+        public async Task<ObjectStat> StatObjectAsync(StatObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            StatObjectResponse statResponse = new StatObjectResponse(response.StatusCode, response.Content, response.Headers, args);
+            return statResponse.ObjectInfo;
+        }
+
 
         /// <summary>
         /// Select an object's content. The object will be streamed to the callback given by the user.
@@ -143,7 +157,11 @@ namespace Minio
         {
             // Stat to see if the object exists
             // NOTE: This avoids writing the error body to the action stream passed (Do not remove).
-            await StatObjectAsync(bucketName, objectName, sse: sse, cancellationToken: cancellationToken).ConfigureAwait(false);
+            StatObjectArgs statArgs = new StatObjectArgs()
+                                            .WithBucket(bucketName)
+                                            .WithObject(objectName)
+                                            .WithServerSideEncryption(sse);
+            await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             var headers = new Dictionary<string, string>();
             if (sse != null && sse.GetType().Equals(EncryptionType.SSE_C))
@@ -184,7 +202,11 @@ namespace Minio
 
             // Stat to see if the object exists
             // NOTE: This avoids writing the error body to the action stream passed (Do not remove).
-            await StatObjectAsync(bucketName, objectName, cancellationToken: cancellationToken).ConfigureAwait(false);
+            StatObjectArgs statArgs = new StatObjectArgs()
+                                            .WithBucket(bucketName)
+                                            .WithObject(objectName)
+                                            .WithServerSideEncryption(sse);
+            await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             var headerMap = new Dictionary<string, string>();
             if (length > 0)
@@ -220,7 +242,12 @@ namespace Minio
             bool fileExists = File.Exists(fileName);
             utils.ValidateFile(fileName);
 
-            ObjectStat objectStat = await StatObjectAsync(bucketName, objectName, sse: sse, cancellationToken: cancellationToken).ConfigureAwait(false);
+            StatObjectArgs statArgs = new StatObjectArgs()
+                                            .WithBucket(bucketName)
+                                            .WithObject(objectName)
+                                            .WithServerSideEncryption(sse);
+            ObjectStat objectStat = await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
+
             long length = objectStat.Size;
             string etag = objectStat.ETag;
 
@@ -360,7 +387,7 @@ namespace Minio
                 foreach (KeyValuePair<string, string> p in metaData)
                 {
                     var key = p.Key;
-                    if (!supportedHeaders.Contains(p.Key, StringComparer.OrdinalIgnoreCase) && !p.Key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
+                    if (!OperationsUtil.IsSupportedHeader(p.Key) && !p.Key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
                     {
                         key = "x-amz-meta-" + key.ToLowerInvariant();
                     }
@@ -368,7 +395,7 @@ namespace Minio
 
                 }
             }
-            
+
             if (sse != null)
             {
                 sse.Marshal(sseHeaders);
@@ -830,55 +857,14 @@ namespace Minio
         /// <param name="sse"> Server-side encryption option.Defaults to null</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Facts about the object</returns>
+        [Obsolete("Use StatObjectAsync method with StatObjectArgs object. Refer StatObject & StatObjectQuery example code.")]
         public async Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var headerMap = new Dictionary<string, string>();
-
-            if (sse != null && sse.GetType().Equals(EncryptionType.SSE_C))
-            {
-                sse.Marshal(headerMap);
-            }
-            var request = await this.CreateRequest(Method.HEAD, bucketName, objectName: objectName, headerMap: headerMap).ConfigureAwait(false);
-
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-
-            // Extract stats from response
-            long size = 0;
-            DateTime lastModified = new DateTime();
-            string etag = string.Empty;
-            string contentType = null;
-            var metaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (Parameter parameter in response.Headers)
-            {
-                if (parameter.Name.Equals("Content-Length", StringComparison.OrdinalIgnoreCase))
-                {
-                    size = long.Parse(parameter.Value.ToString());
-                }
-                else if (parameter.Name.Equals("Last-Modified", StringComparison.OrdinalIgnoreCase))
-                {
-                    lastModified = DateTime.Parse(parameter.Value.ToString(), CultureInfo.InvariantCulture);
-                }
-                else if (parameter.Name.Equals("ETag", StringComparison.OrdinalIgnoreCase))
-                {
-                    etag = parameter.Value.ToString().Replace("\"", string.Empty);
-                }
-                else if (parameter.Name.Equals("Content-Type", StringComparison.OrdinalIgnoreCase))
-                {
-                    contentType = parameter.Value.ToString();
-                    metaData["Content-Type"] = contentType;
-                }
-                else if (supportedHeaders.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
-                {
-                    metaData[parameter.Name] = parameter.Value.ToString();
-                }
-                else if (parameter.Name.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
-                {
-                    metaData[parameter.Name.Substring("x-amz-meta-".Length)] = parameter.Value.ToString();
-                    Console.WriteLine(parameter.Name.Substring("x-amz-meta-".Length) + " - " + parameter.Value.ToString());
-                }
-            }
-            return new ObjectStat(objectName, size, lastModified, etag, contentType, metaData);
+            StatObjectArgs args = new StatObjectArgs()
+                                            .WithBucket(bucketName)
+                                            .WithObject(objectName)
+                                            .WithServerSideEncryption(sse);
+            return await this.StatObjectAsync(args, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -966,7 +952,11 @@ namespace Minio
                 sseGet = sseCpy.CloneToSSEC();
             }
             // Get Stats on the source object
-            ObjectStat srcStats = await this.StatObjectAsync(bucketName, objectName, sse: sseGet, cancellationToken: cancellationToken).ConfigureAwait(false);
+            StatObjectArgs statArgs = new StatObjectArgs()
+                                            .WithBucket(bucketName)
+                                            .WithObject(objectName)
+                                            .WithServerSideEncryption(sseGet);
+            ObjectStat srcStats = await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
             // Copy metadata from the source object if no metadata replace directive
             var meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             Dictionary<string, string> m = metadata;
@@ -980,7 +970,7 @@ namespace Minio
                 foreach (var item in m)
                 {
                     var key = item.Key;
-                    if (!supportedHeaders.Contains(key, StringComparer.OrdinalIgnoreCase) && !key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
+                    if (!OperationsUtil.IsSupportedHeader(key) && !key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
                     {
                         key = "x-amz-meta-" + key.ToLowerInvariant();
                     }
