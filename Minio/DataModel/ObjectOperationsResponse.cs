@@ -16,12 +16,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Xml.Linq;
 using System.IO;
+using System.Linq;
 using System.Net;
 using RestSharp;
 
 using Minio.DataModel;
+using System.Xml.Serialization;
 
 namespace Minio
 {
@@ -36,6 +38,7 @@ namespace Minio
 
     }
 
+
     internal class StatObjectResponse : GenericResponse
     {
         internal ObjectStat ObjectInfo { get; set; }
@@ -44,6 +47,34 @@ namespace Minio
         {
             // StatObjectResponse object is populated with available stats from the response.
             this.ObjectInfo = ObjectStat.FromResponseHeaders(args.ObjectName, responseHeaders);
+        }
+    }
+
+    internal class GetMultipartUploadsListResponse : GenericResponse
+    {
+        internal Tuple<ListMultipartUploadsResult, List<Upload>> UploadResult { get; private set; }
+        internal GetMultipartUploadsListResponse(HttpStatusCode statusCode, string responseContent)
+                    : base(statusCode, responseContent)
+        {
+            ListMultipartUploadsResult uploadsResult = null;
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                uploadsResult = (ListMultipartUploadsResult)new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(stream);
+            }
+            XDocument root = XDocument.Parse(responseContent);
+            var itemCheck = root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload").FirstOrDefault();
+            if (uploadsResult == null || itemCheck == null || !itemCheck.HasElements)
+            {
+                return;
+            }
+            var uploads  = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
+                          select new Upload
+                          {
+                              Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
+                              UploadId = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}UploadId").Value,
+                              Initiated = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Initiated").Value
+                          };
+            this.UploadResult = new Tuple<ListMultipartUploadsResult, List<Upload>>(uploadsResult, uploads.ToList());
         }
     }
 }
