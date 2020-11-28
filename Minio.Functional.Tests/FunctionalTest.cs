@@ -51,8 +51,8 @@ namespace Minio.Functional.Tests
         private const string listObjectsSignature = "IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = false, CancellationToken cancellationToken = default(CancellationToken))";
         private const string listObjectVersionsSignature = "IObservable<VersionItem> ListObjectVersionsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
 
-        private const string listIncompleteUploadsSignature = "IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix, bool recursive, CancellationToken cancellationToken = default(CancellationToken))";
         private const string getObjectSignature = "Task GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string listIncompleteUploadsSignature = "IObservable<Upload> ListIncompleteUploads(ListIncompleteUploads args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string putObjectSignature1 = "Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType, Dictionary<string, string> metaData=null, CancellationToken cancellationToken = default(CancellationToken))";
         private const string putObjectSignature2 = "Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null, Dictionary<string, string> metaData=null, CancellationToken cancellationToken = default(CancellationToken))";
         private const string listenBucketNotificationsSignature = "IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(ListenBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
@@ -2824,11 +2824,19 @@ namespace Minio.Functional.Tests
                 }
                 catch (OperationCanceledException)
                 {
-                    IObservable<Upload> observable = minio.ListIncompleteUploads(bucketName);
+                    ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
+                                                                    .WithBucket(bucketName);
+                    IObservable<Upload> observable = minio.ListIncompleteUploads(listArgs);
 
                     IDisposable subscription = observable.Subscribe(
-                        item => Assert.AreEqual(item.Key, objectName),
-                        ex => Assert.Fail());
+                        item =>
+                        {
+                            StringAssert.Equals(item.Key, objectName);
+                        },
+                        ex =>
+                        {
+                            Assert.Fail();
+                        });
 
                     await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
                 }
@@ -2881,7 +2889,11 @@ namespace Minio.Functional.Tests
                 }
                 catch (OperationCanceledException)
                 {
-                    IObservable<Upload> observable = minio.ListIncompleteUploads(bucketName, "minioprefix", false);
+                    ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
+                                                                    .WithBucket(bucketName)
+                                                                    .WithPrefix("minioprefix")
+                                                                    .WithRecursive(false);
+                    IObservable<Upload> observable = minio.ListIncompleteUploads(listArgs);
 
                     IDisposable subscription = observable.Subscribe(
                         item => Assert.AreEqual(item.Key, objectName),
@@ -2933,7 +2945,11 @@ namespace Minio.Functional.Tests
                 }
                 catch (OperationCanceledException)
                 {
-                    IObservable<Upload> observable = minio.ListIncompleteUploads(bucketName, prefix, true);
+                    ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
+                                                                    .WithBucket(bucketName)
+                                                                    .WithPrefix(prefix)
+                                                                    .WithRecursive(true);
+                    IObservable<Upload> observable = minio.ListIncompleteUploads(listArgs);
 
                     IDisposable subscription = observable.Subscribe(
                         item => Assert.AreEqual(item.Key, objectName),
@@ -2987,7 +3003,9 @@ namespace Minio.Functional.Tests
                 {
                     await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
 
-                    IObservable<Upload> observable = minio.ListIncompleteUploads(bucketName);
+                    ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
+                                                                    .WithBucket(bucketName);
+                    IObservable<Upload> observable = minio.ListIncompleteUploads(listArgs);
 
                     IDisposable subscription = observable.Subscribe(
                         item => Assert.Fail(),

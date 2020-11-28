@@ -744,9 +744,9 @@ catch (MinioException e)
 
 
 <a name="listIncompleteUploads"></a>
-### ListIncompleteUploads(string bucketName, string prefix, bool recursive)
+### ListIncompleteUploads(ListIncompleteUploadsArgs args)
 
-`IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix, bool recursive, CancellationToken cancellationToken = default(CancellationToken))`
+`IObservable<Upload> ListIncompleteUploads(ListIncompleteUploadsArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 Lists partially uploaded objects in a bucket.
 
@@ -756,9 +756,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket  |
-| ``prefix``  | _string_  | Prefix string. List objects whose name starts with ``prefix`` |
-| ``recursive``  | _bool_  | when false, emulates a directory structure where each listing returned is either a full object or part of the object's key up to the first '/'. All objects with the same prefix up to the first '/' will be merged into one entry |
+| ``args``  | _ListIncompleteUploadsArgs_  | ListIncompleteUploadsArgs object - encapsulates bucket name, prefix, show recursively.  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -778,7 +776,11 @@ try
     if (found)
     {
         // List all incomplete multipart upload of objects in 'mybucket'
-        IObservable<Upload> observable = minioClient.ListIncompleteUploads("mybucket", "prefix", true);
+        ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
+                                                            .WithBucket("mybucket")
+                                                            .WithPrefix("prefix")
+                                                            .WithRecursive(true);
+        IObservable<Upload> observable = minioClient.ListIncompleteUploads(listArgs);
         IDisposable subscription = observable.Subscribe(
 							item => Console.WriteLine("OnNext: {0}", item.Key),
 							ex => Console.WriteLine("OnError: {0}", ex.Message),
