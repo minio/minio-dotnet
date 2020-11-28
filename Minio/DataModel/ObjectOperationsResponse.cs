@@ -77,4 +77,17 @@ namespace Minio
             this.UploadResult = new Tuple<ListMultipartUploadsResult, List<Upload>>(uploadsResult, uploads.ToList());
         }
     }
+
+    internal class PresignedPostPolicyResponse
+    {
+        internal Tuple<string, Dictionary<string, string>> URIPolicyTuple { get; private set; }
+
+        public PresignedPostPolicyResponse(PresignedPostPolicyArgs args, string absURI)
+        {
+            args.Policy.SetAlgorithm("AWS4-HMAC-SHA256");
+            args.Policy.SetDate(DateTime.UtcNow);
+            args.Policy.SetPolicy(args.Policy.Base64());
+            URIPolicyTuple = Tuple.Create(absURI, args.Policy.GetFormData());
+        }
+    }
 }

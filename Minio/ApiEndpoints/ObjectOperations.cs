@@ -146,6 +146,25 @@ namespace Minio
 
 
         /// <summary>
+        /// Presigned post policy
+        /// </summary>
+        /// <param name="args">PresignedPostPolicyArgs Arguments object encapsulating Policy, Expiry, Region, </param>
+        /// <returns>Tuple of URI and Policy Form data</returns>
+        public async Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PresignedPostPolicyArgs args)
+        {
+            string region = await this.GetRegion(args.BucketName);
+            args.Validate();
+            args =  args.WithSessionToken(this.SessionToken)
+                        .WithCredential(this.authenticator.GetCredentialString(DateTime.UtcNow, region))
+                        .WithSignature(this.authenticator.PresignPostSignature(region, DateTime.UtcNow, args.Policy.Base64()))
+                        .WithRegion(region);
+            this.SetTargetURL(RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, args.BucketName, args.Region, usePathStyle: false));
+            PresignedPostPolicyResponse policyResponse = new PresignedPostPolicyResponse(args, this.restClient.BaseUrl.AbsoluteUri);
+            return policyResponse.URIPolicyTuple;
+        }
+
+
+        /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
@@ -1209,50 +1228,11 @@ namespace Minio
         /// <returns></returns>
         public async Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy)
         {
-            string region = null;
-
-            if (!policy.IsBucketSet())
-            {
-                throw new ArgumentException("bucket should be set", nameof(policy));
-            }
-
-            if (!policy.IsKeySet())
-            {
-                throw new ArgumentException("key should be set", nameof(policy));
-            }
-
-            if (!policy.IsExpirationSet())
-            {
-                throw new ArgumentException("expiration should be set", nameof(policy));
-            }
-
-            // Initialize a new client.
-            if (!BucketRegionCache.Instance.Exists(policy.Bucket))
-            {
-                region = await BucketRegionCache.Instance.Update(this, policy.Bucket).ConfigureAwait(false);
-            }
-
-            if (region == null)
-            {
-                region = BucketRegionCache.Instance.Region(policy.Bucket);
-            }
-
-            // Set Target URL
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, bucketName: policy.Bucket, region: region, usePathStyle: false);
-            SetTargetURL(requestUrl);
-            DateTime signingDate = DateTime.UtcNow;
-
-            policy.SetAlgorithm("AWS4-HMAC-SHA256");
-            policy.SetCredential(this.authenticator.GetCredentialString(signingDate, region));
-            policy.SetDate(signingDate);
-            policy.SetSessionToken(this.SessionToken);
-            string policyBase64 = policy.Base64();
-            string signature = this.authenticator.PresignPostSignature(region, signingDate, policyBase64);
-
-            policy.SetPolicy(policyBase64);
-            policy.SetSignature(signature);
-
-            return Tuple.Create(this.restClient.BaseUrl.AbsoluteUri, policy.GetFormData());
+            PresignedPostPolicyArgs args = new PresignedPostPolicyArgs()
+                                                        .WithBucket(policy.Bucket)
+                                                        .WithObject(policy.Key)
+                                                        .WithPolicy(policy);
+            return await this.PresignedPostPolicyAsync(args);
         }
     }
 }
