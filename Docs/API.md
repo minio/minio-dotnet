@@ -1695,9 +1695,9 @@ catch(MinioException e)
 ```
 
 <a name="presignedPostPolicy"></a>
-### PresignedPostPolicy(PostPolicy policy)
+### PresignedPostPolicy(PresignedPostPolicyArgs args)
 
-`Task<Dictionary<string, string>> PresignedPostPolicyAsync(PostPolicy policy)`
+`Task<Dictionary<string, string>> PresignedPostPolicyAsync(PresignedPostPolicyArgs args)`
 
 Allows setting policy conditions to a presigned URL for POST operations. Policies such as bucket name to receive object uploads, key name prefixes, expiry policy may be set.
 
@@ -1706,7 +1706,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``PostPolicy``  | _PostPolicy_  | Post policy of an object.  |
+| ``args``  | _PresignedPostPolicyArgs_  | PresignedPostPolicyArgs Arguments object includes bucket, object names & Post policy of an object.  |
 
 
 | Return Type	  | Exceptions	  |
@@ -1731,8 +1731,12 @@ try
     policy.SetExpires(expiration.AddDays(10));
     policy.SetKey("my-objectname");
     policy.SetBucket("my-bucketname");
+    PresignedPostPolicyArgs args = PresignedPostPolicyArgs()
+                                            .WithBucket("my-bucketname")
+                                            .WithObject("my-objectname")
+                                            .WithPolicy(policy);
 
-    Dictionary<string, string> formData = minioClient.Api.PresignedPostPolicy(policy);
+    Dictionary<string, string> formData = minioClient.Api.PresignedPostPolicy(args);
     string curlCommand = "curl ";
     foreach (KeyValuePair<string, string> pair in formData)
     {
