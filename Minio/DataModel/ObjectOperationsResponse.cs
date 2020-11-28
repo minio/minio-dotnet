@@ -16,7 +16,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Xml.Linq;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -25,6 +25,7 @@ using System.Xml.Serialization;
 using RestSharp;
 
 using Minio.DataModel;
+using System.Xml.Serialization;
 
 namespace Minio
 {
@@ -38,6 +39,7 @@ namespace Minio
         }
 
     }
+
 
     internal class StatObjectResponse : GenericResponse
     {

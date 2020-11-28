@@ -754,14 +754,34 @@ namespace Minio
         /// <returns></returns>
         public async Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var uploads = await this.ListIncompleteUploads(bucketName, objectName, cancellationToken: cancellationToken).ToArray();
-            foreach (Upload upload in uploads)
-            {
-                if (objectName == upload.Key)
+            ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
+                                                                .WithBucket(bucketName)
+                                                                .WithPrefix(objectName);
+            IObservable<Upload> observable = this.ListIncompleteUploads(listArgs, cancellationToken: cancellationToken);
+
+            IDisposable subscription = observable.Subscribe(
+                async upload =>
                 {
-                    await this.RemoveUploadAsync(bucketName, objectName, upload.UploadId, cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        if (objectName == upload.Key)
+                        {
+                            await this.RemoveUploadAsync(bucketName, objectName, upload.UploadId, cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                        if (ex.GetType() != typeof(BucketNotFoundException)) // Ignoring bucket not found as upload is deleted as desired
+                        {
+                            throw ex;
+                        }
+                    }
+                },
+                ex => 
+                {
+                    throw ex;
                 }
-            }
+                );
         }
 
         /// <summary>
