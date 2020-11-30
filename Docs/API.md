@@ -1709,9 +1709,9 @@ catch(MinioException e)
 ```
 
 <a name="presignedPutObject"></a>
-### PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
+### PresignedPutObjectAsync(PresignedPutObjectArgs args)
 
-`Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)`
+`Task<string> PresignedPutObjectAsync(PresignedPutObjectArgs args)`
 
 Generates a presigned URL for HTTP PUT operations. Browsers/Mobile clients may point to this URL to upload objects directly to a bucket even if it is private. This presigned URL can have an associated expiration time in seconds after which it is no longer operational. The default expiry is set to 7 days.
 
@@ -1720,9 +1720,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket  |
-| ``objectName``  | _string_  | Object name in the bucket |
-| ``expiresInt``  | _int_  | Expiry in seconds. Default expiry is set to 7 days. |
+| ``args``  | _PresignedPutObjectArgs_  | PresignedPutObjectArgs arguments object with bucket, object names & expiry  |
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
@@ -1738,7 +1736,11 @@ __Example__
 ```cs
 try
 {
-    String url = await minioClient.PresignedPutObjectAsync("mybucket", "myobject", 60 * 60 * 24);
+    PresignedPutObjectArgs args = PresignedPutObjectArgs()
+                                            .WithBucket("mybucket")
+                                            .WithObject("myobject")
+                                            .WithExpiry(60 * 60 * 24);
+    String url = await minioClient.PresignedPutObjectAsync(args);
     Console.WriteLine(url);
 }
 catch(MinioException e)
