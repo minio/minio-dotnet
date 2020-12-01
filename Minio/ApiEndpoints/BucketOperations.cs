@@ -369,6 +369,36 @@ namespace Minio
 
 
         /// <summary>
+        /// Sets the Encryption Configuration for the mentioned bucket.
+        /// </summary>
+	    /// <param name="args">SetBucketEncryptionArgs Arguments Object with information like Bucket name, encryption config</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>An observable of JSON-based notification events</returns>
+        public async Task SetBucketEncryptionAsync(SetBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// Sets the Encryption Configuration for the mentioned bucket.
+        /// </summary>
+	    /// <param name="args">GetBucketEncryptionArgs Arguments Object encapsulating information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>An observable of JSON-based notification events</returns>
+        public async Task<ServerSideEncryptionConfiguration> GetBucketEncryptionAsync(GetBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            GetBucketEncryptionResponse getBucketEncryptionResponse = new GetBucketEncryptionResponse(response.StatusCode, response.Content);
+            return getBucketEncryptionResponse.BucketEncryptionConfiguration;
+        }
+
+
+        /// <summary>
         /// Create a private bucket with the given name.
         /// </summary>
         /// <param name="bucketName">Name of the new bucket</param>

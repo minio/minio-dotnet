@@ -22,6 +22,7 @@ using System.Net;
 using RestSharp;
 
 using Minio.DataModel;
+using System.Xml.Serialization;
 
 namespace Minio
 {
@@ -44,6 +45,25 @@ namespace Minio
         {
             // StatObjectResponse object is populated with available stats from the response.
             this.ObjectInfo = ObjectStat.FromResponseHeaders(args.ObjectName, responseHeaders);
+        }
+    }
+
+    internal class GetBucketEncryptionResponse : GenericResponse
+    {
+        internal ServerSideEncryptionConfiguration BucketEncryptionConfiguration { get; set; }
+
+        internal GetBucketEncryptionResponse(HttpStatusCode statusCode, string responseContent)
+                    : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
+            {
+                this.BucketEncryptionConfiguration = null;
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                BucketEncryptionConfiguration = (ServerSideEncryptionConfiguration)new XmlSerializer(typeof(ServerSideEncryptionConfiguration)).Deserialize(stream);
+            }
         }
     }
 }

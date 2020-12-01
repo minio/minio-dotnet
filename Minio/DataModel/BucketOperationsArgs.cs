@@ -344,4 +344,58 @@ namespace Minio
             return this;
         }
     }
+
+    public class SetBucketEncryptionArgs : BucketArgs<SetBucketEncryptionArgs>
+    {
+        public SetBucketEncryptionArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        internal ServerSideEncryptionConfiguration EncryptionConfig { get; set; }
+
+        public SetBucketEncryptionArgs WithEncryptionConfig(ServerSideEncryptionConfiguration config)
+        {
+            this.EncryptionConfig = config;
+            return this;
+        }
+
+        public SetBucketEncryptionArgs WithAESConfig()
+        {
+            this.EncryptionConfig = ServerSideEncryptionConfiguration.GetSSEConfigurationWithS3Rule();
+            return this;
+        }
+
+        public SetBucketEncryptionArgs WithKMSConfig(string keyId = null)
+        {
+            this.EncryptionConfig = ServerSideEncryptionConfiguration.GetSSEConfigurationWithKMSRule(keyId);
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            if (this.EncryptionConfig == null)
+            {
+                this.EncryptionConfig = ServerSideEncryptionConfiguration.GetSSEConfigurationWithS3Rule();
+            }
+            request.AddQueryParameter("encryption","");
+            string body = utils.MarshalXML(this.EncryptionConfig, "http://s3.amazonaws.com/doc/2006-03-01/");
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+
+            return request;
+        }
+    }
+
+    public class GetBucketEncryptionArgs : BucketArgs<GetBucketEncryptionArgs>
+    {
+        public GetBucketEncryptionArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("encryption","");
+            return request;
+        }
+    }
 }
