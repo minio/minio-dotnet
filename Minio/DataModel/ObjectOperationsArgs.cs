@@ -245,6 +245,124 @@ namespace Minio
         }
     }
 
+    public class PresignedPostPolicyArgs : ObjectArgs<PresignedPostPolicyArgs>
+    {
+        internal PostPolicy Policy { get; set; }
+        internal DateTime Expiration { get; set; }
+
+        internal string Region { get; set; }
+        public new void Validate()
+        {
+            bool checkPolicy = false;
+            try
+            {
+                utils.ValidateBucketName(this.BucketName);
+                utils.ValidateObjectName(this.ObjectName);
+            }
+            catch (Exception ex)
+            {
+                if (ex is InvalidBucketNameException || ex is InvalidObjectNameException)
+                {
+                    checkPolicy = true;
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            if (checkPolicy)
+            {
+                if (!this.Policy.IsBucketSet())
+                {
+                    throw new InvalidOperationException("For the " + nameof(Policy) + " bucket should be set");
+                }
+
+                if (!this.Policy.IsKeySet())
+                {
+                    throw new InvalidOperationException("For the " + nameof(Policy) + " key should be set");
+                }
+
+                if (!this.Policy.IsExpirationSet())
+                {
+                    throw new InvalidOperationException("For the " + nameof(Policy) + " expiration should be set");
+                }
+                this.BucketName = this.Policy.Bucket;
+                this.ObjectName = this.Policy.Key;
+            }
+            if (string.IsNullOrEmpty(this.Expiration.ToString()))
+            {
+                throw new InvalidOperationException("For the " + nameof(Policy) + " expiration should be set");
+            }
+
+        }
+
+        public PresignedPostPolicyArgs WithExpiration(DateTime ex)
+        {
+            this.Expiration = ex;
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request = base.BuildRequest(request);
+            return request;
+        }
+
+        internal PresignedPostPolicyArgs WithRegion(string region)
+        {
+            this.Region = region;
+            return this;
+        }
+
+        internal PresignedPostPolicyArgs WithSessionToken(string sessionToken)
+        {
+            this.Policy.SetSessionToken(sessionToken);
+            return this;
+        }
+
+        internal PresignedPostPolicyArgs WithCredential(string credential)
+        {
+            this.Policy.SetCredential(credential);
+            return this;
+        }
+
+        internal PresignedPostPolicyArgs WithSignature(string signature)
+        {
+            this.Policy.SetSignature(signature);
+            return this;
+        }
+        public PresignedPostPolicyArgs WithPolicy(PostPolicy policy)
+        {
+            this.Policy = policy;
+            return this;
+        }
+    }
+
+    public class PresignedPutObjectArgs : ObjectArgs<PresignedPutObjectArgs>
+    {
+        internal int Expiry { get; set; }
+
+        public PresignedPutObjectArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        internal new void Validate()
+        {
+            base.Validate();
+            if (!utils.IsValidExpiry(this.Expiry))
+            {
+                throw new InvalidExpiryRangeException("Expiry range should be between 1 seconds and " + Constants.DefaultExpiryTime.ToString() + " seconds");
+            }
+        }
+
+        public PresignedPutObjectArgs WithExpiry(int ex)
+        {
+            this.Expiry = ex;
+            return this;
+        }
+    }
+
     public class RemoveUploadArgs : EncryptionArgs<RemoveUploadArgs>
     {
         internal string UploadId { get; private set; }

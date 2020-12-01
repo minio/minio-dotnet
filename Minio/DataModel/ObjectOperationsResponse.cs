@@ -20,12 +20,10 @@ using System.Xml.Linq;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Xml.Linq;
 using System.Xml.Serialization;
 using RestSharp;
 
 using Minio.DataModel;
-using System.Xml.Serialization;
 
 namespace Minio
 {
@@ -77,6 +75,19 @@ namespace Minio
                               Initiated = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Initiated").Value
                           };
             this.UploadResult = new Tuple<ListMultipartUploadsResult, List<Upload>>(uploadsResult, uploads.ToList());
+        }
+    }
+
+    internal class PresignedPostPolicyResponse
+    {
+        internal Tuple<string, Dictionary<string, string>> URIPolicyTuple { get; private set; }
+
+        public PresignedPostPolicyResponse(PresignedPostPolicyArgs args, string absURI)
+        {
+            args.Policy.SetAlgorithm("AWS4-HMAC-SHA256");
+            args.Policy.SetDate(DateTime.UtcNow);
+            args.Policy.SetPolicy(args.Policy.Base64());
+            URIPolicyTuple = Tuple.Create(absURI, args.Policy.GetFormData());
         }
     }
 }

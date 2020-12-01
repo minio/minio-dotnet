@@ -63,9 +63,9 @@ namespace Minio.Functional.Tests
         private const string removeObjectSignature1 = "Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeObjectSignature2 = "Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectsList, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeIncompleteUploadSignature = "Task RemoveIncompleteUploadAsync(RemoveIncompleteUploadArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string presignedPutObjectSignature = "Task<string> PresignedPutObjectAsync(PresignedPutObjectArgs args)";
         private const string presignedGetObjectSignature = "Task<string> PresignedGetObjectAsync(PresignedGetObjectArgs args)";
-        private const string presignedPutObjectSignature = "Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)";
-        private const string presignedPostPolicySignature = "Task<Dictionary<string, string>> PresignedPostPolicyAsync(PostPolicy policy)";
+        private const string presignedPostPolicySignature = "Task<Dictionary<string, string>> PresignedPostPolicyAsync(PresignedPostPolicyArgs args)";
         private const string getBucketPolicySignature = "Task<string> GetPolicyAsync(GetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string setBucketPolicySignature = "Task SetPolicyAsync(SetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string getBucketNotificationSignature = "Task<BucketNotification> GetBucketNotificationAsync(GetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
@@ -2574,7 +2574,11 @@ namespace Minio.Functional.Tests
             {
                 await Setup_Test(minio, bucketName);
                 // Upload with presigned url
-                string presigned_url = await minio.PresignedPutObjectAsync(bucketName, objectName, 1000);
+                PresignedPutObjectArgs presignedPutObjectArgs = new PresignedPutObjectArgs()
+                                                                            .WithBucket(bucketName)
+                                                                            .WithObject(objectName)
+                                                                            .WithExpiry(1000);
+                string presigned_url = await minio.PresignedPutObjectAsync(presignedPutObjectArgs);
                 await UploadObjectAsync(presigned_url, fileName);
                 // Get stats for object from server
                 StatObjectArgs statObjectArgs = new StatObjectArgs()
@@ -2629,7 +2633,11 @@ namespace Minio.Functional.Tests
                                                             .WithBucket(bucketName)
                                                             .WithObject(objectName);
                     ObjectStat stats = await minio.StatObjectAsync(statObjectArgs);
-                    string presigned_url = await minio.PresignedPutObjectAsync(bucketName, objectName, 0);
+                    PresignedPutObjectArgs presignedPutObjectArgs = new PresignedPutObjectArgs()
+                                                                                .WithBucket(bucketName)
+                                                                                .WithObject(objectName)
+                                                                                .WithExpiry(0);
+                    string presigned_url = await minio.PresignedPutObjectAsync(presignedPutObjectArgs);
                 }
                 catch (InvalidExpiryRangeException)
                 {
@@ -2692,7 +2700,11 @@ namespace Minio.Functional.Tests
                             fileName);
                 var pairs = new List<KeyValuePair<string, string>>();
                 string url = "https://s3.amazonaws.com/" + bucketName;
-                Tuple<string, System.Collections.Generic.Dictionary<string, string>> policyTuple = await minio.PresignedPostPolicyAsync(form);
+                PresignedPostPolicyArgs polArgs = new PresignedPostPolicyArgs()
+                                                                .WithBucket(bucketName)
+                                                                .WithObject(objectName)
+                                                                .WithPolicy(form);
+                Tuple<string, System.Collections.Generic.Dictionary<string, string>> policyTuple = await minio.PresignedPostPolicyAsync(polArgs);
                 var httpClient = new HttpClient();
 
                 using (var stream = File.OpenRead(fileName))
