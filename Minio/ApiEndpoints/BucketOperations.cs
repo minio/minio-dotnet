@@ -65,6 +65,7 @@ namespace Minio
             return true;
         }
 
+
         /// <summary>
         /// Remove the bucket with the given name.
         /// </summary>

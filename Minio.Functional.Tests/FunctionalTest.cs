@@ -3254,20 +3254,39 @@ namespace Minio.Functional.Tests
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
             string objectName = GetRandomObjectName(10);
+            string outFileName = "outFileName";
             var args = new Dictionary<string, string>
             {
                 { "bucketName", bucketName },
-                { "objectName", objectName }
+                { "objectName", objectName },
+                { "fileName", outFileName },
             };
             try
             {
-                await Setup_Test(minio, bucketName);
+                await Setup_WithLock_Test(minio, bucketName);
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
+                    await minio.PutObjectAsync(bucketName,
+                                                objectName,
+                                                filestream, filestream.Length, null);
+
+                SetObjectRetentionArgs retentionArgs = new SetObjectRetentionArgs()
+                                                                    .WithBucket(bucketName)
+                                                                    .WithObject(objectName)
+                                                                    .WithRetentionMode(RetentionMode.GOVERNANCE)
+                                                                    .WithRetentionValidDays(112);
+                await minio.SetObjectRetentionAsync(retentionArgs);
                 SetObjectLegalHoldArgs legalHoldArgs = new SetObjectLegalHoldArgs()
                                                                     .WithBucket(bucketName)
                                                                     .WithObject(objectName)
                                                                     .WithLegalHold(true);
                 await minio.SetObjectLegalHoldAsync(legalHoldArgs);
+                GetObjectLegalHoldArgs getObjectLegalHoldArgs = new GetObjectLegalHoldArgs()
+                                                                    .WithBucket(bucketName)
+                                                                    .WithObject(objectName);
+                bool enabled = await minio.GetObjectLegalHoldAsync(getObjectLegalHoldArgs);
+                Assert.IsTrue(enabled);
                 await minio.RemoveObjectAsync(bucketName, objectName);
+                System.Threading.Thread.Sleep(1000);
                 await TearDown(minio, bucketName);
                 new MintLogger(nameof(LegalHoldStatusAsync_Test1), setObjectLegalHoldSignature, "Tests whether SetObjectLegalHoldAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
@@ -3275,28 +3294,6 @@ namespace Minio.Functional.Tests
             {
                 await TearDown(minio, bucketName);
                 new MintLogger(nameof(LegalHoldStatusAsync_Test1), setObjectLegalHoldSignature, "Tests whether SetObjectLegalHoldAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
-            }
-
-            try
-            {
-                await Setup_Test(minio, bucketName);
-                SetObjectLegalHoldArgs legalHoldArgs = new SetObjectLegalHoldArgs()
-                                                                    .WithBucket(bucketName)
-                                                                    .WithObject(objectName)
-                                                                    .WithLegalHold(true);
-                await minio.SetObjectLegalHoldAsync(legalHoldArgs);
-                GetObjectLegalHoldArgs getLegalHoldArgs = new GetObjectLegalHoldArgs()
-                                                                    .WithBucket(bucketName)
-                                                                    .WithObject(objectName);
-                bool enabled = await minio.GetObjectLegalHoldAsync(getLegalHoldArgs);
-                await minio.RemoveObjectAsync(bucketName, objectName);
-                await TearDown(minio, bucketName);
-                new MintLogger(nameof(LegalHoldStatusAsync_Test1), getObjectLegalHoldSignature, "Tests whether GetObjectLegalHoldAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
-            }
-            catch (Exception ex)
-            {
-                await TearDown(minio, bucketName);
-                new MintLogger(nameof(LegalHoldStatusAsync_Test1), getObjectLegalHoldSignature, "Tests whether GetObjectLegalHoldAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
             }
         }
 

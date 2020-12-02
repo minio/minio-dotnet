@@ -414,4 +414,98 @@ namespace Minio
             return request;
         }
     }
+
+    public class SetObjectRetentionArgs : ObjectVersionArgs<SetObjectRetentionArgs>
+    {
+        internal bool BypassGovernanceMode { get; set; }
+        internal RetentionMode Mode { get; set; }
+        internal DateTime RetentionUntilDate { get; set; }
+        internal int RetentionValidDays { get; set; }
+        public SetObjectRetentionArgs()
+        {
+            this.RequestMethod = Method.PUT;
+            this.RetentionUntilDate = default(DateTime);
+            this.RetentionValidDays = -1;
+            this.Mode = RetentionMode.GOVERNANCE;
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if (this.RetentionUntilDate.Equals(default(DateTime)) && this.RetentionValidDays < 0)
+            {
+                throw new InvalidOperationException("Retention Period is not set. Please set " +
+                        nameof(RetentionUntilDate) + " or " + nameof(RetentionValidDays));
+            }
+        }
+        public SetObjectRetentionArgs WithBypassGovernanceMode(bool bypass = true)
+        {
+            this.BypassGovernanceMode = bypass;
+            return this;
+        }
+
+        public SetObjectRetentionArgs WithRetentionMode(RetentionMode mode)
+        {
+            this.Mode = mode;
+            return this;
+        }
+
+        public SetObjectRetentionArgs WithRetentionUntilDate(DateTime date)
+        {
+            this.RetentionUntilDate = date;
+            return this;
+        }
+
+        public SetObjectRetentionArgs WithRetentionValidDays(int days)
+        {
+            this.RetentionValidDays = days;
+            return this;
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("retention", "");
+            if( !string.IsNullOrEmpty(this.VersionId) )
+            {
+                request.AddQueryParameter("versionId", this.VersionId);
+            }
+            if (this.BypassGovernanceMode)
+            {
+                request.AddOrUpdateParameter("x-amz-bypass-governance-retention", "true", ParameterType.HttpHeader);
+            }
+            ObjectRetentionConfiguration config = null;
+            if (this.RetentionValidDays > 0)
+            {
+                config = new ObjectRetentionConfiguration((uint)this.RetentionValidDays, this.Mode);
+            }
+            else if (this.RetentionUntilDate != default(DateTime))
+            {
+                config = new ObjectRetentionConfiguration(this.RetentionUntilDate, this.Mode);
+            }
+            string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+            var md5 = MD5.Create();
+            byte[] hash = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(body));
+            string base64 = Convert.ToBase64String(hash);
+            request.AddOrUpdateParameter("Content-MD5", base64, ParameterType.HttpHeader);
+            return request;
+        }
+    }
+    
+    public class GetObjectRetentionArgs : ObjectVersionArgs<GetObjectRetentionArgs>
+    {
+        public GetObjectRetentionArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("retention", "");
+            if( !string.IsNullOrEmpty(this.VersionId) )
+            {
+                request.AddQueryParameter("versionId", this.VersionId);
+            }
+            return request;
+        }
+    }
 }
