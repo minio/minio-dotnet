@@ -51,7 +51,7 @@ namespace Minio.Functional.Tests
         private const string listObjectsSignature = "IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = false, CancellationToken cancellationToken = default(CancellationToken))";
         private const string listObjectVersionsSignature = "IObservable<VersionItem> ListObjectVersionsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
 
-        private const string listIncompleteUploadsSignature = "IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix, bool recursive, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string listIncompleteUploadsSignature = "IObservable<Upload> ListIncompleteUploads(ListIncompleteUploads args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string getObjectSignature1 = "Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, CancellationToken cancellationToken = default(CancellationToken))";
         private const string getObjectSignature2 = "Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, CancellationToken cancellationToken = default(CancellationToken))";
         private const string getObjectSignature3 = "Task GetObjectAsync(string bucketName, string objectName, string fileName, CancellationToken cancellationToken = default(CancellationToken))";
@@ -63,9 +63,9 @@ namespace Minio.Functional.Tests
         private const string removeObjectSignature1 = "Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeObjectSignature2 = "Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectsList, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeIncompleteUploadSignature = "Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string presignedPutObjectSignature = "Task<string> PresignedPutObjectAsync(PresignedPutObjectArgs args)";
         private const string presignedGetObjectSignature = "Task<string> PresignedGetObjectAsync(PresignedGetObjectArgs args)";
-        private const string presignedPutObjectSignature = "Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)";
-        private const string presignedPostPolicySignature = "Task<Dictionary<string, string>> PresignedPostPolicyAsync(PostPolicy policy)";
+        private const string presignedPostPolicySignature = "Task<Dictionary<string, string>> PresignedPostPolicyAsync(PresignedPostPolicyArgs args)";
         private const string getBucketPolicySignature = "Task<string> GetPolicyAsync(GetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string setBucketPolicySignature = "Task SetPolicyAsync(SetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string getBucketNotificationSignature = "Task<BucketNotification> GetBucketNotificationAsync(GetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
@@ -2575,7 +2575,11 @@ namespace Minio.Functional.Tests
             {
                 await Setup_Test(minio, bucketName);
                 // Upload with presigned url
-                string presigned_url = await minio.PresignedPutObjectAsync(bucketName, objectName, 1000);
+                PresignedPutObjectArgs presignedPutObjectArgs = new PresignedPutObjectArgs()
+                                                                            .WithBucket(bucketName)
+                                                                            .WithObject(objectName)
+                                                                            .WithExpiry(1000);
+                string presigned_url = await minio.PresignedPutObjectAsync(presignedPutObjectArgs);
                 await UploadObjectAsync(presigned_url, fileName);
                 // Get stats for object from server
                 StatObjectArgs statObjectArgs = new StatObjectArgs()
@@ -2630,7 +2634,11 @@ namespace Minio.Functional.Tests
                                                             .WithBucket(bucketName)
                                                             .WithObject(objectName);
                     ObjectStat stats = await minio.StatObjectAsync(statObjectArgs);
-                    string presigned_url = await minio.PresignedPutObjectAsync(bucketName, objectName, 0);
+                    PresignedPutObjectArgs presignedPutObjectArgs = new PresignedPutObjectArgs()
+                                                                                .WithBucket(bucketName)
+                                                                                .WithObject(objectName)
+                                                                                .WithExpiry(0);
+                    string presigned_url = await minio.PresignedPutObjectAsync(presignedPutObjectArgs);
                 }
                 catch (InvalidExpiryRangeException)
                 {
@@ -2693,7 +2701,11 @@ namespace Minio.Functional.Tests
                             fileName);
                 var pairs = new List<KeyValuePair<string, string>>();
                 string url = "https://s3.amazonaws.com/" + bucketName;
-                Tuple<string, System.Collections.Generic.Dictionary<string, string>> policyTuple = await minio.PresignedPostPolicyAsync(form);
+                PresignedPostPolicyArgs polArgs = new PresignedPostPolicyArgs()
+                                                                .WithBucket(bucketName)
+                                                                .WithObject(objectName)
+                                                                .WithPolicy(form);
+                Tuple<string, System.Collections.Generic.Dictionary<string, string>> policyTuple = await minio.PresignedPostPolicyAsync(polArgs);
                 var httpClient = new HttpClient();
 
                 using (var stream = File.OpenRead(fileName))
@@ -2760,11 +2772,19 @@ namespace Minio.Functional.Tests
                 }
                 catch (OperationCanceledException)
                 {
-                    IObservable<Upload> observable = minio.ListIncompleteUploads(bucketName);
+                    ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
+                                                                    .WithBucket(bucketName);
+                    IObservable<Upload> observable = minio.ListIncompleteUploads(listArgs);
 
                     IDisposable subscription = observable.Subscribe(
-                        item => Assert.AreEqual(item.Key, objectName),
-                        ex => Assert.Fail());
+                        item =>
+                        {
+                            StringAssert.Equals(item.Key, objectName);
+                        },
+                        ex =>
+                        {
+                            Assert.Fail();
+                        });
 
                     await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
                 }
@@ -2817,7 +2837,11 @@ namespace Minio.Functional.Tests
                 }
                 catch (OperationCanceledException)
                 {
-                    IObservable<Upload> observable = minio.ListIncompleteUploads(bucketName, "minioprefix", false);
+                    ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
+                                                                    .WithBucket(bucketName)
+                                                                    .WithPrefix("minioprefix")
+                                                                    .WithRecursive(false);
+                    IObservable<Upload> observable = minio.ListIncompleteUploads(listArgs);
 
                     IDisposable subscription = observable.Subscribe(
                         item => Assert.AreEqual(item.Key, objectName),
@@ -2869,7 +2893,11 @@ namespace Minio.Functional.Tests
                 }
                 catch (OperationCanceledException)
                 {
-                    IObservable<Upload> observable = minio.ListIncompleteUploads(bucketName, prefix, true);
+                    ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
+                                                                    .WithBucket(bucketName)
+                                                                    .WithPrefix(prefix)
+                                                                    .WithRecursive(true);
+                    IObservable<Upload> observable = minio.ListIncompleteUploads(listArgs);
 
                     IDisposable subscription = observable.Subscribe(
                         item => Assert.AreEqual(item.Key, objectName),
@@ -2923,7 +2951,9 @@ namespace Minio.Functional.Tests
                 {
                     await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
 
-                    IObservable<Upload> observable = minio.ListIncompleteUploads(bucketName);
+                    ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
+                                                                    .WithBucket(bucketName);
+                    IObservable<Upload> observable = minio.ListIncompleteUploads(listArgs);
 
                     IDisposable subscription = observable.Subscribe(
                         item => Assert.Fail(),

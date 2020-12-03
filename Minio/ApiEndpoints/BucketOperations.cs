@@ -383,7 +383,7 @@ namespace Minio
 
 
         /// <summary>
-        /// Sets the Encryption Configuration for the mentioned bucket.
+        /// Returns the Encryption Configuration for the mentioned bucket.
         /// </summary>
 	    /// <param name="args">GetBucketEncryptionArgs Arguments Object encapsulating information like Bucket name</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -395,6 +395,20 @@ namespace Minio
             IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             GetBucketEncryptionResponse getBucketEncryptionResponse = new GetBucketEncryptionResponse(response.StatusCode, response.Content);
             return getBucketEncryptionResponse.BucketEncryptionConfiguration;
+        }
+
+
+        /// <summary>
+        /// Removes the Encryption Configuration for the mentioned bucket.
+        /// </summary>
+	    /// <param name="args">GetBucketEncryptionArgs Arguments Object encapsulating information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>An observable of JSON-based notification events</returns>
+        public async Task RemoveBucketEncryptionAsync(RemoveBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 

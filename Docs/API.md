@@ -744,9 +744,9 @@ catch (MinioException e)
 
 
 <a name="listIncompleteUploads"></a>
-### ListIncompleteUploads(string bucketName, string prefix, bool recursive)
+### ListIncompleteUploads(ListIncompleteUploadsArgs args)
 
-`IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix, bool recursive, CancellationToken cancellationToken = default(CancellationToken))`
+`IObservable<Upload> ListIncompleteUploads(ListIncompleteUploadsArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 Lists partially uploaded objects in a bucket.
 
@@ -756,9 +756,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket  |
-| ``prefix``  | _string_  | Prefix string. List objects whose name starts with ``prefix`` |
-| ``recursive``  | _bool_  | when false, emulates a directory structure where each listing returned is either a full object or part of the object's key up to the first '/'. All objects with the same prefix up to the first '/' will be merged into one entry |
+| ``args``  | _ListIncompleteUploadsArgs_  | ListIncompleteUploadsArgs object - encapsulates bucket name, prefix, show recursively.  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -778,7 +776,11 @@ try
     if (found)
     {
         // List all incomplete multipart upload of objects in 'mybucket'
-        IObservable<Upload> observable = minioClient.ListIncompleteUploads("mybucket", "prefix", true);
+        ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
+                                                            .WithBucket("mybucket")
+                                                            .WithPrefix("prefix")
+                                                            .WithRecursive(true);
+        IObservable<Upload> observable = minioClient.ListIncompleteUploads(listArgs);
         IDisposable subscription = observable.Subscribe(
 							item => Console.WriteLine("OnNext: {0}", item.Key),
 							ex => Console.WriteLine("OnError: {0}", ex.Message),
@@ -1707,9 +1709,9 @@ catch(MinioException e)
 ```
 
 <a name="presignedPutObject"></a>
-### PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
+### PresignedPutObjectAsync(PresignedPutObjectArgs args)
 
-`Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)`
+`Task<string> PresignedPutObjectAsync(PresignedPutObjectArgs args)`
 
 Generates a presigned URL for HTTP PUT operations. Browsers/Mobile clients may point to this URL to upload objects directly to a bucket even if it is private. This presigned URL can have an associated expiration time in seconds after which it is no longer operational. The default expiry is set to 7 days.
 
@@ -1718,9 +1720,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket  |
-| ``objectName``  | _string_  | Object name in the bucket |
-| ``expiresInt``  | _int_  | Expiry in seconds. Default expiry is set to 7 days. |
+| ``args``  | _PresignedPutObjectArgs_  | PresignedPutObjectArgs arguments object with bucket, object names & expiry  |
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
@@ -1736,7 +1736,11 @@ __Example__
 ```cs
 try
 {
-    String url = await minioClient.PresignedPutObjectAsync("mybucket", "myobject", 60 * 60 * 24);
+    PresignedPutObjectArgs args = PresignedPutObjectArgs()
+                                            .WithBucket("mybucket")
+                                            .WithObject("myobject")
+                                            .WithExpiry(60 * 60 * 24);
+    String url = await minioClient.PresignedPutObjectAsync(args);
     Console.WriteLine(url);
 }
 catch(MinioException e)
@@ -1746,9 +1750,9 @@ catch(MinioException e)
 ```
 
 <a name="presignedPostPolicy"></a>
-### PresignedPostPolicy(PostPolicy policy)
+### PresignedPostPolicy(PresignedPostPolicyArgs args)
 
-`Task<Dictionary<string, string>> PresignedPostPolicyAsync(PostPolicy policy)`
+`Task<Dictionary<string, string>> PresignedPostPolicyAsync(PresignedPostPolicyArgs args)`
 
 Allows setting policy conditions to a presigned URL for POST operations. Policies such as bucket name to receive object uploads, key name prefixes, expiry policy may be set.
 
@@ -1757,7 +1761,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``PostPolicy``  | _PostPolicy_  | Post policy of an object.  |
+| ``args``  | _PresignedPostPolicyArgs_  | PresignedPostPolicyArgs Arguments object includes bucket, object names & Post policy of an object.  |
 
 
 | Return Type	  | Exceptions	  |
@@ -1782,8 +1786,12 @@ try
     policy.SetExpires(expiration.AddDays(10));
     policy.SetKey("my-objectname");
     policy.SetBucket("my-bucketname");
+    PresignedPostPolicyArgs args = PresignedPostPolicyArgs()
+                                            .WithBucket("my-bucketname")
+                                            .WithObject("my-objectname")
+                                            .WithPolicy(policy);
 
-    Dictionary<string, string> formData = minioClient.Api.PresignedPostPolicy(policy);
+    Dictionary<string, string> formData = minioClient.Api.PresignedPostPolicy(args);
     string curlCommand = "curl ";
     foreach (KeyValuePair<string, string> pair in formData)
     {

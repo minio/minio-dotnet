@@ -89,6 +89,85 @@ namespace Minio
         }
     }
 
+    public class ListIncompleteUploadsArgs : BucketArgs<ListIncompleteUploadsArgs>
+    {
+        internal string Prefix { get; private set; }
+        internal string Delimiter { get; private set; }
+        internal bool Recursive { get; private set; }
+        public ListIncompleteUploadsArgs()
+        {
+            this.RequestMethod = Method.GET;
+            this.Recursive = true;
+        }
+        public ListIncompleteUploadsArgs WithPrefix(string prefix)
+        {
+            this.Prefix = prefix ?? string.Empty;
+            return this;
+        }
+
+        public ListIncompleteUploadsArgs WithDelimiter(string delim)
+        {
+            this.Delimiter = delim ?? string.Empty;
+            return this;
+        }
+
+        public ListIncompleteUploadsArgs WithRecursive(bool recursive)
+        {
+            this.Recursive = recursive;
+            this.Delimiter = (recursive)? string.Empty : "/";
+            return this;
+        }
+    }
+
+    public class GetMultipartUploadsListArgs : BucketArgs<GetMultipartUploadsListArgs>
+    {
+        internal string Prefix { get; private set; }
+        internal string Delimiter { get; private set; }
+        internal string KeyMarker { get; private set; }
+        internal string UploadIdMarker { get; private set; }
+        internal uint MAX_UPLOAD_COUNT { get; private set; }
+        public GetMultipartUploadsListArgs()
+        {
+            this.RequestMethod = Method.GET;
+            this.MAX_UPLOAD_COUNT = 1000;
+        }
+        public GetMultipartUploadsListArgs WithPrefix(string prefix)
+        {
+            this.Prefix = prefix ?? string.Empty;
+            return this;
+        }
+
+        public GetMultipartUploadsListArgs WithDelimiter(string delim)
+        {
+            this.Delimiter = delim ?? string.Empty;
+            return this;
+        }
+
+        public GetMultipartUploadsListArgs WithKeyMarker(string nextKeyMarker)
+        {
+            this.KeyMarker = nextKeyMarker ?? string.Empty;
+            return this;
+        }
+
+        public GetMultipartUploadsListArgs WithUploadIdMarker(string nextUploadIdMarker)
+        {
+            this.UploadIdMarker = nextUploadIdMarker ?? string.Empty;
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request = base.BuildRequest(request);
+            request.AddQueryParameter("uploads","");
+            request.AddQueryParameter("prefix",this.Prefix);
+            request.AddQueryParameter("delimiter",this.Delimiter);
+            request.AddQueryParameter("key-marker",this.KeyMarker);
+            request.AddQueryParameter("upload-id-marker",this.UploadIdMarker);
+            request.AddQueryParameter("max-uploads",this.MAX_UPLOAD_COUNT.ToString());
+            return request;
+        }
+    }
+
     public class PresignedGetObjectArgs : ObjectArgs<PresignedGetObjectArgs>
     {
         internal int Expiry { get; set; }
@@ -163,6 +242,124 @@ namespace Minio
             {
                 throw new InvalidOperationException("Invalid to set both modified date match conditions " + nameof(this.ModifiedSince) + " and " + nameof(this.UnModifiedSince));
             }
+        }
+    }
+
+    public class PresignedPostPolicyArgs : ObjectArgs<PresignedPostPolicyArgs>
+    {
+        internal PostPolicy Policy { get; set; }
+        internal DateTime Expiration { get; set; }
+
+        internal string Region { get; set; }
+        public new void Validate()
+        {
+            bool checkPolicy = false;
+            try
+            {
+                utils.ValidateBucketName(this.BucketName);
+                utils.ValidateObjectName(this.ObjectName);
+            }
+            catch (Exception ex)
+            {
+                if (ex is InvalidBucketNameException || ex is InvalidObjectNameException)
+                {
+                    checkPolicy = true;
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            if (checkPolicy)
+            {
+                if (!this.Policy.IsBucketSet())
+                {
+                    throw new InvalidOperationException("For the " + nameof(Policy) + " bucket should be set");
+                }
+
+                if (!this.Policy.IsKeySet())
+                {
+                    throw new InvalidOperationException("For the " + nameof(Policy) + " key should be set");
+                }
+
+                if (!this.Policy.IsExpirationSet())
+                {
+                    throw new InvalidOperationException("For the " + nameof(Policy) + " expiration should be set");
+                }
+                this.BucketName = this.Policy.Bucket;
+                this.ObjectName = this.Policy.Key;
+            }
+            if (string.IsNullOrEmpty(this.Expiration.ToString()))
+            {
+                throw new InvalidOperationException("For the " + nameof(Policy) + " expiration should be set");
+            }
+
+        }
+
+        public PresignedPostPolicyArgs WithExpiration(DateTime ex)
+        {
+            this.Expiration = ex;
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request = base.BuildRequest(request);
+            return request;
+        }
+
+        internal PresignedPostPolicyArgs WithRegion(string region)
+        {
+            this.Region = region;
+            return this;
+        }
+
+        internal PresignedPostPolicyArgs WithSessionToken(string sessionToken)
+        {
+            this.Policy.SetSessionToken(sessionToken);
+            return this;
+        }
+
+        internal PresignedPostPolicyArgs WithCredential(string credential)
+        {
+            this.Policy.SetCredential(credential);
+            return this;
+        }
+
+        internal PresignedPostPolicyArgs WithSignature(string signature)
+        {
+            this.Policy.SetSignature(signature);
+            return this;
+        }
+        public PresignedPostPolicyArgs WithPolicy(PostPolicy policy)
+        {
+            this.Policy = policy;
+            return this;
+        }
+    }
+
+    public class PresignedPutObjectArgs : ObjectArgs<PresignedPutObjectArgs>
+    {
+        internal int Expiry { get; set; }
+
+        public PresignedPutObjectArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        internal new void Validate()
+        {
+            base.Validate();
+            if (!utils.IsValidExpiry(this.Expiry))
+            {
+                throw new InvalidExpiryRangeException("Expiry range should be between 1 seconds and " + Constants.DefaultExpiryTime.ToString() + " seconds");
+            }
+        }
+
+        public PresignedPutObjectArgs WithExpiry(int ex)
+        {
+            this.Expiry = ex;
+            return this;
         }
     }
 }

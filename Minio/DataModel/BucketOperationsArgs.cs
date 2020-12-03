@@ -398,4 +398,17 @@ namespace Minio
             return request;
         }
     }
+
+    public class RemoveBucketEncryptionArgs : BucketArgs<RemoveBucketEncryptionArgs>
+    {
+        public RemoveBucketEncryptionArgs()
+        {
+            this.RequestMethod = Method.DELETE;
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("encryption","");
+            return request;
+        }
+    }
 }
