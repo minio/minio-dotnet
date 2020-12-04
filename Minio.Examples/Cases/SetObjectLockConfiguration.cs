@@ -15,25 +15,26 @@
  */
 using System;
 using System.Threading.Tasks;
+using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
     public class SetObjectLockConfiguration
     {
-        // Put Encryption Configuration for the bucket
+        // Set Object Lock Configuration for the bucket
         public async static Task Run(MinioClient minio,
                                     string bucketName = "my-bucket-name",
                                     ObjectLockConfiguration config = null)
         {
             try
             {
-                Console.WriteLine("Running example for API: SetObjectLockConfigurationAsync");
+                Console.WriteLine("Running example for API: SetObjectLockConfiguration");
                 await minio.SetObjectLockConfigurationAsync(
                     new SetObjectLockConfigurationArgs()
                         .WithBucket(bucketName)
                         .WithLockConfiguration(config)
                 );
-                Console.WriteLine($"Assigned object lock configuration to bucket {bucketName}");
+                Console.WriteLine($"Set object lock configuration for bucket {bucketName}");
                 Console.WriteLine();
             }
             catch (Exception e)

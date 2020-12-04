@@ -24,8 +24,6 @@ namespace Minio
     {
         public DefaultRetention()
         {
-            this.Days = -1;
-            this.Mode = RetentionMode.GOVERNANCE;
         }
 
         public DefaultRetention(int days, RetentionMode mode)

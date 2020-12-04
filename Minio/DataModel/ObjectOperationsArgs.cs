@@ -362,4 +362,42 @@ namespace Minio
             return this;
         }
     }
+
+    public class RemoveUploadArgs : EncryptionArgs<RemoveUploadArgs>
+    {
+        internal string UploadId { get; private set; }
+        public RemoveUploadArgs()
+        {
+            this.RequestMethod = Method.DELETE;
+        }
+
+        public RemoveUploadArgs WithUploadId(string id)
+        {
+            this.UploadId = id;
+            return this;
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if(string.IsNullOrEmpty(this.UploadId))
+            {
+                throw new InvalidOperationException(nameof(UploadId) + " cannot be empty. Please assign a valid upload ID to remove.");
+            }
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request = base.BuildRequest(request);
+            request.AddQueryParameter("uploadId",$"{this.UploadId}");
+            return request;
+        }
+    }
+
+    public class RemoveIncompleteUploadArgs : EncryptionArgs<RemoveIncompleteUploadArgs>
+    {
+        public RemoveIncompleteUploadArgs()
+        {
+            this.RequestMethod = Method.DELETE;
+        }
+    }
 }

@@ -655,6 +655,22 @@ namespace Minio
                 throw new BucketNotFoundException(errResponse.BucketName, "Not found.");
             }
 
+            if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
+                && errResponse.Code.Equals("InvalidRequest"))
+            {
+                Parameter legalHold = new Parameter("legal-hold", "", ParameterType.QueryString);
+                if (response.Request.Parameters.Contains(legalHold))
+                {
+                    throw new MissingObjectLockConfiguration(errResponse.BucketName, errResponse.Message);
+                }
+            }
+
+            if (response.StatusCode.Equals(HttpStatusCode.NotFound)
+                && errResponse.Code.Equals("ObjectLockConfigurationNotFoundError"))
+            {
+                throw new MissingObjectLockConfiguration(errResponse.BucketName, errResponse.Message);
+            }
+
             throw new UnexpectedMinioException(errResponse.Message)
             {
                 Response = errResponse,

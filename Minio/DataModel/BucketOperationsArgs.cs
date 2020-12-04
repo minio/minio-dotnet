@@ -345,7 +345,6 @@ namespace Minio
         }
     }
 
-
     public class SetObjectLockConfigurationArgs : BucketArgs<SetObjectLockConfigurationArgs>
     {
         public SetObjectLockConfigurationArgs()

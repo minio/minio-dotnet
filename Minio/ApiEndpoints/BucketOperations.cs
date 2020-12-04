@@ -20,12 +20,10 @@ using Minio.Exceptions;
 using RestSharp;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 using Minio.Helper;
 
 namespace Minio
@@ -369,7 +367,7 @@ namespace Minio
 
 
         /// <summary>
-        /// Sets the notification configuration for this bucket
+        /// Sets the Object Lock Configuration for this bucket
         /// </summary>
         /// <param name="args">SetObjectLockConfigurationArgs Arguments Object with information like Bucket name, object lock configuration to set</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -382,10 +380,10 @@ namespace Minio
         }
 
 
-         /// <summary>
-        /// Gets notification configuration for this bucket
+        /// <summary>
+        /// Gets the Object Lock Configuration for this bucket
         /// </summary>
-        /// <param name="args">GetBucketNotificationsArgs Arguments Object with information like Bucket name</param>
+        /// <param name="args">GetObjectLockConfigurationArgs Arguments Object with information like Bucket name</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>ObjectLockConfiguration object</returns>
         public async Task<ObjectLockConfiguration> GetObjectLockConfigurationAsync(GetObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken))
@@ -399,9 +397,9 @@ namespace Minio
 
 
         /// <summary>
-        /// Sets the notification configuration for this bucket
+        /// Removes the Object Lock Configuration for this bucket
         /// </summary>
-        /// <param name="args">SetObjectLockConfigurationArgs Arguments Object with information like Bucket name, object lock configuration to set</param>
+        /// <param name="args">RemoveObjectLockConfigurationArgs Arguments Object with information like Bucket name</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         public async Task RemoveObjectLockConfigurationAsync(RemoveObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken))

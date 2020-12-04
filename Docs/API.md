@@ -33,6 +33,10 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 | [`listenBucketNotifications`](#listenBucketNotifications) | [`removeIncompleteUpload`](#removeIncompleteUpload) |   |   |
 | [`setVersioning`](#setVersioning)  | [`selectObjectContent`](#selectObjectContent) |   |   |
 | [`getVersioning`](#getVersioning)  |  |   |   |
+| [`setObjectLock`](#setObjectLock)  |   |   |   |
+| [`getObjectLock`](#getObjectLock)  |   |   |   |
+| [`removeObjectLock`](#removeObjectLock)  |   |   |   |
+
 
 ## 1. Constructors
 
@@ -684,6 +688,151 @@ try
 catch (MinioException e)
 {
     Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
+
+<a name="setObjectLock"></a>
+### SetObjectLockConfigurationAsync(SetObjectLockConfigurationArgs args)
+
+`Task SetObjectLockConfigurationAsync(SetObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Sets object-lock configuration in a bucket.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _SetObjectLockConfigurationArgs_  | SetObjectLockConfigurationArgs Argument Object with bucket, lock configuration to set  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task``  | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found   |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Set Object Lock Configuration for the bucket
+    SetObjectLockConfigurationArgs args = new SetBucketTagsArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithTagKeyValuePairs(tags);
+    await minio.SetObjectLockConfigurationAsync(args);
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
+<a name="getObjectLock"></a>
+### GetObjectLockConfigurationAsync(GetObjectLockConfigurationArgs args)
+
+`Task<ObjectLockConfiguration> GetObjectLockConfigurationAsync(GetObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Gets object-lock configuration in a bucket.
+
+
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _GetObjectLockConfigurationArgs_  | GetObjectLockConfigurationArgs Argument Object with bucket name  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task<ObjectLockConfiguration>``: ObjectLockConfiguration object which containing tag-value pairs. | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found  |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Get the Object Lock Configuration for the bucket
+    var args = new GetObjectLockConfigurationArgs()
+                                     .WithBucket(bucketName);
+    var config = await minio.GetObjectLockConfigurationAsync(args);
+    Console.WriteLine($"Got Object lock configuration to bucket {bucketName}. Status: " + config.ObjectLockEnabled);
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
+<a name="removeObjectLock"></a>
+### RemoveObjectLockConfigurationAsync(RemoveObjectLockConfigurationArgs args)
+
+`Task RemoveObjectLockConfigurationAsync(RemoveObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Deletes object-lock configuration in a bucket.
+
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _RemoveObjectLockConfigurationArgs_  | RemoveObjectLockConfigurationArgs Argument Object with bucket name  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task``  | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found  |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Remove Object Lock Configuration for the bucket
+    var args = new RemoveObjectLockConfigurationArgs()
+                                .WithBucket(bucketName);
+    await minio.RemoveObjectLockConfigurationAsync(args);
+    Console.WriteLine($"Removed Object lock configuration for bucket {bucketName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
 }
 ```
 
@@ -1549,9 +1698,9 @@ catch (MinioException e)
 ```
 
 <a name="removeIncompleteUpload"></a>
-### RemoveIncompleteUploadAsync(string bucketName, string objectName)
+### RemoveIncompleteUploadAsync(RemoveIncompleteUploadArgs args)
 
-`Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))`
+`Task RemoveIncompleteUploadAsync(RemoveIncompleteUploadArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 Removes a partially uploaded object.
 
@@ -1560,8 +1709,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket  |
-| ``objectName``  | _string_  | Object name in the bucket |
+| ``args``  | _RemoveIncompleteUploadArgs_  | RemoveIncompleteUploadArgs object encapsulating the bucket, object names  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -1580,7 +1728,10 @@ __Example__
 try
 {
     // Removes partially uploaded objects from buckets.
-    await minioClient.RemoveIncompleteUploadAsync("mybucket", "myobject");
+    RemoveIncompleteUploadArgs args = new RemoveIncompleteUploadArgs()
+                                                    .WithBucket(bucketName)
+                                                    .WithObject(objectName);
+    await minioClient.RemoveIncompleteUploadAsync(args);
     Console.WriteLine("successfully removed all incomplete upload session of my-bucketname/my-objectname");
 }
 catch(MinioException e)

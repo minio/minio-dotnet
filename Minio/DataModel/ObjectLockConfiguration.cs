@@ -17,7 +17,7 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Minio
+namespace Minio.DataModel
 {
     [Serializable]
     [XmlRoot(ElementName = "ObjectLockConfiguration", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]

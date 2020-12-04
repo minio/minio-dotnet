@@ -14,25 +14,17 @@
  * limitations under the License.
  */
 
-using System;
-using System.Xml.Serialization;
-
-namespace Minio.DataModel
+namespace Minio.Exceptions
 {
-    [Serializable]
-    [XmlRoot(ElementName = "ObjectLockRule", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-    public class ObjectLockRule
+    public class MissingObjectLockConfiguration : MinioException
     {
-        [XmlElement("DefaultRetention")]
-        public DefaultRetention DefaultRetention { get; set; }
-        public ObjectLockRule()
+        private readonly string bucketName;
+
+        public MissingObjectLockConfiguration(string bucketName, string message) : base(message)
         {
-            this.DefaultRetention = null;
+            this.bucketName = bucketName;
         }
 
-        public ObjectLockRule(RetentionMode mode, int retentionDurationDays)
-        {
-            this.DefaultRetention = new DefaultRetention(retentionDurationDays, mode);
-        }
+        public override string ToString() => $"{this.bucketName}: {base.ToString()}";
     }
 }
