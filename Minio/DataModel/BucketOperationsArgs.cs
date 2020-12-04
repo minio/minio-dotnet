@@ -344,4 +344,69 @@ namespace Minio
             return this;
         }
     }
+
+
+    public class SetObjectLockConfigurationArgs : BucketArgs<SetObjectLockConfigurationArgs>
+    {
+        public SetObjectLockConfigurationArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        internal ObjectLockConfiguration LockConfiguration { set; get; }
+        public SetObjectLockConfigurationArgs WithLockConfiguration(ObjectLockConfiguration config)
+        {
+            this.LockConfiguration = config;
+            return this;
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if (this.LockConfiguration == null)
+            {
+                throw new InvalidOperationException("The lock configuration object " + nameof(LockConfiguration) + " is not set. Please use " + nameof(WithLockConfiguration) + " to set.");
+            }
+        }
+        
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("object-lock","");
+            string body = utils.MarshalXML(this.LockConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+
+            return request;
+        }
+    }
+
+    public class GetObjectLockConfigurationArgs : BucketArgs<GetObjectLockConfigurationArgs>
+    {
+        public GetObjectLockConfigurationArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("object-lock","");
+            return request;
+        }
+    }
+
+    public class RemoveObjectLockConfigurationArgs : BucketArgs<RemoveObjectLockConfigurationArgs>
+    {
+        public RemoveObjectLockConfigurationArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("object-lock","");
+            string body = utils.MarshalXML(new ObjectLockConfiguration(), "http://s3.amazonaws.com/doc/2006-03-01/");
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+
+            return request;
+        }
+    }
 }
