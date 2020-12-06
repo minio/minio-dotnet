@@ -45,46 +45,17 @@ namespace Minio
             {
                 tempFileName = $"{args.FileName}.{etag}.{args.VersionId}.part.minio";
             }
-
-            bool tempFileExists = File.Exists(tempFileName);
-            bool getObjectFileExists = File.Exists(args.FileName);
+            if (File.Exists(args.FileName))
+            {
+                File.Delete(args.FileName);
+            }
 
             utils.ValidateFile(tempFileName);
-
-            if (tempFileExists)
+            if (File.Exists(tempFileName))
             {
-                FileInfo tempFileInfo = new FileInfo(tempFileName);
-                tempFileSize = tempFileInfo.Length;
-                if (tempFileSize > length)
-                {
-                    File.Delete(tempFileName);
-                    tempFileExists = false;
-                    tempFileSize = 0;
-                }
+                File.Delete(tempFileName);
             }
 
-            if (getObjectFileExists)
-            {
-                FileInfo fileInfo = new FileInfo(args.FileName);
-                long fileSize = fileInfo.Length;
-                if (fileSize == length)
-                {
-                    // already downloaded. nothing to do
-                    return;
-                }
-                else if (fileSize > length)
-                {
-                    throw new ArgumentException("'" + args.FileName + "': object size " + length + " is smaller than file size "
-                                                       + fileSize);
-                }
-                else if (!tempFileExists)
-                {
-                    // before resuming the download, copy filename to tempfilename
-                    File.Copy(args.FileName, tempFileName);
-                    tempFileSize = fileSize;
-                    tempFileExists = true;
-                }
-            }
             args = args.WithCallbackStream( (stream) =>
                                     {
                                         var fileStream = File.Create(tempFileName);
