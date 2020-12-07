@@ -15,15 +15,13 @@
  */
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
-using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
     class SetLegalHold
     {
-        // Enable Legal Hold and then Check if Legal Hold is Enabled on a bucket
+        // Enable Legal Hold
         public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name",
                                      string objectName = "my-object-name",
@@ -33,20 +31,21 @@ namespace Minio.Examples.Cases
             {
                 Console.WriteLine("Running example for API: SetLegalHold, enable legal hold");
                 // Setting WithLegalHold true, sets Legal hold status to ON.
+                // Setting WithLegalHold false will set Legal hold status to OFF.
                 SetObjectLegalHoldArgs args = new SetObjectLegalHoldArgs()
                                                             .WithBucket(bucketName)
                                                             .WithObject(objectName)
                                                             .WithVersionId(versionId)
                                                             .WithLegalHold(true);
                 await minio.SetObjectLegalHoldAsync(args);
-                Console.WriteLine("Legal Hold status for bucket " + bucketName + " object " + objectName + 
+                Console.WriteLine("Legal Hold status for " + bucketName + "/" + objectName + 
                             (string.IsNullOrEmpty(versionId)?" " : " with version id " + versionId + " ") + 
                             " set to ON." );
                 Console.WriteLine();
             }
             catch (Exception e)
             {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
+                Console.WriteLine($"[Object]  Exception: {e}");
             }
         }
     }

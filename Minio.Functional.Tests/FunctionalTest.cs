@@ -62,7 +62,7 @@ namespace Minio.Functional.Tests
         private const string copyObjectSignature = "Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeObjectSignature1 = "Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeObjectSignature2 = "Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectsList, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string removeIncompleteUploadSignature = "Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string removeIncompleteUploadSignature = "Task RemoveIncompleteUploadAsync(RemoveIncompleteUploadArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string presignedPutObjectSignature = "Task<string> PresignedPutObjectAsync(PresignedPutObjectArgs args)";
         private const string presignedGetObjectSignature = "Task<string> PresignedGetObjectAsync(PresignedGetObjectArgs args)";
         private const string presignedPostPolicySignature = "Task<Dictionary<string, string>> PresignedPostPolicyAsync(PresignedPostPolicyArgs args)";
@@ -2788,7 +2788,10 @@ namespace Minio.Functional.Tests
                             Assert.Fail();
                         });
 
-                    await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
+                    RemoveIncompleteUploadArgs rmArgs = new RemoveIncompleteUploadArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName);
+                    await minio.RemoveIncompleteUploadAsync(rmArgs);
                 }
                 catch (Exception ex)
                 {
@@ -2800,7 +2803,11 @@ namespace Minio.Functional.Tests
             }
             catch (MinioException ex)
             {
-                await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
+                RemoveIncompleteUploadArgs rmArgs = new RemoveIncompleteUploadArgs()
+                                                                    .WithBucket(bucketName)
+                                                                    .WithObject(objectName);
+
+                await minio.RemoveIncompleteUploadAsync(rmArgs);
                 await TearDown(minio, bucketName);
                 new MintLogger("ListIncompleteUpload_Test1", listIncompleteUploadsSignature, "Tests whether ListIncompleteUpload passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString()).Log();
             }
@@ -2849,14 +2856,20 @@ namespace Minio.Functional.Tests
                         item => Assert.AreEqual(item.Key, objectName),
                         ex => Assert.Fail());
 
-                    await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
+                    RemoveIncompleteUploadArgs rmArgs = new RemoveIncompleteUploadArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName);
+                    await minio.RemoveIncompleteUploadAsync(rmArgs);
                 }
                 await TearDown(minio, bucketName);
                 new MintLogger("ListIncompleteUpload_Test2", listIncompleteUploadsSignature, "Tests whether ListIncompleteUpload passes when qualified by prefix", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (MinioException ex)
             {
-                await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
+                RemoveIncompleteUploadArgs rmArgs = new RemoveIncompleteUploadArgs()
+                                                                    .WithBucket(bucketName)
+                                                                    .WithObject(objectName);
+                await minio.RemoveIncompleteUploadAsync(rmArgs);
                 await TearDown(minio, bucketName);
                 new MintLogger("ListIncompleteUpload_Test2", listIncompleteUploadsSignature, "Tests whether ListIncompleteUpload passes when qualified by prefix", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
             }
@@ -2905,14 +2918,21 @@ namespace Minio.Functional.Tests
                         item => Assert.AreEqual(item.Key, objectName),
                         ex => Assert.Fail());
 
-                    await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
+                    RemoveIncompleteUploadArgs rmArgs = new RemoveIncompleteUploadArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName);
+                    await minio.RemoveIncompleteUploadAsync(rmArgs);
                 }
                 await TearDown(minio, bucketName);
                 new MintLogger("ListIncompleteUpload_Test3", listIncompleteUploadsSignature, "Tests whether ListIncompleteUpload passes when qualified by prefix and recursive", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (MinioException ex)
             {
-                await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
+                RemoveIncompleteUploadArgs rmArgs = new RemoveIncompleteUploadArgs()
+                                                                    .WithBucket(bucketName)
+                                                                    .WithObject(objectName);
+
+                await minio.RemoveIncompleteUploadAsync(rmArgs);
                 await TearDown(minio, bucketName);
                 new MintLogger("ListIncompleteUpload_Test3", listIncompleteUploadsSignature, "Tests whether ListIncompleteUpload passes when qualified by prefix and recursive", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
             }
@@ -2951,7 +2971,10 @@ namespace Minio.Functional.Tests
                 }
                 catch (OperationCanceledException)
                 {
-                    await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
+                    RemoveIncompleteUploadArgs rmArgs = new RemoveIncompleteUploadArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName);
+                    await minio.RemoveIncompleteUploadAsync(rmArgs);
 
                     ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
                                                                     .WithBucket(bucketName);
@@ -3261,14 +3284,16 @@ namespace Minio.Functional.Tests
             };
             try
             {
-                await Setup_Test(minio, bucketName);
+                await Setup_WithLock_Test(minio, bucketName);
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
+                    await minio.PutObjectAsync(bucketName,
+                                                objectName,
+                                                filestream, filestream.Length, null);
                 SetObjectLegalHoldArgs legalHoldArgs = new SetObjectLegalHoldArgs()
                                                                     .WithBucket(bucketName)
                                                                     .WithObject(objectName)
                                                                     .WithLegalHold(true);
                 await minio.SetObjectLegalHoldAsync(legalHoldArgs);
-                await minio.RemoveObjectAsync(bucketName, objectName);
-                await TearDown(minio, bucketName);
                 new MintLogger(nameof(LegalHoldStatusAsync_Test1), setObjectLegalHoldSignature, "Tests whether SetObjectLegalHoldAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (Exception ex)
@@ -3279,16 +3304,11 @@ namespace Minio.Functional.Tests
 
             try
             {
-                await Setup_Test(minio, bucketName);
-                SetObjectLegalHoldArgs legalHoldArgs = new SetObjectLegalHoldArgs()
-                                                                    .WithBucket(bucketName)
-                                                                    .WithObject(objectName)
-                                                                    .WithLegalHold(true);
-                await minio.SetObjectLegalHoldAsync(legalHoldArgs);
                 GetObjectLegalHoldArgs getLegalHoldArgs = new GetObjectLegalHoldArgs()
                                                                     .WithBucket(bucketName)
                                                                     .WithObject(objectName);
                 bool enabled = await minio.GetObjectLegalHoldAsync(getLegalHoldArgs);
+                Assert.IsTrue(enabled);
                 await minio.RemoveObjectAsync(bucketName, objectName);
                 await TearDown(minio, bucketName);
                 new MintLogger(nameof(LegalHoldStatusAsync_Test1), getObjectLegalHoldSignature, "Tests whether GetObjectLegalHoldAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();

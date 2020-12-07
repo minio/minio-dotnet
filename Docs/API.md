@@ -28,11 +28,11 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 | [`bucketExists`](#bucketExists)  | [`copyObject`](#copyObject)  | [`presignedPostPolicy`](#presignedPostPolicy)  |[`setBucketNotification`](#setBucketNotification)  |
 | [`removeBucket`](#removeBucket)  | [`statObject`](#statObject) |   | [`getBucketNotification`](#getBucketNotification)  |
 | [`listObjects`](#listObjects)  | [`removeObject`](#removeObject) |   |  [`removeAllBucketNotification`](#removeAllBucketNotification) |
-| [`listObjectVersions`](#listObjectVersions)  |  |   |   |
-| [`listIncompleteUploads`](#listIncompleteUploads)  | [`removeObjects`](#removeObjects) |   |   |
-| [`listenBucketNotifications`](#listenBucketNotifications) | [`removeIncompleteUpload`](#removeIncompleteUpload) |   |   |
-| [`setVersioning`](#setVersioning)  | [`selectObjectContent`](#selectObjectContent) |   |   |
-| [`getVersioning`](#getVersioning)  |  |   |   |
+| [`listObjectVersions`](#listObjectVersions)  | [`removeObjects`](#removeObjects) |   |   |
+| [`listIncompleteUploads`](#listIncompleteUploads) | [`removeIncompleteUpload`](#removeIncompleteUpload) |   |   |
+| [`listenBucketNotifications`](#listenBucketNotifications)  | [`selectObjectContent`](#selectObjectContent) |   |   |
+| [`setVersioning`](#setVersioning)  | [`setLegalHold`](#setLegalHold)  |   |   |
+| [`getVersioning`](#getVersioning)  | [`getLegalHold`](#getLegalHold)  |   |   |
 
 ## 1. Constructors
 
@@ -1549,9 +1549,9 @@ catch (MinioException e)
 ```
 
 <a name="removeIncompleteUpload"></a>
-### RemoveIncompleteUploadAsync(string bucketName, string objectName)
+### RemoveIncompleteUploadAsync(RemoveIncompleteUploadArgs args)
 
-`Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))`
+`Task RemoveIncompleteUploadAsync(RemoveIncompleteUploadArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 Removes a partially uploaded object.
 
@@ -1560,8 +1560,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket  |
-| ``objectName``  | _string_  | Object name in the bucket |
+| ``args``  | _RemoveIncompleteUploadArgs_  | RemoveIncompleteUploadArgs object encapsulating the bucket, object names  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -1580,7 +1579,10 @@ __Example__
 try
 {
     // Removes partially uploaded objects from buckets.
-    await minioClient.RemoveIncompleteUploadAsync("mybucket", "myobject");
+    RemoveIncompleteUploadArgs args = new RemoveIncompleteUploadArgs()
+                                                    .WithBucket(bucketName)
+                                                    .WithObject(objectName);
+    await minioClient.RemoveIncompleteUploadAsync(args);
     Console.WriteLine("successfully removed all incomplete upload session of my-bucketname/my-objectname");
 }
 catch(MinioException e)
@@ -1665,6 +1667,109 @@ catch (MinioException e)
     Console.WriteLine("Error occurred: " + e);
 }
 ```
+
+
+<a name="setLegalHold"></a>
+### SetObjectLegalHoldAsync(SetObjectLegalHoldArgs args)
+
+`Task SetObjectLegalHoldAsync(SetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Sets the Legal Hold status of an object.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _SetObjectLegalHoldArgs_  | SetObjectLegalHoldArgs Argument Object with bucket, object names, version id(optional)  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task``  | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``InvalidObjectNameException`` : upon invalid object name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found   |
+|        |  ``ObjectNotFoundException`` : upon object with name not found |
+|        |  ``MissingObjectLockConfiguration`` : upon bucket created with object lock not enabled |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Setting WithLegalHold true, sets Legal hold status to ON.
+    SetObjectLegalHoldArgs args = new SetObjectLegalHoldArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObject(objectName)
+                                                .WithVersionId(versionId)
+                                                .WithLegalHold(true);
+    await minio.SetObjectLegalHoldAsync(args);
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+<a name="getLegalHold"></a>
+### GetObjectLegalHoldAsync(GetObjectLegalHoldArgs args)
+
+`Task<bool> GetObjectLegalHoldAsync(GetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Gets the Legal Hold status of an object.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _GetObjectLegalHoldArgs_  | GetObjectLegalHoldArgs Argument Object with bucket, object names, version id(optional)  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task<bool>``: True if LegalHold is enabled, false otherwise. | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``InvalidObjectNameException`` : upon invalid object name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found  |
+|        |  ``ObjectNotFoundException`` : upon object with name not found |
+|        |  ``MissingObjectLockConfiguration`` : upon bucket created with object lock not enabled |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Get Legal Hold status a object
+    var args = new GetObjectLegalHoldArgs()
+                            .WithBucket(bucketName)
+                            .WithObject(objectName)
+                            .WithVersionId(versionId);
+    bool enabled = await minio.GetObjectLegalHoldAsync(args);
+    Console.WriteLine("LegalHold Configuration STATUS for " + bucketName + "/" + objectName +
+                                        (!string.IsNullOrEmpty(versionId)?" with Version ID " + versionId: " ") +
+                                        " : " + (enabled?"ON":"OFF"));
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
 
 ## 4. Presigned operations
 <a name="presignedGetObject"></a>

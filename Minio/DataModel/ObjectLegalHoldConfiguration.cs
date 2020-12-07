@@ -22,6 +22,7 @@ namespace Minio.DataModel
     [Serializable]
     [XmlRoot(ElementName = "LegalHold", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
 
+    // Legal Hold Configuration for the object. Status - {ON, OFF}.
     public class ObjectLegalHoldConfiguration
     {
         public ObjectLegalHoldConfiguration()
