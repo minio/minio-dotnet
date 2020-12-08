@@ -473,7 +473,7 @@ namespace Minio
         /// <param name="request">request</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>IRESTResponse</returns>
-        internal Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        internal Task<IRestResponse> ExecuteAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             return ExecuteWithRetry(
                 () => ExecuteTaskCoreAsync(errorHandlers, request, cancellationToken));
@@ -489,7 +489,7 @@ namespace Minio
                 Console.WriteLine($"Full URL of Request {fullUrl}");
             }
 
-            IRestResponse response = await this.restClient.ExecuteTaskAsync(request, cancellationToken).ConfigureAwait(false);
+            IRestResponse response = await this.restClient.ExecuteAsync(request, request.Method, cancellationToken).ConfigureAwait(false);
 
             this.HandleIfErrorResponse(response, errorHandlers, startTime);
             return response;

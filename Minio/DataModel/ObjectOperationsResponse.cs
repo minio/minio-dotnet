@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
+using System;
+using System.Collections.Generic;
+using System.Xml.Linq;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Xml.Serialization;
+using RestSharp;
+
 using Minio.DataModel;
 
 namespace Minio
@@ -29,5 +36,58 @@ namespace Minio
             this.ResponseStream = new SelectResponseStream(new MemoryStream(responseRawBytes));
         }
 
+    }
+
+
+    internal class StatObjectResponse : GenericResponse
+    {
+        internal ObjectStat ObjectInfo { get; set; }
+        internal StatObjectResponse(HttpStatusCode statusCode, string responseContent, IList<Parameter> responseHeaders, StatObjectArgs args)
+                    : base(statusCode, responseContent)
+        {
+            // StatObjectResponse object is populated with available stats from the response.
+            this.ObjectInfo = ObjectStat.FromResponseHeaders(args.ObjectName, responseHeaders);
+        }
+    }
+
+    internal class GetMultipartUploadsListResponse : GenericResponse
+    {
+        internal Tuple<ListMultipartUploadsResult, List<Upload>> UploadResult { get; private set; }
+        internal GetMultipartUploadsListResponse(HttpStatusCode statusCode, string responseContent)
+                    : base(statusCode, responseContent)
+        {
+            ListMultipartUploadsResult uploadsResult = null;
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                uploadsResult = (ListMultipartUploadsResult)new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(stream);
+            }
+            XDocument root = XDocument.Parse(responseContent);
+            var itemCheck = root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload").FirstOrDefault();
+            if (uploadsResult == null || itemCheck == null || !itemCheck.HasElements)
+            {
+                return;
+            }
+            var uploads  = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
+                          select new Upload
+                          {
+                              Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
+                              UploadId = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}UploadId").Value,
+                              Initiated = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Initiated").Value
+                          };
+            this.UploadResult = new Tuple<ListMultipartUploadsResult, List<Upload>>(uploadsResult, uploads.ToList());
+        }
+    }
+
+    internal class PresignedPostPolicyResponse
+    {
+        internal Tuple<string, Dictionary<string, string>> URIPolicyTuple { get; private set; }
+
+        public PresignedPostPolicyResponse(PresignedPostPolicyArgs args, string absURI)
+        {
+            args.Policy.SetAlgorithm("AWS4-HMAC-SHA256");
+            args.Policy.SetDate(DateTime.UtcNow);
+            args.Policy.SetPolicy(args.Policy.Base64());
+            URIPolicyTuple = Tuple.Create(absURI, args.Policy.GetFormData());
+        }
     }
 }

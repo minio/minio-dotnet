@@ -31,7 +31,7 @@ namespace Minio.Exceptions
         public string BucketName { get; set; }
         public string Key { get; set; }
         public string VersionId { get; set; }
-
+        public bool DeleteMarker { get; set; }
         public string BucketRegion { get; set; }
     }
 }

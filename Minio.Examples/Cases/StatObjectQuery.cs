@@ -1,5 +1,5 @@
-﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+/*
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,11 @@
 using Minio.DataModel;
 using Minio.Exceptions;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
-    class StatObject
+    class StatObjectQuery
     {
         public static void PrintStat(string bucketObject, ObjectStat statObject)
         {
@@ -37,52 +36,36 @@ namespace Minio.Examples.Cases
         public async static Task Run(MinioClient minio, 
                                      string bucketName = "my-bucket-name",
                                      string bucketObject = "my-object-name",
-                                     string versionID = null)
+                                     string versionID = null,
+                                     string matchEtag = null,
+                                     DateTime modifiedSince = default(DateTime))
         {
             try
             {
-                Console.WriteLine("Running example for API: StatObjectAsync");
-                if (string.IsNullOrEmpty(versionID))
-                {
-                    StatObjectArgs objectStatArgs = new StatObjectArgs()
-                                                    .WithBucket(bucketName)
-                                                    .WithObject(bucketObject);
-                    ObjectStat statObject = await minio.StatObjectAsync(objectStatArgs);
-                    PrintStat(bucketObject, statObject);
-                    PrintMetaData(statObject.MetaData);
-                    return;
-                }
+                Console.WriteLine("Running example for API: StatObjectAsync [with ObjectQuery]");
+
                 StatObjectArgs args = new StatObjectArgs()
                                                 .WithBucket(bucketName)
                                                 .WithObject(bucketObject)
-                                                .WithVersionId(versionID);
+                                                .WithVersionId(versionID)
+                                                .WithMatchETag(matchEtag)
+                                                .WithModifiedSince(modifiedSince);
                 ObjectStat statObjectVersion = await minio.StatObjectAsync(args);
                 PrintStat(bucketObject, statObjectVersion);
-                PrintMetaData(statObjectVersion.MetaData);
             }
             catch (MinioException me)
             {
                 string objectNameInfo = $"{bucketName}-{bucketObject}";
                 if (!string.IsNullOrEmpty(versionID))
                 {
-                    objectNameInfo = objectNameInfo + $" (Version ID) {me.Response.VersionId} (Delete Marker) {me.Response.DeleteMarker}";
+                    objectNameInfo = objectNameInfo + $" (Version ID) {me.Response.VersionId} (Marked DEL) {me.Response.DeleteMarker}";
                 }
                 Console.WriteLine($"[StatObject] {objectNameInfo} Exception: {me}");
             }
             catch (Exception e)
             {
-                Console.WriteLine($"[StatObject] {bucketName}-{bucketObject} Exception: {e}");
+                Console.WriteLine($"[StatObject]  Exception: {e}");
             }
-        }
-
-        private static void PrintMetaData(Dictionary<string, string> metaData)
-        {
-            Console.WriteLine("Metadata:");
-            foreach(var metaPair in metaData)
-            {
-                Console.WriteLine("    " + metaPair.Key + ":\t" + metaPair.Value);
-            }
-            Console.WriteLine();
         }
     }
 }

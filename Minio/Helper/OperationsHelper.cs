@@ -18,6 +18,8 @@ using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
+using System.Linq;
+
 using Minio.Exceptions;
 
 namespace Minio
@@ -33,7 +35,7 @@ namespace Minio
     	private async Task<List<DeleteError>> removeObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken)
         {
             var request = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             RemoveObjectsResponse removeObjectsResponse = new RemoveObjectsResponse(response.StatusCode, response.Content);
             var deleteErrorList = new List<DeleteError>();
             if (removeObjectsResponse.DeletedObjectsResult != null)
@@ -140,4 +142,15 @@ namespace Minio
             return fullErrorsList;
         }
     }
+
+    public class OperationsUtil
+    {
+        private static readonly List<string> SupportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type", "x-amz-acl", "content-disposition" };
+        internal static bool IsSupportedHeader(string hdr, IEqualityComparer<string> comparer = null)
+        {
+            comparer = comparer ?? StringComparer.OrdinalIgnoreCase;
+            return SupportedHeaders.Contains(hdr, comparer);
+        }
+    }
+
 }
