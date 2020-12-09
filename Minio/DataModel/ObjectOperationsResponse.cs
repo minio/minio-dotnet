@@ -20,10 +20,10 @@ using System.Xml.Linq;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Xml.Serialization;
 using RestSharp;
 
 using Minio.DataModel;
-using System.Xml.Serialization;
 
 namespace Minio
 {
@@ -37,6 +37,7 @@ namespace Minio
         }
 
     }
+
 
     internal class StatObjectResponse : GenericResponse
     {
@@ -87,25 +88,6 @@ namespace Minio
             args.Policy.SetDate(DateTime.UtcNow);
             args.Policy.SetPolicy(args.Policy.Base64());
             URIPolicyTuple = Tuple.Create(absURI, args.Policy.GetFormData());
-        }
-    }
-
-    internal class GetBucketEncryptionResponse : GenericResponse
-    {
-        internal ServerSideEncryptionConfiguration BucketEncryptionConfiguration { get; set; }
-
-        internal GetBucketEncryptionResponse(HttpStatusCode statusCode, string responseContent)
-                    : base(statusCode, responseContent)
-        {
-            if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
-            {
-                this.BucketEncryptionConfiguration = null;
-                return;
-            }
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
-            {
-                BucketEncryptionConfiguration = (ServerSideEncryptionConfiguration)new XmlSerializer(typeof(ServerSideEncryptionConfiguration)).Deserialize(stream);
-            }
         }
     }
 }

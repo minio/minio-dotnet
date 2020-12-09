@@ -92,16 +92,16 @@ namespace Minio
                       Tuple<ListMultipartUploadsResult, List<Upload>> uploads = null;
                       try
                       {
-                          uploads = await this.GetMultipartUploadsListAsync(getArgs, cancellationToken).ConfigureAwait(false);
+                        uploads = await this.GetMultipartUploadsListAsync(getArgs, cancellationToken).ConfigureAwait(false);
                       }
-                      catch (Exception ex)
+                      catch (Exception)
                       {
-                          if (ex.GetType() == typeof(BucketNotFoundException))
-                          {
-                            isRunning = false;
-                            continue;
-                          }
-                          throw;
+                        throw;
+                      }
+                      if (uploads == null)
+                      {
+                        isRunning = false;
+                        continue;
                       }
                       foreach (Upload upload in uploads.Item2)
                       {
@@ -118,7 +118,7 @@ namespace Minio
         /// <summary>
         /// Get list of multi-part uploads matching particular uploadIdMarker
         /// </summary>
-        /// <param name="args">ListIncompleteUploadsArgs Arguments Object which encapsulates bucket name, prefix, recursive</param>
+        /// <param name="args">GetMultipartUploadsListArgs Arguments Object which encapsulates bucket name, prefix, recursive</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         private async Task<Tuple<ListMultipartUploadsResult, List<Upload>>> GetMultipartUploadsListAsync(GetMultipartUploadsListArgs args,
@@ -126,11 +126,77 @@ namespace Minio
         {
             args.Validate();
             IRestResponse response = null;
-            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+                response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
             GetMultipartUploadsListResponse getUploadResponse = new GetMultipartUploadsListResponse(response.StatusCode, response.Content);
             return getUploadResponse.UploadResult;
         }
+
+
+        /// <summary>
+        /// Remove object with matching uploadId from bucket
+        /// </summary>
+        /// <param name="args">RemoveUploadArgs Arguments Object which encapsulates bucket, object names, upload Id</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        private async Task RemoveUploadAsync(RemoveUploadArgs args, CancellationToken cancellationToken)
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// Remove incomplete uploads from a given bucket and objectName
+        /// </summary>
+        /// <param name="args">RemoveIncompleteUploadArgs Arguments Object which encapsulates bucket, object names</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        public async Task RemoveIncompleteUploadAsync(RemoveIncompleteUploadArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            ListIncompleteUploadsArgs listUploadArgs = new ListIncompleteUploadsArgs()
+                                                                    .WithBucket(args.BucketName)
+                                                                    .WithPrefix(args.ObjectName);
+                                                                    
+            Upload[] uploads = null;
+            try
+            {
+                uploads = await this.ListIncompleteUploads(listUploadArgs, cancellationToken)?.ToArray();
+            }
+            catch (Exception ex)
+            {
+                //Bucket Not found. So, incomplete uploads are removed.
+                if (ex.GetType() != typeof(BucketNotFoundException))
+                {
+                    throw ex;
+                }
+            }
+            if (uploads == null)
+            {
+                return;
+            }
+            foreach (var upload in uploads)
+            {
+                if(upload.Key.ToLower().Equals(args.ObjectName.ToLower()))
+                {
+                    RemoveUploadArgs rmArgs = new RemoveUploadArgs()
+                                                        .WithBucket(args.BucketName)
+                                                        .WithObject(args.ObjectName)
+                                                        .WithUploadId(upload.UploadId);
+                    await this.RemoveUploadAsync(rmArgs, cancellationToken).ConfigureAwait(false);
+                }
+            }
+        }
+
 
         /// Presigned get url - returns a presigned url to access an object's data without credentials.URL can have a maximum expiry of
         /// upto 7 days or a minimum of 1 second.Additionally, you can override a set of response headers using reqParams.

@@ -62,16 +62,18 @@ namespace Minio.Functional.Tests
         private const string copyObjectSignature = "Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeObjectSignature1 = "Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeObjectSignature2 = "Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectsList, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string removeIncompleteUploadSignature = "Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string removeIncompleteUploadSignature = "Task RemoveIncompleteUploadAsync(RemoveIncompleteUploadArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string presignedPutObjectSignature = "Task<string> PresignedPutObjectAsync(PresignedPutObjectArgs args)";
         private const string presignedGetObjectSignature = "Task<string> PresignedGetObjectAsync(PresignedGetObjectArgs args)";
         private const string presignedPostPolicySignature = "Task<Dictionary<string, string>> PresignedPostPolicyAsync(PresignedPostPolicyArgs args)";
         private const string getBucketPolicySignature = "Task<string> GetPolicyAsync(GetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string setBucketPolicySignature = "Task SetPolicyAsync(SetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string getBucketNotificationSignature = "Task<BucketNotification> GetBucketNotificationAsync(GetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string setBucketNotificationSignature = "Task SetBucketNotificationAsync(SetBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string setBucketNotificationSignature = "Task SetBucketNotificationAsync(SetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeAllBucketsNotificationSignature = "Task RemoveAllBucketNotificationsAsync(RemoveAllBucketNotifications args, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string setBucketEncryptionSignature = "Task SetBucketEncryptionAsync(SetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string setBucketEncryptionSignature = "Task SetBucketEncryptionAsync(SetBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string getBucketEncryptionSignature = "Task<ServerSideEncryptionConfiguration> GetBucketEncryptionAsync(GetBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string removeBucketEncryptionSignature = "Task RemoveBucketEncryptionAsync(RemoveBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string selectObjectSignature = "Task<SelectResponseStream> SelectObjectContentAsync(SelectObjectContentArgs args,CancellationToken cancellationToken = default(CancellationToken))";
 
         // Create a file of given size from random byte array or optionally create a symbolic link
@@ -2786,7 +2788,10 @@ namespace Minio.Functional.Tests
                             Assert.Fail();
                         });
 
-                    await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
+                    RemoveIncompleteUploadArgs rmArgs = new RemoveIncompleteUploadArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName);
+                    await minio.RemoveIncompleteUploadAsync(rmArgs);
                 }
                 catch (Exception ex)
                 {
@@ -2798,7 +2803,11 @@ namespace Minio.Functional.Tests
             }
             catch (MinioException ex)
             {
-                await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
+                RemoveIncompleteUploadArgs rmArgs = new RemoveIncompleteUploadArgs()
+                                                                    .WithBucket(bucketName)
+                                                                    .WithObject(objectName);
+
+                await minio.RemoveIncompleteUploadAsync(rmArgs);
                 await TearDown(minio, bucketName);
                 new MintLogger("ListIncompleteUpload_Test1", listIncompleteUploadsSignature, "Tests whether ListIncompleteUpload passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString()).Log();
             }
@@ -2847,14 +2856,20 @@ namespace Minio.Functional.Tests
                         item => Assert.AreEqual(item.Key, objectName),
                         ex => Assert.Fail());
 
-                    await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
+                    RemoveIncompleteUploadArgs rmArgs = new RemoveIncompleteUploadArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName);
+                    await minio.RemoveIncompleteUploadAsync(rmArgs);
                 }
                 await TearDown(minio, bucketName);
                 new MintLogger("ListIncompleteUpload_Test2", listIncompleteUploadsSignature, "Tests whether ListIncompleteUpload passes when qualified by prefix", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (MinioException ex)
             {
-                await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
+                RemoveIncompleteUploadArgs rmArgs = new RemoveIncompleteUploadArgs()
+                                                                    .WithBucket(bucketName)
+                                                                    .WithObject(objectName);
+                await minio.RemoveIncompleteUploadAsync(rmArgs);
                 await TearDown(minio, bucketName);
                 new MintLogger("ListIncompleteUpload_Test2", listIncompleteUploadsSignature, "Tests whether ListIncompleteUpload passes when qualified by prefix", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
             }
@@ -2903,14 +2918,21 @@ namespace Minio.Functional.Tests
                         item => Assert.AreEqual(item.Key, objectName),
                         ex => Assert.Fail());
 
-                    await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
+                    RemoveIncompleteUploadArgs rmArgs = new RemoveIncompleteUploadArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName);
+                    await minio.RemoveIncompleteUploadAsync(rmArgs);
                 }
                 await TearDown(minio, bucketName);
                 new MintLogger("ListIncompleteUpload_Test3", listIncompleteUploadsSignature, "Tests whether ListIncompleteUpload passes when qualified by prefix and recursive", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (MinioException ex)
             {
-                await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
+                RemoveIncompleteUploadArgs rmArgs = new RemoveIncompleteUploadArgs()
+                                                                    .WithBucket(bucketName)
+                                                                    .WithObject(objectName);
+
+                await minio.RemoveIncompleteUploadAsync(rmArgs);
                 await TearDown(minio, bucketName);
                 new MintLogger("ListIncompleteUpload_Test3", listIncompleteUploadsSignature, "Tests whether ListIncompleteUpload passes when qualified by prefix and recursive", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
             }
@@ -2949,7 +2971,10 @@ namespace Minio.Functional.Tests
                 }
                 catch (OperationCanceledException)
                 {
-                    await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
+                    RemoveIncompleteUploadArgs rmArgs = new RemoveIncompleteUploadArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName);
+                    await minio.RemoveIncompleteUploadAsync(rmArgs);
 
                     ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
                                                                     .WithBucket(bucketName);
@@ -3261,14 +3286,52 @@ namespace Minio.Functional.Tests
                 SetBucketEncryptionArgs encryptionArgs = new SetBucketEncryptionArgs()
                                                                     .WithBucket(bucketName);
                 await minio.SetBucketEncryptionAsync(encryptionArgs);
-                await TearDown(minio, bucketName);
                 new MintLogger(nameof(BucketEncryptionsAsync_Test1), setBucketEncryptionSignature, "Tests whether SetBucketEncryptionAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (Exception ex)
             {
                 await TearDown(minio, bucketName);
                 new MintLogger(nameof(BucketEncryptionsAsync_Test1), setBucketEncryptionSignature, "Tests whether SetBucketEncryptionAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                return;
             }
+            try
+            {
+                GetBucketEncryptionArgs encryptionArgs = new GetBucketEncryptionArgs()
+                                                                        .WithBucket(bucketName);
+                var config = await minio.GetBucketEncryptionAsync(encryptionArgs).ConfigureAwait(false);
+                Assert.IsNotNull(config);
+                Assert.IsNotNull(config.Rule);
+                Assert.IsNotNull(config.Rule.Apply);
+                StringAssert.Equals(config.Rule.Apply.SSEAlgorithm, "AES256");
+                new MintLogger(nameof(BucketEncryptionsAsync_Test1), getBucketEncryptionSignature, "Tests whether GetBucketEncryptionAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                await TearDown(minio, bucketName);
+                new MintLogger(nameof(BucketEncryptionsAsync_Test1), getBucketEncryptionSignature, "Tests whether GetBucketEncryptionAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                return;
+            }
+            try
+            {
+                RemoveBucketEncryptionArgs rmEncryptionArgs = new RemoveBucketEncryptionArgs()
+                                                                        .WithBucket(bucketName);
+                await minio.RemoveBucketEncryptionAsync(rmEncryptionArgs).ConfigureAwait(false);
+                GetBucketEncryptionArgs encryptionArgs = new GetBucketEncryptionArgs()
+                                                                        .WithBucket(bucketName);
+                var config = await minio.GetBucketEncryptionAsync(encryptionArgs).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("The server side encryption configuration was not found"))
+                {
+                    new MintLogger(nameof(BucketEncryptionsAsync_Test1), removeBucketEncryptionSignature, "Tests whether RemoveBucketEncryptionAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+                }
+                else
+                {
+                    new MintLogger(nameof(BucketEncryptionsAsync_Test1), removeBucketEncryptionSignature, "Tests whether RemoveBucketEncryptionAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                }
+            }
+            await TearDown(minio, bucketName);
         }
 
         #endregion

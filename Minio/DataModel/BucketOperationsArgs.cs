@@ -347,12 +347,12 @@ namespace Minio
 
     public class SetBucketEncryptionArgs : BucketArgs<SetBucketEncryptionArgs>
     {
+        internal ServerSideEncryptionConfiguration EncryptionConfig { get; set; }
+
         public SetBucketEncryptionArgs()
         {
             this.RequestMethod = Method.PUT;
         }
-
-        internal ServerSideEncryptionConfiguration EncryptionConfig { get; set; }
 
         public SetBucketEncryptionArgs WithEncryptionConfig(ServerSideEncryptionConfiguration config)
         {

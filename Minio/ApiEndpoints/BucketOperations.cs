@@ -371,9 +371,9 @@ namespace Minio
         /// <summary>
         /// Sets the Encryption Configuration for the mentioned bucket.
         /// </summary>
-	    /// <param name="args">SetBucketEncryptionArgs Arguments Object with information like Bucket name, encryption config</param>
+        /// <param name="args">SetBucketEncryptionArgs Arguments Object with information like Bucket name, encryption config</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <returns>An observable of JSON-based notification events</returns>
+        /// <returns> Task </returns>
         public async Task SetBucketEncryptionAsync(SetBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
@@ -385,9 +385,9 @@ namespace Minio
         /// <summary>
         /// Returns the Encryption Configuration for the mentioned bucket.
         /// </summary>
-	    /// <param name="args">GetBucketEncryptionArgs Arguments Object encapsulating information like Bucket name</param>
+        /// <param name="args">GetBucketEncryptionArgs Arguments Object encapsulating information like Bucket name</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <returns>An observable of JSON-based notification events</returns>
+        /// <returns> An object of type ServerSideEncryptionConfiguration </returns>
         public async Task<ServerSideEncryptionConfiguration> GetBucketEncryptionAsync(GetBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
@@ -401,9 +401,9 @@ namespace Minio
         /// <summary>
         /// Removes the Encryption Configuration for the mentioned bucket.
         /// </summary>
-	    /// <param name="args">GetBucketEncryptionArgs Arguments Object encapsulating information like Bucket name</param>
+        /// <param name="args">RemoveBucketEncryptionArgs Arguments Object encapsulating information like Bucket name</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <returns>An observable of JSON-based notification events</returns>
+        /// <returns> Task </returns>
         public async Task RemoveBucketEncryptionAsync(RemoveBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
