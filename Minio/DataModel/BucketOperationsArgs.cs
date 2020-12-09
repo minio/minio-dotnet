@@ -344,4 +344,67 @@ namespace Minio
             return this;
         }
     }
+
+    public class SetBucketTagsArgs : BucketArgs<SetBucketTagsArgs>
+    {
+        internal Dictionary<string, string> TagKeyValuePairs { get; set; }
+        internal Tagging BucketTags { get; private set; }
+        public SetBucketTagsArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        public SetBucketTagsArgs WithTagKeyValuePairs(Dictionary<string, string> kv)
+        {
+            this.TagKeyValuePairs = new Dictionary<string, string>(kv);
+            this.BucketTags = Tagging.GetBucketTags(kv);
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("tagging","");
+            string body = this.BucketTags.MarshalXML();
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+
+            return request;
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if (this.TagKeyValuePairs == null || this.TagKeyValuePairs.Count == 0)
+            {
+                throw new InvalidOperationException("Unable to set empty tags.");
+            }
+        }
+    }
+
+    public class GetBucketTagsArgs : BucketArgs<GetBucketTagsArgs>
+    {
+        public GetBucketTagsArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("tagging","");
+            return request;
+        }
+    }
+
+    public class RemoveBucketTagsArgs : BucketArgs<RemoveBucketTagsArgs>
+    {
+        public RemoveBucketTagsArgs()
+        {
+            this.RequestMethod = Method.DELETE;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("tagging","");
+            return request;
+        }
+    }
 }
