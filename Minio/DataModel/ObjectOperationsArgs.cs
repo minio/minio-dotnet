@@ -20,6 +20,7 @@ using RestSharp;
 using Minio.DataModel;
 using Minio.Exceptions;
 using Minio.Helper;
+using System.Collections.Generic;
 
 namespace Minio
 {
@@ -398,6 +399,80 @@ namespace Minio
         public RemoveIncompleteUploadArgs()
         {
             this.RequestMethod = Method.DELETE;
+        }
+    }
+
+    public class SetObjectTagsArgs : ObjectVersionArgs<SetObjectTagsArgs>
+    {
+        internal Dictionary<string, string> TagKeyValuePairs { get; set; }
+        internal Tagging ObjectTags { get; private set; }
+        public SetObjectTagsArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        public SetObjectTagsArgs WithTagKeyValuePairs(Dictionary<string, string> kv)
+        {
+            this.TagKeyValuePairs = new Dictionary<string, string>(kv);
+            this.ObjectTags = Tagging.GetBucketTags(kv);
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("tagging","");
+            if (!string.IsNullOrEmpty(this.VersionId))
+            {
+                request.AddQueryParameter("versionId", this.VersionId);
+            }
+            string body = this.ObjectTags.MarshalXML();
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+
+            return request;
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if (this.TagKeyValuePairs == null || this.TagKeyValuePairs.Count == 0)
+            {
+                throw new InvalidOperationException("Unable to set empty tags.");
+            }
+        }
+    }
+    public class GetObjectTagsArgs : ObjectVersionArgs<GetObjectTagsArgs>
+    {
+        public GetObjectTagsArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("tagging","");
+            if (!string.IsNullOrEmpty(this.VersionId))
+            {
+                request.AddQueryParameter("versionId", this.VersionId);
+            }
+            return request;
+        }
+    }
+
+    public class RemoveObjectTagsArgs : ObjectVersionArgs<RemoveObjectTagsArgs>
+    {
+        public RemoveObjectTagsArgs()
+        {
+            this.RequestMethod = Method.DELETE;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("tagging","");
+            if (!string.IsNullOrEmpty(this.VersionId))
+            {
+                request.AddQueryParameter("versionId", this.VersionId);
+            }
+            return request;
         }
     }
 }

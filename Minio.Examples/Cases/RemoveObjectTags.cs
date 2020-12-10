@@ -18,25 +18,29 @@ using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
-    public class RemoveBucketTags
+    public class RemoveObjectTags
     {
         // Remove Tags set for the bucket
         public async static Task Run(MinioClient minio,
-                                    string bucketName = "my-bucket-name")
+                                    string bucketName = "my-bucket-name",
+                                    string objectName = "my-object-name",
+                                    string versionId = null)
         {
             try
             {
-                Console.WriteLine("Running example for API: RemoveBucketTags");
-                await minio.RemoveBucketTagsAsync(
-                    new RemoveBucketTagsArgs()
+                Console.WriteLine("Running example for API: RemoveObjectTags");
+                await minio.RemoveObjectTagsAsync(
+                    new RemoveObjectTagsArgs()
                         .WithBucket(bucketName)
+                        .WithObject(objectName)
+                        .WithVersionId(versionId)
                 );
-                Console.WriteLine($"Bucket Tags removed for bucket {bucketName}.");
+                Console.WriteLine($"Tags removed for object {bucketName}/{objectName}.");
                 Console.WriteLine();
             }
             catch (Exception e)
             {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
+                Console.WriteLine($"[Object]  Exception: {e}");
             }
         }
     }

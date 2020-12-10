@@ -90,4 +90,24 @@ namespace Minio
             URIPolicyTuple = Tuple.Create(absURI, args.Policy.GetFormData());
         }
     }
+
+    internal class GetObjectTagsResponse : GenericResponse
+    {
+        public GetObjectTagsResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) ||
+                    !HttpStatusCode.OK.Equals(statusCode))
+            {
+                this.ObjectTags = null;
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                this.ObjectTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(stream);
+            }
+        }
+
+        public Tagging ObjectTags { get; set; }
+    }
 }

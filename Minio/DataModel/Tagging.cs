@@ -125,7 +125,6 @@ namespace Minio.DataModel
                 settings.OmitXmlDeclaration = true;
 
                 ns = new XmlSerializerNamespaces();
-                // ns.Add("", "http://s3.amazonaws.com/doc/2006-03-01/");
                 ns.Add(string.Empty, string.Empty);
 
                 StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
@@ -133,8 +132,6 @@ namespace Minio.DataModel
                 xs = new XmlSerializer(typeof(Tagging), "");
                 xw = XmlWriter.Create(sw, settings);
                 xs.Serialize(xw, this, ns);
-                //xs.Serialize(xw, this);
-                //xs.Serialize(xw, this, ns);
                 xw.Flush();
 
                 str = sw.ToString();
