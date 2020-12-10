@@ -20,10 +20,10 @@ using System.Xml.Linq;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Xml.Serialization;
 using RestSharp;
 
 using Minio.DataModel;
-using System.Xml.Serialization;
 
 namespace Minio
 {

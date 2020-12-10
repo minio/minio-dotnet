@@ -18,29 +18,26 @@ using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
-    public class SetObjectRetention
+    public class ClearObjectRetention
     {
-        // Put Object Retention Configuration for the bucket
+        // Put Empty Retention Configuration for the bucket
         public async static Task Run(MinioClient minio,
                                     string bucketName = "my-bucket-name",
                                     string objectName = "my-object-name",
-                                    string versionId = null,
-                                    int numOfDays = 1)
+                                    string versionId = null)
         {
             try
             {
-                Console.WriteLine("Running example for API: SetObjectRetention");
-                await minio.SetObjectRetentionAsync(
-                    new SetObjectRetentionArgs()
+                Console.WriteLine("Running example for API: ClearObjectRetention");
+                await minio.ClearObjectRetentionAsync(
+                    new ClearObjectRetentionArgs()
                         .WithBucket(bucketName)
                         .WithObject(objectName)
                         .WithVersionId(versionId)
-                        .WithRetentionValidDays(numOfDays)
                 );
                 string versionInfo = (string.IsNullOrEmpty(versionId))?"":(" Version ID: " + versionId);
-                Console.WriteLine($"Assigned retention configuration to object {bucketName}/{objectName} "  +
-                        versionInfo +
-                        " Number of days: " + numOfDays);
+                Console.WriteLine($"Cleared retention configuration to object {bucketName}/{objectName} "  +
+                        versionInfo);
                 Console.WriteLine();
             }
             catch (Exception e)

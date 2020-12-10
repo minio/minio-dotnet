@@ -38,7 +38,7 @@ namespace Minio
         Task<bool> GetObjectLegalHoldAsync(GetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// Get the configuration object for Legal Hold Status 
+        /// Set the configuration for Legal Hold Status
         /// </summary>
         /// <param name="args">SetObjectLegalHoldArgs Arguments Object which has object identifier information - bucket name, object name, version ID and the status (ON/OFF) of legal-hold</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation </param>
@@ -66,6 +66,16 @@ namespace Minio
         /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
         /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
         Task<ObjectRetentionConfiguration> GetObjectRetentionAsync(GetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Clears the Retention configuration
+        /// </summary>
+        /// <param name="args">SetObjectLegalHoldArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        Task ClearObjectRetentionAsync(ClearObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.

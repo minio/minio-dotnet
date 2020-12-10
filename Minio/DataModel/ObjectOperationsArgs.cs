@@ -16,11 +16,14 @@
 
 using System;
 using RestSharp;
+using System.Security.Cryptography;
+using System.IO;
+using System.Globalization;
+using System.Xml;
 
 using Minio.DataModel;
 using Minio.Exceptions;
 using Minio.Helper;
-using System.Security.Cryptography;
 
 namespace Minio
 {
@@ -363,6 +366,45 @@ namespace Minio
             return this;
         }
     }
+
+    public class RemoveUploadArgs : EncryptionArgs<RemoveUploadArgs>
+    {
+        internal string UploadId { get; private set; }
+        public RemoveUploadArgs()
+        {
+            this.RequestMethod = Method.DELETE;
+        }
+
+        public RemoveUploadArgs WithUploadId(string id)
+        {
+            this.UploadId = id;
+            return this;
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if(string.IsNullOrEmpty(this.UploadId))
+            {
+                throw new InvalidOperationException(nameof(UploadId) + " cannot be empty. Please assign a valid upload ID to remove.");
+            }
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request = base.BuildRequest(request);
+            request.AddQueryParameter("uploadId",$"{this.UploadId}");
+            return request;
+        }
+    }
+
+    public class RemoveIncompleteUploadArgs : EncryptionArgs<RemoveIncompleteUploadArgs>
+    {
+        public RemoveIncompleteUploadArgs()
+        {
+            this.RequestMethod = Method.DELETE;
+        }
+    }
+
     public class GetObjectLegalHoldArgs : ObjectVersionArgs<GetObjectLegalHoldArgs>
     {
         public GetObjectLegalHoldArgs()
@@ -505,6 +547,45 @@ namespace Minio
             {
                 request.AddQueryParameter("versionId", this.VersionId);
             }
+            return request;
+        }
+    }
+
+    public class ClearObjectRetentionArgs : ObjectVersionArgs<ClearObjectRetentionArgs>
+    {
+        public ClearObjectRetentionArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        public static string EmptyRetentionConfigXML()
+        {
+            StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
+            XmlWriterSettings settings = new XmlWriterSettings();
+            settings.OmitXmlDeclaration = true;
+            settings.Indent = true;
+            XmlWriter xw = XmlWriter.Create(sw, settings);
+            xw.WriteStartElement("Retention");
+            xw.WriteString("");
+            xw.WriteFullEndElement();
+            xw.Flush();
+            return sw.ToString();
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("retention", "");
+            if( !string.IsNullOrEmpty(this.VersionId) )
+            {
+                request.AddQueryParameter("versionId", this.VersionId);
+            }
+            // Required for Clear Object Retention.
+            request.AddOrUpdateParameter("x-amz-bypass-governance-retention", "true", ParameterType.HttpHeader);
+            string body = EmptyRetentionConfigXML();
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+            var md5 = MD5.Create();
+            byte[] hash = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(body));
+            string base64 = Convert.ToBase64String(hash);
+            request.AddOrUpdateParameter("Content-MD5", base64, ParameterType.HttpHeader);
             return request;
         }
     }

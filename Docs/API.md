@@ -1549,9 +1549,9 @@ catch (MinioException e)
 ```
 
 <a name="removeIncompleteUpload"></a>
-### RemoveIncompleteUploadAsync(string bucketName, string objectName)
+### RemoveIncompleteUploadAsync(RemoveIncompleteUploadArgs args)
 
-`Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))`
+`Task RemoveIncompleteUploadAsync(RemoveIncompleteUploadArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 Removes a partially uploaded object.
 
@@ -1560,8 +1560,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket  |
-| ``objectName``  | _string_  | Object name in the bucket |
+| ``args``  | _RemoveIncompleteUploadArgs_  | RemoveIncompleteUploadArgs object encapsulating the bucket, object names  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -1580,7 +1579,10 @@ __Example__
 try
 {
     // Removes partially uploaded objects from buckets.
-    await minioClient.RemoveIncompleteUploadAsync("mybucket", "myobject");
+    RemoveIncompleteUploadArgs args = new RemoveIncompleteUploadArgs()
+                                                    .WithBucket(bucketName)
+                                                    .WithObject(objectName);
+    await minioClient.RemoveIncompleteUploadAsync(args);
     Console.WriteLine("successfully removed all incomplete upload session of my-bucketname/my-objectname");
 }
 catch(MinioException e)

@@ -20,7 +20,7 @@ namespace Minio.Examples.Cases
 {
     public class GetObjectRetention
     {
-        // Put Encryption Configuration for the bucket
+        // Get Object Retention Configuration for the bucket
         public async static Task Run(MinioClient minio,
                                     string bucketName = "my-bucket-name",
                                     string objectName = "my-object-name",
@@ -45,7 +45,7 @@ namespace Minio.Examples.Cases
             }
             catch (Exception e)
             {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
+                Console.WriteLine($"[Object]  Exception: {e}");
             }
         }
     }

@@ -15,6 +15,7 @@
  */
 
 using System;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace Minio
@@ -36,8 +37,7 @@ namespace Minio
 
         public ObjectRetentionConfiguration()
         {
-            this.Mode = RetentionMode.GOVERNANCE;
-            this.RetainUntilDate = utils.To8601String(DateTime.Now);
+            this.RetainUntilDate = null;
         }
 
         public ObjectRetentionConfiguration(DateTime date, RetentionMode mode = RetentionMode.GOVERNANCE)
