@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Xml.Serialization;
-
 namespace Minio.DataModel
 {
     public sealed class SelectEventType

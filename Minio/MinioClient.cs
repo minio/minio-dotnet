@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+using Minio.DataModel.Tracing;
+using Minio.Exceptions;
+using Minio.Helper;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,12 +29,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Serialization;
-
-using Minio.DataModel.Tracing;
-using Minio.Exceptions;
-using Minio.Helper;
-
-using RestSharp;
 
 namespace Minio
 {

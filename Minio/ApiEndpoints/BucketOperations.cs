@@ -17,16 +17,14 @@
 
 using Minio.DataModel;
 using Minio.Exceptions;
+using Minio.Helper;
 using RestSharp;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
-using Minio.Helper;
 
 namespace Minio
 {

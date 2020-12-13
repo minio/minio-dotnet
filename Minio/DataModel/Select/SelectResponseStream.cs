@@ -13,22 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using Minio.Exceptions;
-
-using System;
-using System.Collections.Generic;
-
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Xml.Serialization;
-using RestSharp;
-using System;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Force.Crc32;
-using System.Linq;
+using Minio.Exceptions;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Xml.Serialization;
 
 namespace Minio.DataModel
 {
