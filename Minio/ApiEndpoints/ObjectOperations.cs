@@ -392,10 +392,10 @@ namespace Minio
                 }
             }
 
-            await GetObjectAsync(bucketName, objectName, async (stream) =>
+            await GetObjectAsync(bucketName, objectName, (stream) =>
             {
                 var fileStream = File.Create(tempFileName);
-                await stream.CopyToAsync(fileStream);
+                stream.CopyTo(fileStream);
                 fileStream.Dispose();
                 FileInfo writtenInfo = new FileInfo(tempFileName);
                 long writtenSize = writtenInfo.Length;
