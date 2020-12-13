@@ -125,14 +125,14 @@ namespace Minio
             SortedDictionary<string, string> headersToSign = this.GetHeadersToSign(request);
             string signedHeaders = this.GetSignedHeaders(headersToSign);
             string canonicalRequest = this.GetCanonicalRequest(request, headersToSign);
-            byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
+            byte[] canonicalRequestBytes = Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = this.BytesToHex(this.ComputeSha256(canonicalRequestBytes));
             string region = this.GetRegion(client.BaseUrl.Host);
             string stringToSign = this.GetStringToSign(region, signingDate, canonicalRequestHash);
 
             byte[] signingKey = this.GenerateSigningKey(region, signingDate);
 
-            byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(stringToSign);
+            byte[] stringToSignBytes = Encoding.UTF8.GetBytes(stringToSign);
 
             byte[] signatureBytes = this.SignHmac(signingKey, stringToSignBytes);
 
@@ -186,17 +186,17 @@ namespace Minio
         /// <returns>bytes of computed hmac</returns>
         private byte[] GenerateSigningKey(string region, DateTime signingDate)
         {
-            byte[] formattedDateBytes = System.Text.Encoding.UTF8.GetBytes(signingDate.ToString("yyyMMdd"));
-            byte[] formattedKeyBytes = System.Text.Encoding.UTF8.GetBytes($"AWS4{this.secretKey}");
+            byte[] formattedDateBytes = Encoding.UTF8.GetBytes(signingDate.ToString("yyyMMdd"));
+            byte[] formattedKeyBytes = Encoding.UTF8.GetBytes($"AWS4{this.secretKey}");
             byte[] dateKey = this.SignHmac(formattedKeyBytes, formattedDateBytes);
 
-            byte[] regionBytes = System.Text.Encoding.UTF8.GetBytes(region);
+            byte[] regionBytes = Encoding.UTF8.GetBytes(region);
             byte[] dateRegionKey = this.SignHmac(dateKey, regionBytes);
 
-            byte[] serviceBytes = System.Text.Encoding.UTF8.GetBytes("s3");
+            byte[] serviceBytes = Encoding.UTF8.GetBytes("s3");
             byte[] dateRegionServiceKey = this.SignHmac(dateRegionKey, serviceBytes);
 
-            byte[] requestBytes = System.Text.Encoding.UTF8.GetBytes("aws4_request");
+            byte[] requestBytes = Encoding.UTF8.GetBytes("aws4_request");
             return this.SignHmac(dateRegionServiceKey, requestBytes);
         }
 
@@ -268,7 +268,7 @@ namespace Minio
         public string PresignPostSignature(string region, DateTime signingDate, string policyBase64)
         {
             byte[] signingKey = this.GenerateSigningKey(region, signingDate);
-            byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(policyBase64);
+            byte[] stringToSignBytes = Encoding.UTF8.GetBytes(policyBase64);
 
             byte[] signatureBytes = this.SignHmac(signingKey, stringToSignBytes);
             string signature = this.BytesToHex(signatureBytes);
@@ -322,12 +322,12 @@ namespace Minio
 
             var presignUri = new UriBuilder(requestUri) {Query = requestQuery}.Uri;
             string canonicalRequest = this.GetPresignCanonicalRequest(request.Method, presignUri, headersToSign);
-            string headers = string.Concat(headersToSign.Select(p => $"&{p.Key}={utils.UrlEncode(p.Value)}"));
-            byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
+            string headers = string.Concat(headersToSign.Select(p => $"&{p.Key}={Utils.UrlEncode(p.Value)}"));
+            byte[] canonicalRequestBytes = Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = this.BytesToHex(ComputeSha256(canonicalRequestBytes));
             string stringToSign = this.GetStringToSign(region, signingDate, canonicalRequestHash);
             byte[] signingKey = this.GenerateSigningKey(region, signingDate);
-            byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(stringToSign);
+            byte[] stringToSignBytes = Encoding.UTF8.GetBytes(stringToSign);
             byte[] signatureBytes = this.SignHmac(signingKey, stringToSignBytes);
             string signature = this.BytesToHex(signatureBytes);
 
@@ -345,6 +345,7 @@ namespace Minio
         /// </summary>
         /// <param name="requestMethod">HTTP method used for this request</param>
         /// <param name="uri">Full url for this request, including all query parameters except for headers and X-Amz-Signature</param>
+        /// <param name="headersToSign"></param>
         /// <returns>Presigned canonical request</returns>
         internal string GetPresignCanonicalRequest(Method requestMethod, Uri uri, SortedDictionary<string, string> headersToSign)
         {
@@ -357,7 +358,7 @@ namespace Minio
             canonicalStringList.AddLast(path);
             var queryParams = uri.Query.TrimStart('?').Split('&').ToList();
             queryParams.AddRange(headersToSign.Select(cv =>
-                $"{utils.UrlEncode(cv.Key)}={utils.UrlEncode(s3utils.TrimAll(cv.Value))}"));
+                $"{Utils.UrlEncode(cv.Key)}={Utils.UrlEncode(S3Utils.TrimAll(cv.Value))}"));
             queryParams.Sort(StringComparer.Ordinal);
             string query = string.Join("&", queryParams);
             canonicalStringList.AddLast(query);
@@ -428,7 +429,7 @@ namespace Minio
 
             foreach (string header in headersToSign.Keys)
             {
-                canonicalStringList.AddLast(header + ":" + s3utils.TrimAll(headersToSign[header]));
+                canonicalStringList.AddLast(header + ":" + S3Utils.TrimAll(headersToSign[header]));
             }
             canonicalStringList.AddLast(string.Empty);
             canonicalStringList.AddLast(string.Join(";", headersToSign.Keys));
@@ -525,7 +526,7 @@ namespace Minio
                 byte[] body = null;
                 if (bodyParameter.Value is string)
                 {
-                    body = System.Text.Encoding.UTF8.GetBytes(bodyParameter.Value as string);
+                    body = Encoding.UTF8.GetBytes(bodyParameter.Value as string);
                 }
                 if (bodyParameter.Value is byte[])
                 {

@@ -27,7 +27,7 @@ namespace Minio.DataModel
         public static readonly SelectEventType SelectProgressEvent = new SelectEventType("Progress");
         public static readonly SelectEventType SelectStatsEvent = new SelectEventType("Stats");
 
-        private String Type;
+        private string Type;
         public SelectEventType()
         {
         }

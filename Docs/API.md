@@ -147,10 +147,10 @@ __Examples__
 
 
 ```cs
-// 1. public MinioClient(String endpoint)
+// 1. public MinioClient(string endpoint)
 MinioClient minioClient = new MinioClient("play.min.io");
 
-// 2. public MinioClient(String endpoint, String accessKey, String secretKey)
+// 2. public MinioClient(string endpoint, String accessKey, String secretKey)
 MinioClient minioClient = new MinioClient("play.min.io",
                                           accessKey:"Q3AM3UQ867SPQQA43P2F",
                                           secretKey:"zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
@@ -182,10 +182,10 @@ MinioClient minioClient = new MinioClient()
 
 
 ```cs
-// 1. public MinioClient(String endpoint)
+// 1. public MinioClient(string endpoint)
 MinioClient s3Client = new MinioClient("s3.amazonaws.com").WithSSL();
 
-// 2. public MinioClient(String endpoint, String accessKey, String secretKey)
+// 2. public MinioClient(string endpoint, string accessKey, string secretKey)
 MinioClient s3Client = new MinioClient("s3.amazonaws.com",
                                        accessKey:"YOUR-ACCESSKEYID",
                                        secretKey:"YOUR-SECRETACCESSKEY").WithSSL();
@@ -881,7 +881,7 @@ try
 {
     GetPolicyArgs args = new GetPolicyArgs()
                                     .WithBucket("myBucket");
-    String policyJson = await minioClient.GetPolicyAsync(args);
+    string policyJson = await minioClient.GetPolicyAsync(args);
     Console.WriteLine("Current policy: " + policyJson);
 }
 catch (MinioException e)
@@ -1190,7 +1190,7 @@ try
 ```
 
 <a name="getObject"></a>
-### GetObjectAsync(String bucketName, String objectName, String fileName, ServerSideEncryption sse)
+### GetObjectAsync(string bucketName, string objectName, string fileName, ServerSideEncryption sse)
 
 `Task GetObjectAsync(string bucketName, string objectName, string fileName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
 
@@ -1701,7 +1701,7 @@ try
                                                 .WithBucket("mybucket")
                                                 .WithObject("myobject")
                                                 .WithExpiry(60 * 60 * 24);
-    String url = await minioClient.PresignedGetObjectAsync(args);
+    string url = await minioClient.PresignedGetObjectAsync(args);
     Console.WriteLine(url);
 }
 catch(MinioException e)
@@ -1742,7 +1742,7 @@ try
                                             .WithBucket("mybucket")
                                             .WithObject("myobject")
                                             .WithExpiry(60 * 60 * 24);
-    String url = await minioClient.PresignedPutObjectAsync(args);
+    string url = await minioClient.PresignedPutObjectAsync(args);
     Console.WriteLine(url);
 }
 catch(MinioException e)

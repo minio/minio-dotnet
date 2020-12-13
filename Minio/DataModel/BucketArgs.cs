@@ -51,7 +51,7 @@ namespace Minio
 
         public virtual void Validate()
         {
-            utils.ValidateBucketName(this.BucketName);
+            Utils.ValidateBucketName(this.BucketName);
         }
     }
 }

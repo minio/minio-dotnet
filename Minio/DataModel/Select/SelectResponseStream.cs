@@ -231,7 +231,7 @@ namespace Minio.DataModel
             {
                 byte nameLength = data[offset++];
                 byte[] b = data.Skip(offset).Take(nameLength).ToArray();
-                String name = Encoding.UTF8.GetString(b, 0, b.Length);
+                string name = Encoding.UTF8.GetString(b, 0, b.Length);
                 offset += nameLength;
                 var hdrValue = data[offset++];
                 if (hdrValue != 7)
@@ -246,7 +246,7 @@ namespace Minio.DataModel
                 offset += 2;
                 int headerValLength = BitConverter.ToInt16(b, 0);
                 b = data.Skip(offset).Take(headerValLength).ToArray();
-                String value = Encoding.UTF8.GetString(b, 0, b.Length);
+                string value = Encoding.UTF8.GetString(b, 0, b.Length);
                 offset += headerValLength;
                 headerMap.Add(name,value);
             }

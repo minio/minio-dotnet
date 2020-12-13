@@ -52,7 +52,7 @@ namespace Minio.DataModel
 
         public virtual void Marshal(Dictionary<string, string> headers)
         {
-            var md5SumStr = utils.getMD5SumStr(this.key);
+            var md5SumStr = Utils.GetMD5SumStr(this.key);
             headers.Add("X-Amz-Server-Side-Encryption-Customer-Algorithm", "AES256");
             headers.Add("X-Amz-Server-Side-Encryption-Customer-Key", Convert.ToBase64String(this.key));
             headers.Add("X-Amz-Server-Side-Encryption-Customer-Key-Md5", md5SumStr);
@@ -76,7 +76,7 @@ namespace Minio.DataModel
     {
         public override void Marshal(Dictionary<string, string> headers)
         {
-            var md5SumStr = utils.getMD5SumStr(this.key);
+            var md5SumStr = Utils.GetMD5SumStr(this.key);
             headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Algorithm", "AES256");
             headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key", Convert.ToBase64String(key));
             headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key-Md5", md5SumStr);

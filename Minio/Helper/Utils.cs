@@ -29,7 +29,7 @@ using System.Xml.Serialization;
 
 namespace Minio
 {
-    internal class utils
+    internal class Utils
     {
         // We support '.' with bucket names but we fallback to using path
         // style requests instead for such buckets.
@@ -268,7 +268,7 @@ namespace Minio
             return (expiryInt > 0) && (expiryInt <= Constants.DefaultExpiryTime);
         }
 
-        internal static string getMD5SumStr(byte[] key)
+        internal static string GetMD5SumStr(byte[] key)
         {
             var hashedBytes = System.Security.Cryptography.MD5
               .Create()
@@ -843,7 +843,7 @@ namespace Minio
 
             XmlWriter xw = null;
 
-            String str = String.Empty;
+            string str = String.Empty;
 
             try
             {

@@ -99,7 +99,7 @@ namespace Minio
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, args.Location);
             SetTargetURL(requestUrl);
             // Set Authenticator, if necessary.
-            if (string.IsNullOrEmpty(this.Region) && !s3utils.IsAmazonEndPoint(this.BaseUrl) && args.Location != "us-east-1" && this.restClient != null)
+            if (string.IsNullOrEmpty(this.Region) && !S3Utils.IsAmazonEndPoint(this.BaseUrl) && args.Location != "us-east-1" && this.restClient != null)
             {
                 this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: args.Location, sessionToken: this.SessionToken);
             }
@@ -154,7 +154,6 @@ namespace Minio
             return getPolicyResponse.PolicyJsonString;
         }
 
-
         /// <summary>
         /// Sets the current bucket policy
         /// </summary>
@@ -166,7 +165,6 @@ namespace Minio
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
             await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
-
 
         /// <summary>
         /// Removes the current bucket policy
@@ -182,7 +180,6 @@ namespace Minio
             await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
-
         /// <summary>
         /// List all objects in a bucket
         /// List all the buckets for the current Endpoint URL
@@ -196,7 +193,6 @@ namespace Minio
             ListBucketsResponse listBucketsResponse = new ListBucketsResponse(response.StatusCode, response.Content);
             return listBucketsResponse.BucketsResult;
         }
-
 
         /// <summary>
         /// List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
@@ -232,7 +228,6 @@ namespace Minio
               });
         }
 
-
         /// <summary>
         /// List all objects along with versions non-recursively in a bucket with a given prefix, optionally emulating a directory
         /// </summary>
@@ -267,7 +262,6 @@ namespace Minio
               });
         }
 
-
         /// <summary>
         /// Gets the list of objects in the bucket filtered by prefix
         /// </summary>
@@ -282,7 +276,6 @@ namespace Minio
             return getObjectsListResponse.ObjectsTuple;
         }
 
-
         /// <summary>
         /// Gets the list of objects along with version IDs in the bucket filtered by prefix
         /// </summary>
@@ -296,7 +289,6 @@ namespace Minio
             GetObjectsVersionsListResponse getObjectsListResponse = new GetObjectsVersionsListResponse(response.StatusCode, response.Content);
             return getObjectsListResponse.ObjectsTuple;
         }
-
 
         /// <summary>
         /// Gets notification configuration for this bucket
@@ -324,8 +316,6 @@ namespace Minio
             await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
-
-
         /// <summary>
         /// Removes all bucket notification configurations stored on the server.
         /// </summary>
@@ -337,7 +327,6 @@ namespace Minio
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
             await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
-
 
         /// <summary>
         /// Subscribes to bucket change notifications (a Minio-only extension)
@@ -352,7 +341,6 @@ namespace Minio
                 {
                     bool isRunning = true;
 
-                    int i = 0;
                     using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
                     {
                         while (isRunning)
@@ -451,7 +439,6 @@ namespace Minio
             return await this.GetObjectListAsync(args, cancellationToken);
         }
 
-
         /// <summary>
         /// Returns current policy stored on the server for this bucket
         /// </summary>
@@ -464,7 +451,6 @@ namespace Minio
                                             .WithBucket(bucketName);
             return await this.GetPolicyAsync(args, cancellationToken);
         }
-
 
         /// <summary>
         /// Sets the current bucket policy

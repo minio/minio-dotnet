@@ -197,7 +197,7 @@ namespace Minio
             }
         }
 
-
+        /// <summary>
         /// Presigned get url - returns a presigned url to access an object's data without credentials.URL can have a maximum expiry of
         /// upto 7 days or a minimum of 1 second.Additionally, you can override a set of response headers using reqParams.
         /// </summary>
@@ -339,7 +339,7 @@ namespace Minio
         public async Task GetObjectAsync(string bucketName, string objectName, string fileName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             bool fileExists = File.Exists(fileName);
-            utils.ValidateFile(fileName);
+            Utils.ValidateFile(fileName);
 
             StatObjectArgs statArgs = new StatObjectArgs()
                                             .WithBucket(bucketName)
@@ -354,7 +354,7 @@ namespace Minio
 
             bool tempFileExists = File.Exists(tempFileName);
 
-            utils.ValidateFile(tempFileName);
+            Utils.ValidateFile(tempFileName);
 
             FileInfo tempFileInfo = new FileInfo(tempFileName);
             long tempFileSize = 0;
@@ -391,6 +391,7 @@ namespace Minio
                     tempFileExists = true;
                 }
             }
+
             await GetObjectAsync(bucketName, objectName, (stream) =>
             {
                 var fileStream = File.Create(tempFileName);
@@ -403,7 +404,7 @@ namespace Minio
                     throw new IOException(tempFileName + ": unexpected data written.  expected = " + (length - tempFileSize)
                                            + ", written = " + writtenSize);
                 }
-                utils.MoveWithReplace(tempFileName, fileName);
+                Utils.MoveWithReplace(tempFileName, fileName);
             }, sse, cancellationToken).ConfigureAwait(false);
         }
 
@@ -417,8 +418,8 @@ namespace Minio
         [Obsolete("Use SelectObjectContentAsync method with SelectObjectContentsArgs object. Refer SelectObjectContent example code.")]
         public async Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts,CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.ValidateBucketName(bucketName);
-            utils.ValidateObjectName(objectName);
+            Utils.ValidateBucketName(bucketName);
+            Utils.ValidateObjectName(objectName);
             if (opts == null)
             {
                 throw new ArgumentException("Options cannot be null", nameof(opts));
@@ -455,7 +456,7 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         public async Task PutObjectAsync(string bucketName, string objectName, string fileName, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.ValidateFile(fileName, contentType);
+            Utils.ValidateFile(fileName, contentType);
             FileInfo fileInfo = new FileInfo(fileName);
             long size = fileInfo.Length;
             using (FileStream file = new FileStream(fileName, FileMode.Open, FileAccess.Read))
@@ -477,8 +478,8 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.ValidateBucketName(bucketName);
-            utils.ValidateObjectName(objectName);
+            Utils.ValidateBucketName(bucketName);
+            Utils.ValidateObjectName(objectName);
 
             var sseHeaders = new Dictionary<string, string>();
             var meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -525,7 +526,7 @@ namespace Minio
             }
             // For all sizes greater than 5MiB do multipart.
 
-            dynamic multiPartInfo = utils.CalculateMultiPartSize(size);
+            dynamic multiPartInfo = Utils.CalculateMultiPartSize(size);
             double partSize = multiPartInfo.partSize;
             double partCount = multiPartInfo.partCount;
             double lastPartSize = multiPartInfo.lastPartSize;
@@ -911,7 +912,7 @@ namespace Minio
                 return null;
             }
 
-            utils.ValidateBucketName(bucketName);
+            Utils.ValidateBucketName(bucketName);
             List<DeleteObject> objectList;
             return Observable.Create<DeleteError>(
               async obs =>
@@ -926,7 +927,7 @@ namespace Minio
                       while (i < count)
                       {
                           string objectName = objectNames.ElementAt(i);
-                          utils.ValidateObjectName(objectName);
+                          Utils.ValidateObjectName(objectName);
                           objectList.Add(new DeleteObject(objectName));
                           i++;
                           if (i % 1000 == 0)
@@ -1037,7 +1038,7 @@ namespace Minio
                 throw new ArgumentException("Destination bucket name cannot be empty", nameof(destBucketName));
             }
             // Escape source object path.
-            string sourceObjectPath = $"{bucketName}/{utils.UrlEncode(objectName)}";
+            string sourceObjectPath = $"{bucketName}/{Utils.UrlEncode(objectName)}";
 
             // Destination object name is optional, if empty default to source object name.
             if (destObjectName == null)
@@ -1117,14 +1118,14 @@ namespace Minio
         /// <param name="destObjectName">Object name to be created, if not provided uses source object name as destination object name.</param>
         /// <param name="copyConditions">optionally can take a key value CopyConditions as well for conditionally attempting copyObject.</param>
         /// <param name="customHeaders">optional custom header to specify byte range</param>
-        /// <param name="resource">Optional string to specify upload id and part number </param>
+        /// <param name="queryMap">Optional string to specify upload id and part number</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <param name="type">Type of XML serialization to be applied on the server response</param>
         /// <returns></returns>
         private async Task<object> CopyObjectRequestAsync(string bucketName, string objectName, string destBucketName, string destObjectName, CopyConditions copyConditions, Dictionary<string, string> customHeaders, Dictionary<string, string> queryMap, CancellationToken cancellationToken, Type type)
         {
             // Escape source object path.
-            string sourceObjectPath = bucketName + "/" + utils.UrlEncode(objectName);
+            string sourceObjectPath = bucketName + "/" + Utils.UrlEncode(objectName);
 
             // Destination object name is optional, if empty default to source object name.
             if (destObjectName == null)
@@ -1196,7 +1197,7 @@ namespace Minio
             // For all sizes greater than 5GB or if Copy byte range specified in conditions and byte range larger
             // than minimum part size (5 MB) do multipart.
 
-            dynamic multiPartInfo = utils.CalculateMultiPartSize(copySize);
+            dynamic multiPartInfo = Utils.CalculateMultiPartSize(copySize);
             double partSize = multiPartInfo.partSize;
             double partCount = multiPartInfo.partCount;
             double lastPartSize = multiPartInfo.lastPartSize;

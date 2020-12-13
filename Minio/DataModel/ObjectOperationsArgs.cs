@@ -181,7 +181,7 @@ namespace Minio
         public override void Validate()
         {
             base.Validate();
-            if (!utils.IsValidExpiry(this.Expiry))
+            if (!Utils.IsValidExpiry(this.Expiry))
             {
                 throw new InvalidExpiryRangeException("expiry range should be between 1 and " + Constants.DefaultExpiryTime.ToString());
             }
@@ -256,8 +256,8 @@ namespace Minio
             bool checkPolicy = false;
             try
             {
-                utils.ValidateBucketName(this.BucketName);
-                utils.ValidateObjectName(this.ObjectName);
+                Utils.ValidateBucketName(this.BucketName);
+                Utils.ValidateObjectName(this.ObjectName);
             }
             catch (Exception ex)
             {
@@ -350,7 +350,7 @@ namespace Minio
         internal new void Validate()
         {
             base.Validate();
-            if (!utils.IsValidExpiry(this.Expiry))
+            if (!Utils.IsValidExpiry(this.Expiry))
             {
                 throw new InvalidExpiryRangeException("Expiry range should be between 1 seconds and " + Constants.DefaultExpiryTime.ToString() + " seconds");
             }

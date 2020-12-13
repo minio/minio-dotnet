@@ -25,7 +25,7 @@ namespace Minio.DataModel
         public static readonly MessageType Error = new MessageType("error");
         public static readonly MessageType Event = new MessageType("event");
         [XmlText]
-        public String Type;
+        public string Type;
         
         public MessageType()
         {

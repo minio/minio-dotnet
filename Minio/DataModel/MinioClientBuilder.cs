@@ -130,9 +130,9 @@ namespace Minio
             return this;
         }
 
-        public MinioClient WithSessionToken(string st)
+        public MinioClient WithSessionToken(string sessionToken)
         {
-            this.SessionToken = st;
+            this.SessionToken = sessionToken;
             return this;
         }
 
@@ -151,7 +151,7 @@ namespace Minio
 
             string host = this.BaseUrl;
 
-            var scheme = this.Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
+            var scheme = this.Secure ? Utils.UrlEncode("https") : Utils.UrlEncode("http");
 
             if ( !this.BaseUrl.StartsWith("http") )
             {

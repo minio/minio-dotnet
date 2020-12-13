@@ -115,7 +115,7 @@ namespace Minio.Tests
 
             foreach (KeyValuePair<string, bool> testCase in testIPDict)
             {
-                Assert.AreEqual(s3utils.IsValidIP(testCase.Key), testCase.Value);
+                Assert.AreEqual(S3Utils.IsValidIP(testCase.Key), testCase.Value);
             }
         }
 
@@ -160,8 +160,8 @@ namespace Minio.Tests
 
             foreach (KeyValuePair<string, bool> testCase in testAmazonDict)
             {
-                bool value = s3utils.IsAmazonEndPoint(testCase.Key);
-                Assert.AreEqual(s3utils.IsAmazonEndPoint(testCase.Key), testCase.Value);
+                bool value = S3Utils.IsAmazonEndPoint(testCase.Key);
+                Assert.AreEqual(S3Utils.IsAmazonEndPoint(testCase.Key), testCase.Value);
             }
         }
 
@@ -182,8 +182,8 @@ namespace Minio.Tests
 
             foreach (KeyValuePair<string, bool> testCase in testAmazonDict)
             {
-                bool value = s3utils.IsAmazonChinaEndPoint(testCase.Key);
-                Assert.AreEqual(s3utils.IsAmazonChinaEndPoint(testCase.Key), testCase.Value);
+                bool value = S3Utils.IsAmazonChinaEndPoint(testCase.Key);
+                Assert.AreEqual(S3Utils.IsAmazonChinaEndPoint(testCase.Key), testCase.Value);
             }
         }
     }

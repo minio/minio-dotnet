@@ -28,7 +28,7 @@ namespace Minio.DataModel
         public static readonly SelectCompressionType BZIP = new SelectCompressionType("BZIP2");
 
         [XmlText]
-        public String CompressionType;
+        public string CompressionType;
         public SelectCompressionType()
         {
             

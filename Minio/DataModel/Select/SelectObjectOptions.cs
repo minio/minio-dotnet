@@ -49,7 +49,7 @@ namespace Minio.DataModel
 
             XmlWriter xw = null;
 
-            String str = String.Empty;
+            string str = string.Empty;
 
             try
             {

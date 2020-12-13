@@ -40,7 +40,7 @@ namespace Minio
         public override void Validate()
         {
             base.Validate();
-            utils.ValidateObjectName(this.ObjectName);
+            Utils.ValidateObjectName(this.ObjectName);
         }
     }
 }

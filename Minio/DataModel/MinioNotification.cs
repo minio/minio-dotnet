@@ -43,19 +43,19 @@ namespace Minio.DataModel
     public class MinioNotification
     {
         public NotificationEvent[] Records;
-        public String Err;
+        public string Err;
     }
 
     public class NotificationEvent
     {
-        public String eventVersion;
-        public String eventSource;
-        public String awsRegion;
-        public String eventTime;
-        public String eventName;
+        public string eventVersion;
+        public string eventSource;
+        public string awsRegion;
+        public string eventTime;
+        public string eventName;
         public Identity userIdentity;
-        public Dictionary<String, String> requestParameters;
-        public Dictionary<String, String> responseElements;
+        public Dictionary<string, string> requestParameters;
+        public Dictionary<string, string> responseElements;
         public EventMeta s3;
         public SourceInfo source;
     }
@@ -64,10 +64,10 @@ namespace Minio.DataModel
     public class EventMeta
     {
         [DataMember]
-        public String schemaVersion;
+        public string schemaVersion;
 
         [DataMember]
-        public String configurationId;
+        public string configurationId;
 
         [DataMember]
         public BucketMeta bucket;
@@ -78,31 +78,31 @@ namespace Minio.DataModel
 
     public class ObjectMeta
     {
-        public String key;
+        public string key;
         public int size;
-        public String etag;
-        public String versionId;
-        public String sequencer;
-        public String contentType;
-        public Dictionary<String, String> userMetadata;
+        public string etag;
+        public string versionId;
+        public string sequencer;
+        public string contentType;
+        public Dictionary<string, string> userMetadata;
     }
 
     public class BucketMeta
     {
-        public String name;
+        public string name;
         public Identity ownerIdentity;
-        public String arn;
+        public string arn;
     }
 
     public class Identity
     {
-        public String principalId;
+        public string principalId;
     }
 
     public class SourceInfo
     {
-        public String host;
-        public String port;
-        public String userAgent;
+        public string host;
+        public string port;
+        public string userAgent;
     }
 }

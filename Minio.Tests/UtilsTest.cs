@@ -53,7 +53,7 @@ namespace Minio.Tests
                 InvalidBucketNameException expectedException = pair.Value;
                 try
                 {
-                    utils.ValidateBucketName(bucketName);
+                    Utils.ValidateBucketName(bucketName);
                 }
                 catch (InvalidBucketNameException ex)
                 {
@@ -69,7 +69,7 @@ namespace Minio.Tests
         {
             try
             {
-                utils.ValidateObjectName("");
+                Utils.ValidateObjectName("");
             }
             catch (InvalidObjectNameException ex)
             {
@@ -84,7 +84,7 @@ namespace Minio.Tests
             try
             {
                 string objName = TestHelper.GetRandomName(1025);
-                utils.ValidateObjectName(objName);
+                Utils.ValidateObjectName(objName);
             }
             catch (InvalidObjectNameException ex)
             {
@@ -97,26 +97,26 @@ namespace Minio.Tests
         public void TestObjectName()
         {
             string objName = TestHelper.GetRandomName(15);
-            utils.ValidateObjectName(objName);
+            Utils.ValidateObjectName(objName);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void TestEmptyFile()
         {
-            utils.ValidateFile("");
+            Utils.ValidateFile("");
         }
 
         [TestMethod]
         public void TestFileWithoutExtension()
         {
-            utils.ValidateFile("xxxx");
+            Utils.ValidateFile("xxxx");
         }
 
         [TestMethod]
         public void TestFileWithExtension()
         {
-            utils.ValidateFile("xxxx.xml");
+            Utils.ValidateFile("xxxx.xml");
         }
 
         [TestMethod]
@@ -125,7 +125,7 @@ namespace Minio.Tests
         {
             try
             {
-                Object multiparts = utils.CalculateMultiPartSize(5000000000000000000);
+                object multiparts = Utils.CalculateMultiPartSize(5000000000000000000);
             }
             catch (EntityTooLargeException ex)
             {
@@ -138,7 +138,7 @@ namespace Minio.Tests
         public void TestValidPartSize1()
         {
             // { partSize = 550502400, partCount = 9987, lastPartSize = 241172480 }
-            dynamic partSizeObject = utils.CalculateMultiPartSize(5497558138880);
+            dynamic partSizeObject = Utils.CalculateMultiPartSize(5497558138880);
             double partSize = partSizeObject.partSize;
             double partCount = partSizeObject.partCount;
             double lastPartSize = partSizeObject.lastPartSize;
@@ -150,7 +150,7 @@ namespace Minio.Tests
         [TestMethod]
         public void TestValidPartSize2()
         {
-            dynamic partSizeObject = utils.CalculateMultiPartSize(5000000000);
+            dynamic partSizeObject = Utils.CalculateMultiPartSize(5000000000);
             double partSize = partSizeObject.partSize;
             double partCount = partSizeObject.partCount;
             double lastPartSize = partSizeObject.lastPartSize;
@@ -162,31 +162,31 @@ namespace Minio.Tests
         [TestMethod]
         public void TestCaseInsensitiveContains()
         {
-            Assert.IsTrue(utils.CaseInsensitiveContains("ef", ""));
-            Assert.IsTrue(utils.CaseInsensitiveContains("abcdef", "ef"));
-            Assert.IsFalse(utils.CaseInsensitiveContains("abc", "xyz"));
+            Assert.IsTrue(Utils.CaseInsensitiveContains("ef", ""));
+            Assert.IsTrue(Utils.CaseInsensitiveContains("abcdef", "ef"));
+            Assert.IsFalse(Utils.CaseInsensitiveContains("abc", "xyz"));
         }
 
         [TestMethod]
         public void TestIsAmazonEndpoint()
         {
-            Assert.IsTrue(s3utils.IsAmazonEndPoint("s3.amazonaws.com"));
-            Assert.IsTrue(s3utils.IsAmazonEndPoint("s3.cn-north-1.amazonaws.com.cn"));
-            Assert.IsFalse(s3utils.IsAmazonEndPoint("s3.us-west-1amazonaws.com"));
-            Assert.IsFalse(s3utils.IsAmazonEndPoint("play.min.io"));
-            Assert.IsFalse(s3utils.IsAmazonEndPoint("192.168.12.1"));
-            Assert.IsFalse(s3utils.IsAmazonEndPoint("storage.googleapis.com"));
+            Assert.IsTrue(S3Utils.IsAmazonEndPoint("s3.amazonaws.com"));
+            Assert.IsTrue(S3Utils.IsAmazonEndPoint("s3.cn-north-1.amazonaws.com.cn"));
+            Assert.IsFalse(S3Utils.IsAmazonEndPoint("s3.us-west-1amazonaws.com"));
+            Assert.IsFalse(S3Utils.IsAmazonEndPoint("play.min.io"));
+            Assert.IsFalse(S3Utils.IsAmazonEndPoint("192.168.12.1"));
+            Assert.IsFalse(S3Utils.IsAmazonEndPoint("storage.googleapis.com"));
         }
 
         [TestMethod]
         public void TestIsAmazonChinaEndpoint()
         {
-            Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("s3.amazonaws.com"));
-            Assert.IsTrue(s3utils.IsAmazonChinaEndPoint("s3.cn-north-1.amazonaws.com.cn"));
-            Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("s3.us-west-1amazonaws.com"));
-            Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("play.min.io"));
-            Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("192.168.12.1"));
-            Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("storage.googleapis.com"));
+            Assert.IsFalse(S3Utils.IsAmazonChinaEndPoint("s3.amazonaws.com"));
+            Assert.IsTrue(S3Utils.IsAmazonChinaEndPoint("s3.cn-north-1.amazonaws.com.cn"));
+            Assert.IsFalse(S3Utils.IsAmazonChinaEndPoint("s3.us-west-1amazonaws.com"));
+            Assert.IsFalse(S3Utils.IsAmazonChinaEndPoint("play.min.io"));
+            Assert.IsFalse(S3Utils.IsAmazonChinaEndPoint("192.168.12.1"));
+            Assert.IsFalse(S3Utils.IsAmazonChinaEndPoint("storage.googleapis.com"));
         }
 
         [TestMethod]

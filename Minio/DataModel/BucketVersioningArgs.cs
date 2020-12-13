@@ -27,10 +27,10 @@ namespace Minio
             this.RequestMethod = Method.GET;
         }
 
-        public override RestRequest BuildRequest(RestRequest req)
+        public override RestRequest BuildRequest(RestRequest request)
         {
-            req.AddQueryParameter("versioning","");
-            return req;
+            request.AddQueryParameter("versioning","");
+            return request;
         }
     }
 
@@ -50,7 +50,7 @@ namespace Minio
         }
         public override void Validate()
         {
-            utils.ValidateBucketName(this.BucketName);
+            Utils.ValidateBucketName(this.BucketName);
             if (this.CurrentVersioningStatus > VersioningStatus.Suspended )
             {
                 throw new UnexpectedMinioException("CurrentVersioningStatus invalid value .");
@@ -75,7 +75,7 @@ namespace Minio
             req.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
             req.XmlSerializer.Namespace = "http://s3.amazonaws.com/doc/2006-03-01/";
             req.XmlSerializer.ContentType = "application/xml";
-            string body = utils.MarshalXML(config, req.XmlSerializer.Namespace);
+            string body = Utils.MarshalXML(config, req.XmlSerializer.Namespace);
             req.AddQueryParameter("versioning","");
             req.AddParameter("text/xml", body, ParameterType.RequestBody);
             return req;

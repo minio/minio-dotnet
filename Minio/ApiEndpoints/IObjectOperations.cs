@@ -84,10 +84,10 @@ namespace Minio
         /// Removes objects in the list from specific bucket
         /// </summary>
         /// <param name="bucketName">Bucket to remove objects from</param>
-        /// <param name="objectsList">List of object keys to remove</param>
+        /// <param name="objectNames">List of object keys to remove</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectsList, CancellationToken cancellationToken = default(CancellationToken));
+        Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectNames, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Tests the object's existence and returns metadata about existing objects.

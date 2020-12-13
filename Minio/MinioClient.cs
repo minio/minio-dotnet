@@ -213,13 +213,13 @@ namespace Minio
             string region = string.Empty;
             if (bucketName != null)
             {
-                utils.ValidateBucketName(bucketName);
+                Utils.ValidateBucketName(bucketName);
                 region = await GetRegion(bucketName).ConfigureAwait(false);
             }
 
             if (objectName != null)
             {
-                utils.ValidateObjectName(objectName);
+                Utils.ValidateObjectName(objectName);
             }
 
             // Start with user specified endpoint
@@ -233,7 +233,7 @@ namespace Minio
             bool usePathStyle = false;
             if (bucketName != null)
             {
-                if (s3utils.IsAmazonEndPoint(this.BaseUrl))
+                if (S3Utils.IsAmazonEndPoint(this.BaseUrl))
                 {
                     usePathStyle = false;
 
@@ -255,12 +255,12 @@ namespace Minio
 
                     if (usePathStyle)
                     {
-                        resource += utils.UrlEncode(bucketName) + "/";
+                        resource += Utils.UrlEncode(bucketName) + "/";
                     }
                 }
                 else
                 {
-                    resource += utils.UrlEncode(bucketName) + "/";
+                    resource += Utils.UrlEncode(bucketName) + "/";
                 }
             }
 
@@ -270,7 +270,7 @@ namespace Minio
 
             if (objectName != null)
             {
-                resource += utils.EncodePath(objectName);
+                resource += Utils.EncodePath(objectName);
             }
 
             // Append query string passed in
@@ -315,7 +315,7 @@ namespace Minio
             }
             string host = this.BaseUrl;
 
-            var scheme = this.Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
+            var scheme = this.Secure ? Utils.UrlEncode("https") : Utils.UrlEncode("http");
             // This is the actual url pointed to for all HTTP requests
             this.Endpoint = string.Format("{0}://{1}", scheme, host);
             Init();

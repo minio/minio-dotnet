@@ -25,7 +25,7 @@ namespace Minio.DataModel
         // Constants for compression types under select API.
         public static readonly QueryExpressionType SQL = new QueryExpressionType("SQL");
         [XmlText]
-        public String ExpressionType;
+        public string ExpressionType;
         public QueryExpressionType()
         {
 

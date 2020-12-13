@@ -94,7 +94,7 @@ namespace Minio
             && client.SecretKey != null && !Instance.Exists(bucketName))
             {
                 string location = null;
-                var path = utils.UrlEncode(bucketName);
+                var path = Utils.UrlEncode(bucketName);
                 // Initialize client
                 Uri requestUrl = RequestUtil.MakeTargetURL(client.BaseUrl, client.Secure);
                 client.SetTargetURL(requestUrl);

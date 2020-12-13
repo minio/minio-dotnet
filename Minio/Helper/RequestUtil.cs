@@ -32,14 +32,14 @@ namespace Minio
                 string[] parts = endPoint.Split(':');
                 string host = parts[0];
                 string port = parts[1];
-                if (!s3utils.IsValidIP(host) && !IsValidEndpoint(host))
+                if (!S3Utils.IsValidIP(host) && !IsValidEndpoint(host))
                 {
                     throw new InvalidEndpointException("Endpoint: " + endPoint + " does not follow ip address or domain name standards.");
                 }
             }
             else
             {
-                if (!s3utils.IsValidIP(endPoint) && !IsValidEndpoint(endPoint))
+                if (!S3Utils.IsValidIP(endPoint) && !IsValidEndpoint(endPoint))
                 {
                     throw new InvalidEndpointException("Endpoint: " + endPoint + " does not follow ip address or domain name standards.");
                 }
@@ -54,14 +54,14 @@ namespace Minio
         {
             // For Amazon S3 endpoint, try to fetch location based endpoint.
             string host = endPoint;
-            if (s3utils.IsAmazonEndPoint(endPoint))
+            if (S3Utils.IsAmazonEndPoint(endPoint))
             {
                 // Fetch new host based on the bucket location.
                 host = AWSS3Endpoints.Instance.Endpoint(region);
                 if (!usePathStyle)
                 {
-                    string prefix = (bucketName != null) ? utils.UrlEncode(bucketName) + "." : "";
-                    host = prefix + utils.UrlEncode(host) + "/";
+                    string prefix = (bucketName != null) ? Utils.UrlEncode(bucketName) + "." : "";
+                    host = prefix + Utils.UrlEncode(host) + "/";
                 }
             }
             Uri uri = TryCreateUri(host, secure);
@@ -70,7 +70,7 @@ namespace Minio
 
         internal static Uri TryCreateUri(string endpoint, bool secure)
         {
-            var scheme = secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
+            var scheme = secure ? Utils.UrlEncode("https") : Utils.UrlEncode("http");
 
             // This is the actual url pointed to for all HTTP requests
             string endpointURL = string.Format("{0}://{1}", scheme, endpoint);
@@ -154,10 +154,10 @@ namespace Minio
                         string contentType = "application/octet-stream",
                         object body = null, string resourcePath = null)
         {
-            utils.ValidateBucketName(bucketName);
+            Utils.ValidateBucketName(bucketName);
             if (objectName != null)
             {
-                utils.ValidateObjectName(objectName);
+                Utils.ValidateObjectName(objectName);
             }
 
             // Start with user specified endpoint
@@ -167,9 +167,9 @@ namespace Minio
             bool usePathStyle = false;
             if (bucketName != null)
             {
-                if (s3utils.IsAmazonEndPoint(baseURL))
+                if (S3Utils.IsAmazonEndPoint(baseURL))
                 {
-                    if (method == RestSharp.Method.PUT && objectName == null && resourcePath == null)
+                    if (method == Method.PUT && objectName == null && resourcePath == null)
                     {
                         // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
                         usePathStyle = true;
@@ -184,24 +184,24 @@ namespace Minio
                         // use path style where '.' in bucketName causes SSL certificate validation error
                         usePathStyle = true;
                     }
-                    else if ( method == RestSharp.Method.HEAD && secure )
+                    else if ( method == Method.HEAD && secure )
                     {
                         usePathStyle = true;
                     }
 
                     if (usePathStyle)
                     {
-                        resource += utils.UrlEncode(bucketName) + "/";
+                        resource += Utils.UrlEncode(bucketName) + "/";
                     }
                 }
                 else
                 {
-                    resource += utils.UrlEncode(bucketName) + "/";
+                    resource += Utils.UrlEncode(bucketName) + "/";
                 }
             }
             if (objectName != null)
             {
-                resource += utils.EncodePath(objectName);
+                resource += Utils.EncodePath(objectName);
             }
 
             // Append query string passed in
