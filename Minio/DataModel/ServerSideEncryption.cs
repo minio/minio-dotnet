@@ -32,7 +32,7 @@ namespace Minio.DataModel
     /// <summary>
     /// ServerSideEncryption interface
     /// </summary>
-    public interface ServerSideEncryption
+    public interface IServerSideEncryption
     {
         // GetType() needs to return the type of Server-side encryption
         EncryptionType GetType();
@@ -43,7 +43,7 @@ namespace Minio.DataModel
     /// <summary>
     /// Server-side encryption with customer provided keys (SSE-C)
     /// </summary>
-    public class SSEC : ServerSideEncryption
+    public class SSEC : IServerSideEncryption
     {
         // secret AES-256 Key
         protected byte[] key;
@@ -93,7 +93,7 @@ namespace Minio.DataModel
     /// <summary>
     /// Server-side encryption with S3 managed encryption keys (SSE-S3)
     /// </summary>
-    public class SSES3 : ServerSideEncryption
+    public class SSES3 : IServerSideEncryption
     {
         public new EncryptionType GetType() => EncryptionType.SSE_S3;
 
@@ -107,7 +107,7 @@ namespace Minio.DataModel
     /// <summary>
     /// Server-side encryption with AWS KMS managed keys
     /// </summary>
-    public class SSEKMS : ServerSideEncryption
+    public class SSEKMS : IServerSideEncryption
     {
         // Specifies the customer master key(CMK).Cannot be null
         protected string key;

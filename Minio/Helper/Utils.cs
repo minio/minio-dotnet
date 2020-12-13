@@ -843,7 +843,7 @@ namespace Minio
 
             XmlWriter xw = null;
 
-            string str = String.Empty;
+            string str = string.Empty;
 
             try
             {

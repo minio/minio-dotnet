@@ -249,10 +249,10 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Name of object to retrieve</param>
-        /// <param name="cb">A stream will be passed to the callback</param>
+        /// <param name="callback">A stream will be passed to the callback</param>
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, IServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Stat to see if the object exists
             // NOTE: This avoids writing the error body to the action stream passed (Do not remove).
@@ -272,7 +272,7 @@ namespace Minio
                                                 objectName: objectName,
                                                 headerMap: headers)
                                     .ConfigureAwait(false);
-            request.ResponseWriter = cb;
+            request.ResponseWriter = callback;
 
             var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
@@ -287,7 +287,7 @@ namespace Minio
         /// <param name="cb">A stream will be passed to the callback</param>
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        public async Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb, IServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (offset < 0)
             {
@@ -336,7 +336,7 @@ namespace Minio
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public async Task GetObjectAsync(string bucketName, string objectName, string filePath, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task GetObjectAsync(string bucketName, string objectName, string filePath, IServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             bool fileExists = File.Exists(filePath);
             Utils.ValidateFile(filePath);
@@ -395,7 +395,7 @@ namespace Minio
             await GetObjectAsync(bucketName, objectName, async (stream) =>
             {
                 var fileStream = File.Create(tempFileName);
-                stream.CopyTo(fileStream);
+                await stream.CopyToAsync(fileStream);
                 fileStream.Dispose();
                 FileInfo writtenInfo = new FileInfo(tempFileName);
                 long writtenSize = writtenInfo.Length;
@@ -449,17 +449,17 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to create object in</param>
         /// <param name="objectName">Key of the new object</param>
-        /// <param name="fileName">Path of file to upload</param>
+        /// <param name="filePath">Path of file to upload</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
         /// <param name="metaData">Object metadata to be stored. Defaults to null.</param>
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        public async Task PutObjectAsync(string bucketName, string objectName, string fileName, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType = null, Dictionary<string, string> metaData = null, IServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            Utils.ValidateFile(fileName, contentType);
-            FileInfo fileInfo = new FileInfo(fileName);
+            Utils.ValidateFile(filePath, contentType);
+            FileInfo fileInfo = new FileInfo(filePath);
             long size = fileInfo.Length;
-            using (FileStream file = new FileStream(fileName, FileMode.Open, FileAccess.Read))
+            using (FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
                 await PutObjectAsync(bucketName, objectName, file, size, contentType, metaData, sse, cancellationToken).ConfigureAwait(false);
             }
@@ -476,7 +476,7 @@ namespace Minio
         /// <param name="metaData">Object metadata to be stored. Defaults to null.</param>
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null, IServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             Utils.ValidateBucketName(bucketName);
             Utils.ValidateObjectName(objectName);
@@ -958,7 +958,7 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Facts about the object</returns>
         [Obsolete("Use StatObjectAsync method with StatObjectArgs object. Refer StatObject & StatObjectQuery example code.")]
-        public async Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, IServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             StatObjectArgs args = new StatObjectArgs()
                                             .WithBucket(bucketName)
@@ -1023,7 +1023,7 @@ namespace Minio
         /// <param name="sseDest">Optional destination encryption options.Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public async Task CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null, IServerSideEncryption sseSrc = null, IServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (bucketName == null)
             {
@@ -1046,7 +1046,7 @@ namespace Minio
                 destObjectName = objectName;
             }
 
-            ServerSideEncryption sseGet = sseSrc;
+            IServerSideEncryption sseGet = sseSrc;
             if (sseSrc is SSECopy sseCpy)
             {
                 sseGet = sseCpy.CloneToSSEC();
@@ -1192,7 +1192,7 @@ namespace Minio
         /// <param name="sseDest">optional Server-side encryption options</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        private async Task MultipartCopyUploadAsync(string bucketName, string objectName, string destBucketName, string destObjectName, CopyConditions copyConditions, long copySize, Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken))
+        private async Task MultipartCopyUploadAsync(string bucketName, string objectName, string destBucketName, string destObjectName, CopyConditions copyConditions, long copySize, Dictionary<string, string> metadata = null, IServerSideEncryption sseSrc = null, IServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // For all sizes greater than 5GB or if Copy byte range specified in conditions and byte range larger
             // than minimum part size (5 MB) do multipart.

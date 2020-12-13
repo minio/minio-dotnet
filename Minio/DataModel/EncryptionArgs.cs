@@ -22,7 +22,7 @@ namespace Minio
     public abstract class EncryptionArgs<T> : ObjectArgs<T>
                         where T : EncryptionArgs<T>
     {
-        internal ServerSideEncryption SSE { get; set; }
+        internal IServerSideEncryption SSE { get; set; }
         internal Dictionary<string,string> SSEHeaders { get; set; }
 
         public EncryptionArgs()
@@ -30,7 +30,7 @@ namespace Minio
             this.SSEHeaders = new Dictionary<string, string>();
         }
 
-        public T WithServerSideEncryption(ServerSideEncryption sse)
+        public T WithServerSideEncryption(IServerSideEncryption sse)
         {
             this.SSE = sse;
             this.SSE?.Marshal(SSEHeaders);

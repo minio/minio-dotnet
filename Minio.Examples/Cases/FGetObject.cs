@@ -28,7 +28,7 @@ namespace Minio.Examples.Cases
                                      string bucketName = "my-bucket-name",
                                      string objectName = "my-object-name",
                                      string fileName = "local-filename",
-                                     ServerSideEncryption sse = null)
+                                     IServerSideEncryption sse = null)
         {
             try
             {

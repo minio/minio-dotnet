@@ -28,8 +28,8 @@ namespace Minio.Examples.Cases
                                      string fromObjectName = "from-object-name",
                                      string destBucketName = "dest-bucket",
                                      string destObjectName =" to-object-name",
-                                     ServerSideEncryption sseSrc = null,
-                                     ServerSideEncryption sseDest = null)
+                                     IServerSideEncryption sseSrc = null,
+                                     IServerSideEncryption sseDest = null)
         {
             try
             {

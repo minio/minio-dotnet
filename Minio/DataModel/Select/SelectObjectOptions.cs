@@ -28,9 +28,9 @@ namespace Minio.DataModel
     public class SelectObjectOptions
     {
         [XmlIgnore]
-        public  ServerSideEncryption SSE{ get; set; }
+        public IServerSideEncryption SSE { get; set; }
         
-        public String Expression { get; set; }
+        public string Expression { get; set; }
         
         [XmlElement("ExpressionType")]
         public QueryExpressionType ExpressionType { get; set; }
