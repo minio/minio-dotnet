@@ -332,14 +332,14 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Name of object to retrieve</param>
-        /// <param name="fileName">string with file path</param>
+        /// <param name="filePath">string with file path</param>
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public async Task GetObjectAsync(string bucketName, string objectName, string fileName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task GetObjectAsync(string bucketName, string objectName, string filePath, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            bool fileExists = File.Exists(fileName);
-            Utils.ValidateFile(fileName);
+            bool fileExists = File.Exists(filePath);
+            Utils.ValidateFile(filePath);
 
             StatObjectArgs statArgs = new StatObjectArgs()
                                             .WithBucket(bucketName)
@@ -350,7 +350,7 @@ namespace Minio
             long length = objectStat.Size;
             string etag = objectStat.ETag;
 
-            string tempFileName = $"{fileName}.{etag}.part.minio";
+            string tempFileName = $"{filePath}.{etag}.part.minio";
 
             bool tempFileExists = File.Exists(tempFileName);
 
@@ -371,7 +371,7 @@ namespace Minio
 
             if (fileExists)
             {
-                FileInfo fileInfo = new FileInfo(fileName);
+                FileInfo fileInfo = new FileInfo(filePath);
                 long fileSize = fileInfo.Length;
                 if (fileSize == length)
                 {
@@ -380,13 +380,13 @@ namespace Minio
                 }
                 else if (fileSize > length)
                 {
-                    throw new ArgumentException("'" + fileName + "': object size " + length + " is smaller than file size "
+                    throw new ArgumentException("'" + filePath + "': object size " + length + " is smaller than file size "
                                                        + fileSize, nameof(fileSize));
                 }
                 else if (!tempFileExists)
                 {
                     // before resuming the download, copy filename to tempfilename
-                    File.Copy(fileName, tempFileName);
+                    File.Copy(filePath, tempFileName);
                     tempFileSize = fileSize;
                     tempFileExists = true;
                 }
@@ -404,7 +404,7 @@ namespace Minio
                     throw new IOException(tempFileName + ": unexpected data written.  expected = " + (length - tempFileSize)
                                            + ", written = " + writtenSize);
                 }
-                Utils.MoveWithReplace(tempFileName, fileName);
+                Utils.MoveWithReplace(tempFileName, filePath);
             }, sse, cancellationToken).ConfigureAwait(false);
         }
 
