@@ -29,48 +29,49 @@ namespace Minio.DataModel
             ExtraHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
-        public static ObjectStat FromResponseHeaders(string objectName, IList<Parameter> responseHeaders)
+        public static ObjectStat FromResponseHeaders(string objectName, Dictionary<string, string> responseHeaders)
         {
             if (string.IsNullOrEmpty(objectName))
             {
                 throw new ArgumentNullException("Name of an object cannot be empty");
             }
             ObjectStat objInfo = new ObjectStat();
-            foreach (Parameter parameter in responseHeaders)
+            foreach (var paramName in responseHeaders.Keys)
             {
-                switch(parameter.Name.ToLower())
+                string paramValue = responseHeaders[paramName];
+                switch(paramName.ToLower())
                 {
                     case "content-length" :
-                        objInfo.Size = long.Parse(parameter.Value.ToString());
+                        objInfo.Size = long.Parse(paramValue);
                         break;
                     case "last-modified" :
-                        objInfo.LastModified = DateTime.Parse(parameter.Value.ToString(), CultureInfo.InvariantCulture);
+                        objInfo.LastModified = DateTime.Parse(paramValue, CultureInfo.InvariantCulture);
                         break;
                     case "etag" :
-                        objInfo.ETag = parameter.Value.ToString().Replace("\"", string.Empty);
+                        objInfo.ETag = paramValue.Replace("\"", string.Empty);
                         break;
                     case "Content-Type" :
-                        objInfo.ContentType = parameter.Value.ToString();
+                        objInfo.ContentType = paramValue;
                         objInfo.MetaData["Content-Type"] = objInfo.ContentType;
                         break;
                     case "x-amz-version-id" :
-                        objInfo.VersionId = parameter.Value.ToString();
+                        objInfo.VersionId = paramValue;
                         break;
                     case "x-amz-delete-marker":
-                        objInfo.DeleteMarker = parameter.Value.ToString().Equals("true");
+                        objInfo.DeleteMarker = paramValue.Equals("true");
                         break;
                     default:
-                        if (OperationsUtil.IsSupportedHeader(parameter.Name))
+                        if (OperationsUtil.IsSupportedHeader(paramName))
                         {
-                            objInfo.MetaData[parameter.Name] = parameter.Value.ToString();
+                            objInfo.MetaData[paramName] = paramValue;
                         }
-                        else if (parameter.Name.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
+                        else if (paramName.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
                         {
-                            objInfo.MetaData[parameter.Name.Substring("x-amz-meta-".Length)] = parameter.Value.ToString();
+                            objInfo.MetaData[paramName.Substring("x-amz-meta-".Length)] = paramValue;
                         }
                         else
                         {
-                            objInfo.ExtraHeaders[parameter.Name] = parameter.Value.ToString();
+                            objInfo.ExtraHeaders[paramName] = paramValue;
                         }
                         break;
                 }

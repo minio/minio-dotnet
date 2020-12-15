@@ -42,7 +42,7 @@ namespace Minio
     internal class StatObjectResponse : GenericResponse
     {
         internal ObjectStat ObjectInfo { get; set; }
-        internal StatObjectResponse(HttpStatusCode statusCode, string responseContent, IList<Parameter> responseHeaders, StatObjectArgs args)
+        internal StatObjectResponse(HttpStatusCode statusCode, string responseContent, Dictionary<string, string> responseHeaders, StatObjectArgs args)
                     : base(statusCode, responseContent)
         {
             // StatObjectResponse object is populated with available stats from the response.

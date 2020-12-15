@@ -69,7 +69,7 @@ namespace Minio
             {
                 CreateBucketConfiguration config = new CreateBucketConfiguration(this.Location);
                 string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
-                request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+                request.AddParameter("text/xml", body, ParameterType.RequestBody);
             }
             if (this.ObjectLock)
             {
@@ -233,7 +233,7 @@ namespace Minio
                 this.BucketNotificationConfiguration = new BucketNotification(); // Empty configuration.
             }
             string body = utils.MarshalXML(this.BucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
-            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+            request.AddParameter("text/xml", body, ParameterType.RequestBody);
             return request;
         }
         public SetBucketNotificationsArgs WithBucketNotificationConfiguration(BucketNotification config)
@@ -254,7 +254,7 @@ namespace Minio
             request.AddQueryParameter("notification","");
             BucketNotification bucketNotificationConfiguration = new BucketNotification();
             string body = utils.MarshalXML(bucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
-            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+            request.AddParameter("text/xml", body, ParameterType.RequestBody);
 
             return request;
         }

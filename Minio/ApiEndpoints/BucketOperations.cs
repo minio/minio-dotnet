@@ -352,7 +352,6 @@ namespace Minio
                 {
                     bool isRunning = true;
 
-                    int i = 0;
                     using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
                     {
                         while (isRunning)
@@ -421,6 +420,7 @@ namespace Minio
         /// <param name="recursive">Set to true to recursively list all objects</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>An observable of items that client can subscribe to</returns>
+        [Obsolete("Use ListObjectsAsync method with ListObjectsArgs object. Refer ListObjects example code.")]
         public IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = false, CancellationToken cancellationToken = default(CancellationToken))
         {
             ListObjectsArgs args = new ListObjectsArgs()
@@ -458,6 +458,7 @@ namespace Minio
         /// <param name="bucketName">Bucket name.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task that returns the Bucket policy as a json string</returns>
+        [Obsolete("Use GetPolicyAsync method with GetPolicyArgs object. Refer GetBucketPolicy example code.")]
         public async Task<string> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
             GetPolicyArgs args = new GetPolicyArgs()
@@ -473,6 +474,7 @@ namespace Minio
         /// <param name="policyJson">Policy json as string </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task to set a policy</returns>
+        [Obsolete("Use SetPolicyAsync method with SetPolicyArgs object. Refer SetBucketPolicy example code.")]
         public async Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default(CancellationToken))
         {
             SetPolicyArgs args = new SetPolicyArgs()
@@ -487,6 +489,7 @@ namespace Minio
         /// <param name="bucketName">Bucket name</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        [Obsolete("Use GetBucketNotificationsAsync method with GetBucketNotificationsArgs object. Refer GetBucketNotification example code.")]
         public async Task<BucketNotification> GetBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
             GetBucketNotificationsArgs args = new GetBucketNotificationsArgs()

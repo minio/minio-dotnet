@@ -2041,7 +2041,6 @@ namespace Minio.Functional.Tests
             string objectName = prefix + GetRandomName(10);
             var args = new Dictionary<string, string>
             {
-                { "bucketName", bucketName },
                 { "objectName", objectName },
                 { "prefix", prefix },
                 { "recursive", "false" },
@@ -2055,7 +2054,7 @@ namespace Minio.Functional.Tests
                 }
                 await Task.WhenAll(tasks);
 
-                ListObjects_Test(minio, bucketName, prefix, 2, false).Wait();
+                ListObjects_Test(minio, bucketName, prefix, 2, false);
                 System.Threading.Thread.Sleep(2000);
 
                 await minio.RemoveObjectAsync(bucketName, objectName + "0");
@@ -2084,7 +2083,8 @@ namespace Minio.Functional.Tests
             {
                 await Setup_Test(minio, bucketName);
 
-                ListObjects_Test(minio, bucketName, null, 0).Wait(1000);
+                ListObjects_Test(minio, bucketName, null, 0);
+                System.Threading.Thread.Sleep(2000);
                 await TearDown(minio, bucketName);
                 new MintLogger("ListObjects_Test2", listObjectsSignature, "Tests whether ListObjects passes when bucket is empty", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
@@ -2117,7 +2117,7 @@ namespace Minio.Functional.Tests
                 }
                 await Task.WhenAll(tasks);
 
-                ListObjects_Test(minio, bucketName, prefix, 2, true).Wait();
+                ListObjects_Test(minio, bucketName, prefix, 2, true);
                 System.Threading.Thread.Sleep(2000);
                 await minio.RemoveObjectAsync(bucketName, objectName + "0");
                 await minio.RemoveObjectAsync(bucketName, objectName + "1");
@@ -2153,7 +2153,7 @@ namespace Minio.Functional.Tests
                 }
                 await Task.WhenAll(tasks);
 
-                ListObjects_Test(minio, bucketName, "", 2, false).Wait();
+                ListObjects_Test(minio, bucketName, "", 2, false);
                 System.Threading.Thread.Sleep(2000);
 
                 await minio.RemoveObjectAsync(bucketName, objectName + "0");
@@ -2195,7 +2195,7 @@ namespace Minio.Functional.Tests
                 }
                 await Task.WhenAll(tasks);
 
-                ListObjects_Test(minio, bucketName, objectNamePrefix, numObjects, false).Wait();
+                ListObjects_Test(minio, bucketName, objectNamePrefix, numObjects, false);
                 System.Threading.Thread.Sleep(5000);
                 for(int index=1; index <= numObjects; index++)
                 {
@@ -2242,7 +2242,7 @@ namespace Minio.Functional.Tests
                 }
                 await Task.WhenAll(tasks);
 
-                ListObjects_Test(minio, bucketName, prefix, 2, false, true).Wait();
+                ListObjects_Test(minio, bucketName, prefix, 2, false, true);
                 System.Threading.Thread.Sleep(2000);
 
                 await minio.RemoveObjectAsync(bucketName, objectName + "0");
@@ -2258,7 +2258,7 @@ namespace Minio.Functional.Tests
             }
         }
 
-        internal async static Task ListObjects_Test(MinioClient minio, string bucketName, string prefix, int numObjects, bool recursive = true, bool versions = false)
+        internal static void ListObjects_Test(MinioClient minio, string bucketName, string prefix, int numObjects, bool recursive = true, bool versions = false)
         {
             DateTime startTime = DateTime.Now;
             int count = 0;
@@ -2358,7 +2358,7 @@ namespace Minio.Functional.Tests
                 }
                 Task.WhenAll(tasks).Wait();
                 System.Threading.Thread.Sleep(1000);
-                IObservable<DeleteError> observable = await minio.RemoveObjectAsync(bucketName, objectsList);
+                IObservable<DeleteError> observable = minio.RemoveObjectAsync(bucketName, objectsList);
                 IDisposable subscription = observable.Subscribe(
                    deleteError => de = deleteError,
                    () =>
@@ -2369,7 +2369,7 @@ namespace Minio.Functional.Tests
             }
             catch (MinioException ex)
             {
-                IObservable<DeleteError> observable = await minio.RemoveObjectAsync(bucketName, objectsList);
+                IObservable<DeleteError> observable = minio.RemoveObjectAsync(bucketName, objectsList);
                 IDisposable subscription = observable.Subscribe(
                    deleteError => de = deleteError,
                    () => TearDown(minio, bucketName).Wait()

@@ -45,7 +45,12 @@ namespace Minio
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
             IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-            StatObjectResponse statResponse = new StatObjectResponse(response.StatusCode, response.Content, response.Headers, args);
+            Dictionary<string, string> responseHeaders = new Dictionary<string, string>();
+            foreach (var param in response.Headers.ToList())
+            {
+                responseHeaders.Add(param.Name.ToString(), param.Value.ToString());
+            }
+            StatObjectResponse statResponse = new StatObjectResponse(response.StatusCode, response.Content, responseHeaders, args);
             return statResponse.ObjectInfo;
         }
 
@@ -198,8 +203,9 @@ namespace Minio
         }
 
 
+        /// <summary>
         /// Presigned get url - returns a presigned url to access an object's data without credentials.URL can have a maximum expiry of
-        /// upto 7 days or a minimum of 1 second.Additionally, you can override a set of response headers using reqParams.
+        /// up to 7 days or a minimum of 1 second.Additionally, you can override a set of response headers using reqParams.
         /// </summary>
         /// <param name="args">PresignedGetObjectArgs Arguments object encapsulating bucket and object names, expiry time, response headers, request date</param>
         /// <returns></returns>
@@ -417,30 +423,16 @@ namespace Minio
         [Obsolete("Use SelectObjectContentAsync method with SelectObjectContentsArgs object. Refer SelectObjectContent example code.")]
         public async Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts,CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.ValidateBucketName(bucketName);
-            utils.ValidateObjectName(objectName);
-            if (opts == null)
-            {
-                throw new ArgumentException("Options cannot be null", nameof(opts));
-            }
-            Dictionary<string,string> sseHeaders = null;
-            if (opts.SSE != null)
-            {
-                sseHeaders = new Dictionary<string,string>();
-                opts.SSE.Marshal(sseHeaders);
-            }
-            var selectReqBytes = System.Text.Encoding.UTF8.GetBytes(opts.MarshalXML());
-
-            var request = await this.CreateRequest(Method.POST, bucketName,
-                                                    objectName: objectName,
-                                                    headerMap: sseHeaders)
-                                    .ConfigureAwait(false);
-            request.AddQueryParameter("select","");
-            request.AddQueryParameter("select-type","2");
-            request.AddParameter("application/xml", selectReqBytes, ParameterType.RequestBody);
-
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-            return new SelectResponseStream(new MemoryStream(response.RawBytes));
+            SelectObjectContentArgs args = new SelectObjectContentArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName)
+                                                        .WithExpressionType(opts.ExpressionType)
+                                                        .WithInputSerialization(opts.InputSerialization)
+                                                        .WithOutputSerialization(opts.OutputSerialization)
+                                                        .WithQueryExpression(opts.Expression)
+                                                        .WithServerSideEncryption(opts.SSE)
+                                                        .WithRequestProgress(opts.RequestProgress);
+            return await this.SelectObjectContentAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -753,14 +745,11 @@ namespace Minio
 
             var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
-            string etag = null;
-            foreach (Parameter parameter in response.Headers)
-            {
-                if (parameter.Name.Equals("ETag", StringComparison.OrdinalIgnoreCase))
-                {
-                    etag = parameter.Value.ToString();
-                }
-            }
+            string etag = response.Headers
+                                    .Where(param => (param.Name.ToLower().Equals("etag")))
+                                    .Select(param => param.Value.ToString())
+                                    .FirstOrDefault()
+                                    .ToString();
             return etag;
         }
 
@@ -793,36 +782,13 @@ namespace Minio
         /// <param name="objectName">Key to remove incomplete uploads from</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        [Obsolete("Use RemoveIncompleteUploadAsync method with RemoveIncompleteUploadArgs object. Refer RemoveIncompleteUpload example code.")]
         public async Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
+            RemoveIncompleteUploadArgs args = new RemoveIncompleteUploadArgs()
                                                                 .WithBucket(bucketName)
-                                                                .WithPrefix(objectName);
-            IObservable<Upload> observable = this.ListIncompleteUploads(listArgs, cancellationToken: cancellationToken);
-
-            IDisposable subscription = observable.Subscribe(
-                async upload =>
-                {
-                    try
-                    {
-                        if (objectName == upload.Key)
-                        {
-                            await this.RemoveUploadAsync(bucketName, objectName, upload.UploadId, cancellationToken).ConfigureAwait(false);
-                        }
-                    }
-                    catch(Exception ex)
-                    {
-                        if (ex.GetType() != typeof(BucketNotFoundException)) // Ignoring bucket not found as upload is deleted as desired
-                        {
-                            throw ex;
-                        }
-                    }
-                },
-                ex => 
-                {
-                    throw ex;
-                }
-                );
+                                                                .WithObject(objectName);
+            await this.RemoveIncompleteUploadAsync(args);
         }
 
         /// <summary>
@@ -904,7 +870,7 @@ namespace Minio
         /// <param name="objectNames">List of object keys to remove.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public async Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectNames, CancellationToken cancellationToken = default(CancellationToken))
+        public IObservable<DeleteError> RemoveObjectAsync(string bucketName, IEnumerable<string> objectNames, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (objectNames == null)
             {
@@ -1117,7 +1083,7 @@ namespace Minio
         /// <param name="destObjectName">Object name to be created, if not provided uses source object name as destination object name.</param>
         /// <param name="copyConditions">optionally can take a key value CopyConditions as well for conditionally attempting copyObject.</param>
         /// <param name="customHeaders">optional custom header to specify byte range</param>
-        /// <param name="resource">Optional string to specify upload id and part number </param>
+        /// <param name="queryMap">optional query parameters like upload id, part number etc for copy operations</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <param name="type">Type of XML serialization to be applied on the server response</param>
         /// <returns></returns>
@@ -1271,6 +1237,7 @@ namespace Minio
         /// <param name="reqParams">optional override response headers</param>
         /// <param name="reqDate">optional request date and time in UTC</param>
         /// <returns></returns>
+        [Obsolete("Use PresignedGetObjectAsync method with PresignedGetObjectArgs object.")]
         public async Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null)
         {
             PresignedGetObjectArgs args = new PresignedGetObjectArgs()
