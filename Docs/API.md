@@ -33,6 +33,9 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 | [`listenBucketNotifications`](#listenBucketNotifications)  | [`selectObjectContent`](#selectObjectContent) |   |   |
 | [`setVersioning`](#setVersioning)  | [`setLegalHold`](#setLegalHold)  |   |   |
 | [`getVersioning`](#getVersioning)  | [`getLegalHold`](#getLegalHold)  |   |   |
+| [`setBucketEncryption`](#setBucketEncryption)  |   |   |   |
+| [`getBucketEncryption`](#getBucketEncryption)  |   |   |   |
+| [`removeBucketEncryption`](#removeBucketEncryption)  |   |   |   |
 
 ## 1. Constructors
 
@@ -630,6 +633,147 @@ try
 catch (MinioException e)
 {
     Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
+
+<a name="setBucketEncryption"></a>
+### SetBucketEncryptionAsync(SetBucketEncryptionArgs args)
+
+`Task SetBucketEncryptionAsync(SetBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken));`
+
+Sets the Bucket Encryption Configuration of a bucket.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _SetBucketEncryptionArgs_  | SetBucketEncryptionArgs Argument Object with bucket, encryption configuration  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task``  | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found   |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Set Encryption Configuration for the bucket
+    SetBucketEncryptionArgs args = new SetBucketEncryptionArgs()
+                                        .WithBucket(bucketName)
+                                        .WithEncryptionConfig(config);
+    await minio.SetBucketEncryptionAsync(args);
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+<a name="getBucketEncryption"></a>
+### GetBucketEncryptionAsync(GetBucketEncryptionArgs args)
+
+`Task<ServerSideEncryptionConfiguration> GetBucketEncryptionAsync(GetBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Gets the Bucket Encryption configuration of the bucket.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _GetBucketEncryptionArgs_  | GetBucketEncryptionArgs Argument Object with bucket name  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task<ServerSideEncryptionConfiguration>``: ServerSideEncryptionConfiguration object which contains the bucket encryption configuration. | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found  |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Get Bucket Encryption Configuration for the bucket
+    var args = new GetBucketEncryptionArgs()
+                        .WithBucket(bucketName);
+    ServerSideEncryptionConfiguration config = await minio.GetBucketEncryptionAsync(args);
+    Console.WriteLine($"Got encryption configuration for bucket {bucketName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
+<a name="removeBucketEncryption"></a>
+### RemoveBucketEncryptionAsync(RemoveBucketEncryptionArgs args)
+
+`Task RemoveBucketEncryptionAsync(RemoveBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Remove the Bucket Encryption configuration of an object.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _RemoveBucketEncryptionArgs_  | RemoveBucketEncryptionArgs Argument Object with bucket name  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task``  | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found  |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Remove Bucket Encryption Configuration for the bucket
+    var args = new RemoveBucketEncryptionArgs()
+                                .WithBucket(bucketName);
+    bool enabled = await minio.RemoveBucketEncryptionAsync(args);
+    Console.WriteLine($"Removed encryption configuration for bucket {bucketName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
 }
 ```
 
