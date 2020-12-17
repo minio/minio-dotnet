@@ -24,6 +24,7 @@ using System.Xml;
 using Minio.DataModel;
 using Minio.Exceptions;
 using Minio.Helper;
+using System.Security.Cryptography;
 
 namespace Minio
 {
@@ -413,7 +414,6 @@ namespace Minio
         }
         public override RestRequest BuildRequest(RestRequest request)
         {
-            request = base.BuildRequest(request);
             request.AddQueryParameter("legal-hold", "");
             if( !string.IsNullOrEmpty(this.VersionId) )
             {

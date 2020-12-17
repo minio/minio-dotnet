@@ -16,13 +16,12 @@
 
 using System;
 using System.Threading.Tasks;
-using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
     class GetLegalHold
     {
-        // Check Legal Hold status a object
+        // Get Legal Hold status a object
         public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name",
                                      string objectName = "my-object-name",
@@ -30,7 +29,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                Console.WriteLine("Running example for API: GetLegalHoldInfo, ");
+                Console.WriteLine("Running example for API: GetLegalHold, ");
                 var args = new GetObjectLegalHoldArgs()
                                         .WithBucket(bucketName)
                                         .WithObject(objectName)
@@ -42,7 +41,7 @@ namespace Minio.Examples.Cases
             }
             catch (Exception e)
             {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
+                Console.WriteLine($"[Object]  Exception: {e}");
             }
         }
     }

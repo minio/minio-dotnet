@@ -34,7 +34,7 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation </param>
         /// <returns> True if Legal Hold is ON, false otherwise  </returns>
         /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
-        /// <exception cref="InvalidObjectNameException">When bucketName is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When objectName is invalid</exception>
         Task<bool> GetObjectLegalHoldAsync(GetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -42,9 +42,9 @@ namespace Minio
         /// </summary>
         /// <param name="args">SetObjectLegalHoldArgs Arguments Object which has object identifier information - bucket name, object name, version ID and the status (ON/OFF) of legal-hold</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation </param>
-        /// <returns> True if Legal Hold is ON, false otherwise  </returns>
+        /// <returns> Task </returns>
         /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
-        /// <exception cref="InvalidObjectNameException">When bucketName is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When objectName is invalid</exception>
         Task SetObjectLegalHoldAsync(SetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Minio
         /// </summary>
         /// <param name="args">GetObjectLegalHoldArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <returns> Task </returns>
+        /// <returns> ObjectRetentionConfiguration object which contains the Retention configuration </returns>
         /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
         /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
         Task<ObjectRetentionConfiguration> GetObjectRetentionAsync(GetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken));
@@ -70,7 +70,7 @@ namespace Minio
         /// <summary>
         /// Clears the Retention configuration
         /// </summary>
-        /// <param name="args">SetObjectLegalHoldArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
+        /// <param name="args">ClearObjectRetentionArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns> Task </returns>
         /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>

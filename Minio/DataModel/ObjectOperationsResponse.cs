@@ -98,26 +98,23 @@ namespace Minio
         public GetLegalHoldResponse(HttpStatusCode statusCode, string responseContent)
             : base(statusCode, responseContent)
         {
-            if ( string.IsNullOrEmpty(responseContent) )
+            if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
             {
                 this.CurrentLegalHoldConfiguration = null;
                 return;
             }
-            if (HttpStatusCode.OK.Equals(statusCode))
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
             {
-                using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
-                {
-                    CurrentLegalHoldConfiguration = (ObjectLegalHoldConfiguration)new XmlSerializer(typeof(ObjectLegalHoldConfiguration)).Deserialize(stream);
-                }
-                if ( this.CurrentLegalHoldConfiguration == null
-                        || string.IsNullOrEmpty(this.CurrentLegalHoldConfiguration.Status) )
-                {
-                    Status = "Off";
-                }
-                else
-                {
-                    Status = this.CurrentLegalHoldConfiguration.Status;
-                }
+                CurrentLegalHoldConfiguration = (ObjectLegalHoldConfiguration)new XmlSerializer(typeof(ObjectLegalHoldConfiguration)).Deserialize(stream);
+            }
+            if ( this.CurrentLegalHoldConfiguration == null
+                    || string.IsNullOrEmpty(this.CurrentLegalHoldConfiguration.Status) )
+            {
+                Status = "OFF";
+            }
+            else
+            {
+                Status = this.CurrentLegalHoldConfiguration.Status;
             }
         }
     }

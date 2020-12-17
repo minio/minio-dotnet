@@ -250,7 +250,7 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation </param>
         /// <returns> True if Legal Hold is ON, false otherwise  </returns>
         /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
-        /// <exception cref="InvalidObjectNameException">When bucketName is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When objectName is invalid</exception>
         public async Task<bool> GetObjectLegalHoldAsync(GetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
