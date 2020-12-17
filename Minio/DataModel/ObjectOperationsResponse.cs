@@ -90,4 +90,32 @@ namespace Minio
             URIPolicyTuple = Tuple.Create(absURI, args.Policy.GetFormData());
         }
     }
+
+    public class GetLegalHoldResponse: GenericResponse
+    {
+        internal ObjectLegalHoldConfiguration CurrentLegalHoldConfiguration { get; private set; }
+        internal string Status { get; private set;}
+        public GetLegalHoldResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
+            {
+                this.CurrentLegalHoldConfiguration = null;
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                CurrentLegalHoldConfiguration = (ObjectLegalHoldConfiguration)new XmlSerializer(typeof(ObjectLegalHoldConfiguration)).Deserialize(stream);
+            }
+            if ( this.CurrentLegalHoldConfiguration == null
+                    || string.IsNullOrEmpty(this.CurrentLegalHoldConfiguration.Status) )
+            {
+                Status = "OFF";
+            }
+            else
+            {
+                Status = this.CurrentLegalHoldConfiguration.Status;
+            }
+        }
+    }
 }
