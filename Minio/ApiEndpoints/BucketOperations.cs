@@ -385,6 +385,50 @@ namespace Minio
 
 
         /// <summary>
+        /// Sets the Encryption Configuration for the mentioned bucket.
+        /// </summary>
+        /// <param name="args">SetBucketEncryptionArgs Arguments Object with information like Bucket name, encryption config</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        public async Task SetBucketEncryptionAsync(SetBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// Returns the Encryption Configuration for the mentioned bucket.
+        /// </summary>
+        /// <param name="args">GetBucketEncryptionArgs Arguments Object encapsulating information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> An object of type ServerSideEncryptionConfiguration </returns>
+        public async Task<ServerSideEncryptionConfiguration> GetBucketEncryptionAsync(GetBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            GetBucketEncryptionResponse getBucketEncryptionResponse = new GetBucketEncryptionResponse(response.StatusCode, response.Content);
+            return getBucketEncryptionResponse.BucketEncryptionConfiguration;
+        }
+
+
+        /// <summary>
+        /// Removes the Encryption Configuration for the mentioned bucket.
+        /// </summary>
+        /// <param name="args">RemoveBucketEncryptionArgs Arguments Object encapsulating information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        public async Task RemoveBucketEncryptionAsync(RemoveBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
         /// Sets the Tagging values for this bucket
         /// </summary>
         /// <param name="args">SetBucketTagsArgs Arguments Object with information like Bucket name, tag key-value pairs</param>
@@ -410,6 +454,8 @@ namespace Minio
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
             await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
+
+
         /// <summary>
         /// Create a private bucket with the given name.
         /// </summary>

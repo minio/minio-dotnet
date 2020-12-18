@@ -18,29 +18,25 @@ using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
-    public class RemoveObjectTags
+    public class RemoveBucketEncryption
     {
-        // Remove Tags set for the object
+        // Remove Encryption Configuration for the bucket
         public async static Task Run(MinioClient minio,
-                                    string bucketName = "my-bucket-name",
-                                    string objectName = "my-object-name",
-                                    string versionId = null)
+                                    string bucketName = "my-bucket-name")
         {
             try
             {
-                Console.WriteLine("Running example for API: RemoveObjectTags");
-                await minio.RemoveObjectTagsAsync(
-                    new RemoveObjectTagsArgs()
+                Console.WriteLine("Running example for API: RemoveBucketEncryptionAsync");
+                await minio.RemoveBucketEncryptionAsync(
+                    new RemoveBucketEncryptionArgs()
                         .WithBucket(bucketName)
-                        .WithObject(objectName)
-                        .WithVersionId(versionId)
                 );
-                Console.WriteLine($"Tags removed for object {bucketName}/{objectName}.");
+                Console.WriteLine($"Removed encryption configuration for bucket {bucketName}.");
                 Console.WriteLine();
             }
             catch (Exception e)
             {
-                Console.WriteLine($"[Object]  Exception: {e}");
+                Console.WriteLine($"[Bucket]  Exception: {e}");
             }
         }
     }

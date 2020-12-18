@@ -21,6 +21,7 @@ using Minio.DataModel;
 using Minio.Exceptions;
 using Minio.Helper;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace Minio
 {
@@ -402,6 +403,58 @@ namespace Minio
         }
     }
 
+
+    public class GetObjectLegalHoldArgs : ObjectVersionArgs<GetObjectLegalHoldArgs>
+    {
+        public GetObjectLegalHoldArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("legal-hold", "");
+            if( !string.IsNullOrEmpty(this.VersionId) )
+            {
+                request.AddQueryParameter("versionId", this.VersionId);
+            }
+            return request;
+        }
+    }
+
+    public class SetObjectLegalHoldArgs : ObjectVersionArgs<SetObjectLegalHoldArgs>
+    {
+        internal bool LegalHoldON { get; private set; }
+
+        public SetObjectLegalHoldArgs()
+        {
+            this.RequestMethod = Method.PUT;
+            this.LegalHoldON = false;
+        }
+
+        public SetObjectLegalHoldArgs WithLegalHold(bool status)
+        {
+            this.LegalHoldON = status;
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("legal-hold", "");
+            if( !string.IsNullOrEmpty(this.VersionId) )
+            {
+                request.AddQueryParameter("versionId", this.VersionId);
+            }
+            ObjectLegalHoldConfiguration config = new ObjectLegalHoldConfiguration(this.LegalHoldON);
+            string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+            var md5 = MD5.Create();
+            byte[] hash = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(body));
+            string base64 = Convert.ToBase64String(hash);
+            request.AddOrUpdateParameter("Content-MD5", base64, ParameterType.HttpHeader);
+            return request;
+        }
+    }
+
     public class SetObjectTagsArgs : ObjectVersionArgs<SetObjectTagsArgs>
     {
         internal Dictionary<string, string> TagKeyValuePairs { get; set; }
@@ -440,6 +493,7 @@ namespace Minio
             }
         }
     }
+
     public class GetObjectTagsArgs : ObjectVersionArgs<GetObjectTagsArgs>
     {
         public GetObjectTagsArgs()

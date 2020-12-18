@@ -13,30 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
 using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
-    public class RemoveObjectTags
+    class GetLegalHold
     {
-        // Remove Tags set for the object
+        // Get Legal Hold status a object
         public async static Task Run(MinioClient minio,
-                                    string bucketName = "my-bucket-name",
-                                    string objectName = "my-object-name",
-                                    string versionId = null)
+                                     string bucketName = "my-bucket-name",
+                                     string objectName = "my-object-name",
+                                     string versionId = null)
         {
             try
             {
-                Console.WriteLine("Running example for API: RemoveObjectTags");
-                await minio.RemoveObjectTagsAsync(
-                    new RemoveObjectTagsArgs()
-                        .WithBucket(bucketName)
-                        .WithObject(objectName)
-                        .WithVersionId(versionId)
-                );
-                Console.WriteLine($"Tags removed for object {bucketName}/{objectName}.");
-                Console.WriteLine();
+                Console.WriteLine("Running example for API: GetLegalHold, ");
+                var args = new GetObjectLegalHoldArgs()
+                                        .WithBucket(bucketName)
+                                        .WithObject(objectName)
+                                        .WithVersionId(versionId);
+                bool enabled = await minio.GetObjectLegalHoldAsync(args);
+                Console.WriteLine("LegalHold Configuration STATUS for " + bucketName + "/" + objectName +
+                                        (!string.IsNullOrEmpty(versionId)?" with Version ID " + versionId: " ") +
+                                        " : " + (enabled?"ON":"OFF"));
             }
             catch (Exception e)
             {

@@ -345,6 +345,74 @@ namespace Minio
         }
     }
 
+
+    public class SetBucketEncryptionArgs : BucketArgs<SetBucketEncryptionArgs>
+    {
+        internal ServerSideEncryptionConfiguration EncryptionConfig { get; set; }
+
+        public SetBucketEncryptionArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        public SetBucketEncryptionArgs WithEncryptionConfig(ServerSideEncryptionConfiguration config)
+        {
+            this.EncryptionConfig = config;
+            return this;
+        }
+
+        public SetBucketEncryptionArgs WithAESConfig()
+        {
+            this.EncryptionConfig = ServerSideEncryptionConfiguration.GetSSEConfigurationWithS3Rule();
+            return this;
+        }
+
+        public SetBucketEncryptionArgs WithKMSConfig(string keyId = null)
+        {
+            this.EncryptionConfig = ServerSideEncryptionConfiguration.GetSSEConfigurationWithKMSRule(keyId);
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            if (this.EncryptionConfig == null)
+            {
+                this.EncryptionConfig = ServerSideEncryptionConfiguration.GetSSEConfigurationWithS3Rule();
+            }
+            request.AddQueryParameter("encryption","");
+            string body = utils.MarshalXML(this.EncryptionConfig, "http://s3.amazonaws.com/doc/2006-03-01/");
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+
+            return request;
+        }
+    }
+
+    public class GetBucketEncryptionArgs : BucketArgs<GetBucketEncryptionArgs>
+    {
+        public GetBucketEncryptionArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("encryption","");
+            return request;
+        }
+    }
+
+    public class RemoveBucketEncryptionArgs : BucketArgs<RemoveBucketEncryptionArgs>
+    {
+        public RemoveBucketEncryptionArgs()
+        {
+            this.RequestMethod = Method.DELETE;
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("encryption","");
+            return request;
+        }
+    }
+
     public class SetBucketTagsArgs : BucketArgs<SetBucketTagsArgs>
     {
         internal Dictionary<string, string> TagKeyValuePairs { get; set; }
