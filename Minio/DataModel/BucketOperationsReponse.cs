@@ -270,6 +270,25 @@ namespace Minio
         }
     }
 
+    internal class GetBucketEncryptionResponse : GenericResponse
+    {
+        internal ServerSideEncryptionConfiguration BucketEncryptionConfiguration { get; set; }
+
+        internal GetBucketEncryptionResponse(HttpStatusCode statusCode, string responseContent)
+                    : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
+            {
+                this.BucketEncryptionConfiguration = null;
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                BucketEncryptionConfiguration = (ServerSideEncryptionConfiguration)new XmlSerializer(typeof(ServerSideEncryptionConfiguration)).Deserialize(stream);
+            }
+        }
+    }
+
     internal class GetObjectLockConfigurationResponse : GenericResponse
     {
         internal ObjectLockConfiguration LockConfiguration { get; set; }

@@ -637,6 +637,12 @@ namespace Minio
             var stream = new MemoryStream(contentBytes);
             ErrorResponse errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream);
 
+            if (response.StatusCode.Equals(HttpStatusCode.Forbidden)
+                && (errResponse.Code.Equals("SignatureDoesNotMatch") || errResponse.Code.Equals("InvalidAccessKeyId")))
+            {
+                throw new AuthorizationException(errResponse.Resource, errResponse.BucketName, errResponse.Message);
+            }
+
             // Handle XML response for Bucket Policy not found case
             if (response.StatusCode.Equals(HttpStatusCode.NotFound)
                 && response.Request.Resource.EndsWith("?policy")
@@ -647,6 +653,12 @@ namespace Minio
                 {
                     XmlError = response.Content
                 };
+            }
+
+            if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
+                && errResponse.Code.Equals("MalformedXML"))
+            {
+                throw new MalFormedXMLException(errResponse.Resource, errResponse.BucketName, errResponse.Message, errResponse.Key);
             }
 
             if (response.StatusCode.Equals(HttpStatusCode.NotFound)
