@@ -56,6 +56,36 @@ namespace Minio
 
 
         /// <summary>
+        /// Get an object. The object will be streamed to the callback given by the user.
+        /// </summary>
+        /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name, server-side encryption object, action stream, length, offset</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        public async Task GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            // First we call StatObject to verify the existence of the object.
+            // NOTE: This avoids writing the error body to the action stream passed (Do not remove).
+            StatObjectArgs statArgs = new StatObjectArgs()
+                                            .WithBucket(args.BucketName)
+                                            .WithObject(args.ObjectName)
+                                            .WithVersionId(args.VersionId)
+                                            .WithMatchETag(args.MatchETag)
+                                            .WithNotMatchETag(args.NotMatchETag)
+                                            .WithModifiedSince(args.ModifiedSince)
+                                            .WithUnModifiedSince(args.UnModifiedSince)
+                                            .WithServerSideEncryption(args.SSE);
+            ObjectStat objStat = await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (args.FileName != null)
+            {
+                await this.getObjectFileAsync(args, objStat, cancellationToken);
+            }
+            else
+            {
+                await this.getObjectStreamAsync(args, objStat, args.CallBack, cancellationToken);
+            }
+        }
+
+
+        /// <summary>
         /// Select an object's content. The object will be streamed to the callback given by the user.
         /// </summary>
         /// <param name="args">SelectObjectContentArgs Arguments Object which encapsulates bucket name, object name, Select Object Options</param>
@@ -249,6 +279,39 @@ namespace Minio
             return this.authenticator.PresignURL(this.restClient, request, args.Expiry, Region, this.SessionToken);
         }
 
+        /// <summary>
+        /// Get the configuration object for Legal Hold Status 
+        /// </summary>
+        /// <param name="args">GetObjectLegalHoldArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation </param>
+        /// <returns> True if Legal Hold is ON, false otherwise  </returns>
+        /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When objectName is invalid</exception>
+        public async Task<bool> GetObjectLegalHoldAsync(GetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            var request = await this.CreateRequest(args).ConfigureAwait(false);
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var legalHoldConfig = new GetLegalHoldResponse(response.StatusCode, response.Content);
+            return (legalHoldConfig.CurrentLegalHoldConfiguration == null)?false: legalHoldConfig.CurrentLegalHoldConfiguration.Status.ToLower().Equals("on");
+        }
+
+
+        /// <summary>
+        /// Set the Legal Hold Status using the related configuration
+        /// </summary>
+        /// <param name="args">SetObjectLegalHoldArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        public async Task SetObjectLegalHoldAsync(SetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            var request = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
 
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
@@ -282,6 +345,7 @@ namespace Minio
 
             var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
+
 
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
@@ -412,6 +476,7 @@ namespace Minio
                 utils.MoveWithReplace(tempFileName, fileName);
             }, sse, cancellationToken).ConfigureAwait(false);
         }
+
 
         /// <summary>
         /// Select an object's content. The object will be streamed to the callback given by the user.

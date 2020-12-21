@@ -1,5 +1,5 @@
-﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2020 MinIO, Inc.
+/*
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,28 +19,29 @@ using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
-    class GetObject
+    class GetLegalHold
     {
-        // Get object in a bucket
+        // Get Legal Hold status a object
         public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name",
                                      string objectName = "my-object-name",
-                                     string fileName = "my-file-name")
+                                     string versionId = null)
         {
             try
             {
-                Console.WriteLine("Running example for API: GetObjectAsync");
-                GetObjectArgs args = new GetObjectArgs()
-                                                .WithBucket(bucketName)
-                                                .WithObject(objectName)
-                                                .WithFile(fileName);
-                await minio.GetObjectAsync(args);
-                Console.WriteLine($"Downloaded the file {fileName} in bucket {bucketName}");
-                Console.WriteLine();
+                Console.WriteLine("Running example for API: GetLegalHold, ");
+                var args = new GetObjectLegalHoldArgs()
+                                        .WithBucket(bucketName)
+                                        .WithObject(objectName)
+                                        .WithVersionId(versionId);
+                bool enabled = await minio.GetObjectLegalHoldAsync(args);
+                Console.WriteLine("LegalHold Configuration STATUS for " + bucketName + "/" + objectName +
+                                        (!string.IsNullOrEmpty(versionId)?" with Version ID " + versionId: " ") +
+                                        " : " + (enabled?"ON":"OFF"));
             }
             catch (Exception e)
             {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
+                Console.WriteLine($"[Object]  Exception: {e}");
             }
         }
     }

@@ -167,6 +167,7 @@ namespace Minio
         /// <param name="bucketName">Bucket Name</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>BucketNotification object populated with the notification subresource</returns>
+        [Obsolete("Use GetBucketNotificationsAsync method with GetBucketNotificationsArgs object. Refer GetBucketNotification example code.")]
         Task<BucketNotification> GetBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -176,6 +177,7 @@ namespace Minio
         /// <param name="notification">BucketNotification object</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        [Obsolete("Use SetBucketNotificationsAsync method with SetBucketNotificationsArgs object. Refer SetBucketNotification example code.")]
         Task SetBucketNotificationsAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -184,6 +186,7 @@ namespace Minio
         /// <param name="bucketName">bucketName</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        [Obsolete("Use RemoveAllBucketNotificationsAsync method with RemoveAllBucketNotificationsArgs object. Refer RemoveAllBucketNotification example code.")]
         Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -214,5 +217,29 @@ namespace Minio
         /// <returns> Task </returns>
         /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
         Task  SetVersioningAsync(SetVersioningArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Sets the Encryption Configuration for the bucket.
+        /// </summary>
+        /// <param name="args">SetBucketEncryptionArgs Arguments Object with information like Bucket name, encryption config</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        Task SetBucketEncryptionAsync(SetBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Returns the Encryption Configuration for the bucket.
+        /// </summary>
+        /// <param name="args">GetBucketEncryptionArgs Arguments Object encapsulating information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> An object of type ServerSideEncryptionConfiguration  </returns>
+        Task<ServerSideEncryptionConfiguration> GetBucketEncryptionAsync(GetBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Removes the Encryption Configuration for the bucket.
+        /// </summary>
+        /// <param name="args">RemoveBucketEncryptionArgs Arguments Object encapsulating information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        Task RemoveBucketEncryptionAsync(RemoveBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

@@ -1,5 +1,5 @@
-﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2020 MinIO, Inc.
+/*
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,29 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 using System;
 using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
-    class GetObject
+    public class SetBucketEncryption
     {
-        // Get object in a bucket
+        // Put Encryption Configuration for the bucket
         public async static Task Run(MinioClient minio,
-                                     string bucketName = "my-bucket-name",
-                                     string objectName = "my-object-name",
-                                     string fileName = "my-file-name")
+                                    string bucketName = "my-bucket-name",
+                                    ServerSideEncryptionConfiguration config = null)
         {
             try
             {
-                Console.WriteLine("Running example for API: GetObjectAsync");
-                GetObjectArgs args = new GetObjectArgs()
-                                                .WithBucket(bucketName)
-                                                .WithObject(objectName)
-                                                .WithFile(fileName);
-                await minio.GetObjectAsync(args);
-                Console.WriteLine($"Downloaded the file {fileName} in bucket {bucketName}");
+                Console.WriteLine("Running example for API: SetBucketEncryptionAsync");
+                await minio.SetBucketEncryptionAsync(
+                    new SetBucketEncryptionArgs()
+                        .WithBucket(bucketName)
+                        .WithEncryptionConfig(config)
+                );
+                Console.WriteLine($"Assigned encryption configuration to bucket {bucketName}");
                 Console.WriteLine();
             }
             catch (Exception e)
