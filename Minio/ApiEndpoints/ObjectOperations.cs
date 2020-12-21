@@ -52,6 +52,36 @@ namespace Minio
 
 
         /// <summary>
+        /// Get an object. The object will be streamed to the callback given by the user.
+        /// </summary>
+        /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name, server-side encryption object, action stream, length, offset</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        public async Task GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            // First we call StatObject to verify the existence of the object.
+            // NOTE: This avoids writing the error body to the action stream passed (Do not remove).
+            StatObjectArgs statArgs = new StatObjectArgs()
+                                            .WithBucket(args.BucketName)
+                                            .WithObject(args.ObjectName)
+                                            .WithVersionId(args.VersionId)
+                                            .WithMatchETag(args.MatchETag)
+                                            .WithNotMatchETag(args.NotMatchETag)
+                                            .WithModifiedSince(args.ModifiedSince)
+                                            .WithUnModifiedSince(args.UnModifiedSince)
+                                            .WithServerSideEncryption(args.SSE);
+            ObjectStat objStat = await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (args.FileName != null)
+            {
+                await this.getObjectFileAsync(args, objStat, cancellationToken);
+            }
+            else
+            {
+                await this.getObjectStreamAsync(args, objStat, args.CallBack, cancellationToken);
+            }
+        }
+
+
+        /// <summary>
         /// Select an object's content. The object will be streamed to the callback given by the user.
         /// </summary>
         /// <param name="args">SelectObjectContentArgs Arguments Object which encapsulates bucket name, object name, Select Object Options</param>
@@ -355,6 +385,7 @@ namespace Minio
             var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
+
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
@@ -484,6 +515,7 @@ namespace Minio
                 utils.MoveWithReplace(tempFileName, fileName);
             }, sse, cancellationToken).ConfigureAwait(false);
         }
+
 
         /// <summary>
         /// Select an object's content. The object will be streamed to the callback given by the user.

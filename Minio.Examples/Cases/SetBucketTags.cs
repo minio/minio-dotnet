@@ -21,7 +21,7 @@ namespace Minio.Examples.Cases
 {
     public class SetBucketTags
     {
-        // Put Encryption Configuration for the bucket
+        // Set Tags to the bucket
         public async static Task Run(MinioClient minio,
                                     string bucketName = "my-bucket-name",
                                     Dictionary<string, string> tags = null)

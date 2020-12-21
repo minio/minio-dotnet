@@ -1,5 +1,5 @@
-﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2020 MinIO, Inc.
+/*
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,23 +19,30 @@ using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
-    class GetObject
+    class GetObjectVersion
     {
         // Get object in a bucket
         public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name",
                                      string objectName = "my-object-name",
+                                     string versionId = "my-version-id",
                                      string fileName = "my-file-name")
         {
             try
             {
-                Console.WriteLine("Running example for API: GetObjectAsync");
+                if (string.IsNullOrEmpty(versionId))
+                {
+                    Console.WriteLine("Version ID is empty or not assigned");
+                    return;
+                }
+                Console.WriteLine("Running example for API: GetObjectAsync with Version ID");
                 GetObjectArgs args = new GetObjectArgs()
                                                 .WithBucket(bucketName)
                                                 .WithObject(objectName)
+                                                .WithVersionId(versionId)
                                                 .WithFile(fileName);
                 await minio.GetObjectAsync(args);
-                Console.WriteLine($"Downloaded the file {fileName} in bucket {bucketName}");
+                Console.WriteLine($"Downloaded the file {fileName} for object {objectName} with version {versionId} in bucket {bucketName}");
                 Console.WriteLine();
             }
             catch (Exception e)

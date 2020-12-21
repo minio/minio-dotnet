@@ -820,6 +820,7 @@ try
                                                 .WithBucket(bucketName)
                                                 .WithTagKeyValuePairs(tags);
     await minio.SetBucketTagsAsync(args);
+    Console.WriteLine($"Set Tags for bucket {bucketName}.");
 }
 catch(MinioException e)
 {
@@ -1366,11 +1367,11 @@ catch (MinioException e)
 ## 3. Object operations
 
 <a name="getObject"></a>
-### GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, ServerSideEncryption sse)
+### GetObjectAsync(GetObjectArgs args, ServerSideEncryption sse)
 
-`Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
+`Task GetObjectAsync(GetObjectArgs args, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
 
-Downloads an object as a stream.
+Downloads an object.
 
 
 __Parameters__
@@ -1378,10 +1379,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_ | Name of the bucket  |
-| ``objectName``  | _string_  | Object name in the bucket |
-| ``callback``    | _Action<Stream>_ | Call back to process stream |
-| ``sse``    | _ServerSideEncryption_ | Server-side encryption option | Optional parameter. Defaults to null |
+| ``args``  | _GetObjectArgs_ | GetObjectArgs Argument Object encapsulating bucket, object names, version Id, ServerSideEncryption object, offset, length |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
@@ -1393,10 +1391,11 @@ __Parameters__
 |        | ``InternalClientException`` : upon internal library error.        |
 
 
-__Example__
+__Examples__
 
 
 ```cs
+//1. With Bucket & Object names.
 try
 {
    // Check whether the object exists using statObject().
@@ -1409,54 +1408,22 @@ try
    await minioClient.StatObjectAsync(statObjectArgs);
 
    // Get input stream to have content of 'my-objectname' from 'my-bucketname'
-   await minioClient.GetObjectAsync("mybucket", "myobject",
-                                    (stream) =>
-                                    {
-                                        stream.CopyTo(Console.OpenStandardOutput());
-                                    });
+   GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                            .WithBucket("mybucket")
+                                            .WithObject("myobject")
+                                            .WithCallbackStream((stream) =>
+                                                                {
+                                                                    stream.CopyTo(Console.OpenStandardOutput());
+                                                                });
+   await minioClient.GetObjectAsync(getObjectArgs);
   }
   catch (MinioException e)
   {
       Console.WriteLine("Error occurred: " + e);
   }
-```
-
-<a name="getObject"></a>
-### GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> callback, ServerSideEncryption sse)
-
-`Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> callback, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
-
-Downloads the specified range bytes of an object as a stream.Both offset and length are required.
-
-
-__Parameters__
-
-
-|Param   | Type	  | Description  |
-|:--- |:--- |:--- |
-| ``bucketName``  | _string_ | Name of the bucket.  |
-| ``objectName``  | _string_  | Object name in the bucket. |
-| ``offset``| _long_ | Offset of the object from where stream will start |
-| ``length``| _long_| Length of the object to read in from the stream |
-| ``callback``    | _Action<Stream>_ | Call back to process stream |
-| ``sse``    | _ServerSideEncryption_ | Server-side encryption option | Optional parameter. Defaults to null |
-| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
-
-
-| Return Type	  | Exceptions	  |
-|:--- |:--- |
-|  ``Task``: Task callback returns an InputStream containing the object data.  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name. |
-|        | ``ConnectionException`` : upon connection error.            |
-|        | ``InternalClientException`` : upon internal library error.        |
-
-
-__Example__
-
-
-```cs
-try
-{
+  // 2. With Offset Length specifying a range of bytes & the object as a stream.
+  try
+  {
    // Check whether the object exists using statObject().
    // If the object is not found, statObject() throws an exception,
    // else it means that the object exists.
@@ -1467,50 +1434,25 @@ try
    await minioClient.StatObjectAsync(statObjectArgs);
 
    // Get input stream to have content of 'my-objectname' from 'my-bucketname'
-   await minioClient.GetObjectAsync("mybucket", "myobject", 1024L, 10L,
-                                    (stream) =>
-                                    {
-                                        stream.CopyTo(Console.OpenStandardOutput());
-                                    });
+   GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                            .WithBucket("mybucket")
+                                            .WithObject("myobject")
+                                            .WithOffset(1024L)
+                                            .WithObjectSize(10L)
+                                            .WithCallbackStream((stream) =>
+                                                                {
+                                                                    stream.CopyTo(Console.OpenStandardOutput());
+                                                                });
+   await minioClient.GetObjectAsync(getObjectArgs);
   }
   catch (MinioException e)
   {
       Console.WriteLine("Error occurred: " + e);
   }
-```
 
-<a name="getObject"></a>
-### GetObjectAsync(String bucketName, String objectName, String fileName, ServerSideEncryption sse)
-
-`Task GetObjectAsync(string bucketName, string objectName, string fileName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
-
-Downloads and saves the object as a file in the local filesystem.
-
-
-__Parameters__
-
-
-|Param   | Type	  | Description  |
-|:--- |:--- |:--- |
-| ``bucketName``  | _String_  | Name of the bucket  |
-| ``objectName``  | _String_  | Object name in the bucket |
-| ``fileName``  | _String_  | File name |
-| ``sse``    | _ServerSideEncryption_ | Server-side encryption option | Optional parameter. Defaults to null |
-| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
-
-
-| Return Type	  | Exceptions	  |
-|:--- |:--- |
-|  ``Task `` | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
-|        | ``ConnectionException`` : upon connection error            |
-|        | ``InternalClientException`` : upon internal library error        |
-
-__Example__
-
-```cs
-try
-{
+  //3. Downloads and saves the object as a file in the local filesystem.
+ try
+ {
    // Check whether the object exists using statObjectAsync().
    // If the object is not found, statObjectAsync() throws an exception,
    // else it means that the object exists.
@@ -1521,14 +1463,20 @@ try
    await minioClient.StatObjectAsync(statObjectArgs);
 
    // Gets the object's data and stores it in photo.jpg
-   await minioClient.GetObjectAsync("mybucket", "myobject", "photo.jpg");
+   GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                            .WithBucket("mybucket")
+                                            .WithObject("myobject")
+                                            .WithFileName("photo.jpg");
+   await minioClient.GetObjectAsync(getObjectArgs);
 
 }
 catch (MinioException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
+
 ```
+
 <a name="putObject"></a>
 ### PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType, ServerSideEncryption sse)
 
