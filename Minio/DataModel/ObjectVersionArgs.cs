@@ -21,7 +21,7 @@ namespace Minio
     public abstract class ObjectVersionArgs<T> : EncryptionArgs<T>
                             where T : ObjectVersionArgs<T>
     {
-        internal string VersionId { get; private set; }
+        internal string VersionId { get; set; }
         public T WithVersionId(string vid)
         {
             this.VersionId = vid;

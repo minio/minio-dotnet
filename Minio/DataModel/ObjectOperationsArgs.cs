@@ -15,6 +15,8 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using RestSharp;
 
 using Minio.DataModel;
@@ -402,6 +404,7 @@ namespace Minio
         }
     }
 
+
     public class GetObjectLegalHoldArgs : ObjectVersionArgs<GetObjectLegalHoldArgs>
     {
         public GetObjectLegalHoldArgs()
@@ -450,6 +453,83 @@ namespace Minio
             string base64 = Convert.ToBase64String(hash);
             request.AddOrUpdateParameter("Content-MD5", base64, ParameterType.HttpHeader);
             return request;
+        }
+    }
+
+    public class GetObjectArgs : ObjectQueryArgs<GetObjectArgs>
+    {
+        internal Action<Stream> CallBack { get; private set; }
+        internal long ObjectOffset { get; private set; }
+        internal long ObjectLength { get; private set; }
+        internal string FileName { get; private set; }
+        internal bool OffsetLengthSet { get; set; }
+
+        public GetObjectArgs()
+        {
+            this.RequestMethod = Method.GET;
+            this.OffsetLengthSet = false;
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if (this.CallBack == null)
+            {
+                throw new MinioException("CallBack method not set of GetObject operation.");
+            }
+            if (OffsetLengthSet)
+            {
+                if (this.ObjectOffset < 0)
+                {
+                    throw new ArgumentException("Offset should be zero or greater", nameof(this.ObjectOffset));
+                }
+
+                if (this.ObjectLength < 0)
+                {
+                    throw new ArgumentException("Length should be greater than or equal to zero", nameof(this.ObjectLength));
+                }
+            }
+            if (this.FileName != null)
+            {
+                utils.ValidateFile(this.FileName);
+            }
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request = base.BuildRequest(request);
+            var headers = new Dictionary<string, string>();
+            if (this.SSE != null && this.SSE.GetType().Equals(EncryptionType.SSE_C))
+            {
+                this.SSE.Marshal(headers);
+            }
+            request.ResponseWriter = this.CallBack;
+
+            return request;
+        }   
+
+
+        public GetObjectArgs WithCallbackStream(Action<Stream> cb)
+        {
+            this.CallBack = cb;
+            return this;
+        }
+
+        public GetObjectArgs WithLengthAndOffset(long offset, long length)
+        {
+            this.OffsetLengthSet = true;
+            this.ObjectOffset = offset;
+            this.ObjectLength = length;
+            if (ObjectLength > 0)
+            {
+                this.HeaderMap.Add("Range", "bytes=" + offset.ToString() + "-" + (offset + length - 1).ToString());
+            }
+            return this;
+        }
+
+        public GetObjectArgs WithFile(string file)
+        {
+            this.FileName = file;
+            return this;
         }
     }
 }
