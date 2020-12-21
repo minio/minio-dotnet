@@ -14,18 +14,30 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
+using System;
+using System.Collections.Generic;
+using System.Xml.Serialization;
 
-namespace Minio
+namespace Minio.DataModel
 {
-    public abstract class ObjectVersionArgs<T> : EncryptionArgs<T>
-                            where T : ObjectVersionArgs<T>
+    [Serializable]
+    [XmlRoot(ElementName = "Tag")]
+
+    public class Tag
     {
-        internal string VersionId { get; set; }
-        public T WithVersionId(string vid)
+        [XmlElement("Key")]
+        public string Key { get; set; }
+        [XmlElement("Value")]
+        public string Value { get; set; }
+        public Tag()
         {
-            this.VersionId = vid;
-            return (T)this;
+        }
+
+        public Tag(string key, string value) 
+        {
+            this.Key = key;
+            this.Value = value;
+               
         }
     }
 }

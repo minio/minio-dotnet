@@ -1,5 +1,5 @@
-﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2020 MinIO, Inc.
+/*
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,23 +19,30 @@ using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
-    class GetObject
+    class GetObjectQuery
     {
         // Get object in a bucket
         public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name",
                                      string objectName = "my-object-name",
-                                     string fileName = "my-file-name")
+                                     string versionId = "my-version-id",
+                                     string fileName = "my-file-name",
+                                     string matchEtag = null,
+                                     DateTime modifiedSince = default(DateTime))
         {
             try
             {
-                Console.WriteLine("Running example for API: GetObjectAsync");
+                string withVersionId = (string.IsNullOrEmpty(versionId))?"":" with Version ID";
+                Console.WriteLine("Running example for API: GetObjectAsync" + withVersionId);
                 GetObjectArgs args = new GetObjectArgs()
                                                 .WithBucket(bucketName)
                                                 .WithObject(objectName)
-                                                .WithFile(fileName);
+                                                .WithVersionId(versionId)
+                                                .WithFile(fileName)
+                                                .WithMatchETag(matchEtag)
+                                                .WithModifiedSince(modifiedSince);
                 await minio.GetObjectAsync(args);
-                Console.WriteLine($"Downloaded the file {fileName} in bucket {bucketName}");
+                Console.WriteLine($"Downloaded the file {fileName} for object {objectName} with given query parameters in bucket {bucketName}");
                 Console.WriteLine();
             }
             catch (Exception e)
