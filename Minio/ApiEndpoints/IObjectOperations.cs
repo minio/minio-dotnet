@@ -201,5 +201,29 @@ namespace Minio
         /// <param name="policy"></param>
         /// <returns></returns>
         Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy);
+
+        /// <summary>
+        /// Gets Tagging values set for this object
+        /// </summary>
+        /// <param name="args"> GetObjectTagsArgs Arguments Object with information like Bucket, Object name, (optional)version Id</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Tagging Object with key-value tag pairs</returns>
+        Task<Tagging> GetObjectTagsAsync(GetObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Sets the Tagging values for this object
+        /// </summary>
+        /// <param name="args">SetObjectTagsArgs Arguments Object with information like Bucket name,Object name, (optional)version Id, tag key-value pairs</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        Task SetObjectTagsAsync(SetObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Removes Tagging values stored for the object
+        /// </summary>
+        /// <param name="args">RemoveObjectTagsArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        Task RemoveObjectTagsAsync(RemoveObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken));
     }
 }
