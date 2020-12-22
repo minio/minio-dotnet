@@ -15,17 +15,81 @@
  */
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Threading;
 using System.Linq;
+using System.IO;
+using RestSharp;
 
 using Minio.Exceptions;
+using Minio.DataModel;
 
 namespace Minio
 {
     public partial class MinioClient : IObjectOperations
     {
+
+        /// <summary>
+        /// private helper method to remove list of objects from bucket
+        /// </summary>
+        /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name etc </param>
+        /// <param name="objectStat"> ObjectStat object encapsulates information like - object name, size, etag etc </param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        private async Task getObjectFileAsync(GetObjectArgs args, ObjectStat objectStat, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            long length = objectStat.Size;
+            string etag = objectStat.ETag;
+
+            long tempFileSize = 0;
+            string tempFileName = $"{args.FileName}.{etag}.part.minio";
+            if (!string.IsNullOrEmpty(args.VersionId))
+            {
+                tempFileName = $"{args.FileName}.{etag}.{args.VersionId}.part.minio";
+            }
+            if (File.Exists(args.FileName))
+            {
+                File.Delete(args.FileName);
+            }
+
+            utils.ValidateFile(tempFileName);
+            if (File.Exists(tempFileName))
+            {
+                File.Delete(tempFileName);
+            }
+
+            args = args.WithCallbackStream( (stream) =>
+                                    {
+                                        var fileStream = File.Create(tempFileName);
+                                        stream.CopyTo(fileStream);
+                                        fileStream.Dispose();
+                                        FileInfo writtenInfo = new FileInfo(tempFileName);
+                                        long writtenSize = writtenInfo.Length;
+                                        if (writtenSize != (length - tempFileSize))
+                                        {
+                                            throw new IOException(tempFileName + ": unexpected data written.  expected = " + (length - tempFileSize)
+                                                                + ", written = " + writtenSize);
+                                        }
+                                        utils.MoveWithReplace(tempFileName, args.FileName);
+                                    });
+            await getObjectStreamAsync(args, objectStat, null, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// private helper method to remove list of objects from bucket
+        /// </summary>
+        /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name etc </param>
+        /// <param name="objectStat"> ObjectStat object encapsulates information like - object name, size, etag etc, represents Object Information </param>
+        /// <param name="cb"> Action object of type Stream, callback to send Object contents, if assigned </param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        private async Task getObjectStreamAsync(GetObjectArgs args, ObjectStat objectStat, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken);
+        }
+
+
         /// <summary>
         /// private helper method to remove list of objects from bucket
         /// </summary>

@@ -14,18 +14,32 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
+using System;
+using System.Xml.Serialization;
 
-namespace Minio
+namespace Minio.DataModel
 {
-    public abstract class ObjectVersionArgs<T> : EncryptionArgs<T>
-                            where T : ObjectVersionArgs<T>
+    [Serializable]
+    [XmlRoot(ElementName = "LegalHold", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+
+    // Legal Hold Configuration for the object. Status - {ON, OFF}.
+    public class ObjectLegalHoldConfiguration
     {
-        internal string VersionId { get; set; }
-        public T WithVersionId(string vid)
+        public ObjectLegalHoldConfiguration()
         {
-            this.VersionId = vid;
-            return (T)this;
+            this.Status = "OFF";
         }
+
+        public ObjectLegalHoldConfiguration(bool enable = true)
+        {
+            if (enable)
+            {
+                this.Status = "ON";
+                return;
+            }
+            this.Status = "OFF";
+        }
+
+        public string Status { get; set; }
     }
 }

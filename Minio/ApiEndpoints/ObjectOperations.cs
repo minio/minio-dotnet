@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -76,7 +77,7 @@ namespace Minio
         /// <summary>
         /// Removes multiple objects from a specific bucket
         /// </summary>
-        /// <param name="args">RemoveObjectArgs Arguments Object encapsulates information like - bucket name, List of objects, optional list of versions (for each object) to be deleted</param>
+        /// <param name="args">RemoveObjectsArgs Arguments Object encapsulates information like - bucket name, List of objects, optional list of versions (for each object) to be deleted</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Observable that returns delete error while deleting objects if any</returns>
         public async Task<IObservable<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))
@@ -100,6 +101,36 @@ namespace Minio
                     obs.OnNext(error);
                 }
               });
+        }
+
+
+        /// <summary>
+        /// Get an object. The object will be streamed to the callback given by the user.
+        /// </summary>
+        /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name, server-side encryption object, action stream, length, offset</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        public async Task GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            // First we call StatObject to verify the existence of the object.
+            // NOTE: This avoids writing the error body to the action stream passed (Do not remove).
+            StatObjectArgs statArgs = new StatObjectArgs()
+                                            .WithBucket(args.BucketName)
+                                            .WithObject(args.ObjectName)
+                                            .WithVersionId(args.VersionId)
+                                            .WithMatchETag(args.MatchETag)
+                                            .WithNotMatchETag(args.NotMatchETag)
+                                            .WithModifiedSince(args.ModifiedSince)
+                                            .WithUnModifiedSince(args.UnModifiedSince)
+                                            .WithServerSideEncryption(args.SSE);
+            ObjectStat objStat = await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (args.FileName != null)
+            {
+                await this.getObjectFileAsync(args, objStat, cancellationToken);
+            }
+            else
+            {
+                await this.getObjectStreamAsync(args, objStat, args.CallBack, cancellationToken);
+            }
         }
 
 
@@ -296,6 +327,83 @@ namespace Minio
             return this.authenticator.PresignURL(this.restClient, request, args.Expiry, Region, this.SessionToken);
         }
 
+        /// <summary>
+        /// Get the configuration object for Legal Hold Status 
+        /// </summary>
+        /// <param name="args">GetObjectLegalHoldArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation </param>
+        /// <returns> True if Legal Hold is ON, false otherwise  </returns>
+        /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When objectName is invalid</exception>
+        public async Task<bool> GetObjectLegalHoldAsync(GetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            var request = await this.CreateRequest(args).ConfigureAwait(false);
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var legalHoldConfig = new GetLegalHoldResponse(response.StatusCode, response.Content);
+            return (legalHoldConfig.CurrentLegalHoldConfiguration == null)?false: legalHoldConfig.CurrentLegalHoldConfiguration.Status.ToLower().Equals("on");
+        }
+
+
+        /// <summary>
+        /// Set the Legal Hold Status using the related configuration
+        /// </summary>
+        /// <param name="args">SetObjectLegalHoldArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        public async Task SetObjectLegalHoldAsync(SetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            var request = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// Gets Tagging values set for this object
+        /// </summary>
+        /// <param name="args"> GetObjectTagsArgs Arguments Object with information like Bucket, Object name, (optional)version Id</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Tagging Object with key-value tag pairs</returns>
+        public async Task<Tagging> GetObjectTagsAsync(GetObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            GetObjectTagsResponse getObjectTagsResponse = new GetObjectTagsResponse(response.StatusCode, response.Content);
+            return getObjectTagsResponse.ObjectTags;
+        }
+
+
+        /// <summary>
+        /// Sets the Tagging values for this object
+        /// </summary>
+        /// <param name="args">SetObjectTagsArgs Arguments Object with information like Bucket name,Object name, (optional)version Id, tag key-value pairs</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        public async Task SetObjectTagsAsync(SetObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// Removes Tagging values stored for the object
+        /// </summary>
+        /// <param name="args">RemoveObjectTagsArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        public async Task RemoveObjectTagsAsync(RemoveObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
 
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
@@ -329,6 +437,7 @@ namespace Minio
 
             var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
+
 
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
@@ -459,6 +568,7 @@ namespace Minio
                 utils.MoveWithReplace(tempFileName, fileName);
             }, sse, cancellationToken).ConfigureAwait(false);
         }
+
 
         /// <summary>
         /// Select an object's content. The object will be streamed to the callback given by the user.

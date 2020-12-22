@@ -28,6 +28,26 @@ namespace Minio
     public interface IObjectOperations
     {
         /// <summary>
+        /// Get the configuration object for Legal Hold Status 
+        /// </summary>
+        /// <param name="args">GetObjectLegalHoldArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation </param>
+        /// <returns> True if Legal Hold is ON, false otherwise  </returns>
+        /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When objectName is invalid</exception>
+        Task<bool> GetObjectLegalHoldAsync(GetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Set the configuration object for Legal Hold Status
+        /// </summary>
+        /// <param name="args">SetObjectLegalHoldArgs Arguments Object which has object identifier information - bucket name, object name, version ID and the status (ON/OFF) of legal-hold</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation </param>
+        /// <returns>Task</returns>
+        /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When objectName is invalid</exception>
+        Task SetObjectLegalHoldAsync(SetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
@@ -80,13 +100,21 @@ namespace Minio
         Task RemoveObjectAsync(RemoveObjectArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
+        /// Removes multiple objects from a specific bucket
+        /// </summary>
+        /// <param name="args">RemoveObjectsArgs Arguments Object encapsulates information like - bucket name, List of objects, optional list of versions (for each object) to be deleted</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Observable that returns delete error while deleting objects if any</returns>
+        Task<IObservable<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
         /// Removes an object with given name in specific bucket
         /// </summary>
         /// <param name="bucketName">Bucket to remove object from</param>
         /// <param name="objectName">Key of object to remove</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        [Obsolete("Use RemoveObjectAsync method with RemoveObjectArgs object. Refer RemoveObjectAsync example code.")]
+        [Obsolete("Use RemoveObjectAsync method with RemoveObjectArgs object. Refer RemoveObject example code.")]
         Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -96,6 +124,7 @@ namespace Minio
         /// <param name="objectsList">List of object keys to remove</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        [Obsolete("Use RemoveObjectsAsync method with RemoveObjectsArgs object. Refer RemoveObjects example code.")]
         Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectsList, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -190,5 +219,29 @@ namespace Minio
         /// <param name="policy"></param>
         /// <returns></returns>
         Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy);
+
+        /// <summary>
+        /// Gets Tagging values set for this object
+        /// </summary>
+        /// <param name="args"> GetObjectTagsArgs Arguments Object with information like Bucket, Object name, (optional)version Id</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Tagging Object with key-value tag pairs</returns>
+        Task<Tagging> GetObjectTagsAsync(GetObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Sets the Tagging values for this object
+        /// </summary>
+        /// <param name="args">SetObjectTagsArgs Arguments Object with information like Bucket name,Object name, (optional)version Id, tag key-value pairs</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        Task SetObjectTagsAsync(SetObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Removes Tagging values stored for the object
+        /// </summary>
+        /// <param name="args">RemoveObjectTagsArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        Task RemoveObjectTagsAsync(RemoveObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

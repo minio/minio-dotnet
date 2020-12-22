@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-using RestSharp;
 using System;
-using System.Collections.Generic;
+using System.IO;
+using RestSharp;
 using System.Xml.Linq;
+using System.Security.Cryptography;
+using System.Collections.Generic;
 
 using Minio.DataModel;
 using Minio.Exceptions;
@@ -523,6 +525,210 @@ namespace Minio
         public RemoveIncompleteUploadArgs()
         {
             this.RequestMethod = Method.DELETE;
+        }
+    }
+
+
+    public class GetObjectLegalHoldArgs : ObjectVersionArgs<GetObjectLegalHoldArgs>
+    {
+        public GetObjectLegalHoldArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("legal-hold", "");
+            if( !string.IsNullOrEmpty(this.VersionId) )
+            {
+                request.AddQueryParameter("versionId", this.VersionId);
+            }
+            return request;
+        }
+    }
+
+    public class SetObjectLegalHoldArgs : ObjectVersionArgs<SetObjectLegalHoldArgs>
+    {
+        internal bool LegalHoldON { get; private set; }
+
+        public SetObjectLegalHoldArgs()
+        {
+            this.RequestMethod = Method.PUT;
+            this.LegalHoldON = false;
+        }
+
+        public SetObjectLegalHoldArgs WithLegalHold(bool status)
+        {
+            this.LegalHoldON = status;
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("legal-hold", "");
+            if( !string.IsNullOrEmpty(this.VersionId) )
+            {
+                request.AddQueryParameter("versionId", this.VersionId);
+            }
+            ObjectLegalHoldConfiguration config = new ObjectLegalHoldConfiguration(this.LegalHoldON);
+            string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+            var md5 = MD5.Create();
+            byte[] hash = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(body));
+            string base64 = Convert.ToBase64String(hash);
+            request.AddOrUpdateParameter("Content-MD5", base64, ParameterType.HttpHeader);
+            return request;
+        }
+    }
+
+    public class GetObjectArgs : ObjectQueryArgs<GetObjectArgs>
+    {
+        internal Action<Stream> CallBack { get; private set; }
+        internal long ObjectOffset { get; private set; }
+        internal long ObjectLength { get; private set; }
+        internal string FileName { get; private set; }
+        internal bool OffsetLengthSet { get; set; }
+
+        public GetObjectArgs()
+        {
+            this.RequestMethod = Method.GET;
+            this.OffsetLengthSet = false;
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if (this.CallBack == null)
+            {
+                throw new MinioException("CallBack method not set of GetObject operation.");
+            }
+            if (OffsetLengthSet)
+            {
+                if (this.ObjectOffset < 0)
+                {
+                    throw new ArgumentException("Offset should be zero or greater", nameof(this.ObjectOffset));
+                }
+
+                if (this.ObjectLength < 0)
+                {
+                    throw new ArgumentException("Length should be greater than or equal to zero", nameof(this.ObjectLength));
+                }
+            }
+            if (this.FileName != null)
+            {
+                utils.ValidateFile(this.FileName);
+            }
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request = base.BuildRequest(request);
+            var headers = new Dictionary<string, string>();
+            if (this.SSE != null && this.SSE.GetType().Equals(EncryptionType.SSE_C))
+            {
+                this.SSE.Marshal(headers);
+            }
+            request.ResponseWriter = this.CallBack;
+
+            return request;
+        }   
+
+
+        public GetObjectArgs WithCallbackStream(Action<Stream> cb)
+        {
+            this.CallBack = cb;
+            return this;
+        }
+
+        public GetObjectArgs WithLengthAndOffset(long offset, long length)
+        {
+            this.OffsetLengthSet = true;
+            this.ObjectOffset = offset;
+            this.ObjectLength = length;
+            if (ObjectLength > 0)
+            {
+                this.HeaderMap.Add("Range", "bytes=" + offset.ToString() + "-" + (offset + length - 1).ToString());
+            }
+            return this;
+        }
+
+        public GetObjectArgs WithFile(string file)
+        {
+            this.FileName = file;
+            return this;
+        }
+    }
+
+    public class SetObjectTagsArgs : ObjectVersionArgs<SetObjectTagsArgs>
+    {
+        internal Dictionary<string, string> TagKeyValuePairs { get; set; }
+        internal Tagging ObjectTags { get; private set; }
+        public SetObjectTagsArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        public SetObjectTagsArgs WithTagKeyValuePairs(Dictionary<string, string> kv)
+        {
+            this.TagKeyValuePairs = new Dictionary<string, string>(kv);
+            this.ObjectTags = Tagging.GetBucketTags(kv);
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("tagging","");
+            if (!string.IsNullOrEmpty(this.VersionId))
+            {
+                request.AddQueryParameter("versionId", this.VersionId);
+            }
+            string body = this.ObjectTags.MarshalXML();
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+
+            return request;
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if (this.TagKeyValuePairs == null || this.TagKeyValuePairs.Count == 0)
+            {
+                throw new InvalidOperationException("Unable to set empty tags.");
+            }
+        }
+    }
+
+    public class GetObjectTagsArgs : ObjectVersionArgs<GetObjectTagsArgs>
+    {
+        public GetObjectTagsArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("tagging","");
+            if (!string.IsNullOrEmpty(this.VersionId))
+            {
+                request.AddQueryParameter("versionId", this.VersionId);
+            }
+            return request;
+        }
+    }
+
+    public class RemoveObjectTagsArgs : ObjectVersionArgs<RemoveObjectTagsArgs>
+    {
+        public RemoveObjectTagsArgs()
+        {
+            this.RequestMethod = Method.DELETE;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("tagging","");
+            if (!string.IsNullOrEmpty(this.VersionId))
+            {
+                request.AddQueryParameter("versionId", this.VersionId);
+            }
+            return request;
         }
     }
 }
