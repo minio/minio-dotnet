@@ -289,6 +289,25 @@ namespace Minio
         }
     }
 
+    internal class GetBucketTagsResponse : GenericResponse
+    {
+        internal Tagging BucketTags { set; get; }
+        internal GetBucketTagsResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) ||
+                    !HttpStatusCode.OK.Equals(statusCode))
+            {
+                this.BucketTags = null;
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                this.BucketTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(stream);
+            }
+        }
+    }
+
     internal class GetObjectLockConfigurationResponse : GenericResponse
     {
         internal ObjectLockConfiguration LockConfiguration { get; set; }

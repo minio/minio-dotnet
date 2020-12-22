@@ -20,18 +20,18 @@ namespace Minio.Examples.Cases
 {
     public class RemoveObjectLockConfiguration
     {
-        // Remove Object Lock Configuration for the bucket
+        // Remove Object Lock Configuration on the bucket
         public async static Task Run(MinioClient minio,
                                     string bucketName = "my-bucket-name")
         {
             try
             {
-                Console.WriteLine("Running example for API: RemoveObjectLockConfigurationAsync");
+                Console.WriteLine("Running example for API: RemoveObjectLockConfiguration");
                 await minio.RemoveObjectLockConfigurationAsync(
                     new RemoveObjectLockConfigurationArgs()
                         .WithBucket(bucketName)
                 );
-                Console.WriteLine($"Removed Object lock configuration for bucket {bucketName}.");
+                Console.WriteLine($"Removed Object lock configuration on the bucket {bucketName}.");
                 Console.WriteLine();
             }
             catch (Exception e)

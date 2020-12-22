@@ -134,8 +134,33 @@ namespace Minio
         /// <returns>An observable of JSON-based notification events</returns>
         IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(ListenBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
+
         /// <summary>
-        /// Sets the Object Lock Configuration for this bucket
+        /// Gets Tagging values set for this bucket
+        /// </summary>
+        /// <param name="args">GetBucketTagsArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Tagging Object with key-value tag pairs</returns>
+        Task<Tagging> GetBucketTagsAsync(GetBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Sets the Tagging values for this bucket
+        /// </summary>
+        /// <param name="args">SetBucketTagsArgs Arguments Object with information like Bucket name, tag key-value pairs</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        Task SetBucketTagsAsync(SetBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Removes Tagging values stored for the bucket.
+        /// </summary>
+        /// <param name="args">RemoveBucketTagsArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        Task RemoveBucketTagsAsync(RemoveBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Sets the Object Lock Configuration on this bucket
         /// </summary>
         /// <param name="args">SetObjectLockConfigurationArgs Arguments Object with information like Bucket name, object lock configuration to set</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -143,7 +168,7 @@ namespace Minio
         Task SetObjectLockConfigurationAsync(SetObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// Gets the Object Lock Configuration for this bucket
+        /// Gets the Object Lock Configuration on this bucket
         /// </summary>
         /// <param name="args">GetObjectLockConfigurationArgs Arguments Object with information like Bucket name</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -152,7 +177,7 @@ namespace Minio
 
 
         /// <summary>
-        /// Removes the Object Lock Configuration for this bucket
+        /// Removes the Object Lock Configuration on this bucket
         /// </summary>
         /// <param name="args">RemoveObjectLockConfigurationArgs Arguments Object with information like Bucket name</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -166,7 +191,6 @@ namespace Minio
         /// <param name="recursive">List incomplete uploads recursively</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>An observable of items that client can subscribe to</returns>
-
         IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = false, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>

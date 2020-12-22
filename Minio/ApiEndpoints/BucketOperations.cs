@@ -20,10 +20,12 @@ using Minio.Exceptions;
 using RestSharp;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using Minio.Helper;
 
 namespace Minio
@@ -366,6 +368,21 @@ namespace Minio
         }
 
 
+        /// <summary>
+        /// Gets Tagging values set for this bucket
+        /// </summary>
+        /// <param name="args">GetBucketTagsArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Tagging Object with key-value tag pairs</returns>
+        public async Task<Tagging> GetBucketTagsAsync(GetBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            GetBucketTagsResponse getBucketNotificationsResponse = new GetBucketTagsResponse(response.StatusCode, response.Content);
+            return getBucketNotificationsResponse.BucketTags;
+        }
+
 
         /// <summary>
         /// Sets the Encryption Configuration for the mentioned bucket.
@@ -412,7 +429,35 @@ namespace Minio
 
 
         /// <summary>
-        /// Sets the Object Lock Configuration for this bucket
+        /// Sets the Tagging values for this bucket
+        /// </summary>
+        /// <param name="args">SetBucketTagsArgs Arguments Object with information like Bucket name, tag key-value pairs</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        public async Task SetBucketTagsAsync(SetBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// Removes Tagging values stored for the bucket.
+        /// </summary>
+        /// <param name="args">RemoveBucketTagsArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        public async Task RemoveBucketTagsAsync(RemoveBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// Sets the Object Lock Configuration on this bucket
         /// </summary>
         /// <param name="args">SetObjectLockConfigurationArgs Arguments Object with information like Bucket name, object lock configuration to set</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -426,7 +471,7 @@ namespace Minio
 
 
         /// <summary>
-        /// Gets the Object Lock Configuration for this bucket
+        /// Gets the Object Lock Configuration on this bucket
         /// </summary>
         /// <param name="args">GetObjectLockConfigurationArgs Arguments Object with information like Bucket name</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -442,7 +487,7 @@ namespace Minio
 
 
         /// <summary>
-        /// Removes the Object Lock Configuration for this bucket
+        /// Removes the Object Lock Configuration on this bucket
         /// </summary>
         /// <param name="args">RemoveObjectLockConfigurationArgs Arguments Object with information like Bucket name</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>

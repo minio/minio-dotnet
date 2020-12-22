@@ -15,31 +15,32 @@
  */
 using System;
 using System.Threading.Tasks;
-using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
-    public class SetObjectLockConfiguration
+    public class RemoveObjectTags
     {
-        // Set Object Lock Configuration on the bucket
+        // Remove Tags set for the object
         public async static Task Run(MinioClient minio,
                                     string bucketName = "my-bucket-name",
-                                    ObjectLockConfiguration config = null)
+                                    string objectName = "my-object-name",
+                                    string versionId = null)
         {
             try
             {
-                Console.WriteLine("Running example for API: SetObjectLockConfiguration");
-                    await minio.SetObjectLockConfigurationAsync(
-                        new SetObjectLockConfigurationArgs()
-                            .WithBucket(bucketName)
-                            .WithLockConfiguration(config)
+                Console.WriteLine("Running example for API: RemoveObjectTags");
+                await minio.RemoveObjectTagsAsync(
+                    new RemoveObjectTagsArgs()
+                        .WithBucket(bucketName)
+                        .WithObject(objectName)
+                        .WithVersionId(versionId)
                 );
-                Console.WriteLine($"Set object lock configuration on bucket {bucketName}");
+                Console.WriteLine($"Tags removed for object {bucketName}/{objectName}.");
                 Console.WriteLine();
             }
             catch (Exception e)
             {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
+                Console.WriteLine($"[Object]  Exception: {e}");
             }
         }
     }

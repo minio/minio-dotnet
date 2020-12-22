@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
-    public class SetObjectLockConfiguration
+    public class SetBucketTags
     {
-        // Set Object Lock Configuration on the bucket
+        // Set Tags to the bucket
         public async static Task Run(MinioClient minio,
                                     string bucketName = "my-bucket-name",
-                                    ObjectLockConfiguration config = null)
+                                    Dictionary<string, string> tags = null)
         {
             try
             {
-                Console.WriteLine("Running example for API: SetObjectLockConfiguration");
-                    await minio.SetObjectLockConfigurationAsync(
-                        new SetObjectLockConfigurationArgs()
-                            .WithBucket(bucketName)
-                            .WithLockConfiguration(config)
+                Console.WriteLine("Running example for API: SetBucketTags");
+                await minio.SetBucketTagsAsync(
+                    new SetBucketTagsArgs()
+                        .WithBucket(bucketName)
+                        .WithTagKeyValuePairs(tags)
                 );
-                Console.WriteLine($"Set object lock configuration on bucket {bucketName}");
+                Console.WriteLine($"Bucket Tags set for bucket {bucketName}.");
                 Console.WriteLine();
             }
             catch (Exception e)

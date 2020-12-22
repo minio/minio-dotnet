@@ -33,9 +33,12 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 | [`listenBucketNotifications`](#listenBucketNotifications)  | [`selectObjectContent`](#selectObjectContent) |   |   |
 | [`setVersioning`](#setVersioning)  | [`setLegalHold`](#setLegalHold)  |   |   |
 | [`getVersioning`](#getVersioning)  | [`getLegalHold`](#getLegalHold)  |   |   |
-| [`setBucketEncryption`](#setBucketEncryption)  |   |   |   |
-| [`getBucketEncryption`](#getBucketEncryption)  |   |   |   |
-| [`removeBucketEncryption`](#removeBucketEncryption)  |   |   |   |
+| [`setBucketEncryption`](#setBucketEncryption)  | [`setObjectTags`](#setObjectTags)  |   |   |
+| [`getBucketEncryption`](#getBucketEncryption)  | [`getObjectTags`](#getObjectTags)  |   |   |
+| [`removeBucketEncryption`](#removeBucketEncryption)  | [`removeObjectTags`](#removeObjectTags)  |   |   |
+| [`setBucketTags`](#setBucketTags)  |   |   |   |
+| [`getBucketTags`](#getBucketTags)  |   |   |   |
+| [`removeBucketTags`](#removeBucketTags)  |   |   |   |
 | [`setObjectLock`](#setObjectLock)  |   |   |   |
 | [`getObjectLock`](#getObjectLock)  |   |   |   |
 | [`removeObjectLock`](#removeObjectLock)  |   |   |   |
@@ -772,7 +775,7 @@ try
     // Remove Bucket Encryption Configuration for the bucket
     var args = new RemoveBucketEncryptionArgs()
                                 .WithBucket(bucketName);
-    bool enabled = await minio.RemoveBucketEncryptionAsync(args);
+    await minio.RemoveBucketEncryptionAsync(args);
     Console.WriteLine($"Removed encryption configuration for bucket {bucketName}.");
 }
 catch(MinioException e)
@@ -780,6 +783,149 @@ catch(MinioException e)
    Console.WriteLine("Error occurred: " + e);
 }
 ```
+
+<a name="setBucketTags"></a>
+### SetBucketTagsAsync(SetBucketTagsArgs args)
+
+`Task SetBucketTagsAsync(SetBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Sets tags to a bucket.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _SetBucketTagsArgs_  | SetBucketTagsArgs Argument Object with bucket, tags to set  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task``  | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found   |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Set Tags for the bucket
+    SetBucketTagsArgs args = new SetBucketTagsArgs()
+                                                .WithBucket(bucketName)
+                                                .WithTagKeyValuePairs(tags);
+    await minio.SetBucketTagsAsync(args);
+    Console.WriteLine($"Set Tags for bucket {bucketName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+<a name="getBucketTags"></a>
+### GetBucketTagsAsync(GetBucketTagsArgs args)
+
+`Task<Tagging> GetBucketTagsAsync(GetBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Gets tags of a bucket.
+
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _GetBucketTagsArgs_  | GetBucketTagsArgs Argument Object with bucket name  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task<Tagging>``: Tagging object which containing tag-value pairs. | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found  |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Get Bucket Tags for the bucket
+    var args = new GetBucketTagsArgs()
+                        .WithBucket(bucketName);
+    var tags = await minio.GetBucketTagsAsync(args);
+    Console.WriteLine($"Got tags for bucket {bucketName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
+<a name="removeBucketTags"></a>
+### RemoveBucketTagsAsync(RemoveBucketTagsArgs args)
+
+`Task RemoveBucketTagsAsync(RemoveBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Deletes tags of a bucket.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _RemoveBucketTagsArgs_  | RemoveBucketTagsArgs Argument Object with bucket name  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task``  | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found  |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Remove Bucket Encryption Configuration for the bucket
+    var args = new RemoveBucketTagsArgs()
+                                .WithBucket(bucketName);
+    await minio.RemoveBucketTagsAsync(args);
+    Console.WriteLine($"Removed tags for bucket {bucketName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
 
 
 <a name="listObjects"></a>
@@ -871,11 +1017,13 @@ __Example__
 ```cs
 try
 {
+    ObjectLockConfiguration config = = new ObjectLockConfiguration(RetentionMode.GOVERNANCE, 35);
     // Set Object Lock Configuration for the bucket
-    SetObjectLockConfigurationArgs args = new SetBucketTagsArgs()
+    SetObjectLockConfigurationArgs args = new SetObjectLockConfigurationArgs()
                                                         .WithBucket(bucketName)
-                                                        .WithTagKeyValuePairs(tags);
+                                                        .WithLockConfiguration(config);
     await minio.SetObjectLockConfigurationAsync(args);
+    Console.WriteLine($"Set Object lock configuration to bucket {bucketName}.");
 }
 catch(MinioException e)
 {
@@ -889,8 +1037,7 @@ catch(MinioException e)
 
 `Task<ObjectLockConfiguration> GetObjectLockConfigurationAsync(GetObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
-Gets object-lock configuration in a bucket.
-
+Gets object-lock configuration of a bucket.
 
 
 
@@ -905,7 +1052,7 @@ __Parameters__
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
-|  ``Task<ObjectLockConfiguration>``: ObjectLockConfiguration object which containing tag-value pairs. | Listed Exceptions: |
+|  ``Task<ObjectLockConfiguration>``: ObjectLockConfiguration object which containing lock-enabled status & Object lock rule. | Listed Exceptions: |
 |        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name |
 |        |  ``BucketNotFoundException`` : upon bucket with name not found  |
@@ -924,7 +1071,7 @@ try
     var args = new GetObjectLockConfigurationArgs()
                                      .WithBucket(bucketName);
     var config = await minio.GetObjectLockConfigurationAsync(args);
-    Console.WriteLine($"Got Object lock configuration to bucket {bucketName}. Status: " + config.ObjectLockEnabled);
+    Console.WriteLine($"Object lock configuration on bucket {bucketName} is : " + config.ObjectLockEnabled);
 }
 catch(MinioException e)
 {
@@ -938,7 +1085,7 @@ catch(MinioException e)
 
 `Task RemoveObjectLockConfigurationAsync(RemoveObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
-Deletes object-lock configuration in a bucket.
+Removes object-lock configuration on a bucket.
 
 
 
@@ -968,11 +1115,11 @@ __Example__
 ```cs
 try
 {
-    // Remove Object Lock Configuration for the bucket
+    // Remove Object Lock Configuration on the bucket
     var args = new RemoveObjectLockConfigurationArgs()
                                 .WithBucket(bucketName);
     await minio.RemoveObjectLockConfigurationAsync(args);
-    Console.WriteLine($"Removed Object lock configuration for bucket {bucketName}.");
+    Console.WriteLine($"Removed Object lock configuration on bucket {bucketName}.");
 }
 catch(MinioException e)
 {
@@ -2009,6 +2156,156 @@ catch(MinioException e)
    Console.WriteLine("Error occurred: " + e);
 }
 ```
+<a name="setObjectTags"></a>
+### SetObjectTagsAsync(SetObjectTagsArgs args)
+
+`Task SetObjectTagsAsync(SetObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Sets tags to a object.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _SetObjectTagsArgs_  | SetObjectTagsArgs Argument Object with object, tags to set  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task``  | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``InvalidObjectNameException`` : upon invalid object name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found   |
+|        |  ``ObjectNotFoundException`` : upon object with name not found   |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Set Tags for the object
+    SetObjectTagsArgs args = new new SetObjectTagsArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObject(objectName)
+                                                .WithTagKeyValuePairs(tags);
+    await minio.SetObjectTagsAsync(args);
+    Console.WriteLine($"Set tags for object {bucketName}/{objectName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+<a name="getObjectTags"></a>
+### GetObjectTagsAsync(GetObjectTagsArgs args)
+
+`Task<Tagging> GetObjectTagsAsync(GetObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Gets tags of a object.
+
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _GetObjectTagsArgs_  | GetObjectTagsArgs Argument Object with object name  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task<Tagging>``: Task<Tagging> object which containing tag-value pairs. | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``InvalidObjectNameException`` : upon invalid object name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found  |
+|        |  ``ObjectNotFoundException`` : upon object with name not found   |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Get Object Tags for the object
+    var args = new GetObjectTagsArgs()
+                        .WithBucket(bucketName)
+                        .WithObject(objectName);
+    var tags = await minio.GetObjectTagsAsync(args);
+    Console.WriteLine($"Got tags for object {bucketName}/{objectName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
+<a name="removeObjectTags"></a>
+### RemoveObjectTagsAsync(RemoveObjectTagsArgs args)
+
+`Task RemoveObjectTagsAsync(RemoveObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Deletes tags of a object.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _RemoveObjectTagsArgs_  | RemoveObjectTagsArgs Argument Object with object name  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task``  | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``InvalidObjectNameException`` : upon invalid object name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found  |
+|        |  ``ObjectNotFoundException`` : upon object with name not found   |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Remove Tags for the object
+    var args = new RemoveObjectTagsArgs()
+                                .WithBucket(bucketName)
+                                .WithObject(objectName);
+    await minio.RemoveObjectTagsAsync(args);
+    Console.WriteLine($"Removed tags for object {bucketName}/{objectName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
 
 
 ## 4. Presigned operations

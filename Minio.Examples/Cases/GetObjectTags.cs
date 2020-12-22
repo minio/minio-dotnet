@@ -18,36 +18,39 @@ using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
-    public class GetObjectLockConfiguration
+    public class GetObjectTags
     {
-        // Get the Object Lock Configuration on the bucket
+        // Get Tags set for the object
         public async static Task Run(MinioClient minio,
-                                    string bucketName = "my-bucket-name")
+                                    string bucketName = "my-bucket-name",
+                                    string objectName = "my-object-name",
+                                    string versionId = null)
         {
             try
             {
-                Console.WriteLine("Running example for API: GetObjectLockConfiguration");
-                var config = await minio.GetObjectLockConfigurationAsync(
-                    new GetObjectLockConfigurationArgs()
+                Console.WriteLine("Running example for API: GetObjectTags");
+                var tags = await minio.GetObjectTagsAsync(
+                    new GetObjectTagsArgs()
                         .WithBucket(bucketName)
+                        .WithObject(objectName)
+                        .WithVersionId(versionId)
                 );
-                if (config != null)
+                if (tags != null && tags.GetTags() != null && tags.GetTags().Count > 0)
                 {
-                    Console.WriteLine($"Object lock configuration on bucket {bucketName} is : " + config.ObjectLockEnabled);
-                    if (config.Rule != null && config.Rule.DefaultRetention != null)
+                    Console.WriteLine($"Got tags set for object {bucketName}/{objectName}.");
+                    foreach(var tag in tags.GetTags())
                     {
-                        string mode = (config.Rule.DefaultRetention.Mode == RetentionMode.GOVERNANCE)? "GOVERNANCE" : "COMPLIANCE";
-                        Console.WriteLine("Object Lock Configuration Rule Mode: " + mode + " Duration: " + config.Rule.DefaultRetention.Days + " days.");
+                        Console.WriteLine(tag.Key + " : " + tag.Value);
                     }
                     Console.WriteLine();
                     return;
                 }
-                Console.WriteLine($"Object lock configuration unavailable on bucket {bucketName}.");
+                Console.WriteLine($" Tags not set for object {bucketName}/{objectName}.");
                 Console.WriteLine();
             }
             catch (Exception e)
             {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
+                Console.WriteLine($"[Object]  Exception: {e}");
             }
         }
     }

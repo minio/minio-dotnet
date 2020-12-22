@@ -14,32 +14,35 @@
  * limitations under the License.
  */
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
-    public class SetObjectLockConfiguration
+    public class SetObjectTags
     {
-        // Set Object Lock Configuration on the bucket
+        // Set Tags for the object
         public async static Task Run(MinioClient minio,
                                     string bucketName = "my-bucket-name",
-                                    ObjectLockConfiguration config = null)
+                                    string objectName = "my-object-name",
+                                    Dictionary<string, string> tags = null,
+                                    string versionId = null)
         {
             try
             {
-                Console.WriteLine("Running example for API: SetObjectLockConfiguration");
-                    await minio.SetObjectLockConfigurationAsync(
-                        new SetObjectLockConfigurationArgs()
-                            .WithBucket(bucketName)
-                            .WithLockConfiguration(config)
-                );
-                Console.WriteLine($"Set object lock configuration on bucket {bucketName}");
+                Console.WriteLine("Running example for API: SetObjectTags");
+                var args = new SetObjectTagsArgs()
+                                    .WithBucket(bucketName)
+                                    .WithObject(objectName)
+                                    .WithVersionId(versionId)
+                                    .WithTagKeyValuePairs(tags);
+                await minio.SetObjectTagsAsync(args);
+                Console.WriteLine($"Tags set for object {bucketName}/{objectName}.");
                 Console.WriteLine();
             }
             catch (Exception e)
             {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
+                Console.WriteLine($"[Object]  Exception: {e}");
             }
         }
     }

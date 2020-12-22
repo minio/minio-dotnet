@@ -655,16 +655,16 @@ namespace Minio
                 };
             }
 
-            if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
-                && errResponse.Code.Equals("MalformedXML"))
-            {
-                throw new MalFormedXMLException(errResponse.Resource, errResponse.BucketName, errResponse.Message, errResponse.Key);
-            }
-
             if (response.StatusCode.Equals(HttpStatusCode.NotFound)
                 && errResponse.Code == "NoSuchBucket")
             {
                 throw new BucketNotFoundException(errResponse.BucketName, "Not found.");
+            }
+
+            if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
+                && errResponse.Code.Equals("MalformedXML"))
+            {
+                throw new MalFormedXMLException(errResponse.Resource, errResponse.BucketName, errResponse.Message, errResponse.Key);
             }
 
             if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
