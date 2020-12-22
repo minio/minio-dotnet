@@ -70,70 +70,6 @@ namespace Minio.Functional.Tests
 
             // Set app Info
             minioClient.SetAppInfo("app-name", "app-version");
-            FunctionalTest.SelectObjectContent_Test(minioClient).Wait();
-            FunctionalTest.RemoveIncompleteUpload_Test(minioClient).Wait();
-            FunctionalTest.ListObjects_Test1(minioClient).Wait();
-            FunctionalTest.ListObjects_Test2(minioClient).Wait();
-            FunctionalTest.ListObjects_Test3(minioClient).Wait();
-            FunctionalTest.ListObjects_Test4(minioClient).Wait();
-            FunctionalTest.ListObjects_Test5(minioClient).Wait();
-            FunctionalTest.ListenBucketNotificationsAsync_Test1(minioClient).Wait();
-            FunctionalTest.StatObject_Test1(minioClient).Wait();
-            FunctionalTest.PutObject_Test1(minioClient).Wait();
-            FunctionalTest.PutObject_Test2(minioClient).Wait();
-            FunctionalTest.PutObject_Test3(minioClient).Wait();
-            FunctionalTest.PutObject_Test4(minioClient).Wait();
-            FunctionalTest.PutObject_Test5(minioClient).Wait();
-        }
-
-        public static void Main0(string[] args)
-        {
-            string endPoint = null;
-            string accessKey = null;
-            string secretKey = null;
-            string enableHttps = "0";
-            string kmsEnabled = "0";
-
-            bool useAWS = Environment.GetEnvironmentVariable("AWS_ENDPOINT") != null;
-            if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
-            {
-                endPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");
-                accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
-                secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
-                enableHttps = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
-                kmsEnabled = Environment.GetEnvironmentVariable("ENABLE_KMS");
-            }
-            else
-            {
-                endPoint = "play.min.io";
-                accessKey = "Q3AM3UQ867SPQQA43P2F";
-                secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
-                enableHttps = "1";
-                kmsEnabled = "1";
-            }
-
-            MinioClient minioClient = null;
-            if (enableHttps == "1")
-                // WithSSL() enables SSL support in MinIO client
-                minioClient = new MinioClient()
-                                        .WithSSL()
-                                        .WithCredentials(accessKey, secretKey)
-                                        .WithEndpoint(endPoint)
-                                        .Build();
-            else
-                minioClient = new MinioClient()
-                                        .WithCredentials(accessKey, secretKey)
-                                        .WithEndpoint(endPoint)
-                                        .Build();
-
-            // Assign parameters before starting the test
-            string bucketName = FunctionalTest.GetRandomName();
-            string objectName = FunctionalTest.GetRandomName();
-            string destBucketName = FunctionalTest.GetRandomName();
-            string destObjectName = FunctionalTest.GetRandomName();
-
-            // Set app Info
-            minioClient.SetAppInfo("app-name", "app-version");
             // Set HTTP Tracing On
             // minioClient.SetTraceOn(new JsonNetLogger());
 
@@ -235,6 +171,10 @@ namespace Minio.Functional.Tests
 
             // Test GetBucket policy
             FunctionalTest.GetBucketPolicy_Test1(minioClient).Wait();
+
+            // Test Bucket, Object Tags
+            FunctionalTest.BucketTagsAsync_Test1(minioClient).Wait();
+            FunctionalTest.ObjectTagsAsync_Test1(minioClient).Wait();
 
             // Test encryption
             if (enableHttps == "1")

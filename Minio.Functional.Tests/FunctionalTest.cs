@@ -76,6 +76,12 @@ namespace Minio.Functional.Tests
         private const string setObjectLegalHoldSignature = "Task SetObjectLegalHoldAsync(SetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string getObjectLegalHoldSignature = "Task<bool> GetObjectLegalHoldAsync(GetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken))";
 
+        private const string getBucketTagsSignature = "Task<Tagging> GetBucketTagsAsync(GetBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string setBucketTagsSignature = "Task SetBucketTagsAsync(SetBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string deleteBucketTagsSignature = "Task RemoveBucketTagsAsync(RemoveBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string getObjectTagsSignature = "Task<Tagging> GetObjectTagsAsync(GetObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string setObjectTagsSignature = "Task SetObjectTagsAsync(SetObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string deleteObjectTagsSignature = "Task RemoveObjectTagsAsync(RemoveObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
 
         // Create a file of given size from random byte array or optionally create a symbolic link
         // to the dataFileName residing in MINT_DATA_DIR
@@ -2112,6 +2118,7 @@ namespace Minio.Functional.Tests
             string objectName = prefix + GetRandomName(10);
             var args = new Dictionary<string, string>
             {
+                { "bucketName", bucketName },
                 { "objectName", objectName },
                 { "prefix", prefix },
                 { "recursive", "false" },
@@ -3458,5 +3465,168 @@ namespace Minio.Functional.Tests
 
         #endregion
 
+
+        #region Bucket Tagging
+        internal async static Task BucketTagsAsync_Test1(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName", bucketName }
+            };
+            Dictionary<string, string> tags = new Dictionary<string, string>()
+                                {
+                                    {"key1", "value1"},
+                                    {"key2", "value2"},
+                                    {"key3", "value3"}
+                                };
+            try
+            {
+                await Setup_Test(minio, bucketName);
+                SetBucketTagsArgs tagsArgs = new SetBucketTagsArgs()
+                                                            .WithBucket(bucketName)
+                                                            .WithTagKeyValuePairs(tags);
+                await minio.SetBucketTagsAsync(tagsArgs);
+                new MintLogger(nameof(BucketTagsAsync_Test1), setBucketTagsSignature, "Tests whether SetBucketTagsAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                await TearDown(minio, bucketName);
+                new MintLogger(nameof(BucketTagsAsync_Test1), setBucketTagsSignature, "Tests whether SetBucketTagsAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                return;
+            }
+            try
+            {
+                GetBucketTagsArgs tagsArgs = new GetBucketTagsArgs()
+                                                        .WithBucket(bucketName);
+                var tagObj = await minio.GetBucketTagsAsync(tagsArgs);
+                Assert.IsNotNull(tagObj);
+                Assert.IsNotNull(tagObj.GetTags());
+                var tagsRes = tagObj.GetTags();
+                Assert.AreEqual(tagsRes.Count, tags.Count);
+                
+                new MintLogger(nameof(BucketTagsAsync_Test1), getBucketTagsSignature, "Tests whether GetBucketTagsAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                await TearDown(minio, bucketName);
+                new MintLogger(nameof(BucketTagsAsync_Test1), getBucketTagsSignature, "Tests whether GetBucketTagsAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                return;
+            }
+            try
+            {
+                RemoveBucketTagsArgs tagsArgs = new RemoveBucketTagsArgs()
+                                                                .WithBucket(bucketName);
+                await minio.RemoveBucketTagsAsync(tagsArgs);
+                GetBucketTagsArgs getTagsArgs = new GetBucketTagsArgs()
+                                                        .WithBucket(bucketName);
+                var tagObj = await minio.GetBucketTagsAsync(getTagsArgs);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message.Contains("The TagSet does not exist"));
+                var testOutcome = (ex.Message.Contains("The TagSet does not exist")) ? TestStatus.PASS : TestStatus.FAIL;
+                if (ex.Message.Contains("The TagSet does not exist"))
+                    new MintLogger(nameof(BucketTagsAsync_Test1), deleteBucketTagsSignature, "Tests whether RemoveBucketTagsAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+                else
+                    new MintLogger(nameof(BucketTagsAsync_Test1), deleteBucketTagsSignature, "Tests whether RemoveBucketTagsAsync passes", testOutcome, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                await TearDown(minio, bucketName);
+                return;
+            }
+        }
+
+        #endregion
+
+        #region Object Tagging
+        internal async static Task ObjectTagsAsync_Test1(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName", bucketName },
+                { "objectName", objectName}
+            };
+            Dictionary<string, string> tags = new Dictionary<string, string>()
+                                {
+                                    {"key1", "value1"},
+                                    {"key2", "value2"},
+                                    {"key3", "value3"}
+                                };
+            try
+            {
+                await Setup_Test(minio, bucketName);
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
+                    await minio.PutObjectAsync(bucketName,
+                                                objectName,
+                                                filestream, filestream.Length, null);
+                SetObjectTagsArgs tagsArgs = new SetObjectTagsArgs()
+                                                            .WithBucket(bucketName)
+                                                            .WithObject(objectName)
+                                                            .WithTagKeyValuePairs(tags);
+                await minio.SetObjectTagsAsync(tagsArgs);
+                new MintLogger(nameof(ObjectTagsAsync_Test1), setObjectTagsSignature, "Tests whether SetObjectTagsAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                await minio.RemoveObjectAsync(bucketName, objectName);
+                await TearDown(minio, bucketName);
+                new MintLogger(nameof(ObjectTagsAsync_Test1), setObjectTagsSignature, "Tests whether SetObjectTagsAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                return;
+            }
+            try
+            {
+                GetObjectTagsArgs tagsArgs = new GetObjectTagsArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName);
+                var tagObj = await minio.GetObjectTagsAsync(tagsArgs);
+                Assert.IsNotNull(tagObj);
+                Assert.IsNotNull(tagObj.GetTags());
+                var tagsRes = tagObj.GetTags();
+                Assert.AreEqual(tagsRes.Count, tags.Count);
+                new MintLogger(nameof(ObjectTagsAsync_Test1), getObjectTagsSignature, "Tests whether GetObjectTagsAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                await minio.RemoveObjectAsync(bucketName, objectName);
+                await TearDown(minio, bucketName);
+                new MintLogger(nameof(ObjectTagsAsync_Test1), getObjectTagsSignature, "Tests whether GetObjectTagsAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                return;
+            }
+            try
+            {
+                RemoveObjectTagsArgs tagsArgs = new RemoveObjectTagsArgs()
+                                                                .WithBucket(bucketName)
+                                                                .WithObject(objectName);
+                await minio.RemoveObjectTagsAsync(tagsArgs);
+                GetObjectTagsArgs getTagsArgs = new GetObjectTagsArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName);
+                var tagObj = await minio.GetObjectTagsAsync(getTagsArgs);
+                Assert.IsNotNull(tagObj);
+                var tagsRes = tagObj.GetTags();
+                Assert.IsNull(tagsRes);
+                new MintLogger(nameof(ObjectTagsAsync_Test1), deleteObjectTagsSignature, "Tests whether RemoveObjectTagsAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                await minio.RemoveObjectAsync(bucketName, objectName);
+                await TearDown(minio, bucketName);
+                new MintLogger(nameof(ObjectTagsAsync_Test1), deleteObjectTagsSignature, "Tests whether RemoveObjectTagsAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+            }
+            try
+            {
+                await minio.RemoveObjectAsync(bucketName, objectName);
+                await TearDown(minio, bucketName);
+            }
+            catch (Exception ex)
+            {
+                new MintLogger(nameof(ObjectTagsAsync_Test1), nameof(ObjectTagsAsync_Test1), "ObjectTags test Teardown did not finish", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+            }
+        }
+
+        #endregion
     }
 }
