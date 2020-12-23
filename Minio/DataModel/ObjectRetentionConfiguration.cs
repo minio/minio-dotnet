@@ -1,5 +1,5 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio
 {
-    public class MissingObjectLockConfiguration : MinioException
+    public enum RetentionMode
     {
-        private readonly string bucketName;
-
-        public MissingObjectLockConfiguration(string bucketName, string message) : base(message)
-        {
-            this.bucketName = bucketName;
-        }
-
-        public override string ToString() => $"{this.bucketName}: {base.ToString()}";
+        GOVERNANCE,
+        COMPLIANCE
     }
 }

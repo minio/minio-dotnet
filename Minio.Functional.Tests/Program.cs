@@ -173,6 +173,9 @@ namespace Minio.Functional.Tests
             // Test GetBucket policy
             FunctionalTest.GetBucketPolicy_Test1(minioClient).Wait();
 
+            // Test Object Lock Configuration
+            FunctionalTest.ObjectLockConfigurationAsync_Test1(minioClient).Wait();
+
             // Test Bucket, Object Tags
             FunctionalTest.BucketTagsAsync_Test1(minioClient).Wait();
             FunctionalTest.ObjectTagsAsync_Test1(minioClient).Wait();
