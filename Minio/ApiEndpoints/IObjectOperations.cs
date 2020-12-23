@@ -50,31 +50,45 @@ namespace Minio
         /// <summary>
         /// Set the Retention using the configuration object
         /// </summary>
-        /// <param name="args">SetObjectLegalHoldArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
+        /// <param name="args">SetObjectRetentionArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns> Task </returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
         /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
         /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         Task SetObjectRetentionAsync(SetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// Get the Retention using the configuration object
+        /// Get the Retention configuration for the object
         /// </summary>
-        /// <param name="args">GetObjectLegalHoldArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
+        /// <param name="args">GetObjectRetentionArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns> ObjectRetentionConfiguration object which contains the Retention configuration </returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
         /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
         /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
         Task<ObjectRetentionConfiguration> GetObjectRetentionAsync(GetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// Clears the Retention configuration
+        /// Clears the Retention configuration for the object
         /// </summary>
         /// <param name="args">ClearObjectRetentionArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns> Task </returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
         /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
         /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         Task ClearObjectRetentionAsync(ClearObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>

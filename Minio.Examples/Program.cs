@@ -230,6 +230,15 @@ namespace Minio.Examples
                 // Remove all bucket notifications
                 Cases.RemoveAllBucketNotifications.Run(minioClient, bucketName).Wait();
 
+                // Object Lock Configuration operations
+                lockBucketName = GetRandomName();
+                Cases.MakeBucketWithLock.Run(minioClient, lockBucketName).Wait();
+                ObjectLockConfiguration configuration = new ObjectLockConfiguration(RetentionMode.GOVERNANCE, 35);
+                Cases.SetObjectLockConfiguration.Run(minioClient, lockBucketName, configuration).Wait();
+                Cases.GetObjectLockConfiguration.Run(minioClient, lockBucketName).Wait();
+                Cases.RemoveObjectLockConfiguration.Run(minioClient, lockBucketName).Wait();
+                Cases.RemoveBucket.Run(minioClient, lockBucketName).Wait();
+
                 // Get the presigned url for a GET object request
                 Cases.PresignedGetObject.Run(minioClient, bucketName, objectName).Wait();
 

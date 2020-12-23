@@ -19,14 +19,12 @@ using System.Collections.Generic;
 using System.IO;
 using RestSharp;
 using System.Security.Cryptography;
-using System.IO;
 using System.Globalization;
 using System.Xml;
 
 using Minio.DataModel;
 using Minio.Exceptions;
 using Minio.Helper;
-using System.Security.Cryptography;
 
 namespace Minio
 {
@@ -451,11 +449,10 @@ namespace Minio
             }
             ObjectLegalHoldConfiguration config = new ObjectLegalHoldConfiguration(this.LegalHoldON);
             string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
-            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
-            var md5 = MD5.Create();
-            byte[] hash = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(body));
-            string base64 = Convert.ToBase64String(hash);
-            request.AddOrUpdateParameter("Content-MD5", base64, ParameterType.HttpHeader);
+            request.AddParameter("text/xml", body, ParameterType.RequestBody);
+            request.AddOrUpdateParameter("Content-MD5",
+                                          utils.getMD5SumStr(System.Text.Encoding.UTF8.GetBytes(body)),
+                                          ParameterType.HttpHeader);
             return request;
         }
     }
@@ -617,22 +614,25 @@ namespace Minio
         internal bool BypassGovernanceMode { get; set; }
         internal RetentionMode Mode { get; set; }
         internal DateTime RetentionUntilDate { get; set; }
-        internal int RetentionValidDays { get; set; }
+
         public SetObjectRetentionArgs()
         {
             this.RequestMethod = Method.PUT;
             this.RetentionUntilDate = default(DateTime);
-            this.RetentionValidDays = -1;
             this.Mode = RetentionMode.GOVERNANCE;
         }
 
         public override void Validate()
         {
             base.Validate();
-            if (this.RetentionUntilDate.Equals(default(DateTime)) && this.RetentionValidDays < 0)
+            if (this.RetentionUntilDate.Equals(default(DateTime)))
             {
-                throw new InvalidOperationException("Retention Period is not set. Please set " +
-                        nameof(RetentionUntilDate) + " or " + nameof(RetentionValidDays));
+                throw new InvalidOperationException("Retention Period is not set. Please set using " +
+                        nameof(WithRetentionUntilDate) + ".");
+            }
+            if (DateTime.Compare(this.RetentionUntilDate, DateTime.Now)  <= 0)
+            {
+                throw new InvalidOperationException("Retention until date set using " + nameof(WithRetentionUntilDate) + " needs to be in the future.");
             }
         }
         public SetObjectRetentionArgs WithBypassGovernanceMode(bool bypass = true)
@@ -653,11 +653,6 @@ namespace Minio
             return this;
         }
 
-        public SetObjectRetentionArgs WithRetentionValidDays(int days)
-        {
-            this.RetentionValidDays = days;
-            return this;
-        }
         public override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("retention", "");
@@ -669,25 +664,16 @@ namespace Minio
             {
                 request.AddOrUpdateParameter("x-amz-bypass-governance-retention", "true", ParameterType.HttpHeader);
             }
-            ObjectRetentionConfiguration config = null;
-            if (this.RetentionValidDays > 0)
-            {
-                config = new ObjectRetentionConfiguration((uint)this.RetentionValidDays, this.Mode);
-            }
-            else if (this.RetentionUntilDate != default(DateTime))
-            {
-                config = new ObjectRetentionConfiguration(this.RetentionUntilDate, this.Mode);
-            }
+            ObjectRetentionConfiguration config = new ObjectRetentionConfiguration(this.RetentionUntilDate, this.Mode);
             string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
-            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
-            var md5 = MD5.Create();
-            byte[] hash = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(body));
-            string base64 = Convert.ToBase64String(hash);
-            request.AddOrUpdateParameter("Content-MD5", base64, ParameterType.HttpHeader);
+            request.AddParameter("text/xml", body, ParameterType.RequestBody);
+            request.AddOrUpdateParameter("Content-MD5",
+                                          utils.getMD5SumStr(System.Text.Encoding.UTF8.GetBytes(body)),
+                                          ParameterType.HttpHeader);
             return request;
         }
     }
-    
+
     public class GetObjectRetentionArgs : ObjectVersionArgs<GetObjectRetentionArgs>
     {
         public GetObjectRetentionArgs()
@@ -736,11 +722,10 @@ namespace Minio
             // Required for Clear Object Retention.
             request.AddOrUpdateParameter("x-amz-bypass-governance-retention", "true", ParameterType.HttpHeader);
             string body = EmptyRetentionConfigXML();
-            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
-            var md5 = MD5.Create();
-            byte[] hash = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(body));
-            string base64 = Convert.ToBase64String(hash);
-            request.AddOrUpdateParameter("Content-MD5", base64, ParameterType.HttpHeader);
+            request.AddParameter("text/xml", body, ParameterType.RequestBody);
+            request.AddOrUpdateParameter("Content-MD5",
+                                          utils.getMD5SumStr(System.Text.Encoding.UTF8.GetBytes(body)),
+                                          ParameterType.HttpHeader);
             return request;
         }
     }

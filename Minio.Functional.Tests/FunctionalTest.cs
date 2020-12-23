@@ -21,6 +21,7 @@ using Minio.Exceptions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -75,13 +76,19 @@ namespace Minio.Functional.Tests
         private const string selectObjectSignature = "Task<SelectResponseStream> SelectObjectContentAsync(SelectObjectContentArgs args,CancellationToken cancellationToken = default(CancellationToken))";
         private const string setObjectLegalHoldSignature = "Task SetObjectLegalHoldAsync(SetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string getObjectLegalHoldSignature = "Task<bool> GetObjectLegalHoldAsync(GetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken))";
-
+        private const string setObjectLockConfigurationSignature = "Task SetObjectLockConfigurationAsync(SetObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string getObjectLockConfigurationSignature = "Task<ObjectLockConfiguration> GetObjectLockConfigurationAsync(GetObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string deleteObjectLockConfigurationSignature = "Task RemoveObjectLockConfigurationAsync(GetObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string getBucketTagsSignature = "Task<Tagging> GetBucketTagsAsync(GetBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string setBucketTagsSignature = "Task SetBucketTagsAsync(SetBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string deleteBucketTagsSignature = "Task RemoveBucketTagsAsync(RemoveBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string getObjectTagsSignature = "Task<Tagging> GetObjectTagsAsync(GetObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string setObjectTagsSignature = "Task SetObjectTagsAsync(SetObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string deleteObjectTagsSignature = "Task RemoveObjectTagsAsync(RemoveObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string setObjectRetentionSignature = "Task SetObjectRetentionAsync(SetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string getObjectRetentionSignature = "Task<ObjectRetentionConfiguration> GetObjectRetentionAsync(GetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string clearObjectRetentionSignature = "Task ClearObjectRetentionAsync(ClearObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+
 
         // Create a file of given size from random byte array or optionally create a symbolic link
         // to the dataFileName residing in MINT_DATA_DIR
@@ -3345,6 +3352,7 @@ namespace Minio.Functional.Tests
 
         #endregion
 
+
         #region Bucket Encryption
         internal async static Task BucketEncryptionsAsync_Test1(MinioClient minio)
         {
@@ -3388,7 +3396,7 @@ namespace Minio.Functional.Tests
             try
             {
                 RemoveBucketEncryptionArgs rmEncryptionArgs = new RemoveBucketEncryptionArgs()
-                                                                            .WithBucket(bucketName);
+                                                                        .WithBucket(bucketName);
                 await minio.RemoveBucketEncryptionAsync(rmEncryptionArgs).ConfigureAwait(false);
                 GetBucketEncryptionArgs encryptionArgs = new GetBucketEncryptionArgs()
                                                                         .WithBucket(bucketName);
@@ -3416,12 +3424,10 @@ namespace Minio.Functional.Tests
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
             string objectName = GetRandomObjectName(10);
-            string outFileName = "outFileName";
             var args = new Dictionary<string, string>
             {
                 { "bucketName", bucketName },
-                { "objectName", objectName },
-                { "fileName", outFileName },
+                { "objectName", objectName }
             };
             try
             {
@@ -3430,39 +3436,38 @@ namespace Minio.Functional.Tests
                     await minio.PutObjectAsync(bucketName,
                                                 objectName,
                                                 filestream, filestream.Length, null);
-
-                SetObjectRetentionArgs retentionArgs = new SetObjectRetentionArgs()
-                                                                    .WithBucket(bucketName)
-                                                                    .WithObject(objectName)
-                                                                    .WithRetentionMode(RetentionMode.GOVERNANCE)
-                                                                    .WithRetentionValidDays(112);
-                await minio.SetObjectRetentionAsync(retentionArgs);
-                new MintLogger(nameof(LegalHoldStatusAsync_Test1), setObjectLegalHoldSignature, "Tests whether SetObjectLegalHoldAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
                 SetObjectLegalHoldArgs legalHoldArgs = new SetObjectLegalHoldArgs()
                                                                     .WithBucket(bucketName)
                                                                     .WithObject(objectName)
                                                                     .WithLegalHold(true);
                 await minio.SetObjectLegalHoldAsync(legalHoldArgs);
+                new MintLogger(nameof(LegalHoldStatusAsync_Test1), setObjectLegalHoldSignature, "Tests whether SetObjectLegalHoldAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                await TearDown(minio, bucketName);
+                new MintLogger(nameof(LegalHoldStatusAsync_Test1), setObjectLegalHoldSignature, "Tests whether SetObjectLegalHoldAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+            }
+
+            try
+            {
                 GetObjectLegalHoldArgs getLegalHoldArgs = new GetObjectLegalHoldArgs()
                                                                     .WithBucket(bucketName)
                                                                     .WithObject(objectName);
                 bool enabled = await minio.GetObjectLegalHoldAsync(getLegalHoldArgs);
                 Assert.IsTrue(enabled);
                 await minio.RemoveObjectAsync(bucketName, objectName);
-                System.Threading.Thread.Sleep(1000);
                 await TearDown(minio, bucketName);
                 new MintLogger(nameof(LegalHoldStatusAsync_Test1), getObjectLegalHoldSignature, "Tests whether GetObjectLegalHoldAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (Exception ex)
             {
                 await TearDown(minio, bucketName);
-                new MintLogger(nameof(LegalHoldStatusAsync_Test1), setObjectLegalHoldSignature, "Tests whether SetObjectLegalHoldAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
                 new MintLogger(nameof(LegalHoldStatusAsync_Test1), getObjectLegalHoldSignature, "Tests whether GetObjectLegalHoldAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
             }
         }
 
         #endregion
-
 
         #region Bucket Tagging
         internal async static Task BucketTagsAsync_Test1(MinioClient minio)
@@ -3626,5 +3631,159 @@ namespace Minio.Functional.Tests
         }
 
         #endregion
+
+        #region Object Lock Configuration
+        internal async static Task ObjectLockConfigurationAsync_Test1(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName", bucketName }
+            };
+            try
+            {
+                await Setup_WithLock_Test(minio, bucketName);
+                SetObjectLockConfigurationArgs objectLockArgs = new SetObjectLockConfigurationArgs()
+                                                                            .WithBucket(bucketName)
+                                                                            .WithLockConfiguration(
+                                                                                new ObjectLockConfiguration(RetentionMode.GOVERNANCE, 33)
+                                                                            );
+                await minio.SetObjectLockConfigurationAsync(objectLockArgs);
+                new MintLogger(nameof(ObjectLockConfigurationAsync_Test1), setObjectLockConfigurationSignature, "Tests whether SetObjectLockConfigurationAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                await TearDown(minio, bucketName);
+                new MintLogger(nameof(ObjectLockConfigurationAsync_Test1), setObjectLockConfigurationSignature, "Tests whether SetObjectLockConfigurationAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                return;
+            }
+            try
+            {
+                GetObjectLockConfigurationArgs objectLockArgs = new GetObjectLockConfigurationArgs()
+                                                                            .WithBucket(bucketName);
+                var config = await minio.GetObjectLockConfigurationAsync(objectLockArgs);
+                Assert.IsNotNull(config);
+                StringAssert.Equals(config.ObjectLockEnabled, ObjectLockConfiguration.LockEnabled);
+                Assert.IsNotNull(config.Rule);
+                Assert.IsNotNull(config.Rule.DefaultRetention);
+                Assert.AreEqual(config.Rule.DefaultRetention.Days, 33);
+                new MintLogger(nameof(ObjectLockConfigurationAsync_Test1), getObjectLockConfigurationSignature, "Tests whether GetObjectLockConfigurationAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                await TearDown(minio, bucketName);
+                new MintLogger(nameof(ObjectLockConfigurationAsync_Test1), getObjectLockConfigurationSignature, "Tests whether GetObjectLockConfigurationAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                return;
+            }
+            try
+            {
+                RemoveObjectLockConfigurationArgs objectLockArgs = new RemoveObjectLockConfigurationArgs()
+                                                                            .WithBucket(bucketName);
+                await minio.RemoveObjectLockConfigurationAsync(objectLockArgs);
+                GetObjectLockConfigurationArgs getObjectLockArgs = new GetObjectLockConfigurationArgs()
+                                                                            .WithBucket(bucketName);
+                var config = await minio.GetObjectLockConfigurationAsync(getObjectLockArgs);
+                Assert.IsNotNull(config);
+                Assert.IsNull(config.Rule);
+                await TearDown(minio, bucketName);
+                new MintLogger(nameof(ObjectLockConfigurationAsync_Test1), deleteObjectLockConfigurationSignature, "Tests whether GetObjectLockConfigurationAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                await TearDown(minio, bucketName);
+                new MintLogger(nameof(ObjectLockConfigurationAsync_Test1), deleteObjectLockConfigurationSignature, "Tests whether GetObjectLockConfigurationAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                return;
+            }
+        }
+
+        #endregion
+
+
+        #region Object Retention
+        internal async static Task ObjectRetentionAsync_Test1(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomObjectName(10);
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName", bucketName },
+                { "objectName", objectName }
+            };
+            try
+            {
+                int plusDays = 10;
+                await Setup_WithLock_Test(minio, bucketName);
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
+                    await minio.PutObjectAsync(bucketName,
+                                                objectName,
+                                                filestream, filestream.Length, null);
+                DateTime untilDate = DateTime.Now.AddDays(plusDays);
+                SetObjectRetentionArgs setRetentionArgs = new SetObjectRetentionArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName)
+                                                                        .WithRetentionMode(RetentionMode.GOVERNANCE)
+                                                                        .WithRetentionUntilDate(untilDate);
+                await minio.SetObjectRetentionAsync(setRetentionArgs);
+                new MintLogger(nameof(ObjectRetentionAsync_Test1), setObjectRetentionSignature, "Tests whether SetObjectRetentionAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                await TearDown(minio, bucketName);
+                new MintLogger(nameof(ObjectRetentionAsync_Test1), setObjectRetentionSignature, "Tests whether SetObjectRetentionAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+            }
+
+            try
+            {
+                GetObjectRetentionArgs getRetentionArgs = new GetObjectRetentionArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName);
+                ObjectRetentionConfiguration config = await minio.GetObjectRetentionAsync(getRetentionArgs);
+                double plusDays = 10.0;
+                Assert.IsNotNull(config);
+                Assert.AreEqual(config.Mode, RetentionMode.GOVERNANCE);
+                DateTime untilDate = DateTime.Parse(config.RetainUntilDate, null, System.Globalization.DateTimeStyles.RoundtripKind);
+                Assert.AreEqual(Math.Ceiling((untilDate - DateTime.Now).TotalDays), plusDays);
+                new MintLogger(nameof(ObjectRetentionAsync_Test1), getObjectRetentionSignature, "Tests whether GetObjectRetentionAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                await TearDown(minio, bucketName);
+                new MintLogger(nameof(ObjectRetentionAsync_Test1), getObjectRetentionSignature, "Tests whether GetObjectRetentionAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+            }
+
+            try
+            {
+                ClearObjectRetentionArgs clearRetentionArgs = new ClearObjectRetentionArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName);
+                await minio.ClearObjectRetentionAsync(clearRetentionArgs);
+                GetObjectRetentionArgs getRetentionArgs = new GetObjectRetentionArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName);
+                ObjectRetentionConfiguration config = await minio.GetObjectRetentionAsync(getRetentionArgs);
+            }
+            catch (Exception ex)
+            {
+                bool errMsgLock = ex.Message.Contains("The specified object does not have a ObjectLock configuration");
+                if (errMsgLock)
+                    new MintLogger(nameof(ObjectRetentionAsync_Test1), clearObjectRetentionSignature, "Tests whether ClearObjectRetentionAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+                else
+                    new MintLogger(nameof(ObjectRetentionAsync_Test1), clearObjectRetentionSignature, "Tests whether ClearObjectRetentionAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+            }
+
+            try
+            {
+                await minio.RemoveObjectAsync(bucketName, objectName);
+                await TearDown(minio, bucketName);
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        #endregion
+
     }
 }

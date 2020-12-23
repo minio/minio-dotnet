@@ -45,12 +45,5 @@ namespace Minio
             this.RetainUntilDate = utils.To8601String(date);
             this.Mode = mode;
         }
-
-        public ObjectRetentionConfiguration(uint numOfDays, RetentionMode mode = RetentionMode.GOVERNANCE)
-        {
-            DateTime today = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0);
-            this.RetainUntilDate = utils.To8601String(today.AddDays(numOfDays));
-            this.Mode = mode;
-        }
     }
 }

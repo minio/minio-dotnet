@@ -39,6 +39,9 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 | [`setBucketTags`](#setBucketTags)  | [`setObjectRetention`](#setObjectRetention)  |   |   |
 | [`getBucketTags`](#getBucketTags)  | [`getObjectRetention`](#getObjectRetention)  |   |   |
 | [`removeBucketTags`](#removeBucketTags)  | [`clearObjectRetention`](#clearObjectRetention)  |   |   |
+| [`setObjectLock`](#setObjectLock)  |   |   |   |
+| [`getObjectLock`](#getObjectLock)  |   |   |   |
+| [`removeObjectLock`](#removeObjectLock)  |   |   |   |
 
 
 ## 1. Constructors
@@ -975,6 +978,152 @@ try
 catch (MinioException e)
 {
     Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
+
+<a name="setObjectLock"></a>
+### SetObjectLockConfigurationAsync(SetObjectLockConfigurationArgs args)
+
+`Task SetObjectLockConfigurationAsync(SetObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Sets object-lock configuration in a bucket.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _SetObjectLockConfigurationArgs_  | SetObjectLockConfigurationArgs Argument Object with bucket, lock configuration to set  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task``  | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found   |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    ObjectLockConfiguration config = = new ObjectLockConfiguration(RetentionMode.GOVERNANCE, 35);
+    // Set Object Lock Configuration for the bucket
+    SetObjectLockConfigurationArgs args = new SetObjectLockConfigurationArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithLockConfiguration(config);
+    await minio.SetObjectLockConfigurationAsync(args);
+    Console.WriteLine($"Set Object lock configuration to bucket {bucketName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
+<a name="getObjectLock"></a>
+### GetObjectLockConfigurationAsync(GetObjectLockConfigurationArgs args)
+
+`Task<ObjectLockConfiguration> GetObjectLockConfigurationAsync(GetObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Gets object-lock configuration of a bucket.
+
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _GetObjectLockConfigurationArgs_  | GetObjectLockConfigurationArgs Argument Object with bucket name  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task<ObjectLockConfiguration>``: ObjectLockConfiguration object which containing lock-enabled status & Object lock rule. | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found  |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Get the Object Lock Configuration for the bucket
+    var args = new GetObjectLockConfigurationArgs()
+                                     .WithBucket(bucketName);
+    var config = await minio.GetObjectLockConfigurationAsync(args);
+    Console.WriteLine($"Object lock configuration on bucket {bucketName} is : " + config.ObjectLockEnabled);
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
+<a name="removeObjectLock"></a>
+### RemoveObjectLockConfigurationAsync(RemoveObjectLockConfigurationArgs args)
+
+`Task RemoveObjectLockConfigurationAsync(RemoveObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Removes object-lock configuration on a bucket.
+
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _RemoveObjectLockConfigurationArgs_  | RemoveObjectLockConfigurationArgs Argument Object with bucket name  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task``  | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found  |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Remove Object Lock Configuration on the bucket
+    var args = new RemoveObjectLockConfigurationArgs()
+                                .WithBucket(bucketName);
+    await minio.RemoveObjectLockConfigurationAsync(args);
+    Console.WriteLine($"Removed Object lock configuration on bucket {bucketName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
 }
 ```
 
@@ -2181,7 +2330,7 @@ __Parameters__
 |        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
 |        |  ``InvalidBucketNameException`` : upon invalid bucket name |
 |        |  ``InvalidObjectNameException`` : upon invalid object name |
-|        |  ``BucketNotFoundException`` : upon bucket with name not found   |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found |
 |        |  ``ObjectNotFoundException`` : upon object with name not found |
 |        |  ``MissingObjectLockConfiguration`` : upon bucket created with object lock not enabled |
 |        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |

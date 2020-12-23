@@ -25,22 +25,26 @@ namespace Minio.Examples.Cases
                                     string bucketName = "my-bucket-name",
                                     string objectName = "my-object-name",
                                     string versionId = null,
-                                    int numOfDays = 1)
+                                    RetentionMode mode = RetentionMode.GOVERNANCE,
+                                    DateTime retentionValidDate = default(DateTime))
         {
             try
             {
+                if(retentionValidDate.Equals(default(DateTime)))
+                    retentionValidDate = DateTime.Now.AddDays(1);
                 Console.WriteLine("Running example for API: SetObjectRetention");
                 await minio.SetObjectRetentionAsync(
                     new SetObjectRetentionArgs()
                         .WithBucket(bucketName)
                         .WithObject(objectName)
                         .WithVersionId(versionId)
-                        .WithRetentionValidDays(numOfDays)
+                        .WithRetentionMode(mode)
+                        .WithRetentionUntilDate(retentionValidDate)
                 );
                 string versionInfo = (string.IsNullOrEmpty(versionId))?"":(" Version ID: " + versionId);
                 Console.WriteLine($"Assigned retention configuration to object {bucketName}/{objectName} "  +
                         versionInfo +
-                        " Number of days: " + numOfDays);
+                        " till date: " + retentionValidDate.ToShortDateString());
                 Console.WriteLine();
             }
             catch (Exception e)
