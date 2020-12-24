@@ -37,7 +37,10 @@ namespace FileUploader
             var secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
             try
             {
-                var minio = new MinioClient(endpoint, accessKey, secretKey).WithSSL();
+                var minio = new MinioClient()
+                                    .WithEndpoint(endpoint)
+                                    .WithCredentials(accessKey, secretKey)
+                                    .WithSSL();
                 Run(minio).Wait();
             }
             catch (Exception ex)
@@ -64,10 +67,15 @@ namespace FileUploader
 
             try
             {
-                bool found = await minio.BucketExistsAsync(bucketName);
+                var bktExistArgs = new BucketExistsArgs()
+                                                .WithBucket(bucketName);
+                bool found = await minio.BucketExistsAsync(bktExistArgs);
                 if (!found)
                 {
-                    await minio.MakeBucketAsync(bucketName, location);
+                    var mkBktArgs = new MakeBucketArgs()
+                                                .WithBucket(bucketName)
+                                                .WithLocation(location);
+                    await minio.MakeBucketAsync(mkBktArgs);
                 }
                 await minio.PutObjectAsync(bucketName, objectName, filePath, contentType);
                 Console.WriteLine("Successfully uploaded " + objectName);

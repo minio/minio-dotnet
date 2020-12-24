@@ -36,9 +36,9 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 | [`setBucketEncryption`](#setBucketEncryption)  | [`setObjectTags`](#setObjectTags)  |   |   |
 | [`getBucketEncryption`](#getBucketEncryption)  | [`getObjectTags`](#getObjectTags)  |   |   |
 | [`removeBucketEncryption`](#removeBucketEncryption)  | [`removeObjectTags`](#removeObjectTags)  |   |   |
-| [`setBucketTags`](#setBucketTags)  |   |   |   |
-| [`getBucketTags`](#getBucketTags)  |   |   |   |
-| [`removeBucketTags`](#removeBucketTags)  |   |   |   |
+| [`setBucketTags`](#setBucketTags)  | [`setObjectRetention`](#setObjectRetention)  |   |   |
+| [`getBucketTags`](#getBucketTags)  | [`getObjectRetention`](#getObjectRetention)  |   |   |
+| [`removeBucketTags`](#removeBucketTags)  | [`clearObjectRetention`](#clearObjectRetention)  |   |   |
 | [`setObjectLock`](#setObjectLock)  |   |   |   |
 | [`getObjectLock`](#getObjectLock)  |   |   |   |
 | [`removeObjectLock`](#removeObjectLock)  |   |   |   |
@@ -2299,6 +2299,157 @@ try
                                 .WithObject(objectName);
     await minio.RemoveObjectTagsAsync(args);
     Console.WriteLine($"Removed tags for object {bucketName}/{objectName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
+<a name="setObjectRetention"></a>
+### SetObjectRetentionAsync(SetObjectRetentionArgs args)
+
+`Task SetObjectRetentionAsync(SetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Sets retention configuration to an object.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _SetObjectRetentionArgs_  | SetObjectRetentionArgs Argument Object with bucket, object names, version id(optional)  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task``  | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``InvalidObjectNameException`` : upon invalid object name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found |
+|        |  ``ObjectNotFoundException`` : upon object with name not found |
+|        |  ``MissingObjectLockConfiguration`` : upon bucket created with object lock not enabled |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Setting Retention Configuration of the object.
+    SetObjectRetentionArgs args = new SetObjectRetentionArgs()
+                        .WithBucket(bucketName)
+                        .WithObject(objectName)
+                        .WithRetentionValidDays(numOfDays);
+    await minio.SetObjectRetentionAsync(args);
+    Console.WriteLine($"Assigned retention configuration to object {bucketName}/{objectName}");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
+<a name="getObjectRetention"></a>
+### GetObjectRetentionAsync(GetObjectRetentionArgs args)
+
+`Task<ObjectRetentionConfiguration> GetObjectRetentionAsync(GetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Gets retention configuration of an object.
+
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _GetObjectRetentionArgs_  | GetObjectRetentionArgs Argument Object with bucket, object names, version id(optional)  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task<ObjectRetentionConfiguration>``: ObjectRetentionConfiguration object with configuration data. | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``InvalidObjectNameException`` : upon invalid object name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found  |
+|        |  ``ObjectNotFoundException`` : upon object with name not found |
+|        |  ``MissingObjectLockConfiguration`` : upon bucket created with object lock not enabled |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Get Retention configuration of an object
+    var args = new GetObjectRetentionArgs()
+                        .WithBucket(bucketName)
+                        .WithObject(objectName);
+    ObjectRetentionConfiguration config = await minio.GetObjectRetentionAsync(args);
+    Console.WriteLine($"Got retention configuration for object {bucketName}/{objectName}");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
+<a name="clearObjectRetention"></a>
+### ClearObjectRetentionAsync(ClearObjectRetentionArgs args)
+
+`Task ClearObjectRetentionAsync(ClearObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Clears retention configuration to an object.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _ClearObjectRetentionArgs_  | ClearObjectRetentionArgs Argument Object with bucket, object names, version id(optional)  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task``  | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``InvalidObjectNameException`` : upon invalid object name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found   |
+|        |  ``ObjectNotFoundException`` : upon object with name not found |
+|        |  ``MissingObjectLockConfiguration`` : upon bucket created with object lock not enabled |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Clearing the Retention Configuration of the object.
+    ClearObjectRetentionArgs args = new ClearObjectRetentionArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObject(objectName);
+    await minio.ClearObjectRetentionAsync(args);
+    Console.WriteLine($"Clears retention configuration to object {bucketName}/{objectName}");
 }
 catch(MinioException e)
 {

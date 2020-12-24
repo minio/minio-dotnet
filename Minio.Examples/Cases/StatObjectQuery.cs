@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
-using Minio.Exceptions;
 using System;
 using System.Threading.Tasks;
+
+using Minio.DataModel;
+using Minio.Exceptions;
 
 namespace Minio.Examples.Cases
 {

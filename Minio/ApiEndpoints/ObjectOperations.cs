@@ -15,21 +15,22 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
-using Minio.Exceptions;
-using Minio.Helper;
 using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+
+using Minio.DataModel;
+using Minio.Exceptions;
+using Minio.Helper;
+
 
 namespace Minio
 {
@@ -186,7 +187,7 @@ namespace Minio
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -310,7 +311,7 @@ namespace Minio
         {
             args.Validate();
             var request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -340,7 +341,7 @@ namespace Minio
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -354,6 +355,70 @@ namespace Minio
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// Set the Retention using the configuration object
+        /// </summary>
+        /// <param name="args">SetObjectRetentionArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
+        public async Task SetObjectRetentionAsync(SetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            var request = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// Get the Retention configuration for the object
+        /// </summary>
+        /// <param name="args">GetObjectRetentionArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        public async Task<ObjectRetentionConfiguration> GetObjectRetentionAsync(GetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            var request = await this.CreateRequest(args).ConfigureAwait(false);
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var retentionResponse = new GetRetentionResponse(response.StatusCode, response.Content);
+            return retentionResponse.CurrentRetentionConfiguration;
+        }
+
+
+        /// <summary>
+        /// Clears the Retention configuration for the object
+        /// </summary>
+        /// <param name="args">ClearObjectRetentionArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
+        public async Task ClearObjectRetentionAsync(ClearObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            var request = await this.CreateRequest(args).ConfigureAwait(false);
             await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
@@ -469,57 +534,34 @@ namespace Minio
 
             bool tempFileExists = File.Exists(tempFileName);
 
-            utils.ValidateFile(tempFileName);
-
             FileInfo tempFileInfo = new FileInfo(tempFileName);
             long tempFileSize = 0;
             if (tempFileExists)
             {
                 tempFileSize = tempFileInfo.Length;
-                if (tempFileSize > length)
-                {
-                    File.Delete(tempFileName);
-                    tempFileExists = false;
-                    tempFileSize = 0;
-                }
             }
 
-            if (fileExists)
-            {
-                FileInfo fileInfo = new FileInfo(fileName);
-                long fileSize = fileInfo.Length;
-                if (fileSize == length)
-                {
-                    // already downloaded. nothing to do
-                    return;
-                }
-                else if (fileSize > length)
-                {
-                    throw new ArgumentException("'" + fileName + "': object size " + length + " is smaller than file size "
-                                                       + fileSize, nameof(fileSize));
-                }
-                else if (!tempFileExists)
-                {
-                    // before resuming the download, copy filename to tempfilename
-                    File.Copy(fileName, tempFileName);
-                    tempFileSize = fileSize;
-                    tempFileExists = true;
-                }
-            }
-            await GetObjectAsync(bucketName, objectName, (stream) =>
-            {
-                var fileStream = File.Create(tempFileName);
-                stream.CopyTo(fileStream);
-                fileStream.Dispose();
-                FileInfo writtenInfo = new FileInfo(tempFileName);
-                long writtenSize = writtenInfo.Length;
-                if (writtenSize != length - tempFileSize)
-                {
-                    throw new IOException(tempFileName + ": unexpected data written.  expected = " + (length - tempFileSize)
-                                           + ", written = " + writtenSize);
-                }
-                utils.MoveWithReplace(tempFileName, fileName);
-            }, sse, cancellationToken).ConfigureAwait(false);
+            GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                    .WithBucket(bucketName)
+                                                    .WithObject(objectName)
+                                                    .WithCallbackStream(
+                                                        stream =>
+                                                        {
+                                                            var fileStream = File.Create(tempFileName);
+                                                            stream.CopyTo(fileStream);
+                                                            fileStream.Dispose();
+                                                            FileInfo writtenInfo = new FileInfo(tempFileName);
+                                                            long writtenSize = writtenInfo.Length;
+                                                            if (writtenSize != length - tempFileSize)
+                                                            {
+                                                                throw new IOException(tempFileName + ": unexpected data written.  expected = " + (length - tempFileSize)
+                                                                                    + ", written = " + writtenSize);
+                                                            }
+                                                            utils.MoveWithReplace(tempFileName, fileName);
+                                                        }
+                                                    )
+                                                    .WithServerSideEncryption(sse);
+            await GetObjectAsync(getObjectArgs, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -531,7 +573,7 @@ namespace Minio
         /// <param name="opts">Select Object options</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         [Obsolete("Use SelectObjectContentAsync method with SelectObjectContentsArgs object. Refer SelectObjectContent example code.")]
-        public async Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts,CancellationToken cancellationToken = default(CancellationToken))
+        public Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts,CancellationToken cancellationToken = default(CancellationToken))
         {
             SelectObjectContentArgs args = new SelectObjectContentArgs()
                                                         .WithBucket(bucketName)
@@ -542,7 +584,7 @@ namespace Minio
                                                         .WithQueryExpression(opts.Expression)
                                                         .WithServerSideEncryption(opts.SSE)
                                                         .WithRequestProgress(opts.RequestProgress);
-            return await this.SelectObjectContentAsync(args, cancellationToken);
+            return this.SelectObjectContentAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -668,7 +710,11 @@ namespace Minio
             // This shouldn't happen where stream size is known.
             if (partCount != numPartsUploaded && size != -1)
             {
-                await this.RemoveUploadAsync(bucketName, objectName, uploadId, cancellationToken).ConfigureAwait(false);
+                RemoveUploadArgs rmUploadArgs = new RemoveUploadArgs()
+                                                    .WithBucket(bucketName)
+                                                    .WithObject(objectName)
+                                                    .WithUploadId(uploadId);
+                await this.RemoveUploadAsync(rmUploadArgs, cancellationToken).ConfigureAwait(false);
                 return;
             }
 
@@ -893,12 +939,12 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         [Obsolete("Use RemoveIncompleteUploadAsync method with RemoveIncompleteUploadArgs object. Refer RemoveIncompleteUpload example code.")]
-        public async Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))
+        public Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))
         {
             RemoveIncompleteUploadArgs args = new RemoveIncompleteUploadArgs()
                                                                 .WithBucket(bucketName)
                                                                 .WithObject(objectName);
-            await this.RemoveIncompleteUploadAsync(args);
+            return this.RemoveIncompleteUploadAsync(args);
         }
 
         /// <summary>
@@ -909,13 +955,14 @@ namespace Minio
         /// <param name="uploadId"></param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        private async Task RemoveUploadAsync(string bucketName, string objectName, string uploadId, CancellationToken cancellationToken)
+        [Obsolete("Use RemoveUploadAsync method with RemoveUploadArgs object.")]
+        private Task RemoveUploadAsync(string bucketName, string objectName, string uploadId, CancellationToken cancellationToken)
         {
-            var request = await this.CreateRequest(Method.DELETE, bucketName,
-                                                     objectName: objectName)
-                                    .ConfigureAwait(false);
-            request.AddQueryParameter("uploadId",$"{uploadId}");
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            RemoveUploadArgs args = new RemoveUploadArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObject(objectName)
+                                                .WithUploadId(uploadId);
+            return this.RemoveUploadAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -1033,13 +1080,13 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Facts about the object</returns>
         [Obsolete("Use StatObjectAsync method with StatObjectArgs object. Refer StatObject & StatObjectQuery example code.")]
-        public async Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             StatObjectArgs args = new StatObjectArgs()
                                             .WithBucket(bucketName)
                                             .WithObject(objectName)
                                             .WithServerSideEncryption(sse);
-            return await this.StatObjectAsync(args, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return this.StatObjectAsync(args, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -1348,7 +1395,7 @@ namespace Minio
         /// <param name="reqDate">optional request date and time in UTC</param>
         /// <returns></returns>
         [Obsolete("Use PresignedGetObjectAsync method with PresignedGetObjectArgs object.")]
-        public async Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null)
+        public Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null)
         {
             PresignedGetObjectArgs args = new PresignedGetObjectArgs()
                                                         .WithBucket(bucketName)
@@ -1357,7 +1404,7 @@ namespace Minio
                                                         .WithExpiry(expiresInt)
                                                         .WithRequestDate(reqDate);
 
-            return await this.PresignedGetObjectAsync(args);
+            return this.PresignedGetObjectAsync(args);
         }
 
         /// <summary>
@@ -1369,13 +1416,13 @@ namespace Minio
         /// <param name="expiresInt">Expiration time in seconds</param>
         /// <returns></returns>
         [Obsolete("Use PresignedPutObjectAsync method with PresignedPutObjectArgs object.")]
-        public async Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
+        public Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
         {
             PresignedPutObjectArgs args = new PresignedPutObjectArgs()
                                                         .WithBucket(bucketName)
                                                         .WithObject(objectName)
                                                         .WithExpiry(expiresInt);
-            return await this.PresignedPutObjectAsync(args);
+            return this.PresignedPutObjectAsync(args);
         }
 
         /// <summary>
@@ -1383,13 +1430,13 @@ namespace Minio
         /// </summary>
         /// <param name="policy"></param>
         /// <returns></returns>
-        public async Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy)
+        public Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy)
         {
             PresignedPostPolicyArgs args = new PresignedPostPolicyArgs()
                                                         .WithBucket(policy.Bucket)
                                                         .WithObject(policy.Key)
                                                         .WithPolicy(policy);
-            return await this.PresignedPostPolicyAsync(args);
+            return this.PresignedPostPolicyAsync(args);
         }
     }
 }

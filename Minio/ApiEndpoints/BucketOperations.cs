@@ -20,12 +20,10 @@ using Minio.Exceptions;
 using RestSharp;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 using Minio.Helper;
 
 namespace Minio
@@ -44,7 +42,7 @@ namespace Minio
             try
             {
                 RestRequest request = await this.CreateRequest( Method.HEAD, args.BucketName ).ConfigureAwait(false);
-                await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+                var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             }
             catch (InternalClientException ice)
             {
@@ -103,7 +101,7 @@ namespace Minio
             {
                 this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: args.Location, sessionToken: this.SessionToken);
             }
-            await this.ExecuteAsync(this.NoErrorHandlers, args.BuildRequest(request), cancellationToken);
+            var response = await this.ExecuteAsync(this.NoErrorHandlers, args.BuildRequest(request), cancellationToken);
         }
 
 
@@ -135,7 +133,7 @@ namespace Minio
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -179,7 +177,7 @@ namespace Minio
         public async Task RemovePolicyAsync(RemovePolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -321,7 +319,7 @@ namespace Minio
         public async Task SetBucketNotificationsAsync(SetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -335,7 +333,7 @@ namespace Minio
         public async Task RemoveAllBucketNotificationsAsync(RemoveAllBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -393,7 +391,7 @@ namespace Minio
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -423,7 +421,7 @@ namespace Minio
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -437,7 +435,7 @@ namespace Minio
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -451,7 +449,7 @@ namespace Minio
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -465,7 +463,7 @@ namespace Minio
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -495,7 +493,7 @@ namespace Minio
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -508,12 +506,12 @@ namespace Minio
         /// <returns> Task </returns>
         /// <exception cref="InvalidBucketNameException">When bucketName is null</exception>
         [Obsolete("Use MakeBucketAsync method with MakeBucketArgs object. Refer MakeBucket example code.")]
-        public async Task MakeBucketAsync(string bucketName, string location = "us-east-1", CancellationToken cancellationToken = default(CancellationToken))
+        public Task MakeBucketAsync(string bucketName, string location = "us-east-1", CancellationToken cancellationToken = default(CancellationToken))
         {
             MakeBucketArgs args = new MakeBucketArgs()
                                             .WithBucket(bucketName)
                                             .WithLocation(location);
-            await this.MakeBucketAsync(args, cancellationToken);
+            return this.MakeBucketAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -523,11 +521,11 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task that returns true if exists and user has access</returns>
         [Obsolete("Use BucketExistsAsync method with BucketExistsArgs object. Refer BucketExists example code.")]
-        public async Task<bool> BucketExistsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<bool> BucketExistsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
             BucketExistsArgs args = new BucketExistsArgs()
                                                 .WithBucket(bucketName);
-            return await BucketExistsAsync(args, cancellationToken);
+            return BucketExistsAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -537,11 +535,11 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task</returns>
         [Obsolete("Use RemoveBucketAsync method with RemoveBucketArgs object. Refer RemoveBucket example code.")]
-        public async Task RemoveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        public Task RemoveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
             RemoveBucketArgs args = new RemoveBucketArgs()
                                                 .WithBucket(bucketName);
-            await RemoveBucketAsync(args, cancellationToken);
+            return RemoveBucketAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -571,7 +569,7 @@ namespace Minio
         /// <param name="marker">marks location in the iterator sequence</param>
         /// <returns>Task with a tuple populated with objects</returns>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix, string delimiter, string marker, CancellationToken cancellationToken = default(CancellationToken))
+        private Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix, string delimiter, string marker, CancellationToken cancellationToken = default(CancellationToken))
         {
             var queryMap = new Dictionary<string,string>();
             // null values are treated as empty strings.
@@ -580,7 +578,7 @@ namespace Minio
                                             .WithPrefix(prefix)
                                             .WithDelimiter(delimiter)
                                             .WithMarker(marker);
-            return await this.GetObjectListAsync(args, cancellationToken);
+            return this.GetObjectListAsync(args, cancellationToken);
         }
 
 
@@ -591,11 +589,11 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task that returns the Bucket policy as a json string</returns>
         [Obsolete("Use GetPolicyAsync method with GetPolicyArgs object. Refer GetBucketPolicy example code.")]
-        public async Task<string> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<string> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
             GetPolicyArgs args = new GetPolicyArgs()
                                             .WithBucket(bucketName);
-            return await this.GetPolicyAsync(args, cancellationToken);
+            return this.GetPolicyAsync(args, cancellationToken);
         }
 
 
@@ -607,12 +605,12 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task to set a policy</returns>
         [Obsolete("Use SetPolicyAsync method with SetPolicyArgs object. Refer SetBucketPolicy example code.")]
-        public async Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default(CancellationToken))
+        public Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default(CancellationToken))
         {
             SetPolicyArgs args = new SetPolicyArgs()
                                             .WithBucket(bucketName)
                                             .WithPolicy(policyJson);
-            await this.SetPolicyAsync(args, cancellationToken);
+            return this.SetPolicyAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -622,11 +620,11 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         [Obsolete("Use GetBucketNotificationsAsync method with GetBucketNotificationsArgs object. Refer GetBucketNotification example code.")]
-        public async Task<BucketNotification> GetBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<BucketNotification> GetBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
             GetBucketNotificationsArgs args = new GetBucketNotificationsArgs()
                                                             .WithBucket(bucketName);
-            return await this.GetBucketNotificationsAsync(args, cancellationToken);
+            return this.GetBucketNotificationsAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -637,12 +635,12 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         [Obsolete("Use SetBucketNotificationsAsync method with SetBucketNotificationsArgs object. Refer SetBucketNotification example code.")]
-        public async Task SetBucketNotificationsAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken))
+        public Task SetBucketNotificationsAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken))
         {
             SetBucketNotificationsArgs args = new SetBucketNotificationsArgs()
                                                                 .WithBucket(bucketName)
                                                                 .WithBucketNotificationConfiguration(notification);
-            await this.SetBucketNotificationsAsync(args, cancellationToken);
+            return this.SetBucketNotificationsAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -652,11 +650,11 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         [Obsolete("Use RemoveAllBucketNotificationsAsync method with RemoveAllBucketNotificationsArgs object. Refer RemoveAllBucketNotification example code.")]
-        public async Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
+        public Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))
         {
             RemoveAllBucketNotificationsArgs args = new RemoveAllBucketNotificationsArgs()
                                                                         .WithBucket(bucketName);
-            await this.RemoveAllBucketNotificationsAsync(args, cancellationToken).ConfigureAwait(false);
+            return this.RemoveAllBucketNotificationsAsync(args, cancellationToken);
         }
 
         /// <summary>
