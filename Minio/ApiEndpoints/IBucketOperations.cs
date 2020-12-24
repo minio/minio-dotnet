@@ -160,6 +160,30 @@ namespace Minio
         Task RemoveBucketTagsAsync(RemoveBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
+        /// Sets the Object Lock Configuration on this bucket
+        /// </summary>
+        /// <param name="args">SetObjectLockConfigurationArgs Arguments Object with information like Bucket name, object lock configuration to set</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        Task SetObjectLockConfigurationAsync(SetObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Gets the Object Lock Configuration on this bucket
+        /// </summary>
+        /// <param name="args">GetObjectLockConfigurationArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>ObjectLockConfiguration object</returns>
+        Task<ObjectLockConfiguration> GetObjectLockConfigurationAsync(GetObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+
+        /// <summary>
+        /// Removes the Object Lock Configuration on this bucket
+        /// </summary>
+        /// <param name="args">RemoveObjectLockConfigurationArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        Task RemoveObjectLockConfigurationAsync(RemoveObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken));
+        /// <summary>
         /// List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
         /// </summary>
         /// <param name="bucketName">Bucket to list objects from</param>
