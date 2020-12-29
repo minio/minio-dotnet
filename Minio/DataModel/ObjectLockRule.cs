@@ -15,18 +15,24 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Xml.Serialization;
 
-namespace Minio
+namespace Minio.DataModel
 {
-    public class OperationsUtil
+    [Serializable]
+    [XmlRoot(ElementName = "ObjectLockRule", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+    public class ObjectLockRule
     {
-        private static readonly List<string> SupportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type", "x-amz-acl", "content-disposition" };
-        internal static bool IsSupportedHeader(string hdr, IEqualityComparer<string> comparer = null)
+        [XmlElement("DefaultRetention")]
+        public DefaultRetention DefaultRetention { get; set; }
+        public ObjectLockRule()
         {
-            comparer = comparer ?? StringComparer.OrdinalIgnoreCase;
-            return SupportedHeaders.Contains(hdr, comparer);
+            this.DefaultRetention = null;
+        }
+
+        public ObjectLockRule(RetentionMode mode, int retentionDurationDays)
+        {
+            this.DefaultRetention = new DefaultRetention(retentionDurationDays, mode);
         }
     }
 }

@@ -160,7 +160,7 @@ namespace Minio
         /// Constructs a RestRequest using bucket/object names from Args.
         /// Calls overloaded CreateRequest method.
         /// </summary>
-        /// <param name="args">The child object of BucketArgs class, args with populated values from Input</param>
+        /// <param name="args">The direct descendant of BucketArgs class, args with populated values from Input</param>
         /// <returns>A RestRequest</returns>
         internal async Task<RestRequest> CreateRequest<T>(BucketArgs<T> args) where T : BucketArgs<T>
         {
@@ -174,19 +174,20 @@ namespace Minio
         /// Constructs a RestRequest using bucket/object names from Args.
         /// Calls overloaded CreateRequest method.
         /// </summary>
-        /// <param name="args">The child object of BucketArgs class, args with populated values from Input</param>
+        /// <param name="args">The direct descendant of ObjectArgs class, args with populated values from Input</param>
         /// <returns>A RestRequest</returns>
         internal async Task<RestRequest> CreateRequest<T>(ObjectArgs<T> args) where T : ObjectArgs<T>
         {
             this.ArgsCheck(args);
+            string contentType = "application/octet-stream";
+            args.HeaderMap?.TryGetValue("Content-Type", out contentType);
             RestRequest request = await this.CreateRequest(args.RequestMethod,
                                                 args.BucketName,
                                                 args.ObjectName,
-                                                args.MergedHeaders(),
-                                                args.ContentType,
+                                                args.HeaderMap,
+                                                contentType,
                                                 args.RequestBody,
-                                                args.ResourcePath).ConfigureAwait(false);
-
+                                                null).ConfigureAwait(false);
             return args.BuildRequest(request);
         }
 
@@ -471,7 +472,7 @@ namespace Minio
         /// <param name="request">request</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>IRESTResponse</returns>
-        internal Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        internal Task<IRestResponse> ExecuteAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             return ExecuteWithRetry(
                 () => ExecuteTaskCoreAsync(errorHandlers, request, cancellationToken));
@@ -487,7 +488,7 @@ namespace Minio
                 Console.WriteLine($"Full URL of Request {fullUrl}");
             }
 
-            IRestResponse response = await this.restClient.ExecuteTaskAsync(request, cancellationToken).ConfigureAwait(false);
+            IRestResponse response = await this.restClient.ExecuteAsync(request, request.Method, cancellationToken).ConfigureAwait(false);
 
             this.HandleIfErrorResponse(response, errorHandlers, startTime);
             return response;
@@ -636,6 +637,12 @@ namespace Minio
             var stream = new MemoryStream(contentBytes);
             ErrorResponse errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream);
 
+            if (response.StatusCode.Equals(HttpStatusCode.Forbidden)
+                && (errResponse.Code.Equals("SignatureDoesNotMatch") || errResponse.Code.Equals("InvalidAccessKeyId")))
+            {
+                throw new AuthorizationException(errResponse.Resource, errResponse.BucketName, errResponse.Message);
+            }
+
             // Handle XML response for Bucket Policy not found case
             if (response.StatusCode.Equals(HttpStatusCode.NotFound)
                 && response.Request.Resource.EndsWith("?policy")
@@ -652,6 +659,28 @@ namespace Minio
                 && errResponse.Code == "NoSuchBucket")
             {
                 throw new BucketNotFoundException(errResponse.BucketName, "Not found.");
+            }
+
+            if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
+                && errResponse.Code.Equals("MalformedXML"))
+            {
+                throw new MalFormedXMLException(errResponse.Resource, errResponse.BucketName, errResponse.Message, errResponse.Key);
+            }
+
+            if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
+                && errResponse.Code.Equals("InvalidRequest"))
+            {
+                Parameter legalHold = new Parameter("legal-hold", "", ParameterType.QueryString);
+                if (response.Request.Parameters.Contains(legalHold))
+                {
+                    throw new MissingObjectLockConfiguration(errResponse.BucketName, errResponse.Message);
+                }
+            }
+
+            if (response.StatusCode.Equals(HttpStatusCode.NotFound)
+                && errResponse.Code.Equals("ObjectLockConfigurationNotFoundError"))
+            {
+                throw new MissingObjectLockConfiguration(errResponse.BucketName, errResponse.Message);
             }
 
             throw new UnexpectedMinioException(errResponse.Message)

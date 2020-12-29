@@ -344,4 +344,199 @@ namespace Minio
             return this;
         }
     }
+
+
+    public class SetBucketEncryptionArgs : BucketArgs<SetBucketEncryptionArgs>
+    {
+        internal ServerSideEncryptionConfiguration EncryptionConfig { get; set; }
+
+        public SetBucketEncryptionArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        public SetBucketEncryptionArgs WithEncryptionConfig(ServerSideEncryptionConfiguration config)
+        {
+            this.EncryptionConfig = config;
+            return this;
+        }
+
+        public SetBucketEncryptionArgs WithAESConfig()
+        {
+            this.EncryptionConfig = ServerSideEncryptionConfiguration.GetSSEConfigurationWithS3Rule();
+            return this;
+        }
+
+        public SetBucketEncryptionArgs WithKMSConfig(string keyId = null)
+        {
+            this.EncryptionConfig = ServerSideEncryptionConfiguration.GetSSEConfigurationWithKMSRule(keyId);
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            if (this.EncryptionConfig == null)
+            {
+                this.EncryptionConfig = ServerSideEncryptionConfiguration.GetSSEConfigurationWithS3Rule();
+            }
+            request.AddQueryParameter("encryption","");
+            string body = utils.MarshalXML(this.EncryptionConfig, "http://s3.amazonaws.com/doc/2006-03-01/");
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+
+            return request;
+        }
+    }
+
+    public class GetBucketEncryptionArgs : BucketArgs<GetBucketEncryptionArgs>
+    {
+        public GetBucketEncryptionArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("encryption","");
+            return request;
+        }
+    }
+
+    public class RemoveBucketEncryptionArgs : BucketArgs<RemoveBucketEncryptionArgs>
+    {
+        public RemoveBucketEncryptionArgs()
+        {
+            this.RequestMethod = Method.DELETE;
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("encryption","");
+            return request;
+        }
+    }
+
+    public class SetBucketTagsArgs : BucketArgs<SetBucketTagsArgs>
+    {
+        internal Dictionary<string, string> TagKeyValuePairs { get; set; }
+        internal Tagging BucketTags { get; private set; }
+        public SetBucketTagsArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        public SetBucketTagsArgs WithTagKeyValuePairs(Dictionary<string, string> kv)
+        {
+            this.TagKeyValuePairs = new Dictionary<string, string>(kv);
+            this.BucketTags = Tagging.GetBucketTags(kv);
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("tagging","");
+            string body = this.BucketTags.MarshalXML();
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+
+            return request;
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if (this.TagKeyValuePairs == null || this.TagKeyValuePairs.Count == 0)
+            {
+                throw new InvalidOperationException("Unable to set empty tags.");
+            }
+        }
+    }
+
+    public class GetBucketTagsArgs : BucketArgs<GetBucketTagsArgs>
+    {
+        public GetBucketTagsArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("tagging","");
+            return request;
+        }
+    }
+
+    public class RemoveBucketTagsArgs : BucketArgs<RemoveBucketTagsArgs>
+    {
+        public RemoveBucketTagsArgs()
+        {
+            this.RequestMethod = Method.DELETE;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("tagging","");
+            return request;
+        }
+    }
+
+    public class SetObjectLockConfigurationArgs : BucketArgs<SetObjectLockConfigurationArgs>
+    {
+        public SetObjectLockConfigurationArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        internal ObjectLockConfiguration LockConfiguration { set; get; }
+        public SetObjectLockConfigurationArgs WithLockConfiguration(ObjectLockConfiguration config)
+        {
+            this.LockConfiguration = config;
+            return this;
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if (this.LockConfiguration == null)
+            {
+                throw new InvalidOperationException("The lock configuration object " + nameof(LockConfiguration) + " is not set. Please use " + nameof(WithLockConfiguration) + " to set.");
+            }
+        }
+        
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("object-lock","");
+            string body = utils.MarshalXML(this.LockConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+
+            return request;
+        }
+    }
+
+    public class GetObjectLockConfigurationArgs : BucketArgs<GetObjectLockConfigurationArgs>
+    {
+        public GetObjectLockConfigurationArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("object-lock","");
+            return request;
+        }
+    }
+
+    public class RemoveObjectLockConfigurationArgs : BucketArgs<RemoveObjectLockConfigurationArgs>
+    {
+        public RemoveObjectLockConfigurationArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("object-lock","");
+            string body = utils.MarshalXML(new ObjectLockConfiguration(), "http://s3.amazonaws.com/doc/2006-03-01/");
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+
+            return request;
+        }
+    }
 }

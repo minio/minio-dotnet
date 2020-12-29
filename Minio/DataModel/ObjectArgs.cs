@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -24,19 +23,7 @@ namespace Minio
                             where T : ObjectArgs<T>
     {
         internal string ObjectName { get; set; }
-        internal Dictionary<string, string> HeaderMap { get; set; }
-        internal string ContentType { get; set; }
         internal object RequestBody { get; set; }
-        internal string ResourcePath { get; set; }
-        internal string VersionId { get; set; }
-
-        public ObjectArgs()
-        {
-            HeaderMap = null;
-            ContentType = "application/octet-stream" ;
-            RequestBody = null;
-            ResourcePath = null;
-        }
 
         public T WithObject(string obj)
         {
@@ -44,47 +31,9 @@ namespace Minio
             return (T)this;
         }
 
-        public T WithHeaders(Dictionary<string, string> headers)
-        {
-            if (headers == null)
-            {
-                return (T)this;
-            }
-            if (this.HeaderMap == null)
-            {
-                this.HeaderMap = new Dictionary<string, string>(headers);
-            }
-            else
-            {
-                foreach (string key in headers.Keys)
-                {
-                    this.HeaderMap.Add(key, headers[key]);
-                }
-            }
-            return (T)this;
-        }
-
-        public T WithContentType(string contentType)
-        {
-            this.ContentType = contentType ?? "application/octet-stream";
-            return (T)this;
-        }
-
-        public T WithBody(object data)
+        public T WithRequestBody(object data)
         {
             this.RequestBody = data;
-            return (T)this;
-        }
-
-        public T WithResourcePath(string path)
-        {
-            this.ResourcePath = path;
-            return (T)this;
-        }
-
-        public T WithVersionId(string vid)
-        {
-            this.VersionId = vid;
             return (T)this;
         }
 
@@ -92,21 +41,6 @@ namespace Minio
         {
             base.Validate();
             utils.ValidateObjectName(this.ObjectName);
-        }
-
-        // Merge the Headers map & extra headers.
-        public Dictionary<string, string> MergedHeaders()
-        {
-            if (this.ExtraHeaders == null )
-            {
-                return this.HeaderMap;
-            }
-            if  (this.HeaderMap == null)
-            {
-                return this.ExtraHeaders;
-            }
-            // Merge headers.
-            return this.HeaderMap.Concat(this.ExtraHeaders).GroupBy(ele => ele.Key).ToDictionary(ele => ele.Key, ele => ele.First().Value);
         }
     }
 }

@@ -91,13 +91,13 @@ namespace Minio.Functional.Tests
 
             // Create a new bucket
             FunctionalTest.MakeBucket_Test1(minioClient).Wait();
-            FunctionalTest.MakeBucket_Test2(minioClient).Wait();
             FunctionalTest.MakeBucket_Test5(minioClient).Wait();
 
             if (useAWS)
             {
-                FunctionalTest.MakeBucket_Test3(minioClient).Wait();
-                FunctionalTest.MakeBucket_Test4(minioClient).Wait();
+                FunctionalTest.MakeBucket_Test2(minioClient, useAWS).Wait();
+                FunctionalTest.MakeBucket_Test3(minioClient, useAWS).Wait();
+                FunctionalTest.MakeBucket_Test4(minioClient, useAWS).Wait();
             }
 
             // Test removal of bucket
@@ -171,6 +171,13 @@ namespace Minio.Functional.Tests
 
             // Test GetBucket policy
             FunctionalTest.GetBucketPolicy_Test1(minioClient).Wait();
+
+            // Test Object Lock Configuration
+            FunctionalTest.ObjectLockConfigurationAsync_Test1(minioClient).Wait();
+
+            // Test Bucket, Object Tags
+            FunctionalTest.BucketTagsAsync_Test1(minioClient).Wait();
+            FunctionalTest.ObjectTagsAsync_Test1(minioClient).Wait();
 
             // Test encryption
             if (enableHttps == "1")

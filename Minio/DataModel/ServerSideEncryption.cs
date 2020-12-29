@@ -53,9 +53,9 @@ namespace Minio.DataModel
         public virtual void Marshal(Dictionary<string, string> headers)
         {
             var md5SumStr = utils.getMD5SumStr(this.key);
-            headers.Add("X-Amz-Server-Side-Encryption-Customer-Algorithm", "AES256");
-            headers.Add("X-Amz-Server-Side-Encryption-Customer-Key", Convert.ToBase64String(this.key));
-            headers.Add("X-Amz-Server-Side-Encryption-Customer-Key-Md5", md5SumStr);
+            headers["X-Amz-Server-Side-Encryption-Customer-Algorithm"] = "AES256";
+            headers["X-Amz-Server-Side-Encryption-Customer-Key"] = Convert.ToBase64String(this.key);
+            headers["X-Amz-Server-Side-Encryption-Customer-Key-Md5"] = md5SumStr;
             return;
         }
 
@@ -77,9 +77,9 @@ namespace Minio.DataModel
         public override void Marshal(Dictionary<string, string> headers)
         {
             var md5SumStr = utils.getMD5SumStr(this.key);
-            headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Algorithm", "AES256");
-            headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key", Convert.ToBase64String(key));
-            headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key-Md5", md5SumStr);
+            headers["X-Amz-Copy-Source-Server-Side-Encryption-Customer-Algorithm"] = "AES256";
+            headers["X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key"] = Convert.ToBase64String(key);
+            headers["X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key-Md5"] = md5SumStr;
             return;
         }
 
@@ -99,7 +99,7 @@ namespace Minio.DataModel
 
         public virtual void Marshal(Dictionary<string, string> headers)
         {
-            headers.Add(Constants.SSEGenericHeader, "AES256");
+            headers[Constants.SSEGenericHeader] = "AES256";
             return;
         }
     }
@@ -127,11 +127,11 @@ namespace Minio.DataModel
 
         public void Marshal(Dictionary<string, string> headers)
         {
-            headers.Add(Constants.SSEKMSKeyId, this.key);
-            headers.Add(Constants.SSEGenericHeader, "aws:kms");
+            headers[Constants.SSEKMSKeyId] = this.key;
+            headers[Constants.SSEGenericHeader] = "aws:kms";
             if (context != null)
             {
-                headers.Add(Constants.SSEKMSContext, this.marshalContext());
+                headers[Constants.SSEKMSContext] = this.marshalContext();
             }
             return;
         }

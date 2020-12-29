@@ -269,4 +269,61 @@ namespace Minio
             }
         }
     }
+
+    internal class GetBucketEncryptionResponse : GenericResponse
+    {
+        internal ServerSideEncryptionConfiguration BucketEncryptionConfiguration { get; set; }
+
+        internal GetBucketEncryptionResponse(HttpStatusCode statusCode, string responseContent)
+                    : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
+            {
+                this.BucketEncryptionConfiguration = null;
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                BucketEncryptionConfiguration = (ServerSideEncryptionConfiguration)new XmlSerializer(typeof(ServerSideEncryptionConfiguration)).Deserialize(stream);
+            }
+        }
+    }
+
+    internal class GetBucketTagsResponse : GenericResponse
+    {
+        internal Tagging BucketTags { set; get; }
+        internal GetBucketTagsResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) ||
+                    !HttpStatusCode.OK.Equals(statusCode))
+            {
+                this.BucketTags = null;
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                this.BucketTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(stream);
+            }
+        }
+    }
+
+    internal class GetObjectLockConfigurationResponse : GenericResponse
+    {
+        internal ObjectLockConfiguration LockConfiguration { get; set; }
+
+        internal GetObjectLockConfigurationResponse(HttpStatusCode statusCode, string responseContent)
+                    : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
+            {
+                this.LockConfiguration = null;
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                this.LockConfiguration = (ObjectLockConfiguration)new XmlSerializer(typeof(ObjectLockConfiguration)).Deserialize(stream);
+            }
+        }
+    }
 }
