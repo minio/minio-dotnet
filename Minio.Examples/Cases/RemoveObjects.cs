@@ -17,21 +17,20 @@
 using Minio.Exceptions;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
     class RemoveObjects
     {
         // Remove a list of objects from a bucket
-        public async static Task Run(MinioClient minio,
+        public static void Run(MinioClient minio,
                                      string bucketName = "my-bucket-name",
                                      List<string> objectsList = null)
         {
             try
             {
                 Console.WriteLine("Running example for API: RemoveObjectAsync");
-                IObservable<DeleteError> observable = await minio.RemoveObjectAsync(bucketName, objectsList);
+                IObservable<DeleteError> observable = minio.RemoveObjectAsync(bucketName, objectsList);
                 IDisposable subscription = observable.Subscribe(
                    deleteError => Console.WriteLine($"Object: {deleteError.Key}"),
                    ex => Console.WriteLine($"OnError: {ex}"),

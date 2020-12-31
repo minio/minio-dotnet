@@ -25,7 +25,7 @@ namespace Minio
     {
         internal Tagging ObjectTags { get; set; }
         internal ObjectRetentionConfiguration Retention { get; set; }
-        internal bool LegalHoldEnabled { get; set; }
+        internal bool? LegalHoldEnabled { get; set; }
         internal string ContentType { get; set; }
 
         public T WithTagKeyValuePairs(Dictionary<string, string> kv)
@@ -33,9 +33,28 @@ namespace Minio
             this.ObjectTags = Tagging.GetObjectTags(kv);
             return (T)this;
         }
+
+        public T WithTagging(Tagging tagging)
+        {
+            this.ObjectTags = tagging;
+            return (T)this;
+        }
+
         public T WithContentType(string type)
         {
             this.ContentType = type;
+            return (T)this;
+        }
+
+        public T WithRetentionConfiguration(ObjectRetentionConfiguration retentionConfiguration)
+        {
+            this.Retention = retentionConfiguration;
+            return (T)this;
+        }
+
+        public T WithLegalHold(bool? legalHold)
+        {
+            this.LegalHoldEnabled = legalHold;
             return (T)this;
         }
     }

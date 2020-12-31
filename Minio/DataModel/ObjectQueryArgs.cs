@@ -15,7 +15,6 @@
  */
 
 using System;
-using Minio.Exceptions;
 
 namespace Minio
 {

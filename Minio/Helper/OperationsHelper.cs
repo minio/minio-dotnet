@@ -34,7 +34,7 @@ namespace Minio
         /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name etc </param>
         /// <param name="objectStat"> ObjectStat object encapsulates information like - object name, size, etag etc </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        private async Task getObjectFileAsync(GetObjectArgs args, ObjectStat objectStat, CancellationToken cancellationToken = default(CancellationToken))
+        private Task getObjectFileAsync(GetObjectArgs args, ObjectStat objectStat, CancellationToken cancellationToken = default(CancellationToken))
         {
             long length = objectStat.Size;
             string etag = objectStat.ETag;
@@ -56,11 +56,12 @@ namespace Minio
                 File.Delete(tempFileName);
             }
 
-            args = args.WithCallbackStream( (stream) =>
+            args = args.WithCallbackStream( stream =>
                                     {
-                                        var fileStream = File.Create(tempFileName);
-                                        stream.CopyTo(fileStream);
-                                        fileStream.Dispose();
+                                        using (var fileStream = File.Create(tempFileName))
+                                        {
+                                            stream.CopyTo(fileStream);
+                                        }
                                         FileInfo writtenInfo = new FileInfo(tempFileName);
                                         long writtenSize = writtenInfo.Length;
                                         if (writtenSize != (length - tempFileSize))
@@ -70,7 +71,7 @@ namespace Minio
                                         }
                                         utils.MoveWithReplace(tempFileName, args.FileName);
                                     });
-            await getObjectStreamAsync(args, objectStat, null, cancellationToken).ConfigureAwait(false);
+            return getObjectStreamAsync(args, objectStat, null, cancellationToken);
         }
 
 

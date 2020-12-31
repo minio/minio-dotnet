@@ -15,21 +15,22 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
-using Minio.Exceptions;
-using Minio.Helper;
 using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+
+using Minio.DataModel;
+using Minio.Exceptions;
+using Minio.Helper;
+
 
 namespace Minio
 {
@@ -46,7 +47,12 @@ namespace Minio
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
             IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-            StatObjectResponse statResponse = new StatObjectResponse(response.StatusCode, response.Content, response.Headers, args);
+            Dictionary<string, string> responseHeaders = new Dictionary<string, string>();
+            foreach (var param in response.Headers.ToList())
+            {
+                responseHeaders.Add(param.Name.ToString(), param.Value.ToString());
+            }
+            StatObjectResponse statResponse = new StatObjectResponse(response.StatusCode, response.Content, responseHeaders, args);
             return statResponse.ObjectInfo;
         }
 
@@ -181,7 +187,7 @@ namespace Minio
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -228,9 +234,10 @@ namespace Minio
             }
         }
 
+
         /// <summary>
         /// Presigned get url - returns a presigned url to access an object's data without credentials.URL can have a maximum expiry of
-        /// upto 7 days or a minimum of 1 second.Additionally, you can override a set of response headers using reqParams.
+        /// up to 7 days or a minimum of 1 second.Additionally, you can override a set of response headers using reqParams.
         /// </summary>
         /// <param name="args">PresignedGetObjectArgs Arguments object encapsulating bucket and object names, expiry time, response headers, request date</param>
         /// <returns></returns>
@@ -304,7 +311,7 @@ namespace Minio
         {
             args.Validate();
             var request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -334,7 +341,7 @@ namespace Minio
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -348,7 +355,7 @@ namespace Minio
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -440,7 +447,7 @@ namespace Minio
         /// <returns></returns>
         private async Task<string> PutObjectSinglePartAsync(PutObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
-            //Skipping validate as we need the case where we need the case of stream send 0 bytes
+            //Skipping validate as we need the case where stream sends 0 bytes
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
             IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken);
             PutObjectResponse putObjectResponse = new PutObjectResponse(response.StatusCode, response.Content, response.Headers);
@@ -532,7 +539,13 @@ namespace Minio
             NewMultipartUploadArgs multipartUploadArgs = new NewMultipartUploadArgs()
                                                                         .WithBucket(args.BucketName)
                                                                         .WithObject(args.ObjectName)
+                                                                        .WithVersionId(args.VersionId)
                                                                         .WithHeaders(args.HeaderMap)
+                                                                        .WithContentType(args.ContentType)
+                                                                        .WithTagging(args.ObjectTags)
+                                                                        .WithLegalHold(args.LegalHoldEnabled)
+                                                                        .WithRetentionConfiguration(args.Retention)
+                                                                        .WithServerSideEncryption(args.SSE)
                                                                         .WithSSEHeaders(args.SSEHeaders);
             string uploadId = await this.NewMultipartUploadAsync(multipartUploadArgs, cancellationToken).ConfigureAwait(false);
             // Remove SSE-S3 and KMS headers during PutObjectPart operations.
@@ -697,57 +710,34 @@ namespace Minio
 
             bool tempFileExists = File.Exists(tempFileName);
 
-            utils.ValidateFile(tempFileName);
-
             FileInfo tempFileInfo = new FileInfo(tempFileName);
             long tempFileSize = 0;
             if (tempFileExists)
             {
                 tempFileSize = tempFileInfo.Length;
-                if (tempFileSize > length)
-                {
-                    File.Delete(tempFileName);
-                    tempFileExists = false;
-                    tempFileSize = 0;
-                }
             }
 
-            if (fileExists)
-            {
-                FileInfo fileInfo = new FileInfo(fileName);
-                long fileSize = fileInfo.Length;
-                if (fileSize == length)
-                {
-                    // already downloaded. nothing to do
-                    return;
-                }
-                else if (fileSize > length)
-                {
-                    throw new ArgumentException("'" + fileName + "': object size " + length + " is smaller than file size "
-                                                       + fileSize, nameof(fileSize));
-                }
-                else if (!tempFileExists)
-                {
-                    // before resuming the download, copy filename to tempfilename
-                    File.Copy(fileName, tempFileName);
-                    tempFileSize = fileSize;
-                    tempFileExists = true;
-                }
-            }
-            await GetObjectAsync(bucketName, objectName, (stream) =>
-            {
-                var fileStream = File.Create(tempFileName);
-                stream.CopyTo(fileStream);
-                fileStream.Dispose();
-                FileInfo writtenInfo = new FileInfo(tempFileName);
-                long writtenSize = writtenInfo.Length;
-                if (writtenSize != length - tempFileSize)
-                {
-                    throw new IOException(tempFileName + ": unexpected data written.  expected = " + (length - tempFileSize)
-                                           + ", written = " + writtenSize);
-                }
-                utils.MoveWithReplace(tempFileName, fileName);
-            }, sse, cancellationToken).ConfigureAwait(false);
+            GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                    .WithBucket(bucketName)
+                                                    .WithObject(objectName)
+                                                    .WithCallbackStream(
+                                                        stream =>
+                                                        {
+                                                            var fileStream = File.Create(tempFileName);
+                                                            stream.CopyTo(fileStream);
+                                                            fileStream.Dispose();
+                                                            FileInfo writtenInfo = new FileInfo(tempFileName);
+                                                            long writtenSize = writtenInfo.Length;
+                                                            if (writtenSize != length - tempFileSize)
+                                                            {
+                                                                throw new IOException(tempFileName + ": unexpected data written.  expected = " + (length - tempFileSize)
+                                                                                    + ", written = " + writtenSize);
+                                                            }
+                                                            utils.MoveWithReplace(tempFileName, fileName);
+                                                        }
+                                                    )
+                                                    .WithServerSideEncryption(sse);
+            await GetObjectAsync(getObjectArgs, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -759,32 +749,18 @@ namespace Minio
         /// <param name="opts">Select Object options</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         [Obsolete("Use SelectObjectContentAsync method with SelectObjectContentsArgs object. Refer SelectObjectContent example code.")]
-        public async Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts,CancellationToken cancellationToken = default(CancellationToken))
+        public Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts,CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.ValidateBucketName(bucketName);
-            utils.ValidateObjectName(objectName);
-            if (opts == null)
-            {
-                throw new ArgumentException("Options cannot be null", nameof(opts));
-            }
-            Dictionary<string,string> sseHeaders = null;
-            if (opts.SSE != null)
-            {
-                sseHeaders = new Dictionary<string,string>();
-                opts.SSE.Marshal(sseHeaders);
-            }
-            var selectReqBytes = System.Text.Encoding.UTF8.GetBytes(opts.MarshalXML());
-
-            var request = await this.CreateRequest(Method.POST, bucketName,
-                                                    objectName: objectName,
-                                                    headerMap: sseHeaders)
-                                    .ConfigureAwait(false);
-            request.AddQueryParameter("select","");
-            request.AddQueryParameter("select-type","2");
-            request.AddParameter("application/xml", selectReqBytes, ParameterType.RequestBody);
-
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-            return new SelectResponseStream(new MemoryStream(response.RawBytes));
+            SelectObjectContentArgs args = new SelectObjectContentArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName)
+                                                        .WithExpressionType(opts.ExpressionType)
+                                                        .WithInputSerialization(opts.InputSerialization)
+                                                        .WithOutputSerialization(opts.OutputSerialization)
+                                                        .WithQueryExpression(opts.Expression)
+                                                        .WithServerSideEncryption(opts.SSE)
+                                                        .WithRequestProgress(opts.RequestProgress);
+            return this.SelectObjectContentAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -797,15 +773,17 @@ namespace Minio
         /// <param name="metaData">Object metadata to be stored. Defaults to null.</param>
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        [Obsolete("Use PutObjectAsync method with PutObjectArgs object. Refer PutObject example code.")]
         public async Task PutObjectAsync(string bucketName, string objectName, string fileName, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.ValidateFile(fileName, contentType);
-            FileInfo fileInfo = new FileInfo(fileName);
-            long size = fileInfo.Length;
-            using (FileStream file = new FileStream(fileName, FileMode.Open, FileAccess.Read))
-            {
-                await PutObjectAsync(bucketName, objectName, file, size, contentType, metaData, sse, cancellationToken).ConfigureAwait(false);
-            }
+            PutObjectArgs args = new PutObjectArgs()
+                                            .WithBucket(bucketName)
+                                            .WithObject(objectName)
+                                            .WithFileName(fileName)
+                                            .WithContentType(contentType)
+                                            .WithHeaders(metaData)
+                                            .WithServerSideEncryption(sse);
+            await this.PutObjectAsync(args, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -819,89 +797,18 @@ namespace Minio
         /// <param name="metaData">Object metadata to be stored. Defaults to null.</param>
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        [Obsolete("Use PutObjectAsync method with PutObjectArgs object. Refer PutObject example code.")]
         public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.ValidateBucketName(bucketName);
-            utils.ValidateObjectName(objectName);
-
-            var sseHeaders = new Dictionary<string, string>();
-            var meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            if (metaData != null) {
-                foreach (KeyValuePair<string, string> p in metaData)
-                {
-                    var key = p.Key;
-                    if (!OperationsUtil.IsSupportedHeader(p.Key) && !p.Key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
-                    {
-                        key = "x-amz-meta-" + key.ToLowerInvariant();
-                    }
-                    meta[key] = p.Value;
-
-                }
-            }
-
-            if (sse != null)
-            {
-                sse.Marshal(sseHeaders);
-            }
-            if (string.IsNullOrWhiteSpace(contentType))
-            {
-                contentType = "application/octet-stream";
-            }
-            if (!meta.ContainsKey("Content-Type"))
-            {
-                meta["Content-Type"] = contentType;
-            }
-            if (data == null)
-            {
-                throw new ArgumentNullException(nameof(data), "Invalid input stream, cannot be null");
-            }
-
-            // for sizes less than 5Mb , put a single object
-            if (size < Constants.MinimumPartSize && size >= 0)
-            {
-                var bytes = await ReadFullAsync(data, (int)size).ConfigureAwait(false);
-                if (bytes != null && bytes.Length != (int)size)
-                {
-                    throw new UnexpectedShortReadException($"Data read {bytes.Length} is shorter than the size {size} of input buffer.");
-                }
-                PutObjectArgs putObjectArgs = new PutObjectArgs()
-                                                        .WithBucket(bucketName)
-                                                        .WithObject(objectName)
-                                                        .WithUploadId()
-                                                        .WithPartNumber(0)
-                                                        .WithObjectSize(size)
-                                                        .WithRequestBody(bytes)
-                                                        .WithStreamData(data)
-                                                        .WithSSEHeaders(sseHeaders)
-                                                        .WithServerSideEncryption(sse);
-
-                await this.PutObjectSinglePartAsync(putObjectArgs, cancellationToken).ConfigureAwait(false);
-                return;
-            }
-            // For all sizes greater than 5MiB do multipart.
-            NewMultipartUploadArgs multipartUploadArgs = new NewMultipartUploadArgs()
-                                                                        .WithBucket(bucketName)
-                                                                        .WithObject(objectName)
-                                                                        .WithHeaders(meta)
-                                                                        .WithSSEHeaders(sseHeaders);
-            string uploadId = await this.NewMultipartUploadAsync(multipartUploadArgs, cancellationToken).ConfigureAwait(false);
-
-            // Remove SSE-S3 and KMS headers during PutObjectPart operations.
-            PutObjectPartArgs putObjectPartArgs = new PutObjectPartArgs()
-                                                            .WithBucket(bucketName)
-                                                            .WithObject(objectName)
-                                                            .WithObjectSize(size)
-                                                            .WithStreamData(data)
-                                                            .WithContentType(contentType)
-                                                            .WithHeaders(meta)
-                                                            .WithSSEHeaders(sseHeaders);
-            Dictionary<int, string> etags = await this.PutObjectPartAsync(putObjectPartArgs, cancellationToken).ConfigureAwait(false);
-            CompleteMultipartUploadArgs completeMultipartUploadArgs = new CompleteMultipartUploadArgs()
-                                                                                        .WithBucket(bucketName)
-                                                                                        .WithObject(objectName)
-                                                                                        .WithUploadID(uploadId)
-                                                                                        .WithETags(etags);
-            await this.CompleteMultipartUploadAsync(completeMultipartUploadArgs, cancellationToken).ConfigureAwait(false);
+            PutObjectArgs args = new PutObjectArgs()
+                                            .WithBucket(bucketName)
+                                            .WithObject(objectName)
+                                            .WithStreamData(data)
+                                            .WithObjectSize(size)
+                                            .WithContentType(contentType)
+                                            .WithHeaders(metaData)
+                                            .WithServerSideEncryption(sse);
+            await this.PutObjectAsync(args, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1079,14 +986,11 @@ namespace Minio
 
             var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
-            string etag = null;
-            foreach (Parameter parameter in response.Headers)
-            {
-                if (parameter.Name.Equals("ETag", StringComparison.OrdinalIgnoreCase))
-                {
-                    etag = parameter.Value.ToString();
-                }
-            }
+            string etag = response.Headers
+                                    .Where(param => (param.Name.ToLower().Equals("etag")))
+                                    .Select(param => param.Value.ToString())
+                                    .FirstOrDefault()
+                                    .ToString();
             return etag;
         }
 
@@ -1119,36 +1023,13 @@ namespace Minio
         /// <param name="objectName">Key to remove incomplete uploads from</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public async Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))
+        [Obsolete("Use RemoveIncompleteUploadAsync method with RemoveIncompleteUploadArgs object. Refer RemoveIncompleteUpload example code.")]
+        public Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
+            RemoveIncompleteUploadArgs args = new RemoveIncompleteUploadArgs()
                                                                 .WithBucket(bucketName)
-                                                                .WithPrefix(objectName);
-            IObservable<Upload> observable = this.ListIncompleteUploads(listArgs, cancellationToken: cancellationToken);
-
-            IDisposable subscription = observable.Subscribe(
-                async upload =>
-                {
-                    try
-                    {
-                        if (objectName == upload.Key)
-                        {
-                            await this.RemoveUploadAsync(bucketName, objectName, upload.UploadId, cancellationToken).ConfigureAwait(false);
-                        }
-                    }
-                    catch(Exception ex)
-                    {
-                        if (ex.GetType() != typeof(BucketNotFoundException)) // Ignoring bucket not found as upload is deleted as desired
-                        {
-                            throw ex;
-                        }
-                    }
-                },
-                ex => 
-                {
-                    throw ex;
-                }
-                );
+                                                                .WithObject(objectName);
+            return this.RemoveIncompleteUploadAsync(args);
         }
 
         /// <summary>
@@ -1159,13 +1040,14 @@ namespace Minio
         /// <param name="uploadId"></param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        private async Task RemoveUploadAsync(string bucketName, string objectName, string uploadId, CancellationToken cancellationToken)
+        [Obsolete("Use RemoveUploadAsync method with RemoveUploadArgs object.")]
+        private Task RemoveUploadAsync(string bucketName, string objectName, string uploadId, CancellationToken cancellationToken)
         {
-            var request = await this.CreateRequest(Method.DELETE, bucketName,
-                                                     objectName: objectName)
-                                    .ConfigureAwait(false);
-            request.AddQueryParameter("uploadId",$"{uploadId}");
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            RemoveUploadArgs args = new RemoveUploadArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObject(objectName)
+                                                .WithUploadId(uploadId);
+            return this.RemoveUploadAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -1230,7 +1112,7 @@ namespace Minio
         /// <param name="objectNames">List of object keys to remove.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public async Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectNames, CancellationToken cancellationToken = default(CancellationToken))
+        public IObservable<DeleteError> RemoveObjectAsync(string bucketName, IEnumerable<string> objectNames, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (objectNames == null)
             {
@@ -1283,13 +1165,13 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Facts about the object</returns>
         [Obsolete("Use StatObjectAsync method with StatObjectArgs object. Refer StatObject & StatObjectQuery example code.")]
-        public async Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             StatObjectArgs args = new StatObjectArgs()
                                             .WithBucket(bucketName)
                                             .WithObject(objectName)
                                             .WithServerSideEncryption(sse);
-            return await this.StatObjectAsync(args, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return this.StatObjectAsync(args, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -1443,7 +1325,7 @@ namespace Minio
         /// <param name="destObjectName">Object name to be created, if not provided uses source object name as destination object name.</param>
         /// <param name="copyConditions">optionally can take a key value CopyConditions as well for conditionally attempting copyObject.</param>
         /// <param name="customHeaders">optional custom header to specify byte range</param>
-        /// <param name="resource">Optional string to specify upload id and part number </param>
+        /// <param name="queryMap">optional query parameters like upload id, part number etc for copy operations</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <param name="type">Type of XML serialization to be applied on the server response</param>
         /// <returns></returns>
@@ -1597,7 +1479,8 @@ namespace Minio
         /// <param name="reqParams">optional override response headers</param>
         /// <param name="reqDate">optional request date and time in UTC</param>
         /// <returns></returns>
-        public async Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null)
+        [Obsolete("Use PresignedGetObjectAsync method with PresignedGetObjectArgs object.")]
+        public Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null)
         {
             PresignedGetObjectArgs args = new PresignedGetObjectArgs()
                                                         .WithBucket(bucketName)
@@ -1606,7 +1489,7 @@ namespace Minio
                                                         .WithExpiry(expiresInt)
                                                         .WithRequestDate(reqDate);
 
-            return await this.PresignedGetObjectAsync(args);
+            return this.PresignedGetObjectAsync(args);
         }
 
         /// <summary>
@@ -1618,13 +1501,13 @@ namespace Minio
         /// <param name="expiresInt">Expiration time in seconds</param>
         /// <returns></returns>
         [Obsolete("Use PresignedPutObjectAsync method with PresignedPutObjectArgs object.")]
-        public async Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
+        public Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
         {
             PresignedPutObjectArgs args = new PresignedPutObjectArgs()
                                                         .WithBucket(bucketName)
                                                         .WithObject(objectName)
                                                         .WithExpiry(expiresInt);
-            return await this.PresignedPutObjectAsync(args);
+            return this.PresignedPutObjectAsync(args);
         }
 
         /// <summary>
@@ -1632,13 +1515,13 @@ namespace Minio
         /// </summary>
         /// <param name="policy"></param>
         /// <returns></returns>
-        public async Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy)
+        public Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy)
         {
             PresignedPostPolicyArgs args = new PresignedPostPolicyArgs()
                                                         .WithBucket(policy.Bucket)
                                                         .WithObject(policy.Key)
                                                         .WithPolicy(policy);
-            return await this.PresignedPostPolicyAsync(args);
+            return this.PresignedPostPolicyAsync(args);
         }
     }
 }

@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
-using Minio.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Minio.DataModel;
+using Minio.Exceptions;
 
 namespace Minio
 {
@@ -75,7 +76,6 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns> Task </returns>
         /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
-        [Obsolete("Use RemoveBucketAsync method with RemoveBucketArgs object. Refer RemoveBucket example code.")]
         Task RemoveBucketAsync(RemoveBucketArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -84,6 +84,7 @@ namespace Minio
         /// <param name="bucketName">Name of bucket to remove</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task</returns>
+        [Obsolete("Use RemoveBucketAsync method with RemoveBucketArgs object. Refer RemoveBucket example code.")]
         Task RemoveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -191,6 +192,7 @@ namespace Minio
         /// <param name="recursive">List incomplete uploads recursively</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>An observable of items that client can subscribe to</returns>
+        [Obsolete("Use ListObjectsAsync method with ListObjectsArgs object. Refer ListObjects example code.")]
         IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = false, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -199,6 +201,7 @@ namespace Minio
         /// <param name="bucketName">Bucket name</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Returns Task with bucket policy json as string </returns>
+        [Obsolete("Use GetPolicyAsync method with GetPolicyArgs object. Refer GetBucketPolicy example code.")]
         Task<string> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -208,6 +211,7 @@ namespace Minio
         /// <param name="policyJson">policy json</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Returns Task that sets the current bucket policy</returns>
+        [Obsolete("Use SetPolicyAsync method with SetPolicyArgs object. Refer SetBucketPolicy example code.")]
         Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -216,6 +220,7 @@ namespace Minio
         /// <param name="bucketName">Bucket Name</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>BucketNotification object populated with the notification subresource</returns>
+        [Obsolete("Use GetBucketNotificationsAsync method with GetBucketNotificationsArgs object. Refer GetBucketNotification example code.")]
         Task<BucketNotification> GetBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -225,6 +230,7 @@ namespace Minio
         /// <param name="notification">BucketNotification object</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        [Obsolete("Use SetBucketNotificationsAsync method with SetBucketNotificationsArgs object. Refer SetBucketNotification example code.")]
         Task SetBucketNotificationsAsync(string bucketName, BucketNotification notification, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -233,6 +239,7 @@ namespace Minio
         /// <param name="bucketName">bucketName</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        [Obsolete("Use RemoveAllBucketNotificationsAsync method with RemoveAllBucketNotificationsArgs object. Refer RemoveAllBucketNotification example code.")]
         Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -244,6 +251,7 @@ namespace Minio
         /// <param name="suffix">Filter keys ending with this suffix</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>An observable of JSON-based notification events</returns>
+        [Obsolete("Use ListenBucketNotificationsAsync method with ListenBucketNotificationsArgs object. Refer ListenBucketNotifications example code.")]
         IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events, string prefix = "", string suffix = "", CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>

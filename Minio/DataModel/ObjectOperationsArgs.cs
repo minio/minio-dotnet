@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using RestSharp;
-using System.Security.Cryptography;
 using System.Globalization;
 using System.Xml;
 
@@ -27,6 +26,7 @@ using Minio.Exceptions;
 using Minio.Helper;
 using System.Linq;
 using System.Xml.Linq;
+using System.Security.Cryptography;
 
 namespace Minio
 {
@@ -733,9 +733,8 @@ namespace Minio
         }
     }
 
-    public class NewMultipartUploadArgs: ObjectArgs<NewMultipartUploadArgs>
+    public class NewMultipartUploadArgs: ObjectWriteArgs<NewMultipartUploadArgs>
     {
-        internal ServerSideEncryption SSE { get; private set; }
         public NewMultipartUploadArgs()
         {
             this.RequestMethod = Method.POST;
@@ -748,6 +747,26 @@ namespace Minio
         {
             request = base.BuildRequest(request);
             request.AddQueryParameter("uploads","");
+            if (this.ObjectTags != null && this.ObjectTags.TaggingSet != null
+                    && this.ObjectTags.TaggingSet.Tag.Count > 0)
+            {
+                request.AddOrUpdateParameter("x-amz-tagging", this.ObjectTags.GetTagString(), ParameterType.HttpHeader);
+            }
+            if (this.Retention != null)
+            {
+                request.AddOrUpdateParameter("x-amz-object-lock-retain-until-date",
+                            this.Retention.RetainUntilDate,
+                            ParameterType.HttpHeader);
+                request.AddOrUpdateParameter("x-amz-object-lock-mode",
+                    (this.Retention.Mode == RetentionMode.GOVERNANCE)?"GOVERNANCE":"COMPLIANCE",
+                    ParameterType.HttpHeader);
+            }
+            if (this.LegalHoldEnabled != null)
+            {
+                request.AddOrUpdateParameter("x-amz-object-lock-legal-hold", 
+                    ((this.LegalHoldEnabled == true)?"ON":"OFF"),
+                    ParameterType.HttpHeader);
+            }
             return request;
         }
 
@@ -902,7 +921,7 @@ namespace Minio
             base.Validate();
             if (this.RequestBody == null && this.ObjectStreamData == null && string.IsNullOrEmpty(this.FileName))
             {
-                throw new ArgumentNullException("Invalid input. All of " + nameof(RequestBody) + ", " + nameof(FileName) + " and " + nameof(ObjectStreamData) + " cannot be null.");
+                throw new ArgumentNullException("Invalid input. " + nameof(RequestBody) + ", " + nameof(FileName) + " and " + nameof(ObjectStreamData) + " cannot be empty.");
             }
             if (this.PartNumber < 0 )
             {
@@ -912,7 +931,19 @@ namespace Minio
             {
                 utils.ValidateFile(this.FileName);
             }
+            this.Populate();
         }
+
+        internal void Populate()
+        {
+            if (!string.IsNullOrEmpty(this.FileName))
+            {
+                FileInfo fileInfo = new FileInfo(this.FileName);
+                this.ObjectSize = fileInfo.Length;
+                this.ObjectStreamData = new FileStream(this.FileName, FileMode.Open, FileAccess.Read);
+            }
+        }
+
         public override RestRequest BuildRequest(RestRequest request)
         {
             request = base.BuildRequest(request);
@@ -933,6 +964,21 @@ namespace Minio
             {
                 request.AddQueryParameter("uploadId",$"{this.UploadId}");
                 request.AddQueryParameter("partNumber",$"{this.PartNumber}");
+            }
+            if (this.ObjectTags != null && this.ObjectTags.TaggingSet != null
+                    && this.ObjectTags.TaggingSet.Tag.Count > 0)
+            {
+                request.AddOrUpdateParameter("x-amz-tagging", this.ObjectTags.GetTagString(), ParameterType.HttpHeader);
+            }
+            if (this.Retention != null)
+            {
+                request.AddOrUpdateParameter("x-amz-object-lock-retain-until-date", this.Retention.RetainUntilDate, ParameterType.HttpHeader);
+            }
+            if (this.LegalHoldEnabled != null)
+            {
+                request.AddOrUpdateParameter("x-amz-object-lock-legal-hold", 
+                    ((this.LegalHoldEnabled == true)?"ON":"OFF"),
+                    ParameterType.HttpHeader);
             }
             if (this.RequestBody != null)
             {
@@ -1010,6 +1056,17 @@ namespace Minio
         {
             this.ObjectStreamData = data;
             return this;
+        }
+
+        ~PutObjectArgs()
+        {
+            if (!string.IsNullOrEmpty(this.FileName) && this.ObjectStreamData != null)
+            {
+                ((FileStream)this.ObjectStreamData).Close();
+            } else if (this.ObjectStreamData != null)
+            {
+                this.ObjectStreamData.Close();
+            }
         }
    }
 }

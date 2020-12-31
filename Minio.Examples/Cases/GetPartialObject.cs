@@ -34,7 +34,10 @@ namespace Minio.Examples.Cases
                 Console.WriteLine("Running example for API: GetObjectAsync");
                 // Check whether the object exists using StatObjectAsync(). If the object is not found,
                 // StatObjectAsync() will throw an exception.
-                await minio.StatObjectAsync(bucketName, objectName);
+                var statObjectArgs = new StatObjectArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObject(objectName);
+                await minio.StatObjectAsync(statObjectArgs);
 
                 // Get object content starting at byte position 1024 and length of 4096
                 await minio.GetObjectAsync(bucketName, objectName, 1024L, 4096L,

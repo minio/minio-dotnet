@@ -158,5 +158,21 @@ namespace Minio.DataModel
         {
             return new Tagging(tags, true);
         }
+
+        public string GetTagString()
+        {
+            if (this.TaggingSet == null || this.TaggingSet.Tag == null && this.TaggingSet.Tag.Count == 0)
+            {
+                return null;
+            }
+            string tagStr = "";
+            int i = 0;
+            foreach(var tag in this.TaggingSet.Tag)
+            {
+                string append = (i < (this.TaggingSet.Tag.Count - 1))?"&":"";
+                tagStr += tag.Key + "=" + tag.Value + append;
+            }
+            return tagStr;
+        }
     }
 }
