@@ -69,19 +69,22 @@ namespace Minio.Tests
             try
             {
                 const int tryCount = 5;
-                var args = new MakeBucketArgs()
+                var mkBktArgs = new MakeBucketArgs()
                                     .WithBucket(bucketName);
-                await minio.MakeBucketAsync(args);
+                await minio.MakeBucketAsync(mkBktArgs);
 
+                var statObjArgs = new StatObjectArgs()
+                                            .WithBucket(bucketName)
+                                            .WithObject(badName);
                 var ex = await Assert.ThrowsExceptionAsync<InvalidObjectNameException>(
-                    () => minio.StatObjectAsync(bucketName, badName));
+                    () => minio.StatObjectAsync(statObjArgs));
                 for(int i=0;
                         i < tryCount &&
                             (ex.ServerResponse != null &&
                                 ex.ServerResponse.StatusCode.Equals(HttpStatusCode.ServiceUnavailable)); ++i)
                 {
                     ex = await Assert.ThrowsExceptionAsync<InvalidObjectNameException>(
-                        () => minio.StatObjectAsync(bucketName, badName));
+                        () => minio.StatObjectAsync(statObjArgs));
 
                 }
                 Assert.AreEqual(ex.Response.Code, "InvalidObjectName");

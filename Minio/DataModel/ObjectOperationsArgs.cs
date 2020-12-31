@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using RestSharp;
-using System.Security.Cryptography;
 using System.Globalization;
 using System.Xml;
 

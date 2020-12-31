@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
-
 namespace Minio
 {
     public abstract class ObjectVersionArgs<T> : EncryptionArgs<T>

@@ -32,9 +32,11 @@ namespace Minio.Tests
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                     | SecurityProtocolType.Tls11
                                     | SecurityProtocolType.Tls12;
-            var minio = new MinioClient("play.min.io",
-                "Q3AM3UQ867SPQQA43P2F",
-                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG");
+            var minio = new MinioClient()
+                                    .WithEndpoint("play.min.io")
+                                    .WithCredentials("Q3AM3UQ867SPQQA43P2F",
+                                             "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+                                    .Build();
         }
 
         private TestContext testContextInstance;
@@ -80,47 +82,61 @@ namespace Minio.Tests
         [TestMethod]
         public void TestWithUrl()
         {
-            new MinioClient(endpoint:"http://localhost:9000");
+            new MinioClient()
+                    .WithEndpoint("localhost", 9000)
+                    .Build();
         }
 
         [TestMethod]
         public void TestWithoutPort()
         {
-            new MinioClient("http://localhost");
+            new MinioClient()
+                    .WithEndpoint("localhost")
+                    .Build();
         }
 
         [TestMethod]
         public void TestWithTrailingSlash()
         {
-            new MinioClient("http://localhost:9000/");
+            new MinioClient()
+                    .WithEndpoint("localhost:9000/")
+                    .Build();
         }
 
         [TestMethod]
         [ExpectedException(typeof(InvalidEndpointException))]
         public void TestUrlFailsWithMalformedScheme()
         {
-            new MinioClient("htp://localhost:9000");
+            new MinioClient()
+                    .WithEndpoint("htp://localhost:9000")
+                    .Build();
         }
 
         [TestMethod]
         [ExpectedException(typeof(InvalidEndpointException))]
         public void TestUrlFailsWithPath()
         {
-            new MinioClient("http://localhost:9000/foo");
+            new MinioClient()
+                    .WithEndpoint("localhost:9000/foo")
+                    .Build();
         }
 
         [TestMethod]
         [ExpectedException(typeof(InvalidEndpointException))]
         public void TestUrlFailsWithQuery()
         {
-            new MinioClient("http://localhost:9000/?foo=bar");
+            new MinioClient()
+                    .WithEndpoint("http://localhost:9000/?foo=bar")
+                    .Build();
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void TestSetAppInfoFailsNullApp()
         {
-            var client = new MinioClient("http://localhost:9000");
+            var client = new MinioClient()
+                                    .WithEndpoint("localhost", 9000)
+                                    .Build();
             client.SetAppInfo(null, "1.2.2");
         }
 
@@ -128,28 +144,36 @@ namespace Minio.Tests
         [ExpectedException(typeof(ArgumentException))]
         public void TestSetAppInfoFailsNullVersion()
         {
-            var client = new MinioClient("http://localhost:9000");
+            var client = new MinioClient()
+                                    .WithEndpoint("localhost", 9000)
+                                    .Build();
             client.SetAppInfo("Hello-App", null);
         }
 
         [TestMethod]
         public void TestSetAppInfoSuccess()
         {
-            var client = new MinioClient("http://localhost:9000");
+            var client = new MinioClient()
+                                    .WithEndpoint("localhost", 9000)
+                                    .Build();
             client.SetAppInfo("Hello-App", "1.2.1");
         }
 
         [TestMethod]
         public void TestEndpointSuccess()
         {
-            new MinioClient("s3.amazonaws.com");
+            new MinioClient()
+                        .WithEndpoint("s3.amazonaws.com")
+                        .Build();
         }
 
         [TestMethod]
         [ExpectedException(typeof(InvalidEndpointException))]
         public void TestEndpointFailure()
         {
-            new MinioClient("s3-us-west-1.amazonaws.com");
+            new MinioClient()
+                    .WithEndpoint("s3-us-west-1.amazonaws.com")
+                    .Build();
         }
 
         //[TestMethod]

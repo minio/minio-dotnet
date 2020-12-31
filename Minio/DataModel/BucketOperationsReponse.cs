@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -230,7 +231,7 @@ namespace Minio
     {
         internal string PolicyJsonString { get; private set; }
 
-        private async void Initialize()
+        private async Task Initialize()
         {
             using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(ResponseContent)))
             using (var streamReader = new StreamReader(stream))
@@ -248,7 +249,7 @@ namespace Minio
             {
                 return;
             }
-            Initialize();
+            Initialize().Wait();
         }
     }
     internal class GetBucketNotificationsResponse : GenericResponse
