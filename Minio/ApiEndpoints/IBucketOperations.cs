@@ -1,6 +1,6 @@
 ﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
- * (C) 2017, 2018, 2019 MinIO, Inc.
+ * (C) 2017, 2018, 2019, 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -295,5 +295,29 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns> Task </returns>
         Task RemoveBucketEncryptionAsync(RemoveBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Sets the Lifecycle configuration for this bucket
+        /// </summary>
+        /// <param name="args">SetBucketLifecycleArgs Arguments Object with information like Bucket name, tag key-value pairs</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        Task SetBucketLifecycleAsync(SetBucketLifecycleArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Gets Lifecycle configuration set for this bucket returned in an object
+        /// </summary>
+        /// <param name="args">GetBucketLifecycleArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Lifecycle Object with key-value tag pairs</returns>
+        Task<LifecycleConfiguration> GetBucketLifecycleAsync(GetBucketLifecycleArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Removes Lifecycle configuration stored for the bucket.
+        /// </summary>
+        /// <param name="args">RemoveBucketLifecycleArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        Task RemoveBucketLifecycleAsync(RemoveBucketLifecycleArgs args, CancellationToken cancellationToken = default(CancellationToken));
     }
 }
