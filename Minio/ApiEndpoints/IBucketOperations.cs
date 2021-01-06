@@ -1,6 +1,6 @@
 ﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
- * (C) 2017, 2018, 2019 MinIO, Inc.
+ * (C) 2017, 2018, 2019, 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -295,5 +295,30 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns> Task </returns>
         Task RemoveBucketEncryptionAsync(RemoveBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Gets Replication configuration set for this bucket
+        /// </summary>
+        /// <param name="args">GetBucketReplicationArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Replication configuration object</returns>
+        Task<ReplicationConfiguration> GetBucketReplicationAsync(GetBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Sets the Replication configuration for this bucket
+        /// </summary>
+        /// <param name="args">SetBucketReplicationArgs Arguments Object with information like Bucket name, Replication Configuration object</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        Task SetBucketReplicationAsync(SetBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+
+        /// <summary>
+        /// Removes Replication configuration stored for the bucket.
+        /// </summary>
+        /// <param name="args">RemoveBucketReplicationArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        Task RemoveBucketReplicationAsync(RemoveBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

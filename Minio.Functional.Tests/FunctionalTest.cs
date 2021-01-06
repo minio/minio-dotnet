@@ -1,6 +1,6 @@
 ﻿/*
 * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
-* (C) 2017, 2018, 2019, 2020 MinIO, Inc.
+* (C) 2017, 2018, 2019, 2020, 2021 MinIO, Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
+using Minio.DataModel.Replication;
 using Minio.Exceptions;
 using Newtonsoft.Json;
 using System;
@@ -87,6 +88,10 @@ namespace Minio.Functional.Tests
         private const string setObjectRetentionSignature = "Task SetObjectRetentionAsync(SetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string getObjectRetentionSignature = "Task<ObjectRetentionConfiguration> GetObjectRetentionAsync(GetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string clearObjectRetentionSignature = "Task ClearObjectRetentionAsync(ClearObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string getBucketReplicationSignature = "Task<Tagging> GetBucketTagsAsync(GetBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string setBucketReplicationSignature = "Task SetBucketTagsAsync(SetBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string deleteBucketReplicationSignature = "Task RemoveBucketTagsAsync(RemoveBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+
 
 
         // Create a file of given size from random byte array or optionally create a symbolic link
@@ -3783,6 +3788,112 @@ namespace Minio.Functional.Tests
             }
             catch (Exception)
             {
+            }
+        }
+
+        #endregion
+
+        #region Bucket Replication
+        internal async static Task BucketReplicationAsync_Test1(MinioClient minio, string remoteARN)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName1 = GetRandomName(15);
+            string bucketName2 = GetRandomName(15);
+            string objectName = GetRandomObjectName(10);
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName1", bucketName1 },
+                { "bucketName2", bucketName2 }
+            };
+            ReplicationConfiguration repl;
+
+            try
+            {
+                await Setup_Test(minio, bucketName1);
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
+                    await minio.PutObjectAsync(bucketName1 + "/txt/",
+                                                objectName,
+                                                filestream, filestream.Length, null);
+                SetVersioningArgs versioningArgs = new SetVersioningArgs()
+                                                            .WithBucket(bucketName1)
+                                                            .WithVersioningEnabled();
+                await minio.SetVersioningAsync(versioningArgs);
+                versioningArgs = new SetVersioningArgs()
+                                            .WithBucket(bucketName2)
+                                            .WithVersioningEnabled();
+                await minio.SetVersioningAsync(versioningArgs);
+                Dictionary<string, string> tags = new Dictionary<string, string>()
+                                {
+                                    {"key1", "value1"},
+                                    {"key2", "value2"},
+                                    {"key3", "value3"}
+                                };
+                ReplicationRule rule = 
+                    new ReplicationRule(
+                        new DeleteMarkerReplication(DeleteMarkerReplication.REPLICATION_DELETEMARKER_STATUS_DISABLED),
+                        new ReplicationDestination(
+                                null, null, "arn:aws:s3:::"+bucketName1, null, null, null, null),
+                        null,
+                        new RuleFilter(new AndOperator("txt", Tagging.GetBucketTags(tags)),null, null),
+                        new DeleteReplication(DeleteReplication.DELETEREPLICATION_STATUS_DISABLED),
+                        1,
+                        "txt",
+                        "txt/",
+                        null,
+                        ReplicationRule.REPLICATION_RULE_STATUS_ENABLED
+                    );
+                List<ReplicationRule> rules = new List<ReplicationRule>();
+                rules.Add(rule);
+                repl = new ReplicationConfiguration(remoteARN, rules);
+
+                SetBucketReplicationArgs replArgs = new SetBucketReplicationArgs()
+                                                            .WithBucket(bucketName1)
+                                                            .WithConfiguration(repl);
+                await minio.SetBucketReplicationAsync(replArgs);
+                new MintLogger(nameof(BucketReplicationAsync_Test1), setBucketReplicationSignature, "Tests whether SetBucketReplicationAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                await TearDown(minio, bucketName1);
+                new MintLogger(nameof(BucketReplicationAsync_Test1), setBucketReplicationSignature, "Tests whether SetBucketReplicationAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                return;
+            }
+            try
+            {
+                GetBucketReplicationArgs replArgs = new GetBucketReplicationArgs()
+                                                        .WithBucket(bucketName1);
+                var replRes = await minio.GetBucketReplicationAsync(replArgs);
+                Assert.IsNotNull(replRes);
+                Assert.IsNotNull(replRes);
+                Assert.IsTrue((replRes.Rules.Count > 0));
+                Assert.AreEqual(replRes.Rules.Count, repl.Rules.Count);
+                
+                new MintLogger(nameof(BucketReplicationAsync_Test1), getBucketReplicationSignature, "Tests whether GetBucketReplicationAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                await TearDown(minio, bucketName1);
+                new MintLogger(nameof(BucketReplicationAsync_Test1), getBucketReplicationSignature, "Tests whether GetBucketReplicationAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                return;
+            }
+            try
+            {
+                RemoveBucketReplicationArgs replArgs = new RemoveBucketReplicationArgs()
+                                                                .WithBucket(bucketName1);
+                await minio.RemoveBucketReplicationAsync(replArgs);
+                GetBucketReplicationArgs getReplicationArgs = new GetBucketReplicationArgs()
+                                                        .WithBucket(bucketName1);
+                var tagObj = await minio.GetBucketReplicationAsync(getReplicationArgs);
+            }
+            catch (Exception ex)
+            {
+                var testOutcome = (ex.Message.Contains("The replication configuration was not found")) ? TestStatus.PASS : TestStatus.FAIL;
+                if (ex.Message.Contains("The replication configuration was not found"))
+                    new MintLogger(nameof(BucketReplicationAsync_Test1), deleteBucketReplicationSignature, "Tests whether RemoveBucketReplicationAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+                else
+                    new MintLogger(nameof(BucketReplicationAsync_Test1), deleteBucketReplicationSignature, "Tests whether RemoveBucketReplicationAsync passes", testOutcome, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                await TearDown(minio, bucketName1);
+                return;
             }
         }
 

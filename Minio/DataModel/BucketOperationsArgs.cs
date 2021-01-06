@@ -1,5 +1,5 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -532,6 +532,61 @@ namespace Minio
             string body = utils.MarshalXML(new ObjectLockConfiguration(), "http://s3.amazonaws.com/doc/2006-03-01/");
             request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
 
+            return request;
+        }
+    }
+
+    public class GetBucketReplicationArgs : BucketArgs<GetBucketReplicationArgs>
+    {
+        public GetBucketReplicationArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("replication","");
+            return request;
+        }
+    }
+
+    public class SetBucketReplicationArgs : BucketArgs<SetBucketReplicationArgs>
+    {
+        internal ReplicationConfiguration BucketReplication { get; private set; }
+        public SetBucketReplicationArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        public SetBucketReplicationArgs WithConfiguration(ReplicationConfiguration conf)
+        {
+            this.BucketReplication = conf;
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("replication","");
+            string body = this.BucketReplication.MarshalXML();
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+            request.AddOrUpdateParameter("Content-MD5",
+                                          utils.getMD5SumStr(System.Text.Encoding.UTF8.GetBytes(body)),
+                                          ParameterType.HttpHeader);
+
+            return request;
+        }
+    }
+
+    public class RemoveBucketReplicationArgs : BucketArgs<RemoveBucketReplicationArgs>
+    {
+        public RemoveBucketReplicationArgs()
+        {
+            this.RequestMethod = Method.DELETE;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("replication","");
             return request;
         }
     }
