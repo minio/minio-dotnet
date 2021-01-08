@@ -29,7 +29,10 @@ namespace Minio.Examples.Cases
             try
             {
                 Console.WriteLine("Running example for API: RemoveIncompleteUploadAsync");
-                await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
+                RemoveIncompleteUploadArgs args = new RemoveIncompleteUploadArgs()
+                                                                .WithBucket(bucketName)
+                                                                .WithObject(objectName);
+                await minio.RemoveIncompleteUploadAsync(args);
                 Console.WriteLine($"Removed object {objectName} from bucket {bucketName} successfully");
                 Console.WriteLine();
             }

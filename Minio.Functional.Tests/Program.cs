@@ -138,11 +138,11 @@ namespace Minio.Functional.Tests
             FunctionalTest.ListObjects_Test3(minioClient).Wait();
             FunctionalTest.ListObjects_Test4(minioClient).Wait();
             FunctionalTest.ListObjects_Test5(minioClient).Wait();
-            FunctionalTest.ListObjectVersions_Test1(minioClient).Wait();
 
             // Test RemoveObjectAsync function
             FunctionalTest.RemoveObject_Test1(minioClient).Wait();
             FunctionalTest.RemoveObjects_Test2(minioClient).Wait();
+            FunctionalTest.RemoveObjects_Test3(minioClient).Wait();
 
             // Test CopyObjectAsync function
             FunctionalTest.CopyObject_Test1(minioClient).Wait();

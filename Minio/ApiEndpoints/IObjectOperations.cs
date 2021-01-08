@@ -15,13 +15,14 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
-using Minio.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Minio.DataModel;
+using Minio.Exceptions;
 
 namespace Minio
 {
@@ -38,14 +39,74 @@ namespace Minio
         Task<bool> GetObjectLegalHoldAsync(GetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// Set the configuration object for Legal Hold Status
+        /// Set the configuration for Legal Hold Status
         /// </summary>
         /// <param name="args">SetObjectLegalHoldArgs Arguments Object which has object identifier information - bucket name, object name, version ID and the status (ON/OFF) of legal-hold</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation </param>
-        /// <returns>Task</returns>
+        /// <returns> Task </returns>
         /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
         /// <exception cref="InvalidObjectNameException">When objectName is invalid</exception>
         Task SetObjectLegalHoldAsync(SetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Set the Retention using the configuration object
+        /// </summary>
+        /// <param name="args">SetObjectRetentionArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
+        Task SetObjectRetentionAsync(SetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Get the Retention configuration for the object
+        /// </summary>
+        /// <param name="args">GetObjectRetentionArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> ObjectRetentionConfiguration object which contains the Retention configuration </returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        Task<ObjectRetentionConfiguration> GetObjectRetentionAsync(GetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Clears the Retention configuration for the object
+        /// </summary>
+        /// <param name="args">ClearObjectRetentionArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns> Task </returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
+        Task ClearObjectRetentionAsync(ClearObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Removes an object with given name in specific bucket
+        /// </summary>
+        /// <param name="args">RemoveObjectArgs Arguments Object encapsulates information like - bucket name, object name, whether delete all versions</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        Task RemoveObjectAsync(RemoveObjectArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Removes multiple objects from a specific bucket
+        /// </summary>
+        /// <param name="args">RemoveObjectsArgs Arguments Object encapsulates information like - bucket name, List of objects, optional list of versions (for each object) to be deleted</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Observable that returns delete error while deleting objects if any</returns>
+        Task<IObservable<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
@@ -76,6 +137,7 @@ namespace Minio
         /// <param name="objectName">Name of object to retrieve</param>
         /// <param name="opts">Select Object options</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        [Obsolete("Use SelectObjectContentAsync method with SelectObjectContentsArgs object. Refer SelectObjectContent example code.")]
         Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, SelectObjectOptions opts, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -90,22 +152,6 @@ namespace Minio
         /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
-        /// Removes an object with given name in specific bucket
-        /// </summary>
-        /// <param name="args">RemoveObjectArgs Arguments Object encapsulates information like - bucket name, object name, whether delete all versions</param>
-        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <returns></returns>
-        Task RemoveObjectAsync(RemoveObjectArgs args, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
-        /// Removes multiple objects from a specific bucket
-        /// </summary>
-        /// <param name="args">RemoveObjectsArgs Arguments Object encapsulates information like - bucket name, List of objects, optional list of versions (for each object) to be deleted</param>
-        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <returns>Observable that returns delete error while deleting objects if any</returns>
-        Task<IObservable<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Removes an object with given name in specific bucket
@@ -135,6 +181,7 @@ namespace Minio
         /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Facts about the object</returns>
+        [Obsolete("Use StatObjectAsync method with StatObjectArgs object. Refer StatObject & StatObjectQuery example code.")]
         Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -211,6 +258,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds</param>
+        [Obsolete("Use PresignedPutObjectAsync method with PresignedPutObjectArgs object.")]
         Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt);
 
         /// <summary>

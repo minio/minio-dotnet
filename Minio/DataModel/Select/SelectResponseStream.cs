@@ -19,16 +19,10 @@ using System;
 using System.Collections.Generic;
 
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Xml.Serialization;
-using RestSharp;
-using System;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Force.Crc32;
 using System.Linq;
-using System.Collections.Generic;
 
 namespace Minio.DataModel
 {
@@ -87,7 +81,6 @@ namespace Minio.DataModel
         private void start()
         {
             int numBytesRead = 0;
-            int msgOffset = 0;
             while (_isProcessing)
             {   
                 var n =  ReadFromStream(prelude);

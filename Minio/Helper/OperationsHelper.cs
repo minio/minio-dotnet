@@ -19,24 +19,23 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+
+using Minio.DataModel;
 using System.IO;
 using RestSharp;
-
 using Minio.Exceptions;
-using Minio.DataModel;
 
 namespace Minio
 {
     public partial class MinioClient : IObjectOperations
     {
-
         /// <summary>
         /// private helper method to remove list of objects from bucket
         /// </summary>
         /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name etc </param>
         /// <param name="objectStat"> ObjectStat object encapsulates information like - object name, size, etag etc </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        private async Task getObjectFileAsync(GetObjectArgs args, ObjectStat objectStat, CancellationToken cancellationToken = default(CancellationToken))
+        private Task getObjectFileAsync(GetObjectArgs args, ObjectStat objectStat, CancellationToken cancellationToken = default(CancellationToken))
         {
             long length = objectStat.Size;
             string etag = objectStat.ETag;
@@ -58,11 +57,12 @@ namespace Minio
                 File.Delete(tempFileName);
             }
 
-            args = args.WithCallbackStream( (stream) =>
+            args = args.WithCallbackStream( stream =>
                                     {
-                                        var fileStream = File.Create(tempFileName);
-                                        stream.CopyTo(fileStream);
-                                        fileStream.Dispose();
+                                        using (var fileStream = File.Create(tempFileName))
+                                        {
+                                            stream.CopyTo(fileStream);
+                                        }
                                         FileInfo writtenInfo = new FileInfo(tempFileName);
                                         long writtenSize = writtenInfo.Length;
                                         if (writtenSize != (length - tempFileSize))
@@ -72,7 +72,7 @@ namespace Minio
                                         }
                                         utils.MoveWithReplace(tempFileName, args.FileName);
                                     });
-            await getObjectStreamAsync(args, objectStat, null, cancellationToken).ConfigureAwait(false);
+            return getObjectStreamAsync(args, objectStat, null, cancellationToken);
         }
 
 
@@ -96,17 +96,12 @@ namespace Minio
         /// <param name="args">RemoveObjectsArgs Arguments Object encapsulates information like - bucket name, List of objects, optional list of versions (for each object) to be deleted</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-    	private async Task<List<DeleteError>> removeObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken)
+        private async Task<List<DeleteError>> removeObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken)
         {
             var request = await this.CreateRequest(args).ConfigureAwait(false);
             var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             RemoveObjectsResponse removeObjectsResponse = new RemoveObjectsResponse(response.StatusCode, response.Content);
-            var deleteErrorList = new List<DeleteError>();
-            if (removeObjectsResponse.DeletedObjectsResult != null)
-            {
-                deleteErrorList = removeObjectsResponse.DeletedObjectsResult.errorList;
-            }
-            return deleteErrorList;
+            return removeObjectsResponse.DeletedObjectsResult.errorList;
         }
 
         /// <summary>
@@ -149,7 +144,6 @@ namespace Minio
 
         private async Task<List<DeleteError>> removeObjectVersionsHelper(RemoveObjectsArgs args, List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
         {
-            int i = 0;
             if (args.ObjectNamesVersions.Count <= 1000)
             {
                 fullErrorsList.AddRange(await callRemoveObjectVersions(args, args.ObjectNamesVersions, fullErrorsList, cancellationToken));
@@ -158,28 +152,26 @@ namespace Minio
             else
             {
                 List<Tuple<string, string>> curItemList = new List<Tuple<string, string>>(args.ObjectNamesVersions.GetRange(0, 1000));
-                int curItemListCount = curItemList.Count;
+                int delVersionNextIndex = curItemList.Count;
                 int deletedCount = 0;
-                while (curItemListCount > 0)
+                while (delVersionNextIndex <= args.ObjectNamesVersions.Count)
                 {
-                    Console.WriteLine("curItemList.Count " + curItemList.Count);
                     var errorList = await callRemoveObjectVersions(args, curItemList, fullErrorsList, cancellationToken).ConfigureAwait(false);
+                    if (delVersionNextIndex == args.ObjectNamesVersions.Count)
+                        break;
                     deletedCount += curItemList.Count;
                     fullErrorsList.AddRange(errorList);
                     curItemList.Clear();
-                    if ((args.ObjectNamesVersions.Count - deletedCount) <= 0)
+                    if ((args.ObjectNamesVersions.Count - delVersionNextIndex) <= 1000)
                     {
-                        break;
-                    }
-                    if ((args.ObjectNamesVersions.Count - deletedCount) <= 1000)
-                    {
-                        curItemList.AddRange(args.ObjectNamesVersions.GetRange(curItemListCount, (args.ObjectNamesVersions.Count - deletedCount)));
+                        curItemList.AddRange(args.ObjectNamesVersions.GetRange(delVersionNextIndex, (args.ObjectNamesVersions.Count - delVersionNextIndex)));
+                        delVersionNextIndex = args.ObjectNamesVersions.Count;
                     }
                     else
                     {
-                        curItemList.AddRange(args.ObjectNamesVersions.GetRange(curItemListCount, 1000));
+                        curItemList.AddRange(args.ObjectNamesVersions.GetRange(delVersionNextIndex, 1000));
+                        delVersionNextIndex += 1000;
                     }
-                    curItemListCount = curItemList.Count;
                 }
             }
             return fullErrorsList;
@@ -216,5 +208,4 @@ namespace Minio
             return SupportedHeaders.Contains(hdr, comparer);
         }
     }
-
 }

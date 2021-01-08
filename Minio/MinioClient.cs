@@ -222,7 +222,6 @@ namespace Minio
                 utils.ValidateObjectName(objectName);
             }
 
-
             // Start with user specified endpoint
             string host = this.BaseUrl;
 

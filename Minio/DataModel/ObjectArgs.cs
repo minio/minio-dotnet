@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Minio
 {

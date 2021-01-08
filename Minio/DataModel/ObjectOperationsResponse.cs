@@ -21,7 +21,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Xml.Serialization;
-using RestSharp;
 
 using Minio.DataModel;
 
@@ -42,11 +41,24 @@ namespace Minio
     internal class StatObjectResponse : GenericResponse
     {
         internal ObjectStat ObjectInfo { get; set; }
-        internal StatObjectResponse(HttpStatusCode statusCode, string responseContent, IList<Parameter> responseHeaders, StatObjectArgs args)
+        internal StatObjectResponse(HttpStatusCode statusCode, string responseContent, Dictionary<string, string> responseHeaders, StatObjectArgs args)
                     : base(statusCode, responseContent)
         {
             // StatObjectResponse object is populated with available stats from the response.
             this.ObjectInfo = ObjectStat.FromResponseHeaders(args.ObjectName, responseHeaders);
+        }
+    }
+
+    internal class RemoveObjectsResponse : GenericResponse
+    {
+        internal DeleteObjectsResult DeletedObjectsResult { get; private set; }
+        internal RemoveObjectsResponse(HttpStatusCode statusCode, string responseContent)
+                    : base(statusCode, responseContent)
+        {
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                this.DeletedObjectsResult = (DeleteObjectsResult)new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(stream);
+            }
         }
     }
 
@@ -137,5 +149,23 @@ namespace Minio
         }
 
         public Tagging ObjectTags { get; set; }
+    }
+
+    internal class GetRetentionResponse: GenericResponse
+    {
+        internal ObjectRetentionConfiguration CurrentRetentionConfiguration { get; private set; }
+        public GetRetentionResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
+        {
+            if ( string.IsNullOrEmpty(responseContent) && !HttpStatusCode.OK.Equals(statusCode))
+            {
+                this.CurrentRetentionConfiguration = null;
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                CurrentRetentionConfiguration = (ObjectRetentionConfiguration)new XmlSerializer(typeof(ObjectRetentionConfiguration)).Deserialize(stream);
+            }
+        }
     }
 }

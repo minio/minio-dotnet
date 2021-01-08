@@ -15,11 +15,12 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using RestSharp;
+using System.Globalization;
 using System.Xml.Linq;
-using System.Security.Cryptography;
-using System.Collections.Generic;
+using System.Xml;
 
 using Minio.DataModel;
 using Minio.Exceptions;
@@ -27,129 +28,6 @@ using Minio.Helper;
 
 namespace Minio
 {
-    public class RemoveObjectArgs : ObjectArgs<RemoveObjectArgs>
-    {
-        public string VersionId { get; private set; }
-
-        public RemoveObjectArgs()
-        {
-            this.RequestMethod = Method.DELETE;
-        }
-
-        public override RestRequest BuildRequest(RestRequest request)
-        {
-            if (!string.IsNullOrEmpty(this.VersionId))
-            {
-                request.AddQueryParameter("versionId",$"{this.VersionId}");
-            }
-            return request;
-        }
-        public RemoveObjectArgs WithVersionId(string ver)
-        {
-            this.VersionId = ver;
-            return this;
-        }
-    }
-
-    public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
-    {
-        internal List<string> ObjectNames { get; private set; }
-        // Each element in the list is a Tuple. Each Tuple has an Object name(string)
-        // And the second element is 
-        //internal List<Tuple<string, List<string>>> ObjectNamesVersions  { get; private set; }
-        internal List<Tuple<string, string>> ObjectNamesVersions  { get; private set; }
-
-        public RemoveObjectsArgs()
-        {
-            this.ObjectName = null;
-            this.ObjectNames = new List<string>();
-            this.ObjectNamesVersions = new List<Tuple<string, string>>();
-            this.RequestMethod = Method.POST;
-        }
-
-        public RemoveObjectsArgs WithObjectAndVersions(string objectName, List<string> versions)
-        {
-            foreach (var vid in versions)
-            {
-                this.ObjectNamesVersions.Add(new Tuple<string, string>(objectName, vid));
-            }
-            return this;
-        }
-
-        // Tuple<string, List<string>>. Tuple object name -> List of Version IDs.
-        public RemoveObjectsArgs WithObjectsVersions(List<Tuple<string, List<string>>> objectsVersionsList)
-        {
-            foreach (var objVersions in objectsVersionsList)
-            {
-                foreach (var vid in objVersions.Item2)
-                {
-                    this.ObjectNamesVersions.Add(new Tuple<string, string>(objVersions.Item1, vid));
-                }
-            }
-            return this;
-        }
-
-        public RemoveObjectsArgs WithObjectsVersions(List<Tuple<string, string>> objectVersions)
-        {
-            this.ObjectNamesVersions.AddRange(objectVersions);
-            return this;
-        }
-
-        public RemoveObjectsArgs WithObjects(List<string> names)
-        {
-            this.ObjectNames = names;
-            return this;
-        }
-
-        public override void Validate()
-        {
-            utils.ValidateBucketName(this.BucketName); // Not doing base.Validate() to skip object name validation.
-            if (!string.IsNullOrEmpty(this.ObjectName))
-            {
-                throw new InvalidOperationException(nameof(ObjectName)  + " is set. Please use " + nameof(WithObjects) + "or " +
-                    nameof(WithObjectsVersions) + " method to set objects to be deleted.");
-            }
-            if (this.ObjectNames.Count == 0 && this.ObjectNamesVersions.Count == 0)
-            {
-                throw new InvalidOperationException("Please assign list of object names or object names and version IDs to remove using method(s) " +
-                    nameof(WithObjects) + " " + nameof(WithObjectsVersions));
-            }
-        }
-
-        public override RestRequest BuildRequest(RestRequest request)
-        {
-            List<XElement> objects = new List<XElement>();
-            request.AddQueryParameter("delete","");
-            request.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
-            request.RequestFormat = DataFormat.Xml;
-            if (this.ObjectNamesVersions.Count > 0)
-            {
-                // Object(s) & multiple versions
-                foreach (var objTuple in this.ObjectNamesVersions)
-                {
-                    objects.Add(new XElement("Object",
-                                        new XElement("Key", objTuple.Item1),
-                                        new XElement("VersionId", objTuple.Item2)));
-                }
-                var deleteObjectsRequest = new XElement("Delete", objects,
-                                                new XElement("Quiet", true));
-                request.AddXmlBody(deleteObjectsRequest);
-            }
-            else
-            {
-                // Multiple Objects
-                foreach (var obj in this.ObjectNames)
-                {
-                    objects.Add(new XElement("Object",
-                                        new XElement("Key", obj)));
-                }
-                var deleteObjectsRequest = new XElement("Delete", objects,
-                                                new XElement("Quiet", true));
-                request.AddXmlBody(deleteObjectsRequest);
-            }
-            return request;
-        }
-    }
     public class SelectObjectContentArgs: EncryptionArgs<SelectObjectContentArgs>
     {
         private SelectObjectOptions SelectOptions;
@@ -571,11 +449,10 @@ namespace Minio
             }
             ObjectLegalHoldConfiguration config = new ObjectLegalHoldConfiguration(this.LegalHoldON);
             string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
-            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
-            var md5 = MD5.Create();
-            byte[] hash = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(body));
-            string base64 = Convert.ToBase64String(hash);
-            request.AddOrUpdateParameter("Content-MD5", base64, ParameterType.HttpHeader);
+            request.AddParameter("text/xml", body, ParameterType.RequestBody);
+            request.AddOrUpdateParameter("Content-MD5",
+                                          utils.getMD5SumStr(System.Text.Encoding.UTF8.GetBytes(body)),
+                                          ParameterType.HttpHeader);
             return request;
         }
     }
@@ -657,6 +534,129 @@ namespace Minio
         }
     }
 
+    public class RemoveObjectArgs : ObjectArgs<RemoveObjectArgs>
+    {
+        public string VersionId { get; private set; }
+
+        public RemoveObjectArgs()
+        {
+            this.RequestMethod = Method.DELETE;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            if (!string.IsNullOrEmpty(this.VersionId))
+            {
+                request.AddQueryParameter("versionId",$"{this.VersionId}");
+            }
+            return request;
+        }
+        public RemoveObjectArgs WithVersionId(string ver)
+        {
+            this.VersionId = ver;
+            return this;
+        }
+    }
+
+    public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
+    {
+        internal List<string> ObjectNames { get; private set; }
+        // Each element in the list is a Tuple. Each Tuple has an Object name & the version ID.
+        internal List<Tuple<string, string>> ObjectNamesVersions  { get; private set; }
+
+        public RemoveObjectsArgs()
+        {
+            this.ObjectName = null;
+            this.ObjectNames = new List<string>();
+            this.ObjectNamesVersions = new List<Tuple<string, string>>();
+            this.RequestMethod = Method.POST;
+        }
+
+        public RemoveObjectsArgs WithObjectAndVersions(string objectName, List<string> versions)
+        {
+            foreach (var vid in versions)
+            {
+                this.ObjectNamesVersions.Add(new Tuple<string, string>(objectName, vid));
+            }
+            return this;
+        }
+
+        // Tuple<string, List<string>>. Tuple object name -> List of Version IDs.
+        public RemoveObjectsArgs WithObjectsVersions(List<Tuple<string, List<string>>> objectsVersionsList)
+        {
+            foreach (var objVersions in objectsVersionsList)
+            {
+                foreach (var vid in objVersions.Item2)
+                {
+                    this.ObjectNamesVersions.Add(new Tuple<string, string>(objVersions.Item1, vid));
+                }
+            }
+            return this;
+        }
+
+        public RemoveObjectsArgs WithObjectsVersions(List<Tuple<string, string>> objectVersions)
+        {
+            this.ObjectNamesVersions.AddRange(objectVersions);
+            return this;
+        }
+
+        public RemoveObjectsArgs WithObjects(List<string> names)
+        {
+            this.ObjectNames = names;
+            return this;
+        }
+
+        public override void Validate()
+        {
+            utils.ValidateBucketName(this.BucketName); // Not doing base.Validate() to skip object name validation.
+            if (!string.IsNullOrEmpty(this.ObjectName))
+            {
+                throw new InvalidOperationException(nameof(ObjectName)  + " is set. Please use " + nameof(WithObjects) + "or " +
+                    nameof(WithObjectsVersions) + " method to set objects to be deleted.");
+            }
+            if ((this.ObjectNames == null && this.ObjectNamesVersions == null) ||
+                (this.ObjectNames.Count == 0 && this.ObjectNamesVersions.Count == 0))
+            {
+                throw new InvalidOperationException("Please assign list of object names or object names and version IDs to remove using method(s) " +
+                    nameof(WithObjects) + " " + nameof(WithObjectsVersions));
+            }
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            List<XElement> objects = new List<XElement>();
+            request.AddQueryParameter("delete","");
+            request.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
+            request.RequestFormat = DataFormat.Xml;
+            if (this.ObjectNamesVersions.Count > 0)
+            {
+                // Object(s) & multiple versions
+                foreach (var objTuple in this.ObjectNamesVersions)
+                {
+                    objects.Add(new XElement("Object",
+                                        new XElement("Key", objTuple.Item1),
+                                        new XElement("VersionId", objTuple.Item2)));
+                }
+                var deleteObjectsRequest = new XElement("Delete", objects,
+                                                new XElement("Quiet", true));
+                request.AddXmlBody(deleteObjectsRequest);
+            }
+            else
+            {
+                // Multiple Objects
+                foreach (var obj in this.ObjectNames)
+                {
+                    objects.Add(new XElement("Object",
+                                        new XElement("Key", obj)));
+                }
+                var deleteObjectsRequest = new XElement("Delete", objects,
+                                                new XElement("Quiet", true));
+                request.AddXmlBody(deleteObjectsRequest);
+            }
+            return request;
+        }
+    }
+
     public class SetObjectTagsArgs : ObjectVersionArgs<SetObjectTagsArgs>
     {
         internal Dictionary<string, string> TagKeyValuePairs { get; set; }
@@ -728,6 +728,127 @@ namespace Minio
             {
                 request.AddQueryParameter("versionId", this.VersionId);
             }
+            return request;
+        }
+    }
+
+    public class SetObjectRetentionArgs : ObjectVersionArgs<SetObjectRetentionArgs>
+    {
+        internal bool BypassGovernanceMode { get; set; }
+        internal RetentionMode Mode { get; set; }
+        internal DateTime RetentionUntilDate { get; set; }
+
+        public SetObjectRetentionArgs()
+        {
+            this.RequestMethod = Method.PUT;
+            this.RetentionUntilDate = default(DateTime);
+            this.Mode = RetentionMode.GOVERNANCE;
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if (this.RetentionUntilDate.Equals(default(DateTime)))
+            {
+                throw new InvalidOperationException("Retention Period is not set. Please set using " +
+                        nameof(WithRetentionUntilDate) + ".");
+            }
+            if (DateTime.Compare(this.RetentionUntilDate, DateTime.Now)  <= 0)
+            {
+                throw new InvalidOperationException("Retention until date set using " + nameof(WithRetentionUntilDate) + " needs to be in the future.");
+            }
+        }
+        public SetObjectRetentionArgs WithBypassGovernanceMode(bool bypass = true)
+        {
+            this.BypassGovernanceMode = bypass;
+            return this;
+        }
+
+        public SetObjectRetentionArgs WithRetentionMode(RetentionMode mode)
+        {
+            this.Mode = mode;
+            return this;
+        }
+
+        public SetObjectRetentionArgs WithRetentionUntilDate(DateTime date)
+        {
+            this.RetentionUntilDate = date;
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("retention", "");
+            if( !string.IsNullOrEmpty(this.VersionId) )
+            {
+                request.AddQueryParameter("versionId", this.VersionId);
+            }
+            if (this.BypassGovernanceMode)
+            {
+                request.AddOrUpdateParameter("x-amz-bypass-governance-retention", "true", ParameterType.HttpHeader);
+            }
+            ObjectRetentionConfiguration config = new ObjectRetentionConfiguration(this.RetentionUntilDate, this.Mode);
+            string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+            request.AddParameter("text/xml", body, ParameterType.RequestBody);
+            request.AddOrUpdateParameter("Content-MD5",
+                                          utils.getMD5SumStr(System.Text.Encoding.UTF8.GetBytes(body)),
+                                          ParameterType.HttpHeader);
+            return request;
+        }
+    }
+
+    public class GetObjectRetentionArgs : ObjectVersionArgs<GetObjectRetentionArgs>
+    {
+        public GetObjectRetentionArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("retention", "");
+            if( !string.IsNullOrEmpty(this.VersionId) )
+            {
+                request.AddQueryParameter("versionId", this.VersionId);
+            }
+            return request;
+        }
+    }
+
+    public class ClearObjectRetentionArgs : ObjectVersionArgs<ClearObjectRetentionArgs>
+    {
+        public ClearObjectRetentionArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        public static string EmptyRetentionConfigXML()
+        {
+            StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
+            XmlWriterSettings settings = new XmlWriterSettings();
+            settings.OmitXmlDeclaration = true;
+            settings.Indent = true;
+            XmlWriter xw = XmlWriter.Create(sw, settings);
+            xw.WriteStartElement("Retention");
+            xw.WriteString("");
+            xw.WriteFullEndElement();
+            xw.Flush();
+            return sw.ToString();
+        }
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("retention", "");
+            if( !string.IsNullOrEmpty(this.VersionId) )
+            {
+                request.AddQueryParameter("versionId", this.VersionId);
+            }
+            // Required for Clear Object Retention.
+            request.AddOrUpdateParameter("x-amz-bypass-governance-retention", "true", ParameterType.HttpHeader);
+            string body = EmptyRetentionConfigXML();
+            request.AddParameter("text/xml", body, ParameterType.RequestBody);
+            request.AddOrUpdateParameter("Content-MD5",
+                                          utils.getMD5SumStr(System.Text.Encoding.UTF8.GetBytes(body)),
+                                          ParameterType.HttpHeader);
             return request;
         }
     }

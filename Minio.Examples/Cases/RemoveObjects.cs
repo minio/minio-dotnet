@@ -24,7 +24,7 @@ namespace Minio.Examples.Cases
     class RemoveObjects
     {
         // Remove a list of objects from a bucket
-        public async static Task Run(MinioClient minio,
+        public static async Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name",
                                      List<string> objectsList = null,
                                      List<Tuple<string, string>> objectsVersionsList = null)
@@ -43,7 +43,7 @@ namespace Minio.Examples.Cases
                             ex => Console.WriteLine($"OnError: {ex}"),
                             () =>
                             {
-                                Console.WriteLine($"Listed all delete errors for remove objects on {bucketName}\n");
+                                Console.WriteLine($"Removed objects in list from {bucketName}\n");
                             });
                     return;
                 }
@@ -57,7 +57,7 @@ namespace Minio.Examples.Cases
                         ex => Console.WriteLine($"OnError: {ex}"),
                         () =>
                         {
-                            Console.WriteLine($"Listed all delete errors for remove objects with versions on {bucketName}\n");
+                            Console.WriteLine($"Removed objects versions from {bucketName}\n");
                         });
             }
             catch (Exception e)

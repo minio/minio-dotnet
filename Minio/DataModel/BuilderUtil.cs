@@ -126,7 +126,7 @@ namespace Minio
                 {
                     port = Int32.Parse(host.Substring(posColon + 1, (host.Length - posColon - 1)));
                 }
-                catch ( System.FormatException ex)
+                catch ( System.FormatException )
                 {
                     return false;
                 }

@@ -69,7 +69,7 @@ namespace Minio
             {
                 CreateBucketConfiguration config = new CreateBucketConfiguration(this.Location);
                 string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
-                request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+                request.AddParameter("text/xml", body, ParameterType.RequestBody);
             }
             if (this.ObjectLock)
             {
@@ -141,7 +141,7 @@ namespace Minio
         {
             request.AddQueryParameter("delimiter",this.Delimiter);
             request.AddQueryParameter("prefix",this.Prefix);
-            //request.AddQueryParameter("max-keys", "1000");
+            request.AddQueryParameter("max-keys", "1000");
             request.AddQueryParameter("marker",this.Marker);
             request.AddQueryParameter("encoding-type","url");
             if (this.Versions)
@@ -228,12 +228,8 @@ namespace Minio
                 throw new UnexpectedMinioException("Cannot BuildRequest for SetBucketNotificationsArgs. BucketNotification configuration not assigned");
             }
             request.AddQueryParameter("notification","");
-            if (this.BucketNotificationConfiguration != null)
-            {
-                this.BucketNotificationConfiguration = new BucketNotification(); // Empty configuration.
-            }
             string body = utils.MarshalXML(this.BucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
-            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+            request.AddParameter("text/xml", body, ParameterType.RequestBody);
             return request;
         }
         public SetBucketNotificationsArgs WithBucketNotificationConfiguration(BucketNotification config)
@@ -254,7 +250,7 @@ namespace Minio
             request.AddQueryParameter("notification","");
             BucketNotification bucketNotificationConfiguration = new BucketNotification();
             string body = utils.MarshalXML(bucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
-            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+            request.AddParameter("text/xml", body, ParameterType.RequestBody);
 
             return request;
         }
