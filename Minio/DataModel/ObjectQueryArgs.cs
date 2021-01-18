@@ -15,7 +15,6 @@
  */
 
 using System;
-using Minio.Exceptions;
 
 namespace Minio
 {
@@ -53,12 +52,12 @@ namespace Minio
         }
         public T WithModifiedSince(DateTime d)
         {
-            this.ModifiedSince = d;
+            this.ModifiedSince = new DateTime(d.Year, d.Month, d.Day, 0, 0, 0);
             return (T)this;
         }
         public T WithUnModifiedSince(DateTime d)
         {
-            this.UnModifiedSince = d;
+            this.UnModifiedSince = new DateTime(d.Year, d.Month, d.Day, 0, 0, 0);
             return (T)this;
         }
     }

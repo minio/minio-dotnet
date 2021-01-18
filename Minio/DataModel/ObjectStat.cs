@@ -16,36 +16,67 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 
 namespace Minio.DataModel
 {
     public class ObjectStat
     {
-        /// <summary>
-        /// Object metadata information.
-        /// </summary>
-        /// <param name="objectName">Object name</param>
-        /// <param name="size">Object size</param>
-        /// <param name="lastModified">Last when object was modified</param>
-        /// <param name="etag">Unique entity tag for the object</param>
-        /// <param name="contentType">Object content type</param>
-        /// <param name="versionId">Object Version ID</param>
-        /// <param name="deleteMarker">Object Version ID delete marker</param>
-        /// <param name="metadata"></param>
-        public ObjectStat(string objectName, long size, DateTime lastModified, string etag, string contentType, string versionId, bool deleteMarker, Dictionary<string, string> metadata)
+        private ObjectStat()
         {
-            this.ObjectName = objectName;
-            this.Size = size;
-            this.LastModified = lastModified;
-            this.ETag = etag;
-            this.ContentType = contentType;
-            if (metadata != null && metadata.Count > 0)
+            MetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            ExtraHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        public static ObjectStat FromResponseHeaders(string objectName, Dictionary<string, string> responseHeaders)
+        {
+            if (string.IsNullOrEmpty(objectName))
             {
-                this.MetaData = new Dictionary<string, string>(metadata, StringComparer.OrdinalIgnoreCase);
+                throw new ArgumentNullException("Name of an object cannot be empty");
             }
-            this.VersionId = versionId;
-            this.DeleteMarker = deleteMarker;
+            ObjectStat objInfo = new ObjectStat();
+            foreach (var paramName in responseHeaders.Keys)
+            {
+                string paramValue = responseHeaders[paramName];
+                switch(paramName.ToLower())
+                {
+                    case "content-length" :
+                        objInfo.Size = long.Parse(paramValue);
+                        break;
+                    case "last-modified" :
+                        objInfo.LastModified = DateTime.Parse(paramValue, CultureInfo.InvariantCulture);
+                        break;
+                    case "etag" :
+                        objInfo.ETag = paramValue.Replace("\"", string.Empty);
+                        break;
+                    case "Content-Type" :
+                        objInfo.ContentType = paramValue;
+                        objInfo.MetaData["Content-Type"] = objInfo.ContentType;
+                        break;
+                    case "x-amz-version-id" :
+                        objInfo.VersionId = paramValue;
+                        break;
+                    case "x-amz-delete-marker":
+                        objInfo.DeleteMarker = paramValue.Equals("true");
+                        break;
+                    default:
+                        if (OperationsUtil.IsSupportedHeader(paramName))
+                        {
+                            objInfo.MetaData[paramName] = paramValue;
+                        }
+                        else if (paramName.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
+                        {
+                            objInfo.MetaData[paramName.Substring("x-amz-meta-".Length)] = paramValue;
+                        }
+                        else
+                        {
+                            objInfo.ExtraHeaders[paramName] = paramValue;
+                        }
+                        break;
+                }
+            }
+
+            return objInfo;
         }
 
         public string ObjectName { get; private set; }
@@ -56,6 +87,7 @@ namespace Minio.DataModel
         public Dictionary<string, string> MetaData { get; private set; }
         public string VersionId { get; private set; }
         public bool DeleteMarker { get; private set; }
+        public Dictionary<string, string> ExtraHeaders { get; private set; }
 
         public override string ToString()
         {

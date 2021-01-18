@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Minio
 {
@@ -24,7 +22,6 @@ namespace Minio
     {
         internal string ObjectName { get; set; }
         internal object RequestBody { get; set; }
-        internal Dictionary<string, string> QueryParameters { get; set; }
 
         public T WithObject(string obj)
         {
@@ -35,13 +32,6 @@ namespace Minio
         public T WithRequestBody(object data)
         {
             this.RequestBody = data;
-            return (T)this;
-        }
-
-        public T WithQueryParameters(Dictionary<string, string> q)
-        {
-            this.QueryParameters = this.QueryParameters ?? new Dictionary<string, string>();
-            this.QueryParameters = this.QueryParameters.Concat(q).GroupBy(item => item.Key).ToDictionary(item => item.Key, item => item.First().Value);
             return (T)this;
         }
 

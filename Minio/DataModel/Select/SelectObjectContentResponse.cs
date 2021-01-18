@@ -16,14 +16,12 @@
 
 using System;
 using System.IO;
-using System.Xml.Serialization;
 
 namespace Minio.DataModel
 {
     [Serializable]
     public class SelectObjectContentResponse
     {
-        [XmlAttribute("Prefix")]
         /// Event Stream result of SelectObjectContent
         public Action<Stream> StreamCallBack { get; set; }
 

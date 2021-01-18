@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -230,7 +231,7 @@ namespace Minio
     {
         internal string PolicyJsonString { get; private set; }
 
-        private async void Initialize()
+        private async Task Initialize()
         {
             using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(ResponseContent)))
             using (var streamReader = new StreamReader(stream))
@@ -248,7 +249,7 @@ namespace Minio
             {
                 return;
             }
-            Initialize();
+            Initialize().Wait();
         }
     }
     internal class GetBucketNotificationsResponse : GenericResponse
@@ -266,6 +267,63 @@ namespace Minio
             using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
             {
                 this.BucketNotificationConfiguration = (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(stream);
+            }
+        }
+    }
+
+    internal class GetBucketEncryptionResponse : GenericResponse
+    {
+        internal ServerSideEncryptionConfiguration BucketEncryptionConfiguration { get; set; }
+
+        internal GetBucketEncryptionResponse(HttpStatusCode statusCode, string responseContent)
+                    : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
+            {
+                this.BucketEncryptionConfiguration = null;
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                BucketEncryptionConfiguration = (ServerSideEncryptionConfiguration)new XmlSerializer(typeof(ServerSideEncryptionConfiguration)).Deserialize(stream);
+            }
+        }
+    }
+
+    internal class GetBucketTagsResponse : GenericResponse
+    {
+        internal Tagging BucketTags { set; get; }
+        internal GetBucketTagsResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) ||
+                    !HttpStatusCode.OK.Equals(statusCode))
+            {
+                this.BucketTags = null;
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                this.BucketTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(stream);
+            }
+        }
+    }
+
+    internal class GetObjectLockConfigurationResponse : GenericResponse
+    {
+        internal ObjectLockConfiguration LockConfiguration { get; set; }
+
+        internal GetObjectLockConfigurationResponse(HttpStatusCode statusCode, string responseContent)
+                    : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
+            {
+                this.LockConfiguration = null;
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                this.LockConfiguration = (ObjectLockConfiguration)new XmlSerializer(typeof(ObjectLockConfiguration)).Deserialize(stream);
             }
         }
     }

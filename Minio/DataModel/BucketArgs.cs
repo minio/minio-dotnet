@@ -37,10 +37,14 @@ namespace Minio
 
         public T WithHeaders(Dictionary<string, string> headers)
         {
+            if (headers == null || headers.Count <= 0)
+            {
+                return (T)this;
+            }
             this.HeaderMap = this.HeaderMap ?? new Dictionary<string, string>();
             foreach (string key in headers.Keys)
             {
-                this.HeaderMap.Add(key, headers[key]);
+                this.HeaderMap[key] = headers[key];
             }
             return (T)this;
         }
