@@ -14,32 +14,23 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel
 {
-    [Serializable]
-    [XmlRoot(ElementName = "DeleteReplication")]
-
-    public class DeleteReplication
+    public class NoncurrentVersionExpiration
     {
-        [XmlElement("Status")]
-        public string Status { get; set; }
-        public const string StatusEnabled = "Enabled";
-        public const string StatusDisabled = "Disabled";
+        [XmlElement(ElementName = "NoncurrentDays", IsNullable = true)]
+        internal uint? NoncurrentDays { get; set; }
 
-        public DeleteReplication(string status) 
+        public NoncurrentVersionExpiration()
         {
-            if (string.IsNullOrEmpty(status) || string.IsNullOrWhiteSpace(status))
-            {
-                throw new ArgumentNullException(nameof(Status) + " cannot be null or empty.");
-            }
-            this.Status = status;               
+            this.NoncurrentDays = null;
         }
 
-        public DeleteReplication()
+        public NoncurrentVersionExpiration(uint nonCurrentDays)
         {
+            this.NoncurrentDays = nonCurrentDays;
         }
     }
 }

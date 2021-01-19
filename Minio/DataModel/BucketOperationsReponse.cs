@@ -328,21 +328,40 @@ namespace Minio
         }
     }
 
+    internal class GetBucketLifecycleResponse : GenericResponse
+    {
+        internal LifecycleConfiguration BucketLifecycle { set; get; }
+        internal GetBucketLifecycleResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) ||
+                    !HttpStatusCode.OK.Equals(statusCode))
+            {
+                this.BucketLifecycle = null;
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                this.BucketLifecycle = (LifecycleConfiguration)new XmlSerializer(typeof(LifecycleConfiguration)).Deserialize(stream);
+            }
+        }
+    }
+
     internal class GetBucketReplicationResponse : GenericResponse
     {
-        internal ReplicationConfiguration BucketReplication { set; get; }
+        internal ReplicationConfiguration Config { set; get; }
         internal GetBucketReplicationResponse(HttpStatusCode statusCode, string responseContent)
             : base(statusCode, responseContent)
         {
             if (string.IsNullOrEmpty(responseContent) ||
                     !HttpStatusCode.OK.Equals(statusCode))
             {
-                this.BucketReplication = null;
+                this.Config = null;
                 return;
             }
             using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
             {
-                this.BucketReplication = (ReplicationConfiguration)new XmlSerializer(typeof(ReplicationConfiguration)).Deserialize(stream);
+                this.Config = (ReplicationConfiguration)new XmlSerializer(typeof(ReplicationConfiguration)).Deserialize(stream);
             }
         }
     }

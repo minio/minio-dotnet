@@ -26,8 +26,8 @@ namespace Minio.DataModel
     {
         [XmlElement("Status")]
         public string Status { get; set; }
-        public const string REPLICATION_DELETEMARKER_STATUS_ENABLED = "Enabled";
-        public const string REPLICATION_DELETEMARKER_STATUS_DISABLED = "Disabled";
+        public const string StatusEnabled = "Enabled";
+        public const string StatusDisabled = "Disabled";
 
 
         public DeleteMarkerReplication(string status) 

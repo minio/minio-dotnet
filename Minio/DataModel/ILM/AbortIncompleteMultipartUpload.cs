@@ -20,26 +20,20 @@ using System.Xml.Serialization;
 namespace Minio.DataModel
 {
     [Serializable]
-    [XmlRoot(ElementName = "DeleteReplication")]
-
-    public class DeleteReplication
+    [XmlRoot(ElementName = "AbortIncompleteMultipartUpload")]
+    public class AbortIncompleteMultipartUpload
     {
-        [XmlElement("Status")]
-        public string Status { get; set; }
-        public const string StatusEnabled = "Enabled";
-        public const string StatusDisabled = "Disabled";
+        [XmlElement(ElementName = "DaysAfterInitiation", IsNullable = true)]
+        internal uint? DaysAfterInitiation { get; set; }
 
-        public DeleteReplication(string status) 
+        public AbortIncompleteMultipartUpload()
         {
-            if (string.IsNullOrEmpty(status) || string.IsNullOrWhiteSpace(status))
-            {
-                throw new ArgumentNullException(nameof(Status) + " cannot be null or empty.");
-            }
-            this.Status = status;               
+            this.DaysAfterInitiation = null;
         }
 
-        public DeleteReplication()
+        public AbortIncompleteMultipartUpload(uint daysAfterInitiation)
         {
+            this.DaysAfterInitiation = daysAfterInitiation;
         }
     }
 }

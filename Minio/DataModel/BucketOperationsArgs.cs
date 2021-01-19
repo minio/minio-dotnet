@@ -1,5 +1,5 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020,2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -430,6 +430,9 @@ namespace Minio
             request.AddQueryParameter("tagging","");
             string body = this.BucketTags.MarshalXML();
             request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+            request.AddOrUpdateParameter("Content-MD5",
+                                          utils.getMD5SumStr(System.Text.Encoding.UTF8.GetBytes(body)),
+                                          ParameterType.HttpHeader);
 
             return request;
         }
@@ -532,6 +535,69 @@ namespace Minio
             string body = utils.MarshalXML(new ObjectLockConfiguration(), "http://s3.amazonaws.com/doc/2006-03-01/");
             request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
 
+            return request;
+        }
+    }
+
+    public class SetBucketLifecycleArgs : BucketArgs<SetBucketLifecycleArgs>
+    {
+        internal LifecycleConfiguration BucketLifecycle { get; private set; }
+        public SetBucketLifecycleArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        public SetBucketLifecycleArgs WithLifecycleConfiguration(LifecycleConfiguration lc)
+        {
+            this.BucketLifecycle = lc;
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("lifecycle","");
+            string body = this.BucketLifecycle.MarshalXML();
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+            request.AddOrUpdateParameter("Content-MD5",
+                                          utils.getMD5SumStr(System.Text.Encoding.UTF8.GetBytes(body)),
+                                          ParameterType.HttpHeader);
+            return request;
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if (this.BucketLifecycle == null || this.BucketLifecycle.Rules.Count == 0)
+            {
+                throw new InvalidOperationException("Unable to set empty Lifecycle configuration.");
+            }
+        }
+    }
+
+    public class GetBucketLifecycleArgs : BucketArgs<GetBucketLifecycleArgs>
+    {
+        public GetBucketLifecycleArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("lifecycle","");
+            return request;
+        }
+    }
+
+    public class RemoveBucketLifecycleArgs : BucketArgs<RemoveBucketLifecycleArgs>
+    {
+        public RemoveBucketLifecycleArgs()
+        {
+            this.RequestMethod = Method.DELETE;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("lifecycle","");
             return request;
         }
     }

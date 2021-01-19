@@ -20,26 +20,28 @@ using System.Xml.Serialization;
 namespace Minio.DataModel
 {
     [Serializable]
-    [XmlRoot(ElementName = "DeleteReplication")]
-
-    public class DeleteReplication
+    [XmlRoot(ElementName = "Transition")]
+    public class Transition : Duration
     {
-        [XmlElement("Status")]
-        public string Status { get; set; }
-        public const string StatusEnabled = "Enabled";
-        public const string StatusDisabled = "Disabled";
+        [XmlElement(ElementName = "StorageClass", IsNullable = true)]
+        public string StorageClass { get; set; }
 
-        public DeleteReplication(string status) 
+        public Transition()
         {
-            if (string.IsNullOrEmpty(status) || string.IsNullOrWhiteSpace(status))
-            {
-                throw new ArgumentNullException(nameof(Status) + " cannot be null or empty.");
-            }
-            this.Status = status;               
         }
 
-        public DeleteReplication()
+        public Transition(DateTime date, string storageClass) : base(date)
         {
+            CheckStorageClass(storageClass);
+            this.StorageClass = storageClass.ToUpper();
+        }
+
+        internal static void CheckStorageClass(string storageClass)
+        {
+            if (string.IsNullOrEmpty(storageClass) || string.IsNullOrWhiteSpace(storageClass))
+            {
+                throw new ArgumentNullException(nameof(StorageClass) + " cannot be empty.");
+            }
         }
     }
 }

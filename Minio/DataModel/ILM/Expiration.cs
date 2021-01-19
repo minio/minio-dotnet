@@ -20,26 +20,24 @@ using System.Xml.Serialization;
 namespace Minio.DataModel
 {
     [Serializable]
-    [XmlRoot(ElementName = "DeleteReplication")]
-
-    public class DeleteReplication
+    [XmlRoot(ElementName = "Expiration")]
+    public class Expiration : Duration
     {
-        [XmlElement("Status")]
-        public string Status { get; set; }
-        public const string StatusEnabled = "Enabled";
-        public const string StatusDisabled = "Disabled";
-
-        public DeleteReplication(string status) 
+        [XmlIgnore]
+        public bool? ExpiredObjectDeleteMarker { get; set; }
+        public Expiration() : base()
         {
-            if (string.IsNullOrEmpty(status) || string.IsNullOrWhiteSpace(status))
-            {
-                throw new ArgumentNullException(nameof(Status) + " cannot be null or empty.");
-            }
-            this.Status = status;               
+            this.ExpiredObjectDeleteMarker = default(bool?);
         }
 
-        public DeleteReplication()
+        public Expiration(DateTime date, bool deleteMarker = false) : base(date)
         {
+            if (date == null || date == default(DateTime))
+            {
+                this.ExpiredObjectDeleteMarker = deleteMarker;
+                return;
+            }
+            this.ExpiredObjectDeleteMarker = default(bool?);
         }
     }
 }

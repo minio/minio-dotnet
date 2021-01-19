@@ -18,30 +18,20 @@ using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
-    public class GetBucketReplication
+    public class RemoveBucketLifecycle
     {
-        // Get Replication configuration assigned to the bucket
+        // Remove Lifecycle configuration set for the bucket
         public async static Task Run(MinioClient minio,
                                     string bucketName = "my-bucket-name")
         {
             try
             {
-                Console.WriteLine("Running example for API: GetBucketReplicationConfiguration");
-                var repl = await minio.GetBucketReplicationAsync(
-                    new GetBucketReplicationArgs()
-                                    .WithBucket(bucketName)
+                Console.WriteLine("Running example for API: RemoveBucketLifecycle");
+                await minio.RemoveBucketLifecycleAsync(
+                    new RemoveBucketLifecycleArgs()
+                        .WithBucket(bucketName)
                 );
-                if (repl != null && repl.Rules != null && repl.Rules.Count > 0)
-                {
-                    Console.WriteLine($"Got Bucket Replication Configuration set for bucket {bucketName}.");
-                    foreach(var rule in repl.Rules)
-                    {
-                        Console.WriteLine("ID: " + rule.ID + ", Status: " + rule.Status);
-                    }
-                    Console.WriteLine();
-                    return;
-                }
-                Console.WriteLine($"Bucket Replication Configuration not set for bucket {bucketName}.");
+                Console.WriteLine($"Bucket Lifecycle removed for bucket {bucketName}.");
                 Console.WriteLine();
             }
             catch (Exception e)
@@ -49,6 +39,5 @@ namespace Minio.Examples.Cases
                 Console.WriteLine($"[Bucket]  Exception: {e}");
             }
         }
-    }
-
+    }    
 }

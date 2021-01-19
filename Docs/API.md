@@ -42,6 +42,9 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 | [`setObjectLock`](#setObjectLock)  |   |   |   |
 | [`getObjectLock`](#getObjectLock)  |   |   |   |
 | [`removeObjectLock`](#removeObjectLock)  |   |   |   |
+| [`setBucketLifecycle`](#setBucketLifecycle)  |   |   |   |
+| [`getBucketLifecycle`](#getBucketLifecycle)  |   |   |   |
+| [`removeBucketLifecycle`](#removeBucketLifecycle)  |   |   |   |
 | [`setBucketReplication`](#setBucketReplication)  |   |   |   |
 | [`getBucketReplication`](#getBucketReplication)  |   |   |   |
 | [`removeBucketReplication`](#removeBucketReplication)  |   |   |   |
@@ -930,6 +933,289 @@ catch(MinioException e)
 ```
 
 
+<a name="setBucketLifecycle"></a>
+### SetBucketLifecycleAsync(SetBucketLifecycleArgs args)
+
+`Task SetBucketLifecycleAsync(SetBucketLifecycleArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Sets Lifecycle configuration to a bucket.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _SetBucketLifecycleArgs_  | SetBucketLifecycleArgs Argument Object with bucket name, Lifecycle configuration to set  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task``  | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found   |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Set Lifecycle configuration for the bucket
+    SetBucketLifecycleArgs args = new SetBucketLifecycleArgs()
+                                                .WithBucket(bucketName)
+                                                .WithConfiguration(lfc);
+    await minio.SetBucketLifecycleAsync(args);
+    Console.WriteLine($"Set Lifecycle for bucket {bucketName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+<a name="getBucketLifecycle"></a>
+### GetBucketLifecycleAsync(GetBucketLifecycleArgs args)
+
+`Task<LifecycleConfiguration> GetBucketLifecycleAsync(GetBucketLifecycleArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Gets Lifecycle configuration of a bucket.
+
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _GetBucketLifecycleArgs_  | GetBucketLifecycleArgs Argument Object with bucket name  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task<LifecycleConfiguration>``: LifecycleConfiguration object which contains the Lifecycle configuration details. | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found  |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Get Bucket Lifecycle configuration for the bucket
+    var args = new GetBucketLifecycleArgs()
+                        .WithBucket(bucketName);
+    var lfc = await minio.GetBucketLifecycleAsync(args);
+    Console.WriteLine($"Got Lifecycle configuration for bucket {bucketName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
+<a name="removeBucketLifecycle"></a>
+### RemoveBucketLifecycleAsync(RemoveBucketLifecycleArgs args)
+
+`Task RemoveBucketLifecycleAsync(RemoveBucketLifecycleArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Deletes Lifecycle configuration of a bucket.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _RemoveBucketLifecycleArgs_  | RemoveBucketLifecycleArgs Argument Object with bucket name  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+|  ``Task``  | Listed Exceptions: |
+|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        |  ``BucketNotFoundException`` : upon bucket with name not found  |
+|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Remove Bucket Lifecycle Configuration for the bucket
+    var args = new RemoveBucketLifecycleArgs()
+                                .WithBucket(bucketName);
+    await minio.RemoveBucketLifecycleAsync(args);
+    Console.WriteLine($"Removed Lifecycle configuration for bucket {bucketName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
+
+<a name="setBucketReplication"></a>
+### SetBucketReplicationAsync(SetBucketReplicationArgs args)
+
+`Task SetBucketReplicationAsync(SetBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Sets Replication configuration to a bucket.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _SetBucketReplicationArgs_  | SetBucketReplicationArgs Argument Object with bucket name, Replication configuration to set  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+| ``Task``  | Listed Exceptions: |
+|        | ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        | ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``BucketNotFoundException`` : upon bucket with name not found   |
+|        | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        | ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Set Replication configuration for the bucket
+    SetBucketReplicationArgs args = new SetBucketReplicationArgs()
+                                                    .WithBucket(bucketName)
+                                                    .WithConfiguration(cfg);
+    await minio.SetBucketReplicationAsync(args);
+    Console.WriteLine($"Set Replication configuration for bucket {bucketName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+<a name="getBucketReplication"></a>
+### GetBucketReplicationAsync(GetBucketReplicationArgs args)
+
+`Task<ReplicationConfiguration> GetBucketReplicationAsync(GetBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Gets Replication configuration of a bucket.
+
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _GetBucketReplicationArgs_  | GetBucketReplicationArgs Argument Object with bucket name  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+| ``Task<ReplicationConfiguration>``: ReplicationConfiguration object which contains the Replication configuration details. | Listed Exceptions: |
+|        | ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        | ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``BucketNotFoundException`` : upon bucket with name not found  |
+|        | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        | ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Get Bucket Replication for the bucket
+    var args = new GetBucketReplicationArgs()
+                                .WithBucket(bucketName);
+    var cfg = await minio.GetBucketReplicationAsync(args);
+    Console.WriteLine($"Got Replication configuration for bucket {bucketName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
+<a name="removeBucketReplication"></a>
+### RemoveBucketReplicationAsync(RemoveBucketReplicationArgs args)
+
+`Task RemoveBucketReplicationAsync(RemoveBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Deletes Replication configuration of a bucket.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _RemoveBucketReplicationArgs_  | RemoveBucketReplicationArgs Argument Object with bucket name  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+| ``Task``  | Listed Exceptions: |
+|        | ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        | ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``BucketNotFoundException`` : upon bucket with name not found  |
+|        | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        | ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Remove Bucket Replication Configuration for the bucket
+    var args = new RemoveBucketReplicationArgs()
+                                .WithBucket(bucketName);
+    await minio.RemoveBucketReplicationAsync(args);
+    Console.WriteLine($"Removed Replication configuration for bucket {bucketName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
 
 
 <a name="listObjects"></a>
@@ -1124,148 +1410,6 @@ try
                                 .WithBucket(bucketName);
     await minio.RemoveObjectLockConfigurationAsync(args);
     Console.WriteLine($"Removed Object lock configuration on bucket {bucketName}.");
-}
-catch(MinioException e)
-{
-   Console.WriteLine("Error occurred: " + e);
-}
-```
-
-
-<a name="setBucketReplication"></a>
-### SetBucketReplicationAsync(SetBucketReplicationArgs args)
-
-`Task SetBucketReplicationAsync(SetBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken))`
-
-Sets Replication configuration to a bucket.
-
-
-__Parameters__
-
-
-|Param   | Type	  | Description  |
-|:--- |:--- |:--- |
-| ``args``  | _SetBucketReplicationArgs_  | SetBucketReplicationArgs Argument Object with bucket name, Replication configuration to set  |
-| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
-
-
-| Return Type	  | Exceptions	  |
-|:--- |:--- |
-|  ``Task``  | Listed Exceptions: |
-|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
-|        |  ``BucketNotFoundException`` : upon bucket with name not found   |
-|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
-
-
-
-__Example__
-
-
-```cs
-try
-{
-    // Set Replication configuration for the bucket
-    SetBucketReplicationArgs args = new SetBucketReplicationArgs()
-                                                .WithBucket(bucketName)
-                                                .WithConfiguration(lfc);
-    await minio.SetBucketReplicationAsync(args);
-    Console.WriteLine($"Set Replication configuration for bucket {bucketName}.");
-}
-catch(MinioException e)
-{
-   Console.WriteLine("Error occurred: " + e);
-}
-```
-
-<a name="getBucketReplication"></a>
-### GetBucketReplicationAsync(GetBucketReplicationArgs args)
-
-`Task<ReplicationConfiguration> GetBucketReplicationAsync(GetBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken))`
-
-Gets Replication configuration of a bucket.
-
-
-
-__Parameters__
-
-
-|Param   | Type	  | Description  |
-|:--- |:--- |:--- |
-| ``args``  | _GetBucketReplicationArgs_  | GetBucketReplicationArgs Argument Object with bucket name  |
-| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
-
-
-| Return Type	  | Exceptions	  |
-|:--- |:--- |
-|  ``Task<ReplicationConfiguration>``: ReplicationConfiguration object which contains the Replication configuration details. | Listed Exceptions: |
-|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
-|        |  ``BucketNotFoundException`` : upon bucket with name not found  |
-|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
-
-
-
-__Example__
-
-
-```cs
-try
-{
-    // Get Bucket Replication for the bucket
-    var args = new GetBucketReplicationArgs()
-                        .WithBucket(bucketName);
-    var lfc = await minio.GetBucketReplicationAsync(args);
-    Console.WriteLine($"Got Replication configuration for bucket {bucketName}.");
-}
-catch(MinioException e)
-{
-   Console.WriteLine("Error occurred: " + e);
-}
-```
-
-
-<a name="removeBucketReplication"></a>
-### RemoveBucketReplicationAsync(RemoveBucketReplicationArgs args)
-
-`Task RemoveBucketReplicationAsync(RemoveBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken))`
-
-Deletes Replication configuration of a bucket.
-
-
-__Parameters__
-
-
-|Param   | Type	  | Description  |
-|:--- |:--- |:--- |
-| ``args``  | _RemoveBucketReplicationArgs_  | RemoveBucketReplicationArgs Argument Object with bucket name  |
-| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
-
-
-| Return Type	  | Exceptions	  |
-|:--- |:--- |
-|  ``Task``  | Listed Exceptions: |
-|        |  ``AuthorizationException`` : upon access or secret key wrong or not found |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
-|        |  ``BucketNotFoundException`` : upon bucket with name not found  |
-|        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|        |  ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
-
-
-
-__Example__
-
-
-```cs
-try
-{
-    // Remove Bucket Replication Configuration for the bucket
-    var args = new RemoveBucketReplicationArgs()
-                                .WithBucket(bucketName);
-    await minio.RemoveBucketReplicationAsync(args);
-    Console.WriteLine($"Removed Replication configuration for bucket {bucketName}.");
 }
 catch(MinioException e)
 {

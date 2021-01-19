@@ -39,17 +39,17 @@ namespace Minio.Examples.Cases
                                 };
                 ReplicationRule rule = 
                     new ReplicationRule(
-                        new DeleteMarkerReplication(DeleteMarkerReplication.REPLICATION_DELETEMARKER_STATUS_ENABLED),
+                        new DeleteMarkerReplication(DeleteMarkerReplication.StatusEnabled),
                         new ReplicationDestination(
                                 null, null, "Bucket-ARN", null, null, null, null),
                         null,
                         new RuleFilter(new AndOperator("PREFIX", Tagging.GetBucketTags(tags)),null, null),
-                        new DeleteReplication(DeleteReplication.DELETEREPLICATION_STATUS_DISABLED),
+                        new DeleteReplication(DeleteReplication.StatusDisabled),
                         1,
                         "REPLICATION-ID",
                         "PREFIX",
                         null,
-                        ReplicationRule.REPLICATION_RULE_STATUS_ENABLED
+                        ReplicationRule.StatusEnabled
                     );
                 List<ReplicationRule> rules = new List<ReplicationRule>();
                 rules.Add(rule);

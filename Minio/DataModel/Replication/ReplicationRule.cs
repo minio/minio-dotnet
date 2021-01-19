@@ -45,8 +45,8 @@ namespace Minio.DataModel
         public SourceSelectionCriteria SourceSelectionCriteria { get; set; }
         [XmlElement("Status")]
         public string Status { get; set; }
-        public const string REPLICATION_RULE_STATUS_ENABLED = "Enabled";
-        public const string REPLICATION_RULE_STATUS_DISABLED = "Disabled";
+        public const string StatusEnabled = "Enabled";
+        public const string StatusDisabled = "Disabled";
 
         public ReplicationRule()
         {
@@ -54,13 +54,13 @@ namespace Minio.DataModel
 
         public ReplicationRule(DeleteMarkerReplication deleteMarkerReplication, ReplicationDestination destination,
                 ExistingObjectReplication existingObjectReplication, RuleFilter filter, DeleteReplication deleteReplication,
-                uint priority, string iD, string prefix, SourceSelectionCriteria sourceSelectionCriteria, string status) 
+                uint priority, string id, string prefix, SourceSelectionCriteria sourceSelectionCriteria, string status)
         {
-            if (string.IsNullOrEmpty(Status) || string.IsNullOrWhiteSpace(Status))
+            if (string.IsNullOrEmpty(status) || string.IsNullOrWhiteSpace(status))
             {
                 throw new ArgumentNullException(nameof(Status) + " cannot be null or empty.");
             }
-            if (string.IsNullOrEmpty(ID) || string.IsNullOrWhiteSpace(ID))
+            if (string.IsNullOrEmpty(id) || string.IsNullOrWhiteSpace(id))
             {
                 throw new ArgumentNullException(nameof(ID) + " cannot be null or empty.");
             }
@@ -78,7 +78,7 @@ namespace Minio.DataModel
             this.Filter = filter;
             this.Priority = priority;
             this.DeleteReplication = deleteReplication;
-            this.ID = iD;
+            this.ID = id;
             this.Prefix = prefix;
             this.SourceSelectionCriteria = sourceSelectionCriteria;
             this.Status = status;               
