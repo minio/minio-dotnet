@@ -880,11 +880,15 @@ namespace Minio
     {
         internal CopySourceObjectArgs CopySourceObject { get; set; }
         internal ObjectStat CopySourceObjectInfo { get; set; }
+        internal bool ReplaceTagsDirective { get; set; }
+        internal bool ReplaceMetadataDirective { get; set; }
+        internal string StorageClass { get; set; }
 
         public CopyObjectArgs()
         {
             this.RequestMethod = Method.PUT;
             this.CopySourceObject = new CopySourceObjectArgs();
+            this.ReplaceTagsDirective = false;
         }
 
         public override void Validate()
@@ -920,6 +924,11 @@ namespace Minio
             return this;
         }
 
+        public CopyObjectArgs WithReplaceTagsDirective(bool replace)
+        {
+            this.ReplaceTagsDirective = replace;
+            return this;
+        }
         internal CopyObjectArgs WithCopyObjectSourceStats(ObjectStat info)
         {
             this.CopySourceObjectInfo = info;
@@ -931,9 +940,59 @@ namespace Minio
             return this;
         }
 
+        public CopyObjectArgs WithStorageClass(string storageClass)
+        {
+            this.StorageClass = storageClass;
+            return this;
+        }
+
         public override RestRequest BuildRequest(RestRequest request)
         {
             request = base.BuildRequest(request);
+            foreach (var hdr in this.SSEHeaders)
+            {
+                this.HeaderMap[hdr.Key] = hdr.Value;
+            }
+            foreach (var hdr in this.CopySourceObject.SSEHeaders)
+            {
+                this.HeaderMap[hdr.Key] = hdr.Value;
+            }
+            if (!string.IsNullOrEmpty(this.MatchETag))
+            {
+                request.AddOrUpdateParameter("x-amz-copy-source-if-match", this.MatchETag, ParameterType.HttpHeader);
+            }
+            if (!string.IsNullOrEmpty(this.NotMatchETag))
+            {
+                request.AddOrUpdateParameter("x-amz-copy-source-if-none-match", this.NotMatchETag, ParameterType.HttpHeader);
+            }
+            if (this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
+            {
+                request.AddOrUpdateParameter("x-amz-copy-source-if-unmodified-since", this.ModifiedSince, ParameterType.HttpHeader);
+            }
+            if(this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
+            {
+                request.AddOrUpdateParameter("x-amz-copy-source-if-modified-since", this.UnModifiedSince, ParameterType.HttpHeader);
+            }
+            if( !string.IsNullOrEmpty(this.VersionId) )
+            {
+                request.AddQueryParameter("versionId", this.VersionId);
+            }
+            if (this.ObjectTags != null && this.ObjectTags.TaggingSet != null
+                    && this.ObjectTags.TaggingSet.Tag.Count > 0)
+            {
+                request.AddOrUpdateParameter("x-amz-tagging", this.ObjectTags.GetTagString(), ParameterType.HttpHeader);
+                request.AddOrUpdateParameter("x-amz-tagging-directive",
+                            this.ReplaceTagsDirective?"COPY":"REPLACE",
+                            ParameterType.HttpHeader);
+            }
+            if (this.ReplaceMetadataDirective)
+            {
+                request.AddOrUpdateParameter("x-amz-metadata-directive", "REPLACE", ParameterType.HttpHeader);
+            }
+            if (!string.IsNullOrEmpty(this.StorageClass))
+            {
+                request.AddOrUpdateParameter("x-amz-storage-class", this.StorageClass, ParameterType.HttpHeader);
+            }
             return request;
         }
     }
@@ -1000,10 +1059,7 @@ namespace Minio
 
             this.HeaderMap = cpArgs.HeaderMap;
             this.SSE = cpArgs.SSE;
-            if (this.SSE != null)
-            {
-                this.SSE.Marshal(this.SSEHeaders);
-            }
+            this.SSE?.Marshal(this.SSEHeaders);
 
             this.HeaderMap = this.HeaderMap ?? new Dictionary<string, string>();
             this.HeaderMap = this.HeaderMap.Concat(cpArgs.HeaderMap).GroupBy(item => item.Key).ToDictionary(item => item.Key, item => item.First().Value);
@@ -1026,5 +1082,12 @@ namespace Minio
             this.CopySize = copySize;
             return this;
         }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request = base.BuildRequest(request);
+            return request;
+        }
+
     }
 }
