@@ -96,6 +96,12 @@ namespace Minio
         /// <param name="args">RemoveObjectsArgs Arguments Object encapsulates information like - bucket name, List of objects, optional list of versions (for each object) to be deleted</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         private async Task<List<DeleteError>> removeObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken)
         {
             var request = await this.CreateRequest(args).ConfigureAwait(false);
@@ -105,9 +111,9 @@ namespace Minio
         }
 
         /// <summary>
-        /// private helper method to remove 1000 objects from bucket
+        /// private helper method to call remove objects function
         /// </summary>
-        /// <param name="args">RemoveObjectsArgs Arguments Object encapsulates information like - bucket name, List of objects, optional list of versions (for each object) to be deleted</param>
+        /// <param name="args">RemoveObjectsArgs Arguments Object encapsulates information like - bucket name, List of objects, optional version Id list</param>
         /// <param name="objVersions">List of Tuples. Each tuple is Object name to List of Version IDs to be deleted</param>
         /// <param name="fullErrorsList">Full List of DeleteError objects. The error list from this call will be added to the full list.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -124,7 +130,7 @@ namespace Minio
 
 
         /// <summary>
-        /// private helper method to remove 1000 objects from bucket
+        /// private helper method to call function to remove objects/version items in iterations of 1000 each from bucket
         /// </summary>
         /// <param name="args">RemoveObjectsArgs Arguments Object encapsulates information like - bucket name, List of objects, optional list of versions (for each object) to be deleted</param>
         /// <param name="objNames">List of Object names to be deleted</param>
@@ -142,6 +148,19 @@ namespace Minio
         }
 
 
+        /// <summary>
+        /// private helper method to remove objects/version items in iterations of 1000 each from bucket
+        /// </summary>
+        /// <param name="args">RemoveObjectsArgs Arguments Object encapsulates information like - bucket name, List of objects, optional list of versions (for each object) to be deleted</param>
+        /// <param name="fullErrorsList">Full List of DeleteError objects. The error list from this call will be added to the full list.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         private async Task<List<DeleteError>> removeObjectVersionsHelper(RemoveObjectsArgs args, List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
         {
             if (args.ObjectNamesVersions.Count <= 1000)
@@ -176,6 +195,20 @@ namespace Minio
             }
             return fullErrorsList;
         }
+
+                /// <summary>
+        /// private helper method to remove objects in iterations of 1000 each from bucket
+        /// </summary>
+        /// <param name="args">RemoveObjectsArgs Arguments Object encapsulates information like - bucket name, List of objects, optional list of versions (for each object) to be deleted</param>
+        /// <param name="fullErrorsList">Full List of DeleteError objects. The error list from this call will be added to the full list.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         private async Task<List<DeleteError>> removeObjectsHelper(RemoveObjectsArgs args, List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
         {
             List<string> iterObjects = new List<string>();

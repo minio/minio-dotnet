@@ -608,7 +608,8 @@ namespace Minio
 
         public override void Validate()
         {
-            utils.ValidateBucketName(this.BucketName); // Not doing base.Validate() to skip object name validation.
+            // Skip object name validation.
+            utils.ValidateBucketName(this.BucketName);
             if (!string.IsNullOrEmpty(this.ObjectName))
             {
                 throw new InvalidOperationException(nameof(ObjectName)  + " is set. Please use " + nameof(WithObjects) + "or " +

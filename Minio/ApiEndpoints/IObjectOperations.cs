@@ -101,7 +101,7 @@ namespace Minio
         Task RemoveObjectAsync(RemoveObjectArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// Removes multiple objects from a specific bucket
+        /// Removes list of objects from bucket
         /// </summary>
         /// <param name="args">RemoveObjectsArgs Arguments Object encapsulates information like - bucket name, List of objects, optional list of versions (for each object) to be deleted</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>

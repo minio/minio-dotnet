@@ -1,6 +1,6 @@
 ﻿/*
 * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
-* (C) 2017, 2018, 2019, 2020 MinIO, Inc.
+* (C) 2017, 2018, 2019, 2020, 2021 MinIO, Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
+using Minio.DataModel.ILM;
 using Minio.Exceptions;
 using Newtonsoft.Json;
 using System;
@@ -87,6 +88,9 @@ namespace Minio.Functional.Tests
         private const string setObjectRetentionSignature = "Task SetObjectRetentionAsync(SetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string getObjectRetentionSignature = "Task<ObjectRetentionConfiguration> GetObjectRetentionAsync(GetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string clearObjectRetentionSignature = "Task ClearObjectRetentionAsync(ClearObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string getBucketLifecycleSignature = "Task<LifecycleConfiguration> GetBucketLifecycleAsync(GetBucketLifecycleArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string setBucketLifecycleSignature = "Task SetBucketLifecycleAsync(SetBucketLifecycleArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string deleteBucketLifecycleSignature = "Task RemoveBucketLifecycleAsync(RemoveBucketLifecycleArgs args, CancellationToken cancellationToken = default(CancellationToken))";
 
 
         // Create a file of given size from random byte array or optionally create a symbolic link
@@ -3972,7 +3976,6 @@ namespace Minio.Functional.Tests
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message.Contains("The TagSet does not exist"));
                 var testOutcome = (ex.Message.Contains("The TagSet does not exist")) ? TestStatus.PASS : TestStatus.FAIL;
                 if (ex.Message.Contains("The TagSet does not exist"))
                     new MintLogger(nameof(BucketTagsAsync_Test1), deleteBucketTagsSignature, "Tests whether RemoveBucketTagsAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
@@ -4244,6 +4247,85 @@ namespace Minio.Functional.Tests
             }
             catch (Exception)
             {
+            }
+        }
+
+        #endregion
+
+
+        #region Bucket Lifecycle
+        internal async static Task BucketLifecycleAsync_Test1(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName", bucketName }
+            };
+
+            List<LifecycleRule> rules = new List<LifecycleRule>();
+            Expiration exp = new Expiration(DateTime.Now.AddYears(1));
+            var compareDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0 ,0 ,0);
+            var expInDays = (compareDate.AddYears(1) - compareDate).TotalDays;
+
+            LifecycleRule rule1 = new LifecycleRule(null, "txt", exp, null,
+                new RuleFilter(null, "txt/", null),
+                null, null, LifecycleRule.LIFECYCLE_RULE_STATUS_ENABLED
+                );
+            rules.Add(rule1);
+            LifecycleConfiguration lfc = new LifecycleConfiguration(rules);
+            try
+            {
+                await Setup_Test(minio, bucketName);
+                SetBucketLifecycleArgs lfcArgs = new SetBucketLifecycleArgs()
+                                                            .WithBucket(bucketName)
+                                                            .WithLifecycleConfiguration(lfc);
+                await minio.SetBucketLifecycleAsync(lfcArgs);
+                new MintLogger(nameof(BucketLifecycleAsync_Test1), setBucketLifecycleSignature, "Tests whether SetBucketLifecycleAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                await TearDown(minio, bucketName);
+                new MintLogger(nameof(BucketLifecycleAsync_Test1), setBucketLifecycleSignature, "Tests whether SetBucketLifecycleAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                return;
+            }
+            try
+            {
+                GetBucketLifecycleArgs lfcArgs = new GetBucketLifecycleArgs()
+                                                            .WithBucket(bucketName);
+                var lfcObj = await minio.GetBucketLifecycleAsync(lfcArgs);
+                Assert.IsNotNull(lfcObj);
+                Assert.IsNotNull(lfcObj.Rules);
+                Assert.IsTrue(lfcObj.Rules.Count > 0);
+                Assert.AreEqual(lfcObj.Rules.Count, lfc.Rules.Count);
+                DateTime lfcDate = DateTime.Parse(lfcObj.Rules[0].Expiration.Date, null, System.Globalization.DateTimeStyles.RoundtripKind);
+                Assert.AreEqual(Math.Floor((lfcDate - compareDate).TotalDays), expInDays);
+                new MintLogger(nameof(BucketLifecycleAsync_Test1), getBucketLifecycleSignature, "Tests whether GetBucketLifecycleAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (Exception ex)
+            {
+                await TearDown(minio, bucketName);
+                new MintLogger(nameof(BucketLifecycleAsync_Test1), getBucketLifecycleSignature, "Tests whether GetBucketLifecycleAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                return;
+            }
+            try
+            {
+                RemoveBucketLifecycleArgs lfcArgs = new RemoveBucketLifecycleArgs()
+                                                                .WithBucket(bucketName);
+                await minio.RemoveBucketLifecycleAsync(lfcArgs);
+                GetBucketLifecycleArgs getLifecycleArgs = new GetBucketLifecycleArgs()
+                                                                    .WithBucket(bucketName);
+                var lfcObj = await minio.GetBucketLifecycleAsync(getLifecycleArgs);
+            }
+            catch (Exception ex)
+            {
+                var testOutcome = (ex.Message.Contains("The lifecycle configuration does not exist")) ? TestStatus.PASS : TestStatus.FAIL;
+                if (ex.Message.Contains("The lifecycle configuration does not exist"))
+                    new MintLogger(nameof(BucketLifecycleAsync_Test1), deleteBucketLifecycleSignature, "Tests whether RemoveBucketLifecycleAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+                else
+                    new MintLogger(nameof(BucketLifecycleAsync_Test1), deleteBucketLifecycleSignature, "Tests whether RemoveBucketLifecycleAsync passes", testOutcome, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                await TearDown(minio, bucketName);
+                return;
             }
         }
 

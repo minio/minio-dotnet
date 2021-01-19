@@ -337,20 +337,32 @@ namespace Minio
         /// <param name="args">RemoveObjectArgs Arguments Object encapsulates information like - bucket name, object name, optional list of versions to be deleted</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Task</returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task RemoveObjectAsync(RemoveObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken);
         }
 
 
         /// <summary>
-        /// Removes multiple objects from a specific bucket
+        /// Removes list of objects from bucket
         /// </summary>
         /// <param name="args">RemoveObjectsArgs Arguments Object encapsulates information like - bucket name, List of objects, optional list of versions (for each object) to be deleted</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Observable that returns delete error while deleting objects if any</returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task<IObservable<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
@@ -367,6 +379,7 @@ namespace Minio
             return Observable.Create<DeleteError>(
               async(obs) =>
               {
+                await Task.Yield();
                 foreach (DeleteError error in errs)
                 {
                     obs.OnNext(error);
@@ -1017,11 +1030,12 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         [Obsolete("Use RemoveObjectAsync method with RemoveObjectArgs object. Refer RemoveObject example code.")]
-        public async Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))
+        public Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var request = await this.CreateRequest(Method.DELETE, bucketName, objectName: objectName).ConfigureAwait(false);
-
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var args = new RemoveObjectArgs()
+                                    .WithBucket(bucketName)
+                                    .WithObject(objectName);
+            return this.RemoveObjectAsync(args, cancellationToken);
         }
 
         /// <summary>
