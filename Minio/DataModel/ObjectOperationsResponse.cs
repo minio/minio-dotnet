@@ -49,6 +49,19 @@ namespace Minio
         }
     }
 
+    internal class RemoveObjectsResponse : GenericResponse
+    {
+        internal DeleteObjectsResult DeletedObjectsResult { get; private set; }
+        internal RemoveObjectsResponse(HttpStatusCode statusCode, string responseContent)
+                    : base(statusCode, responseContent)
+        {
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                this.DeletedObjectsResult = (DeleteObjectsResult)new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(stream);
+            }
+        }
+    }
+
     internal class GetMultipartUploadsListResponse : GenericResponse
     {
         internal Tuple<ListMultipartUploadsResult, List<Upload>> UploadResult { get; private set; }

@@ -1990,10 +1990,11 @@ catch(MinioException e)
 }
 ```
 
-<a name="removeObject"></a>
-### RemoveObjectAsync(string bucketName, string objectName)
 
-`Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))`
+<a name="removeObject"></a>
+### RemoveObjectAsync(RemoveObjectArgs args)
+
+`Task RemoveObjectAsync(RemoveObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 Removes an object.
 
@@ -2002,8 +2003,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket  |
-| ``objectName``  | _string_  | Object name in the bucket |
+| ``args``  | _RemoveObjectArgs_ | Arguments Object.  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 | Return Type	  | Exceptions	  |
@@ -2019,31 +2019,50 @@ __Example__
 
 
 ```cs
+// 1. Remove object myobject from the bucket mybucket.
 try
 {
-    // Remove objectname from the bucket my-bucketname.
-    await minioClient.RemoveObjectAsync("mybucket", "myobject");
+    RemoveObjectArgs rmArgs = new RemoveObjectArgs()
+                                        .WithBucket("mybucket")
+                                        .WithObject("myobject");
+    await minioClient.RemoveObjectAsync(args);
     Console.WriteLine("successfully removed mybucket/myobject");
 }
 catch (MinioException e)
 {
     Console.WriteLine("Error: " + e);
 }
+
+// 2. Remove one version of object myobject with versionID from mybucket.
+try
+{
+    RemoveObjectArgs rmArgs = new RemoveObjectArgs()
+                                        .WithBucket("mybucket")
+                                        .WithObject("myobject")
+                                        .WithVersionId("versionId");
+    await minioClient.RemoveObjectAsync(args);
+    Console.WriteLine("successfully removed mybucket/myobject{versionId}");
+}
+catch (MinioException e)
+{
+    Console.WriteLine("Error: " + e);
+}
+
 ```
 <a name="removeObjects"></a>
-### RemoveObjectAsync(string bucketName, IEnumerable<string> objectsList)
+### RemoveObjectsAsync(RemoveObjectsArgs args)
 
-`Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectsList, CancellationToken cancellationToken = default(CancellationToken))`
+`Task<IObservable<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
-Removes a list of objects.
+Removes a list of objects or object versions.
+
 
 __Parameters__
 
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket  |
-| ``objectsList``  | _IEnumerable<string>_  | IEnumerable of Object names |
+| ``args``  | _RemoveObjectsArgs_ | Arguments Object - bucket name, List of Objects to be deleted or List of Tuples with Tuple(object name, List of version IDs).  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 | Return Type	  | Exceptions	  |
@@ -2059,14 +2078,49 @@ __Example__
 
 
 ```cs
+// 1. Remove list of objects in objectNames from the bucket bucketName.
 try
 {
+    string bucketName = "mybucket"
     List<String> objectNames = new LinkedList<String>();
     objectNames.add("my-objectname1");
     objectNames.add("my-objectname2");
     objectNames.add("my-objectname3");
-    // Remove list of objects in objectNames from the bucket bucketName.
-    IObservable<DeleteError> observable = await minio.RemoveObjectAsync(bucketName, objectNames);
+    RemoveObjectsAsync rmArgs = new RemoveObjectsAsync()
+                                            .WithBucket(bucketName)
+                                            .WithObjects(objectNames);
+    IObservable<DeleteError> observable = await minio.RemoveObjectAsync(rmArgs);
+    IDisposable subscription = observable.Subscribe(
+        deleteError => Console.WriteLine("Object: {0}", deleteError.Key),
+        ex => Console.WriteLine("OnError: {0}", ex),
+        () =>
+        {
+            Console.WriteLine("Removed objects from " + bucketName + "\n");
+        });
+}
+catch (MinioException e)
+{
+    Console.WriteLine("Error: " + e);
+}
+
+// 2. Remove list of objects (only specific versions mentioned in Version ID list) from the bucket bucketName
+try
+{
+    string bucketName = "mybucket";
+    string objectName = "myobject1";
+    List<string> versionIDs = new List<string>();
+    versionIDs.Add("abcobject1version1dce");
+    versionIDs.Add("abcobject1version2dce");
+    versionIDs.Add("abcobject1version3dce");
+    List<Tuple<string, string>> objectsVersions = new List<Tuple<string, string>>();
+    objectsVersions.Add(new Tuple<string, List<string>>(objectName, versionIDs));
+    objectsVersions.Add(new Tuple<string, string>("myobject2" "abcobject2version1dce"));
+    objectsVersions.Add(new Tuple<string, string>("myobject2", "abcobject2version2dce"));
+    objectsVersions.Add(new Tuple<string, string>("myobject2", "abcobject2version3dce"));
+    RemoveObjectsAsync rmArgs = new RemoveObjectsAsync()
+                                            .WithBucket(bucketName)
+                                            .WithObjectsVersions(objectsVersions);
+    IObservable<DeleteError> observable = await minio.RemoveObjectsAsync(rmArgs);
     IDisposable subscription = observable.Subscribe(
         deleteError => Console.WriteLine("Object: {0}", deleteError.Key),
         ex => Console.WriteLine("OnError: {0}", ex),
@@ -2079,7 +2133,9 @@ catch (MinioException e)
 {
     Console.WriteLine("Error: " + e);
 }
+
 ```
+
 
 <a name="removeIncompleteUpload"></a>
 ### RemoveIncompleteUploadAsync(RemoveIncompleteUploadArgs args)
