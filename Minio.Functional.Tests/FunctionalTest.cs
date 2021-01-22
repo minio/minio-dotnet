@@ -1,6 +1,6 @@
 ﻿/*
 * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
-* (C) 2017, 2018, 2019, 2020, 2021 MinIO, Inc.
+* (C) 2017-2021 MinIO, Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
