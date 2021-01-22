@@ -601,4 +601,59 @@ namespace Minio
             return request;
         }
     }
+
+    public class GetBucketReplicationArgs : BucketArgs<GetBucketReplicationArgs>
+    {
+        public GetBucketReplicationArgs()
+        {
+            this.RequestMethod = Method.GET;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("replication","");
+            return request;
+        }
+    }
+
+    public class SetBucketReplicationArgs : BucketArgs<SetBucketReplicationArgs>
+    {
+        internal ReplicationConfiguration BucketReplication { get; private set; }
+        public SetBucketReplicationArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        public SetBucketReplicationArgs WithConfiguration(ReplicationConfiguration conf)
+        {
+            this.BucketReplication = conf;
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("replication","");
+            string body = this.BucketReplication.MarshalXML();
+            request.AddParameter(new Parameter("text/xml", body, ParameterType.RequestBody));
+            request.AddOrUpdateParameter("Content-MD5",
+                                          utils.getMD5SumStr(System.Text.Encoding.UTF8.GetBytes(body)),
+                                          ParameterType.HttpHeader);
+
+            return request;
+        }
+    }
+
+    public class RemoveBucketReplicationArgs : BucketArgs<RemoveBucketReplicationArgs>
+    {
+        public RemoveBucketReplicationArgs()
+        {
+            this.RequestMethod = Method.DELETE;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("replication","");
+            return request;
+        }
+    }
 }

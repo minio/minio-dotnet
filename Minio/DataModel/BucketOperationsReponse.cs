@@ -346,4 +346,23 @@ namespace Minio
             }
         }
     }
+
+    internal class GetBucketReplicationResponse : GenericResponse
+    {
+        internal ReplicationConfiguration Config { set; get; }
+        internal GetBucketReplicationResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) ||
+                    !HttpStatusCode.OK.Equals(statusCode))
+            {
+                this.Config = null;
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                this.Config = (ReplicationConfiguration)new XmlSerializer(typeof(ReplicationConfiguration)).Deserialize(stream);
+            }
+        }
+    }
 }

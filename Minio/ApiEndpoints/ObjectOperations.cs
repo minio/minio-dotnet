@@ -1,6 +1,6 @@
 ﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
- * (C) 2017, 2018, 2019, 2020 MinIO, Inc.
+ * (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -332,6 +332,63 @@ namespace Minio
 
 
         /// <summary>
+        /// Removes an object with given name in specific bucket
+        /// </summary>
+        /// <param name="args">RemoveObjectArgs Arguments Object encapsulates information like - bucket name, object name, optional list of versions to be deleted</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task</returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
+        public async Task RemoveObjectAsync(RemoveObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken);
+        }
+
+
+        /// <summary>
+        /// Removes list of objects from bucket
+        /// </summary>
+        /// <param name="args">RemoveObjectsArgs Arguments Object encapsulates information like - bucket name, List of objects, optional list of versions (for each object) to be deleted</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Observable that returns delete error while deleting objects if any</returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
+        public async Task<IObservable<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            List<DeleteError> errs = new List<DeleteError>();
+            if (args.ObjectNamesVersions.Count > 0)
+            {
+                errs = await removeObjectVersionsHelper(args, errs, cancellationToken);
+            }
+            else
+            {
+                errs = await removeObjectsHelper(args, errs, cancellationToken);
+            }
+
+            return Observable.Create<DeleteError>(
+              async(obs) =>
+              {
+                await Task.Yield();
+                foreach (DeleteError error in errs)
+                {
+                    obs.OnNext(error);
+                }
+              });
+        }
+
+
+        /// <summary>
         /// Sets the Tagging values for this object
         /// </summary>
         /// <param name="args">SetObjectTagsArgs Arguments Object with information like Bucket name,Object name, (optional)version Id, tag key-value pairs</param>
@@ -456,7 +513,7 @@ namespace Minio
 
 
         /// <summary>
-        /// Upload object part to bucket for particular uploadId
+        /// Upload object in multiple parts. Private Helper function
         /// </summary>
         /// <param name="args">PutObjectPartArgs arguments object encapsulating bucket name, object name, upload id, part number, object data(body), Headers, SSE Headers</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -514,13 +571,14 @@ namespace Minio
 
 
         /// <summary>
-        /// Public function exposed to put the object received through the designated input stream or by using the filename.
+        /// Creates object in a bucket fom input stream or filename.
         /// </summary>
         /// <param name="args">PutObjectArgs Arguments object encapsulating bucket name, object name, file name, object data stream, object size, content type, object metadata, SSE.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         public async Task PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
+            // Upload object in single part if size falls under restricted part size.
             if (args.ObjectSize < Constants.MinimumPartSize && args.ObjectSize >= 0 && args.ObjectStreamData != null)
             {
                 var bytes = await ReadFullAsync(args.ObjectStreamData, (int)args.ObjectSize).ConfigureAwait(false);
@@ -547,6 +605,7 @@ namespace Minio
                                                                         .WithRetentionConfiguration(args.Retention)
                                                                         .WithServerSideEncryption(args.SSE)
                                                                         .WithSSEHeaders(args.SSEHeaders);
+            // Get upload Id after creating new multi-part upload operation to be used in putobject part, complete multipart upload operations.
             string uploadId = await this.NewMultipartUploadAsync(multipartUploadArgs, cancellationToken).ConfigureAwait(false);
             // Remove SSE-S3 and KMS headers during PutObjectPart operations.
             PutObjectPartArgs putObjectPartArgs = new PutObjectPartArgs()
@@ -560,6 +619,7 @@ namespace Minio
                                                             .WithHeaders(args.HeaderMap)
                                                             .WithSSEHeaders(args.SSEHeaders);
             Dictionary<int, string> etags = null;
+            // Upload file contents.
             if (!string.IsNullOrEmpty(args.FileName))
             {
                 FileInfo fileInfo = new FileInfo(args.FileName);
@@ -573,6 +633,7 @@ namespace Minio
                     etags = await this.PutObjectPartAsync(putObjectPartArgs, cancellationToken).ConfigureAwait(false);
                 }
             }
+            // Upload stream contents
             else
             {
                 etags = await this.PutObjectPartAsync(putObjectPartArgs, cancellationToken).ConfigureAwait(false);
@@ -584,6 +645,7 @@ namespace Minio
                                                                                         .WithETags(etags);
             await this.CompleteMultipartUploadAsync(completeMultipartUploadArgs, cancellationToken).ConfigureAwait(false);
         }
+
 
         /// <summary>
         /// Internal method to complete multi part upload of object to server.
@@ -774,7 +836,7 @@ namespace Minio
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         [Obsolete("Use PutObjectAsync method with PutObjectArgs object. Refer PutObject example code.")]
-        public async Task PutObjectAsync(string bucketName, string objectName, string fileName, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        public Task PutObjectAsync(string bucketName, string objectName, string fileName, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             PutObjectArgs args = new PutObjectArgs()
                                             .WithBucket(bucketName)
@@ -783,7 +845,7 @@ namespace Minio
                                             .WithContentType(contentType)
                                             .WithHeaders(metaData)
                                             .WithServerSideEncryption(sse);
-            await this.PutObjectAsync(args, cancellationToken).ConfigureAwait(false);
+            return this.PutObjectAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -798,7 +860,7 @@ namespace Minio
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         [Obsolete("Use PutObjectAsync method with PutObjectArgs object. Refer PutObject example code.")]
-        public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        public Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             PutObjectArgs args = new PutObjectArgs()
                                             .WithBucket(bucketName)
@@ -808,7 +870,7 @@ namespace Minio
                                             .WithContentType(contentType)
                                             .WithHeaders(metaData)
                                             .WithServerSideEncryption(sse);
-            await this.PutObjectAsync(args, cancellationToken).ConfigureAwait(false);
+            return this.PutObjectAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -1057,11 +1119,13 @@ namespace Minio
         /// <param name="objectName">Key of object to remove</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public async Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))
+        [Obsolete("Use RemoveObjectAsync method with RemoveObjectArgs object. Refer RemoveObject example code.")]
+        public Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var request = await this.CreateRequest(Method.DELETE, bucketName, objectName: objectName).ConfigureAwait(false);
-
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var args = new RemoveObjectArgs()
+                                    .WithBucket(bucketName)
+                                    .WithObject(objectName);
+            return this.RemoveObjectAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -1071,6 +1135,7 @@ namespace Minio
         /// <param name="objectsList"></param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        [Obsolete("Use RemoveObjectsAsync method with RemoveObjectsArgs object. Refer RemoveObjects example code.")]
         private async Task<List<DeleteError>> removeObjectsAsync(string bucketName, List<DeleteObject> objectsList, CancellationToken cancellationToken)
         {
             var request = await this.CreateRequest(Method.POST, bucketName).ConfigureAwait(false);
@@ -1112,48 +1177,13 @@ namespace Minio
         /// <param name="objectNames">List of object keys to remove.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public IObservable<DeleteError> RemoveObjectAsync(string bucketName, IEnumerable<string> objectNames, CancellationToken cancellationToken = default(CancellationToken))
+        [Obsolete("Use RemoveObjectsAsync method with RemoveObjectsArgs object. Refer RemoveObjects example code.")]
+        public Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectNames, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (objectNames == null)
-            {
-                return null;
-            }
-
-            utils.ValidateBucketName(bucketName);
-            List<DeleteObject> objectList;
-            return Observable.Create<DeleteError>(
-              async obs =>
-              {
-                  bool process = true;
-                  int count = objectNames.Count();
-                  int i = 0;
-
-                  while (process)
-                  {
-                      objectList = new List<DeleteObject>();
-                      while (i < count)
-                      {
-                          string objectName = objectNames.ElementAt(i);
-                          utils.ValidateObjectName(objectName);
-                          objectList.Add(new DeleteObject(objectName));
-                          i++;
-                          if (i % 1000 == 0)
-                              break;
-                      }
-                      if (objectList.Count > 0)
-                      {
-                          var errorsList = await removeObjectsAsync(bucketName, objectList, cancellationToken).ConfigureAwait(false);
-                          foreach (DeleteError error in errorsList)
-                          {
-                              obs.OnNext(error);
-                          }
-                      }
-                      if (i >= objectNames.Count())
-                      {
-                          process = !process;
-                      }
-                  }
-              });
+            RemoveObjectsArgs args = new RemoveObjectsArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObjects(new List<string>(objectNames));
+            return this.RemoveObjectsAsync(args, cancellationToken);
         }
 
         /// <summary>

@@ -239,6 +239,10 @@ namespace Minio.Examples
                 Cases.RemoveObjectLockConfiguration.Run(minioClient, lockBucketName).Wait();
                 Cases.RemoveBucket.Run(minioClient, lockBucketName).Wait();
 
+                // Bucket Replication operations
+                Cases.RemoveBucketReplication.Run(minioClient, bucketName).Wait();
+                Cases.GetBucketReplication.Run(minioClient, bucketName).Wait();
+
                 // Get the presigned url for a GET object request
                 Cases.PresignedGetObject.Run(minioClient, bucketName, objectName).Wait();
 
@@ -249,7 +253,7 @@ namespace Minio.Examples
                 Cases.PresignedPutObject.Run(minioClient, bucketName, objectName).Wait();
 
                 // Delete the list of objects
-                Cases.RemoveObjects.Run(minioClient, bucketName, objectsList);
+                Cases.RemoveObjects.Run(minioClient, bucketName, objectsList).Wait();
 
                 // Delete the object
                 Cases.RemoveObject.Run(minioClient, bucketName, objectName).Wait();

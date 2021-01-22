@@ -45,6 +45,9 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 | [`setBucketLifecycle`](#setBucketLifecycle)  |   |   |   |
 | [`getBucketLifecycle`](#getBucketLifecycle)  |   |   |   |
 | [`removeBucketLifecycle`](#removeBucketLifecycle)  |   |   |   |
+| [`setBucketReplication`](#setBucketReplication)  |   |   |   |
+| [`getBucketReplication`](#getBucketReplication)  |   |   |   |
+| [`removeBucketReplication`](#removeBucketReplication)  |   |   |   |
 
 
 
@@ -1073,6 +1076,147 @@ catch(MinioException e)
 
 
 
+<a name="setBucketReplication"></a>
+### SetBucketReplicationAsync(SetBucketReplicationArgs args)
+
+`Task SetBucketReplicationAsync(SetBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Sets Replication configuration to a bucket.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _SetBucketReplicationArgs_  | SetBucketReplicationArgs Argument Object with bucket name, Replication configuration to set  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+| ``Task``  | Listed Exceptions: |
+|        | ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        | ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``BucketNotFoundException`` : upon bucket with name not found   |
+|        | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        | ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Set Replication configuration for the bucket
+    SetBucketReplicationArgs args = new SetBucketReplicationArgs()
+                                                    .WithBucket(bucketName)
+                                                    .WithConfiguration(cfg);
+    await minio.SetBucketReplicationAsync(args);
+    Console.WriteLine($"Set Replication configuration for bucket {bucketName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+<a name="getBucketReplication"></a>
+### GetBucketReplicationAsync(GetBucketReplicationArgs args)
+
+`Task<ReplicationConfiguration> GetBucketReplicationAsync(GetBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Gets Replication configuration of a bucket.
+
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _GetBucketReplicationArgs_  | GetBucketReplicationArgs Argument Object with bucket name  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+| ``Task<ReplicationConfiguration>``: ReplicationConfiguration object which contains the Replication configuration details. | Listed Exceptions: |
+|        | ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        | ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``BucketNotFoundException`` : upon bucket with name not found  |
+|        | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        | ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Get Bucket Replication for the bucket
+    var args = new GetBucketReplicationArgs()
+                                .WithBucket(bucketName);
+    var cfg = await minio.GetBucketReplicationAsync(args);
+    Console.WriteLine($"Got Replication configuration for bucket {bucketName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
+
+<a name="removeBucketReplication"></a>
+### RemoveBucketReplicationAsync(RemoveBucketReplicationArgs args)
+
+`Task RemoveBucketReplicationAsync(RemoveBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+
+Deletes Replication configuration of a bucket.
+
+
+__Parameters__
+
+
+|Param   | Type	  | Description  |
+|:--- |:--- |:--- |
+| ``args``  | _RemoveBucketReplicationArgs_  | RemoveBucketReplicationArgs Argument Object with bucket name  |
+| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
+
+
+| Return Type	  | Exceptions	  |
+|:--- |:--- |
+| ``Task``  | Listed Exceptions: |
+|        | ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        | ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``BucketNotFoundException`` : upon bucket with name not found  |
+|        | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
+|        | ``UnexpectedMinioException`` : upon internal errors encountered during the operation |
+
+
+
+__Example__
+
+
+```cs
+try
+{
+    // Remove Bucket Replication Configuration for the bucket
+    var args = new RemoveBucketReplicationArgs()
+                                .WithBucket(bucketName);
+    await minio.RemoveBucketReplicationAsync(args);
+    Console.WriteLine($"Removed Replication configuration for bucket {bucketName}.");
+}
+catch(MinioException e)
+{
+   Console.WriteLine("Error occurred: " + e);
+}
+```
+
 
 <a name="listObjects"></a>
 ### ListObjectsAsync(ListObjectArgs args)
@@ -1773,97 +1917,28 @@ catch (MinioException e)
 ```
 
 <a name="putObject"></a>
-### PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType, ServerSideEncryption sse)
+### PutObjectAsync(PutObjectArgs args)
 
-` Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
-
-
-Uploads contents from a stream to objectName.
+` Task PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 
-
-__Parameters__
-
-|Param   | Type	  | Description  |
-|:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket  |
-| ``objectName``  | _string_  | Object name in the bucket |
-| ``data``  | _Stream_  | Stream to upload |
-| ``size``  | _long_    | size of stream   |
-| ``contentType``  | _string_ | Content type of the file. Defaults to "application/octet-stream" |
-| ``metaData``  | _Dictionary<string,string>_ | Dictionary of metadata headers. Defaults to null. |
-| ``sse``    | _ServerSideEncryption_ | Server-side encryption option | Optional parameter. Defaults to null |
-
-| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
-
-
-| Return Type	  | Exceptions	  |
-|:--- |:--- |
-|  ``Task``  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
-|        | ``ConnectionException`` : upon connection error            |
-|        | ``InternalClientException`` : upon internal library error        |
-|        | ``EntityTooLargeException``: upon proposed upload size exceeding max allowed |
-|        | ``UnexpectedShortReadException``: data read was shorter than size of input buffer |
-|        | ``ArgumentNullException``: upon null input stream    |
-
-__Example__
-
-
-The maximum size of a single object is limited to 5TB. putObject transparently uploads objects larger than 5MiB in multiple parts. Uploaded data is carefully verified using MD5SUM signatures.
-
-
-```cs
-try
-{
-    byte[] bs = File.ReadAllBytes(fileName);
-    System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
-    // Specify SSE-C encryption options
-    Aes aesEncryption = Aes.Create();
-    aesEncryption.KeySize = 256;
-    aesEncryption.GenerateKey();
-    var ssec = new SSEC(aesEncryption.Key);
-    await minio.PutObjectAsync("mybucket",
-                               "island.jpg",
-                                filestream,
-                                filestream.Length,
-                               "application/octet-stream", ssec);
-    Console.WriteLine("island.jpg is uploaded successfully");
-}
-catch(MinioException e)
-{
-    Console.WriteLine("Error occurred: " + e);
-}
-```
-
-<a name="putObject"></a>
-### PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null, ServerSideEncryption sse)
-
-` Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
-
-
-Uploads contents from a file to objectName.
-
+PutObjectAsync: Uploads contents from a file to objectName, Uploads contents from a stream to objectName, Upload part of objectName with PartID, UploadID.
 
 
 __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket  |
-| ``objectName``  | _string_  | Object name in the bucket |
-| ``fileName``  | _string_  | File to upload |
-| ``contentType``  | _string_ | Content type of the file. Defaults to " |
-| ``metadata``  | _Dictionary<string,string>_ | Dictionary of meta data headers and their values.Defaults to null.|
-| ``sse``    | _ServerSideEncryption_ | Server-side encryption option | Optional parameter. Defaults to null |
-
+| ``args``  | _PutObjectArgs_  | Arguments object - bucket name, object name, file name, object data stream, object size, content type, object metadata, SSE. etc.  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 |  ``Task``  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        | ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``InvalidObjectNameException`` : upon invalid object name |
 |        | ``ConnectionException`` : upon connection error            |
 |        | ``InternalClientException`` : upon internal library error        |
 |        | ``EntityTooLargeException``: upon proposed upload size exceeding max allowed |
@@ -1877,7 +1952,12 @@ The maximum size of a single object is limited to 5TB. putObject transparently u
 ```cs
 try
 {
-    await minio.PutObjectAsync("mybucket", "island.jpg", "/mnt/photos/island.jpg", contentType: "application/octet-stream");
+    PutObjectArgs putObjectArgs = new PutObjectArgs()
+                                            .WithBucket("mybucket")
+                                            .WithObject("island.jpg")
+                                            .WithFilename("/mnt/photos/island.jpg")
+                                            .WithContentType("application/octet-stream")
+    await minio.PutObjectAsync(putObjectArgs);
     Console.WriteLine("island.jpg is uploaded successfully");
 }
 catch(MinioException e)
@@ -1885,6 +1965,8 @@ catch(MinioException e)
     Console.WriteLine("Error occurred: " + e);
 }
 ```
+
+
 <a name="statObject"></a>
 ### StatObjectAsync(StatObjectArgs args)
 
@@ -1990,10 +2072,11 @@ catch(MinioException e)
 }
 ```
 
-<a name="removeObject"></a>
-### RemoveObjectAsync(string bucketName, string objectName)
 
-`Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))`
+<a name="removeObject"></a>
+### RemoveObjectAsync(RemoveObjectArgs args)
+
+`Task RemoveObjectAsync(RemoveObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 Removes an object.
 
@@ -2002,8 +2085,7 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket  |
-| ``objectName``  | _string_  | Object name in the bucket |
+| ``args``  | _RemoveObjectArgs_ | Arguments Object.  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 | Return Type	  | Exceptions	  |
@@ -2019,31 +2101,50 @@ __Example__
 
 
 ```cs
+// 1. Remove object myobject from the bucket mybucket.
 try
 {
-    // Remove objectname from the bucket my-bucketname.
-    await minioClient.RemoveObjectAsync("mybucket", "myobject");
+    RemoveObjectArgs rmArgs = new RemoveObjectArgs()
+                                        .WithBucket("mybucket")
+                                        .WithObject("myobject");
+    await minioClient.RemoveObjectAsync(args);
     Console.WriteLine("successfully removed mybucket/myobject");
 }
 catch (MinioException e)
 {
     Console.WriteLine("Error: " + e);
 }
+
+// 2. Remove one version of object myobject with versionID from mybucket.
+try
+{
+    RemoveObjectArgs rmArgs = new RemoveObjectArgs()
+                                        .WithBucket("mybucket")
+                                        .WithObject("myobject")
+                                        .WithVersionId("versionId");
+    await minioClient.RemoveObjectAsync(args);
+    Console.WriteLine("successfully removed mybucket/myobject{versionId}");
+}
+catch (MinioException e)
+{
+    Console.WriteLine("Error: " + e);
+}
+
 ```
 <a name="removeObjects"></a>
-### RemoveObjectAsync(string bucketName, IEnumerable<string> objectsList)
+### RemoveObjectsAsync(RemoveObjectsArgs args)
 
-`Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectsList, CancellationToken cancellationToken = default(CancellationToken))`
+`Task<IObservable<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
-Removes a list of objects.
+Removes a list of objects or object versions.
+
 
 __Parameters__
 
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket  |
-| ``objectsList``  | _IEnumerable<string>_  | IEnumerable of Object names |
+| ``args``  | _RemoveObjectsArgs_ | Arguments Object - bucket name, List of Objects to be deleted or List of Tuples with Tuple(object name, List of version IDs).  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 | Return Type	  | Exceptions	  |
@@ -2059,14 +2160,49 @@ __Example__
 
 
 ```cs
+// 1. Remove list of objects in objectNames from the bucket bucketName.
 try
 {
+    string bucketName = "mybucket"
     List<String> objectNames = new LinkedList<String>();
     objectNames.add("my-objectname1");
     objectNames.add("my-objectname2");
     objectNames.add("my-objectname3");
-    // Remove list of objects in objectNames from the bucket bucketName.
-    IObservable<DeleteError> observable = await minio.RemoveObjectAsync(bucketName, objectNames);
+    RemoveObjectsAsync rmArgs = new RemoveObjectsAsync()
+                                            .WithBucket(bucketName)
+                                            .WithObjects(objectNames);
+    IObservable<DeleteError> observable = await minio.RemoveObjectAsync(rmArgs);
+    IDisposable subscription = observable.Subscribe(
+        deleteError => Console.WriteLine("Object: {0}", deleteError.Key),
+        ex => Console.WriteLine("OnError: {0}", ex),
+        () =>
+        {
+            Console.WriteLine("Removed objects from " + bucketName + "\n");
+        });
+}
+catch (MinioException e)
+{
+    Console.WriteLine("Error: " + e);
+}
+
+// 2. Remove list of objects (only specific versions mentioned in Version ID list) from the bucket bucketName
+try
+{
+    string bucketName = "mybucket";
+    string objectName = "myobject1";
+    List<string> versionIDs = new List<string>();
+    versionIDs.Add("abcobject1version1dce");
+    versionIDs.Add("abcobject1version2dce");
+    versionIDs.Add("abcobject1version3dce");
+    List<Tuple<string, string>> objectsVersions = new List<Tuple<string, string>>();
+    objectsVersions.Add(new Tuple<string, List<string>>(objectName, versionIDs));
+    objectsVersions.Add(new Tuple<string, string>("myobject2" "abcobject2version1dce"));
+    objectsVersions.Add(new Tuple<string, string>("myobject2", "abcobject2version2dce"));
+    objectsVersions.Add(new Tuple<string, string>("myobject2", "abcobject2version3dce"));
+    RemoveObjectsAsync rmArgs = new RemoveObjectsAsync()
+                                            .WithBucket(bucketName)
+                                            .WithObjectsVersions(objectsVersions);
+    IObservable<DeleteError> observable = await minio.RemoveObjectsAsync(rmArgs);
     IDisposable subscription = observable.Subscribe(
         deleteError => Console.WriteLine("Object: {0}", deleteError.Key),
         ex => Console.WriteLine("OnError: {0}", ex),
@@ -2079,7 +2215,9 @@ catch (MinioException e)
 {
     Console.WriteLine("Error: " + e);
 }
+
 ```
+
 
 <a name="removeIncompleteUpload"></a>
 ### RemoveIncompleteUploadAsync(RemoveIncompleteUploadArgs args)

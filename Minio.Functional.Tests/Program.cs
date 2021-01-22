@@ -142,6 +142,7 @@ namespace Minio.Functional.Tests
             // Test RemoveObjectAsync function
             FunctionalTest.RemoveObject_Test1(minioClient).Wait();
             FunctionalTest.RemoveObjects_Test2(minioClient).Wait();
+            FunctionalTest.RemoveObjects_Test3(minioClient).Wait();
 
             // Test CopyObjectAsync function
             FunctionalTest.CopyObject_Test1(minioClient).Wait();
