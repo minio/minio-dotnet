@@ -249,7 +249,7 @@ namespace Minio.Examples
                 Cases.PresignedPutObject.Run(minioClient, bucketName, objectName).Wait();
 
                 // Delete the list of objects
-                Cases.RemoveObjects.Run(minioClient, bucketName, objectsList);
+                Cases.RemoveObjects.Run(minioClient, bucketName, objectsList).Wait();
 
                 // Delete the object
                 Cases.RemoveObject.Run(minioClient, bucketName, objectName).Wait();

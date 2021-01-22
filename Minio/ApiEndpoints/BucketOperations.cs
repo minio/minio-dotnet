@@ -257,6 +257,7 @@ namespace Minio
                                                               .WithMarker(marker);
                           Tuple<ListVersionsResult, List<VersionItem>> objectList = await this.GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
                           ListObjectVersionResponse listObjectsItemResponse = new ListObjectVersionResponse(args, objectList, obs);
+                          obs = listObjectsItemResponse.ItemObservable;
                           marker = listObjectsItemResponse.NextMarker;
                           isRunning = objectList.Item1.IsTruncated;
                           cts.Token.ThrowIfCancellationRequested();

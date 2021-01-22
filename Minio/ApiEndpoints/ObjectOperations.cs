@@ -333,6 +333,63 @@ namespace Minio
 
 
         /// <summary>
+        /// Removes an object with given name in specific bucket
+        /// </summary>
+        /// <param name="args">RemoveObjectArgs Arguments Object encapsulates information like - bucket name, object name, optional list of versions to be deleted</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Task</returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
+        public async Task RemoveObjectAsync(RemoveObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken);
+        }
+
+
+        /// <summary>
+        /// Removes list of objects from bucket
+        /// </summary>
+        /// <param name="args">RemoveObjectsArgs Arguments Object encapsulates information like - bucket name, List of objects, optional list of versions (for each object) to be deleted</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Observable that returns delete error while deleting objects if any</returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
+        public async Task<IObservable<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            List<DeleteError> errs = new List<DeleteError>();
+            if (args.ObjectNamesVersions.Count > 0)
+            {
+                errs = await removeObjectVersionsHelper(args, errs, cancellationToken);
+            }
+            else
+            {
+                errs = await removeObjectsHelper(args, errs, cancellationToken);
+            }
+
+            return Observable.Create<DeleteError>(
+              async(obs) =>
+              {
+                await Task.Yield();
+                foreach (DeleteError error in errs)
+                {
+                    obs.OnNext(error);
+                }
+              });
+        }
+
+
+        /// <summary>
         /// Sets the Tagging values for this object
         /// </summary>
         /// <param name="args">SetObjectTagsArgs Arguments Object with information like Bucket name,Object name, (optional)version Id, tag key-value pairs</param>
@@ -1140,11 +1197,13 @@ namespace Minio
         /// <param name="objectName">Key of object to remove</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public async Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))
+        [Obsolete("Use RemoveObjectAsync method with RemoveObjectArgs object. Refer RemoveObject example code.")]
+        public Task RemoveObjectAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var request = await this.CreateRequest(Method.DELETE, bucketName, objectName: objectName).ConfigureAwait(false);
-
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var args = new RemoveObjectArgs()
+                                    .WithBucket(bucketName)
+                                    .WithObject(objectName);
+            return this.RemoveObjectAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -1154,6 +1213,7 @@ namespace Minio
         /// <param name="objectsList"></param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        [Obsolete("Use RemoveObjectsAsync method with RemoveObjectsArgs object. Refer RemoveObjects example code.")]
         private async Task<List<DeleteError>> removeObjectsAsync(string bucketName, List<DeleteObject> objectsList, CancellationToken cancellationToken)
         {
             var request = await this.CreateRequest(Method.POST, bucketName).ConfigureAwait(false);
@@ -1195,48 +1255,13 @@ namespace Minio
         /// <param name="objectNames">List of object keys to remove.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public IObservable<DeleteError> RemoveObjectAsync(string bucketName, IEnumerable<string> objectNames, CancellationToken cancellationToken = default(CancellationToken))
+        [Obsolete("Use RemoveObjectsAsync method with RemoveObjectsArgs object. Refer RemoveObjects example code.")]
+        public Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName, IEnumerable<string> objectNames, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (objectNames == null)
-            {
-                return null;
-            }
-
-            utils.ValidateBucketName(bucketName);
-            List<DeleteObject> objectList;
-            return Observable.Create<DeleteError>(
-              async obs =>
-              {
-                  bool process = true;
-                  int count = objectNames.Count();
-                  int i = 0;
-
-                  while (process)
-                  {
-                      objectList = new List<DeleteObject>();
-                      while (i < count)
-                      {
-                          string objectName = objectNames.ElementAt(i);
-                          utils.ValidateObjectName(objectName);
-                          objectList.Add(new DeleteObject(objectName));
-                          i++;
-                          if (i % 1000 == 0)
-                              break;
-                      }
-                      if (objectList.Count > 0)
-                      {
-                          var errorsList = await removeObjectsAsync(bucketName, objectList, cancellationToken).ConfigureAwait(false);
-                          foreach (DeleteError error in errorsList)
-                          {
-                              obs.OnNext(error);
-                          }
-                      }
-                      if (i >= objectNames.Count())
-                      {
-                          process = !process;
-                      }
-                  }
-              });
+            RemoveObjectsArgs args = new RemoveObjectsArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObjects(new List<string>(objectNames));
+            return this.RemoveObjectsAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -1313,90 +1338,21 @@ namespace Minio
         /// <param name="sseDest">Optional destination encryption options.Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public async Task CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken))
+        [Obsolete("Use CopyObjectAsync method with CopyObjectArgs object. Refer CopyObject example code.")]
+        public Task CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (bucketName == null)
-            {
-                throw new ArgumentException("Source bucket name cannot be empty", nameof(bucketName));
-            }
-            if (objectName == null)
-            {
-                throw new ArgumentException("Source object name cannot be empty", nameof(objectName));
-            }
-            if (destBucketName == null)
-            {
-                throw new ArgumentException("Destination bucket name cannot be empty", nameof(destBucketName));
-            }
-            // Escape source object path.
-            string sourceObjectPath = $"{bucketName}/{utils.UrlEncode(objectName)}";
-
-            // Destination object name is optional, if empty default to source object name.
-            if (destObjectName == null)
-            {
-                destObjectName = objectName;
-            }
-
-            ServerSideEncryption sseGet = sseSrc;
-            if (sseSrc is SSECopy sseCpy)
-            {
-                sseGet = sseCpy.CloneToSSEC();
-            }
-            // Get Stats on the source object
-            StatObjectArgs statArgs = new StatObjectArgs()
-                                            .WithBucket(bucketName)
-                                            .WithObject(objectName)
-                                            .WithServerSideEncryption(sseGet);
-            ObjectStat srcStats = await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
-            // Copy metadata from the source object if no metadata replace directive
-            var meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            Dictionary<string, string> m = metadata;
-            if (copyConditions != null && !copyConditions.HasReplaceMetadataDirective())
-            {
-                m = srcStats.MetaData;
-            }
-
-            if (m != null)
-            {
-                foreach (var item in m)
-                {
-                    var key = item.Key;
-                    if (!OperationsUtil.IsSupportedHeader(key) && !key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
-                    {
-                        key = "x-amz-meta-" + key.ToLowerInvariant();
-                    }
-                    meta[key] = item.Value;
-                }
-            }
-
-            long srcByteRangeSize = 0L;
-
-            if (copyConditions != null)
-            {
-                srcByteRangeSize = copyConditions.GetByteRange();
-            }
-            long copySize = (srcByteRangeSize == 0) ? srcStats.Size : srcByteRangeSize;
-
-            if ((srcByteRangeSize > srcStats.Size) || ((srcByteRangeSize > 0) && (copyConditions.byteRangeEnd >= srcStats.Size)))
-            {
-                throw new ArgumentException("Specified byte range (" + copyConditions.byteRangeStart.ToString() + "-" + copyConditions.byteRangeEnd.ToString() + ") does not fit within source object (size=" + srcStats.Size.ToString() + ")");
-            }
-
-            if ((copySize > Constants.MaxSingleCopyObjectSize) || (srcByteRangeSize > 0 && (srcByteRangeSize != srcStats.Size)))
-            {
-                await MultipartCopyUploadAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, copySize, meta, sseSrc, sseDest, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                if (sseSrc != null && sseSrc is SSECopy)
-                {
-                    sseSrc.Marshal(meta);
-                }
-                if (sseDest != null)
-                {
-                    sseDest.Marshal(meta);
-                }
-                await this.CopyObjectRequestAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, meta, null, cancellationToken, typeof(CopyObjectResult)).ConfigureAwait(false);
-            }
+            CopySourceObjectArgs cpSrcArgs = new CopySourceObjectArgs()
+                                                            .WithBucket(bucketName)
+                                                            .WithObject(objectName)
+                                                            .WithCopyConditions(copyConditions)
+                                                            .WithServerSideEncryption(sseSrc);
+            CopyObjectArgs args = new CopyObjectArgs()
+                                            .WithBucket(destBucketName)
+                                            .WithObject(destObjectName)
+                                            .WithCopyObjectSource(cpSrcArgs)
+                                            .WithHeaders(metadata)
+                                            .WithServerSideEncryption(sseDest);
+            return this.CopyObjectAsync(args, cancellationToken);
         }
 
         /// <summary>
