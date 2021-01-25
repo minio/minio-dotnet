@@ -493,7 +493,8 @@ namespace Minio
                                             .WithBucket(args.CopySourceObject.BucketName)
                                             .WithObject(args.CopySourceObject.ObjectName)
                                             .WithServerSideEncryption(args.CopySourceObject.SSE);
-            args.WithCopyObjectSourceStats(await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false));
+            ObjectStat stat = await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
+            args.WithCopyObjectSourceStats(stat);
             args.Validate();
             bool copyReplaceMeta = (args.CopySourceObject.CopyOperationConditions != null )?args.CopySourceObject.CopyOperationConditions.HasReplaceMetadataDirective() : false;
             if (string.IsNullOrEmpty(args.ObjectName))
@@ -553,7 +554,6 @@ namespace Minio
                 }
                 await this.CopyObjectRequestAsync(cpReqArgs, cancellationToken).ConfigureAwait(false);
             }
-
         }
 
 

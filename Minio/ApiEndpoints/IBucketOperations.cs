@@ -1,6 +1,6 @@
 ﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
- * (C) 2017, 2018, 2019, 2020, 2021 MinIO, Inc.
+ * (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -319,5 +319,38 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         Task RemoveBucketLifecycleAsync(RemoveBucketLifecycleArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Gets Replication configuration set for this bucket
+        /// </summary>
+        /// <param name="args">GetBucketReplicationArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns>Replication configuration object</returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        Task<ReplicationConfiguration> GetBucketReplicationAsync(GetBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Sets the Replication configuration for this bucket
+        /// </summary>
+        /// <param name="args">SetBucketReplicationArgs Arguments Object with information like Bucket name, Replication Configuration object</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        Task SetBucketReplicationAsync(SetBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Removes Replication configuration stored for the bucket.
+        /// </summary>
+        /// <param name="args">RemoveBucketReplicationArgs Arguments Object with information like Bucket name</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        Task RemoveBucketReplicationAsync(RemoveBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

@@ -27,7 +27,6 @@ namespace Minio
         internal ObjectRetentionConfiguration Retention { get; set; }
         internal bool? LegalHoldEnabled { get; set; }
         internal string ContentType { get; set; }
-        internal Dictionary<string, string> CustomHeaders { get; set; }
 
         public T WithTagKeyValuePairs(Dictionary<string, string> kv)
         {
@@ -56,20 +55,6 @@ namespace Minio
         public T WithLegalHold(bool? legalHold)
         {
             this.LegalHoldEnabled = legalHold;
-            return (T)this;
-        }
-
-        public T WithCustomHeaders(Dictionary<string, string> headers)
-        {
-            if (headers == null || headers.Count <= 0)
-            {
-                return (T)this;
-            }
-            this.CustomHeaders = this.CustomHeaders ?? new Dictionary<string, string>();
-            foreach (string key in headers.Keys)
-            {
-                this.CustomHeaders.Add(key, headers[key]);
-            }
             return (T)this;
         }
     }
