@@ -667,6 +667,12 @@ namespace Minio
                 throw new MalFormedXMLException(errResponse.Resource, errResponse.BucketName, errResponse.Message, errResponse.Key);
             }
 
+            if (response.StatusCode.Equals(HttpStatusCode.NotImplemented)
+                && errResponse.Code.Equals("NotImplemented"))
+            {
+                throw new NotImplementedException(errResponse.Message);
+            }
+
             if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
                 && errResponse.Code.Equals("InvalidRequest"))
             {
