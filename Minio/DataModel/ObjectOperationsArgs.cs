@@ -1,5 +1,5 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -205,8 +205,12 @@ namespace Minio
         }
     }
 
-    public class StatObjectArgs : ObjectQueryArgs<StatObjectArgs>
+    public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
     {
+        internal long ObjectOffset { get; private set; }
+        internal long ObjectLength { get; private set; }
+        internal bool OffsetLengthSet { get; set; }
+
         public StatObjectArgs()
         {
             this.RequestMethod = Method.HEAD;
@@ -215,23 +219,10 @@ namespace Minio
         public override RestRequest BuildRequest(RestRequest request)
         {
             request = base.BuildRequest(request);
-            if (!string.IsNullOrEmpty(this.MatchETag))
+            if (!string.IsNullOrEmpty(this.VersionId))
             {
-                request.AddOrUpdateParameter("If-Match", this.MatchETag, ParameterType.HttpHeader);
+                request.AddQueryParameter("versionId",$"{this.VersionId}");
             }
-            if (!string.IsNullOrEmpty(this.NotMatchETag))
-            {
-                request.AddOrUpdateParameter("If-None-Match", this.NotMatchETag, ParameterType.HttpHeader);
-            }
-            if (this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
-            {
-                request.AddOrUpdateParameter("If-Modified-Since", this.ModifiedSince, ParameterType.HttpHeader);
-            }
-            if(this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
-            {
-                request.AddOrUpdateParameter("If-Unmodified-Since", this.UnModifiedSince, ParameterType.HttpHeader);
-            }
-            
             return request;
         }
 
@@ -247,6 +238,28 @@ namespace Minio
             {
                 throw new InvalidOperationException("Invalid to set both modified date match conditions " + nameof(this.ModifiedSince) + " and " + nameof(this.UnModifiedSince));
             }
+            this.Populate();
+        }
+
+        private void Populate()
+        {
+            this.HeaderMap = new Dictionary<string, string>();
+            if (this.SSE != null && this.SSE.GetType().Equals(EncryptionType.SSE_C))
+            {
+                this.SSE.Marshal(this.HeaderMap);
+            }
+        }
+
+        public StatObjectArgs WithOffsetAndLength(long offset, long length)
+        {
+            this.OffsetLengthSet = true;
+            this.ObjectOffset = offset;
+            this.ObjectLength = length;
+            if (ObjectLength > 0)
+            {
+                this.HeaderMap["Range"] = "bytes=" + this.ObjectOffset.ToString() + "-" + (this.ObjectOffset + this.ObjectLength - 1).ToString();
+            }
+            return this;
         }
     }
 
@@ -457,7 +470,7 @@ namespace Minio
         }
     }
 
-    public class GetObjectArgs : ObjectQueryArgs<GetObjectArgs>
+    public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
     {
         internal Action<Stream> CallBack { get; private set; }
         internal long ObjectOffset { get; private set; }
@@ -474,9 +487,9 @@ namespace Minio
         public override void Validate()
         {
             base.Validate();
-            if (this.CallBack == null)
+            if (this.CallBack == null && string.IsNullOrEmpty(this.FileName))
             {
-                throw new MinioException("CallBack method not set of GetObject operation.");
+                throw new MinioException("Atleast one of " + nameof(this.CallBack) + ", CallBack method or " + nameof(this.FileName) + " file path to save need to be set for GetObject operation.");
             }
             if (OffsetLengthSet)
             {
@@ -494,14 +507,28 @@ namespace Minio
             {
                 utils.ValidateFile(this.FileName);
             }
+            this.Populate();
         }
+
+        private void Populate()
+        {
+            this.HeaderMap = new Dictionary<string, string>();
+            if (this.SSE != null && this.SSE.GetType().Equals(EncryptionType.SSE_C))
+            {
+                this.SSE.Marshal(this.HeaderMap);
+            }
+            if (ObjectLength > 0)
+            {
+                this.HeaderMap["Range"] = "bytes=" + this.ObjectOffset.ToString() + "-" + (this.ObjectOffset + this.ObjectLength - 1).ToString();
+            }
+        }
+
         public override RestRequest BuildRequest(RestRequest request)
         {
             request = base.BuildRequest(request);
-            var headers = new Dictionary<string, string>();
-            if (this.SSE != null && this.SSE.GetType().Equals(EncryptionType.SSE_C))
+            if (!string.IsNullOrEmpty(this.VersionId))
             {
-                this.SSE.Marshal(headers);
+                request.AddQueryParameter("versionId",$"{this.VersionId}");
             }
             request.ResponseWriter = this.CallBack;
 
@@ -515,15 +542,11 @@ namespace Minio
             return this;
         }
 
-        public GetObjectArgs WithLengthAndOffset(long offset, long length)
+        public GetObjectArgs WithOffsetAndLength(long offset, long length)
         {
             this.OffsetLengthSet = true;
             this.ObjectOffset = offset;
             this.ObjectLength = length;
-            if (ObjectLength > 0)
-            {
-                this.HeaderMap.Add("Range", "bytes=" + offset.ToString() + "-" + (offset + length - 1).ToString());
-            }
             return this;
         }
 

@@ -89,8 +89,12 @@ namespace Minio.Tests
                 }
                 Assert.AreEqual(ex.Response.Code, "InvalidObjectName");
 
+                GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(badName)
+                                                        .WithCallbackStream(s =>{});
                 ex = await Assert.ThrowsExceptionAsync<InvalidObjectNameException>(
-                    () => minio.GetObjectAsync(bucketName, badName, s => { }));
+                    () => minio.GetObjectAsync(getObjectArgs));
                 Assert.AreEqual(ex.Response.Code, "InvalidObjectName");
             }
             finally

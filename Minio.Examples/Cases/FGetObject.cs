@@ -34,7 +34,12 @@ namespace Minio.Examples.Cases
             {
                 Console.WriteLine("Running example for API: GetObjectAsync");
                 File.Delete(fileName);
-                await minio.GetObjectAsync(bucketName, objectName, fileName, sse: sse);
+                GetObjectArgs args = new GetObjectArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObject(objectName)
+                                                .WithFile(fileName)
+                                                .WithServerSideEncryption(sse);
+                await minio.GetObjectAsync(args).ConfigureAwait(false);
                 Console.WriteLine($"Downloaded the file {fileName} from bucket {bucketName}");
                 Console.WriteLine();
             }

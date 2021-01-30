@@ -1476,7 +1476,7 @@ namespace Minio.Functional.Tests
                 await minio.RemoveObjectAsync(rmArgs);
                 RemoveObjectArgs rmArgsDest = new RemoveObjectArgs()
                                                     .WithBucket(destBucketName)
-                                                    .WithObject(destObjectName);
+                                                    .WithObject(objectName);
                 await minio.RemoveObjectAsync(rmArgsDest);
                 await TearDown(minio, bucketName);
                 await TearDown(minio, destBucketName);
@@ -2168,7 +2168,7 @@ namespace Minio.Functional.Tests
                     GetObjectArgs getObjectArgs = new GetObjectArgs()
                                                             .WithBucket(bucketName)
                                                             .WithObject(objectName)
-                                                            .WithLengthAndOffset(1024L, file_write_size)
+                                                            .WithOffsetAndLength(1024L, file_write_size)
                                                             .WithCallbackStream((stream) =>
                                                                                 {
                                                                                     var fileStream = File.Create(tempFileName);

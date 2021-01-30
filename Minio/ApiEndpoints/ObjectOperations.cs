@@ -1,6 +1,6 @@
 ﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
- * (C) 2017, 2018, 2019, 2020 MinIO, Inc.
+ * (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,12 @@ namespace Minio
                                             .WithModifiedSince(args.ModifiedSince)
                                             .WithUnModifiedSince(args.UnModifiedSince)
                                             .WithServerSideEncryption(args.SSE);
+            if (args.OffsetLengthSet)
+            {
+                statArgs.WithOffsetAndLength(args.ObjectOffset, args.ObjectLength);
+            }
             ObjectStat objStat = await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
+            args.Validate();
             if (args.FileName != null)
             {
                 await this.getObjectFileAsync(args, objStat, cancellationToken);
@@ -488,29 +493,15 @@ namespace Minio
         /// <param name="cb">A stream will be passed to the callback</param>
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        [Obsolete("Use GetObjectAsync method with GetObjectArgs object. Refer GetObject, GetObjectVersion & GetObjectQuery example code.")]
+        public Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            // Stat to see if the object exists
-            // NOTE: This avoids writing the error body to the action stream passed (Do not remove).
-            StatObjectArgs statArgs = new StatObjectArgs()
+            GetObjectArgs args = new GetObjectArgs()
                                             .WithBucket(bucketName)
                                             .WithObject(objectName)
+                                            .WithCallbackStream(cb)
                                             .WithServerSideEncryption(sse);
-            await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            var headers = new Dictionary<string, string>();
-            if (sse != null && sse.GetType().Equals(EncryptionType.SSE_C))
-            {
-                sse.Marshal(headers);
-            }
-            var request = await this.CreateRequest(Method.GET,
-                                                bucketName,
-                                                objectName: objectName,
-                                                headerMap: headers)
-                                    .ConfigureAwait(false);
-            request.ResponseWriter = cb;
-
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            return this.GetObjectAsync(args, cancellationToken);
         }
 
 
@@ -524,44 +515,16 @@ namespace Minio
         /// <param name="cb">A stream will be passed to the callback</param>
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        public async Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        [Obsolete("Use GetObjectAsync method with GetObjectArgs object. Refer GetObject, GetObjectVersion & GetObjectQuery example code.")]
+        public Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (offset < 0)
-            {
-                throw new ArgumentException("Offset should be zero or greater", nameof(offset));
-            }
-
-            if (length < 0)
-            {
-                throw new ArgumentException("Length should be greater than zero", nameof(length));
-            }
-
-            // Stat to see if the object exists
-            // NOTE: This avoids writing the error body to the action stream passed (Do not remove).
-            StatObjectArgs statArgs = new StatObjectArgs()
+            GetObjectArgs args = new GetObjectArgs()
                                             .WithBucket(bucketName)
                                             .WithObject(objectName)
+                                            .WithCallbackStream(cb)
+                                            .WithOffsetAndLength(offset, length)
                                             .WithServerSideEncryption(sse);
-            await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            var headerMap = new Dictionary<string, string>();
-            if (length > 0)
-            {
-                headerMap.Add("Range", "bytes=" + offset.ToString() + "-" + (offset + length - 1).ToString());
-            }
-
-            if (sse != null && sse.GetType().Equals(EncryptionType.SSE_C))
-            {
-                sse.Marshal(headerMap);
-            }
-            var request = await this.CreateRequest(Method.GET,
-                                                     bucketName,
-                                                     objectName: objectName,
-                                                     headerMap: headerMap)
-                                .ConfigureAwait(false);
-
-            request.ResponseWriter = cb;
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            return this.GetObjectAsync(args);
         }
 
         /// <summary>
@@ -573,52 +536,15 @@ namespace Minio
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public async Task GetObjectAsync(string bucketName, string objectName, string fileName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        [Obsolete("Use GetObjectAsync method with GetObjectArgs object. Refer GetObject, GetObjectVersion & GetObjectQuery example code.")]
+        public Task GetObjectAsync(string bucketName, string objectName, string fileName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            bool fileExists = File.Exists(fileName);
-            utils.ValidateFile(fileName);
-
-            StatObjectArgs statArgs = new StatObjectArgs()
+            GetObjectArgs args = new GetObjectArgs()
                                             .WithBucket(bucketName)
                                             .WithObject(objectName)
+                                            .WithFile(fileName)
                                             .WithServerSideEncryption(sse);
-            ObjectStat objectStat = await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            long length = objectStat.Size;
-            string etag = objectStat.ETag;
-
-            string tempFileName = $"{fileName}.{etag}.part.minio";
-
-            bool tempFileExists = File.Exists(tempFileName);
-
-            FileInfo tempFileInfo = new FileInfo(tempFileName);
-            long tempFileSize = 0;
-            if (tempFileExists)
-            {
-                tempFileSize = tempFileInfo.Length;
-            }
-
-            GetObjectArgs getObjectArgs = new GetObjectArgs()
-                                                    .WithBucket(bucketName)
-                                                    .WithObject(objectName)
-                                                    .WithCallbackStream(
-                                                        stream =>
-                                                        {
-                                                            var fileStream = File.Create(tempFileName);
-                                                            stream.CopyTo(fileStream);
-                                                            fileStream.Dispose();
-                                                            FileInfo writtenInfo = new FileInfo(tempFileName);
-                                                            long writtenSize = writtenInfo.Length;
-                                                            if (writtenSize != length - tempFileSize)
-                                                            {
-                                                                throw new IOException(tempFileName + ": unexpected data written.  expected = " + (length - tempFileSize)
-                                                                                    + ", written = " + writtenSize);
-                                                            }
-                                                            utils.MoveWithReplace(tempFileName, fileName);
-                                                        }
-                                                    )
-                                                    .WithServerSideEncryption(sse);
-            await GetObjectAsync(getObjectArgs, cancellationToken).ConfigureAwait(false);
+            return this.GetObjectAsync(args, cancellationToken);
         }
 
 
@@ -974,6 +900,7 @@ namespace Minio
         /// <param name="recursive">Set to true to recursively list all incomplete uploads</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>A lazily populated list of incomplete uploads</returns>
+        [Obsolete("Use ListIncompleteUploads method with ListIncompleteUploadsArgs object. Refer ListIncompleteUploads example code.")]
         public IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix = null, bool recursive = true, CancellationToken cancellationToken = default(CancellationToken))
         {
             ListIncompleteUploadsArgs args = new ListIncompleteUploadsArgs()

@@ -1,5 +1,5 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,19 @@
  */
 
 using System;
+using RestSharp;
 
 namespace Minio
 {
-    public abstract class ObjectQueryArgs<T> : ObjectVersionArgs<T>
-                                    where T: ObjectQueryArgs<T>
+    public abstract class ObjectConditionalQueryArgs<T> : ObjectVersionArgs<T>
+                                    where T: ObjectConditionalQueryArgs<T>
     {
         internal string MatchETag { get; set; }
         internal string NotMatchETag { get; set; }
         internal DateTime ModifiedSince { get; set; }
         internal DateTime UnModifiedSince { get; set; }
 
-        public virtual new void Validate()
+        public override void Validate()
         {
             base.Validate();
             if (!string.IsNullOrEmpty(this.MatchETag) && !string.IsNullOrEmpty(this.NotMatchETag))
@@ -40,6 +41,27 @@ namespace Minio
             }
         }
 
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request = base.BuildRequest(request);
+            if (!string.IsNullOrEmpty(this.MatchETag))
+            {
+                request.AddOrUpdateParameter("If-Match", this.MatchETag, ParameterType.HttpHeader);
+            }
+            if (!string.IsNullOrEmpty(this.NotMatchETag))
+            {
+                request.AddOrUpdateParameter("If-None-Match", this.NotMatchETag, ParameterType.HttpHeader);
+            }
+            if (this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
+            {
+                request.AddOrUpdateParameter("If-Modified-Since", utils.To8601String(this.ModifiedSince), ParameterType.HttpHeader);
+            }
+            if(this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
+            {
+                request.AddOrUpdateParameter("If-Unmodified-Since", utils.To8601String(this.UnModifiedSince), ParameterType.HttpHeader);
+            }
+            return request;
+        }
         public T WithMatchETag(string etag)
         {
             this.MatchETag = etag;

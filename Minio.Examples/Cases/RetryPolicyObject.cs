@@ -94,7 +94,11 @@ namespace Minio.Examples.Cases
 
                 try
                 {
-                    await minio.GetObjectAsync("bad-bucket", "bad-file", s => { });
+                    GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                            .WithBucket("bad-bucket")
+                                                            .WithObject("bad-file")
+                                                            .WithCallbackStream(s => { });
+                    await minio.GetObjectAsync(getObjectArgs);
                 }
                 catch (BucketNotFoundException ex)
                 {
