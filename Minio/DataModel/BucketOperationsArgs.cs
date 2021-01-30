@@ -65,7 +65,7 @@ namespace Minio
             request.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
             request.RequestFormat = DataFormat.Xml;
             // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
-            if (this.Location != "us-east-1")
+            if (!string.IsNullOrEmpty(this.Location) && this.Location != "us-east-1")
             {
                 CreateBucketConfiguration config = new CreateBucketConfiguration(this.Location);
                 string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");

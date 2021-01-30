@@ -239,6 +239,8 @@ namespace Minio
         /// <returns>An observable of items that client can subscribe to</returns>
         public IObservable<VersionItem> ListObjectVersionsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
+            args.Validate();
+            args.Versions = (args.Versions)?args.Versions:true;
             return Observable.Create<VersionItem>(
               async (obs, ct) =>
               {
