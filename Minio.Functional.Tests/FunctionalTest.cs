@@ -208,6 +208,7 @@ namespace Minio.Functional.Tests
                 await minio.MakeBucketAsync(mbArgs);
                 bool found = await minio.BucketExistsAsync(beArgs);
                 Assert.IsTrue(found);
+                await minio.RemoveBucketAsync(rbArgs);
                 new MintLogger(nameof(BucketExists_Test), bucketExistsSignature, "Tests whether BucketExists passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (MinioException ex)
@@ -4221,8 +4222,8 @@ namespace Minio.Functional.Tests
             }
             catch (Exception ex)
             {
-                await TearDown(minio, bucketName);
                 new MintLogger(nameof(ObjectLockConfigurationAsync_Test1), setObjectLockConfigurationSignature, "Tests whether SetObjectLockConfigurationAsync passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                await TearDown(minio, bucketName);
                 return;
             }
             try

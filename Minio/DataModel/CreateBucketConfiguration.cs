@@ -31,7 +31,7 @@ namespace Minio.DataModel
             this.LocationConstraint = location;
         }
 
-        [XmlElement]
+        [XmlElement(ElementName = "LocationConstraint", IsNullable = true)]
         public string LocationConstraint { get; set; }
     }
 }
