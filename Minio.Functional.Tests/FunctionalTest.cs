@@ -57,8 +57,8 @@ namespace Minio.Functional.Tests
         private const string putObjectSignature1 = "Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType, Dictionary<string, string> metaData=null, CancellationToken cancellationToken = default(CancellationToken))";
         private const string putObjectSignature2 = "Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null, Dictionary<string, string> metaData=null, CancellationToken cancellationToken = default(CancellationToken))";
         private const string listenBucketNotificationsSignature = "IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(ListenBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+        private const string copyObjectSignature = "Task<CopyObjectResult> CopyObjectAsync(CopyObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string statObjectSignature = "Task<ObjectStat> StatObjectAsync(StatObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string copyObjectSignature = "Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeObjectSignature1 = "Task RemoveObjectAsync(RemoveObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeObjectSignature2 = "Task<IObservable<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeIncompleteUploadSignature = "Task RemoveIncompleteUploadAsync(RemoveIncompleteUploadArgs args, CancellationToken cancellationToken = default(CancellationToken))";
@@ -1141,7 +1141,15 @@ namespace Minio.Functional.Tests
                                             filestream, filestream.Length, null);
                 }
 
-                await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName);
+                CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName);
+                CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
+                                                            .WithCopyObjectSource(copySourceObjectArgs)
+                                                            .WithBucket(destBucketName)
+                                                            .WithObject(destObjectName);
+
+                await minio.CopyObjectAsync(copyObjectArgs);
 
                 GetObjectArgs getObjectArgs = new GetObjectArgs()
                                                         .WithBucket(destBucketName)
@@ -1213,12 +1221,22 @@ namespace Minio.Functional.Tests
                 conditions.SetMatchETag("TestETag");
                 try
                 {
-                    await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName, conditions);
+                    CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
+                                                                            .WithBucket(bucketName)
+                                                                            .WithObject(objectName)
+                                                                            .WithCopyConditions(conditions);
+                    CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
+                                                                .WithCopyObjectSource(copySourceObjectArgs)
+                                                                .WithBucket(destBucketName)
+                                                                .WithObject(destObjectName);
+
+                    await minio.CopyObjectAsync(copyObjectArgs);
 
                 }
                 catch (MinioException ex)
                 {
-                    Assert.AreEqual(ex.Message, "MinIO API responded with message=At least one of the pre-conditions you specified did not hold");
+                    Console.WriteLine(ex.Message);
+                    StringAssert.Equals(ex.Message, "MinIO API responded with message=At least one of the pre-conditions you specified did not hold");
                 }
 
                 RemoveObjectArgs rmArgs = new RemoveObjectArgs()
@@ -1278,7 +1296,16 @@ namespace Minio.Functional.Tests
 
                 CopyConditions conditions = new CopyConditions();
                 conditions.SetMatchETag(stats.ETag);
-                await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName, conditions);
+                CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName)
+                                                                        .WithCopyConditions(conditions);
+                CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
+                                                            .WithCopyObjectSource(copySourceObjectArgs)
+                                                            .WithBucket(destBucketName)
+                                                            .WithObject(destObjectName);
+
+                await minio.CopyObjectAsync(copyObjectArgs);
                 GetObjectArgs getObjectArgs = new GetObjectArgs()
                                                         .WithBucket(destBucketName)
                                                         .WithObject(destObjectName)
@@ -1354,7 +1381,14 @@ namespace Minio.Functional.Tests
                 CopyConditions conditions = new CopyConditions();
                 conditions.SetMatchETag("TestETag");
                 // omit dest bucket name.
-                await minio.CopyObjectAsync(bucketName, objectName, destBucketName);
+                CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName);
+                CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
+                                                            .WithCopyObjectSource(copySourceObjectArgs)
+                                                            .WithBucket(destBucketName);
+
+                await minio.CopyObjectAsync(copyObjectArgs);
 
                 GetObjectArgs getObjectArgs = new GetObjectArgs()
                                                         .WithBucket(bucketName)
@@ -1430,8 +1464,15 @@ namespace Minio.Functional.Tests
                 conditions.SetByteRange(1024, 6291455);
 
                 // omit dest object name.
-                await minio.CopyObjectAsync(bucketName, objectName, destBucketName, copyConditions: conditions);
+                CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName)
+                                                                        .WithCopyConditions(conditions);
+                CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
+                                                            .WithCopyObjectSource(copySourceObjectArgs)
+                                                            .WithBucket(destBucketName);
 
+                await minio.CopyObjectAsync(copyObjectArgs);
                 GetObjectArgs getObjectArgs = new GetObjectArgs()
                                                         .WithBucket(bucketName)
                                                         .WithObject(objectName)
@@ -1520,15 +1561,24 @@ namespace Minio.Functional.Tests
                 CopyConditions conditions = new CopyConditions();
                 conditions.SetModified(new DateTime(2017, 8, 18));
                 // Should copy object since modification date header < object modification date.
-                await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName, conditions);
+                CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName)
+                                                                        .WithCopyConditions(conditions);
+                CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
+                                                            .WithCopyObjectSource(copySourceObjectArgs)
+                                                            .WithBucket(destBucketName)
+                                                            .WithObject(destObjectName);
+
+                await minio.CopyObjectAsync(copyObjectArgs);
                 GetObjectArgs getObjectArgs = new GetObjectArgs()
                                                         .WithBucket(destBucketName)
                                                         .WithObject(destObjectName)
                                                         .WithFile(outFileName);
                 await minio.GetObjectAsync(getObjectArgs);
                 statObjectArgs = new StatObjectArgs()
-                                                        .WithBucket(destBucketName)
-                                                        .WithObject(destObjectName);
+                                            .WithBucket(destBucketName)
+                                            .WithObject(destObjectName);
                 ObjectStat dstats = await minio.StatObjectAsync(statObjectArgs);
                 Assert.IsNotNull(dstats);
                 StringAssert.Equals(dstats.ObjectName, destObjectName);
@@ -1605,8 +1655,15 @@ namespace Minio.Functional.Tests
                 // Should not copy object since modification date header > object modification date.
                 try
                 {
-                    await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName, conditions);
-
+                    CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
+                                                                            .WithBucket(bucketName)
+                                                                            .WithObject(objectName)
+                                                                            .WithCopyConditions(conditions);
+                    CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
+                                                                .WithCopyObjectSource(copySourceObjectArgs)
+                                                                .WithBucket(destBucketName)
+                                                                .WithObject(destObjectName);
+                    await minio.CopyObjectAsync(copyObjectArgs);
                 }
                 catch (Exception ex)
                 {
@@ -1688,13 +1745,26 @@ namespace Minio.Functional.Tests
                     { "Content-Type", "application/css" },
                     { "Mynewkey", "test   test" }
                 };
-                await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions:copyCond, metadata: metadata);
+                CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName)
+                                                                        .WithCopyConditions(copyCond);
+                CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
+                                                            .WithCopyObjectSource(copySourceObjectArgs)
+                                                            .WithBucket(destBucketName)
+                                                            .WithHeaders(metadata)
+                                                            .WithObject(destObjectName);
+
+                await minio.CopyObjectAsync(copyObjectArgs);
 
                 statObjectArgs = new StatObjectArgs()
                                             .WithBucket(destBucketName)
                                             .WithObject(destObjectName);
                 ObjectStat dstats = await minio.StatObjectAsync(statObjectArgs);
+                Assert.IsTrue(dstats.MetaData["Content-Type"] != null);
                 Assert.IsTrue(dstats.MetaData["Mynewkey"] != null);
+                StringAssert.Equals(dstats.MetaData["Content-Type"], "application/css");
+                StringAssert.Equals(dstats.MetaData["Mynewkey"], "test   test");
                 RemoveObjectArgs rmArgs = new RemoveObjectArgs()
                                                     .WithBucket(bucketName)
                                                     .WithObject(objectName);
@@ -1767,8 +1837,16 @@ namespace Minio.Functional.Tests
                                             filestream, filestream.Length, null, sse:ssec);
                 }
 
-                await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName, sseSrc:sseCpy, sseDest:ssecDst);
-
+                CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName)
+                                                                        .WithServerSideEncryption(sseCpy);
+                CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
+                                                            .WithCopyObjectSource(copySourceObjectArgs)
+                                                            .WithBucket(destBucketName)
+                                                            .WithObject(destObjectName)
+                                                            .WithServerSideEncryption(ssecDst);
+                await minio.CopyObjectAsync(copyObjectArgs);
                 GetObjectArgs getObjectArgs = new GetObjectArgs()
                                                         .WithBucket(destBucketName)
                                                         .WithObject(destObjectName)
@@ -1841,7 +1919,16 @@ namespace Minio.Functional.Tests
                                             filestream, filestream.Length, null, sse:ssec);
                 }
 
-                await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName, sseSrc:sseCpy, sseDest:null);
+                CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName)
+                                                                        .WithServerSideEncryption(sseCpy);
+                CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
+                                                            .WithCopyObjectSource(copySourceObjectArgs)
+                                                            .WithBucket(destBucketName)
+                                                            .WithObject(destObjectName)
+                                                            .WithServerSideEncryption(null);
+                await minio.CopyObjectAsync(copyObjectArgs);
 
                 GetObjectArgs getObjectArgs = new GetObjectArgs()
                                                         .WithBucket(destBucketName)
@@ -1916,8 +2003,16 @@ namespace Minio.Functional.Tests
                                             filestream, filestream.Length, null, sse:ssec);
                 }
 
-                await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName, sseSrc:sseCpy, sseDest:sses3);
-
+                CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName)
+                                                                        .WithServerSideEncryption(sseCpy);
+                CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
+                                                            .WithCopyObjectSource(copySourceObjectArgs)
+                                                            .WithBucket(destBucketName)
+                                                            .WithObject(destObjectName)
+                                                            .WithServerSideEncryption(sses3);
+                await minio.CopyObjectAsync(copyObjectArgs);
                 GetObjectArgs getObjectArgs = new GetObjectArgs()
                                                         .WithBucket(destBucketName)
                                                         .WithObject(destObjectName)
@@ -1987,7 +2082,16 @@ namespace Minio.Functional.Tests
                                             filestream, filestream.Length, null, sse:sses3);
                 }
 
-                await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName, sseSrc:null, sseDest:sses3);
+                CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName)
+                                                                        .WithServerSideEncryption(null);
+                CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
+                                                            .WithCopyObjectSource(copySourceObjectArgs)
+                                                            .WithBucket(destBucketName)
+                                                            .WithObject(destObjectName)
+                                                            .WithServerSideEncryption(sses3);
+                await minio.CopyObjectAsync(copyObjectArgs);
 
                 GetObjectArgs getObjectArgs = new GetObjectArgs()
                                                         .WithBucket(destBucketName)
