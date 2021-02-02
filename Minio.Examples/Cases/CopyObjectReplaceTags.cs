@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,44 +14,39 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
-    class CopyObject
+    class CopyObjectReplaceTags
     {
-        // Copy object from one bucket to another
+        // Copy object from one bucket to another, replace tags in the copied object
         public async static Task Run(MinioClient minio,
                                      string fromBucketName = "from-bucket-name",
                                      string fromObjectName = "from-object-name",
                                      string destBucketName = "dest-bucket",
-                                     string destObjectName =" to-object-name",
-                                     ServerSideEncryption sseSrc = null,
-                                     ServerSideEncryption sseDest = null)
+                                     string destObjectName =" to-object-name")
         {
             try
             {
-                Console.WriteLine("Running example for API: CopyObjectAsync");
-                var metaData = new Dictionary<string, string>
+                Console.WriteLine("Running example for API: CopyObjectAsync with Tags");
+                var tags = new Dictionary<string, string>
                 {
-                    { "Test-Metadata", "Test  Test" }
+                    { "Test-TagKey", "Test-TagValue" },
                 };
-                // Optionally pass copy conditions
                 CopySourceObjectArgs cpSrcArgs = new CopySourceObjectArgs()
                                                             .WithBucket(fromBucketName)
-                                                            .WithObject(fromObjectName)
-                                                            .WithServerSideEncryption(sseSrc);
+                                                            .WithObject(fromObjectName);
                 CopyObjectArgs args = new CopyObjectArgs()
                                                 .WithBucket(destBucketName)
                                                 .WithObject(destObjectName)
-                                                .WithCopyObjectSource(cpSrcArgs)
-                                                .WithServerSideEncryption(sseDest);
-                await minio.CopyObjectAsync(args);
-                Console.WriteLine("Copied object {0} from bucket {1} to bucket {2}", fromObjectName, fromBucketName, destBucketName);
-                Console.WriteLine();
+                                                .WithTagKeyValuePairs(tags)
+                                                .WithReplaceTagsDirective(true)
+                                                .WithCopyObjectSource(cpSrcArgs);
+                await minio.CopyObjectAsync(args).ConfigureAwait(false);
             }
             catch (Exception e)
             {
