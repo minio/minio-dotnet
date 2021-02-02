@@ -2075,9 +2075,9 @@ catch(MinioException e)
 ```
 
 <a name="copyObject"></a>
-### CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null)
+### CopyObjectAsync(CopyObjectArgs args)
 
-*`Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken))`*
+*`Task<CopyObjectResult> CopyObjectAsync(CopyObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))`*
 
 Copies content from objectName to destObjectName.
 
@@ -2087,21 +2087,19 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the source bucket  |
-| ``objectName``  | _string_  | Object name in the source bucket to be copied |
-| ``destBucketName``  | _string_  | Destination bucket name |
-| ``destObjectName`` | _string_ | Destination object name to be created, if not provided defaults to source object name|
-| ``copyConditions`` | _CopyConditions_ | Map of conditions useful for applying restrictions on copy operation|
-| ``metadata``  | _Dictionary<string,string>_ | Dictionary of meta data headers and their values on the destination side.Defaults to null.|
-| ``sseSrc``    | _ServerSideEncryption_ | Server-side encryption option for source object | Optional parameter. Defaults to null |
-| ``sseDest``    | _ServerSideEncryption_ | Server-side encryption option for destination object| Optional parameter. Defaults to null |
+| ``args``  | _CopyObjectArgs_  | Arguments object - bucket name, object name, destination bucket name, destination object name, copy conditions, metadata, Source SSE, Destination SSE. etc.  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 |  ``Task``  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        | ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``InvalidObjectNameException`` : upon invalid object name |
+|        | ``BucketNotFoundException`` : upon bucket with name not found  |
+|        | ``ObjectNotFoundException`` : upon object with name not found |
+|        | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
 |        | ``ConnectionException`` : upon connection error            |
 |        | ``InternalClientException`` : upon internal library error        |
 |        | ``ArgumentException`` : upon missing bucket/object names |
