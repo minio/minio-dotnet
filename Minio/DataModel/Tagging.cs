@@ -1,5 +1,5 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -169,7 +169,7 @@ namespace Minio.DataModel
             int i = 0;
             foreach(var tag in this.TaggingSet.Tag)
             {
-                string append = (i < (this.TaggingSet.Tag.Count - 1))?"&":"";
+                string append = (i++ < (this.TaggingSet.Tag.Count - 1))?"&":"";
                 tagStr += tag.Key + "=" + tag.Value + append;
             }
             return tagStr;

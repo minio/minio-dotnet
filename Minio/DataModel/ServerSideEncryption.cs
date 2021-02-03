@@ -1,5 +1,5 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2019-2021 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2019 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,9 +53,9 @@ namespace Minio.DataModel
         public virtual void Marshal(Dictionary<string, string> headers)
         {
             var md5SumStr = utils.getMD5SumStr(this.key);
-            headers["X-Amz-Server-Side-Encryption-Customer-Algorithm"] = "AES256";
-            headers["X-Amz-Server-Side-Encryption-Customer-Key"] = Convert.ToBase64String(this.key);
-            headers["X-Amz-Server-Side-Encryption-Customer-Key-Md5"] = md5SumStr;
+            headers.Add("X-Amz-Server-Side-Encryption-Customer-Algorithm", "AES256");
+            headers.Add("X-Amz-Server-Side-Encryption-Customer-Key", Convert.ToBase64String(this.key));
+            headers.Add("X-Amz-Server-Side-Encryption-Customer-Key-Md5", md5SumStr);
             return;
         }
 
@@ -77,9 +77,9 @@ namespace Minio.DataModel
         public override void Marshal(Dictionary<string, string> headers)
         {
             var md5SumStr = utils.getMD5SumStr(this.key);
-            headers["X-Amz-Copy-Source-Server-Side-Encryption-Customer-Algorithm"] = "AES256";
-            headers["X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key"] = Convert.ToBase64String(key);
-            headers["X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key-Md5"] = md5SumStr;
+            headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Algorithm", "AES256");
+            headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key", Convert.ToBase64String(key));
+            headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key-Md5", md5SumStr);
             return;
         }
 
@@ -99,7 +99,7 @@ namespace Minio.DataModel
 
         public virtual void Marshal(Dictionary<string, string> headers)
         {
-            headers[Constants.SSEGenericHeader] = "AES256";
+            headers.Add(Constants.SSEGenericHeader, "AES256");
             return;
         }
     }
@@ -127,11 +127,11 @@ namespace Minio.DataModel
 
         public void Marshal(Dictionary<string, string> headers)
         {
-            headers[Constants.SSEKMSKeyId] = this.key;
-            headers[Constants.SSEGenericHeader] = "aws:kms";
+            headers.Add(Constants.SSEKMSKeyId, this.key);
+            headers.Add(Constants.SSEGenericHeader, "aws:kms");
             if (context != null)
             {
-                headers[Constants.SSEKMSContext] = this.marshalContext();
+                headers.Add(Constants.SSEKMSContext, this.marshalContext());
             }
             return;
         }

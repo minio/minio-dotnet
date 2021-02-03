@@ -170,6 +170,28 @@ namespace Minio
         }
     }
 
+    internal class CopyObjectResponse : GenericResponse
+    {
+        internal CopyObjectResult CopyObjectRequestResult { get; set; }
+        internal CopyPartResult CopyPartRequestResult { get; set; }
+
+        public CopyObjectResponse(HttpStatusCode statusCode, string content, Type reqType)
+            : base(statusCode, content)
+        {
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(content)))
+            {
+                if (reqType == typeof(CopyObjectResult))
+                {
+                    this.CopyObjectRequestResult = (CopyObjectResult)new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream);
+                }
+                else
+                {
+                    this.CopyPartRequestResult = (CopyPartResult)new XmlSerializer(typeof(CopyPartResult)).Deserialize(stream);
+                }
+            }
+        }
+    }
+
     internal class NewMultipartUploadResponse: GenericResponse
     {
         internal string UploadId { get; private set; }

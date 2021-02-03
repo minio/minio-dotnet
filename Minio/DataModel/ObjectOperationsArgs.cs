@@ -21,11 +21,11 @@ using RestSharp;
 using System.Globalization;
 using System.Xml.Linq;
 using System.Xml;
+using System.Linq;
 
 using Minio.DataModel;
 using Minio.Exceptions;
 using Minio.Helper;
-using System.Linq;
 using System.Security.Cryptography;
 
 namespace Minio
@@ -251,6 +251,7 @@ namespace Minio
             }
         }
     }
+
 
     public class PresignedPostPolicyArgs : ObjectArgs<PresignedPostPolicyArgs>
     {
@@ -856,16 +857,348 @@ namespace Minio
         }
     }
 
-    internal class NewMultipartUploadArgs: ObjectWriteArgs<NewMultipartUploadArgs>
+    public class CopySourceObjectArgs : ObjectQueryArgs<CopySourceObjectArgs>
+    {
+        internal string CopySourceObjectPath { get; set; }
+        internal CopyConditions CopyOperationConditions { get; set; }
+        public CopySourceObjectArgs()
+        {
+            this.RequestMethod = Method.PUT;
+            this.CopyOperationConditions = new CopyConditions();
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+        }
+
+        public CopySourceObjectArgs WithCopyConditions(CopyConditions cp)
+        {
+            this.CopyOperationConditions = (cp != null)? cp.Clone() : new CopyConditions();
+            return this;
+        }
+    }
+
+    internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
+    {
+        internal CopySourceObjectArgs CopySourceObject { get; set; }
+        internal ObjectStat CopySourceObjectInfo { get; set; }
+        internal Type CopyOperationObjectType { get; set; }
+        internal bool ReplaceTagsDirective { get; set; }
+        internal bool ReplaceMetadataDirective { get; set; }
+        internal string StorageClass { get; set; }
+
+        public CopyObjectRequestArgs(CopyObjectArgs cpArgs)
+        {
+            if (cpArgs == null || cpArgs.CopySourceObject == null)
+            {
+                string message = (cpArgs == null)? $"The constructor of " + nameof(CopyObjectRequestArgs) + "initialized with arguments of CopyObjectArgs null." :
+                                                    $"The constructor of " + nameof(CopyObjectRequestArgs) + "initialized with arguments of CopyObjectArgs type but with " + nameof(cpArgs.CopySourceObject) + " not initialized.";
+                throw new InvalidOperationException(message);
+            }
+            this.CopySourceObject = new CopySourceObjectArgs();
+            this.CopySourceObject.BucketName = cpArgs.CopySourceObject.BucketName;
+            this.CopySourceObject.ObjectName = cpArgs.CopySourceObject.ObjectName;
+            this.CopySourceObject.VersionId = cpArgs.CopySourceObject.VersionId;
+            this.CopySourceObject.CopyOperationConditions = cpArgs.CopySourceObject.CopyOperationConditions.Clone();
+            if (cpArgs.CopySourceObject.HeaderMap != null)
+            {
+                this.CopySourceObject.HeaderMap = this.CopySourceObject.HeaderMap ?? new Dictionary<string, string>();
+                this.CopySourceObject.HeaderMap = this.CopySourceObject.HeaderMap.Concat(cpArgs.CopySourceObject.HeaderMap).GroupBy(item => item.Key).ToDictionary(item => item.Key, item => item.First().Value);
+            }
+            this.HeaderMap = (cpArgs.HeaderMap != null)?new Dictionary<string, string>(cpArgs.HeaderMap):new Dictionary<string, string>();
+            this.CopySourceObjectInfo = cpArgs.CopySourceObjectInfo;
+            if (cpArgs.CopySourceObjectInfo.MetaData != null && cpArgs.CopySourceObjectInfo.MetaData.Count > 0)
+            {
+                this.HeaderMap = this.HeaderMap.Concat(cpArgs.CopySourceObjectInfo.MetaData).GroupBy(item => item.Key).ToDictionary(item => item.Key, item => item.First().Value);
+            }
+            this.CopySourceObject.SSE = cpArgs.CopySourceObject.SSE;
+            this.RequestMethod = Method.PUT;
+            this.BucketName = cpArgs.BucketName;
+            this.ObjectName = cpArgs.ObjectName;
+            this.HeaderMap = cpArgs.HeaderMap ?? new Dictionary<string, string>();
+            if (this.CopySourceObject.HeaderMap != null)
+            {
+                this.HeaderMap = this.HeaderMap.Concat(this.CopySourceObject.HeaderMap).GroupBy(item => item.Key).ToDictionary(item => item.Key, item => item.First().Value);
+            }
+
+            this.RequestBody = cpArgs.RequestBody;
+            this.SSE = cpArgs.SSE;
+            this.SSEHeaders = cpArgs.SSEHeaders ?? new Dictionary<string, string>();
+            if (this.CopySourceObject.SSEHeaders != null)
+            {
+                this.SSEHeaders = this.SSEHeaders.Concat(this.CopySourceObject.SSEHeaders).GroupBy(item => item.Key).ToDictionary(item => item.Key, item => item.First().Value);
+            }
+            this.VersionId = cpArgs.VersionId;
+            this.ObjectTags = (cpArgs.ObjectTags != null && cpArgs.ObjectTags.TaggingSet.Tag.Count > 0)?cpArgs.ObjectTags:null;
+            this.ReplaceTagsDirective = cpArgs.ReplaceTagsDirective;
+        }
+
+        public CopyObjectRequestArgs(MultipartCopyUploadArgs mcArgs)
+        {
+            if (mcArgs == null)
+            {
+                throw new InvalidOperationException("The copy source object needed for copy operation is not initialized.");
+            }
+            mcArgs.Validate();
+
+            this.CopySourceObject = new CopySourceObjectArgs();
+            this.CopySourceObject.BucketName = mcArgs.BucketName;
+            this.CopySourceObject.ObjectName = mcArgs.ObjectName;
+            this.CopySourceObject.HeaderMap = mcArgs.HeaderMap;
+            this.CopySourceObject.MatchETag = mcArgs.CopySourceObject.MatchETag;
+            this.CopySourceObject.ModifiedSince = mcArgs.CopySourceObject.ModifiedSince;
+            this.CopySourceObject.NotMatchETag = mcArgs.CopySourceObject.NotMatchETag;
+            this.CopySourceObject.UnModifiedSince = mcArgs.CopySourceObject.UnModifiedSince;
+            this.CopySourceObject.CopyOperationConditions = mcArgs.CopySourceObject.CopyOperationConditions;
+
+            this.BucketName = mcArgs.BucketName;
+            this.ObjectName = mcArgs.ObjectName ?? mcArgs.CopySourceObject.ObjectName;
+
+            this.HeaderMap = mcArgs.HeaderMap;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request = base.BuildRequest(request);
+            string sourceObjectPath = this.CopySourceObject.BucketName + "/" + utils.UrlEncode(this.CopySourceObject.ObjectName);
+            if(!string.IsNullOrEmpty(this.CopySourceObject.VersionId))
+            {
+                sourceObjectPath += "?versionId=" + this.CopySourceObject.VersionId;
+            }
+            // Set the object source
+            request.AddHeader("x-amz-copy-source", sourceObjectPath);
+
+            if (this.HeaderMap != null)
+            {
+                foreach (var hdr in this.HeaderMap)
+                {
+                    request.AddQueryParameter(hdr.Key,hdr.Value);
+                }
+            }
+
+            if (this.CopySourceObject.CopyOperationConditions != null)
+            {
+                foreach (var item in this.CopySourceObject.CopyOperationConditions.GetConditions())
+                {
+                    request.AddHeader(item.Key, item.Value);
+                }
+            }
+            if (!string.IsNullOrEmpty(this.MatchETag))
+            {
+                request.AddOrUpdateParameter("x-amz-copy-source-if-match", this.MatchETag, ParameterType.HttpHeader);
+            }
+            if (!string.IsNullOrEmpty(this.NotMatchETag))
+            {
+                request.AddOrUpdateParameter("x-amz-copy-source-if-none-match", this.NotMatchETag, ParameterType.HttpHeader);
+            }
+            if (this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
+            {
+                request.AddOrUpdateParameter("x-amz-copy-source-if-unmodified-since", this.ModifiedSince, ParameterType.HttpHeader);
+            }
+            if(this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
+            {
+                request.AddOrUpdateParameter("x-amz-copy-source-if-modified-since", this.UnModifiedSince, ParameterType.HttpHeader);
+            }
+            if (this.ObjectTags != null && this.ObjectTags.TaggingSet != null
+                    && this.ObjectTags.TaggingSet.Tag.Count > 0)
+            {
+                request.AddOrUpdateParameter("x-amz-tagging", this.ObjectTags.GetTagString(), ParameterType.HttpHeader);
+                request.AddOrUpdateParameter("x-amz-tagging-directive",
+                            this.ReplaceTagsDirective?"REPLACE":"COPY",
+                            ParameterType.HttpHeader);
+            }
+            if (this.ReplaceMetadataDirective)
+            {
+                request.AddOrUpdateParameter("x-amz-metadata-directive", "REPLACE", ParameterType.HttpHeader);
+            }
+            if (!string.IsNullOrEmpty(this.StorageClass))
+            {
+                request.AddOrUpdateParameter("x-amz-storage-class", this.StorageClass, ParameterType.HttpHeader);
+            }
+
+            return request;
+        }
+
+        public CopyObjectRequestArgs WithCopyOperationObjectType(Type cp)
+        {
+            this.CopyOperationObjectType = cp;
+            return this;
+        }
+
+        public override void Validate()
+        {
+            base.Validate();
+            if (this.CopySourceObject == null)
+            {
+                throw new InvalidOperationException(nameof(this.CopySourceObject) + " has not been assigned.");
+            }
+        }
+    }
+
+    public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
+    {
+        internal CopySourceObjectArgs CopySourceObject { get; set; }
+        internal ObjectStat CopySourceObjectInfo { get; set; }
+        internal bool ReplaceTagsDirective { get; set; }
+        internal bool ReplaceMetadataDirective { get; set; }
+        internal string StorageClass { get; set; }
+
+        public CopyObjectArgs()
+        {
+            this.RequestMethod = Method.PUT;
+            this.CopySourceObject = new CopySourceObjectArgs();
+            this.ReplaceTagsDirective = false;
+        }
+
+        public override void Validate()
+        {
+            // We don't need to call base validate.
+            // If object name is empty we default to source object name.
+            this.CopySourceObject.Validate();
+            utils.ValidateBucketName(this.BucketName);
+            if (this.CopySourceObject == null)
+            {
+                throw new InvalidOperationException(nameof(this.CopySourceObject) + " has not been assigned. Please use " + nameof(this.WithCopyObjectSource));
+            }
+            if (this.CopySourceObjectInfo == null)
+            {
+                throw new InvalidOperationException("StatObject result for the copy source object needed to continue copy operation. Use " + nameof(WithCopyObjectSourceStats) + " to initialize StatObject result.");
+            }
+        }
+
+        public CopyObjectArgs WithCopyObjectSource(CopySourceObjectArgs cs)
+        {
+            if (cs == null)
+            {
+                throw new InvalidOperationException("The copy source object needed for copy operation is not initialized.");
+            }
+            cs.Validate();
+
+            this.CopySourceObject = this.CopySourceObject ?? new CopySourceObjectArgs();
+            this.CopySourceObject.BucketName = cs.BucketName;
+            this.CopySourceObject.ObjectName = cs.ObjectName;
+            this.CopySourceObject.VersionId = cs.VersionId;
+            this.CopySourceObject.RequestMethod = Method.PUT;
+            this.CopySourceObject.SSE = cs.SSE;
+            this.CopySourceObject.SSEHeaders = cs.SSEHeaders;
+            this.CopySourceObject.HeaderMap = cs.HeaderMap;
+            this.CopySourceObject.MatchETag = cs.MatchETag;
+            this.CopySourceObject.ModifiedSince = cs.ModifiedSince;
+            this.CopySourceObject.NotMatchETag = cs.NotMatchETag;
+            this.CopySourceObject.UnModifiedSince = cs.UnModifiedSince;
+            this.CopySourceObject.CopySourceObjectPath = $"{cs.BucketName}/{utils.UrlEncode(cs.ObjectName)}";
+            this.CopySourceObject.CopyOperationConditions = cs.CopyOperationConditions?.Clone(); 
+            return this;
+        }
+
+        public CopyObjectArgs WithReplaceTagsDirective(bool replace)
+        {
+            this.ReplaceTagsDirective = replace;
+            return this;
+        }
+        internal CopyObjectArgs WithCopyObjectSourceStats(ObjectStat info)
+        {
+            this.CopySourceObjectInfo = info;
+            if (info.MetaData != null)
+            {
+                this.CopySourceObject.HeaderMap = this.CopySourceObject.HeaderMap ?? new Dictionary<string, string>();
+                this.CopySourceObject.HeaderMap = this.CopySourceObject.HeaderMap.Concat(info.MetaData).GroupBy(item => item.Key).ToDictionary(item => item.Key, item => item.First().Value);
+            }
+            return this;
+        }
+
+        public CopyObjectArgs WithStorageClass(string storageClass)
+        {
+            this.StorageClass = storageClass;
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request = base.BuildRequest(request);
+            foreach (var hdr in this.SSEHeaders)
+            {
+                this.HeaderMap[hdr.Key] = hdr.Value;
+            }
+            foreach (var hdr in this.CopySourceObject.SSEHeaders)
+            {
+                this.HeaderMap[hdr.Key] = hdr.Value;
+            }
+            if (!string.IsNullOrEmpty(this.MatchETag))
+            {
+                request.AddOrUpdateParameter("x-amz-copy-source-if-match", this.MatchETag, ParameterType.HttpHeader);
+            }
+            if (!string.IsNullOrEmpty(this.NotMatchETag))
+            {
+                request.AddOrUpdateParameter("x-amz-copy-source-if-none-match", this.NotMatchETag, ParameterType.HttpHeader);
+            }
+            if (this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
+            {
+                request.AddOrUpdateParameter("x-amz-copy-source-if-unmodified-since", this.ModifiedSince, ParameterType.HttpHeader);
+            }
+            if(this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
+            {
+                request.AddOrUpdateParameter("x-amz-copy-source-if-modified-since", this.UnModifiedSince, ParameterType.HttpHeader);
+            }
+            if( !string.IsNullOrEmpty(this.VersionId) )
+            {
+                request.AddQueryParameter("versionId", this.VersionId);
+            }
+            if (this.ObjectTags != null && this.ObjectTags.TaggingSet != null
+                    && this.ObjectTags.TaggingSet.Tag.Count > 0)
+            {
+                request.AddOrUpdateParameter("x-amz-tagging", this.ObjectTags.GetTagString(), ParameterType.HttpHeader);
+                request.AddOrUpdateParameter("x-amz-tagging-directive",
+                            this.ReplaceTagsDirective?"COPY":"REPLACE",
+                            ParameterType.HttpHeader);
+            }
+            if (this.ReplaceMetadataDirective)
+            {
+                request.AddOrUpdateParameter("x-amz-metadata-directive", "REPLACE", ParameterType.HttpHeader);
+            }
+            if (!string.IsNullOrEmpty(this.StorageClass))
+            {
+                request.AddOrUpdateParameter("x-amz-storage-class", this.StorageClass, ParameterType.HttpHeader);
+            }
+            return request;
+        }
+    }
+
+    public class NewMultipartUploadArgs: ObjectWriteArgs<NewMultipartUploadArgs>
     {
         public NewMultipartUploadArgs()
         {
             this.RequestMethod = Method.POST;
         }
+
+        public NewMultipartUploadArgs(MultipartCopyUploadArgs args)
+        {
+            // destBucketName, destObjectName, metadata, sseHeaders
+            this.RequestMethod = Method.POST;
+            this.BucketName = args.BucketName;
+            this.ObjectName = args.ObjectName;
+            this.HeaderMap = args.HeaderMap;
+            this.ObjectName = args.ObjectName ?? args.CopySourceObject.ObjectName;
+            this.HeaderMap = new Dictionary<string, string>();
+            if (args.HeaderMap != null && args.HeaderMap.Count > 0)
+            {
+                this.HeaderMap = this.HeaderMap.Concat(args.HeaderMap).GroupBy(item => item.Key).ToDictionary(item => item.Key, item => item.First().Value);
+            }
+            this.SSE = args.SSE;
+            foreach (KeyValuePair<string, string> kv in args.SSEHeaders)
+            {
+                this.HeaderMap[kv.Key] = kv.Value;
+            }
+            this.SSE?.Marshal(this.SSEHeaders);
+            this.SSE?.Marshal(args.HeaderMap);
+        }
+
         public override void Validate()
         {
             base.Validate();
         }
+
         public override RestRequest BuildRequest(RestRequest request)
         {
             request = base.BuildRequest(request);
@@ -898,6 +1231,75 @@ namespace Minio
             this.WithHeaders(hdr);
             return this;
         }
+    }
+
+    public class MultipartCopyUploadArgs : ObjectVersionArgs<MultipartCopyUploadArgs>
+    {
+        internal CopySourceObjectArgs CopySourceObject { get; set; }
+        internal ObjectStat CopySourceObjectInfo { get; set; }
+        internal long CopySize { get; set; }
+        public MultipartCopyUploadArgs(CopyObjectArgs cpArgs)
+        {
+             if (cpArgs == null || cpArgs.CopySourceObject == null)
+            {
+                string message = (cpArgs == null)? $"The constructor of " + nameof(CopyObjectRequestArgs) + "initialized with arguments of CopyObjectArgs null." :
+                                                    $"The constructor of " + nameof(CopyObjectRequestArgs) + "initialized with arguments of CopyObjectArgs type but with " + nameof(cpArgs.CopySourceObject) + " not initialized.";
+                throw new InvalidOperationException(message);
+            }
+            this.RequestMethod = Method.PUT;
+
+            this.CopySourceObject = new CopySourceObjectArgs();
+            this.CopySourceObject.BucketName = cpArgs.CopySourceObject.BucketName;
+            this.CopySourceObject.ObjectName = cpArgs.CopySourceObject.ObjectName;
+            this.CopySourceObject.CopyOperationConditions = cpArgs.CopySourceObject.CopyOperationConditions.Clone();
+            if (cpArgs.CopySourceObject.HeaderMap != null)
+            {
+                this.CopySourceObject.HeaderMap = new Dictionary<string, string>();
+                this.CopySourceObject.HeaderMap = this.CopySourceObject.HeaderMap.Concat(cpArgs.CopySourceObject.HeaderMap).GroupBy(item => item.Key).ToDictionary(item => item.Key, item => item.First().Value);
+            }
+            this.CopySourceObject.MatchETag = cpArgs.CopySourceObject.MatchETag;
+            this.CopySourceObject.ModifiedSince = cpArgs.CopySourceObject.ModifiedSince;
+            this.CopySourceObject.NotMatchETag = cpArgs.CopySourceObject.NotMatchETag;
+            this.CopySourceObject.UnModifiedSince = cpArgs.CopySourceObject.UnModifiedSince;
+            this.CopySourceObject.HeaderMap = this.CopySourceObject.HeaderMap ?? new Dictionary<string, string>();
+            this.CopySourceObject.HeaderMap = this.CopySourceObject.HeaderMap.Concat(cpArgs.CopySourceObject.HeaderMap).GroupBy(item => item.Key).ToDictionary(item => item.Key, item => item.First().Value);
+            this.CopySourceObject.CopyOperationConditions = cpArgs.CopySourceObject.CopyOperationConditions?.Clone();
+           
+            this.BucketName = cpArgs.BucketName;
+            this.ObjectName = cpArgs.ObjectName;
+
+            this.HeaderMap = cpArgs.HeaderMap;
+            this.SSE = cpArgs.SSE;
+            this.SSE?.Marshal(this.SSEHeaders);
+
+            this.HeaderMap = this.HeaderMap ?? new Dictionary<string, string>();
+            this.HeaderMap = this.HeaderMap.Concat(cpArgs.HeaderMap).GroupBy(item => item.Key).ToDictionary(item => item.Key, item => item.First().Value);
+            this.VersionId = cpArgs.VersionId;
+            this.CopySourceObjectInfo = cpArgs.CopySourceObjectInfo;
+            if (this.CopySourceObjectInfo.MetaData != null && this.CopySourceObjectInfo.MetaData.Count > 0)
+            {
+                this.HeaderMap = this.HeaderMap ?? new Dictionary<string, string>();
+                this.HeaderMap = this.CopySourceObject.HeaderMap.Concat(cpArgs.CopySourceObject.HeaderMap).GroupBy(item => item.Key).ToDictionary(item => item.Key, item => item.First().Value);
+            }
+        }
+
+        internal MultipartCopyUploadArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        internal MultipartCopyUploadArgs WithCopySize(long copySize)
+        {
+            this.CopySize = copySize;
+            return this;
+        }
+
+        public override RestRequest BuildRequest(RestRequest request)
+        {
+            request = base.BuildRequest(request);
+            return request;
+        }
+
     }
 
     internal class PutObjectPartArgs : PutObjectArgs
@@ -1096,11 +1498,6 @@ namespace Minio
         public override RestRequest BuildRequest(RestRequest request)
         {
             request = base.BuildRequest(request);
-            this.HeaderMap = this.HeaderMap ?? new Dictionary<string, string>();
-            if (this.SSE != null && this.SSEHeaders != null)
-            {
-                this.SSE.Marshal(this.SSEHeaders);
-            }
             if (string.IsNullOrEmpty(this.ContentType) || string.IsNullOrWhiteSpace(this.ContentType))
             {
                 this.ContentType = "application/octet-stream";
