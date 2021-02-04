@@ -18,7 +18,7 @@ using System;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel.Replication
 {
     [Serializable]
     [XmlRoot(ElementName = "SourceSelectionCriteria")]

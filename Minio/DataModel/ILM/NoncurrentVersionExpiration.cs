@@ -16,7 +16,7 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel.ILM
 {
     public class NoncurrentVersionExpiration
     {

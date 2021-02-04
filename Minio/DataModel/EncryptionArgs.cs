@@ -1,5 +1,5 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,17 +23,14 @@ namespace Minio
                         where T : EncryptionArgs<T>
     {
         internal ServerSideEncryption SSE { get; set; }
-        internal Dictionary<string,string> SSEHeaders { get; set; }
 
         public EncryptionArgs()
         {
-            this.SSEHeaders = new Dictionary<string, string>();
         }
 
         public T WithServerSideEncryption(ServerSideEncryption sse)
         {
             this.SSE = sse;
-            this.SSE?.Marshal(SSEHeaders);
             return (T)this;
         }
     }

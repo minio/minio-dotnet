@@ -27,7 +27,7 @@ namespace Minio
         internal DateTime ModifiedSince { get; set; }
         internal DateTime UnModifiedSince { get; set; }
 
-        public override void Validate()
+        internal override void Validate()
         {
             base.Validate();
             if (!string.IsNullOrEmpty(this.MatchETag) && !string.IsNullOrEmpty(this.NotMatchETag))
@@ -41,7 +41,7 @@ namespace Minio
             }
         }
 
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request = base.BuildRequest(request);
             if (!string.IsNullOrEmpty(this.MatchETag))

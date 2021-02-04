@@ -18,7 +18,7 @@ using System;
 using System.Xml.Serialization;
 using Minio.DataModel.ILM;
 
-namespace Minio.DataModel
+namespace Minio.DataModel.ILM
 {
     [Serializable]
     [XmlRoot(ElementName = "Rule")]

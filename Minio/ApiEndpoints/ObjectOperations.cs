@@ -493,56 +493,37 @@ namespace Minio
         /// <returns></returns>
         public async Task CopyObjectAsync(CopyObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
-            ServerSideEncryption sseGet = args.CopySourceObject.SSE;
-            if (args.CopySourceObject.SSE is SSECopy sseCpy)
+            ServerSideEncryption sseGet = null;
+            if (args.SourceObject.SSE is SSECopy sSECopy)
             {
-                sseGet = sseCpy.CloneToSSEC();
+                sseGet = sSECopy.CloneToSSEC();
             }
             StatObjectArgs statArgs = new StatObjectArgs()
-                                            .WithBucket(args.CopySourceObject.BucketName)
-                                            .WithObject(args.CopySourceObject.ObjectName);
-            if (args.CopySourceObject.SSE != null)
-            {
-                statArgs.WithServerSideEncryption(sseGet);
-            }
+                                            .WithBucket(args.SourceObject.BucketName)
+                                            .WithObject(args.SourceObject.ObjectName)
+                                            .WithVersionId(args.SourceObject.VersionId)
+                                            .WithServerSideEncryption(sseGet);
             ObjectStat stat = await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
             args.WithCopyObjectSourceStats(stat);
+            if (stat.TaggingCount > 0 && !args.ReplaceTagsDirective)
+            {
+                GetObjectTagsArgs getTagArgs = new GetObjectTagsArgs()
+                                                            .WithBucket(args.SourceObject.BucketName)
+                                                            .WithObject(args.SourceObject.ObjectName)
+                                                            .WithVersionId(args.SourceObject.VersionId)
+                                                            .WithServerSideEncryption(sseGet);
+                var tag = await GetObjectTagsAsync(getTagArgs, cancellationToken).ConfigureAwait(false);
+                args.WithTagging(tag);
+            }
             args.Validate();
-            bool copyReplaceMeta = (args.CopySourceObject.CopyOperationConditions != null )?args.CopySourceObject.CopyOperationConditions.HasReplaceMetadataDirective() : false;
-            if (string.IsNullOrEmpty(args.ObjectName))
+            long srcByteRangeSize = (args.SourceObject.CopyOperationConditions != null)? args.SourceObject.CopyOperationConditions.GetByteRange():0L;
+            long copySize = (srcByteRangeSize == 0) ? args.SourceObjectInfo.Size : srcByteRangeSize;
+            if ((srcByteRangeSize > args.SourceObjectInfo.Size) || ((srcByteRangeSize > 0) && (args.SourceObject.CopyOperationConditions.byteRangeEnd >= args.SourceObjectInfo.Size)))
             {
-                args.ObjectName = args.CopySourceObject.ObjectName;
-            }
-            if (!copyReplaceMeta)
-            {
-                args.HeaderMap = args.CopySourceObject.HeaderMap;
-            }
-            else
-            {
-                args.CopySourceObject.HeaderMap = null;
-            }
-            Dictionary<string, string> meta = new Dictionary<string, string>();
-            if (args.HeaderMap != null)
-            {
-                foreach (var item in args.HeaderMap)
-                {
-                    var key = item.Key;
-                    if (!OperationsUtil.IsSupportedHeader(item.Key) && !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase))
-                    {
-                        key = "x-amz-meta-" + key.ToLowerInvariant();
-                    }
-                    meta[key] = item.Value;
-                }
-            }
-            args.HeaderMap = args.HeaderMap.Concat(meta).GroupBy(item => item.Key).ToDictionary(item => item.Key, item => item.First().Value);
-            long srcByteRangeSize = (args.CopySourceObject.CopyOperationConditions != null)? args.CopySourceObject.CopyOperationConditions.GetByteRange():0L;
-            long copySize = (srcByteRangeSize == 0) ? args.CopySourceObjectInfo.Size : srcByteRangeSize;
-            if ((srcByteRangeSize > args.CopySourceObjectInfo.Size) || ((srcByteRangeSize > 0) && (args.CopySourceObject.CopyOperationConditions.byteRangeEnd >= args.CopySourceObjectInfo.Size)))
-            {
-                throw new ArgumentException("Specified byte range (" + args.CopySourceObject.CopyOperationConditions.byteRangeStart.ToString() + "-" + args.CopySourceObject.CopyOperationConditions.byteRangeEnd.ToString() + ") does not fit within source object (size=" + args.CopySourceObjectInfo.Size.ToString() + ")");
+                throw new ArgumentException("Specified byte range (" + args.SourceObject.CopyOperationConditions.byteRangeStart.ToString() + "-" + args.SourceObject.CopyOperationConditions.byteRangeEnd.ToString() + ") does not fit within source object (size=" + args.SourceObjectInfo.Size.ToString() + ")");
             }
 
-            if ((copySize > Constants.MaxSingleCopyObjectSize) || (srcByteRangeSize > 0 && (srcByteRangeSize != args.CopySourceObjectInfo.Size)))
+            if ((copySize > Constants.MaxSingleCopyObjectSize) || (srcByteRangeSize > 0 && (srcByteRangeSize != args.SourceObjectInfo.Size)))
             {
                 MultipartCopyUploadArgs multiArgs = new MultipartCopyUploadArgs(args)
                                                                 .WithCopySize(copySize);
@@ -550,16 +531,43 @@ namespace Minio
             }
             else
             {
-                CopyObjectRequestArgs cpReqArgs = new CopyObjectRequestArgs(args)
-                                                                .WithCopyOperationObjectType(typeof(CopyObjectResult));
-                if (args.CopySourceObject.SSE != null && args.CopySourceObject.SSE is SSECopy)
+                CopySourceObjectArgs sourceObject = new CopySourceObjectArgs()
+                                                                .WithBucket(args.SourceObject.BucketName)
+                                                                .WithObject(args.SourceObject.ObjectName)
+                                                                .WithVersionId(args.SourceObject.VersionId)
+                                                                .WithCopyConditions(args.SourceObject.CopyOperationConditions);
+
+                CopyObjectRequestArgs cpReqArgs = new CopyObjectRequestArgs()
+                                                                .WithBucket(args.BucketName)
+                                                                .WithObject(args.ObjectName)
+                                                                .WithVersionId(args.VersionId)
+                                                                .WithHeaders(args.Headers)
+                                                                .WithCopyObjectSource(sourceObject)
+                                                                .WithRequestBody(args.RequestBody)
+                                                                .WithSourceObjectInfo(args.SourceObjectInfo)
+                                                                .WithCopyOperationObjectType(typeof(CopyObjectResult))
+                                                                .WithReplaceMetadataDirective(args.ReplaceMetadataDirective)
+                                                                .WithReplaceTagsDirective(args.ReplaceTagsDirective)
+                                                                .WithTagging(args.ObjectTags);
+                cpReqArgs.Validate();
+                Dictionary<string, string> newMeta = null;
+                if (args.ReplaceMetadataDirective)
                 {
-                    args.CopySourceObject.SSE.Marshal(cpReqArgs.HeaderMap);
+                    newMeta = new Dictionary<string, string>(args.Headers);
+                }
+                else
+                {
+                    newMeta = new Dictionary<string, string>(args.SourceObjectInfo.MetaData);
+                }
+                if (args.SourceObject.SSE != null && args.SourceObject.SSE is SSECopy)
+                {
+                    args.SourceObject.SSE.Marshal(newMeta);
                 }
                 if (args.SSE != null)
                 {
-                    args.SSE.Marshal(cpReqArgs.HeaderMap);
+                    args.SSE.Marshal(newMeta);
                 }
+                cpReqArgs.WithHeaders(newMeta);
                 await this.CopyObjectRequestAsync(cpReqArgs, cancellationToken).ConfigureAwait(false);
             }
         }
@@ -578,20 +586,22 @@ namespace Minio
             double lastPartSize = multiPartInfo.lastPartSize;
             Part[] totalParts = new Part[(int)partCount];
 
-            args.SSEHeaders = args.SSEHeaders ?? new Dictionary<string, string>();
-            if (args.SSE != null)
-            {
-                args.SSE.Marshal(args.SSEHeaders);
-            }
-
-            NewMultipartUploadArgs nmuArgs = new NewMultipartUploadArgs(args);
+            NewMultipartUploadArgs nmuArgs = new NewMultipartUploadArgs()
+                                                            .WithBucket(args.BucketName)
+                                                            .WithObject(args.ObjectName ?? args.SourceObject.ObjectName)
+                                                            .WithHeaders(args.Headers)
+                                                            .WithCopyObjectSource(args.SourceObject)
+                                                            .WithSourceObjectInfo(args.SourceObjectInfo)
+                                                            .WithReplaceMetadataDirective(args.ReplaceMetadataDirective)
+                                                            .WithReplaceTagsDirective(args.ReplaceTagsDirective);
+            nmuArgs.Validate();
             // No need to resume upload since this is a Server-side copy. Just initiate a new upload.
             string uploadId = await this.NewMultipartUploadAsync(nmuArgs, cancellationToken).ConfigureAwait(false);
             double expectedReadSize = partSize;
             int partNumber;
             for (partNumber = 1; partNumber <= partCount; partNumber++)
             {
-                CopyConditions partCondition = args.CopySourceObject.CopyOperationConditions.Clone();
+                CopyConditions partCondition = args.SourceObject.CopyOperationConditions.Clone();
                 partCondition.byteRangeStart = (long)partSize * (partNumber - 1) + partCondition.byteRangeStart;
                 if (partNumber < partCount)
                 {
@@ -601,31 +611,33 @@ namespace Minio
                 {
                     partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)lastPartSize - 1;
                 }
-
-                Dictionary<string, string> cpPartMap =  new Dictionary<string, string>();
-                cpPartMap["x-amz-copy-source-range"] = "bytes=" + partCondition.byteRangeStart.ToString() + "-" + partCondition.byteRangeEnd.ToString();
-
                 Dictionary<string, string> queryMap = new Dictionary<string, string>();
                 if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
                 {
                     queryMap.Add("uploadId",uploadId);
                     queryMap.Add("partNumber",partNumber.ToString());
                 }
-
-                if (args.CopySourceObject.SSE != null && args.CopySourceObject.SSE is SSECopy)
+                if (args.SourceObject.SSE != null && args.SourceObject.SSE is SSECopy)
                 {
-                     args.CopySourceObject.SSE.Marshal(args.SSEHeaders);
-                    args.CopySourceObject.SSE.Marshal(args.HeaderMap);
+                    args.SourceObject.SSE.Marshal(args.Headers);
                 }
                 if (args.SSE != null)
                 {
-                    args.SSE.Marshal(args.SSEHeaders);
-                    args.SSE.Marshal(args.HeaderMap);
+                    args.SSE.Marshal(args.Headers);
                 }
-                CopyObjectRequestArgs cpPartArgs = new CopyObjectRequestArgs(args)
+                CopyObjectRequestArgs cpPartArgs = new CopyObjectRequestArgs()
+                                                                .WithBucket(args.BucketName)
+                                                                .WithObject(args.ObjectName)
+                                                                .WithVersionId(args.VersionId)
+                                                                .WithHeaders(args.Headers)
                                                                 .WithCopyOperationObjectType(typeof(CopyPartResult))
-                                                                .WithHeaders(cpPartMap)
-                                                                .WithQueryMap(queryMap);
+                                                                .WithPartCondition(partCondition)
+                                                                .WithQueryMap(queryMap)
+                                                                .WithCopyObjectSource(args.SourceObject)
+                                                                .WithSourceObjectInfo(args.SourceObjectInfo)
+                                                                .WithReplaceMetadataDirective(args.ReplaceMetadataDirective)
+                                                                .WithReplaceTagsDirective(args.ReplaceTagsDirective)
+                                                                .WithTagging(args.ObjectTags);
                 CopyPartResult cpPartResult = (CopyPartResult)await this.CopyObjectRequestAsync(cpPartArgs, cancellationToken).ConfigureAwait(false);
 
                 totalParts[partNumber - 1] = new Part { PartNumber = partNumber, ETag = cpPartResult.ETag, Size = (long)expectedReadSize };

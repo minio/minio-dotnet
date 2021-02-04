@@ -1061,11 +1061,12 @@ namespace Minio.Functional.Tests
                                                         .WithObject(objectName);
                 statObject = await minio.StatObjectAsync(statObjectArgs);
                 Assert.IsNotNull(statObject);
-                StringAssert.Equals(statObject.ObjectName, objectName);
+                Assert.IsTrue(statObject.ObjectName.Contains(objectName));
                 Assert.AreEqual(statObject.Size, file_read_size);
                 if (contentType != null)
                 {
-                    StringAssert.Equals(statObject.ContentType, contentType);
+                    Assert.IsNotNull(statObject.ContentType);
+                    Assert.IsTrue(statObject.ContentType.Contains(contentType));
                 }
 
                 RemoveObjectArgs rmArgs = new RemoveObjectArgs()
@@ -1196,6 +1197,7 @@ namespace Minio.Functional.Tests
             string objectName = GetRandomObjectName(10);
             string destBucketName = GetRandomName(15);
             string destObjectName = GetRandomName(10);
+            bool objectRemoved = false;
             var args = new Dictionary<string, string>
             {
                 { "bucketName", bucketName },
@@ -1231,30 +1233,41 @@ namespace Minio.Functional.Tests
                                                                 .WithObject(destObjectName);
 
                     await minio.CopyObjectAsync(copyObjectArgs);
-
                 }
                 catch (MinioException ex)
                 {
-                    Console.WriteLine(ex.Message);
-                    StringAssert.Equals(ex.Message, "MinIO API responded with message=At least one of the pre-conditions you specified did not hold");
+                    Assert.IsTrue(ex.Message.Contains("MinIO API responded with message=At least one of the pre-conditions you specified did not hold"));
                 }
 
-                RemoveObjectArgs rmArgs = new RemoveObjectArgs()
+                RemoveObjectArgs rmArgs1 = new RemoveObjectArgs()
                                                     .WithBucket(bucketName)
                                                     .WithObject(objectName);
 
-                await minio.RemoveObjectAsync(rmArgs);
+                await minio.RemoveObjectAsync(rmArgs1);
+                RemoveObjectArgs rmArgs2 = new RemoveObjectArgs()
+                                                    .WithBucket(destBucketName)
+                                                    .WithObject(destObjectName);
+                await minio.RemoveObjectAsync(rmArgs2);
+                objectRemoved = true;
                 await TearDown(minio, bucketName);
                 await TearDown(minio, destBucketName);
                 new MintLogger("CopyObject_Test2", copyObjectSignature, "Tests whether CopyObject with Etag mismatch passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (MinioException ex)
             {
-                RemoveObjectArgs rmArgs = new RemoveObjectArgs()
-                                                    .WithBucket(bucketName)
-                                                    .WithObject(objectName);
+                if (!objectRemoved)
+                {
+                    RemoveObjectArgs rmArgs1 = new RemoveObjectArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName);
 
-                await minio.RemoveObjectAsync(rmArgs);
+                    await minio.RemoveObjectAsync(rmArgs1);
+                    RemoveObjectArgs rmArgs2 = new RemoveObjectArgs()
+                                                        .WithBucket(destBucketName)
+                                                        .WithObject(destObjectName);
+
+                    await minio.RemoveObjectAsync(rmArgs2);
+                }
                 await TearDown(minio, bucketName);
                 await TearDown(minio, destBucketName);
                 new MintLogger("CopyObject_Test2", copyObjectSignature, "Tests whether CopyObject with Etag mismatch passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
@@ -1316,7 +1329,7 @@ namespace Minio.Functional.Tests
                                             .WithObject(destObjectName);
                 ObjectStat dstats = await minio.StatObjectAsync(statObjectArgs);
                 Assert.IsNotNull(dstats);
-                StringAssert.Equals(dstats.ObjectName, destObjectName);
+                Assert.IsTrue(dstats.ObjectName.Contains(destObjectName));
                 File.Delete(outFileName);
 
                 RemoveObjectArgs rmArgs1 = new RemoveObjectArgs()
@@ -1401,7 +1414,7 @@ namespace Minio.Functional.Tests
                                                         .WithObject(objectName);
                 ObjectStat stats = await minio.StatObjectAsync(statObjectArgs);
                 Assert.IsNotNull(stats);
-                StringAssert.Equals(stats.ObjectName, objectName);
+                Assert.IsTrue(stats.ObjectName.Contains(objectName));
                 RemoveObjectArgs rmArgs1 = new RemoveObjectArgs()
                                                     .WithBucket(bucketName)
                                                     .WithObject(objectName);
@@ -1484,7 +1497,7 @@ namespace Minio.Functional.Tests
                                                         .WithObject(objectName);
                 ObjectStat stats = await minio.StatObjectAsync(statObjectArgs);
                 Assert.IsNotNull(stats);
-                StringAssert.Equals(stats.ObjectName, objectName);
+                Assert.IsTrue(stats.ObjectName.Contains(objectName));
                 Assert.AreEqual(stats.Size, 6291455 - 1024 + 1);
                 RemoveObjectArgs rmArgs = new RemoveObjectArgs()
                                                     .WithBucket(bucketName)
@@ -1581,7 +1594,7 @@ namespace Minio.Functional.Tests
                                             .WithObject(destObjectName);
                 ObjectStat dstats = await minio.StatObjectAsync(statObjectArgs);
                 Assert.IsNotNull(dstats);
-                StringAssert.Equals(dstats.ObjectName, destObjectName);
+                Assert.IsTrue(dstats.ObjectName.Contains(destObjectName));
                 File.Delete(outFileName);
 
                 RemoveObjectArgs rmArgs = new RemoveObjectArgs()
@@ -1763,8 +1776,8 @@ namespace Minio.Functional.Tests
                 ObjectStat dstats = await minio.StatObjectAsync(statObjectArgs);
                 Assert.IsTrue(dstats.MetaData["Content-Type"] != null);
                 Assert.IsTrue(dstats.MetaData["Mynewkey"] != null);
-                StringAssert.Equals(dstats.MetaData["Content-Type"], "application/css");
-                StringAssert.Equals(dstats.MetaData["Mynewkey"], "test   test");
+                Assert.IsTrue(dstats.MetaData["Content-Type"].Contains("application/css"));
+                Assert.IsTrue(dstats.MetaData["Mynewkey"].Contains("test   test"));
                 RemoveObjectArgs rmArgs = new RemoveObjectArgs()
                                                     .WithBucket(bucketName)
                                                     .WithObject(objectName);
@@ -1792,6 +1805,98 @@ namespace Minio.Functional.Tests
                 await TearDown(minio, bucketName);
                 await TearDown(minio, destBucketName);
                 new MintLogger("CopyObject_Test8", copyObjectSignature, "Tests whether CopyObject with metadata replacement passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+            }
+        }
+
+        internal async static Task CopyObject_Test9(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomObjectName(10);
+            string destBucketName = GetRandomName(15);
+            string destObjectName = GetRandomName(10);
+            string outFileName = "outFileName";
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "destBucketName", destBucketName },
+                { "destObjectName", destObjectName },
+            };
+            try
+            {
+                await Setup_Test(minio, bucketName);
+                await Setup_Test(minio, destBucketName);
+
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
+                {
+                    await minio.PutObjectAsync(bucketName,
+                                            objectName,
+                                            filestream, filestream.Length, null);
+                    Dictionary<string, string> putTags = new Dictionary<string, string> {
+                        {"key1", "PutObjectTags"}
+                    };
+                    SetObjectTagsArgs setObjectTagsArgs = new SetObjectTagsArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName)
+                                                                        .WithTagging(Tagging.GetObjectTags(putTags));
+                    await minio.SetObjectTagsAsync(setObjectTagsArgs);
+                }
+
+                Dictionary<string, string> copyTags = new Dictionary<string, string> {
+                    {"key1", "CopyObjectTags"}
+                };
+                CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName);
+                // CopyObject test to replace original tags
+                CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
+                                                            .WithCopyObjectSource(copySourceObjectArgs)
+                                                            .WithBucket(destBucketName)
+                                                            .WithObject(destObjectName)
+                                                            .WithTagging(Tagging.GetObjectTags(copyTags))
+                                                            .WithReplaceTagsDirective(true);
+                await minio.CopyObjectAsync(copyObjectArgs);
+
+                GetObjectTagsArgs getObjectTagsArgs = new GetObjectTagsArgs()
+                                                        .WithBucket(destBucketName)
+                                                        .WithObject(destObjectName);
+                var tags = await minio.GetObjectTagsAsync(getObjectTagsArgs);
+                Assert.IsNotNull(tags);
+                var copiedTags = tags.GetTags();
+                Assert.IsNotNull(tags);
+                Assert.IsNotNull(copiedTags);
+                Assert.IsTrue(copiedTags.Count > 0);
+                Assert.IsNotNull(copiedTags["key1"]);
+                StringAssert.Contains(copiedTags["key1"], "CopyObjectTags");
+                RemoveObjectArgs rmArgs1 = new RemoveObjectArgs()
+                                                    .WithBucket(bucketName)
+                                                    .WithObject(objectName);
+                await minio.RemoveObjectAsync(rmArgs1);
+                RemoveObjectArgs rmArgs2 = new RemoveObjectArgs()
+                                                    .WithBucket(destBucketName)
+                                                    .WithObject(destObjectName);
+                await minio.RemoveObjectAsync(rmArgs2);
+
+                await TearDown(minio, bucketName);
+                await TearDown(minio, destBucketName);
+                new MintLogger("CopyObject_Test9", copyObjectSignature, "Tests whether CopyObject passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (MinioException ex)
+            {
+                File.Delete(outFileName);
+                RemoveObjectArgs rmArgs1 = new RemoveObjectArgs()
+                                                    .WithBucket(bucketName)
+                                                    .WithObject(objectName);
+
+                await minio.RemoveObjectAsync(rmArgs1);
+                RemoveObjectArgs rmArgs2 = new RemoveObjectArgs()
+                                                    .WithBucket(destBucketName)
+                                                    .WithObject(destObjectName);
+                await minio.RemoveObjectAsync(rmArgs2);
+                await TearDown(minio, bucketName);
+                await TearDown(minio, destBucketName);
+                new MintLogger("CopyObject_Test9", copyObjectSignature, "Tests whether CopyObject passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
             }
         }
 
@@ -3097,10 +3202,10 @@ namespace Minio.Functional.Tests
                 string presigned_url = await minio.PresignedGetObjectAsync(preArgs);
                 WebRequest httpRequest = WebRequest.Create(presigned_url);
                 var response = (HttpWebResponse)(await Task<WebResponse>.Factory.FromAsync(httpRequest.BeginGetResponse, httpRequest.EndGetResponse, null));
-                StringAssert.Equals(response.ContentType, reqParams["response-content-type"]);
-                StringAssert.Equals(response.Headers["Content-Disposition"], "attachment;filename=MyDocument.json;");
-                StringAssert.Equals(response.Headers["Content-Type"], "application/json");
-                StringAssert.Equals(response.Headers["Content-Length"], stats.Size.ToString());
+                Assert.IsTrue(response.ContentType.Contains(reqParams["response-content-type"]));
+                Assert.IsTrue(response.Headers["Content-Disposition"].Contains("attachment;filename=MyDocument.json;"));
+                Assert.IsTrue(response.Headers["Content-Type"].Contains("application/json"));
+                Assert.IsTrue(response.Headers["Content-Length"].Contains(stats.Size.ToString()));
                 Stream stream = response.GetResponseStream();
                 var fileStream = File.Create(downloadFile);
                 stream.CopyTo(fileStream);
@@ -3384,7 +3489,7 @@ namespace Minio.Functional.Tests
                     IDisposable subscription = observable.Subscribe(
                         item =>
                         {
-                            StringAssert.Equals(item.Key, objectName);
+                            Assert.IsTrue(item.Key.Contains(objectName));
                         },
                         ex =>
                         {
@@ -3743,9 +3848,7 @@ namespace Minio.Functional.Tests
                     ex => Console.WriteLine("OnError: {0}", ex.Message),
                     () => Console.WriteLine($"ListenBucketNotificationsAsync finished")
                 );
-
                 await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
-                // Thread.Sleep(2 * 1000);
 
                 // wait for notifications
                 for (int attempt = 0; attempt < 10; attempt++) {
@@ -3781,22 +3884,19 @@ namespace Minio.Functional.Tests
 
                             throw ex;
                         }
-
                         MinioNotification notification = JsonConvert.DeserializeObject<MinioNotification>(received[0].json);
 
-
                         Assert.AreEqual(1, notification.Records.Length);
-                        Assert.AreEqual("s3:ObjectCreated:Put", notification.Records[0].eventName);
-
-                        StringAssert.Equals(objectName, System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key));
-                        StringAssert.Equals(contentType, notification.Records[0].s3.objectMeta.contentType);
+                        Assert.IsTrue(notification.Records[0].eventName.Contains("s3:ObjectCreated:Put"));
+                        Assert.IsTrue(objectName.Contains(System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key)));
+                        Assert.IsTrue(contentType.Contains(notification.Records[0].s3.objectMeta.contentType));
                         testOutcome = TestStatus.PASS;
                         break;
                     } else {
                         Console.WriteLine($"ListenBucketNotificationsAsync: waiting for notification (t={attempt})");
                     }
 
-                    Thread.Sleep(2000);
+                    Thread.Sleep(4000);
                 }
 
                 subscription.Dispose();
@@ -3805,7 +3905,8 @@ namespace Minio.Functional.Tests
             }
             catch (Exception ex)
             {
-                subscription.Dispose();
+                if (subscription != null)
+                    subscription.Dispose();
                 await TearDown(minio, bucketName);
                 testOutcome = (ex.Message.Contains("A header you provided implies functionality that is not implemented")) ? TestStatus.NA : TestStatus.FAIL;
                 new MintLogger(nameof(ListenBucketNotificationsAsync_Test1), listenBucketNotificationsSignature, "Tests whether ListenBucketNotifications passes for small object", testOutcome, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
@@ -3875,7 +3976,19 @@ namespace Minio.Functional.Tests
                                                                 .WithOutputSerialization(outputSerialization);
                 var resp = await  minio.SelectObjectContentAsync(selArgs).ConfigureAwait(false);
                 var output = await new StreamReader(resp.Payload).ReadToEndAsync();
-                StringAssert.Equals(output,csvString.ToString());
+                var csvStringNoWS = System.Text.RegularExpressions.Regex.Replace(csvString.ToString(), @"\s+", "");
+                var outputNoWS = System.Text.RegularExpressions.Regex.Replace(output, @"\s+", "");
+                // Compute MD5 for a better result.
+                var hashedOutputBytes = System.Security.Cryptography.MD5
+                                                                .Create()
+                                                                .ComputeHash(System.Text.Encoding.UTF8.GetBytes(outputNoWS));
+                var outputMd5 = Convert.ToBase64String(hashedOutputBytes);
+                var hashedCSVBytes = System.Security.Cryptography.MD5
+                                                                .Create()
+                                                                .ComputeHash(System.Text.Encoding.UTF8.GetBytes(csvStringNoWS));
+                var csvMd5 = Convert.ToBase64String(hashedCSVBytes);
+
+                Assert.IsTrue(csvMd5.Contains(outputMd5));
                 RemoveObjectArgs rmArgs = new RemoveObjectArgs()
                                                     .WithBucket(bucketName)
                                                     .WithObject(objectName);
@@ -3933,7 +4046,7 @@ namespace Minio.Functional.Tests
                 Assert.IsNotNull(config);
                 Assert.IsNotNull(config.Rule);
                 Assert.IsNotNull(config.Rule.Apply);
-                StringAssert.Equals(config.Rule.Apply.SSEAlgorithm, "AES256");
+                Assert.IsTrue(config.Rule.Apply.SSEAlgorithm.Contains("AES256"));
                 new MintLogger(nameof(BucketEncryptionsAsync_Test1), getBucketEncryptionSignature, "Tests whether GetBucketEncryptionAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (Exception ex)
@@ -4042,7 +4155,7 @@ namespace Minio.Functional.Tests
                 await Setup_Test(minio, bucketName);
                 SetBucketTagsArgs tagsArgs = new SetBucketTagsArgs()
                                                             .WithBucket(bucketName)
-                                                            .WithTagKeyValuePairs(tags);
+                                                            .WithTagging(Tagging.GetBucketTags(tags));
                 await minio.SetBucketTagsAsync(tagsArgs);
                 new MintLogger(nameof(BucketTagsAsync_Test1), setBucketTagsSignature, "Tests whether SetBucketTagsAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
@@ -4120,7 +4233,7 @@ namespace Minio.Functional.Tests
                 SetObjectTagsArgs tagsArgs = new SetObjectTagsArgs()
                                                             .WithBucket(bucketName)
                                                             .WithObject(objectName)
-                                                            .WithTagKeyValuePairs(tags);
+                                                            .WithTagging(Tagging.GetObjectTags(tags));
                 await minio.SetObjectTagsAsync(tagsArgs);
                 new MintLogger(nameof(ObjectTagsAsync_Test1), setObjectTagsSignature, "Tests whether SetObjectTagsAsync passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
@@ -4232,7 +4345,7 @@ namespace Minio.Functional.Tests
                                                                             .WithBucket(bucketName);
                 var config = await minio.GetObjectLockConfigurationAsync(objectLockArgs);
                 Assert.IsNotNull(config);
-                StringAssert.Equals(config.ObjectLockEnabled, ObjectLockConfiguration.LockEnabled);
+                Assert.IsTrue(config.ObjectLockEnabled.Contains(ObjectLockConfiguration.LockEnabled));
                 Assert.IsNotNull(config.Rule);
                 Assert.IsNotNull(config.Rule.DefaultRetention);
                 Assert.AreEqual(config.Rule.DefaultRetention.Days, 33);

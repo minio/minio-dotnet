@@ -19,7 +19,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using Minio.DataModel.Replication;
 
-namespace Minio.DataModel
+namespace Minio.DataModel.Replication
 {
     [Serializable]
     [XmlRoot(ElementName = "Rule")]

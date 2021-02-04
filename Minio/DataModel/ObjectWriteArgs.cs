@@ -28,12 +28,6 @@ namespace Minio
         internal bool? LegalHoldEnabled { get; set; }
         internal string ContentType { get; set; }
 
-        public T WithTagKeyValuePairs(Dictionary<string, string> kv)
-        {
-            this.ObjectTags = Tagging.GetObjectTags(kv);
-            return (T)this;
-        }
-
         public T WithTagging(Tagging tagging)
         {
             this.ObjectTags = tagging;

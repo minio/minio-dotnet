@@ -35,6 +35,7 @@ namespace Minio.DataModel
                 throw new ArgumentNullException("Name of an object cannot be empty");
             }
             ObjectStat objInfo = new ObjectStat();
+            objInfo.ObjectName = objectName;
             foreach (var paramName in responseHeaders.Keys)
             {
                 string paramValue = responseHeaders[paramName];
@@ -49,8 +50,8 @@ namespace Minio.DataModel
                     case "etag" :
                         objInfo.ETag = paramValue.Replace("\"", string.Empty);
                         break;
-                    case "Content-Type" :
-                        objInfo.ContentType = paramValue;
+                    case "content-type" :
+                        objInfo.ContentType = paramValue.ToString();
                         objInfo.MetaData["Content-Type"] = objInfo.ContentType;
                         break;
                     case "x-amz-version-id" :
@@ -58,6 +59,12 @@ namespace Minio.DataModel
                         break;
                     case "x-amz-delete-marker":
                         objInfo.DeleteMarker = paramValue.Equals("true");
+                        break;
+                    case "x-amz-tagging-count":
+                        if (Int32.TryParse(paramValue.ToString(), out int tagCount) && tagCount >= 0)
+                        {
+                            objInfo.TaggingCount = (uint)tagCount;
+                        }
                         break;
                     default:
                         if (OperationsUtil.IsSupportedHeader(paramName))
@@ -88,6 +95,7 @@ namespace Minio.DataModel
         public string VersionId { get; private set; }
         public bool DeleteMarker { get; private set; }
         public Dictionary<string, string> ExtraHeaders { get; private set; }
+        public uint TaggingCount { get; private set; }
 
         public override string ToString()
         {
