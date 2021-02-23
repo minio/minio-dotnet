@@ -17,6 +17,7 @@
 
 using System;
 using System.Net;
+using Minio.Credentials;
 using Minio.Exceptions;
 
 namespace Minio
@@ -144,7 +145,11 @@ namespace Minio
             {
                 throw new MinioException("Endpoint not initialized.");
             }
-            if (string.IsNullOrEmpty(this.AccessKey) || string.IsNullOrEmpty(this.SecretKey) )
+            if (this.Provider != null && this.Provider.GetType() != (typeof(ChainedProvider)) && this.SessionToken == null)
+            {
+                throw new MinioException("User Access Credentials Provider not initialized correctly.");
+            }
+            if (this.Provider == null && (string.IsNullOrEmpty(this.AccessKey) || string.IsNullOrEmpty(this.SecretKey)))
             {
                 throw new MinioException("User Access Credentials not initialized.");
             }
