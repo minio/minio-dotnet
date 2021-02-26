@@ -16,7 +16,13 @@
 
 using System;
 using System.Xml.Serialization;
-using Minio.DataModel.ILM;
+
+/*
+ * LifecycleRule is used within LifecycleConfiguration as an encapsulation of rules.
+ * Please refer:
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketLifecycleConfiguration.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html
+ */
 
 namespace Minio.DataModel.ILM
 {

@@ -1868,7 +1868,7 @@ namespace Minio.Functional.Tests
                 Assert.IsNotNull(copiedTags);
                 Assert.IsTrue(copiedTags.Count > 0);
                 Assert.IsNotNull(copiedTags["key1"]);
-                StringAssert.Contains(copiedTags["key1"], "CopyObjectTags");
+                Assert.IsTrue(copiedTags["key1"].Contains("CopyObjectTags"));
                 RemoveObjectArgs rmArgs1 = new RemoveObjectArgs()
                                                     .WithBucket(bucketName)
                                                     .WithObject(objectName);
@@ -3896,7 +3896,7 @@ namespace Minio.Functional.Tests
                         Console.WriteLine($"ListenBucketNotificationsAsync: waiting for notification (t={attempt})");
                     }
 
-                    Thread.Sleep(4000);
+                    Thread.Sleep(2000);
                 }
 
                 subscription.Dispose();

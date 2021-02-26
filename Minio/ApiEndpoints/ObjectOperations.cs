@@ -586,7 +586,7 @@ namespace Minio
             double lastPartSize = multiPartInfo.lastPartSize;
             Part[] totalParts = new Part[(int)partCount];
 
-            NewMultipartUploadArgs nmuArgs = new NewMultipartUploadArgs()
+            NewMultipartUploadCopyArgs nmuArgs = new NewMultipartUploadCopyArgs()
                                                             .WithBucket(args.BucketName)
                                                             .WithObject(args.ObjectName ?? args.SourceObject.ObjectName)
                                                             .WithHeaders(args.Headers)
@@ -659,10 +659,10 @@ namespace Minio
         /// <summary>
         /// Start a new multi-part upload request
         /// </summary>
-        /// <param name="args">NewMultipartUploadArgs arguments object encapsulating bucket name, object name, Headers, SSE Headers</param>
+        /// <param name="args">NewMultipartUploadPutArgs arguments object encapsulating bucket name, object name, Headers, SSE Headers</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        private async Task<string> NewMultipartUploadAsync(NewMultipartUploadArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        private async Task<string> NewMultipartUploadAsync(NewMultipartUploadPutArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
@@ -670,6 +670,23 @@ namespace Minio
             NewMultipartUploadResponse uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
             return uploadResponse.UploadId;
         }
+
+
+        /// <summary>
+        /// Start a new multi-part copy upload request
+        /// </summary>
+        /// <param name="args">NewMultipartUploadCopyArgs arguments object encapsulating bucket name, object name, Headers, SSE Headers</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        private async Task<string> NewMultipartUploadAsync(NewMultipartUploadCopyArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken);
+            NewMultipartUploadResponse uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
+            return uploadResponse.UploadId;
+        }
+
 
         /// <summary>
         /// Create the copy request, execute it and return the copy result.

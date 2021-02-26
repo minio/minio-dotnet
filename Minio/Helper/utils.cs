@@ -900,5 +900,10 @@ namespace Minio
             );
             return config;
         }
+        public static DateTime From8601String(string dt)
+        {
+            return DateTime.Parse(dt, null, System.Globalization.DateTimeStyles.RoundtripKind);
+        }
+
     }
 }

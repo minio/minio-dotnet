@@ -17,6 +17,14 @@
 using System;
 using System.Xml.Serialization;
 
+/*
+ * AccessControlTranslation class used within ReplicationDestination which is used to specify a cross-account if assigned.
+ * Please refer:
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketReplication.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketReplication.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
+ */
+
 namespace Minio.DataModel.Replication
 {
     [Serializable]

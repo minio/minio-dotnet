@@ -17,6 +17,14 @@
 using System;
 using System.Xml.Serialization;
 
+/*
+ * EncryptionConfiguration class used within ReplicationDestination has the encryption-related information of the bucket.
+ * Please refer:
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketReplication.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketReplication.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
+ */
+
 namespace Minio.DataModel.Replication
 {
     public class EncryptionConfiguration

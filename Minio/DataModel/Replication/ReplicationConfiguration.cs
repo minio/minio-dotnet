@@ -21,6 +21,14 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
+/*
+ * ReplicationConfiguration class used as a container for replication rules. Max number of rules is 100. Size of configuration allowed is 2MB.
+ * Please refer:
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketReplication.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketReplication.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
+ */
+
 namespace Minio.DataModel.Replication
 {
     [Serializable]

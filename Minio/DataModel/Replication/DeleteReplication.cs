@@ -17,6 +17,14 @@
 using System;
 using System.Xml.Serialization;
 
+/*
+ * DeleteReplication class used within ReplicationRule to be used as a status within ReplicationRule.
+ * Please refer:
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketReplication.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketReplication.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
+ */
+
 namespace Minio.DataModel.Replication
 {
     [Serializable]

@@ -1357,116 +1357,26 @@ namespace Minio
         }
     }
 
-    internal class NewMultipartUploadArgs: ObjectWriteArgs<NewMultipartUploadArgs>
+    internal class NewMultipartUploadArgs<T> : ObjectWriteArgs<T>
+                    where T : NewMultipartUploadArgs<T>
     {
-        internal bool ReplaceMetadataDirective { get; set; }
-        internal bool ReplaceTagsDirective { get; set; }
-        internal string StorageClass { get; set; }
-        internal ObjectStat SourceObjectInfo { get; set; }
-        internal CopySourceObjectArgs SourceObject { get; set; }
         internal RetentionMode ObjectLockRetentionMode { get; set; }
         internal DateTime RetentionUntilDate { get; set; }
         internal bool ObjectLockSet { get; set; }
-
 
         internal NewMultipartUploadArgs()
         {
             this.RequestMethod = Method.POST;
         }
 
-        internal override void Validate()
-        {
-            base.Validate();
-            if (this.SourceObjectInfo == null || this.SourceObject == null)
-            {
-                throw new InvalidOperationException(nameof(this.SourceObjectInfo) + " and " + nameof(this.SourceObject) + " need to be initialized for a NewMultipartUpload operation to work.");
-            }
-            this.Populate();
-        }
-
-        private void Populate()
-        {
-            //Concat as Headers may have byte range info .etc.
-            if (!this.ReplaceMetadataDirective && this.SourceObjectInfo.MetaData != null && this.SourceObjectInfo.MetaData.Count > 0)
-            {
-                this.Headers = this.SourceObjectInfo.MetaData.Concat(this.Headers).GroupBy(item => item.Key).ToDictionary(item => item.Key, item => item.First().Value);
-            }
-            else if (this.ReplaceMetadataDirective)
-            {
-                this.Headers = this.Headers ?? new Dictionary<string, string>();
-            }
-            if (this.Headers != null)
-            {
-                List<Tuple<string, string>> newKVList = new List<Tuple<string, string>>();
-                foreach (var item in this.Headers)
-                {
-                    var key = item.Key;
-                    if (!OperationsUtil.IsSupportedHeader(item.Key) && !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase))
-                    {
-                        newKVList.Add(new Tuple<string, string>("x-amz-meta-" + key.ToLowerInvariant(), item.Value));
-                    }
-                }
-                foreach (var item in newKVList)
-                {
-                    this.Headers[item.Item1] = item.Item2;
-                }
-            }
-        }
-
-        internal NewMultipartUploadArgs WithStorageClass(string storageClass)
-        {
-            this.StorageClass = storageClass;
-            return this;
-        }
-
-        internal NewMultipartUploadArgs WithReplaceMetadataDirective(bool replace)
-        {
-            this.ReplaceMetadataDirective = replace;
-            return this;
-        }
-
-        internal NewMultipartUploadArgs WithReplaceTagsDirective(bool replace)
-        {
-            this.ReplaceTagsDirective = replace;
-            return this;
-        }
-
-        public NewMultipartUploadArgs WithSourceObjectInfo(ObjectStat stat)
-        {
-            this.SourceObjectInfo = stat;
-            return this;
-        }
-        public NewMultipartUploadArgs WithCopyObjectSource(CopySourceObjectArgs cs)
-        {
-            if (cs == null)
-            {
-                throw new InvalidOperationException("The copy source object needed for copy operation is not initialized.");
-            }
-
-            this.SourceObject = this.SourceObject ?? new CopySourceObjectArgs();
-            this.SourceObject.RequestMethod = Method.PUT;
-            this.SourceObject.BucketName = cs.BucketName;
-            this.SourceObject.ObjectName = cs.ObjectName;
-            this.SourceObject.VersionId = cs.VersionId;
-            this.SourceObject.SSE = cs.SSE;
-            this.SourceObject.Headers = cs.Headers;
-            this.SourceObject.MatchETag = cs.MatchETag;
-            this.SourceObject.ModifiedSince = cs.ModifiedSince;
-            this.SourceObject.NotMatchETag = cs.NotMatchETag;
-            this.SourceObject.UnModifiedSince = cs.UnModifiedSince;
-            this.SourceObject.CopySourceObjectPath = $"{cs.BucketName}/{utils.UrlEncode(cs.ObjectName)}";
-            this.SourceObject.CopyOperationConditions = cs.CopyOperationConditions?.Clone();
-            return this;
-        }
-
-        public NewMultipartUploadArgs WithObjectLockMode(RetentionMode mode)
+        public NewMultipartUploadArgs<T> WithObjectLockMode(RetentionMode mode)
         {
             this.ObjectLockSet = true;
             this.ObjectLockRetentionMode = mode;
             return this;
         }
 
-        public NewMultipartUploadArgs WithObjectLockRetentionDate(DateTime untilDate)
+        public NewMultipartUploadArgs<T> WithObjectLockRetentionDate(DateTime untilDate)
         {
             this.ObjectLockSet = true;
             this.RetentionUntilDate = new DateTime(untilDate.Year, untilDate.Month, untilDate.Day,
@@ -1478,24 +1388,6 @@ namespace Minio
         {
             request = base.BuildRequest(request);
             request.AddQueryParameter("uploads","");
-            if (this.ObjectTags != null && this.ObjectTags.TaggingSet != null
-                    && this.ObjectTags.TaggingSet.Tag.Count > 0)
-            {
-                request.AddOrUpdateParameter("x-amz-tagging", this.ObjectTags.GetTagString(), ParameterType.HttpHeader);
-                request.AddOrUpdateParameter("x-amz-tagging-directive",
-                            this.ReplaceTagsDirective?"REPLACE":"COPY",
-                            ParameterType.HttpHeader);
-            }
-            string replaceDirective = "COPY";
-            if (this.ReplaceMetadataDirective)
-            {
-                replaceDirective = "REPLACE";
-            }
-            request.AddOrUpdateParameter("x-amz-metadata-directive", replaceDirective, ParameterType.HttpHeader);
-            if (!string.IsNullOrEmpty(this.StorageClass))
-            {
-                request.AddOrUpdateParameter("x-amz-storage-class", this.StorageClass, ParameterType.HttpHeader);
-            }
             if (this.ObjectLockSet)
             {
                 if (!this.RetentionUntilDate.Equals(default(DateTime)))
@@ -1506,12 +1398,13 @@ namespace Minio
                                             (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE)?"GOVERNANCE":"COMPLIANCE",
                                             ParameterType.HttpHeader);
             }
-
-
             return request;
         }
     }
 
+    internal class NewMultipartUploadPutArgs : NewMultipartUploadArgs<NewMultipartUploadPutArgs>
+    {
+    }
     internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs>
     {
         internal CopySourceObjectArgs SourceObject { get; set; }
@@ -1654,6 +1547,156 @@ namespace Minio
             this.RetentionUntilDate = new DateTime(untilDate.Year, untilDate.Month, untilDate.Day,
                                                     untilDate.Hour, untilDate.Minute, untilDate.Second);
             return this;
+        }
+    }
+
+
+    internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartUploadCopyArgs>
+    {
+        internal bool ReplaceMetadataDirective { get; set; }
+        internal bool ReplaceTagsDirective { get; set; }
+        internal string StorageClass { get; set; }
+        internal ObjectStat SourceObjectInfo { get; set; }
+        internal CopySourceObjectArgs SourceObject { get; set; }
+
+        internal override void Validate()
+        {
+            base.Validate();
+            if (this.SourceObjectInfo == null || this.SourceObject == null)
+            {
+                throw new InvalidOperationException(nameof(this.SourceObjectInfo) + " and " + nameof(this.SourceObject) + " need to be initialized for a NewMultipartUpload operation to work.");
+            }
+            this.Populate();
+        }
+
+        private void Populate()
+        {
+            //Concat as Headers may have byte range info .etc.
+            if (!this.ReplaceMetadataDirective && this.SourceObjectInfo.MetaData != null && this.SourceObjectInfo.MetaData.Count > 0)
+            {
+                this.Headers = this.SourceObjectInfo.MetaData.Concat(this.Headers).GroupBy(item => item.Key).ToDictionary(item => item.Key, item => item.First().Value);
+            }
+            else if (this.ReplaceMetadataDirective)
+            {
+                this.Headers = this.Headers ?? new Dictionary<string, string>();
+            }
+            if (this.Headers != null)
+            {
+                List<Tuple<string, string>> newKVList = new List<Tuple<string, string>>();
+                foreach (var item in this.Headers)
+                {
+                    var key = item.Key;
+                    if (!OperationsUtil.IsSupportedHeader(item.Key) && !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase))
+                    {
+                        newKVList.Add(new Tuple<string, string>("x-amz-meta-" + key.ToLowerInvariant(), item.Value));
+                    }
+                }
+                foreach (var item in newKVList)
+                {
+                    this.Headers[item.Item1] = item.Item2;
+                }
+            }
+        }
+
+        public new NewMultipartUploadCopyArgs WithObjectLockMode(RetentionMode mode)
+        {
+            base.WithObjectLockMode(mode);
+            return this;
+        }
+
+        public new NewMultipartUploadCopyArgs WithHeaders(Dictionary<string, string> headers)
+        {
+            base.WithHeaders(headers);
+            return this;
+        }
+
+        public new NewMultipartUploadCopyArgs WithObjectLockRetentionDate(DateTime untilDate)
+        {
+            base.WithObjectLockRetentionDate(untilDate);
+            return this;
+        }
+
+      internal NewMultipartUploadCopyArgs WithStorageClass(string storageClass)
+        {
+            this.StorageClass = storageClass;
+            return this;
+        }
+
+        internal NewMultipartUploadCopyArgs WithReplaceMetadataDirective(bool replace)
+        {
+            this.ReplaceMetadataDirective = replace;
+            return this;
+        }
+
+        internal NewMultipartUploadCopyArgs WithReplaceTagsDirective(bool replace)
+        {
+            this.ReplaceTagsDirective = replace;
+            return this;
+        }
+
+        public NewMultipartUploadCopyArgs WithSourceObjectInfo(ObjectStat stat)
+        {
+            this.SourceObjectInfo = stat;
+            return this;
+        }
+        public NewMultipartUploadCopyArgs WithCopyObjectSource(CopySourceObjectArgs cs)
+        {
+            if (cs == null)
+            {
+                throw new InvalidOperationException("The copy source object needed for copy operation is not initialized.");
+            }
+
+            this.SourceObject = this.SourceObject ?? new CopySourceObjectArgs();
+            this.SourceObject.RequestMethod = Method.PUT;
+            this.SourceObject.BucketName = cs.BucketName;
+            this.SourceObject.ObjectName = cs.ObjectName;
+            this.SourceObject.VersionId = cs.VersionId;
+            this.SourceObject.SSE = cs.SSE;
+            this.SourceObject.Headers = cs.Headers;
+            this.SourceObject.MatchETag = cs.MatchETag;
+            this.SourceObject.ModifiedSince = cs.ModifiedSince;
+            this.SourceObject.NotMatchETag = cs.NotMatchETag;
+            this.SourceObject.UnModifiedSince = cs.UnModifiedSince;
+            this.SourceObject.CopySourceObjectPath = $"{cs.BucketName}/{utils.UrlEncode(cs.ObjectName)}";
+            this.SourceObject.CopyOperationConditions = cs.CopyOperationConditions?.Clone();
+            return this;
+        }
+
+        internal override RestRequest BuildRequest(RestRequest request)
+        {
+            request = base.BuildRequest(request);
+            request.AddQueryParameter("uploads","");
+            if (this.ObjectTags != null && this.ObjectTags.TaggingSet != null
+                    && this.ObjectTags.TaggingSet.Tag.Count > 0)
+            {
+                request.AddOrUpdateParameter("x-amz-tagging", this.ObjectTags.GetTagString(), ParameterType.HttpHeader);
+                request.AddOrUpdateParameter("x-amz-tagging-directive",
+                            this.ReplaceTagsDirective?"REPLACE":"COPY",
+                            ParameterType.HttpHeader);
+            }
+            string replaceDirective = "COPY";
+            if (this.ReplaceMetadataDirective)
+            {
+                replaceDirective = "REPLACE";
+            }
+            request.AddOrUpdateParameter("x-amz-metadata-directive", replaceDirective, ParameterType.HttpHeader);
+            if (!string.IsNullOrEmpty(this.StorageClass))
+            {
+                request.AddOrUpdateParameter("x-amz-storage-class", this.StorageClass, ParameterType.HttpHeader);
+            }
+            if (this.ObjectLockSet)
+            {
+                if (!this.RetentionUntilDate.Equals(default(DateTime)))
+                {
+                    request.AddOrUpdateParameter("x-amz-object-lock-retain-until-date", utils.To8601String(this.RetentionUntilDate), ParameterType.HttpHeader);
+                }
+                request.AddOrUpdateParameter("x-amz-object-lock-mode",
+                                            (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE)?"GOVERNANCE":"COMPLIANCE",
+                                            ParameterType.HttpHeader);
+            }
+
+
+            return request;
         }
     }
 

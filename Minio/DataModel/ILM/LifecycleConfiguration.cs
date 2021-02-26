@@ -21,6 +21,13 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
+/*
+ * Object representation of request XML used in these calls - PutBucketLifecycleConfiguration, GetBucketLifecycleConfiguration.
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketLifecycleConfiguration.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html
+ *
+ */
+
 namespace Minio.DataModel.ILM
 {
     [Serializable]
