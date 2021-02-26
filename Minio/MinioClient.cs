@@ -25,7 +25,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Serialization;
-
+using Minio.Credentials;
+using Minio.DataModel;
 using Minio.DataModel.Tracing;
 using Minio.Exceptions;
 using Minio.Helper;
@@ -63,6 +64,8 @@ namespace Minio
         internal BucketRegionCache regionCache;
 
         private IRequestLogger logger;
+
+        internal ClientProvider Provider;
 
         // Enables HTTP tracing if set to true
         private bool trace = false;
@@ -294,6 +297,19 @@ namespace Minio
                 }
             }
 
+            if (this.Provider != null)
+            {
+                AccessCredentials creds = await this.Provider.GetCredentialsAsync();
+                bool isAWSProvider = (this.Provider is AWSEnvironmentProvider) ||
+                                     (this.Provider is ChainedProvider chained && chained.CurrentProvider is AWSEnvironmentProvider);
+                bool isAWSSessionTokenAvailable = isAWSProvider && (!string.IsNullOrEmpty(creds.SessionToken) && !string.IsNullOrWhiteSpace(creds.SessionToken));
+                if (isAWSSessionTokenAvailable)
+                {
+                    request.AddHeader("X-Amz-Security-Token", creds.SessionToken);
+                }
+                authenticator.Authenticate(restClient, request);
+            }
+
             return request;
         }
 
@@ -370,6 +386,7 @@ namespace Minio
         {
             this.Region = "";
             this.SessionToken = "";
+            this.Provider = null;
         }
 
         /// <summary>
@@ -446,6 +463,26 @@ namespace Minio
         public MinioClient WithRetryPolicy(RetryPolicyHandlingDelegate retryPolicyHandler)
         {
             this.retryPolicyHandler = retryPolicyHandler;
+            return this;
+        }
+
+        /// <summary>
+        /// With provider for credentials and session token if being used
+        /// </summary>
+        /// <returns></returns>
+    	public MinioClient WithCredentialsProvider(ClientProvider provider)
+        {
+            this.Provider = provider;
+            AccessCredentials credentials = this.Provider.GetCredentials();
+            this.AccessKey = credentials.AccessKey;
+            this.SecretKey = credentials.SecretKey;
+            bool isSessionTokenAvailable = !string.IsNullOrEmpty(credentials.SessionToken);
+            if ((this.Provider is AWSEnvironmentProvider aWSEnvironmentProvider ||
+                (this.Provider is ChainedProvider chainedProvider && chainedProvider.CurrentProvider is AWSEnvironmentProvider))
+                    && isSessionTokenAvailable)
+            {
+                this.SessionToken = credentials.SessionToken;
+            }
             return this;
         }
 

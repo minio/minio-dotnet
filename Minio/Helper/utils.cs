@@ -880,5 +880,11 @@ namespace Minio
         {
             return dt.ToString("yyyy-MM-dd'T'HH:mm:ssZ", CultureInfo.InvariantCulture);
         }
+
+        public static DateTime From8601String(string dt)
+        {
+            return DateTime.Parse(dt, null, System.Globalization.DateTimeStyles.RoundtripKind);
+        }
+
     }
 }
