@@ -354,7 +354,7 @@ namespace Minio
                                 .ConfigureAwait(false);
             request.AddQueryParameter("notification","");
 
-            var bodyString = notification.ToString();
+            var bodyString = notification.ToXML();
 
             var body = System.Text.Encoding.UTF8.GetBytes(bodyString);
             request.AddParameter("application/xml", body, RestSharp.ParameterType.RequestBody);

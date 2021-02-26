@@ -136,24 +136,21 @@ namespace Minio.DataModel
             {
                 OmitXmlDeclaration = true
             };
+
             using (MemoryStream ms = new MemoryStream())
             {
-                using (XmlWriter writer = XmlWriter.Create(ms, settings))
-                {
-                    XmlSerializerNamespaces names = new XmlSerializerNamespaces();
-                    names.Add(string.Empty, "http://s3.amazonaws.com/doc/2006-03-01/");
+                var xmlWriter = XmlWriter.Create(ms, settings);
+                XmlSerializerNamespaces names = new XmlSerializerNamespaces();
+                names.Add(string.Empty, "http://s3.amazonaws.com/doc/2006-03-01/");
 
-                    XmlSerializer cs = new XmlSerializer(typeof(BucketNotification));
-                    cs.Serialize(writer, this, names);
+                XmlSerializer cs = new XmlSerializer(typeof(BucketNotification));
+                cs.Serialize(xmlWriter, this, names);
 
-                    ms.Flush();
-                    ms.Seek(0, SeekOrigin.Begin);
-                    using (StreamReader sr = new StreamReader(ms))
-                    {
-                        var xml = sr.ReadToEnd();
-                        return xml;
-                    }
-                }
+                ms.Flush();
+                ms.Seek(0, SeekOrigin.Begin);
+                var streamReader = new StreamReader(ms);
+                var xml = streamReader.ReadToEnd();
+                return xml;
             }
         }
     }
