@@ -16,13 +16,17 @@
  */
 
 using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using RestSharp;
 
 using Minio.DataModel;
+
+/*
+ * Web Identity Credential provider
+ * https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html
+ */
 
 namespace Minio.Credentials
 {
@@ -41,7 +45,6 @@ namespace Minio.Credentials
     public class WebIdentityProvider : WebIdentityClientGrantsProvider<WebIdentityProvider>
     {
         internal int ExpiryInSeconds { get; set; }
-        internal Func<string, JsonWebToken> Supplier { get; set; }
         internal JsonWebToken CurrentJsonWebToken { get; set; }
 
 
@@ -51,46 +54,41 @@ namespace Minio.Credentials
 
         public override AccessCredentials GetCredentials()
         {
+            this.Validate();
             return base.GetCredentials();
         }
 
-        public override async Task<AccessCredentials> GetCredentialsAsync()
+        public override Task<AccessCredentials> GetCredentialsAsync()
         {
-            return await base.GetCredentialsAsync();
+            this.Validate();
+            return base.GetCredentialsAsync();
         }
 
-        internal override Uri GetJWTUri(JwtSecurityToken jwtSecurityToken)
+        internal WebIdentityProvider WithJWTSupplier(Func<JsonWebToken> f)
         {
-            throw new NotImplementedException();
-        }
-
-        internal WebIdentityProvider WithJWTSupplier(Func<string, JsonWebToken> f)
-        {
-            this.Supplier = (Func<string, JsonWebToken>)f.Clone();
+            this.Validate();
+            this.JWTSupplier = (Func<JsonWebToken>)f.Clone();
             return this;
         }
 
         internal async override Task<IRestRequest> BuildRequest()
         {
-            // Policy, RoleArn to be set already.
-            if (string.IsNullOrEmpty(this.Policy) || string.IsNullOrWhiteSpace(this.Policy) ||
-                string.IsNullOrEmpty(this.RoleARN) || string.IsNullOrWhiteSpace(this.RoleARN))
-            {
-                throw new InvalidOperationException(nameof(this.Policy) + " and " + nameof(this.RoleARN) + " needs to be initialized for the " + nameof(this.BuildRequest) + " operation to work.");
-            }
+            this.Validate();
+            this.CurrentJsonWebToken = this.JWTSupplier();
+            // RoleArn to be set already.
             this.WithRoleAction("AssumeRoleWithWebIdentity");
-            this.WithDurationInSeconds(this.CurrentJsonWebToken.Expiry);
+            this.WithDurationInSeconds(GetDurationInSeconds(this.CurrentJsonWebToken.Expiry));
             if (this.RoleSessionName == null)
             {
                 this.RoleSessionName = utils.To8601String(DateTime.Now);
             }
             IRestRequest restRequest = await base.BuildRequest();
-            restRequest.AddQueryParameter("WebIdentityToken", this.CurrentJsonWebToken.AccessToken);
             return restRequest;
         }
 
         public override AccessCredentials ParseResponse(IRestResponse response)
         {
+            this.Validate();
             AccessCredentials credentials = base.ParseResponse(response);
             using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(response.Content)))
             {

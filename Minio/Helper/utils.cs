@@ -1,5 +1,5 @@
 ﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 using Minio.Exceptions;
 using Minio.Helper;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -925,6 +926,13 @@ namespace Minio
             }
 
             return url;
+        }
+
+        public static IRestRequest GetEmptyRestRequest(IRestRequest request)
+        {
+            string serializedBody = Newtonsoft.Json.JsonConvert.SerializeObject("");
+            request.AddParameter("application/json; charset=utf-8", serializedBody, ParameterType.RequestBody);
+            return request;
         }
     }
 }

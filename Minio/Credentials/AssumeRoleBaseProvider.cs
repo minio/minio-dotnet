@@ -33,7 +33,6 @@ namespace Minio.Credentials
                                 where T: AssumeRoleBaseProvider<T>
     {
         internal AccessCredentials Credentials { get; set; }
-        internal HttpClient Http_Client { get; set; }
         internal MinioClient Minio_Client { get; set; }
         internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers = Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
         internal string Action { get; set; }
@@ -44,11 +43,6 @@ namespace Minio.Credentials
         internal string RoleARN { get; set; }
         internal string ExternalID { get; set; }
 
-        public AssumeRoleBaseProvider(HttpClient httpClient)
-        {
-            this.Http_Client = httpClient;
-        }
-
         public AssumeRoleBaseProvider(MinioClient client)
         {
             this.Minio_Client = Minio_Client;
@@ -57,7 +51,6 @@ namespace Minio.Credentials
         public AssumeRoleBaseProvider()
         {
             this.Minio_Client = null;
-            this.Http_Client = null;
         }
 
         public T WithDurationInSeconds(uint? durationInSeconds)
@@ -113,12 +106,6 @@ namespace Minio.Credentials
         public T WithRoleAction(string action)
         {
             this.Action = action;
-            return (T)this;
-        }
-
-        public T WithHttpClient(HttpClient client)
-        {
-            this.Http_Client = client;
             return (T)this;
         }
 

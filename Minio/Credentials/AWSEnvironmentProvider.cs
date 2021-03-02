@@ -34,7 +34,7 @@ namespace Minio.Credentials
             throw new InvalidOperationException("Please use the non-async function GetCredentials()");
         }
 
-        protected string GetAccessKey()
+        internal string GetAccessKey()
         {
             string accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
             if (string.IsNullOrEmpty(accessKey) || string.IsNullOrWhiteSpace(accessKey))
@@ -44,7 +44,7 @@ namespace Minio.Credentials
             return accessKey;
         }
 
-        protected string GetSecretKey()
+        internal string GetSecretKey()
         {
             string secretKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
             if (string.IsNullOrEmpty(secretKey) || string.IsNullOrWhiteSpace(secretKey))

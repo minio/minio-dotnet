@@ -17,7 +17,6 @@
 
 using System;
 using System.Threading.Tasks;
-using System.IdentityModel.Tokens.Jwt;
 using RestSharp;
 using Minio.DataModel;
 using System.Net;
@@ -31,10 +30,8 @@ namespace Minio.Credentials
     {
         public readonly uint MIN_DURATION_SECONDS = 15;
         public readonly uint MAX_DURATION_SECONDS = (uint)(new TimeSpan(7,0,0,0)).TotalSeconds;
-        internal JwtSecurityTokenHandler TokenHandler { get; set; } // JWT supplier.
-        internal JwtSecurityToken SecurityToken { get; set; }
         internal Uri STSEndpoint { get; set; }
-        internal Func<string, JsonWebToken> JWTSupplier { get; set; }
+        internal Func<JsonWebToken> JWTSupplier { get; set; }
 
         public WebIdentityClientGrantsProvider()
         {
@@ -53,8 +50,6 @@ namespace Minio.Credentials
             return (expiry < MIN_DURATION_SECONDS) ? MIN_DURATION_SECONDS : expiry;
         }
 
-        internal abstract Uri GetJWTUri(JwtSecurityToken jwtSecurityToken);
-
         internal T WithSTSEndpoint(Uri endpoint)
         {
             this.STSEndpoint = endpoint;
@@ -62,14 +57,18 @@ namespace Minio.Credentials
         }
         internal async override Task<IRestRequest> BuildRequest()
         {
-            IRestRequest restRequest = new RestRequest(GetJWTUri(this.SecurityToken), Method.POST);
-            // Add utils.GetHTTPEmptyBody()
+            this.Validate();
+            JsonWebToken jwt = this.JWTSupplier();
+            IRestRequest restRequest = await base.BuildRequest();
+            restRequest = utils.GetEmptyRestRequest(restRequest);
+            restRequest.AddQueryParameter("WebIdentityToken", jwt.AccessToken);
             await Task.Yield();
             return restRequest;
         }
 
         public override AccessCredentials ParseResponse(IRestResponse response)
         {
+            this.Validate();
             if (string.IsNullOrEmpty(response.Content) || !HttpStatusCode.OK.Equals(response.StatusCode))
             {
                 throw new ArgumentNullException("Cannot generate credentials because of erroneous response");
@@ -80,5 +79,16 @@ namespace Minio.Credentials
             }
         }
 
+        protected void Validate()
+        {
+            if (this.JWTSupplier == null)
+            {
+                throw new ArgumentNullException(nameof(JWTSupplier) + " JWT Token supplier cannot be null.");
+            }
+            if (this.STSEndpoint == null || string.IsNullOrEmpty(this.STSEndpoint.AbsoluteUri))
+            {
+                throw new InvalidOperationException(nameof(this.STSEndpoint) + " value is invalid.");
+            }
+        }
     }
 }

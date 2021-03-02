@@ -25,7 +25,6 @@ namespace Minio.Credentials
     public class AssumeRoleProvider<T> : AssumeRoleBaseProvider<T>
                             where T: AssumeRoleProvider<T>
     {
-
         internal string STSEndPoint { get; set; }
         internal string AccessKey { get; set; }
         internal string SecretKey { get; set; }
@@ -85,10 +84,6 @@ namespace Minio.Credentials
             this.Url = stsUri.Authority;
 
             return (T)this;
-        }
-
-        public AssumeRoleProvider(HttpClient httpClient) : base(httpClient)
-        {
         }
 
         internal override async Task<IRestRequest> BuildRequest()

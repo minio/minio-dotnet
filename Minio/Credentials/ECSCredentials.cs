@@ -23,8 +23,8 @@ namespace Minio.Credentials
 {
     public class ECSCredentials
     {
-        [JsonProperty("AccessKeyID")]
-        public string AccessKeyID { get; set; }
+        [JsonProperty("AccessKeyId")]
+        public string AccessKeyId { get; set; }
         [JsonProperty("SecretAccessKey")]
         public string SecretAccessKey { get; set; }
         [JsonProperty("Token")]
@@ -35,9 +35,13 @@ namespace Minio.Credentials
         public string Code { get; set; }
         [JsonProperty("Message")]
         public string Message { get; set; }
+        [JsonProperty("Type")]
+        public string Type { get; set; }
+        [JsonProperty("LastUpdated")]
+        public string LastUpdated { get; set; }
         public AccessCredentials GetAccessCredentials()
         {
-            return new AccessCredentials(this.AccessKeyID, this.SecretAccessKey, this.SessionToken,
+            return new AccessCredentials(this.AccessKeyId, this.SecretAccessKey, this.SessionToken,
                                             utils.From8601String(this.ExpirationDate));
         }
     }

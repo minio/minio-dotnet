@@ -28,14 +28,15 @@ namespace Minio.Examples.Cases
     public class IAMAWSProviderExample
     {
         // Establish Credentials with AWS IAM Credentials
-        public async static Task Run(MinioClient minio)
+        public async static Task Run()
         {
-            IAMAWSProvider provider = new IAMAWSProvider(null, minio);
+            IAMAWSProvider provider = new IAMAWSProvider();
             MinioClient minioClient = new MinioClient()
                                                 .WithEndpoint("s3.amazonaws.com")
                                                 .WithSSL()
                                                 .WithCredentialsProvider(provider)
                                                 .Build();
+            provider = provider.WithMinioClient(minioClient);
             try
             {
                 StatObjectArgs statObjectArgs = new StatObjectArgs()
