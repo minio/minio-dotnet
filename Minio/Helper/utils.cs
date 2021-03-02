@@ -886,5 +886,45 @@ namespace Minio
             return DateTime.Parse(dt, null, System.Globalization.DateTimeStyles.RoundtripKind);
         }
 
+        public static Uri GetBaseUrl(string endpoint)
+        {
+            if (String.IsNullOrEmpty(endpoint))
+            {
+                throw new ArgumentException(String.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint),"endpoint");
+            }
+            if (endpoint.EndsWith("/"))
+            {
+                endpoint = endpoint.Substring(0, endpoint.Length - 1);
+            }
+            if (!endpoint.StartsWith("http") && !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
+            {
+                throw new InvalidEndpointException(String.Format("{0} is invalid hostname.", endpoint),"endpoint");
+            }
+            string conn_url;
+            if (endpoint.StartsWith("http"))
+            {
+                throw new InvalidEndpointException(String.Format("{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),"endpoint");
+            }
+            string enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
+            string scheme = (enable_https != null && enable_https.Equals("1"))? "https://":"http://";
+            conn_url = scheme + endpoint;
+            string hostnameOfUri = string.Empty;
+            Uri url = null;
+            try
+            {
+                url = new Uri(conn_url);
+                hostnameOfUri = url.Authority;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            if ( !String.IsNullOrEmpty(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
+            {
+                throw new InvalidEndpointException(String.Format("{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),"endpoint");
+            }
+
+            return url;
+        }
     }
 }
