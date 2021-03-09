@@ -828,7 +828,7 @@ try
     // Set Tags for the bucket
     SetBucketTagsArgs args = new SetBucketTagsArgs()
                                                 .WithBucket(bucketName)
-                                                .WithTagKeyValuePairs(tags);
+                                                .WithTagging(tags);
     await minio.SetBucketTagsAsync(args);
     Console.WriteLine($"Set Tags for bucket {bucketName}.");
 }
@@ -2540,7 +2540,7 @@ try
     SetObjectTagsArgs args = new new SetObjectTagsArgs()
                                                 .WithBucket(bucketName)
                                                 .WithObject(objectName)
-                                                .WithTagKeyValuePairs(tags);
+                                                .WithTagging(tags);
     await minio.SetObjectTagsAsync(args);
     Console.WriteLine($"Set tags for object {bucketName}/{objectName}.");
 }

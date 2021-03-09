@@ -17,7 +17,7 @@
 using System;
 using System.Threading.Tasks;
 
-using Minio.DataModel;
+using Minio.DataModel.ILM;
 
 namespace Minio.Examples.Cases
 {

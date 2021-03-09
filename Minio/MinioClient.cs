@@ -1,6 +1,6 @@
 ﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
- * (C) 2017, 2018, 2019, 2020 MinIO, Inc.
+ * (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -183,11 +183,11 @@ namespace Minio
         {
             this.ArgsCheck(args);
             string contentType = "application/octet-stream";
-            args.HeaderMap?.TryGetValue("Content-Type", out contentType);
+            args.Headers?.TryGetValue("Content-Type", out contentType);
             RestRequest request = await this.CreateRequest(args.RequestMethod,
                                                 args.BucketName,
                                                 args.ObjectName,
-                                                args.HeaderMap,
+                                                args.Headers,
                                                 contentType,
                                                 args.RequestBody,
                                                 null).ConfigureAwait(false);

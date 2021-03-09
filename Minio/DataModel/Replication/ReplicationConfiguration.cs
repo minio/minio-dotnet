@@ -18,11 +18,18 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+/*
+ * ReplicationConfiguration class used as a container for replication rules. Max number of rules is 100. Size of configuration allowed is 2MB.
+ * Please refer:
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketReplication.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketReplication.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
+ */
+
+namespace Minio.DataModel.Replication
 {
     [Serializable]
     [XmlRoot(ElementName = "ReplicationConfiguration")]
@@ -80,16 +87,7 @@ namespace Minio.DataModel
                 xs.Serialize(xw, this, ns);
                 xw.Flush();
 
-                str = sw.ToString();
-                // We'll need to remove the namespace attribute inserted in the serialize configuration
-                const RegexOptions regexOptions =
-                            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline;
-                str = Regex.Replace(
-                    str,
-                    @"<\w+\s+\w+:nil=""true""(\s+xmlns:\w+=""http://www.w3.org/2001/XMLSchema-instance"")?\s*/>",
-                    string.Empty,
-                    regexOptions
-                );
+                str = utils.RemoveNamespaceInXML(sw.ToString());
             }
             catch (Exception ex)
             {

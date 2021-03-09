@@ -82,8 +82,12 @@ namespace Minio.Tests
                     throw exception;
                 });
 
+            GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                    .WithBucket(Guid.NewGuid().ToString())
+                                                    .WithObject("aa")
+                                                    .WithCallbackStream(s => { });
             await Assert.ThrowsExceptionAsync<BucketNotFoundException>(
-                () => client.GetObjectAsync(Guid.NewGuid().ToString(), "aa", s => { }));
+                () => client.GetObjectAsync(getObjectArgs));
             Assert.AreEqual(invokeCount, retryCount);
         }
     }

@@ -15,6 +15,9 @@
  */
 
 using Minio.DataModel;
+using Minio.DataModel.ILM;
+using Minio.DataModel.Replication;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -302,6 +305,8 @@ namespace Minio
                 this.BucketTags = null;
                 return;
             }
+            // Remove namespace from response content, if present.
+            responseContent = utils.RemoveNamespaceInXML(responseContent);
             using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
             {
                 this.BucketTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(stream);
@@ -340,6 +345,8 @@ namespace Minio
                 this.BucketLifecycle = null;
                 return;
             }
+            //Remove xmlns content for config serialization
+            responseContent = utils.RemoveNamespaceInXML(responseContent);
             using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
             {
                 this.BucketLifecycle = (LifecycleConfiguration)new XmlSerializer(typeof(LifecycleConfiguration)).Deserialize(stream);

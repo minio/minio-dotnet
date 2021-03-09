@@ -142,6 +142,7 @@ namespace Minio
                 this.ObjectTags = null;
                 return;
             }
+            responseContent = utils.RemoveNamespaceInXML(responseContent);
             using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
             {
                 this.ObjectTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(stream);

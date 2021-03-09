@@ -1,5 +1,5 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,8 +133,7 @@ namespace Minio.DataModel
                 xw = XmlWriter.Create(sw, settings);
                 xs.Serialize(xw, this, ns);
                 xw.Flush();
-
-                str = sw.ToString();
+                str = utils.RemoveNamespaceInXML(sw.ToString());
             }
             catch (Exception ex)
             {
@@ -159,7 +158,7 @@ namespace Minio.DataModel
             return new Tagging(tags, true);
         }
 
-        public string GetTagString()
+        internal string GetTagString()
         {
             if (this.TaggingSet == null || this.TaggingSet.Tag == null && this.TaggingSet.Tag.Count == 0)
             {
@@ -173,6 +172,11 @@ namespace Minio.DataModel
                 tagStr += tag.Key + "=" + tag.Value + append;
             }
             return tagStr;
+        }
+
+        public override string ToString()
+        {
+            return this.GetTagString();
         }
     }
 }

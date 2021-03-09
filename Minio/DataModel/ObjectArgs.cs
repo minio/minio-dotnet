@@ -35,7 +35,7 @@ namespace Minio
             return (T)this;
         }
 
-        public override void Validate()
+        internal override void Validate()
         {
             base.Validate();
             utils.ValidateObjectName(this.ObjectName);
