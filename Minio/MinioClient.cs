@@ -183,11 +183,11 @@ namespace Minio
         {
             this.ArgsCheck(args);
             string contentType = "application/octet-stream";
-            args.HeaderMap?.TryGetValue("Content-Type", out contentType);
+            args.Headers?.TryGetValue("Content-Type", out contentType);
             RestRequest request = await this.CreateRequest(args.RequestMethod,
                                                 args.BucketName,
                                                 args.ObjectName,
-                                                args.HeaderMap,
+                                                args.Headers,
                                                 contentType,
                                                 args.RequestBody,
                                                 null).ConfigureAwait(false);
@@ -230,16 +230,24 @@ namespace Minio
 
             if (this.Provider != null)
             {
-                bool isAWSProvider = (this.Provider is AWSEnvironmentProvider aWSEnvProvider) ||
-                                     (this.Provider is ChainedProvider chained && chained.CurrentProvider is AWSEnvironmentProvider);
-                bool isIAMAWSProvider = (this.Provider is IAMAWSProvider);
+                bool isAWSEnvProvider = (this.Provider is AWSEnvironmentProvider) ||
+                                        (this.Provider is ChainedProvider ch && ch.CurrentProvider is AWSEnvironmentProvider);
+                bool isIAMAWSProvider = (this.Provider is IAMAWSProvider) ||
+                                        (this.Provider is ChainedProvider chained && chained.CurrentProvider is AWSEnvironmentProvider);
                 AccessCredentials creds = null;
-                if (isAWSProvider)
-                    creds = await this.Provider.GetCredentialsAsync();
+                if (isAWSEnvProvider)
+                {
+                    var aWSEnvProvider = (AWSEnvironmentProvider)this.Provider;
+                    creds = await aWSEnvProvider.GetCredentialsAsync();
+                }
                 else if (isIAMAWSProvider)
                 {
                     var iamAWSProvider = (IAMAWSProvider) this.Provider;
                     creds = iamAWSProvider.Credentials;
+                }
+                else
+                {
+                    creds = await this.Provider.GetCredentialsAsync();
                 }
                 if (creds != null)
                 {
@@ -248,7 +256,7 @@ namespace Minio
                 }
             }
 
-            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: string.IsNullOrEmpty(this.Region)?region:this.Region, sessionToken: this.SessionToken);
+            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: string.IsNullOrWhiteSpace(this.Region)?region:this.Region, sessionToken: this.SessionToken);
 
             // This section reconstructs the url with scheme followed by location specific endpoint (s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
@@ -331,7 +339,7 @@ namespace Minio
                     creds = iamAWSProvider.Credentials;
                 }
                 if (creds != null &&
-                    (isAWSProvider || isIAMAWSProvider) && (!string.IsNullOrEmpty(creds.SessionToken) && !string.IsNullOrWhiteSpace(creds.SessionToken)))
+                    (isAWSProvider || isIAMAWSProvider) && !string.IsNullOrWhiteSpace(creds.SessionToken))
                 {
                     request.AddHeader("X-Amz-Security-Token", creds.SessionToken);
                 }
@@ -503,7 +511,8 @@ namespace Minio
             AccessCredentials credentials = null;
             if (this.Provider is IAMAWSProvider iAMAWSProvider)
             {
-                credentials = iAMAWSProvider.GetCredentialsAsync().GetAwaiter().GetResult();
+                // Empty object, we need the Minio client completely
+                credentials = new AccessCredentials();
             }
             else
             {

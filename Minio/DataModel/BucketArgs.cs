@@ -1,5 +1,5 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,11 @@ namespace Minio
                 where T : BucketArgs<T>
     {
         internal string BucketName { get; set; }
-        internal Dictionary<string, string> HeaderMap { get; set; }
+        internal Dictionary<string, string> Headers { get; set; }
 
         public BucketArgs()
         {
-            this.HeaderMap = new Dictionary<string, string>();
+            this.Headers = new Dictionary<string, string>();
         }
 
         public T WithBucket(string bucket)
@@ -41,15 +41,15 @@ namespace Minio
             {
                 return (T)this;
             }
-            this.HeaderMap = this.HeaderMap ?? new Dictionary<string, string>();
+            this.Headers = this.Headers ?? new Dictionary<string, string>();
             foreach (string key in headers.Keys)
             {
-                this.HeaderMap[key] = headers[key];
+                this.Headers[key] = headers[key];
             }
             return (T)this;
         }
 
-        public virtual void Validate()
+        internal virtual void Validate()
         {
             utils.ValidateBucketName(this.BucketName);
         }

@@ -16,15 +16,15 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using Minio.DataModel;
+using System.Collections.Generic;
 using RestSharp;
+
+using Minio.DataModel;
 
 namespace Minio.Credentials
 {
@@ -33,7 +33,7 @@ namespace Minio.Credentials
                                 where T: AssumeRoleBaseProvider<T>
     {
         internal AccessCredentials Credentials { get; set; }
-        internal MinioClient Minio_Client { get; set; }
+        internal MinioClient Client { get; set; }
         internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers = Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
         internal string Action { get; set; }
         internal uint? DurationInSeconds { get; set; }
@@ -45,12 +45,12 @@ namespace Minio.Credentials
 
         public AssumeRoleBaseProvider(MinioClient client)
         {
-            this.Minio_Client = Minio_Client;
+            this.Client = client;
         }
 
         public AssumeRoleBaseProvider()
         {
-            this.Minio_Client = null;
+            this.Client = null;
         }
 
         public T WithDurationInSeconds(uint? durationInSeconds)
@@ -61,13 +61,7 @@ namespace Minio.Credentials
 
         public T WithRegion(string region)
         {
-            if (string.IsNullOrEmpty(region) || string.IsNullOrWhiteSpace(region))
-            {
-                this.Region = "";
-                return (T)this;
-            }
-
-            this.Region = region;
+            this.Region = (!string.IsNullOrWhiteSpace(region))? region : "";
             return (T)this;
         }
 
@@ -91,13 +85,13 @@ namespace Minio.Credentials
 
         public T WithExternalID(string externalId)
         {
-            if (string.IsNullOrEmpty(externalId) || string.IsNullOrWhiteSpace(externalId))
+            if (string.IsNullOrWhiteSpace(externalId))
             {
                 throw new ArgumentNullException("The External ID cannot be null or empty.");
             }
             if (externalId.Length < 2 || externalId.Length > 1224)
             {
-                throw new ArgumentOutOfRangeException("The External Id needs to be between 2 to 1224 in length");
+                throw new ArgumentOutOfRangeException("The External Id needs to be between 2 to 1224 characters in length");
             }
             this.ExternalID = externalId;
             return (T)this;
@@ -112,25 +106,25 @@ namespace Minio.Credentials
         internal async virtual Task<IRestRequest> BuildRequest()
         {
             IRestRequest restRequest = null;
-            if (Minio_Client != null)
+            if (Client != null)
             {
-                restRequest = await Minio_Client.CreateRequest(Method.POST);
+                restRequest = await Client.CreateRequest(Method.POST);
             }
             else
             {
-                throw new InvalidOperationException("MinioClient not initialized in AssumeRoleBaseProvider");
+                throw new InvalidOperationException("MinioClient is not set in AssumeRoleBaseProvider");
             }
             restRequest = restRequest.AddQueryParameter("Action", this.Action)
                                      .AddQueryParameter("Version", "2011-06-15");
-            if (!string.IsNullOrEmpty(this.Policy))
+            if (!string.IsNullOrWhiteSpace(this.Policy))
             {
                 restRequest = restRequest.AddQueryParameter("Policy", this.Policy);
             }
-            if (!string.IsNullOrEmpty(this.RoleARN))
+            if (!string.IsNullOrWhiteSpace(this.RoleARN))
             {
                 restRequest = restRequest.AddQueryParameter("RoleArn", this.RoleARN);
             }
-            if (!string.IsNullOrEmpty(this.RoleSessionName))
+            if (!string.IsNullOrWhiteSpace(this.RoleSessionName))
             {
                 restRequest = restRequest.AddQueryParameter("RoleSessionName", this.RoleARN);
             }
@@ -140,18 +134,18 @@ namespace Minio.Credentials
 
         public async override Task<AccessCredentials> GetCredentialsAsync()
         {
-            if (this.Credentials != null && this.Credentials.AreExpired())
+            if (this.Credentials != null && !this.Credentials.AreExpired())
             {
                 return this.Credentials;
             }
 
             var request = await this.BuildRequest();
-            if (this.Minio_Client != null)
+            if (this.Client != null)
             {
                 IRestResponse restResponse = null;
                 try
                 {
-                    restResponse = await Minio_Client.ExecuteAsync(this.NoErrorHandlers, request);
+                    restResponse = await Client.ExecuteAsync(this.NoErrorHandlers, request);
                 }
                 catch (Exception)
                 {
@@ -161,11 +155,11 @@ namespace Minio.Credentials
             return null;
         }
 
-        public virtual AccessCredentials ParseResponse(IRestResponse response)
+        internal virtual AccessCredentials ParseResponse(IRestResponse response)
         {
             if (string.IsNullOrEmpty(response.Content) || !HttpStatusCode.OK.Equals(response.StatusCode))
             {
-                throw new ArgumentNullException("Cannot generate credentials because of erroneous response");
+                throw new ArgumentNullException("Unable to generate credentials. Response error.");
             }
             using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(response.Content)))
             {
@@ -175,7 +169,7 @@ namespace Minio.Credentials
 
         public override AccessCredentials GetCredentials()
         {
-            throw new InvalidOperationException("Please use the Async method.");
+            throw new InvalidOperationException("Please use the GetCredentialsAsync method.");
         }
     }
 }

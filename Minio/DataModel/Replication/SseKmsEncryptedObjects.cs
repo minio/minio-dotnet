@@ -18,7 +18,15 @@ using System;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+/*
+ * SseKmsEncryptedObjects class used within SourceSelectionCriteria which has the filter information for the selection of objects encrypted with AWS KMS.
+ * Please refer:
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketReplication.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketReplication.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
+ */
+
+namespace Minio.DataModel.Replication
 {
     [Serializable]
     [XmlRoot(ElementName = "SseKmsEncryptedObjects")]

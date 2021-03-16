@@ -25,6 +25,8 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Minio.Helper;
+using Minio.DataModel.ILM;
+using Minio.DataModel.Replication;
 
 namespace Minio
 {
@@ -71,6 +73,7 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns> Task </returns>
         /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucketName is not found</exception>
         public async Task RemoveBucketAsync(RemoveBucketArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
@@ -94,7 +97,7 @@ namespace Minio
                 args.Location = this.Region;
             }
             // Set Target URL for MakeBucket
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, args.Location);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, region:args.Location);
             SetTargetURL(requestUrl);
             // Set Authenticator, if necessary.
             if (string.IsNullOrEmpty(this.Region) && !s3utils.IsAmazonEndPoint(this.BaseUrl) && args.Location != "us-east-1" && this.restClient != null)

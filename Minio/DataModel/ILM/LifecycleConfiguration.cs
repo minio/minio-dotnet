@@ -18,11 +18,17 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+/*
+ * Object representation of request XML used in these calls - PutBucketLifecycleConfiguration, GetBucketLifecycleConfiguration.
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketLifecycleConfiguration.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html
+ *
+ */
+
+namespace Minio.DataModel.ILM
 {
     [Serializable]
     [XmlRoot(ElementName = "LifecycleConfiguration")]
@@ -68,17 +74,7 @@ namespace Minio.DataModel
                 xw = XmlWriter.Create(sw, settings);
                 xs.Serialize(xw, this, ns);
                 xw.Flush();
-
-                // We'll need to remove the namespace attribute inserted in the serialize configuration
-                const RegexOptions regexOptions =
-                            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline;
-                str = sw.ToString();
-                str = Regex.Replace(
-                    str,
-                    @"<\w+\s+\w+:nil=""true""(\s+xmlns:\w+=""http://www.w3.org/2001/XMLSchema-instance"")?\s*/>",
-                    string.Empty,
-                    regexOptions
-                );
+                str = utils.RemoveNamespaceInXML(sw.ToString());
             }
             catch (Exception ex)
             {

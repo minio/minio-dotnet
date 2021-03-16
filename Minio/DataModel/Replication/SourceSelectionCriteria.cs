@@ -18,7 +18,15 @@ using System;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+/*
+ * SourceSelectionCriteria class used within ReplicationRule which describes additional filters for identifying the source objects that is being replicated.
+ * Please refer:
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketReplication.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketReplication.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
+ */
+
+namespace Minio.DataModel.Replication
 {
     [Serializable]
     [XmlRoot(ElementName = "SourceSelectionCriteria")]

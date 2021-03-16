@@ -17,7 +17,15 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+/*
+ * ExistingObjectReplication class used within ReplicationRule is the configuration that specifies if existing source bucket objects can be replicated.
+ * Please refer:
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketReplication.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketReplication.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
+ */
+
+namespace Minio.DataModel.Replication
 {
     [Serializable]
     [XmlRoot(ElementName = "ExistingObjectReplication")]

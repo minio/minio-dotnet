@@ -25,7 +25,7 @@ namespace Minio
         // Will be one of the type - HEAD, GET, PUT, DELETE. etc.
         internal Method RequestMethod { get; set; }
 
-        public virtual RestRequest BuildRequest(RestRequest request)
+        internal virtual RestRequest BuildRequest(RestRequest request)
         {
             return request;
         }

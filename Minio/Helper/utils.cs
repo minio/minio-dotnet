@@ -882,6 +882,25 @@ namespace Minio
             return dt.ToString("yyyy-MM-dd'T'HH:mm:ssZ", CultureInfo.InvariantCulture);
         }
 
+        public static string RemoveNamespaceInXML(string config)
+        {
+            // We'll need to remove the namespace within the serialized configuration
+            const RegexOptions regexOptions =
+                        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline;
+            string patternToReplace = @"<\w+\s+\w+:nil=""true""(\s+xmlns:\w+=""http://www.w3.org/2001/XMLSchema-instance"")?\s*/>";
+            string patternToMatch = @"<\w+\s+xmlns=""http://s3.amazonaws.com/doc/2006-03-01/""\s*>";
+            if (Regex.Match(config, patternToMatch, regexOptions).Success)
+            {
+                patternToReplace = @"xmlns=""http://s3.amazonaws.com/doc/2006-03-01/""\s*";
+            }
+            config = Regex.Replace(
+                config,
+                patternToReplace,
+                string.Empty,
+                regexOptions
+            );
+            return config;
+        }
         public static DateTime From8601String(string dt)
         {
             return DateTime.Parse(dt, null, System.Globalization.DateTimeStyles.RoundtripKind);
@@ -920,7 +939,7 @@ namespace Minio
             {
                 throw;
             }
-            if ( !String.IsNullOrEmpty(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
+            if (!String.IsNullOrWhiteSpace(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
             {
                 throw new InvalidEndpointException(String.Format("{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),"endpoint");
             }

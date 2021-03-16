@@ -16,12 +16,14 @@
  */
 
 using System;
-using System.Threading.Tasks;
 using RestSharp;
-using Minio.DataModel;
 using System.Net;
-using System.Xml.Serialization;
 using System.IO;
+using System.Threading.Tasks;
+using System.Xml.Serialization;
+
+
+using Minio.DataModel;
 
 namespace Minio.Credentials
 {
@@ -66,12 +68,12 @@ namespace Minio.Credentials
             return restRequest;
         }
 
-        public override AccessCredentials ParseResponse(IRestResponse response)
+        internal override AccessCredentials ParseResponse(IRestResponse response)
         {
             this.Validate();
-            if (string.IsNullOrEmpty(response.Content) || !HttpStatusCode.OK.Equals(response.StatusCode))
+            if (string.IsNullOrWhiteSpace(response.Content) || !HttpStatusCode.OK.Equals(response.StatusCode))
             {
-                throw new ArgumentNullException("Cannot generate credentials because of erroneous response");
+                throw new ArgumentNullException("Unable to get credentials. Response error.");
             }
             using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(response.Content)))
             {
@@ -85,7 +87,7 @@ namespace Minio.Credentials
             {
                 throw new ArgumentNullException(nameof(JWTSupplier) + " JWT Token supplier cannot be null.");
             }
-            if (this.STSEndpoint == null || string.IsNullOrEmpty(this.STSEndpoint.AbsoluteUri))
+            if (this.STSEndpoint == null || string.IsNullOrWhiteSpace(this.STSEndpoint.AbsoluteUri))
             {
                 throw new InvalidOperationException(nameof(this.STSEndpoint) + " value is invalid.");
             }

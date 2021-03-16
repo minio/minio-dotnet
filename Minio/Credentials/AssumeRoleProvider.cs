@@ -44,7 +44,7 @@ namespace Minio.Credentials
 
         public T WithAccessKey(string accessKey)
         {
-            if (string.IsNullOrEmpty(accessKey) || string.IsNullOrWhiteSpace(accessKey))
+            if (string.IsNullOrWhiteSpace(accessKey))
             {
                 throw new ArgumentNullException("The Access Key cannot be null or empty.");
             }
@@ -55,7 +55,7 @@ namespace Minio.Credentials
 
         public T WithSecretKey(string secretKey)
         {
-            if (string.IsNullOrEmpty(secretKey) || string.IsNullOrWhiteSpace(secretKey))
+            if (string.IsNullOrWhiteSpace(secretKey))
             {
                 throw new ArgumentNullException("The Secret Key cannot be null or empty.");
             }
@@ -65,7 +65,7 @@ namespace Minio.Credentials
 
         public T WithSTSEndpoint(string endpoint)
         {
-            if (string.IsNullOrEmpty(endpoint) || string.IsNullOrWhiteSpace(endpoint))
+            if (string.IsNullOrWhiteSpace(endpoint))
             {
                 throw new ArgumentNullException("The STS endpoint cannot be null or empty.");
             }
@@ -93,7 +93,7 @@ namespace Minio.Credentials
                 this.DurationInSeconds = DefaultDurationInSeconds;
 
             var restRequest = await base.BuildRequest();
-            if (string.IsNullOrEmpty(this.ExternalID))
+            if (string.IsNullOrWhiteSpace(this.ExternalID))
             {
                 restRequest.AddQueryParameter("ExternalId", this.ExternalID);
             }

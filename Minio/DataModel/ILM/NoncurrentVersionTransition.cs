@@ -17,7 +17,15 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+/*
+ * NoncurrentVersionTransition is used within LifecycleRule to specify when the noncurrent object transitions and which storage class is to be used.
+ * Please refer:
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketLifecycleConfiguration.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html
+ */
+
+
+namespace Minio.DataModel.ILM
 {
     [Serializable]
     [XmlRoot(ElementName = "NoncurrentVersionTransition")]

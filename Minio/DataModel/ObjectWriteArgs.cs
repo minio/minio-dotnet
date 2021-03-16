@@ -20,19 +20,13 @@ using Minio.DataModel;
 
 namespace Minio
 {
-    public abstract class ObjectWriteArgs<T> : ObjectQueryArgs<T>
+    public abstract class ObjectWriteArgs<T> : ObjectConditionalQueryArgs<T>
                             where T : ObjectWriteArgs<T>
     {
         internal Tagging ObjectTags { get; set; }
         internal ObjectRetentionConfiguration Retention { get; set; }
         internal bool? LegalHoldEnabled { get; set; }
         internal string ContentType { get; set; }
-
-        public T WithTagKeyValuePairs(Dictionary<string, string> kv)
-        {
-            this.ObjectTags = Tagging.GetObjectTags(kv);
-            return (T)this;
-        }
 
         public T WithTagging(Tagging tagging)
         {

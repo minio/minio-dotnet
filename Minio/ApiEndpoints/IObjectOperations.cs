@@ -1,6 +1,6 @@
 /*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
- * (C) 2017, 2018, 2019, 2020 MinIO, Inc.
+ * (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,11 +119,19 @@ namespace Minio
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
+        /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name, server-side encryption object, action stream, length, offset</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        Task GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Get an object. The object will be streamed to the callback given by the user.
+        /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Name of object to retrieve</param>
         /// <param name="callback">A stream will be passed to the callback</param>
         /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        [Obsolete("Use GetObjectAsync method with GetObjectArgs object. Refer GetObject, GetObjectVersion & GetObjectQuery example code.")]
         Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -136,6 +144,7 @@ namespace Minio
         /// <param name="cb">A stream will be passed to the callback</param>
         /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        [Obsolete("Use GetObjectAsync method with GetObjectArgs object. Refer GetObject, GetObjectVersion & GetObjectQuery example code.")]
         Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -200,6 +209,7 @@ namespace Minio
         /// <param name="recursive">Set to true to recursively list all incomplete uploads</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>A lazily populated list of incomplete uploads</returns>
+        [Obsolete("Use ListIncompleteUploads method with ListIncompleteUploadsArgs object. Refer ListIncompleteUploads example code.")]
         IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix = "", bool recursive = false, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -208,6 +218,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to remove incomplete uploads from</param>
         /// <param name="objectName">Key to remove incomplete uploads from</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        [Obsolete("Use RemoveIncompleteUploadAsync method with RemoveIncompleteUploadArgs object. Refer RemoveIncompleteUpload example code.")]
         Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -247,6 +258,7 @@ namespace Minio
         /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        [Obsolete("Use GetObjectAsync method with GetObjectArgs object. Refer GetObject, GetObjectVersion & GetObjectQuery example code.")]
         Task GetObjectAsync(string bucketName, string objectName, string filePath, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -258,6 +270,7 @@ namespace Minio
         /// <param name="expiresInt">Expiration time in seconds.</param>
         /// <param name="reqParams">Optional override response headers</param>
         /// <param name="reqDate">Optional request date and time in UTC</param>
+        [Obsolete("Use PresignedGetObjectAsync method with PresignedGetObjectArgs object.")]
         Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null);
 
         /// <summary>

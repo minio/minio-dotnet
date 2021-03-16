@@ -25,19 +25,21 @@ namespace Minio.Credentials
     {
         public override AccessCredentials GetCredentials()
         {
-            AccessCredentials credentials = new AccessCredentials(GetAccessKey(), GetSecretKey(), GetEnvironmentVariable("AWS_SESSION_TOKEN"), default(DateTime));
+            AccessCredentials credentials = new AccessCredentials(GetAccessKey(), GetSecretKey(), GetSessionToken(), default(DateTime));
             return credentials;
         }
 
-        public override Task<AccessCredentials> GetCredentialsAsync()
+        public override async Task<AccessCredentials> GetCredentialsAsync()
         {
-            throw new InvalidOperationException("Please use the non-async function GetCredentials()");
+            var creds = this.GetCredentials();
+            await Task.Yield();
+            return creds;
         }
 
         internal string GetAccessKey()
         {
             string accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
-            if (string.IsNullOrEmpty(accessKey) || string.IsNullOrWhiteSpace(accessKey))
+            if (string.IsNullOrWhiteSpace(accessKey))
             {
                 accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY");
             }
@@ -47,11 +49,16 @@ namespace Minio.Credentials
         internal string GetSecretKey()
         {
             string secretKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
-            if (string.IsNullOrEmpty(secretKey) || string.IsNullOrWhiteSpace(secretKey))
+            if (string.IsNullOrWhiteSpace(secretKey))
             {
                 secretKey = Environment.GetEnvironmentVariable("AWS_SECRET_KEY");
             }
             return secretKey;
+        }
+
+        internal string GetSessionToken()
+        {
+            return Environment.GetEnvironmentVariable("AWS_SESSION_TOKEN");
         }
 
     }

@@ -86,7 +86,7 @@ namespace Minio.Credentials
             return restRequest;
         }
 
-        public override AccessCredentials ParseResponse(IRestResponse response)
+        internal override AccessCredentials ParseResponse(IRestResponse response)
         {
             this.Validate();
             AccessCredentials credentials = base.ParseResponse(response);

@@ -41,7 +41,6 @@ namespace Minio.Credentials
     {
         internal Uri CustomEndPoint { get; set; }
         internal AccessCredentials Credentials { get; set; }
-        internal HttpClient Http_Client { get; set; }
         internal MinioClient Minio_Client { get; set; }
 
         public override AccessCredentials GetCredentials()
@@ -51,7 +50,7 @@ namespace Minio.Credentials
             if (this.CustomEndPoint == null)
             {
                 string region = Environment.GetEnvironmentVariable("AWS_REGION");
-                if (string.IsNullOrEmpty(region) || string.IsNullOrWhiteSpace(region))
+                if (string.IsNullOrWhiteSpace(region))
                 {
                     url = RequestUtil.MakeTargetURL("sts.amazonaws.com", true);
                 }
@@ -76,7 +75,7 @@ namespace Minio.Credentials
             this.Validate();
             Uri url = this.CustomEndPoint;
             string urlStr = url.Authority;
-            if (url == null || string.IsNullOrEmpty(urlStr))
+            if (url == null || string.IsNullOrWhiteSpace(urlStr))
             {
                 string region = Environment.GetEnvironmentVariable("AWS_REGION");
                 urlStr = (region == null)?"https://sts.amazonaws.com":"https://sts." + region + ".amazonaws.com";
@@ -102,7 +101,7 @@ namespace Minio.Credentials
             this.Validate();
             RestRequest request = new RestRequest(url.ToString(), Method.GET);
             var response = await this.Minio_Client.ExecuteAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), request);
-            if (string.IsNullOrEmpty(response.Content) ||
+            if (string.IsNullOrWhiteSpace(response.Content) ||
                     !HttpStatusCode.OK.Equals(response.StatusCode))
             {
                 throw new CredentialsProviderException("IAMAWSProvider", "Credential Get operation failed with HTTP Status code: " + response.StatusCode);
@@ -131,7 +130,7 @@ namespace Minio.Credentials
             }
             Uri url = this.CustomEndPoint;
             string awsTokenFile = Environment.GetEnvironmentVariable("AWS_WEB_IDENTITY_TOKEN_FILE");
-            if (!string.IsNullOrEmpty(awsTokenFile))
+            if (!string.IsNullOrWhiteSpace(awsTokenFile))
             {
                 this.Credentials = this.GetAccessCredentials(awsTokenFile);
                 return this.Credentials;
@@ -139,11 +138,11 @@ namespace Minio.Credentials
             string containerRelativeUri = Environment.GetEnvironmentVariable("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI");
             string containerFullUri = Environment.GetEnvironmentVariable("AWS_CONTAINER_CREDENTIALS_FULL_URI");
             bool isURLEmpty = (url == null);
-            if (!string.IsNullOrEmpty(containerRelativeUri) && isURLEmpty)
+            if (!string.IsNullOrWhiteSpace(containerRelativeUri) && isURLEmpty)
             {    
                 url = RequestUtil.MakeTargetURL("169.254.170.2" + "/" + containerRelativeUri, false);
             }
-            else if (!string.IsNullOrEmpty(containerFullUri) && isURLEmpty)
+            else if (!string.IsNullOrWhiteSpace(containerFullUri) && isURLEmpty)
             {
                 var fullUri = new Uri(containerFullUri);
                 url = RequestUtil.MakeTargetURL(fullUri.AbsolutePath, (fullUri.Scheme == "https"));
@@ -151,7 +150,6 @@ namespace Minio.Credentials
             else
             {
                 url = await GetIamRoleNamedURL();
-                Console.WriteLine("iAMAWSProvider GetCredentialsAsync from " + url.ToString());
             }
             this.Credentials = await GetAccessCredentials(url);
             return this.Credentials;
@@ -162,7 +160,7 @@ namespace Minio.Credentials
             string[] roleNames = null;
             RestRequest request = new RestRequest(url.ToString(), Method.GET);
             var response = await this.Minio_Client.ExecuteAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), request);
-            if (string.IsNullOrEmpty(response.Content) ||
+            if (string.IsNullOrWhiteSpace(response.Content) ||
                     !HttpStatusCode.OK.Equals(response.StatusCode))
             {
                 throw new CredentialsProviderException("IAMAWSProvider", "Credential Get operation failed with HTTP Status code: " + response.StatusCode);
@@ -185,7 +183,7 @@ namespace Minio.Credentials
             this.Validate();
             Uri url = this.CustomEndPoint;
             string newUrlStr = null;
-            if (url == null || string.IsNullOrEmpty(url.Authority))
+            if (url == null || string.IsNullOrWhiteSpace(url.Authority))
             {
                 url = new Uri("http://169.254.169.254/latest/meta-data/iam/security-credentials/");
                 newUrlStr = "http://169.254.169.254/latest/meta-data/iam/security-credentials/";
@@ -203,28 +201,18 @@ namespace Minio.Credentials
 
         public IAMAWSProvider()
         {
-            this.Http_Client = null;
             this.Minio_Client = null;
         }
 
         public IAMAWSProvider WithMinioClient(MinioClient minio)
         {
             this.Minio_Client = minio;
+            if (this.Credentials == null ||
+                string.IsNullOrWhiteSpace(this.Credentials.AccessKey) || string.IsNullOrWhiteSpace(this.Credentials.SecretKey))
+            {
+                this.Credentials = this.GetCredentialsAsync().GetAwaiter().GetResult();
+            }
             return this;
-        }
-
-        public IAMAWSProvider(string endpoint, HttpClient client)
-        {
-            if (string.IsNullOrEmpty(endpoint) || string.IsNullOrWhiteSpace(endpoint))
-            {
-                throw new ArgumentNullException("Endpoint field " + nameof(CustomEndPoint) + " cannot be null or empty.");
-            }
-            if (client == null)
-            {
-                throw new ArgumentException("Http Client field " + nameof(this.Http_Client) + " cannot be null or empty.");
-            }
-            this.Http_Client = client;
-            this.CustomEndPoint = new Uri(endpoint);
         }
 
         public IAMAWSProvider WithEndpoint(string endpoint)
@@ -241,10 +229,10 @@ namespace Minio.Credentials
         }
         public IAMAWSProvider(string endpoint, MinioClient client)
         {
-            if (!string.IsNullOrEmpty(endpoint) && !string.IsNullOrWhiteSpace(endpoint))
+            if (!string.IsNullOrWhiteSpace(endpoint))
             {
                 this.CustomEndPoint = new Uri(endpoint);
-                if (string.IsNullOrEmpty(this.CustomEndPoint.Authority))
+                if (string.IsNullOrWhiteSpace(this.CustomEndPoint.Authority))
                 {
                     throw new ArgumentNullException("Endpoint field " + nameof(CustomEndPoint) + " is invalid.");
                 }
@@ -259,9 +247,9 @@ namespace Minio.Credentials
 
         public void Validate()
         {
-            if (this.Minio_Client == null && this.Http_Client == null)
+            if (this.Minio_Client == null)
             {
-                throw new ArgumentNullException("Atleast one of  " + nameof(Minio_Client) + " or " + nameof(Http_Client) + " should be assigned.");
+                throw new ArgumentNullException(nameof(Minio_Client) + " should be assigned for the operation to continue.");
             }
         }
     }

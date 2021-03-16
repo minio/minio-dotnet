@@ -25,19 +25,17 @@ using Minio.Exceptions;
 
 namespace Minio.Examples.Cases
 {
-    public class IAMAWSProviderExample
+    public class AWSEnvironmentProviderExample
     {
-        // Establish Credentials with AWS IAM Credentials
+        // Establish Credentials with AWS IAM Credentials in Environmental variables
         public async static Task Run()
         {
-            IAMAWSProvider provider = new IAMAWSProvider();
+            AWSEnvironmentProvider provider = new AWSEnvironmentProvider();
             MinioClient minioClient = new MinioClient()
                                                 .WithEndpoint("s3.amazonaws.com")
                                                 .WithSSL()
                                                 .WithCredentialsProvider(provider)
-                                                .WithRegion("us-west-2")
                                                 .Build();
-            provider = provider.WithMinioClient(minioClient);
             try
             {
                 StatObjectArgs statObjectArgs = new StatObjectArgs()

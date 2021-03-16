@@ -1,5 +1,5 @@
 ﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,12 @@ namespace Minio.Examples.Cases
             {
                 Console.WriteLine("Running example for API: GetObjectAsync");
                 File.Delete(fileName);
-                await minio.GetObjectAsync(bucketName, objectName, fileName, sse: sse);
+                GetObjectArgs args = new GetObjectArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObject(objectName)
+                                                .WithFile(fileName)
+                                                .WithServerSideEncryption(sse);
+                await minio.GetObjectAsync(args).ConfigureAwait(false);
                 Console.WriteLine($"Downloaded the file {fileName} from bucket {bucketName}");
                 Console.WriteLine();
             }
