@@ -213,6 +213,7 @@ namespace Minio
                   bool isRunning = true;
                   var delimiter = (args.Recursive)? string.Empty: "/";
                   string marker = string.Empty;
+                  string nextContinuationToken = string.Empty;
                   using(var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
                   {
                     while (isRunning)
@@ -222,11 +223,13 @@ namespace Minio
                                                             .WithPrefix(args.Prefix)
                                                             .WithDelimiter(delimiter)
                                                             .WithVersions(false)
+                                                            .WithNextContinuationToken(nextContinuationToken)
                                                             .WithMarker(marker);
                         Tuple<ListBucketResult, List<Item>> objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
                         ListObjectsItemResponse listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);
                         marker = listObjectsItemResponse.NextMarker;
                         isRunning = objectList.Item1.IsTruncated;
+                        nextContinuationToken = (objectList.Item1.IsTruncated)?objectList.Item1.NextContinuationToken:string.Empty;
                         cts.Token.ThrowIfCancellationRequested();
                     }
                   }

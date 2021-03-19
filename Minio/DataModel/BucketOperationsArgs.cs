@@ -108,7 +108,7 @@ namespace Minio
         internal string Prefix { get; private set; }
         internal string Marker { get; private set; }
         internal bool Versions { get; private set; }
-
+        internal string NextContinuationToken { get; set; }
 
         public GetObjectListArgs()
         {
@@ -118,16 +118,19 @@ namespace Minio
             this.Prefix = string.Empty;
             this.Marker = string.Empty;
         }
+
         public GetObjectListArgs WithDelimiter(string delim)
         {
             this.Delimiter = delim ?? string.Empty;
             return this;
         }
+
         public GetObjectListArgs WithPrefix(string prefix)
         {
             this.Prefix = prefix ?? string.Empty;
             return this;
         }
+
         public GetObjectListArgs WithMarker(string marker)
         {
             this.Marker = marker ?? string.Empty;
@@ -139,13 +142,28 @@ namespace Minio
             this.Versions = versions;
             return this;
         }
+
+        public GetObjectListArgs WithNextContinuationToken(string token)
+        {
+            this.NextContinuationToken = string.IsNullOrWhiteSpace(token)?string.Empty:token;
+            return this;
+        }
+
         internal override RestRequest BuildRequest(RestRequest request)
         {
+            request.AddQueryParameter("list-type", "2");
             request.AddQueryParameter("delimiter",this.Delimiter);
             request.AddQueryParameter("prefix",this.Prefix);
             request.AddQueryParameter("max-keys", "1000");
-            request.AddQueryParameter("marker",this.Marker);
             request.AddQueryParameter("encoding-type","url");
+            if (!string.IsNullOrWhiteSpace(this.Marker))
+            {
+                request.AddQueryParameter("marker",this.Marker);
+            }
+            if (!string.IsNullOrWhiteSpace(this.NextContinuationToken))
+            {
+                request.AddQueryParameter("continuation-token",this.NextContinuationToken);
+            }
             if (this.Versions)
             {
                 request.AddQueryParameter("versions", "");
