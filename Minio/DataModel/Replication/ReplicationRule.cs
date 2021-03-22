@@ -17,9 +17,16 @@
 using System;
 using System.Xml;
 using System.Xml.Serialization;
-using Minio.DataModel.Replication;
 
-namespace Minio.DataModel
+/*
+ * ReplicationRule class used within ReplicationConfiguration to encapsulate a rule used within replication configuration.
+ * Please refer:
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketReplication.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketReplication.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
+ */
+
+namespace Minio.DataModel.Replication
 {
     [Serializable]
     [XmlRoot(ElementName = "Rule")]

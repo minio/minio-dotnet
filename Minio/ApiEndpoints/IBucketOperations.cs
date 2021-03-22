@@ -21,6 +21,8 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Minio.DataModel;
+using Minio.DataModel.ILM;
+using Minio.DataModel.Replication;
 using Minio.Exceptions;
 
 namespace Minio
@@ -76,6 +78,7 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns> Task </returns>
         /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucketName is not found</exception>
         Task RemoveBucketAsync(RemoveBucketArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>

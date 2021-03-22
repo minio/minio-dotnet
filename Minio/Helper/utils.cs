@@ -1,5 +1,5 @@
 ﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -880,5 +880,30 @@ namespace Minio
         {
             return dt.ToString("yyyy-MM-dd'T'HH:mm:ssZ", CultureInfo.InvariantCulture);
         }
+
+        public static string RemoveNamespaceInXML(string config)
+        {
+            // We'll need to remove the namespace within the serialized configuration
+            const RegexOptions regexOptions =
+                        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline;
+            string patternToReplace = @"<\w+\s+\w+:nil=""true""(\s+xmlns:\w+=""http://www.w3.org/2001/XMLSchema-instance"")?\s*/>";
+            string patternToMatch = @"<\w+\s+xmlns=""http://s3.amazonaws.com/doc/2006-03-01/""\s*>";
+            if (Regex.Match(config, patternToMatch, regexOptions).Success)
+            {
+                patternToReplace = @"xmlns=""http://s3.amazonaws.com/doc/2006-03-01/""\s*";
+            }
+            config = Regex.Replace(
+                config,
+                patternToReplace,
+                string.Empty,
+                regexOptions
+            );
+            return config;
+        }
+        public static DateTime From8601String(string dt)
+        {
+            return DateTime.Parse(dt, null, System.Globalization.DateTimeStyles.RoundtripKind);
+        }
+
     }
 }

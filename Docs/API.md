@@ -828,7 +828,7 @@ try
     // Set Tags for the bucket
     SetBucketTagsArgs args = new SetBucketTagsArgs()
                                                 .WithBucket(bucketName)
-                                                .WithTagKeyValuePairs(tags);
+                                                .WithTagging(tags);
     await minio.SetBucketTagsAsync(args);
     Console.WriteLine($"Set Tags for bucket {bucketName}.");
 }
@@ -1942,6 +1942,9 @@ __Parameters__
 |        | ``ConnectionException`` : upon connection error            |
 |        | ``InternalClientException`` : upon internal library error        |
 |        | ``EntityTooLargeException``: upon proposed upload size exceeding max allowed |
+|        | ``UnexpectedShortReadException``: data read was shorter than size of input buffer |
+|        | ``ArgumentNullException``: upon null input stream    |
+|        | ``InvalidOperationException``: upon input value to PutObjectArgs being invalid    |
 
 __Example__
 
@@ -1952,11 +1955,16 @@ The maximum size of a single object is limited to 5TB. putObject transparently u
 ```cs
 try
 {
+    Aes aesEncryption = Aes.Create();
+    aesEncryption.KeySize = 256;
+    aesEncryption.GenerateKey();
+    var ssec = new SSEC(aesEncryption.Key);
     PutObjectArgs putObjectArgs = new PutObjectArgs()
                                             .WithBucket("mybucket")
                                             .WithObject("island.jpg")
                                             .WithFilename("/mnt/photos/island.jpg")
                                             .WithContentType("application/octet-stream")
+                                            .WithServerSideEncryption(ssec);
     await minio.PutObjectAsync(putObjectArgs);
     Console.WriteLine("island.jpg is uploaded successfully");
 }
@@ -2478,7 +2486,7 @@ try
     SetObjectTagsArgs args = new new SetObjectTagsArgs()
                                                 .WithBucket(bucketName)
                                                 .WithObject(objectName)
-                                                .WithTagKeyValuePairs(tags);
+                                                .WithTagging(tags);
     await minio.SetObjectTagsAsync(args);
     Console.WriteLine($"Set tags for object {bucketName}/{objectName}.");
 }

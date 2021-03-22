@@ -17,7 +17,6 @@
 using Minio.DataModel;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
@@ -44,7 +43,7 @@ namespace Minio.Examples.Cases
                                                 .WithObject(objectName)
                                                 .WithContentType("application/octet-stream")
                                                 .WithFileName(fileName)
-                                                .WithTagKeyValuePairs(tags);
+                                                .WithTagging(Tagging.GetObjectTags(tags));
                 await minio.PutObjectAsync(args);
             
                 Console.WriteLine($"Uploaded object {objectName} to bucket {bucketName}");

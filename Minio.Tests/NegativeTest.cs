@@ -1,6 +1,6 @@
 ﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
- * (C) 2017, 2018, 2019, 2020 MinIO, Inc.
+ * (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,8 +89,12 @@ namespace Minio.Tests
                 }
                 Assert.AreEqual(ex.Response.Code, "InvalidObjectName");
 
+                GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(badName)
+                                                        .WithCallbackStream(s =>{});
                 ex = await Assert.ThrowsExceptionAsync<InvalidObjectNameException>(
-                    () => minio.GetObjectAsync(bucketName, badName, s => { }));
+                    () => minio.GetObjectAsync(getObjectArgs));
                 Assert.AreEqual(ex.Response.Code, "InvalidObjectName");
             }
             finally

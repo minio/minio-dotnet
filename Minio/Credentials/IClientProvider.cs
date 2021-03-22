@@ -1,5 +1,6 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2021 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
+ * (C) 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +15,14 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
+using System.Threading.Tasks;
 using Minio.DataModel;
 
-namespace Minio
+namespace Minio.Credentials
 {
-    public abstract class EncryptionArgs<T> : ObjectArgs<T>
-                        where T : EncryptionArgs<T>
+    public abstract class ClientProvider
     {
-        internal ServerSideEncryption SSE { get; set; }
-
-        public EncryptionArgs()
-        {
-        }
-
-        public T WithServerSideEncryption(ServerSideEncryption sse)
-        {
-            this.SSE = sse;
-            return (T)this;
-        }
-    }
+        public abstract AccessCredentials GetCredentials();
+        public abstract Task<AccessCredentials> GetCredentialsAsync();
+    }   
 }

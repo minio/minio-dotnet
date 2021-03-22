@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
+using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
@@ -43,7 +44,7 @@ namespace Minio.Examples.Cases
                 CopyObjectArgs args = new CopyObjectArgs()
                                                 .WithBucket(destBucketName)
                                                 .WithObject(destObjectName)
-                                                .WithTagKeyValuePairs(tags)
+                                                .WithTagging(Tagging.GetObjectTags(tags))
                                                 .WithReplaceTagsDirective(true)
                                                 .WithCopyObjectSource(cpSrcArgs);
                 await minio.CopyObjectAsync(args).ConfigureAwait(false);
