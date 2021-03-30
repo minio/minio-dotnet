@@ -36,8 +36,7 @@ namespace Minio.DataModel
         public AccessCredentials(string accessKey, string secretKey,
                             string sessionToken, DateTime expiration)
         {
-            if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(secretKey) ||
-                string.IsNullOrWhiteSpace(accessKey) || string.IsNullOrWhiteSpace(secretKey))
+            if (string.IsNullOrWhiteSpace(accessKey) || string.IsNullOrWhiteSpace(secretKey))
             {
                 throw new ArgumentNullException(nameof(this.AccessKey) + " and " + nameof(this.SecretKey) + " cannot be null or empty.");
             }
@@ -46,10 +45,14 @@ namespace Minio.DataModel
             this.SessionToken = sessionToken;
             this.Expiration = (expiration.Equals(default(DateTime)))?null:utils.To8601String(expiration);
         }
-  
+
+        public AccessCredentials()
+        {
+        }
+
         public bool AreExpired()
         {
-            if (string.IsNullOrEmpty(this.Expiration))
+            if (string.IsNullOrWhiteSpace(this.Expiration))
             {
                 return false;
             }
