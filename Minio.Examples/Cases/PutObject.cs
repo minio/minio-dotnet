@@ -36,17 +36,10 @@ namespace Minio.Examples.Cases
             try
             {
                 byte[] bs = File.ReadAllBytes(fileName);
+                Console.WriteLine("Running example for API: PutObjectAsync");
                 using (MemoryStream filestream = new MemoryStream(bs))
                 {
                     FileInfo fileInfo = new FileInfo(fileName);
-                    if (fileInfo.Length < (5 * MB))
-                    {
-                        Console.WriteLine("Running example for API: PutObjectAsync with Stream");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Running example for API: PutObjectAsync with Stream and MultiPartUpload");
-                    }
                     var metaData = new Dictionary<string, string>
                     {
                         { "Test-Metadata", "Test  Test" }

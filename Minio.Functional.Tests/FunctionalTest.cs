@@ -619,12 +619,12 @@ namespace Minio.Functional.Tests
                 Assert.IsTrue(statMeta.ContainsKey("Customheader"));
                 Assert.IsTrue(statObject.MetaData.ContainsKey("Content-Type") && statObject.MetaData["Content-Type"].Equals("custom/contenttype"));
                 await TearDown(minio, bucketName);
-                new MintLogger(nameof(PutObject_Test4), putObjectSignature, "Tests whether PutObject with different content-type passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+                new MintLogger(nameof(PutObject_Test4), putObjectSignature, "Tests whether PutObject with different content-type and custom header passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (MinioException ex)
             {
                 await TearDown(minio, bucketName);
-                new MintLogger(nameof(PutObject_Test4), putObjectSignature, "Tests whether PutObject with different content-type passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args:args).Log();
+                new MintLogger(nameof(PutObject_Test4), putObjectSignature, "Tests whether PutObject with different content-type  and custom header passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args:args).Log();
             }
             if (!IsMintEnv())
             {

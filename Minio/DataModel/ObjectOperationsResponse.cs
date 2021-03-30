@@ -220,6 +220,7 @@ namespace Minio
                 if (parameter.Name.Equals("ETag", StringComparison.OrdinalIgnoreCase))
                 {
                     this.Etag = parameter.Value.ToString();
+                    return;
                 }
             }
         }

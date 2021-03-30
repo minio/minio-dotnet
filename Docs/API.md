@@ -1922,7 +1922,7 @@ catch (MinioException e)
 ` Task PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 
-PutObjectAsync: Uploads contents from a file to objectName, Uploads contents from a stream to objectName, Upload part of objectName with PartID, UploadID.
+PutObjectAsync: Uploads object from a file or stream.
 
 
 __Parameters__

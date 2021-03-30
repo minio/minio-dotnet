@@ -1684,7 +1684,7 @@ namespace Minio
                 replaceDirective = "REPLACE";
             }
             request.AddOrUpdateParameter("x-amz-metadata-directive", replaceDirective, ParameterType.HttpHeader);
-            if (!string.IsNullOrEmpty(this.StorageClass))
+            if (!string.IsNullOrWhiteSpace(this.StorageClass))
             {
                 request.AddOrUpdateParameter("x-amz-storage-class", this.StorageClass, ParameterType.HttpHeader);
             }
@@ -1717,7 +1717,7 @@ namespace Minio
         internal override void Validate()
         {
             base.Validate();
-            if (string.IsNullOrEmpty(this.UploadId))
+            if (string.IsNullOrWhiteSpace(this.UploadId))
             {
                 throw new ArgumentNullException(nameof(this.UploadId) + " cannot be empty.");
             }
@@ -1787,7 +1787,7 @@ namespace Minio
         internal override void Validate()
         {
             base.Validate();
-            if (string.IsNullOrEmpty(this.UploadId) || string.IsNullOrWhiteSpace(this.UploadId))
+            if (string.IsNullOrWhiteSpace(this.UploadId))
             {
                 throw new ArgumentNullException(nameof(UploadId) + " not assigned for PutObjectPart operation.");
             }
@@ -1842,6 +1842,9 @@ namespace Minio
         public PutObjectArgs()
         {
             this.RequestMethod = Method.PUT;
+            this.RequestBody = null;
+            this.ObjectStreamData = null;
+            this.PartNumber = 0;
         }
 
         internal PutObjectArgs(PutObjectPartArgs args)
@@ -1849,7 +1852,7 @@ namespace Minio
             this.RequestMethod = Method.PUT;
             this.BucketName = args.BucketName;
             this.ContentType = args.ContentType ?? "application/octet-stream";
-            this.FileName = args.UploadId;
+            this.FileName = args.FileName;
             this.Headers = args.Headers;
             this.ObjectName = args.ObjectName;
             this.ObjectSize = args.ObjectSize;
@@ -1861,7 +1864,7 @@ namespace Minio
         internal override void Validate()
         {
             base.Validate();
-            if (this.RequestBody == null && this.ObjectStreamData == null && string.IsNullOrEmpty(this.FileName))
+            if (this.RequestBody == null && this.ObjectStreamData == null && string.IsNullOrWhiteSpace(this.FileName))
             {
                 throw new ArgumentNullException("Invalid input. " + nameof(RequestBody) + ", " + nameof(FileName) + " and " + nameof(ObjectStreamData) + " cannot be empty.");
             }
@@ -1870,16 +1873,16 @@ namespace Minio
                 throw new ArgumentOutOfRangeException(nameof(PartNumber), this.PartNumber, "Invalid Part number value. Cannot be less than 0");
             }
             // Check if only one of filename or stream are initialized
-            if (!string.IsNullOrEmpty(this.FileName) && this.ObjectStreamData != null)
+            if (!string.IsNullOrWhiteSpace(this.FileName) && this.ObjectStreamData != null)
             {
                 throw new ArgumentException("Only one of " + nameof(FileName) + " or " + nameof(ObjectStreamData) + " should be set.");
             }
             // Check atleast one of filename or stream are initialized
-            if (string.IsNullOrEmpty(this.FileName) && this.ObjectStreamData == null)
+            if (string.IsNullOrWhiteSpace(this.FileName) && this.ObjectStreamData == null)
             {
                 throw new ArgumentException("One of " + nameof(FileName) + " or " + nameof(ObjectStreamData) + " must be set.");
             }
-            if (!string.IsNullOrEmpty(this.FileName))
+            if (!string.IsNullOrWhiteSpace(this.FileName))
             {
                 utils.ValidateFile(this.FileName);
             }
@@ -1888,7 +1891,7 @@ namespace Minio
 
         private void Populate()
         {
-            if (!string.IsNullOrEmpty(this.FileName))
+            if (!string.IsNullOrWhiteSpace(this.FileName))
             {
                 FileInfo fileInfo = new FileInfo(this.FileName);
                 this.ObjectSize = fileInfo.Length;
@@ -1899,7 +1902,7 @@ namespace Minio
         internal override RestRequest BuildRequest(RestRequest request)
         {
             request = base.BuildRequest(request);
-            if (string.IsNullOrEmpty(this.ContentType) || string.IsNullOrWhiteSpace(this.ContentType))
+            if (string.IsNullOrWhiteSpace(this.ContentType))
             {
                 this.ContentType = "application/octet-stream";
             }
@@ -1907,7 +1910,7 @@ namespace Minio
             {
                 this.Headers["Content-Type"] = this.ContentType;
             }
-            if (!string.IsNullOrEmpty(this.UploadId) && this.PartNumber > 0)
+            if (!string.IsNullOrWhiteSpace(this.UploadId) && this.PartNumber > 0)
             {
                 request.AddQueryParameter("uploadId",$"{this.UploadId}");
                 request.AddQueryParameter("partNumber",$"{this.PartNumber}");
@@ -1954,7 +1957,7 @@ namespace Minio
                     this.Headers[key] = p.Value;
                 }
             }
-            if (string.IsNullOrEmpty(this.ContentType) || string.IsNullOrWhiteSpace(this.ContentType))
+            if (string.IsNullOrWhiteSpace(this.ContentType))
             {
                 this.ContentType = "application/octet-stream";
             }
@@ -1965,23 +1968,13 @@ namespace Minio
             return this;
         }
 
-        public PutObjectArgs WithSSEHeaders(Dictionary<string, string> hdr)
-        {
-            this.Headers = this.Headers?? new Dictionary<string, string>();
-            if (hdr != null)
-            {
-                this.Headers = this.Headers.Concat(hdr).GroupBy(ele => ele.Key).ToDictionary(ele => ele.Key, ele => ele.First().Value);
-            }
-            return this;
-        }
-
-        public PutObjectArgs WithUploadId(string id = null)
+        internal PutObjectArgs WithUploadId(string id = null)
         {
             this.UploadId = id;
             return this;
         }
 
-        public PutObjectArgs WithPartNumber(int num)
+        internal PutObjectArgs WithPartNumber(int num)
         {
             this.PartNumber = num;
             return this;
@@ -2007,7 +2000,7 @@ namespace Minio
 
         ~PutObjectArgs()
         {
-            if (!string.IsNullOrEmpty(this.FileName) && this.ObjectStreamData != null)
+            if (!string.IsNullOrWhiteSpace(this.FileName) && this.ObjectStreamData != null)
             {
                 ((FileStream)this.ObjectStreamData).Close();
             } else if (this.ObjectStreamData != null)
