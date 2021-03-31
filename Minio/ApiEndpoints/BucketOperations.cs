@@ -97,7 +97,7 @@ namespace Minio
                 args.Location = this.Region;
             }
             // Set Target URL for MakeBucket
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, args.Location);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, region:args.Location);
             SetTargetURL(requestUrl);
             // Set Authenticator, if necessary.
             if (string.IsNullOrEmpty(this.Region) && !s3utils.IsAmazonEndPoint(this.BaseUrl) && args.Location != "us-east-1" && this.restClient != null)

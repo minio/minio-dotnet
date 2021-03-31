@@ -228,7 +228,35 @@ namespace Minio
             // Start with user specified endpoint
             string host = this.BaseUrl;
 
-            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: string.IsNullOrEmpty(this.Region)?region:this.Region, sessionToken: this.SessionToken);
+            if (this.Provider != null)
+            {
+                bool isAWSEnvProvider = (this.Provider is AWSEnvironmentProvider) ||
+                                        (this.Provider is ChainedProvider ch && ch.CurrentProvider is AWSEnvironmentProvider);
+                bool isIAMAWSProvider = (this.Provider is IAMAWSProvider) ||
+                                        (this.Provider is ChainedProvider chained && chained.CurrentProvider is AWSEnvironmentProvider);
+                AccessCredentials creds = null;
+                if (isAWSEnvProvider)
+                {
+                    var aWSEnvProvider = (AWSEnvironmentProvider)this.Provider;
+                    creds = await aWSEnvProvider.GetCredentialsAsync();
+                }
+                else if (isIAMAWSProvider)
+                {
+                    var iamAWSProvider = (IAMAWSProvider) this.Provider;
+                    creds = iamAWSProvider.Credentials;
+                }
+                else
+                {
+                    creds = await this.Provider.GetCredentialsAsync();
+                }
+                if (creds != null)
+                {
+                    this.AccessKey = creds.AccessKey;
+                    this.SecretKey = creds.SecretKey;
+                }
+            }
+
+            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: string.IsNullOrWhiteSpace(this.Region)?region:this.Region, sessionToken: this.SessionToken);
 
             // This section reconstructs the url with scheme followed by location specific endpoint (s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
@@ -299,15 +327,22 @@ namespace Minio
 
             if (this.Provider != null)
             {
-                AccessCredentials creds = await this.Provider.GetCredentialsAsync();
-                bool isAWSProvider = (this.Provider is AWSEnvironmentProvider) ||
+                bool isAWSProvider = (this.Provider is AWSEnvironmentProvider aWSEnvProvider) ||
                                      (this.Provider is ChainedProvider chained && chained.CurrentProvider is AWSEnvironmentProvider);
-                bool isAWSSessionTokenAvailable = isAWSProvider && (!string.IsNullOrEmpty(creds.SessionToken) && !string.IsNullOrWhiteSpace(creds.SessionToken));
-                if (isAWSSessionTokenAvailable)
+                bool isIAMAWSProvider = (this.Provider is IAMAWSProvider);
+                AccessCredentials creds = null;
+                if (isAWSProvider)
+                    creds = await this.Provider.GetCredentialsAsync();
+                else if (isIAMAWSProvider)
+                {
+                    var iamAWSProvider = (IAMAWSProvider) this.Provider;
+                    creds = iamAWSProvider.Credentials;
+                }
+                if (creds != null &&
+                    (isAWSProvider || isIAMAWSProvider) && !string.IsNullOrWhiteSpace(creds.SessionToken))
                 {
                     request.AddHeader("X-Amz-Security-Token", creds.SessionToken);
                 }
-                authenticator.Authenticate(restClient, request);
             }
 
             return request;
@@ -473,11 +508,26 @@ namespace Minio
     	public MinioClient WithCredentialsProvider(ClientProvider provider)
         {
             this.Provider = provider;
-            AccessCredentials credentials = this.Provider.GetCredentials();
+            AccessCredentials credentials = null;
+            if (this.Provider is IAMAWSProvider iAMAWSProvider)
+            {
+                // Empty object, we need the Minio client completely
+                credentials = new AccessCredentials();
+            }
+            else
+            {
+                credentials = this.Provider.GetCredentials();
+            }
+            if (credentials == null)
+            {
+                // Unable to fetch credentials.
+                return this;
+            }
             this.AccessKey = credentials.AccessKey;
             this.SecretKey = credentials.SecretKey;
             bool isSessionTokenAvailable = !string.IsNullOrEmpty(credentials.SessionToken);
-            if ((this.Provider is AWSEnvironmentProvider aWSEnvironmentProvider ||
+            if ((this.Provider is AWSEnvironmentProvider ||
+                 this.Provider is IAMAWSProvider ||
                 (this.Provider is ChainedProvider chainedProvider && chainedProvider.CurrentProvider is AWSEnvironmentProvider))
                     && isSessionTokenAvailable)
             {
