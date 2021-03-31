@@ -223,7 +223,7 @@ namespace Minio
                                                             .WithPrefix(args.Prefix)
                                                             .WithDelimiter(delimiter)
                                                             .WithVersions(false)
-                                                            .WithNextContinuationToken(nextContinuationToken)
+                                                            .WithContinuationToken(nextContinuationToken)
                                                             .WithMarker(marker);
                         Tuple<ListBucketResult, List<Item>> objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
                         ListObjectsItemResponse listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);

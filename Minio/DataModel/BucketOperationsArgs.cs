@@ -102,13 +102,13 @@ namespace Minio
         }
     }
 
-    public class GetObjectListArgs : BucketArgs<GetObjectListArgs>
+    internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
     {
         internal string Delimiter { get; private set; }
         internal string Prefix { get; private set; }
         internal string Marker { get; private set; }
         internal bool Versions { get; private set; }
-        internal string NextContinuationToken { get; set; }
+        internal string ContinuationToken { get; set; }
 
         public GetObjectListArgs()
         {
@@ -143,9 +143,9 @@ namespace Minio
             return this;
         }
 
-        public GetObjectListArgs WithNextContinuationToken(string token)
+        public GetObjectListArgs WithContinuationToken(string token)
         {
-            this.NextContinuationToken = string.IsNullOrWhiteSpace(token)?string.Empty:token;
+            this.ContinuationToken = string.IsNullOrWhiteSpace(token)?string.Empty:token;
             return this;
         }
 
@@ -160,9 +160,9 @@ namespace Minio
             {
                 request.AddQueryParameter("marker",this.Marker);
             }
-            if (!string.IsNullOrWhiteSpace(this.NextContinuationToken))
+            if (!string.IsNullOrWhiteSpace(this.ContinuationToken))
             {
-                request.AddQueryParameter("continuation-token",this.NextContinuationToken);
+                request.AddQueryParameter("continuation-token",this.ContinuationToken);
             }
             if (this.Versions)
             {
@@ -248,7 +248,7 @@ namespace Minio
                 throw new UnexpectedMinioException("Cannot BuildRequest for SetBucketNotificationsArgs. BucketNotification configuration not assigned");
             }
             request.AddQueryParameter("notification","");
-            string body = utils.MarshalXML(this.BucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
+            string body = this.BucketNotificationConfiguration.ToXML();
             request.AddParameter("text/xml", body, ParameterType.RequestBody);
             return request;
         }
