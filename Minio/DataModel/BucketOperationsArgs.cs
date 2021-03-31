@@ -230,7 +230,7 @@ namespace Minio
                 throw new UnexpectedMinioException("Cannot BuildRequest for SetBucketNotificationsArgs. BucketNotification configuration not assigned");
             }
             request.AddQueryParameter("notification","");
-            string body = utils.MarshalXML(this.BucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
+            string body = this.BucketNotificationConfiguration.ToXML();
             request.AddParameter("text/xml", body, ParameterType.RequestBody);
             return request;
         }
