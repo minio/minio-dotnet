@@ -2791,7 +2791,6 @@ namespace Minio.Functional.Tests
             {
                 await Setup_Test(minio, bucketName);
                 Task[] tasks = new Task[numObjects];
-                //List<string> objectNamesList = new List<string>();
                 HashSet<string> objectNamesSet = new HashSet<string>();
                 for (int i = 1; i <= numObjects; i++) {
                     string obj = objectNamePrefix + i.ToString();
