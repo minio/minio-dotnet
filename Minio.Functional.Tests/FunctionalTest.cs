@@ -23,6 +23,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
@@ -2814,8 +2815,11 @@ namespace Minio.Functional.Tests
             {
                 await Setup_Test(minio, bucketName);
                 Task[] tasks = new Task[numObjects];
+                List<string> objectNames = new List<string>();
                 for (int i = 1; i <= numObjects; i++) {
-                    tasks[i - 1] = PutObject_Task(minio, bucketName, objectNamePrefix + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
+                    string objName = objectNamePrefix + i.ToString();
+                    tasks[i - 1] = PutObject_Task(minio, bucketName, objName, null, null, 0, null, rsg.GenerateStreamFromSeed(1));
+                    objectNames.Add(objName);
                     // Add sleep to avoid flooding server with concurrent requests
                     if (i % 50 == 0) {
                         System.Threading.Thread.Sleep(2000);
@@ -2825,14 +2829,10 @@ namespace Minio.Functional.Tests
 
                 ListObjects_Test(minio, bucketName, objectNamePrefix, numObjects, false);
                 System.Threading.Thread.Sleep(5000);
-                for(int index=1; index <= numObjects; index++)
-                {
-                    string objectName = objectNamePrefix + index.ToString();
-                    RemoveObjectArgs rmArgs = new RemoveObjectArgs()
-                                                        .WithBucket(bucketName)
-                                                        .WithObject(objectName);
-                    await minio.RemoveObjectAsync(rmArgs);
-                }
+                RemoveObjectsArgs rmArgs = new RemoveObjectsArgs()
+                                                    .WithBucket(bucketName)
+                                                    .WithObjects(objectNames);
+                await minio.RemoveObjectsAsync(rmArgs);
                 await TearDown(minio, bucketName);
                 new MintLogger("ListObjects_Test5", listObjectsSignature, "Tests whether ListObjects lists all objects when number of objects == 100", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
@@ -2851,6 +2851,78 @@ namespace Minio.Functional.Tests
             }
         }
 
+        internal async static Task ListObjects_Test6(MinioClient minio)
+        {
+            DateTime startTime = DateTime.Now;
+            string bucketName = GetRandomName(15);
+            string objectNamePrefix = GetRandomName(10);
+            int numObjects = 1015;
+            var args = new Dictionary<string, string>
+            {
+                { "bucketName", bucketName },
+                { "objectName", objectNamePrefix },
+                { "recursive", "false" }
+            };
+            try
+            {
+                await Setup_Test(minio, bucketName);
+                Task[] tasks = new Task[numObjects];
+                HashSet<string> objectNamesSet = new HashSet<string>();
+                for (int i = 1; i <= numObjects; i++) {
+                    string obj = objectNamePrefix + i.ToString();
+                    tasks[i - 1] = PutObject_Task(minio, bucketName, obj, null, null, 0, null, rsg.GenerateStreamFromSeed(1));
+                    // Add sleep to avoid flooding server with concurrent requests
+                    if (i % 50 == 0) {
+                        System.Threading.Thread.Sleep(2000);
+                    }
+                }
+                await Task.WhenAll(tasks);
+                int count = 0;
+                ListObjectsArgs listArgs = new ListObjectsArgs()
+                                                    .WithBucket(bucketName)
+                                                    .WithPrefix(objectNamePrefix)
+                                                    .WithRecursive(false)
+                                                    .WithVersions(false);
+                IObservable<Item> observable = minio.ListObjectsAsync(listArgs);
+                IDisposable subscription = observable.Subscribe(
+                    async(item) =>
+                    {
+                        Assert.IsTrue(item.Key.StartsWith(objectNamePrefix));
+                        if (!objectNamesSet.Add(item.Key))
+                        {
+                            await TearDown(minio, bucketName);
+                            new MintLogger("ListObjects_Test6", listObjectsSignature, "Tests whether ListObjects lists more than 1000 objects correctly(max-keys = 1000)", TestStatus.FAIL, (DateTime.Now - startTime), "Object listing repeated for " + item.Key, "", args:args).Log();
+                        }
+                        count += 1;
+                    },
+                    ex => throw ex,
+                    () =>
+                    {
+                        Assert.AreEqual(count, numObjects);
+                    });
+
+                System.Threading.Thread.Sleep(5000);
+                RemoveObjectsArgs rmArgs = new RemoveObjectsArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObjects(objectNamesSet.ToList());
+                await minio.RemoveObjectsAsync(rmArgs);
+                await TearDown(minio, bucketName);
+                new MintLogger("ListObjects_Test6", listObjectsSignature, "Tests whether ListObjects lists all objects when number of objects == 100", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (MinioException ex)
+            {
+                for(int index=1; index <= numObjects; index++)
+                {
+                    string objectName = objectNamePrefix + index.ToString();
+                    RemoveObjectArgs rmArgs = new RemoveObjectArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName);
+                    await minio.RemoveObjectAsync(rmArgs);
+                }
+                await TearDown(minio, bucketName);
+                new MintLogger("ListObjects_Test5", listObjectsSignature, "Tests whether ListObjects lists all objects when number of objects == 100", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+            }
+        }
 
         internal async static Task ListObjectVersions_Test1(MinioClient minio)
         {
