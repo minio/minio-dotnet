@@ -26,6 +26,7 @@ using System.Linq;
 using Minio.DataModel;
 using Minio.Exceptions;
 using Minio.Helper;
+using System.Security.Cryptography;
 
 namespace Minio
 {
@@ -1213,7 +1214,8 @@ namespace Minio
                 foreach (var item in this.Headers)
                 {
                     var key = item.Key;
-                    if (!OperationsUtil.IsSupportedHeader(item.Key) && !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase))
+                    if (!OperationsUtil.IsSupportedHeader(item.Key) && !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase) &&
+                        !OperationsUtil.IsSSEHeader(key))
                     {
                         newKVList.Add(new Tuple<string, string>("x-amz-meta-" + key.ToLowerInvariant(), item.Value));
                     }
@@ -1460,7 +1462,8 @@ namespace Minio
                 foreach (var item in this.Headers)
                 {
                     var key = item.Key;
-                    if (!OperationsUtil.IsSupportedHeader(item.Key) && !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase))
+                    if (!OperationsUtil.IsSupportedHeader(item.Key) && !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase) &&
+                        !OperationsUtil.IsSSEHeader(key))
                     {
                         newKVList.Add(new Tuple<string, string>("x-amz-meta-" + key.ToLowerInvariant(), item.Value));
                     }
@@ -1586,7 +1589,8 @@ namespace Minio
                 foreach (var item in this.Headers)
                 {
                     var key = item.Key;
-                    if (!OperationsUtil.IsSupportedHeader(item.Key) && !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase))
+                    if (!OperationsUtil.IsSupportedHeader(item.Key) && !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase) &&
+                        !OperationsUtil.IsSSEHeader(key))
                     {
                         newKVList.Add(new Tuple<string, string>("x-amz-meta-" + key.ToLowerInvariant(), item.Value));
                     }
@@ -1680,7 +1684,7 @@ namespace Minio
                 replaceDirective = "REPLACE";
             }
             request.AddOrUpdateParameter("x-amz-metadata-directive", replaceDirective, ParameterType.HttpHeader);
-            if (!string.IsNullOrEmpty(this.StorageClass))
+            if (!string.IsNullOrWhiteSpace(this.StorageClass))
             {
                 request.AddOrUpdateParameter("x-amz-storage-class", this.StorageClass, ParameterType.HttpHeader);
             }
@@ -1713,7 +1717,7 @@ namespace Minio
         internal override void Validate()
         {
             base.Validate();
-            if (string.IsNullOrEmpty(this.UploadId))
+            if (string.IsNullOrWhiteSpace(this.UploadId))
             {
                 throw new ArgumentNullException(nameof(this.UploadId) + " cannot be empty.");
             }
@@ -1772,4 +1776,237 @@ namespace Minio
             return request;
         }
     }
+
+    internal class PutObjectPartArgs : PutObjectArgs
+    {
+        public PutObjectPartArgs()
+        {
+            this.RequestMethod = Method.PUT;
+        }
+
+        internal override void Validate()
+        {
+            base.Validate();
+            if (string.IsNullOrWhiteSpace(this.UploadId))
+            {
+                throw new ArgumentNullException(nameof(UploadId) + " not assigned for PutObjectPart operation.");
+            }
+        }
+        public new PutObjectPartArgs WithBucket(string bkt)
+        {
+            return (PutObjectPartArgs)base.WithBucket(bkt);
+        }
+
+        public new PutObjectPartArgs WithObject(string obj)
+        {
+            return (PutObjectPartArgs)base.WithObject(obj);
+        }
+
+        public new PutObjectPartArgs WithObjectSize(long size)
+        {
+            return (PutObjectPartArgs)base.WithObjectSize(size);
+        }
+
+        public new PutObjectPartArgs WithHeaders(Dictionary<string, string> hdr)
+        {
+            return (PutObjectPartArgs)base.WithHeaders(hdr);
+        }
+
+        public new PutObjectPartArgs WithRequestBody(object data)
+        {
+            return (PutObjectPartArgs)base.WithRequestBody(data);
+        }
+        public new PutObjectPartArgs WithStreamData(Stream data)
+        {
+            return (PutObjectPartArgs)base.WithStreamData(data);
+        }
+        public new PutObjectPartArgs WithContentType(string type)
+        {
+            return (PutObjectPartArgs)base.WithContentType(type);
+        }
+
+        public new PutObjectPartArgs WithUploadId(string id)
+        {
+            return (PutObjectPartArgs)base.WithUploadId(id);
+        }
+    }
+
+    public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
+    {
+        internal string UploadId { get; private set; }
+        internal int PartNumber { get; set; }
+        internal string FileName { get; set; }
+        internal long ObjectSize { get; set; }
+        internal Stream ObjectStreamData { get; set; }
+
+        public PutObjectArgs()
+        {
+            this.RequestMethod = Method.PUT;
+            this.RequestBody = null;
+            this.ObjectStreamData = null;
+            this.PartNumber = 0;
+        }
+
+        internal PutObjectArgs(PutObjectPartArgs args)
+        {
+            this.RequestMethod = Method.PUT;
+            this.BucketName = args.BucketName;
+            this.ContentType = args.ContentType ?? "application/octet-stream";
+            this.FileName = args.FileName;
+            this.Headers = args.Headers;
+            this.ObjectName = args.ObjectName;
+            this.ObjectSize = args.ObjectSize;
+            this.PartNumber = args.PartNumber;
+            this.SSE = args.SSE;
+            this.UploadId = args.UploadId;
+        }
+
+        internal override void Validate()
+        {
+            base.Validate();
+            if (this.RequestBody == null && this.ObjectStreamData == null && string.IsNullOrWhiteSpace(this.FileName))
+            {
+                throw new ArgumentNullException("Invalid input. " + nameof(RequestBody) + ", " + nameof(FileName) + " and " + nameof(ObjectStreamData) + " cannot be empty.");
+            }
+            if (this.PartNumber < 0 )
+            {
+                throw new ArgumentOutOfRangeException(nameof(PartNumber), this.PartNumber, "Invalid Part number value. Cannot be less than 0");
+            }
+            // Check if only one of filename or stream are initialized
+            if (!string.IsNullOrWhiteSpace(this.FileName) && this.ObjectStreamData != null)
+            {
+                throw new ArgumentException("Only one of " + nameof(FileName) + " or " + nameof(ObjectStreamData) + " should be set.");
+            }
+            // Check atleast one of filename or stream are initialized
+            if (string.IsNullOrWhiteSpace(this.FileName) && this.ObjectStreamData == null)
+            {
+                throw new ArgumentException("One of " + nameof(FileName) + " or " + nameof(ObjectStreamData) + " must be set.");
+            }
+            if (!string.IsNullOrWhiteSpace(this.FileName))
+            {
+                utils.ValidateFile(this.FileName);
+            }
+            this.Populate();
+        }
+
+        private void Populate()
+        {
+            if (!string.IsNullOrWhiteSpace(this.FileName))
+            {
+                FileInfo fileInfo = new FileInfo(this.FileName);
+                this.ObjectSize = fileInfo.Length;
+                this.ObjectStreamData = new FileStream(this.FileName, FileMode.Open, FileAccess.Read);
+            }
+        }
+
+        internal override RestRequest BuildRequest(RestRequest request)
+        {
+            request = base.BuildRequest(request);
+            if (string.IsNullOrWhiteSpace(this.ContentType))
+            {
+                this.ContentType = "application/octet-stream";
+            }
+            if (!this.Headers.ContainsKey("Content-Type"))
+            {
+                this.Headers["Content-Type"] = this.ContentType;
+            }
+            if (!string.IsNullOrWhiteSpace(this.UploadId) && this.PartNumber > 0)
+            {
+                request.AddQueryParameter("uploadId",$"{this.UploadId}");
+                request.AddQueryParameter("partNumber",$"{this.PartNumber}");
+            }
+            if (this.ObjectTags != null && this.ObjectTags.TaggingSet != null
+                    && this.ObjectTags.TaggingSet.Tag.Count > 0)
+            {
+                request.AddOrUpdateParameter("x-amz-tagging", this.ObjectTags.GetTagString(), ParameterType.HttpHeader);
+            }
+            if (this.Retention != null)
+            {
+                request.AddOrUpdateParameter("x-amz-object-lock-retain-until-date", this.Retention.RetainUntilDate, ParameterType.HttpHeader);
+            }
+            if (this.LegalHoldEnabled != null)
+            {
+                request.AddOrUpdateParameter("x-amz-object-lock-legal-hold", 
+                    ((this.LegalHoldEnabled == true)?"ON":"OFF"),
+                    ParameterType.HttpHeader);
+            }
+            if (this.RequestBody != null)
+            {
+                var sha256 = SHA256.Create();
+                byte[] hash = sha256.ComputeHash((byte[])this.RequestBody);
+                string hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
+                request.AddOrUpdateParameter("x-amz-content-sha256", hex, ParameterType.HttpHeader);
+            }
+
+            return request;
+        }
+ 
+        public new PutObjectArgs WithHeaders(Dictionary<string, string> metaData)
+        {
+            var sseHeaders = new Dictionary<string, string>();
+            this.Headers = this.Headers ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (metaData != null) {
+                foreach (KeyValuePair<string, string> p in metaData)
+                {
+                    var key = p.Key;
+                    if (!OperationsUtil.IsSupportedHeader(p.Key) && !p.Key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase) &&
+                        !OperationsUtil.IsSSEHeader(p.Key))
+                    {
+                        key = "x-amz-meta-" + key.ToLowerInvariant();
+                    }
+                    this.Headers[key] = p.Value;
+                }
+            }
+            if (string.IsNullOrWhiteSpace(this.ContentType))
+            {
+                this.ContentType = "application/octet-stream";
+            }
+            if (!this.Headers.ContainsKey("Content-Type"))
+            {
+                this.Headers["Content-Type"] = this.ContentType;
+            }
+            return this;
+        }
+
+        internal PutObjectArgs WithUploadId(string id = null)
+        {
+            this.UploadId = id;
+            return this;
+        }
+
+        internal PutObjectArgs WithPartNumber(int num)
+        {
+            this.PartNumber = num;
+            return this;
+        }
+
+        public PutObjectArgs WithFileName(string file)
+        {
+            this.FileName = file;
+            return this;
+        }
+
+        public PutObjectArgs WithObjectSize(long size)
+        {
+            this.ObjectSize = size;
+            return this;
+        }
+
+        public PutObjectArgs WithStreamData(Stream data)
+        {
+            this.ObjectStreamData = data;
+            return this;
+        }
+
+        ~PutObjectArgs()
+        {
+            if (!string.IsNullOrWhiteSpace(this.FileName) && this.ObjectStreamData != null)
+            {
+                ((FileStream)this.ObjectStreamData).Close();
+            } else if (this.ObjectStreamData != null)
+            {
+                this.ObjectStreamData.Close();
+            }
+        }
+   }
 }

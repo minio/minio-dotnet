@@ -124,6 +124,13 @@ namespace Minio
         Task GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
+        /// Creates object in a bucket fom input stream or filename.
+        /// </summary>
+        /// <param name="args">PutObjectArgs Arguments object encapsulating bucket name, object name, file name, object data stream, object size, content type.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        Task PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
@@ -168,6 +175,7 @@ namespace Minio
         /// <param name="metaData">Optional Object metadata to be stored. Defaults to null.</param>
         /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        [Obsolete("Use PutObjectAsync method with PutObjectArgs object. Refer PutObject example code.")]
         Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -247,6 +255,7 @@ namespace Minio
         /// <param name="metaData">Optional Object metadata to be stored. Defaults to null.</param>
         /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        [Obsolete("Use PutObjectAsync method with PutObjectArgs object. Refer PutObject example code.")]
         Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>

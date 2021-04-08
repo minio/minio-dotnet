@@ -39,7 +39,9 @@ jobs:
 
     # Install dependencies
     - name: Install dependencies
-      run: dotnet restore
+      run: |
+        dotnet clean ./Minio.sln --configuration Release && dotnet nuget locals all --clear
+        dotnet restore
 
     # Build and Execute Build tests
     - name: Build & Unit Test

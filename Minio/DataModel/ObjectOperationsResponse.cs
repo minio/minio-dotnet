@@ -1,5 +1,5 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ using System.Net;
 using System.Xml.Serialization;
 
 using Minio.DataModel;
+using RestSharp;
 
 namespace Minio
 {
@@ -170,7 +171,6 @@ namespace Minio
         }
     }
 
-
     internal class CopyObjectResponse : GenericResponse
     {
         internal CopyObjectResult CopyObjectRequestResult { get; set; }
@@ -206,5 +206,24 @@ namespace Minio
             }
             this.UploadId = newUpload.UploadId;
         }
+    }
+
+    internal class PutObjectResponse : GenericResponse
+    {
+        internal string Etag;
+
+        internal PutObjectResponse(HttpStatusCode statusCode, string responseContent, IList<Parameter> responseHeaders)
+                    : base(statusCode, responseContent)
+        {
+            foreach (Parameter parameter in responseHeaders)
+            {
+                if (parameter.Name.Equals("ETag", StringComparison.OrdinalIgnoreCase))
+                {
+                    this.Etag = parameter.Value.ToString();
+                    return;
+                }
+            }
+        }
+
     }
 }

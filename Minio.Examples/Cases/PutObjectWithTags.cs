@@ -1,5 +1,5 @@
-﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
+/*
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,29 +14,38 @@
  * limitations under the License.
  */
 
+using Minio.DataModel;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
-    class FPutObject
+    class PutObjectWithTags
     {
-        // Upload object to bucket from file
-        public async static Task Run(MinioClient minio, 
-                                      string bucketName = "my-bucket-name",
-                                      string objectName = "my-object-name",
-                                      string fileName = "from where")
+        private const int MB = 1024 * 1024;
+
+        // Put an object from a local stream into bucket
+        public async static Task Run(MinioClient minio,
+                                     string bucketName = "my-bucket-name", 
+                                     string objectName = "my-object-name",
+                                     string fileName = "location-of-file")
         {
             try
             {
-                Console.WriteLine("Running example for API: PutObjectAsync with FileName");
+                Console.WriteLine("Running example for API: PutObjectAsync with Tags");
+                var tags = new Dictionary<string, string>
+                {
+                    { "Test-TagKey", "Test-TagValue" }
+                };
                 PutObjectArgs args = new PutObjectArgs()
                                                 .WithBucket(bucketName)
                                                 .WithObject(objectName)
                                                 .WithContentType("application/octet-stream")
-                                                .WithFileName(fileName);
-                await minio.PutObjectAsync(args).ConfigureAwait(false);
-
+                                                .WithFileName(fileName)
+                                                .WithTagging(Tagging.GetObjectTags(tags));
+                await minio.PutObjectAsync(args);
+            
                 Console.WriteLine($"Uploaded object {objectName} to bucket {bucketName}");
                 Console.WriteLine();
             }
