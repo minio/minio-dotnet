@@ -207,6 +207,17 @@ namespace Minio
         /// <returns>An observable of items that client can subscribe to</returns>
         public IObservable<Item> ListObjectsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
+            BucketExistsArgs bucketExistsArgs = new BucketExistsArgs()
+                                                            .WithBucket(args.BucketName);
+            // Check if the bucket exists.
+            var bucketExistTask = this.BucketExistsAsync(bucketExistsArgs, cancellationToken);
+            Task.WaitAll(bucketExistTask);
+            var found = bucketExistTask.Result;
+            if (!found)
+            {
+                throw new BucketNotFoundException(args.BucketName, "Bucket not found.");
+            }
+
             return Observable.Create<Item>(
               async (obs, ct) =>
               {
@@ -214,6 +225,7 @@ namespace Minio
                   var delimiter = (args.Recursive)? string.Empty: "/";
                   string marker = string.Empty;
                   string nextContinuationToken = string.Empty;
+                  uint count = 0;
                   using(var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
                   {
                     while (isRunning)
@@ -226,11 +238,19 @@ namespace Minio
                                                             .WithContinuationToken(nextContinuationToken)
                                                             .WithMarker(marker);
                         Tuple<ListBucketResult, List<Item>> objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
+                        if (objectList.Item2.Count == 0 && objectList.Item1.KeyCount.Equals("0") && count == 0)
+                        {
+                            string name = args.BucketName;
+                            if (!string.IsNullOrEmpty(args.Prefix))
+                                name += "/" + args.Prefix;
+                            throw new EmptyBucketOperation("Bucket " + name + " is empty.");
+                        }
                         ListObjectsItemResponse listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);
                         marker = listObjectsItemResponse.NextMarker;
                         isRunning = objectList.Item1.IsTruncated;
                         nextContinuationToken = (objectList.Item1.IsTruncated)?objectList.Item1.NextContinuationToken:string.Empty;
                         cts.Token.ThrowIfCancellationRequested();
+                        count++;
                     }
                   }
               });
