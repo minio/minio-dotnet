@@ -2941,10 +2941,10 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_WithLock_Test(minio, bucketName);
-                Task[] tasks = new Task[4];
-                for (int i = 0; i < 4; i++) {
-                    tasks[i] = PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
-                    tasks[i] = PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
+                Task[] tasks = new Task[8];
+                for (int i = 0, taskIdx = 0; i < 4; i++) {
+                    tasks[taskIdx++] = PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
+                    tasks[taskIdx++] = PutObject_Task(minio, bucketName, objectName + i.ToString(), null, null, 0, null, rsg.GenerateStreamFromSeed(1));
                 }
                 await Task.WhenAll(tasks);
 
@@ -2956,30 +2956,27 @@ namespace Minio.Functional.Tests
                                                             .WithVersions(true);
                 int count = 0;
                 int numObjectVersions = 8;
-                bool finishedRemove = false;
 
+                List<Tuple<string,string>>  objectVersions = new List<Tuple<string, string>>();
                 IObservable<VersionItem> observable = minio.ListObjectVersionsAsync(listObjectsArgs);
                 IDisposable subscription = observable.Subscribe(
                     item =>
                     {
                         Assert.IsTrue(item.Key.StartsWith(prefix));
                         count += 1;
-                        RemoveObjectArgs rmArgs = new RemoveObjectArgs()
-                                                            .WithBucket(bucketName)
-                                                            .WithObject(item.Key)
-                                                            .WithVersionId(item.VersionId);
-                        minio.RemoveObjectAsync(rmArgs).Wait();
-                        finishedRemove = true;
+                        objectVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
                     },
                     ex => throw ex,
-                    async () =>
+                    () =>
                     {
-                        if (finishedRemove)
-                        {
-                            await TearDown(minio, bucketName).ConfigureAwait(false);
-                        }
                         Assert.AreEqual(count, numObjectVersions);
                     });
+
+                System.Threading.Thread.Sleep(4000);
+                RemoveObjectsArgs removeObjectArgs= new RemoveObjectsArgs()
+                                                                .WithBucket(bucketName)
+                                                                .WithObjectsVersions(objectVersions);
+                await minio.RemoveObjectsAsync(removeObjectArgs);
                 await TearDown(minio, bucketName);
                 new MintLogger("ListObjectVersions_Test1", listObjectVersionsSignature, "Tests whether ListObjects with versions lists all objects along with all version ids for each object matching a prefix non-recursive", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
