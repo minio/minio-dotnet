@@ -745,7 +745,7 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         private async Task MultipartCopyUploadAsync(MultipartCopyUploadArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
-            dynamic multiPartInfo = utils.CalculateMultiPartSize(args.CopySize);
+            dynamic multiPartInfo = utils.CalculateMultiPartSize(args.CopySize, copy:true);
             double partSize = multiPartInfo.partSize;
             double partCount = multiPartInfo.partCount;
             double lastPartSize = multiPartInfo.lastPartSize;
@@ -1509,7 +1509,7 @@ namespace Minio
             // For all sizes greater than 5GB or if Copy byte range specified in conditions and byte range larger
             // than minimum part size (5 MB) do multipart.
 
-            dynamic multiPartInfo = utils.CalculateMultiPartSize(copySize);
+            dynamic multiPartInfo = utils.CalculateMultiPartSize(copySize, copy:true);
             double partSize = multiPartInfo.partSize;
             double partCount = multiPartInfo.partCount;
             double lastPartSize = multiPartInfo.lastPartSize;

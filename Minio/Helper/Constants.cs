@@ -29,6 +29,16 @@ namespace Minio.Helper
         public static long MinimumPartSize = 5 * 1024L * 1024L;
 
         /// <summary>
+        /// Minimum PUT part size
+        /// </summary>
+        public static long MinimumPUTPartSize = 16 * 1024L * 1024L;
+
+        /// <summary>
+        /// Minimum COPY part size
+        /// </summary>
+        public static long MinimumCOPYPartSize = 512 * 1024L * 1024L;
+
+        /// <summary>
         /// Maximum part size
         /// </summary>
         public static long MaximumPartSize = 5 * 1024L * 1024L * 1024L;
