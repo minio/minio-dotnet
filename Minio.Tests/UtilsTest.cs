@@ -121,11 +121,26 @@ namespace Minio.Tests
 
         [TestMethod]
         [ExpectedException(typeof(EntityTooLargeException))]
-        public void TestInvalidPartSize()
+        public void TestInvalidPUTPartSize()
         {
             try
             {
                 Object multiparts = utils.CalculateMultiPartSize(5000000000000000000);
+            }
+            catch (EntityTooLargeException ex)
+            {
+                Assert.AreEqual(ex.ServerMessage, "Your proposed upload size 5000000000000000000 exceeds the maximum allowed object size " + Constants.MaxMultipartPutObjectSize);
+                throw;
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(EntityTooLargeException))]
+        public void TestInvalidCOPYPartSize()
+        {
+            try
+            {
+                Object multiparts = utils.CalculateMultiPartSize(5000000000000000000, true);
             }
             catch (EntityTooLargeException ex)
             {
@@ -142,21 +157,21 @@ namespace Minio.Tests
             double partSize = partSizeObject.partSize;
             double partCount = partSizeObject.partCount;
             double lastPartSize = partSizeObject.lastPartSize;
-            Assert.AreEqual(partSize, 550502400);
-            Assert.AreEqual(partCount, 9987);
-            Assert.AreEqual(lastPartSize, 241172480);
+            Assert.AreEqual(partSize, 553648128);
+            Assert.AreEqual(partCount, 9930);
+            Assert.AreEqual(lastPartSize, 385875968);
         }
 
         [TestMethod]
         public void TestValidPartSize2()
         {
-            dynamic partSizeObject = utils.CalculateMultiPartSize(5000000000);
+            dynamic partSizeObject = utils.CalculateMultiPartSize(500000000000, true);
             double partSize = partSizeObject.partSize;
             double partCount = partSizeObject.partCount;
             double lastPartSize = partSizeObject.lastPartSize;
-            Assert.AreEqual(partSize, 5242880);
-            Assert.AreEqual(partCount, 954);
-            Assert.AreEqual(lastPartSize, 3535360);
+            Assert.AreEqual(partSize, 536870912);
+            Assert.AreEqual(partCount, 932);
+            Assert.AreEqual(lastPartSize, 173180928);
         }
 
         [TestMethod]
