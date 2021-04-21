@@ -235,8 +235,9 @@ namespace Minio
         /// Calculate part size and number of parts required.
         /// </summary>
         /// <param name="size"></param>
+        /// <param name="copy"> If true, use COPY part size, else use PUT part size</param>
         /// <returns></returns>
-        public static object CalculateMultiPartSize(long size)
+        public static object CalculateMultiPartSize(long size, bool copy = false)
         {
             if (size == -1)
             {
@@ -249,7 +250,8 @@ namespace Minio
             }
 
             double partSize = (double)Math.Ceiling((decimal)size / Constants.MaxParts);
-            partSize = (double)Math.Ceiling((decimal)partSize / Constants.MinimumPartSize) * Constants.MinimumPartSize;
+            long minPartSize = copy ? Constants.MinimumCOPYPartSize: Constants.MinimumPUTPartSize;
+            partSize = (double)Math.Ceiling((decimal)partSize / minPartSize) * minPartSize;
             double partCount = Math.Ceiling(size / partSize);
             double lastPartSize = size - (partCount - 1) * partSize;
             dynamic obj = new ExpandoObject();
