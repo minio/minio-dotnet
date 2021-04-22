@@ -54,7 +54,7 @@ namespace Minio.Examples
             return "minio-dotnet-example-" + result.ToString();
         }
 
-        public static void Main(string[] args)
+        public static void Main0(string[] args)
         {
             string endPoint = null;
             string accessKey = null;
