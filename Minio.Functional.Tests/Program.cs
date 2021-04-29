@@ -127,7 +127,6 @@ namespace Minio.Functional.Tests
                 FunctionalTest.GetObject_Test3(minioClient).Wait();
 
                 // Test File GetObject and PutObject functions
-
                 FunctionalTest.FGetObject_Test1(minioClient).Wait();
                 // FIX=> FPutObject_Test1(minioClient).Wait();
                 FunctionalTest.FPutObject_Test2(minioClient).Wait();
