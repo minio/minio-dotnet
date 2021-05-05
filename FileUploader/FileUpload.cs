@@ -1,5 +1,5 @@
 ﻿/*
-* MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+* MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -77,7 +77,12 @@ namespace FileUploader
                                                 .WithLocation(location);
                     await minio.MakeBucketAsync(mkBktArgs);
                 }
-                await minio.PutObjectAsync(bucketName, objectName, filePath, contentType);
+                PutObjectArgs putObjectArgs = new PutObjectArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName)
+                                                        .WithFileName(filePath)
+                                                        .WithContentType(contentType);           
+                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
                 Console.WriteLine("Successfully uploaded " + objectName);
             }
             catch (Exception e)

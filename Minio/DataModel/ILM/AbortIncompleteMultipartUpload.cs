@@ -17,7 +17,14 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+/*
+ * AbortIncompleteMultipartUpload is a helper class to denote abort incomplete multipart upload information specifically for LifecycleRule.
+ * Please refer:
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketLifecycleConfiguration.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html
+ */
+
+namespace Minio.DataModel.ILM
 {
     [Serializable]
     [XmlRoot(ElementName = "AbortIncompleteMultipartUpload")]

@@ -1,5 +1,5 @@
 ﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,29 +36,23 @@ namespace Minio.Examples.Cases
             try
             {
                 byte[] bs = File.ReadAllBytes(fileName);
+                Console.WriteLine("Running example for API: PutObjectAsync");
                 using (MemoryStream filestream = new MemoryStream(bs))
                 {
-                    if (filestream.Length < (5 * MB))
-                    {
-                        Console.WriteLine("Running example for API: PutObjectAsync with Stream");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Running example for API: PutObjectAsync with Stream and MultiPartUpload");
-                    }
-
+                    FileInfo fileInfo = new FileInfo(fileName);
                     var metaData = new Dictionary<string, string>
                     {
                         { "Test-Metadata", "Test  Test" }
                     };
-
-                    await minio.PutObjectAsync(bucketName,
-                                               objectName,
-                                               filestream,
-                                               filestream.Length,
-                                               "application/octet-stream",
-                                               metaData: metaData,
-                                               sse: sse);
+                    PutObjectArgs args = new PutObjectArgs()
+                                                    .WithBucket(bucketName)
+                                                    .WithObject(objectName)
+                                                    .WithStreamData(filestream)
+                                                    .WithObjectSize(filestream.Length)
+                                                    .WithContentType("application/octet-stream")
+                                                    .WithHeaders(metaData)
+                                                    .WithServerSideEncryption(sse);
+                    await minio.PutObjectAsync(args);
                 }
             
                 Console.WriteLine($"Uploaded object {objectName} to bucket {bucketName}");

@@ -16,7 +16,14 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+/*
+ * NoncurrentVersionExpiration is used within LifecycleRule to specify when the noncurrent object expires.
+ * Please refer:
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketLifecycleConfiguration.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html
+ */
+
+namespace Minio.DataModel.ILM
 {
     public class NoncurrentVersionExpiration
     {

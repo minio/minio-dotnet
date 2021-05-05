@@ -1,5 +1,5 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ using System.Net;
 using System.Xml.Serialization;
 
 using Minio.DataModel;
+using RestSharp;
 
 namespace Minio
 {
@@ -142,6 +143,7 @@ namespace Minio
                 this.ObjectTags = null;
                 return;
             }
+            responseContent = utils.RemoveNamespaceInXML(responseContent);
             using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
             {
                 this.ObjectTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(stream);
@@ -167,5 +169,61 @@ namespace Minio
                 CurrentRetentionConfiguration = (ObjectRetentionConfiguration)new XmlSerializer(typeof(ObjectRetentionConfiguration)).Deserialize(stream);
             }
         }
+    }
+
+    internal class CopyObjectResponse : GenericResponse
+    {
+        internal CopyObjectResult CopyObjectRequestResult { get; set; }
+        internal CopyPartResult CopyPartRequestResult { get; set; }
+
+        public CopyObjectResponse(HttpStatusCode statusCode, string content, Type reqType)
+            : base(statusCode, content)
+        {
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(content)))
+            {
+                if (reqType == typeof(CopyObjectResult))
+                {
+                    this.CopyObjectRequestResult = (CopyObjectResult)new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream);
+                }
+                else
+                {
+                    this.CopyPartRequestResult = (CopyPartResult)new XmlSerializer(typeof(CopyPartResult)).Deserialize(stream);
+                }
+            }
+        }
+    }
+
+    internal class NewMultipartUploadResponse: GenericResponse
+    {
+        internal string UploadId { get; private set; }
+        internal NewMultipartUploadResponse(HttpStatusCode statusCode, string responseContent)
+                    : base(statusCode, responseContent)
+        {
+            InitiateMultipartUploadResult newUpload = null;
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            {
+                newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult)).Deserialize(stream);
+            }
+            this.UploadId = newUpload.UploadId;
+        }
+    }
+
+    internal class PutObjectResponse : GenericResponse
+    {
+        internal string Etag;
+
+        internal PutObjectResponse(HttpStatusCode statusCode, string responseContent, IList<Parameter> responseHeaders)
+                    : base(statusCode, responseContent)
+        {
+            foreach (Parameter parameter in responseHeaders)
+            {
+                if (parameter.Name.Equals("ETag", StringComparison.OrdinalIgnoreCase))
+                {
+                    this.Etag = parameter.Value.ToString();
+                    return;
+                }
+            }
+        }
+
     }
 }

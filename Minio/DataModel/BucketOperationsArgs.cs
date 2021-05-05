@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Minio.DataModel;
+using Minio.DataModel.ILM;
+using Minio.DataModel.Replication;
 using Minio.Exceptions;
 using RestSharp;
 
@@ -60,12 +62,12 @@ namespace Minio
             return this;
         }
 
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
             request.RequestFormat = DataFormat.Xml;
             // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
-            if (this.Location != "us-east-1")
+            if (!string.IsNullOrEmpty(this.Location) && this.Location != "us-east-1")
             {
                 CreateBucketConfiguration config = new CreateBucketConfiguration(this.Location);
                 string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
@@ -100,13 +102,13 @@ namespace Minio
         }
     }
 
-    public class GetObjectListArgs : BucketArgs<GetObjectListArgs>
+    internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
     {
         internal string Delimiter { get; private set; }
         internal string Prefix { get; private set; }
         internal string Marker { get; private set; }
         internal bool Versions { get; private set; }
-
+        internal string ContinuationToken { get; set; }
 
         public GetObjectListArgs()
         {
@@ -116,16 +118,19 @@ namespace Minio
             this.Prefix = string.Empty;
             this.Marker = string.Empty;
         }
+
         public GetObjectListArgs WithDelimiter(string delim)
         {
             this.Delimiter = delim ?? string.Empty;
             return this;
         }
+
         public GetObjectListArgs WithPrefix(string prefix)
         {
             this.Prefix = prefix ?? string.Empty;
             return this;
         }
+
         public GetObjectListArgs WithMarker(string marker)
         {
             this.Marker = marker ?? string.Empty;
@@ -137,13 +142,28 @@ namespace Minio
             this.Versions = versions;
             return this;
         }
-        public override RestRequest BuildRequest(RestRequest request)
+
+        public GetObjectListArgs WithContinuationToken(string token)
         {
+            this.ContinuationToken = string.IsNullOrWhiteSpace(token)?string.Empty:token;
+            return this;
+        }
+
+        internal override RestRequest BuildRequest(RestRequest request)
+        {
+            request.AddQueryParameter("list-type", "2");
             request.AddQueryParameter("delimiter",this.Delimiter);
             request.AddQueryParameter("prefix",this.Prefix);
             request.AddQueryParameter("max-keys", "1000");
-            request.AddQueryParameter("marker",this.Marker);
             request.AddQueryParameter("encoding-type","url");
+            if (!string.IsNullOrWhiteSpace(this.Marker))
+            {
+                request.AddQueryParameter("marker",this.Marker);
+            }
+            if (!string.IsNullOrWhiteSpace(this.ContinuationToken))
+            {
+                request.AddQueryParameter("continuation-token",this.ContinuationToken);
+            }
             if (this.Versions)
             {
                 request.AddQueryParameter("versions", "");
@@ -158,7 +178,7 @@ namespace Minio
         {
             this.RequestMethod = Method.GET;
         }
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("policy","");
             return request;
@@ -172,7 +192,7 @@ namespace Minio
         {
             this.RequestMethod = Method.PUT;
         }
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             if (string.IsNullOrEmpty(this.PolicyJsonString))
             {
@@ -195,7 +215,7 @@ namespace Minio
         {
             this.RequestMethod = Method.DELETE;
         }
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("policy","");
             return request;
@@ -208,7 +228,7 @@ namespace Minio
         {
             this.RequestMethod = Method.GET;
         }
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("notification","");
             return request;
@@ -221,14 +241,14 @@ namespace Minio
         {
             this.RequestMethod = Method.PUT;
         }
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             if (this.BucketNotificationConfiguration == null)
             {
                 throw new UnexpectedMinioException("Cannot BuildRequest for SetBucketNotificationsArgs. BucketNotification configuration not assigned");
             }
             request.AddQueryParameter("notification","");
-            string body = utils.MarshalXML(this.BucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
+            string body = this.BucketNotificationConfiguration.ToXML();
             request.AddParameter("text/xml", body, ParameterType.RequestBody);
             return request;
         }
@@ -245,7 +265,7 @@ namespace Minio
         {
             this.RequestMethod = Method.PUT;
         }
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("notification","");
             BucketNotification bucketNotificationConfiguration = new BucketNotification();
@@ -278,7 +298,7 @@ namespace Minio
             this.NotificationObserver = obs;
             return this;
         }
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("prefix",this.Prefix);
             request.AddQueryParameter("suffix",this.Suffix);
@@ -369,7 +389,7 @@ namespace Minio
             return this;
         }
 
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             if (this.EncryptionConfig == null)
             {
@@ -389,7 +409,7 @@ namespace Minio
         {
             this.RequestMethod = Method.GET;
         }
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("encryption","");
             return request;
@@ -402,7 +422,7 @@ namespace Minio
         {
             this.RequestMethod = Method.DELETE;
         }
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("encryption","");
             return request;
@@ -411,21 +431,19 @@ namespace Minio
 
     public class SetBucketTagsArgs : BucketArgs<SetBucketTagsArgs>
     {
-        internal Dictionary<string, string> TagKeyValuePairs { get; set; }
         internal Tagging BucketTags { get; private set; }
         public SetBucketTagsArgs()
         {
             this.RequestMethod = Method.PUT;
         }
 
-        public SetBucketTagsArgs WithTagKeyValuePairs(Dictionary<string, string> kv)
+        public SetBucketTagsArgs WithTagging(Tagging tags)
         {
-            this.TagKeyValuePairs = new Dictionary<string, string>(kv);
-            this.BucketTags = Tagging.GetBucketTags(kv);
+            this.BucketTags = Tagging.GetObjectTags(tags.GetTags());
             return this;
         }
 
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("tagging","");
             string body = this.BucketTags.MarshalXML();
@@ -437,10 +455,10 @@ namespace Minio
             return request;
         }
 
-        public override void Validate()
+        internal override void Validate()
         {
             base.Validate();
-            if (this.TagKeyValuePairs == null || this.TagKeyValuePairs.Count == 0)
+            if (this.BucketTags == null || this.BucketTags.GetTags().Count == 0)
             {
                 throw new InvalidOperationException("Unable to set empty tags.");
             }
@@ -454,7 +472,7 @@ namespace Minio
             this.RequestMethod = Method.GET;
         }
 
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("tagging","");
             return request;
@@ -468,7 +486,7 @@ namespace Minio
             this.RequestMethod = Method.DELETE;
         }
 
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("tagging","");
             return request;
@@ -489,7 +507,7 @@ namespace Minio
             return this;
         }
 
-        public override void Validate()
+        internal override void Validate()
         {
             base.Validate();
             if (this.LockConfiguration == null)
@@ -498,7 +516,7 @@ namespace Minio
             }
         }
         
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("object-lock","");
             string body = utils.MarshalXML(this.LockConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
@@ -515,7 +533,7 @@ namespace Minio
             this.RequestMethod = Method.GET;
         }
 
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("object-lock","");
             return request;
@@ -529,7 +547,7 @@ namespace Minio
             this.RequestMethod = Method.PUT;
         }
 
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("object-lock","");
             string body = utils.MarshalXML(new ObjectLockConfiguration(), "http://s3.amazonaws.com/doc/2006-03-01/");
@@ -553,7 +571,7 @@ namespace Minio
             return this;
         }
 
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("lifecycle","");
             string body = this.BucketLifecycle.MarshalXML();
@@ -564,7 +582,7 @@ namespace Minio
             return request;
         }
 
-        public override void Validate()
+        internal override void Validate()
         {
             base.Validate();
             if (this.BucketLifecycle == null || this.BucketLifecycle.Rules.Count == 0)
@@ -581,7 +599,7 @@ namespace Minio
             this.RequestMethod = Method.GET;
         }
 
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("lifecycle","");
             return request;
@@ -595,7 +613,7 @@ namespace Minio
             this.RequestMethod = Method.DELETE;
         }
 
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("lifecycle","");
             return request;
@@ -609,7 +627,7 @@ namespace Minio
             this.RequestMethod = Method.GET;
         }
 
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("replication","");
             return request;
@@ -630,7 +648,7 @@ namespace Minio
             return this;
         }
 
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("replication","");
             string body = this.BucketReplication.MarshalXML();
@@ -650,7 +668,7 @@ namespace Minio
             this.RequestMethod = Method.DELETE;
         }
 
-        public override RestRequest BuildRequest(RestRequest request)
+        internal override RestRequest BuildRequest(RestRequest request)
         {
             request.AddQueryParameter("replication","");
             return request;

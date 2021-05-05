@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
@@ -35,7 +36,7 @@ namespace Minio.Examples.Cases
                                     .WithBucket(bucketName)
                                     .WithObject(objectName)
                                     .WithVersionId(versionId)
-                                    .WithTagKeyValuePairs(tags);
+                                    .WithTagging(Tagging.GetObjectTags(tags));
                 await minio.SetObjectTagsAsync(args);
                 Console.WriteLine($"Tags set for object {bucketName}/{objectName}.");
                 Console.WriteLine();

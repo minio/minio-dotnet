@@ -1,5 +1,5 @@
 ﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,8 @@ namespace Minio.Examples.Cases
         public static void Run(MinioClient minio,
                                      string bucketName = "my-bucket-name",
                                      string prefix = null,
-                                     bool recursive = true)
+                                     bool recursive = true,
+                                     bool versions=false)
         {
             try
             {
@@ -41,13 +42,16 @@ namespace Minio.Examples.Cases
                     ex => Console.WriteLine($"OnError: {ex}"),
                     () => Console.WriteLine($"Listed all objects in bucket {bucketName}\n"));
 
-                listArgs.WithVersions(true);
-                IObservable<VersionItem> observableVer = minio.ListObjectVersionsAsync(listArgs);
+                if (versions)
+                {
+                    listArgs.WithVersions(true);
+                    IObservable<VersionItem> observableVer = minio.ListObjectVersionsAsync(listArgs);
 
-                IDisposable subscriptionVer = observableVer.Subscribe(
-                    item => Console.WriteLine($"Object: {item.Key} Version: {item.VersionId}"),
-                    ex => Console.WriteLine($"OnError: {ex}"),
-                    () => Console.WriteLine($"Listed all objects in bucket {bucketName}\n"));
+                    IDisposable subscriptionVer = observableVer.Subscribe(
+                        item => Console.WriteLine($"Object: {item.Key} Version: {item.VersionId}"),
+                        ex => Console.WriteLine($"OnError: {ex}"),
+                        () => Console.WriteLine($"Listed all objects in bucket {bucketName}\n"));
+                }
                 // subscription.Dispose();
             }
             catch (Exception e)

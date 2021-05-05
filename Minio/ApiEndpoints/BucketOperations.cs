@@ -25,6 +25,8 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Minio.Helper;
+using Minio.DataModel.ILM;
+using Minio.DataModel.Replication;
 
 namespace Minio
 {
@@ -71,6 +73,7 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns> Task </returns>
         /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucketName is not found</exception>
         public async Task RemoveBucketAsync(RemoveBucketArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
@@ -94,7 +97,7 @@ namespace Minio
                 args.Location = this.Region;
             }
             // Set Target URL for MakeBucket
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, args.Location);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, region:args.Location);
             SetTargetURL(requestUrl);
             // Set Authenticator, if necessary.
             if (string.IsNullOrEmpty(this.Region) && !s3utils.IsAmazonEndPoint(this.BaseUrl) && args.Location != "us-east-1" && this.restClient != null)
@@ -204,12 +207,25 @@ namespace Minio
         /// <returns>An observable of items that client can subscribe to</returns>
         public IObservable<Item> ListObjectsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
+            BucketExistsArgs bucketExistsArgs = new BucketExistsArgs()
+                                                            .WithBucket(args.BucketName);
+            // Check if the bucket exists.
+            var bucketExistTask = this.BucketExistsAsync(bucketExistsArgs, cancellationToken);
+            Task.WaitAll(bucketExistTask);
+            var found = bucketExistTask.Result;
+            if (!found)
+            {
+                throw new BucketNotFoundException(args.BucketName, "Bucket not found.");
+            }
+
             return Observable.Create<Item>(
               async (obs, ct) =>
               {
                   bool isRunning = true;
                   var delimiter = (args.Recursive)? string.Empty: "/";
                   string marker = string.Empty;
+                  string nextContinuationToken = string.Empty;
+                  uint count = 0;
                   using(var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
                   {
                     while (isRunning)
@@ -219,12 +235,22 @@ namespace Minio
                                                             .WithPrefix(args.Prefix)
                                                             .WithDelimiter(delimiter)
                                                             .WithVersions(false)
+                                                            .WithContinuationToken(nextContinuationToken)
                                                             .WithMarker(marker);
                         Tuple<ListBucketResult, List<Item>> objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
+                        if (objectList.Item2.Count == 0 && objectList.Item1.KeyCount.Equals("0") && count == 0)
+                        {
+                            string name = args.BucketName;
+                            if (!string.IsNullOrEmpty(args.Prefix))
+                                name += "/" + args.Prefix;
+                            throw new EmptyBucketOperation("Bucket " + name + " is empty.");
+                        }
                         ListObjectsItemResponse listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);
                         marker = listObjectsItemResponse.NextMarker;
                         isRunning = objectList.Item1.IsTruncated;
+                        nextContinuationToken = (objectList.Item1.IsTruncated)?objectList.Item1.NextContinuationToken:string.Empty;
                         cts.Token.ThrowIfCancellationRequested();
+                        count++;
                     }
                   }
               });
@@ -239,6 +265,8 @@ namespace Minio
         /// <returns>An observable of items that client can subscribe to</returns>
         public IObservable<VersionItem> ListObjectVersionsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
+            args.Validate();
+            args.Versions = (args.Versions)?args.Versions:true;
             return Observable.Create<VersionItem>(
               async (obs, ct) =>
               {

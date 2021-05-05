@@ -1,6 +1,6 @@
 ﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
- * (C) 2017, 2018, 2019, 2020 MinIO, Inc.
+ * (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,7 +31,6 @@ using System.Xml.Serialization;
 using Minio.DataModel;
 using Minio.Exceptions;
 using Minio.Helper;
-
 
 namespace Minio
 {
@@ -75,7 +75,12 @@ namespace Minio
                                             .WithModifiedSince(args.ModifiedSince)
                                             .WithUnModifiedSince(args.UnModifiedSince)
                                             .WithServerSideEncryption(args.SSE);
+            if (args.OffsetLengthSet)
+            {
+                statArgs.WithOffsetAndLength(args.ObjectOffset, args.ObjectLength);
+            }
             ObjectStat objStat = await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
+            args.Validate();
             if (args.FileName != null)
             {
                 await this.getObjectFileAsync(args, objStat, cancellationToken);
@@ -481,6 +486,403 @@ namespace Minio
 
 
         /// <summary>
+        /// Upload object part to bucket for particular uploadId
+        /// </summary>
+        /// <param name="args">PutObjectArgs encapsulates bucket name, object name, upload id, part number, object data(body), Headers, SSE Headers</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        private async Task<string> PutObjectSinglePartAsync(PutObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            //Skipping validate as we need the case where stream sends 0 bytes
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken);
+            PutObjectResponse putObjectResponse = new PutObjectResponse(response.StatusCode, response.Content, response.Headers);
+            return putObjectResponse.Etag;
+        }
+
+
+        /// <summary>
+        /// Upload object in multiple parts. Private Helper function
+        /// </summary>
+        /// <param name="args">PutObjectPartArgs encapsulates bucket name, object name, upload id, part number, object data(body)</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        private async Task<Dictionary<int, string>> PutObjectPartAsync(PutObjectPartArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            dynamic multiPartInfo = utils.CalculateMultiPartSize(args.ObjectSize);
+            double partSize = multiPartInfo.partSize;
+            double partCount = multiPartInfo.partCount;
+            double lastPartSize = multiPartInfo.lastPartSize;
+            Part[] totalParts = new Part[(int)partCount];
+
+            double expectedReadSize = partSize;
+            int partNumber;
+            int numPartsUploaded = 0;
+            Dictionary<int, string> etags = new Dictionary<int, string>();
+            for (partNumber = 1; partNumber <= partCount; partNumber++)
+            {
+                byte[] dataToCopy = await ReadFullAsync(args.ObjectStreamData, (int)partSize).ConfigureAwait(false);
+                if (dataToCopy == null && numPartsUploaded > 0)
+                {
+                    break;
+                }
+                if (partNumber == partCount)
+                {
+                    expectedReadSize = lastPartSize;
+                }
+                numPartsUploaded += 1;
+                PutObjectArgs putObjectArgs = new PutObjectArgs(args)
+                                                        .WithRequestBody(dataToCopy)
+                                                        .WithUploadId(args.UploadId)
+                                                        .WithPartNumber(partNumber);
+                string etag = await this.PutObjectSinglePartAsync(putObjectArgs, cancellationToken).ConfigureAwait(false);
+                totalParts[partNumber - 1] = new Part { PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize };
+                etags[partNumber] = totalParts[partNumber - 1].ETag;
+            }
+
+            // This shouldn't happen where stream size is known.
+            if (partCount != numPartsUploaded && args.ObjectSize != -1)
+            {
+                RemoveUploadArgs removeUploadArgs = new RemoveUploadArgs()
+                                                                .WithBucket(args.BucketName)
+                                                                .WithObject(args.ObjectName)
+                                                                .WithUploadId(args.UploadId);
+                await this.RemoveUploadAsync(removeUploadArgs, cancellationToken).ConfigureAwait(false);
+                return null;
+            }
+            return etags;
+        }
+
+
+        /// <summary>
+        /// Creates object in a bucket fom input stream or filename.
+        /// </summary>
+        /// <param name="args">PutObjectArgs Arguments object encapsulating bucket name, object name, file name, object data stream, object size, content type.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        public async Task PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            var meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (args.Headers != null)
+            {
+                foreach (KeyValuePair<string, string> p in args.Headers)
+                {
+                    var key = p.Key;
+                    if (!OperationsUtil.IsSupportedHeader(p.Key) && !p.Key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase) &&
+                        !OperationsUtil.IsSSEHeader(p.Key))
+                    {
+                        key = "x-amz-meta-" + key.ToLowerInvariant();
+                    }
+                    meta[key] = p.Value;
+                }
+            }
+            if (args.SSE != null)
+            {
+                args.SSE.Marshal(meta);
+            }
+            args.WithHeaders(meta);
+            
+            // Upload object in single part if size falls under restricted part size.
+            if (args.ObjectSize < Constants.MinimumPartSize && args.ObjectSize >= 0 && args.ObjectStreamData != null)
+            {
+                var bytes = await ReadFullAsync(args.ObjectStreamData, (int)args.ObjectSize).ConfigureAwait(false);
+                int bytesRead = (bytes == null)? 0 : bytes.Length;
+                if (bytesRead != (int)args.ObjectSize)
+                {
+                    throw new UnexpectedShortReadException($"Data read {bytes.Length} is shorter than the size {args.ObjectSize} of input buffer.");
+                }
+                args = args.WithRequestBody(bytes)
+                           .WithStreamData(null)
+                           .WithObjectSize(bytesRead);
+                await this.PutObjectSinglePartAsync(args, cancellationToken).ConfigureAwait(false);
+                return;
+            }
+            // For all sizes greater than 5MiB do multipart.
+            NewMultipartUploadPutArgs multipartUploadArgs = new NewMultipartUploadPutArgs()
+                                                                        .WithBucket(args.BucketName)
+                                                                        .WithObject(args.ObjectName)
+                                                                        .WithVersionId(args.VersionId)
+                                                                        .WithHeaders(args.Headers)
+                                                                        .WithContentType(args.ContentType)
+                                                                        .WithTagging(args.ObjectTags)
+                                                                        .WithLegalHold(args.LegalHoldEnabled)
+                                                                        .WithRetentionConfiguration(args.Retention)
+                                                                        .WithServerSideEncryption(args.SSE);
+            // Get upload Id after creating new multi-part upload operation to be used in putobject part, complete multipart upload operations.
+            string uploadId = await this.NewMultipartUploadAsync(multipartUploadArgs, cancellationToken).ConfigureAwait(false);
+            // Remove SSE-S3 and KMS headers during PutObjectPart operations.
+            PutObjectPartArgs putObjectPartArgs = new PutObjectPartArgs()
+                                                            .WithBucket(args.BucketName)
+                                                            .WithObject(args.ObjectName)
+                                                            .WithObjectSize(args.ObjectSize)
+                                                            .WithContentType(args.ContentType)
+                                                            .WithUploadId(uploadId)
+                                                            .WithStreamData(args.ObjectStreamData)
+                                                            .WithRequestBody(args.RequestBody)
+                                                            .WithHeaders(args.Headers);
+            Dictionary<int, string> etags = null;
+            // Upload file contents.
+            if (!string.IsNullOrEmpty(args.FileName))
+            {
+                FileInfo fileInfo = new FileInfo(args.FileName);
+                long size = fileInfo.Length;
+                using (FileStream fileStream = new FileStream(args.FileName, FileMode.Open, FileAccess.Read))
+                {
+                    putObjectPartArgs = putObjectPartArgs
+                                                .WithStreamData(fileStream)
+                                                .WithObjectSize(fileStream.Length)
+                                                .WithRequestBody(null);
+                    etags = await this.PutObjectPartAsync(putObjectPartArgs, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            // Upload stream contents
+            else
+            {
+                etags = await this.PutObjectPartAsync(putObjectPartArgs, cancellationToken).ConfigureAwait(false);
+            }
+            CompleteMultipartUploadArgs completeMultipartUploadArgs = new CompleteMultipartUploadArgs()
+                                                                                        .WithBucket(args.BucketName)
+                                                                                        .WithObject(args.ObjectName)
+                                                                                        .WithUploadId(uploadId)
+                                                                                        .WithETags(etags);
+            await this.CompleteMultipartUploadAsync(completeMultipartUploadArgs, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// Copy a source object into a new destination object.
+        /// </summary>
+        /// <param name="args">CopyObjectArgs Arguments Object which encapsulates bucket name, object name, destination bucket, destination object names, Copy conditions object, metadata, SSE source, destination objects</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        public async Task CopyObjectAsync(CopyObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ServerSideEncryption sseGet = null;
+            if (args.SourceObject.SSE is SSECopy sSECopy)
+            {
+                sseGet = sSECopy.CloneToSSEC();
+            }
+            StatObjectArgs statArgs = new StatObjectArgs()
+                                            .WithBucket(args.SourceObject.BucketName)
+                                            .WithObject(args.SourceObject.ObjectName)
+                                            .WithVersionId(args.SourceObject.VersionId)
+                                            .WithServerSideEncryption(sseGet);
+            ObjectStat stat = await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
+            args.WithCopyObjectSourceStats(stat);
+            if (stat.TaggingCount > 0 && !args.ReplaceTagsDirective)
+            {
+                GetObjectTagsArgs getTagArgs = new GetObjectTagsArgs()
+                                                            .WithBucket(args.SourceObject.BucketName)
+                                                            .WithObject(args.SourceObject.ObjectName)
+                                                            .WithVersionId(args.SourceObject.VersionId)
+                                                            .WithServerSideEncryption(sseGet);
+                var tag = await GetObjectTagsAsync(getTagArgs, cancellationToken).ConfigureAwait(false);
+                args.WithTagging(tag);
+            }
+            args.Validate();
+            long srcByteRangeSize = (args.SourceObject.CopyOperationConditions != null)? args.SourceObject.CopyOperationConditions.GetByteRange():0L;
+            long copySize = (srcByteRangeSize == 0) ? args.SourceObjectInfo.Size : srcByteRangeSize;
+            if ((srcByteRangeSize > args.SourceObjectInfo.Size) || ((srcByteRangeSize > 0) && (args.SourceObject.CopyOperationConditions.byteRangeEnd >= args.SourceObjectInfo.Size)))
+            {
+                throw new ArgumentException("Specified byte range (" + args.SourceObject.CopyOperationConditions.byteRangeStart.ToString() + "-" + args.SourceObject.CopyOperationConditions.byteRangeEnd.ToString() + ") does not fit within source object (size=" + args.SourceObjectInfo.Size.ToString() + ")");
+            }
+
+            if ((copySize > Constants.MaxSingleCopyObjectSize) || (srcByteRangeSize > 0 && (srcByteRangeSize != args.SourceObjectInfo.Size)))
+            {
+                MultipartCopyUploadArgs multiArgs = new MultipartCopyUploadArgs(args)
+                                                                .WithCopySize(copySize);
+                await MultipartCopyUploadAsync(multiArgs, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                CopySourceObjectArgs sourceObject = new CopySourceObjectArgs()
+                                                                .WithBucket(args.SourceObject.BucketName)
+                                                                .WithObject(args.SourceObject.ObjectName)
+                                                                .WithVersionId(args.SourceObject.VersionId)
+                                                                .WithCopyConditions(args.SourceObject.CopyOperationConditions);
+
+                CopyObjectRequestArgs cpReqArgs = new CopyObjectRequestArgs()
+                                                                .WithBucket(args.BucketName)
+                                                                .WithObject(args.ObjectName)
+                                                                .WithVersionId(args.VersionId)
+                                                                .WithHeaders(args.Headers)
+                                                                .WithCopyObjectSource(sourceObject)
+                                                                .WithRequestBody(args.RequestBody)
+                                                                .WithSourceObjectInfo(args.SourceObjectInfo)
+                                                                .WithCopyOperationObjectType(typeof(CopyObjectResult))
+                                                                .WithReplaceMetadataDirective(args.ReplaceMetadataDirective)
+                                                                .WithReplaceTagsDirective(args.ReplaceTagsDirective)
+                                                                .WithTagging(args.ObjectTags);
+                cpReqArgs.Validate();
+                Dictionary<string, string> newMeta = null;
+                if (args.ReplaceMetadataDirective)
+                {
+                    newMeta = new Dictionary<string, string>(args.Headers);
+                }
+                else
+                {
+                    newMeta = new Dictionary<string, string>(args.SourceObjectInfo.MetaData);
+                }
+                if (args.SourceObject.SSE != null && args.SourceObject.SSE is SSECopy)
+                {
+                    args.SourceObject.SSE.Marshal(newMeta);
+                }
+                if (args.SSE != null)
+                {
+                    args.SSE.Marshal(newMeta);
+                }
+                cpReqArgs.WithHeaders(newMeta);
+                await this.CopyObjectRequestAsync(cpReqArgs, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+
+        /// <summary>
+        /// Make a multi part copy upload for objects larger than 5GB or if CopyCondition specifies a byte range.
+        /// </summary>
+        /// <param name="args">MultipartCopyUploadArgs Arguments object encapsulating destination and source bucket, object names, copy conditions, size, metadata, SSE</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        private async Task MultipartCopyUploadAsync(MultipartCopyUploadArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            dynamic multiPartInfo = utils.CalculateMultiPartSize(args.CopySize, copy:true);
+            double partSize = multiPartInfo.partSize;
+            double partCount = multiPartInfo.partCount;
+            double lastPartSize = multiPartInfo.lastPartSize;
+            Part[] totalParts = new Part[(int)partCount];
+
+            NewMultipartUploadCopyArgs nmuArgs = new NewMultipartUploadCopyArgs()
+                                                            .WithBucket(args.BucketName)
+                                                            .WithObject(args.ObjectName ?? args.SourceObject.ObjectName)
+                                                            .WithHeaders(args.Headers)
+                                                            .WithCopyObjectSource(args.SourceObject)
+                                                            .WithSourceObjectInfo(args.SourceObjectInfo)
+                                                            .WithReplaceMetadataDirective(args.ReplaceMetadataDirective)
+                                                            .WithReplaceTagsDirective(args.ReplaceTagsDirective);
+            nmuArgs.Validate();
+            // No need to resume upload since this is a Server-side copy. Just initiate a new upload.
+            string uploadId = await this.NewMultipartUploadAsync(nmuArgs, cancellationToken).ConfigureAwait(false);
+            double expectedReadSize = partSize;
+            int partNumber;
+            for (partNumber = 1; partNumber <= partCount; partNumber++)
+            {
+                CopyConditions partCondition = args.SourceObject.CopyOperationConditions.Clone();
+                partCondition.byteRangeStart = (long)partSize * (partNumber - 1) + partCondition.byteRangeStart;
+                if (partNumber < partCount)
+                {
+                    partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)partSize - 1;
+                }
+                else
+                {
+                    partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)lastPartSize - 1;
+                }
+                Dictionary<string, string> queryMap = new Dictionary<string, string>();
+                if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
+                {
+                    queryMap.Add("uploadId",uploadId);
+                    queryMap.Add("partNumber",partNumber.ToString());
+                }
+                if (args.SourceObject.SSE != null && args.SourceObject.SSE is SSECopy)
+                {
+                    args.SourceObject.SSE.Marshal(args.Headers);
+                }
+                if (args.SSE != null)
+                {
+                    args.SSE.Marshal(args.Headers);
+                }
+                CopyObjectRequestArgs cpPartArgs = new CopyObjectRequestArgs()
+                                                                .WithBucket(args.BucketName)
+                                                                .WithObject(args.ObjectName)
+                                                                .WithVersionId(args.VersionId)
+                                                                .WithHeaders(args.Headers)
+                                                                .WithCopyOperationObjectType(typeof(CopyPartResult))
+                                                                .WithPartCondition(partCondition)
+                                                                .WithQueryMap(queryMap)
+                                                                .WithCopyObjectSource(args.SourceObject)
+                                                                .WithSourceObjectInfo(args.SourceObjectInfo)
+                                                                .WithReplaceMetadataDirective(args.ReplaceMetadataDirective)
+                                                                .WithReplaceTagsDirective(args.ReplaceTagsDirective)
+                                                                .WithTagging(args.ObjectTags);
+                CopyPartResult cpPartResult = (CopyPartResult)await this.CopyObjectRequestAsync(cpPartArgs, cancellationToken).ConfigureAwait(false);
+
+                totalParts[partNumber - 1] = new Part { PartNumber = partNumber, ETag = cpPartResult.ETag, Size = (long)expectedReadSize };
+            }
+            Dictionary<int, string> etags = new Dictionary<int, string>();
+            for (partNumber = 1; partNumber <= partCount; partNumber++)
+            {
+                etags[partNumber] = totalParts[partNumber - 1].ETag;
+            }
+            CompleteMultipartUploadArgs completeMultipartUploadArgs = new CompleteMultipartUploadArgs(args)
+                                                                                        .WithUploadId(uploadId)
+                                                                                        .WithETags(etags);
+            // Complete multi part upload
+            await this.CompleteMultipartUploadAsync(completeMultipartUploadArgs, cancellationToken).ConfigureAwait(false);
+
+        }
+
+
+        /// <summary>
+        /// Start a new multi-part upload request
+        /// </summary>
+        /// <param name="args">NewMultipartUploadPutArgs arguments object encapsulating bucket name, object name, Headers, SSE Headers</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        private async Task<string> NewMultipartUploadAsync(NewMultipartUploadPutArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken);
+            NewMultipartUploadResponse uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
+            return uploadResponse.UploadId;
+        }
+
+
+        /// <summary>
+        /// Start a new multi-part copy upload request
+        /// </summary>
+        /// <param name="args">NewMultipartUploadCopyArgs arguments object encapsulating bucket name, object name, Headers, SSE Headers</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        private async Task<string> NewMultipartUploadAsync(NewMultipartUploadCopyArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken);
+            NewMultipartUploadResponse uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
+            return uploadResponse.UploadId;
+        }
+
+
+        /// <summary>
+        /// Create the copy request, execute it and return the copy result.
+        /// </summary>
+        /// <param name="args"> CopyObjectRequestArgs Arguments Object encapsulating </param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        private async Task<object> CopyObjectRequestAsync(CopyObjectRequestArgs args, CancellationToken cancellationToken)
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            CopyObjectResponse copyObjectResponse = new CopyObjectResponse(response.StatusCode, response.Content, args.CopyOperationObjectType);
+            return copyObjectResponse.CopyPartRequestResult;
+        }
+
+
+        /// <summary>
+        /// Internal method to complete multi part upload of object to server.
+        /// </summary>
+        /// <param name="args">CompleteMultipartUploadArgs Arguments object with bucket name, object name, upload id, Etags</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
+        private async Task CompleteMultipartUploadAsync(CompleteMultipartUploadArgs args, CancellationToken cancellationToken)
+        {
+            args.Validate();
+            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
@@ -488,29 +890,15 @@ namespace Minio
         /// <param name="cb">A stream will be passed to the callback</param>
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        [Obsolete("Use GetObjectAsync method with GetObjectArgs object. Refer GetObject, GetObjectVersion & GetObjectQuery example code.")]
+        public Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            // Stat to see if the object exists
-            // NOTE: This avoids writing the error body to the action stream passed (Do not remove).
-            StatObjectArgs statArgs = new StatObjectArgs()
+            GetObjectArgs args = new GetObjectArgs()
                                             .WithBucket(bucketName)
                                             .WithObject(objectName)
+                                            .WithCallbackStream(cb)
                                             .WithServerSideEncryption(sse);
-            await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            var headers = new Dictionary<string, string>();
-            if (sse != null && sse.GetType().Equals(EncryptionType.SSE_C))
-            {
-                sse.Marshal(headers);
-            }
-            var request = await this.CreateRequest(Method.GET,
-                                                bucketName,
-                                                objectName: objectName,
-                                                headerMap: headers)
-                                    .ConfigureAwait(false);
-            request.ResponseWriter = cb;
-
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            return this.GetObjectAsync(args, cancellationToken);
         }
 
 
@@ -524,44 +912,16 @@ namespace Minio
         /// <param name="cb">A stream will be passed to the callback</param>
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        public async Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        [Obsolete("Use GetObjectAsync method with GetObjectArgs object. Refer GetObject, GetObjectVersion & GetObjectQuery example code.")]
+        public Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (offset < 0)
-            {
-                throw new ArgumentException("Offset should be zero or greater", nameof(offset));
-            }
-
-            if (length < 0)
-            {
-                throw new ArgumentException("Length should be greater than zero", nameof(length));
-            }
-
-            // Stat to see if the object exists
-            // NOTE: This avoids writing the error body to the action stream passed (Do not remove).
-            StatObjectArgs statArgs = new StatObjectArgs()
+            GetObjectArgs args = new GetObjectArgs()
                                             .WithBucket(bucketName)
                                             .WithObject(objectName)
+                                            .WithCallbackStream(cb)
+                                            .WithOffsetAndLength(offset, length)
                                             .WithServerSideEncryption(sse);
-            await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            var headerMap = new Dictionary<string, string>();
-            if (length > 0)
-            {
-                headerMap.Add("Range", "bytes=" + offset.ToString() + "-" + (offset + length - 1).ToString());
-            }
-
-            if (sse != null && sse.GetType().Equals(EncryptionType.SSE_C))
-            {
-                sse.Marshal(headerMap);
-            }
-            var request = await this.CreateRequest(Method.GET,
-                                                     bucketName,
-                                                     objectName: objectName,
-                                                     headerMap: headerMap)
-                                .ConfigureAwait(false);
-
-            request.ResponseWriter = cb;
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            return this.GetObjectAsync(args);
         }
 
         /// <summary>
@@ -573,52 +933,15 @@ namespace Minio
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public async Task GetObjectAsync(string bucketName, string objectName, string fileName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        [Obsolete("Use GetObjectAsync method with GetObjectArgs object. Refer GetObject, GetObjectVersion & GetObjectQuery example code.")]
+        public Task GetObjectAsync(string bucketName, string objectName, string fileName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            bool fileExists = File.Exists(fileName);
-            utils.ValidateFile(fileName);
-
-            StatObjectArgs statArgs = new StatObjectArgs()
+            GetObjectArgs args = new GetObjectArgs()
                                             .WithBucket(bucketName)
                                             .WithObject(objectName)
+                                            .WithFile(fileName)
                                             .WithServerSideEncryption(sse);
-            ObjectStat objectStat = await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            long length = objectStat.Size;
-            string etag = objectStat.ETag;
-
-            string tempFileName = $"{fileName}.{etag}.part.minio";
-
-            bool tempFileExists = File.Exists(tempFileName);
-
-            FileInfo tempFileInfo = new FileInfo(tempFileName);
-            long tempFileSize = 0;
-            if (tempFileExists)
-            {
-                tempFileSize = tempFileInfo.Length;
-            }
-
-            GetObjectArgs getObjectArgs = new GetObjectArgs()
-                                                    .WithBucket(bucketName)
-                                                    .WithObject(objectName)
-                                                    .WithCallbackStream(
-                                                        stream =>
-                                                        {
-                                                            var fileStream = File.Create(tempFileName);
-                                                            stream.CopyTo(fileStream);
-                                                            fileStream.Dispose();
-                                                            FileInfo writtenInfo = new FileInfo(tempFileName);
-                                                            long writtenSize = writtenInfo.Length;
-                                                            if (writtenSize != length - tempFileSize)
-                                                            {
-                                                                throw new IOException(tempFileName + ": unexpected data written.  expected = " + (length - tempFileSize)
-                                                                                    + ", written = " + writtenSize);
-                                                            }
-                                                            utils.MoveWithReplace(tempFileName, fileName);
-                                                        }
-                                                    )
-                                                    .WithServerSideEncryption(sse);
-            await GetObjectAsync(getObjectArgs, cancellationToken).ConfigureAwait(false);
+            return this.GetObjectAsync(args, cancellationToken);
         }
 
 
@@ -654,15 +977,17 @@ namespace Minio
         /// <param name="metaData">Object metadata to be stored. Defaults to null.</param>
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        public async Task PutObjectAsync(string bucketName, string objectName, string fileName, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        [Obsolete("Use PutObjectAsync method with PutObjectArgs object. Refer PutObject example code.")]
+        public Task PutObjectAsync(string bucketName, string objectName, string fileName, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.ValidateFile(fileName, contentType);
-            FileInfo fileInfo = new FileInfo(fileName);
-            long size = fileInfo.Length;
-            using (FileStream file = new FileStream(fileName, FileMode.Open, FileAccess.Read))
-            {
-                await PutObjectAsync(bucketName, objectName, file, size, contentType, metaData, sse, cancellationToken).ConfigureAwait(false);
-            }
+            PutObjectArgs args = new PutObjectArgs()
+                                            .WithBucket(bucketName)
+                                            .WithObject(objectName)
+                                            .WithFileName(fileName)
+                                            .WithContentType(contentType)
+                                            .WithHeaders(metaData)
+                                            .WithServerSideEncryption(sse);
+            return this.PutObjectAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -676,111 +1001,18 @@ namespace Minio
         /// <param name="metaData">Object metadata to be stored. Defaults to null.</param>
         /// <param name="sse">Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        [Obsolete("Use PutObjectAsync method with PutObjectArgs object. Refer PutObject example code.")]
+        public Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.ValidateBucketName(bucketName);
-            utils.ValidateObjectName(objectName);
-
-            var sseHeaders = new Dictionary<string, string>();
-            var meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            if (metaData != null) {
-                foreach (KeyValuePair<string, string> p in metaData)
-                {
-                    var key = p.Key;
-                    if (!OperationsUtil.IsSupportedHeader(p.Key) && !p.Key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
-                    {
-                        key = "x-amz-meta-" + key.ToLowerInvariant();
-                    }
-                    meta[key] = p.Value;
-
-                }
-            }
-
-            if (sse != null)
-            {
-                sse.Marshal(sseHeaders);
-            }
-            if (string.IsNullOrWhiteSpace(contentType))
-            {
-                contentType = "application/octet-stream";
-            }
-            if (!meta.ContainsKey("Content-Type"))
-            {
-                meta["Content-Type"] = contentType;
-            }
-            if (data == null)
-            {
-                throw new ArgumentNullException(nameof(data), "Invalid input stream, cannot be null");
-            }
-
-            // for sizes less than 5Mb , put a single object
-            if (size < Constants.MinimumPartSize && size >= 0)
-            {
-                var bytes = await ReadFullAsync(data, (int)size).ConfigureAwait(false);
-                if (bytes != null && bytes.Length != (int)size)
-                {
-                    throw new UnexpectedShortReadException($"Data read {bytes.Length} is shorter than the size {size} of input buffer.");
-                }
-                await this.PutObjectAsync(bucketName, objectName, null, 0, bytes, meta, sseHeaders, cancellationToken).ConfigureAwait(false);
-                return;
-            }
-            // For all sizes greater than 5MiB do multipart.
-
-            dynamic multiPartInfo = utils.CalculateMultiPartSize(size);
-            double partSize = multiPartInfo.partSize;
-            double partCount = multiPartInfo.partCount;
-            double lastPartSize = multiPartInfo.lastPartSize;
-            Part[] totalParts = new Part[(int)partCount];
-
-            string uploadId = await this.NewMultipartUploadAsync(bucketName, objectName, meta, sseHeaders, cancellationToken).ConfigureAwait(false);
-
-            // Remove SSE-S3 and KMS headers during PutObjectPart operations.
-            if (sse != null &&
-               (sse.GetType().Equals(EncryptionType.SSE_S3) ||
-                sse.GetType().Equals(EncryptionType.SSE_KMS)))
-            {
-                sseHeaders.Remove(Constants.SSEGenericHeader);
-                sseHeaders.Remove(Constants.SSEKMSContext);
-                sseHeaders.Remove(Constants.SSEKMSKeyId);
-            }
-
-            double expectedReadSize = partSize;
-            int partNumber;
-            int numPartsUploaded = 0;
-            for (partNumber = 1; partNumber <= partCount; partNumber++)
-            {
-                byte[] dataToCopy = await ReadFullAsync(data, (int)partSize).ConfigureAwait(false);
-                if (dataToCopy == null && numPartsUploaded > 0)
-                {
-                    break;
-                }
-
-                if (partNumber == partCount)
-                {
-                    expectedReadSize = lastPartSize;
-                }
-                numPartsUploaded += 1;
-                string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, meta, sseHeaders, cancellationToken).ConfigureAwait(false);
-                totalParts[partNumber - 1] = new Part { PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize };
-            }
-
-            // This shouldn't happen where stream size is known.
-            if (partCount != numPartsUploaded && size != -1)
-            {
-                RemoveUploadArgs rmUploadArgs = new RemoveUploadArgs()
-                                                    .WithBucket(bucketName)
-                                                    .WithObject(objectName)
-                                                    .WithUploadId(uploadId);
-                await this.RemoveUploadAsync(rmUploadArgs, cancellationToken).ConfigureAwait(false);
-                return;
-            }
-
-            Dictionary<int, string> etags = new Dictionary<int, string>();
-            for (partNumber = 1; partNumber <= numPartsUploaded; partNumber++)
-            {
-                etags[partNumber] = totalParts[partNumber - 1].ETag;
-            }
-            await this.CompleteMultipartUploadAsync(bucketName, objectName, uploadId, etags, cancellationToken).ConfigureAwait(false);
+            PutObjectArgs args = new PutObjectArgs()
+                                            .WithBucket(bucketName)
+                                            .WithObject(objectName)
+                                            .WithStreamData(data)
+                                            .WithObjectSize(size)
+                                            .WithContentType(contentType)
+                                            .WithHeaders(metaData)
+                                            .WithServerSideEncryption(sse);
+            return this.PutObjectAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -931,6 +1163,7 @@ namespace Minio
         /// <param name="sseHeaders">Server-side encryption headers if any </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        [Obsolete("Use PutObjectAsync method with PutObjectArgs object. Refer PutObject example code.")]
         private async Task<string> PutObjectAsync(string bucketName, string objectName, string uploadId, int partNumber, byte[] data, Dictionary<string, string> metaData, Dictionary<string, string> sseHeaders, CancellationToken cancellationToken)
         {
             // For multi-part upload requests, metadata needs to be passed in the NewMultiPartUpload request
@@ -974,6 +1207,7 @@ namespace Minio
         /// <param name="recursive">Set to true to recursively list all incomplete uploads</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>A lazily populated list of incomplete uploads</returns>
+        [Obsolete("Use ListIncompleteUploads method with ListIncompleteUploadsArgs object. Refer ListIncompleteUploads example code.")]
         public IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix = null, bool recursive = true, CancellationToken cancellationToken = default(CancellationToken))
         {
             ListIncompleteUploadsArgs args = new ListIncompleteUploadsArgs()
@@ -1170,90 +1404,21 @@ namespace Minio
         /// <param name="sseDest">Optional destination encryption options.Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        public async Task CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken))
+        [Obsolete("Use CopyObjectAsync method with CopyObjectArgs object. Refer CopyObject example code.")]
+        public Task CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (bucketName == null)
-            {
-                throw new ArgumentException("Source bucket name cannot be empty", nameof(bucketName));
-            }
-            if (objectName == null)
-            {
-                throw new ArgumentException("Source object name cannot be empty", nameof(objectName));
-            }
-            if (destBucketName == null)
-            {
-                throw new ArgumentException("Destination bucket name cannot be empty", nameof(destBucketName));
-            }
-            // Escape source object path.
-            string sourceObjectPath = $"{bucketName}/{utils.UrlEncode(objectName)}";
-
-            // Destination object name is optional, if empty default to source object name.
-            if (destObjectName == null)
-            {
-                destObjectName = objectName;
-            }
-
-            ServerSideEncryption sseGet = sseSrc;
-            if (sseSrc is SSECopy sseCpy)
-            {
-                sseGet = sseCpy.CloneToSSEC();
-            }
-            // Get Stats on the source object
-            StatObjectArgs statArgs = new StatObjectArgs()
-                                            .WithBucket(bucketName)
-                                            .WithObject(objectName)
-                                            .WithServerSideEncryption(sseGet);
-            ObjectStat srcStats = await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
-            // Copy metadata from the source object if no metadata replace directive
-            var meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            Dictionary<string, string> m = metadata;
-            if (copyConditions != null && !copyConditions.HasReplaceMetadataDirective())
-            {
-                m = srcStats.MetaData;
-            }
-
-            if (m != null)
-            {
-                foreach (var item in m)
-                {
-                    var key = item.Key;
-                    if (!OperationsUtil.IsSupportedHeader(key) && !key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
-                    {
-                        key = "x-amz-meta-" + key.ToLowerInvariant();
-                    }
-                    meta[key] = item.Value;
-                }
-            }
-
-            long srcByteRangeSize = 0L;
-
-            if (copyConditions != null)
-            {
-                srcByteRangeSize = copyConditions.GetByteRange();
-            }
-            long copySize = (srcByteRangeSize == 0) ? srcStats.Size : srcByteRangeSize;
-
-            if ((srcByteRangeSize > srcStats.Size) || ((srcByteRangeSize > 0) && (copyConditions.byteRangeEnd >= srcStats.Size)))
-            {
-                throw new ArgumentException("Specified byte range (" + copyConditions.byteRangeStart.ToString() + "-" + copyConditions.byteRangeEnd.ToString() + ") does not fit within source object (size=" + srcStats.Size.ToString() + ")");
-            }
-
-            if ((copySize > Constants.MaxSingleCopyObjectSize) || (srcByteRangeSize > 0 && (srcByteRangeSize != srcStats.Size)))
-            {
-                await MultipartCopyUploadAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, copySize, meta, sseSrc, sseDest, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                if (sseSrc != null && sseSrc is SSECopy)
-                {
-                    sseSrc.Marshal(meta);
-                }
-                if (sseDest != null)
-                {
-                    sseDest.Marshal(meta);
-                }
-                await this.CopyObjectRequestAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, meta, null, cancellationToken, typeof(CopyObjectResult)).ConfigureAwait(false);
-            }
+            CopySourceObjectArgs cpSrcArgs = new CopySourceObjectArgs()
+                                                            .WithBucket(bucketName)
+                                                            .WithObject(objectName)
+                                                            .WithCopyConditions(copyConditions)
+                                                            .WithServerSideEncryption(sseSrc);
+            CopyObjectArgs args = new CopyObjectArgs()
+                                            .WithBucket(destBucketName)
+                                            .WithObject(destObjectName)
+                                            .WithCopyObjectSource(cpSrcArgs)
+                                            .WithHeaders(metadata)
+                                            .WithServerSideEncryption(sseDest);
+            return this.CopyObjectAsync(args, cancellationToken);
         }
 
         /// <summary>
@@ -1344,7 +1509,7 @@ namespace Minio
             // For all sizes greater than 5GB or if Copy byte range specified in conditions and byte range larger
             // than minimum part size (5 MB) do multipart.
 
-            dynamic multiPartInfo = utils.CalculateMultiPartSize(copySize);
+            dynamic multiPartInfo = utils.CalculateMultiPartSize(copySize, copy:true);
             double partSize = multiPartInfo.partSize;
             double partCount = multiPartInfo.partCount;
             double lastPartSize = multiPartInfo.lastPartSize;

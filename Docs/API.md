@@ -828,7 +828,7 @@ try
     // Set Tags for the bucket
     SetBucketTagsArgs args = new SetBucketTagsArgs()
                                                 .WithBucket(bucketName)
-                                                .WithTagKeyValuePairs(tags);
+                                                .WithTagging(tags);
     await minio.SetBucketTagsAsync(args);
     Console.WriteLine($"Set Tags for bucket {bucketName}.");
 }
@@ -1917,39 +1917,34 @@ catch (MinioException e)
 ```
 
 <a name="putObject"></a>
-### PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType, ServerSideEncryption sse)
+### PutObjectAsync(PutObjectArgs args)
 
-` Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
+` Task PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
 
-Uploads contents from a stream to objectName.
-
+PutObjectAsync: Uploads object from a file or stream.
 
 
 __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket  |
-| ``objectName``  | _string_  | Object name in the bucket |
-| ``data``  | _Stream_  | Stream to upload |
-| ``size``  | _long_    | size of stream   |
-| ``contentType``  | _string_ | Content type of the file. Defaults to "application/octet-stream" |
-| ``metaData``  | _Dictionary<string,string>_ | Dictionary of metadata headers. Defaults to null. |
-| ``sse``    | _ServerSideEncryption_ | Server-side encryption option | Optional parameter. Defaults to null |
-
+| ``args``  | _PutObjectArgs_  | Arguments object - bucket name, object name, file name, object data stream, object size, content type, object metadata, SSE. etc.  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 |  ``Task``  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        | ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``InvalidObjectNameException`` : upon invalid object name |
 |        | ``ConnectionException`` : upon connection error            |
 |        | ``InternalClientException`` : upon internal library error        |
 |        | ``EntityTooLargeException``: upon proposed upload size exceeding max allowed |
 |        | ``UnexpectedShortReadException``: data read was shorter than size of input buffer |
 |        | ``ArgumentNullException``: upon null input stream    |
+|        | ``InvalidOperationException``: upon input value to PutObjectArgs being invalid    |
 
 __Example__
 
@@ -1960,18 +1955,17 @@ The maximum size of a single object is limited to 5TB. putObject transparently u
 ```cs
 try
 {
-    byte[] bs = File.ReadAllBytes(fileName);
-    System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
-    // Specify SSE-C encryption options
     Aes aesEncryption = Aes.Create();
     aesEncryption.KeySize = 256;
     aesEncryption.GenerateKey();
     var ssec = new SSEC(aesEncryption.Key);
-    await minio.PutObjectAsync("mybucket",
-                               "island.jpg",
-                                filestream,
-                                filestream.Length,
-                               "application/octet-stream", ssec);
+    PutObjectArgs putObjectArgs = new PutObjectArgs()
+                                            .WithBucket("mybucket")
+                                            .WithObject("island.jpg")
+                                            .WithFilename("/mnt/photos/island.jpg")
+                                            .WithContentType("application/octet-stream")
+                                            .WithServerSideEncryption(ssec);
+    await minio.PutObjectAsync(putObjectArgs);
     Console.WriteLine("island.jpg is uploaded successfully");
 }
 catch(MinioException e)
@@ -1980,55 +1974,7 @@ catch(MinioException e)
 }
 ```
 
-<a name="putObject"></a>
-### PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null, ServerSideEncryption sse)
 
-` Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))`
-
-
-Uploads contents from a file to objectName.
-
-
-
-__Parameters__
-
-|Param   | Type	  | Description  |
-|:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the bucket  |
-| ``objectName``  | _string_  | Object name in the bucket |
-| ``fileName``  | _string_  | File to upload |
-| ``contentType``  | _string_ | Content type of the file. Defaults to " |
-| ``metadata``  | _Dictionary<string,string>_ | Dictionary of meta data headers and their values.Defaults to null.|
-| ``sse``    | _ServerSideEncryption_ | Server-side encryption option | Optional parameter. Defaults to null |
-
-| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
-
-
-| Return Type	  | Exceptions	  |
-|:--- |:--- |
-|  ``Task``  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
-|        | ``ConnectionException`` : upon connection error            |
-|        | ``InternalClientException`` : upon internal library error        |
-|        | ``EntityTooLargeException``: upon proposed upload size exceeding max allowed |
-
-__Example__
-
-
-The maximum size of a single object is limited to 5TB. putObject transparently uploads objects larger than 5MiB in multiple parts. Uploaded data is carefully verified using MD5SUM signatures.
-
-
-```cs
-try
-{
-    await minio.PutObjectAsync("mybucket", "island.jpg", "/mnt/photos/island.jpg", contentType: "application/octet-stream");
-    Console.WriteLine("island.jpg is uploaded successfully");
-}
-catch(MinioException e)
-{
-    Console.WriteLine("Error occurred: " + e);
-}
-```
 <a name="statObject"></a>
 ### StatObjectAsync(StatObjectArgs args)
 
@@ -2075,9 +2021,9 @@ catch(MinioException e)
 ```
 
 <a name="copyObject"></a>
-### CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null)
+### CopyObjectAsync(CopyObjectArgs args)
 
-*`Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null, Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken))`*
+*`Task<CopyObjectResult> CopyObjectAsync(CopyObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))`*
 
 Copies content from objectName to destObjectName.
 
@@ -2087,21 +2033,19 @@ __Parameters__
 
 |Param   | Type	  | Description  |
 |:--- |:--- |:--- |
-| ``bucketName``  | _string_  | Name of the source bucket  |
-| ``objectName``  | _string_  | Object name in the source bucket to be copied |
-| ``destBucketName``  | _string_  | Destination bucket name |
-| ``destObjectName`` | _string_ | Destination object name to be created, if not provided defaults to source object name|
-| ``copyConditions`` | _CopyConditions_ | Map of conditions useful for applying restrictions on copy operation|
-| ``metadata``  | _Dictionary<string,string>_ | Dictionary of meta data headers and their values on the destination side.Defaults to null.|
-| ``sseSrc``    | _ServerSideEncryption_ | Server-side encryption option for source object | Optional parameter. Defaults to null |
-| ``sseDest``    | _ServerSideEncryption_ | Server-side encryption option for destination object| Optional parameter. Defaults to null |
+| ``args``  | _CopyObjectArgs_  | Arguments object - bucket name, object name, destination bucket name, destination object name, copy conditions, metadata, Source SSE, Destination SSE. etc.  |
 | ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
 
 
 | Return Type	  | Exceptions	  |
 |:--- |:--- |
 |  ``Task``  | Listed Exceptions: |
-|        |  ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``AuthorizationException`` : upon access or secret key wrong or not found |
+|        | ``InvalidBucketNameException`` : upon invalid bucket name |
+|        | ``InvalidObjectNameException`` : upon invalid object name |
+|        | ``BucketNotFoundException`` : upon bucket with name not found  |
+|        | ``ObjectNotFoundException`` : upon object with name not found |
+|        | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
 |        | ``ConnectionException`` : upon connection error            |
 |        | ``InternalClientException`` : upon internal library error        |
 |        | ``ArgumentException`` : upon missing bucket/object names |
@@ -2542,7 +2486,7 @@ try
     SetObjectTagsArgs args = new new SetObjectTagsArgs()
                                                 .WithBucket(bucketName)
                                                 .WithObject(objectName)
-                                                .WithTagKeyValuePairs(tags);
+                                                .WithTagging(tags);
     await minio.SetObjectTagsAsync(args);
     Console.WriteLine($"Set tags for object {bucketName}/{objectName}.");
 }

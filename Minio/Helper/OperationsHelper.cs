@@ -24,6 +24,7 @@ using Minio.DataModel;
 using System.IO;
 using RestSharp;
 using Minio.Exceptions;
+using Minio.Helper;
 
 namespace Minio
 {
@@ -235,10 +236,16 @@ namespace Minio
     public class OperationsUtil
     {
         private static readonly List<string> SupportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type", "x-amz-acl", "content-disposition" };
+        private static readonly List<string> SSEHeaders = new List<string> { "X-Amz-Server-Side-Encryption-Customer-Algorithm", "X-Amz-Server-Side-Encryption-Customer-Key", "X-Amz-Server-Side-Encryption-Customer-Key-Md5", Constants.SSEGenericHeader, Constants.SSEKMSKeyId, Constants.SSEKMSContext };
         internal static bool IsSupportedHeader(string hdr, IEqualityComparer<string> comparer = null)
         {
             comparer = comparer ?? StringComparer.OrdinalIgnoreCase;
             return SupportedHeaders.Contains(hdr, comparer);
+        }
+        internal static bool IsSSEHeader(string hdr, IEqualityComparer<string> comparer = null)
+        {
+            comparer = comparer ?? StringComparer.OrdinalIgnoreCase;
+            return SSEHeaders.Contains(hdr, comparer);
         }
     }
 }

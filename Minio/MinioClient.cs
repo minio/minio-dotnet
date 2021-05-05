@@ -1,6 +1,6 @@
 ﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
- * (C) 2017, 2018, 2019, 2020 MinIO, Inc.
+ * (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Serialization;
-
+using Minio.Credentials;
+using Minio.DataModel;
 using Minio.DataModel.Tracing;
 using Minio.Exceptions;
 using Minio.Helper;
@@ -63,6 +64,8 @@ namespace Minio
         internal BucketRegionCache regionCache;
 
         private IRequestLogger logger;
+
+        internal ClientProvider Provider;
 
         // Enables HTTP tracing if set to true
         private bool trace = false;
@@ -180,11 +183,11 @@ namespace Minio
         {
             this.ArgsCheck(args);
             string contentType = "application/octet-stream";
-            args.HeaderMap?.TryGetValue("Content-Type", out contentType);
+            args.Headers?.TryGetValue("Content-Type", out contentType);
             RestRequest request = await this.CreateRequest(args.RequestMethod,
                                                 args.BucketName,
                                                 args.ObjectName,
-                                                args.HeaderMap,
+                                                args.Headers,
                                                 contentType,
                                                 args.RequestBody,
                                                 null).ConfigureAwait(false);
@@ -225,7 +228,35 @@ namespace Minio
             // Start with user specified endpoint
             string host = this.BaseUrl;
 
-            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: string.IsNullOrEmpty(this.Region)?region:this.Region, sessionToken: this.SessionToken);
+            if (this.Provider != null)
+            {
+                bool isAWSEnvProvider = (this.Provider is AWSEnvironmentProvider) ||
+                                        (this.Provider is ChainedProvider ch && ch.CurrentProvider is AWSEnvironmentProvider);
+                bool isIAMAWSProvider = (this.Provider is IAMAWSProvider) ||
+                                        (this.Provider is ChainedProvider chained && chained.CurrentProvider is AWSEnvironmentProvider);
+                AccessCredentials creds = null;
+                if (isAWSEnvProvider)
+                {
+                    var aWSEnvProvider = (AWSEnvironmentProvider)this.Provider;
+                    creds = await aWSEnvProvider.GetCredentialsAsync();
+                }
+                else if (isIAMAWSProvider)
+                {
+                    var iamAWSProvider = (IAMAWSProvider) this.Provider;
+                    creds = iamAWSProvider.Credentials;
+                }
+                else
+                {
+                    creds = await this.Provider.GetCredentialsAsync();
+                }
+                if (creds != null)
+                {
+                    this.AccessKey = creds.AccessKey;
+                    this.SecretKey = creds.SecretKey;
+                }
+            }
+
+            this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: string.IsNullOrWhiteSpace(this.Region)?region:this.Region, sessionToken: this.SessionToken);
 
             // This section reconstructs the url with scheme followed by location specific endpoint (s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
@@ -291,6 +322,26 @@ namespace Minio
                 foreach (var entry in headerMap)
                 {
                     request.AddHeader(entry.Key, entry.Value);
+                }
+            }
+
+            if (this.Provider != null)
+            {
+                bool isAWSProvider = (this.Provider is AWSEnvironmentProvider aWSEnvProvider) ||
+                                     (this.Provider is ChainedProvider chained && chained.CurrentProvider is AWSEnvironmentProvider);
+                bool isIAMAWSProvider = (this.Provider is IAMAWSProvider);
+                AccessCredentials creds = null;
+                if (isAWSProvider)
+                    creds = await this.Provider.GetCredentialsAsync();
+                else if (isIAMAWSProvider)
+                {
+                    var iamAWSProvider = (IAMAWSProvider) this.Provider;
+                    creds = iamAWSProvider.Credentials;
+                }
+                if (creds != null &&
+                    (isAWSProvider || isIAMAWSProvider) && !string.IsNullOrWhiteSpace(creds.SessionToken))
+                {
+                    request.AddHeader("X-Amz-Security-Token", creds.SessionToken);
                 }
             }
 
@@ -370,6 +421,7 @@ namespace Minio
         {
             this.Region = "";
             this.SessionToken = "";
+            this.Provider = null;
         }
 
         /// <summary>
@@ -446,6 +498,41 @@ namespace Minio
         public MinioClient WithRetryPolicy(RetryPolicyHandlingDelegate retryPolicyHandler)
         {
             this.retryPolicyHandler = retryPolicyHandler;
+            return this;
+        }
+
+        /// <summary>
+        /// With provider for credentials and session token if being used
+        /// </summary>
+        /// <returns></returns>
+    	public MinioClient WithCredentialsProvider(ClientProvider provider)
+        {
+            this.Provider = provider;
+            AccessCredentials credentials = null;
+            if (this.Provider is IAMAWSProvider iAMAWSProvider)
+            {
+                // Empty object, we need the Minio client completely
+                credentials = new AccessCredentials();
+            }
+            else
+            {
+                credentials = this.Provider.GetCredentials();
+            }
+            if (credentials == null)
+            {
+                // Unable to fetch credentials.
+                return this;
+            }
+            this.AccessKey = credentials.AccessKey;
+            this.SecretKey = credentials.SecretKey;
+            bool isSessionTokenAvailable = !string.IsNullOrEmpty(credentials.SessionToken);
+            if ((this.Provider is AWSEnvironmentProvider ||
+                 this.Provider is IAMAWSProvider ||
+                (this.Provider is ChainedProvider chainedProvider && chainedProvider.CurrentProvider is AWSEnvironmentProvider))
+                    && isSessionTokenAvailable)
+            {
+                this.SessionToken = credentials.SessionToken;
+            }
             return this;
         }
 
@@ -665,6 +752,12 @@ namespace Minio
                 && errResponse.Code.Equals("MalformedXML"))
             {
                 throw new MalFormedXMLException(errResponse.Resource, errResponse.BucketName, errResponse.Message, errResponse.Key);
+            }
+
+            if (response.StatusCode.Equals(HttpStatusCode.NotImplemented)
+                && errResponse.Code.Equals("NotImplemented"))
+            {
+                throw new NotImplementedException(errResponse.Message);
             }
 
             if (response.StatusCode.Equals(HttpStatusCode.BadRequest)

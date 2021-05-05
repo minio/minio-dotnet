@@ -27,7 +27,7 @@ namespace Minio
             this.RequestMethod = Method.GET;
         }
 
-        public override RestRequest BuildRequest(RestRequest req)
+        internal override RestRequest BuildRequest(RestRequest req)
         {
             req.AddQueryParameter("versioning","");
             return req;
@@ -48,7 +48,7 @@ namespace Minio
             this.RequestMethod = Method.PUT;
             this.CurrentVersioningStatus = VersioningStatus.Off;
         }
-        public override void Validate()
+        internal override void Validate()
         {
             utils.ValidateBucketName(this.BucketName);
             if (this.CurrentVersioningStatus > VersioningStatus.Suspended )
@@ -69,7 +69,7 @@ namespace Minio
             return this;
         }
 
-        public override RestRequest BuildRequest(RestRequest req)
+        internal override RestRequest BuildRequest(RestRequest req)
         {
             VersioningConfiguration config = new VersioningConfiguration((this.CurrentVersioningStatus == VersioningStatus.Enabled));
             req.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();

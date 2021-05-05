@@ -18,6 +18,14 @@ using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
+/*
+ * AndOperator is used with Lifecycle RuleFilter to bind the rules together.
+ * Please refer:
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketLifecycleConfiguration.html
+ * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html
+ */
+
+
 namespace Minio.DataModel.ILM
 {
     [Serializable]

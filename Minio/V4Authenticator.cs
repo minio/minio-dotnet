@@ -458,7 +458,7 @@ namespace Minio
             foreach (Parameter header in headers)
             {
                 string headerName = header.Name.ToLower();
-                string headerValue = header.Value.ToString();
+                string headerValue = (header.Value != null)?header.Value.ToString():"";
                 if (!ignoredHeaders.Contains(headerName))
                 {
                     sortedHeaders.Add(headerName, headerValue);

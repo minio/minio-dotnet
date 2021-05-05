@@ -1,5 +1,5 @@
 ﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2018 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2018-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,12 +45,16 @@ namespace Minio.Examples.Cases
                     { "Mynewkey", "my-new-value" }
                 };
 
-                await minio.CopyObjectAsync(fromBucketName, 
-                                                fromObjectName, 
-                                                destBucketName, 
-                                                destObjectName, 
-                                                copyConditions:copyCond,
-                                                metadata: metadata);
+                CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
+                                                                        .WithBucket(fromBucketName)
+                                                                        .WithObject(fromObjectName)
+                                                                        .WithCopyConditions(copyCond);
+                CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
+                                                            .WithBucket(destBucketName)
+                                                            .WithObject(destObjectName)
+                                                            .WithHeaders(metadata)
+                                                            .WithCopyObjectSource(copySourceObjectArgs);
+                await minio.CopyObjectAsync(copyObjectArgs);
 
                 Console.WriteLine($"Copied object {fromObjectName} from bucket {fromBucketName} to bucket {destBucketName}");
                 Console.WriteLine();    
