@@ -31,6 +31,7 @@ using System.Xml.Serialization;
 using Minio.DataModel;
 using Minio.Exceptions;
 using Minio.Helper;
+using Minio.DataModel.ObjectLock;
 
 namespace Minio
 {

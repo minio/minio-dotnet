@@ -15,6 +15,7 @@
  */
 using System;
 using System.Threading.Tasks;
+using Minio.DataModel.ObjectLock;
 
 namespace Minio.Examples.Cases
 {
@@ -27,7 +28,7 @@ namespace Minio.Examples.Cases
             try
             {
                 Console.WriteLine("Running example for API: GetObjectLockConfiguration");
-                var config = await minio.GetObjectLockConfigurationAsync(
+                ObjectLockConfiguration config = await minio.GetObjectLockConfigurationAsync(
                     new GetObjectLockConfigurationArgs()
                         .WithBucket(bucketName)
                 );

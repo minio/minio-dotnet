@@ -17,6 +17,7 @@
 using Minio.DataModel;
 using Minio.DataModel.ILM;
 using Minio.DataModel.Replication;
+using Minio.DataModel.ObjectLock;
 
 using System;
 using System.Collections.Generic;

@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using Minio.Helper;
 using Minio.DataModel.ILM;
 using Minio.DataModel.Replication;
+using Minio.DataModel.ObjectLock;
 
 namespace Minio
 {

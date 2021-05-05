@@ -15,7 +15,7 @@
  */
 using System;
 using System.Threading.Tasks;
-using Minio.DataModel;
+using Minio.DataModel.ObjectLock;
 
 namespace Minio.Examples.Cases
 {
