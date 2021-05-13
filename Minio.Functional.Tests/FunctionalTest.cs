@@ -655,6 +655,10 @@ namespace Minio.Functional.Tests
                                                                     .WithBucket(bucketName)
                                                                     .WithObjectsVersions(objectNames);
                     await minio.RemoveObjectsAsync(removeObjectArgs);
+                    if (objectNames.Count > 1000)
+                    {
+                        System.Threading.Thread.Sleep(4500);
+                    }
                 }
             }
             RemoveBucketArgs rbArgs = new RemoveBucketArgs()
@@ -4634,8 +4638,8 @@ namespace Minio.Functional.Tests
             }
             finally
             {
-                await TearDown(minio, bucketName);
                 System.Threading.Thread.Sleep(1500);
+                await TearDown(minio, bucketName);
             }
         }
 

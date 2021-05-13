@@ -212,17 +212,17 @@ namespace Minio
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         private async Task<List<DeleteError>> removeObjectsHelper(RemoveObjectsArgs args, List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
         {
-            List<string> iterObjects = new List<string>();
+            List<string> iterObjects = new List<string>(1000);
             int i =0;
             foreach(var objName in args.ObjectNames)
             {
                 utils.ValidateObjectName(objName);
-                iterObjects.Add(objName);
-                i++;
-                if ((i % 1000) == 0)
+                iterObjects.Insert(i, objName);
+                if ((i + 1)  == 1000)
                 {
                     fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList, cancellationToken);
                     iterObjects.Clear();
+                    i = 0;
                 }
             }
             if (iterObjects.Count > 0)
