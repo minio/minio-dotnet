@@ -61,18 +61,7 @@ namespace Minio
         /// </summary>
         /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name, server-side encryption object, action stream, length, offset</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        public Task<ObjectStat> GetObjectWithStatAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            return getObjectHelper(args, cancellationToken);
-        }
-
-
-        /// <summary>
-        /// Get an object. The object will be streamed to the callback given by the user.
-        /// </summary>
-        /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name, server-side encryption object, action stream, length, offset</param>
-        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        public Task GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<ObjectStat> GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             return getObjectHelper(args, cancellationToken);
         }
