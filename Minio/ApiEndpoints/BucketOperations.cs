@@ -16,6 +16,7 @@
  */
 
 using Minio.DataModel;
+using Minio.DataModel.Tags;
 using Minio.Exceptions;
 using RestSharp;
 using System;

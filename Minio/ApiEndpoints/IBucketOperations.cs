@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using Minio.DataModel;
 using Minio.DataModel.ILM;
 using Minio.DataModel.Replication;
+using Minio.DataModel.Tags;
 using Minio.Exceptions;
 
 namespace Minio

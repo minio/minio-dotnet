@@ -18,6 +18,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
 using Minio.DataModel.ILM;
+using Minio.DataModel.Tags;
 using Minio.Exceptions;
 using Newtonsoft.Json;
 using System;

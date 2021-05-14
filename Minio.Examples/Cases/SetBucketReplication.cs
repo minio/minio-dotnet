@@ -17,7 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using Minio.DataModel;
+using Minio.DataModel.Tags;
 using Minio.DataModel.Replication;
 
 namespace Minio.Examples.Cases

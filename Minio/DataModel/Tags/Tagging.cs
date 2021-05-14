@@ -21,7 +21,7 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel.Tags
 {
     [Serializable]
     [XmlRoot(ElementName = "Tagging")]

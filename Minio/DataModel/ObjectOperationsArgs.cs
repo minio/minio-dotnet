@@ -24,6 +24,7 @@ using System.Xml;
 using System.Linq;
 
 using Minio.DataModel;
+using Minio.DataModel.Tags;
 using Minio.Exceptions;
 using Minio.Helper;
 using System.Security.Cryptography;
