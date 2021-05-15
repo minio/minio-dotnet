@@ -159,7 +159,7 @@ namespace Minio
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         /// <exception cref="ObjectNotFoundException">When object is not found</exception>
         /// <exception cref="DirectoryNotFoundException">If the directory to copy to is not found</exception>
-        Task GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken));
+        Task<ObjectStat> GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Creates object in a bucket fom input stream or filename.

@@ -34,8 +34,9 @@ namespace Minio.Examples.Cases
                                                 .WithBucket(bucketName)
                                                 .WithObject(objectName)
                                                 .WithFile(fileName);
-                await minio.GetObjectAsync(args);
+                var stat = await minio.GetObjectAsync(args);
                 Console.WriteLine($"Downloaded the file {fileName} in bucket {bucketName}");
+                Console.WriteLine($"Stat details of object {objectName} in bucket {bucketName}\n" + stat.ToString());
                 Console.WriteLine();
             }
             catch (Exception e)
