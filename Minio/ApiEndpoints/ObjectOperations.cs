@@ -61,6 +61,12 @@ namespace Minio
         /// </summary>
         /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name, server-side encryption object, action stream, length, offset</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="DirectoryNotFoundException">If the directory to copy to is not found</exception>
         public Task<ObjectStat> GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             return getObjectHelper(args, cancellationToken);
@@ -72,6 +78,11 @@ namespace Minio
         /// </summary>
         /// <param name="args">SelectObjectContentArgs Arguments Object which encapsulates bucket name, object name, Select Object Options</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
         public async Task<SelectResponseStream> SelectObjectContentAsync(SelectObjectContentArgs args,CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
@@ -88,6 +99,11 @@ namespace Minio
         /// <param name="args">ListIncompleteUploadsArgs Arguments Object which encapsulates bucket name, prefix, recursive</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>A lazily populated list of incomplete uploads</returns>
+        /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
         public IObservable<Upload> ListIncompleteUploads(ListIncompleteUploadsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
@@ -177,6 +193,12 @@ namespace Minio
         /// <param name="args">RemoveIncompleteUploadArgs Arguments Object which encapsulates bucket, object names</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task RemoveIncompleteUploadAsync(RemoveIncompleteUploadArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
@@ -221,6 +243,11 @@ namespace Minio
         /// </summary>
         /// <param name="args">PresignedGetObjectArgs Arguments object encapsulating bucket and object names, expiry time, response headers, request date</param>
         /// <returns></returns>
+        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
         public async Task<string> PresignedGetObjectAsync(PresignedGetObjectArgs args)
         {
             args.Validate();
@@ -234,6 +261,12 @@ namespace Minio
         /// </summary>
         /// <param name="args">PresignedPostPolicyArgs Arguments object encapsulating Policy, Expiry, Region, </param>
         /// <returns>Tuple of URI and Policy Form data</returns>
+        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PresignedPostPolicyArgs args)
         {
             string region = await this.GetRegion(args.BucketName);
@@ -254,6 +287,12 @@ namespace Minio
         /// </summary>
         /// <param name="args">PresignedPutObjectArgs Arguments Object which encapsulates bucket, object names, expiry</param>
         /// <returns></returns>
+        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task<string> PresignedPutObjectAsync(PresignedPutObjectArgs args)
         {
             args.Validate();
@@ -267,8 +306,14 @@ namespace Minio
         /// <param name="args">GetObjectLegalHoldArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation </param>
         /// <returns> True if Legal Hold is ON, false otherwise  </returns>
-        /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
-        /// <exception cref="InvalidObjectNameException">When objectName is invalid</exception>
+        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task<bool> GetObjectLegalHoldAsync(GetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
@@ -285,8 +330,14 @@ namespace Minio
         /// <param name="args">SetObjectLegalHoldArgs Arguments Object which has object identifier information - bucket name, object name, version ID</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns> Task </returns>
+        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
         /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
         /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task SetObjectLegalHoldAsync(SetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
@@ -301,6 +352,12 @@ namespace Minio
         /// <param name="args"> GetObjectTagsArgs Arguments Object with information like Bucket, Object name, (optional)version Id</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Tagging Object with key-value tag pairs</returns>
+        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
         public async Task<Tagging> GetObjectTagsAsync(GetObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
@@ -342,6 +399,7 @@ namespace Minio
         /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task<IObservable<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -374,6 +432,13 @@ namespace Minio
         /// <param name="args">SetObjectTagsArgs Arguments Object with information like Bucket name,Object name, (optional)version Id, tag key-value pairs</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task SetObjectTagsAsync(SetObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
@@ -388,6 +453,13 @@ namespace Minio
         /// <param name="args">RemoveObjectTagsArgs Arguments Object with information like Bucket name</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
+        /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task RemoveObjectTagsAsync(RemoveObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
@@ -408,6 +480,7 @@ namespace Minio
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         /// <exception cref="ObjectNotFoundException">When object is not found</exception>
         /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task SetObjectRetentionAsync(SetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -428,6 +501,7 @@ namespace Minio
         /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
         /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
         public async Task<ObjectRetentionConfiguration> GetObjectRetentionAsync(GetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -451,6 +525,7 @@ namespace Minio
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         /// <exception cref="ObjectNotFoundException">When object is not found</exception>
         /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task ClearObjectRetentionAsync(ClearObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -466,6 +541,14 @@ namespace Minio
         /// <param name="args">PutObjectArgs encapsulates bucket name, object name, upload id, part number, object data(body), Headers, SSE Headers</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectDisposedException">The file stream has been disposed</exception>
+        /// <exception cref="NotSupportedException">The file stream cannot be read from</exception>
+        /// <exception cref="InvalidOperationException">The file stream is currently in a read operation</exception>
+        /// <exception cref="AccessDeniedException">For encrypted PUT operation, Access is denied if the key is wrong</exception>
         private async Task<string> PutObjectSinglePartAsync(PutObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             //Skipping validate as we need the case where stream sends 0 bytes
@@ -482,6 +565,14 @@ namespace Minio
         /// <param name="args">PutObjectPartArgs encapsulates bucket name, object name, upload id, part number, object data(body)</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectDisposedException">The file stream has been disposed</exception>
+        /// <exception cref="NotSupportedException">The file stream cannot be read from</exception>
+        /// <exception cref="InvalidOperationException">The file stream is currently in a read operation</exception>
+        /// <exception cref="AccessDeniedException">For encrypted PUT operation, Access is denied if the key is wrong</exception>
         private async Task<Dictionary<int, string>> PutObjectPartAsync(PutObjectPartArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
@@ -535,6 +626,15 @@ namespace Minio
         /// </summary>
         /// <param name="args">PutObjectArgs Arguments object encapsulating bucket name, object name, file name, object data stream, object size, content type.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="FileNotFoundException">If the file to copy from not found</exception>
+        /// <exception cref="ObjectDisposedException">The file stream has been disposed</exception>
+        /// <exception cref="NotSupportedException">The file stream cannot be read from</exception>
+        /// <exception cref="InvalidOperationException">The file stream is currently in a read operation</exception>
+        /// <exception cref="AccessDeniedException">For encrypted PUT operation, Access is denied if the key is wrong</exception>
         public async Task PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
@@ -631,6 +731,12 @@ namespace Minio
         /// <param name="args">CopyObjectArgs Arguments Object which encapsulates bucket name, object name, destination bucket, destination object names, Copy conditions object, metadata, SSE source, destination objects</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
         public async Task CopyObjectAsync(CopyObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             ServerSideEncryption sseGet = null;
@@ -718,6 +824,12 @@ namespace Minio
         /// </summary>
         /// <param name="args">MultipartCopyUploadArgs Arguments object encapsulating destination and source bucket, object names, copy conditions, size, metadata, SSE</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
         private async Task MultipartCopyUploadAsync(MultipartCopyUploadArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             dynamic multiPartInfo = utils.CalculateMultiPartSize(args.CopySize, copy:true);
@@ -802,6 +914,12 @@ namespace Minio
         /// <param name="args">NewMultipartUploadPutArgs arguments object encapsulating bucket name, object name, Headers, SSE Headers</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
         private async Task<string> NewMultipartUploadAsync(NewMultipartUploadPutArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
@@ -818,6 +936,12 @@ namespace Minio
         /// <param name="args">NewMultipartUploadCopyArgs arguments object encapsulating bucket name, object name, Headers, SSE Headers</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
         private async Task<string> NewMultipartUploadAsync(NewMultipartUploadCopyArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
@@ -849,6 +973,12 @@ namespace Minio
         /// <param name="args">CompleteMultipartUploadArgs Arguments object with bucket name, object name, upload id, Etags</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
+        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+        /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+        /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
         private async Task CompleteMultipartUploadAsync(CompleteMultipartUploadArgs args, CancellationToken cancellationToken)
         {
             args.Validate();
