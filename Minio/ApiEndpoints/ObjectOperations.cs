@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -62,33 +61,9 @@ namespace Minio
         /// </summary>
         /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name, server-side encryption object, action stream, length, offset</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        public async Task GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<ObjectStat> GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
-            // First we call StatObject to verify the existence of the object.
-            // NOTE: This avoids writing the error body to the action stream passed (Do not remove).
-            StatObjectArgs statArgs = new StatObjectArgs()
-                                            .WithBucket(args.BucketName)
-                                            .WithObject(args.ObjectName)
-                                            .WithVersionId(args.VersionId)
-                                            .WithMatchETag(args.MatchETag)
-                                            .WithNotMatchETag(args.NotMatchETag)
-                                            .WithModifiedSince(args.ModifiedSince)
-                                            .WithUnModifiedSince(args.UnModifiedSince)
-                                            .WithServerSideEncryption(args.SSE);
-            if (args.OffsetLengthSet)
-            {
-                statArgs.WithOffsetAndLength(args.ObjectOffset, args.ObjectLength);
-            }
-            ObjectStat objStat = await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
-            args.Validate();
-            if (args.FileName != null)
-            {
-                await this.getObjectFileAsync(args, objStat, cancellationToken);
-            }
-            else
-            {
-                await this.getObjectStreamAsync(args, objStat, args.CallBack, cancellationToken);
-            }
+            return getObjectHelper(args, cancellationToken);
         }
 
 
