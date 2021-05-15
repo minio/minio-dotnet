@@ -152,7 +152,14 @@ namespace Minio
 
         internal override RestRequest BuildRequest(RestRequest request)
         {
-            request.AddQueryParameter("list-type", "2");
+            if (this.Versions)
+            {
+                request.AddQueryParameter("versions", "");
+            }
+            else
+            {
+                request.AddQueryParameter("list-type", "2");
+            }
             request.AddQueryParameter("delimiter",this.Delimiter);
             request.AddQueryParameter("prefix",this.Prefix);
             request.AddQueryParameter("max-keys", "1000");
@@ -164,10 +171,6 @@ namespace Minio
             if (!string.IsNullOrWhiteSpace(this.ContinuationToken))
             {
                 request.AddQueryParameter("continuation-token",this.ContinuationToken);
-            }
-            if (this.Versions)
-            {
-                request.AddQueryParameter("versions", "");
             }
             return request;
         }

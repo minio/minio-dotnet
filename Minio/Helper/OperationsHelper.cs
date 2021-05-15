@@ -30,8 +30,44 @@ namespace Minio
 {
     public partial class MinioClient : IObjectOperations
     {
+        
         /// <summary>
         /// private helper method to remove list of objects from bucket
+        /// </summary>
+        /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name etc </param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        private async Task<ObjectStat> getObjectHelper(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            // StatObject is called to both verify the existence of the object and return it with GetObject.
+            // NOTE: This avoids writing the error body to the action stream passed (Do not remove).
+            StatObjectArgs statArgs = new StatObjectArgs()
+                                            .WithBucket(args.BucketName)
+                                            .WithObject(args.ObjectName)
+                                            .WithVersionId(args.VersionId)
+                                            .WithMatchETag(args.MatchETag)
+                                            .WithNotMatchETag(args.NotMatchETag)
+                                            .WithModifiedSince(args.ModifiedSince)
+                                            .WithUnModifiedSince(args.UnModifiedSince)
+                                            .WithServerSideEncryption(args.SSE);
+            if (args.OffsetLengthSet)
+            {
+                statArgs.WithOffsetAndLength(args.ObjectOffset, args.ObjectLength);
+            }
+            ObjectStat objStat = await this.StatObjectAsync(statArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
+            args.Validate();
+            if (args.FileName != null)
+            {
+                await this.getObjectFileAsync(args, objStat, cancellationToken);
+            }
+            else
+            {
+                await this.getObjectStreamAsync(args, objStat, args.CallBack, cancellationToken);
+            }
+            return objStat;
+
+        }
+        /// <summary>
+        /// private helper method return the specified object from the bucket
         /// </summary>
         /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name etc </param>
         /// <param name="objectStat"> ObjectStat object encapsulates information like - object name, size, etag etc </param>
@@ -212,17 +248,17 @@ namespace Minio
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         private async Task<List<DeleteError>> removeObjectsHelper(RemoveObjectsArgs args, List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
         {
-            List<string> iterObjects = new List<string>();
+            List<string> iterObjects = new List<string>(1000);
             int i =0;
             foreach(var objName in args.ObjectNames)
             {
                 utils.ValidateObjectName(objName);
-                iterObjects.Add(objName);
-                i++;
-                if ((i % 1000) == 0)
+                iterObjects.Insert(i, objName);
+                if ((i + 1)  == 1000)
                 {
                     fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList, cancellationToken);
                     iterObjects.Clear();
+                    i = 0;
                 }
             }
             if (iterObjects.Count > 0)
