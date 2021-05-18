@@ -15,6 +15,7 @@
 */
 
 using Minio.DataModel;
+using Minio.DataModel.ObjectLock;
 using Minio.Exceptions;
 using System;
 using System.Collections.Generic;
