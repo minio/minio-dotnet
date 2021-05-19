@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-
-using Minio.DataModel;
 using Minio.DataModel.Tags;
+using Minio.DataModel.ObjectLock;
 
 namespace Minio
 {

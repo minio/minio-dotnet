@@ -25,6 +25,7 @@ using System.Linq;
 
 using Minio.DataModel;
 using Minio.DataModel.Tags;
+using Minio.DataModel.ObjectLock;
 using Minio.Exceptions;
 using Minio.Helper;
 using System.Security.Cryptography;

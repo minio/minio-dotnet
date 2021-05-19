@@ -1,5 +1,5 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,29 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel.ObjectLock
 {
     [Serializable]
-    [XmlRoot(ElementName = "ObjectLockRule", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-    public class ObjectLockRule
+    [XmlRoot(ElementName = "LegalHold", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+
+    // Legal Hold Configuration for the object. Status - {ON, OFF}.
+    public class ObjectLegalHoldConfiguration
     {
-        [XmlElement("DefaultRetention")]
-        public DefaultRetention DefaultRetention { get; set; }
-        public ObjectLockRule()
+        public ObjectLegalHoldConfiguration()
         {
-            this.DefaultRetention = null;
+            this.Status = "OFF";
         }
 
-        public ObjectLockRule(RetentionMode mode, int retentionDurationDays)
+        public ObjectLegalHoldConfiguration(bool enable = true)
         {
-            this.DefaultRetention = new DefaultRetention(retentionDurationDays, mode);
+            if (enable)
+            {
+                this.Status = "ON";
+                return;
+            }
+            this.Status = "OFF";
         }
+
+        public string Status { get; set; }
     }
 }
