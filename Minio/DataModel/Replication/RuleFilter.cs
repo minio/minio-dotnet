@@ -17,6 +17,8 @@
 using System;
 using System.Xml.Serialization;
 
+using Minio.DataModel.Tags;
+
 /*
  * RuleFilter class used within ReplicationRule which encapsulates filter information.
  * Please refer:

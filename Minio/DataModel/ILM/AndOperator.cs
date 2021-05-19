@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
+using Minio.DataModel.Tags;
+
 /*
  * AndOperator is used with Lifecycle RuleFilter to bind the rules together.
  * Please refer:
