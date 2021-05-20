@@ -1,5 +1,5 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading.Tasks;
-using Minio.DataModel;
+using Minio.DataModel.Tags;
 
 namespace Minio.Examples.Cases
 {
@@ -38,13 +37,14 @@ namespace Minio.Examples.Cases
                 {
                     { "Test-TagKey", "Test-TagValue" },
                 };
+                Tagging tagObj = Tagging.GetObjectTags(tags);
                 CopySourceObjectArgs cpSrcArgs = new CopySourceObjectArgs()
                                                             .WithBucket(fromBucketName)
                                                             .WithObject(fromObjectName);
                 CopyObjectArgs args = new CopyObjectArgs()
                                                 .WithBucket(destBucketName)
                                                 .WithObject(destObjectName)
-                                                .WithTagging(Tagging.GetObjectTags(tags))
+                                                .WithTagging(tagObj)
                                                 .WithReplaceTagsDirective(true)
                                                 .WithCopyObjectSource(cpSrcArgs);
                 await minio.CopyObjectAsync(args).ConfigureAwait(false);

@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
+using Minio.DataModel.Tags;
+
 /*
  * AndOperator class used within RuleFilter of ReplicationRule which is used to specify rule components and is equivalent of a Logical And for two or more predicates.
  * Please refer:

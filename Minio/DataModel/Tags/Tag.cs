@@ -15,34 +15,28 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel.Tags
 {
     [Serializable]
-    [XmlRoot(ElementName = "TagSet")]
-    public class TagSet
+    [XmlRoot(ElementName = "Tag")]
+
+    public class Tag
     {
-        public TagSet()
+        [XmlElement("Key")]
+        public string Key { get; set; }
+        [XmlElement("Value")]
+        public string Value { get; set; }
+        public Tag()
         {
-            this.Tag = null;
         }
 
-        public TagSet(Dictionary<string, string> tags)
+        public Tag(string key, string value) 
         {
-            if (tags == null || tags.Count == 0)
-            {
-                return;
-            }
-            this.Tag = new List<Tag>();
-            foreach (var item in tags)
-            {
-                this.Tag.Add(new Tag(item.Key, item.Value));
-            }
+            this.Key = key;
+            this.Value = value;
+               
         }
-
-        [XmlElement("Tag")]
-        public List<Tag> Tag { get; set; }
     }
 }

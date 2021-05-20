@@ -28,6 +28,7 @@ using System.Xml.Linq;
 using System.Xml.Serialization;
 
 using Minio.DataModel;
+using Minio.DataModel.Tags;
 using Minio.Exceptions;
 using Minio.Helper;
 using Minio.DataModel.ObjectLock;

@@ -22,6 +22,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Minio.DataModel;
+using Minio.DataModel.Tags;
 using Minio.DataModel.ObjectLock;
 using Minio.Exceptions;
 
