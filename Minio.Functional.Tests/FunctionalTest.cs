@@ -695,12 +695,14 @@ namespace Minio.Functional.Tests
             {
                 await Setup_Test(minio, bucketName);
                 await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
-                await TearDown(minio, bucketName);
                 new MintLogger(nameof(PutObject_Test1), putObjectSignature, "Tests whether PutObject passes for small object", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (Exception ex)
             {
                 new MintLogger(nameof(PutObject_Test1), putObjectSignature, "Tests whether PutObject passes for small object", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args:args).Log();
+            }
+            finally
+            {
                 await TearDown(minio, bucketName);
             }
         }
@@ -722,12 +724,14 @@ namespace Minio.Functional.Tests
             {
                 await Setup_Test(minio, bucketName);
                 await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(6 * MB));
-                await TearDown(minio, bucketName);
                 new MintLogger(nameof(PutObject_Test2), putObjectSignature, "Tests whether multipart PutObject passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (Exception ex)
             {
                 new MintLogger(nameof(PutObject_Test2), putObjectSignature, "Tests whether multipart PutObject passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args:args).Log();
+            }
+            finally
+            {
                 await TearDown(minio, bucketName);
             }
         }
@@ -750,12 +754,14 @@ namespace Minio.Functional.Tests
             {
                 await Setup_Test(minio, bucketName);
                 await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
-                await TearDown(minio, bucketName);
                 new MintLogger(nameof(PutObject_Test3), putObjectSignature, "Tests whether PutObject with custom content-type passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (Exception ex)
             {
                 new MintLogger(nameof(PutObject_Test3), putObjectSignature, "Tests whether PutObject with custom content-type passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args:args).Log();
+            }
+            finally
+            {
                 await TearDown(minio, bucketName);
             }
         }
@@ -822,13 +828,15 @@ namespace Minio.Functional.Tests
             {
                 await Setup_Test(minio, bucketName);
                 await PutObject_Tester(minio, bucketName, objectName, null, null, 0, null, rsg.GenerateStreamFromSeed(1));
-                await TearDown(minio, bucketName);
                 new MintLogger(nameof(PutObject_Test5), putObjectSignature, "Tests whether PutObject with no content-type passes for small object", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (Exception ex)
             {
-                await TearDown(minio, bucketName);
                 new MintLogger(nameof(PutObject_Test5), putObjectSignature, "Tests whether PutObject with no content-type passes for small object", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args:args).Log();
+            }
+            finally
+            {
+                await TearDown(minio, bucketName);
             }
         }
 
@@ -867,19 +875,16 @@ namespace Minio.Functional.Tests
                                                             .WithBucket(bucketName)
                                                             .WithObject(objectName);
                         await minio.RemoveObjectAsync(rmArgs);
-                        await TearDown(minio, bucketName);
                 }
                 new MintLogger(nameof(PutObject_Test7), putObjectSignature, "Tests whether PutObject with unknown stream-size passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (Exception ex)
             {
-                RemoveObjectArgs rmArgs = new RemoveObjectArgs()
-                                                    .WithBucket(bucketName)
-                                                    .WithObject(objectName);
-
-                await minio.RemoveObjectAsync(rmArgs);
-                await TearDown(minio, bucketName);
                 new MintLogger(nameof(PutObject_Test7), putObjectSignature, "Tests whether PutObject with unknown stream-size passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args:args).Log();
+            }
+            finally
+            {
+                await TearDown(minio, bucketName);
             }
         }
 
@@ -917,19 +922,16 @@ namespace Minio.Functional.Tests
                                                         .WithBucket(bucketName)
                                                         .WithObject(objectName);
                     await minio.RemoveObjectAsync(rmArgs);
-                    await TearDown(minio, bucketName);
                 }
                 new MintLogger(nameof(PutObject_Test8), putObjectSignature, "Tests PutObject where unknown stream sends 0 bytes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (Exception ex)
             {
-                RemoveObjectArgs rmArgs = new RemoveObjectArgs()
-                                                    .WithBucket(bucketName)
-                                                    .WithObject(objectName);
-
-                await minio.RemoveObjectAsync(rmArgs);
-                await TearDown(minio, bucketName);
                 new MintLogger(nameof(PutObject_Test8), putObjectSignature, "Tests PutObject where unknown stream sends 0 bytes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args:args).Log();
+            }
+            finally
+            {
+                await TearDown(minio, bucketName);
             }
         }
 
@@ -994,11 +996,6 @@ namespace Minio.Functional.Tests
                                                             .WithServerSideEncryption(ssec);
                     await minio.StatObjectAsync(statObjectArgs);
                     await minio.GetObjectAsync(getObjectArgs);
-                    RemoveObjectArgs rmArgs = new RemoveObjectArgs()
-                                                        .WithBucket(bucketName)
-                                                        .WithObject(objectName);
-
-                    await minio.RemoveObjectAsync(rmArgs);
                 }
                 new MintLogger("PutGetStatEncryptedObject_Test1", putObjectSignature, "Tests whether Put/Get/Stat Object with encryption passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
@@ -1153,12 +1150,11 @@ namespace Minio.Functional.Tests
             }
             catch (Exception ex)
             {
-                RemoveObjectArgs rmArgs = new RemoveObjectArgs()
-                                                    .WithBucket(bucketName)
-                                                    .WithObject(objectName);
-                await minio.RemoveObjectAsync(rmArgs);
-                await TearDown(minio, bucketName);
                 new MintLogger("PutGetStatEncryptedObject_Test3", putObjectSignature, "Tests whether Put/Get/Stat multipart upload with encryption passes", TestStatus.FAIL, (DateTime.Now - startTime), "", ex.Message, ex.ToString(), args).Log();
+            }
+            finally
+            {
+                await TearDown(minio, bucketName);
             }
         }
 
@@ -1393,36 +1389,38 @@ namespace Minio.Functional.Tests
                                                             .WithHeaders(null);
                     await minio.PutObjectAsync(putObjectArgs);
                 }
+            }
+            catch (Exception ex)
+            {
+                await TearDown(minio, bucketName);
+                await TearDown(minio, destBucketName);
+                new MintLogger("CopyObject_Test2", copyObjectSignature, "Tests whether CopyObject with Etag mismatch passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                throw ex;
+            }
+
+            try
+            {
                 CopyConditions conditions = new CopyConditions();
                 conditions.SetMatchETag("TestETag");
-                try
-                {
-                    CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
-                                                                            .WithBucket(bucketName)
-                                                                            .WithObject(objectName)
-                                                                            .WithCopyConditions(conditions);
-                    CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
-                                                                .WithCopyObjectSource(copySourceObjectArgs)
-                                                                .WithBucket(destBucketName)
-                                                                .WithObject(destObjectName);
+                CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObject(objectName)
+                                                                        .WithCopyConditions(conditions);
+                CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
+                                                            .WithCopyObjectSource(copySourceObjectArgs)
+                                                            .WithBucket(destBucketName)
+                                                            .WithObject(destObjectName);
 
-                    await minio.CopyObjectAsync(copyObjectArgs);
-                }
-                catch (MinioException ex)
-                {
-                    Assert.IsTrue(ex.Message.Contains("MinIO API responded with message=At least one of the pre-conditions you specified did not hold"));
-                }
-                catch (Exception ex)
-                {
-                    new MintLogger(nameof(CopyObject_Test2), copyObjectSignature, "Tests whether CopyObject with Etag mismatch passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
-                    throw ex;
-                }
-
+                await minio.CopyObjectAsync(copyObjectArgs);
+            }
+            catch (MinioException ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("MinIO API responded with message=At least one of the pre-conditions you specified did not hold"));
                 new MintLogger("CopyObject_Test2", copyObjectSignature, "Tests whether CopyObject with Etag mismatch passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (Exception ex)
             {
-                new MintLogger("CopyObject_Test2", copyObjectSignature, "Tests whether CopyObject with Etag mismatch passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                new MintLogger(nameof(CopyObject_Test2), copyObjectSignature, "Tests whether CopyObject with Etag mismatch passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
                 throw ex;
             }
             finally
@@ -2329,20 +2327,26 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_Test(minio, bucketName);
-                try
-                {
-                    GetObjectArgs getObjectArgs = new GetObjectArgs()
-                                                            .WithBucket(bucketName)
-                                                            .WithObject(objectName)
-                                                            .WithFile(fileName);
-                    await minio.GetObjectAsync(getObjectArgs);
+            }
+            catch (Exception ex)
+            {
+                await TearDown(minio, bucketName);
+                new MintLogger("GetObject_Test2", getObjectSignature, "Tests for non-existent GetObject", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                throw ex;
+            }
 
-                }
-                catch (ObjectNotFoundException ex)
-                {
-                    Assert.AreEqual(ex.ServerMessage, "Not found.");
-                }
+            try
+            {
+                GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName)
+                                                        .WithFile(fileName);
+                await minio.GetObjectAsync(getObjectArgs);
                 new MintLogger("GetObject_Test2", getObjectSignature, "Tests for non-existent GetObject", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+            }
+            catch (ObjectNotFoundException ex)
+            {
+                Assert.AreEqual(ex.ServerMessage, "Not found.");
             }
             catch (Exception ex)
             {
@@ -3109,49 +3113,38 @@ namespace Minio.Functional.Tests
             };
             try
             {
-                try
+                await Setup_Test(minio, bucketName);
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
-                    await Setup_Test(minio, bucketName);
-                    using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
-                    {
-                        PutObjectArgs putObjectArgs = new PutObjectArgs()
+                    PutObjectArgs putObjectArgs = new PutObjectArgs()
+                                                            .WithBucket(bucketName)
+                                                            .WithObject(objectName)
+                                                            .WithStreamData(filestream)
+                                                            .WithObjectSize(filestream.Length);
+
+                    await minio.PutObjectAsync(putObjectArgs);
+                }
+                StatObjectArgs statObjectArgs = new StatObjectArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName);
+                ObjectStat stats = await minio.StatObjectAsync(statObjectArgs);
+                PresignedGetObjectArgs preArgs = new PresignedGetObjectArgs()
                                                                 .WithBucket(bucketName)
                                                                 .WithObject(objectName)
-                                                                .WithStreamData(filestream)
-                                                                .WithObjectSize(filestream.Length);
-
-                        await minio.PutObjectAsync(putObjectArgs);
-                    }
-                    StatObjectArgs statObjectArgs = new StatObjectArgs()
-                                                            .WithBucket(bucketName)
-                                                            .WithObject(objectName);
-                    ObjectStat stats = await minio.StatObjectAsync(statObjectArgs);
-                    PresignedGetObjectArgs preArgs = new PresignedGetObjectArgs()
-                                                                    .WithBucket(bucketName)
-                                                                    .WithObject(objectName)
-                                                                    .WithExpiry(0);
-                    string presigned_url = await minio.PresignedGetObjectAsync(preArgs);
-                }
-                catch (InvalidExpiryRangeException)
-                {
-                    new MintLogger("PresignedGetObject_Test2", presignedGetObjectSignature, "Tests whether PresignedGetObject url retrieves object from bucket when invalid expiry is set.", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
-                }
-                RemoveObjectArgs rmArgs = new RemoveObjectArgs()
-                                                    .WithBucket(bucketName)
-                                                    .WithObject(objectName);
-
-                await minio.RemoveObjectAsync(rmArgs);
-                await TearDown(minio, bucketName);
+                                                                .WithExpiry(0);
+                string presigned_url = await minio.PresignedGetObjectAsync(preArgs);
+            }
+            catch (InvalidExpiryRangeException)
+            {
+                new MintLogger("PresignedGetObject_Test2", presignedGetObjectSignature, "Tests whether PresignedGetObject url retrieves object from bucket when invalid expiry is set.", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (Exception ex)
             {
-                RemoveObjectArgs rmArgs = new RemoveObjectArgs()
-                                                    .WithBucket(bucketName)
-                                                    .WithObject(objectName);
-
-                await minio.RemoveObjectAsync(rmArgs);
-                await TearDown(minio, bucketName);
                 new MintLogger("PresignedGetObject_Test2", presignedGetObjectSignature, "Tests whether PresignedGetObject url retrieves object from bucket when invalid expiry is set.", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+            }
+            finally
+            {
+                await TearDown(minio, bucketName);
             }
         }
 
