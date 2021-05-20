@@ -109,6 +109,8 @@ namespace Minio
         internal string Delimiter { get; private set; }
         internal string Prefix { get; private set; }
         internal string Marker { get; private set; }
+        internal string KeyMarker { get; private set; }
+        internal string VersionIdMarker { get; private set; }
         internal bool Versions { get; private set; }
         internal string ContinuationToken { get; set; }
 
@@ -135,7 +137,19 @@ namespace Minio
 
         public GetObjectListArgs WithMarker(string marker)
         {
-            this.Marker = marker ?? string.Empty;
+            this.Marker = string.IsNullOrWhiteSpace(marker)? string.Empty : marker;
+            return this;
+        }
+
+        internal GetObjectListArgs WithVersionIdMarker(string marker)
+        {
+            this.VersionIdMarker = string.IsNullOrWhiteSpace(marker)? string.Empty : marker;
+            return this;
+        }
+
+        internal GetObjectListArgs WithKeyMarker(string marker)
+        {
+            this.KeyMarker = string.IsNullOrWhiteSpace(marker)? string.Empty : marker;
             return this;
         }
 
@@ -168,6 +182,14 @@ namespace Minio
             if (!string.IsNullOrWhiteSpace(this.Marker))
             {
                 request.AddQueryParameter("marker",this.Marker);
+            }
+            if (!string.IsNullOrWhiteSpace(this.KeyMarker))
+            {
+                request.AddQueryParameter("key-marker",this.KeyMarker);
+            }
+            if (!string.IsNullOrWhiteSpace(this.VersionIdMarker))
+            {
+                request.AddQueryParameter("version-id-marker",this.VersionIdMarker);
             }
             if (!string.IsNullOrWhiteSpace(this.ContinuationToken))
             {

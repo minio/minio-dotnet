@@ -112,19 +112,6 @@ namespace Minio
         IObservable<Item> ListObjectsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// List all objects along with versions non-recursively in a bucket with a given prefix, optionally emulating a directory
-        /// </summary>
-        /// <param name="args">ListObjectsArgs Arguments Object with information like Bucket name, prefix, recursive listing, versioning</param>
-        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <returns>An observable of items that client can subscribe to</returns>
-        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-        /// <exception cref="NotImplementedException">If a functionality or extension (like versioning) is not implemented</exception>
-        /// <exception cref="InvalidOperationException">For example, if you call ListObjectsAsync on a bucket with versioning enabled or object lock enabled</exception>
-        IObservable<VersionItem> ListObjectVersionsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
         /// Gets notification configuration for this bucket
         /// </summary>
         /// <param name="args">GetBucketNotificationsArgs Arguments Object with information like Bucket name</param>

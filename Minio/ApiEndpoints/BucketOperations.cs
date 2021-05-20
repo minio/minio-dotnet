@@ -216,68 +216,6 @@ namespace Minio
 
 
         /// <summary>
-        /// List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
-        /// </summary>
-        /// <param name="args">ListObjectsArgs Arguments Object with information like Bucket name, prefix, recursive listing, versioning</param>
-        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <returns>An observable of items that client can subscribe to</returns>
-        /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-        /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-        /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-        /// <exception cref="InvalidOperationException">For example, if you call ListObjectsAsync on a bucket with versioning enabled or object lock enabled</exception>
-        public IObservable<Item> ListObjectsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            BucketExistsArgs bucketExistsArgs = new BucketExistsArgs()
-                                                            .WithBucket(args.BucketName);
-            // Check if the bucket exists.
-            var bucketExistTask = this.BucketExistsAsync(bucketExistsArgs, cancellationToken);
-            Task.WaitAll(bucketExistTask);
-            var found = bucketExistTask.Result;
-            if (!found)
-            {
-                throw new BucketNotFoundException(args.BucketName, "Bucket not found.");
-            }
-
-            return Observable.Create<Item>(
-              async (obs, ct) =>
-              {
-                  bool isRunning = true;
-                  var delimiter = (args.Recursive) ? string.Empty : "/";
-                  string marker = string.Empty;
-                  string nextContinuationToken = string.Empty;
-                  uint count = 0;
-                  using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
-                  {
-                      while (isRunning)
-                      {
-                          GetObjectListArgs goArgs = new GetObjectListArgs()
-                                                              .WithBucket(args.BucketName)
-                                                              .WithPrefix(args.Prefix)
-                                                              .WithDelimiter(delimiter)
-                                                              .WithVersions(false)
-                                                              .WithContinuationToken(nextContinuationToken)
-                                                              .WithMarker(marker);
-                          Tuple<ListBucketResult, List<Item>> objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
-                          if (objectList.Item2.Count == 0 && objectList.Item1.KeyCount.Equals("0") && count == 0)
-                          {
-                              string name = args.BucketName;
-                              if (!string.IsNullOrEmpty(args.Prefix))
-                                  name += "/" + args.Prefix;
-                              throw new EmptyBucketOperation("Bucket " + name + " is empty.");
-                          }
-                          ListObjectsItemResponse listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);
-                          marker = listObjectsItemResponse.NextMarker;
-                          isRunning = objectList.Item1.IsTruncated;
-                          nextContinuationToken = (objectList.Item1.IsTruncated) ? objectList.Item1.NextContinuationToken : string.Empty;
-                          cts.Token.ThrowIfCancellationRequested();
-                          count++;
-                      }
-                  }
-              });
-        }
-
-
-        /// <summary>
         /// List all objects along with versions non-recursively in a bucket with a given prefix, optionally emulating a directory
         /// </summary>
         /// <param name="args">ListObjectsArgs Arguments Object with information like Bucket name, prefix, recursive listing, versioning</param>
@@ -288,16 +226,19 @@ namespace Minio
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         /// <exception cref="NotImplementedException">If a functionality or extension (like versioning) is not implemented</exception>
         /// <exception cref="InvalidOperationException">For example, if you call ListObjectsAsync on a bucket with versioning enabled or object lock enabled</exception>
-        public IObservable<VersionItem> ListObjectVersionsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        public IObservable<Item> ListObjectsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            args.Versions = (args.Versions) ? args.Versions : true;
-            return Observable.Create<VersionItem>(
+            return Observable.Create<Item>(
               async (obs, ct) =>
               {
                   bool isRunning = true;
                   var delimiter = (args.Recursive) ? string.Empty : "/";
                   string marker = string.Empty;
+                  uint count = 0;
+                  string keyMarker = string.Empty;
+                  string versionIdMarker = string.Empty;
+                  string nextContinuationToken = string.Empty;
                   using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
                   {
                       while (isRunning)
@@ -306,14 +247,27 @@ namespace Minio
                                                               .WithBucket(args.BucketName)
                                                               .WithPrefix(args.Prefix)
                                                               .WithDelimiter(delimiter)
-                                                              .WithVersions(args.Versions)
-                                                              .WithMarker(marker);
-                          Tuple<ListVersionsResult, List<VersionItem>> objectList = await this.GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
+                                                              .WithVersions(true)
+                                                              .WithMarker(marker)
+                                                              .WithContinuationToken(nextContinuationToken)
+                                                              .WithKeyMarker(keyMarker)
+                                                              .WithVersionIdMarker(versionIdMarker);
+                          Tuple<ListVersionsResult, List<Item>> objectList = await this.GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
                           ListObjectVersionResponse listObjectsItemResponse = new ListObjectVersionResponse(args, objectList, obs);
+                          if (objectList.Item2.Count == 0 && count == 0)
+                          {
+                              string name = args.BucketName;
+                              if (!string.IsNullOrEmpty(args.Prefix))
+                                  name += "/" + args.Prefix;
+                              throw new EmptyBucketOperation("Bucket " + name + " is empty.");
+                          }
                           obs = listObjectsItemResponse.ItemObservable;
                           marker = listObjectsItemResponse.NextMarker;
+                          keyMarker = listObjectsItemResponse.NextKeyMarker;
+                          versionIdMarker = listObjectsItemResponse.NextVerMarker;
                           isRunning = objectList.Item1.IsTruncated;
                           cts.Token.ThrowIfCancellationRequested();
+                          count++;
                       }
                   }
               });
@@ -341,7 +295,7 @@ namespace Minio
         /// <param name="args">GetObjectListArgs Arguments Object with information like Bucket name, prefix, delimiter, marker, versions(get version IDs of the objects)</param>
         /// <returns>Task with a tuple populated with objects</returns>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        private async Task<Tuple<ListVersionsResult, List<VersionItem>>> GetObjectVersionsListAsync(GetObjectListArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        private async Task<Tuple<ListVersionsResult, List<Item>>> GetObjectVersionsListAsync(GetObjectListArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
             IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);

@@ -28,8 +28,7 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 | [`bucketExists`](#bucketExists)  | [`copyObject`](#copyObject)  | [`presignedPostPolicy`](#presignedPostPolicy)  |[`setBucketNotification`](#setBucketNotification)  |
 | [`removeBucket`](#removeBucket)  | [`statObject`](#statObject) |   | [`getBucketNotification`](#getBucketNotification)  |
 | [`listObjects`](#listObjects)  | [`removeObject`](#removeObject) |   |  [`removeAllBucketNotification`](#removeAllBucketNotification) |
-| [`listObjectVersions`](#listObjectVersions)  | [`removeObjects`](#removeObjects) |   |   |
-| [`listIncompleteUploads`](#listIncompleteUploads) | [`removeIncompleteUpload`](#removeIncompleteUpload) |   |   |
+| [`listIncompleteUploads`](#listIncompleteUploads) | [`removeObjects`](#removeObjects) |   |   |
 | [`listenBucketNotifications`](#listenBucketNotifications)  | [`selectObjectContent`](#selectObjectContent) |   |   |
 | [`setVersioning`](#setVersioning)  | [`setLegalHold`](#setLegalHold)  |   |   |
 | [`getVersioning`](#getVersioning)  | [`getLegalHold`](#getLegalHold)  |   |   |
@@ -39,7 +38,7 @@ var s3Client = new MinioClient("s3.amazonaws.com",
 | [`setBucketTags`](#setBucketTags)  | [`setObjectRetention`](#setObjectRetention)  |   |   |
 | [`getBucketTags`](#getBucketTags)  | [`getObjectRetention`](#getObjectRetention)  |   |   |
 | [`removeBucketTags`](#removeBucketTags)  | [`clearObjectRetention`](#clearObjectRetention)  |   |   |
-| [`setObjectLock`](#setObjectLock)  |   |   |   |
+| [`setObjectLock`](#setObjectLock)  | [`removeIncompleteUpload`](#removeIncompleteUpload) |   |   |
 | [`getObjectLock`](#getObjectLock)  |   |   |   |
 | [`removeObjectLock`](#removeObjectLock)  |   |   |   |
 | [`setBucketLifecycle`](#setBucketLifecycle)  |   |   |   |
@@ -1223,7 +1222,7 @@ catch(MinioException e)
 
 `IObservable<Item> ListObjectsAsync(ListObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
-Lists all objects in a bucket.
+Lists all objects (with version IDs, if existing) in a bucket.
 
 __Parameters__
 
@@ -1245,6 +1244,7 @@ __Example__
 ```cs
 try
 {
+    // Just list of objects
     // Check whether 'mybucket' exists or not.
     bool found = minioClient.BucketExistsAsync("mybucket");
     if (found)
@@ -1269,6 +1269,36 @@ catch (MinioException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
+
+try
+{
+    // List of objects with version IDs.
+    // Check whether 'mybucket' exists or not.
+    bool found = minioClient.BucketExistsAsync("mybucket");
+    if (found)
+    {
+        // List objects from 'my-bucketname'
+        ListObjectArgs args = new ListObjectArgs()
+                                        .WithBucket("mybucket")
+                                        .WithPrefix("prefix")
+                                        .WithRecursive(true)
+                                        .WithVersions(true)
+        IObservable<Item> observable = minioClient.ListObjectsAsync(args, true);
+        IDisposable subscription = observable.Subscribe(
+				item => Console.WriteLine("OnNext: {0} - {1}", item.Key, item.VersionId),
+				ex => Console.WriteLine("OnError: {0}", ex.Message),
+				() => Console.WriteLine("OnComplete: {0}"));
+    }
+    else
+    {
+        Console.WriteLine("mybucket does not exist");
+    }
+}
+catch (MinioException e)
+{
+    Console.WriteLine("Error occurred: " + e);
+}
+
 ```
 
 
@@ -1415,61 +1445,7 @@ catch(MinioException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
-```
 
-
-<a name="listObjectVersions"></a>
-### ListObjectVersionsAsync(ListObjectArgs args)
-
-`IObservable<VersionItem> ListObjectVersionsAsync(ListObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))`
-
-Lists all objects along with multiple versions (if any) in a bucket.
-
-__Parameters__
-
-
-|Param   | Type	  | Description  |
-|:--- |:--- |:--- |
-| ``args``  | _ListObjectArgs_  | ListObjectArgs object - encapsulates bucket name, prefix, show recursively, show versions. |
-| ``cancellationToken``| _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken) |
-
-
-|Return Type	  | Exceptions	  |
-|:--- |:--- |
-| ``IObservable<VersionItem>``: an Observable of Versioned Items.  | _None_  |
-
-
-__Example__
-
-
-```cs
-try
-{
-    // Check whether 'mybucket' exists or not.
-    bool found = minioClient.BucketExistsAsync("mybucket");
-    if (found)
-    {
-        // List objects from 'my-bucketname'
-        ListObjectArgs args = new ListObjectArgs()
-                                        .WithBucket("mybucket")
-                                        .WithPrefix("prefix")
-                                        .WithRecursive(true)
-                                        .WithVersions(true)
-        IObservable<VersionItem> observable = minioClient.ListObjectVersionsAsync(args, true);
-        IDisposable subscription = observable.Subscribe(
-				item => Console.WriteLine("OnNext: {0} - {1}", item.Key, item.VersionId),
-				ex => Console.WriteLine("OnError: {0}", ex.Message),
-				() => Console.WriteLine("OnComplete: {0}"));
-    }
-    else
-    {
-        Console.WriteLine("mybucket does not exist");
-    }
-}
-catch (MinioException e)
-{
-    Console.WriteLine("Error occurred: " + e);
-}
 ```
 
 
