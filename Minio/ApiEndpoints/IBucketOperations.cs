@@ -430,6 +430,7 @@ namespace Minio
         /// <returns>Replication configuration object</returns>
         /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
         /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="MissingBucketReplicationConfiguration">When bucket replication configuration is not set</exception>
         /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         Task<ReplicationConfiguration> GetBucketReplicationAsync(GetBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken));
@@ -442,6 +443,7 @@ namespace Minio
         /// <returns></returns>
         /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
         /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="MissingBucketReplicationConfiguration">When bucket replication configuration is not set</exception>
         /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         Task SetBucketReplicationAsync(SetBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken));
@@ -454,6 +456,7 @@ namespace Minio
         /// <returns></returns>
         /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
         /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="MissingBucketReplicationConfiguration">When bucket replication configuration is not set</exception>
         /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         Task RemoveBucketReplicationAsync(RemoveBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken));

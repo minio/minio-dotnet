@@ -776,6 +776,12 @@ namespace Minio
                 throw new MissingObjectLockConfiguration(errResponse.BucketName, errResponse.Message);
             }
 
+            if (response.StatusCode.Equals(HttpStatusCode.NotFound)
+                && errResponse.Code.Equals("ReplicationConfigurationNotFoundError"))
+            {
+                throw new MissingBucketReplicationConfiguration(errResponse.BucketName, errResponse.Message);
+            }
+
             throw new UnexpectedMinioException(errResponse.Message)
             {
                 Response = errResponse,
