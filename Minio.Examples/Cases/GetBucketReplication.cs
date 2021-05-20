@@ -15,6 +15,7 @@
  */
 using System;
 using System.Threading.Tasks;
+using Minio.Exceptions;
 
 namespace Minio.Examples.Cases
 {
@@ -41,8 +42,11 @@ namespace Minio.Examples.Cases
                     Console.WriteLine();
                     return;
                 }
-                Console.WriteLine($"Bucket Replication Configuration not set for bucket {bucketName}.");
                 Console.WriteLine();
+            }
+            catch (MissingBucketReplicationConfiguration)
+            {
+                Console.WriteLine($"[Bucket] Exception: Replication Configuration not set for bucket {bucketName}.");
             }
             catch (Exception e)
             {
