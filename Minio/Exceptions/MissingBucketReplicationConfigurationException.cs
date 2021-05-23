@@ -16,11 +16,11 @@
 
 namespace Minio.Exceptions
 {
-    public class MissingBucketReplicationConfiguration : MinioException
+    public class MissingBucketReplicationConfigurationException : MinioException
     {
         private readonly string bucketName;
 
-        public MissingBucketReplicationConfiguration(string bucketName, string message) : base(message)
+        public MissingBucketReplicationConfigurationException(string bucketName, string message) : base(message)
         {
             this.bucketName = bucketName;
         }

@@ -16,11 +16,11 @@
 
 namespace Minio.Exceptions
 {
-    public class MissingObjectLockConfiguration : MinioException
+    public class MissingObjectLockConfigurationException : MinioException
     {
         private readonly string bucketName;
 
-        public MissingObjectLockConfiguration(string bucketName, string message) : base(message)
+        public MissingObjectLockConfigurationException(string bucketName, string message) : base(message)
         {
             this.bucketName = bucketName;
         }

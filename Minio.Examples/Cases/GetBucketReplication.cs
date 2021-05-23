@@ -44,7 +44,7 @@ namespace Minio.Examples.Cases
                 }
                 Console.WriteLine();
             }
-            catch (MissingBucketReplicationConfiguration)
+            catch (MissingBucketReplicationConfigurationException)
             {
                 Console.WriteLine($"[Bucket] Exception: Replication Configuration not set for bucket {bucketName}.");
             }
