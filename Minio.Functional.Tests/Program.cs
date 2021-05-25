@@ -30,7 +30,6 @@ namespace Minio.Functional.Tests
             string enableHttps = "0";
             string kmsEnabled = "0";
 
-            bool useAWS = Environment.GetEnvironmentVariable("AWS_ENDPOINT") != null;
             if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
             {
                 endPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");
@@ -92,16 +91,12 @@ namespace Minio.Functional.Tests
                 // Check if bucket exists
                 FunctionalTest.BucketExists_Test(minioClient).Wait();
 
-                // Create a new bucket
+                // Create a new bucket and test valid bucket names
                 FunctionalTest.MakeBucket_Test1(minioClient).Wait();
+                FunctionalTest.MakeBucket_Test2(minioClient).Wait();
+                FunctionalTest.MakeBucket_Test3(minioClient).Wait();
+                FunctionalTest.MakeBucket_Test4(minioClient).Wait();
                 FunctionalTest.MakeBucket_Test5(minioClient).Wait();
-
-                if (useAWS)
-                {
-                    FunctionalTest.MakeBucket_Test2(minioClient, useAWS).Wait();
-                    FunctionalTest.MakeBucket_Test3(minioClient, useAWS).Wait();
-                    FunctionalTest.MakeBucket_Test4(minioClient, useAWS).Wait();
-                }
 
                 // Test removal of bucket
                 FunctionalTest.RemoveBucket_Test1(minioClient).Wait();
