@@ -84,9 +84,12 @@ namespace Minio
     }
     public class ListObjectsArgs : BucketArgs<ListObjectsArgs>
     {
-        internal string Prefix;
-        internal bool Recursive;
-        internal bool Versions;
+        internal string Prefix { get; private set; }
+        internal bool Recursive { get; private set; }
+        internal bool Versions { get; private set; }
+
+        internal bool UseV2 { get; private set; }
+
         public ListObjectsArgs WithPrefix(string prefix)
         {
             this.Prefix = prefix;
@@ -102,12 +105,20 @@ namespace Minio
             this.Versions = ver;
             return this;
         }
+
+        public ListObjectsArgs WithListObjectsV1()
+        {
+            this.UseV2 = false;
+            return this;
+        }
     }
 
     internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
     {
         internal string Delimiter { get; private set; }
         internal string Prefix { get; private set; }
+        internal bool UseV2 { get; private set; }
+        internal string Marker { get; private set; }
         internal string KeyMarker { get; private set; }
         internal string VersionIdMarker { get; private set; }
         internal bool Versions { get; private set; }
@@ -119,6 +130,7 @@ namespace Minio
             // Avoiding null values. Default is empty strings.
             this.Delimiter = string.Empty;
             this.Prefix = string.Empty;
+            this.UseV2 = true;
         }
 
         public GetObjectListArgs WithDelimiter(string delim)
@@ -132,6 +144,13 @@ namespace Minio
             this.Prefix = prefix ?? string.Empty;
             return this;
         }
+
+        internal GetObjectListArgs WithMarker(string marker)
+        {
+            this.Marker = marker ?? string.Empty;
+            return this;
+        }
+
 
         internal GetObjectListArgs WithVersionIdMarker(string marker)
         {
@@ -157,23 +176,36 @@ namespace Minio
             return this;
         }
 
+        public GetObjectListArgs WithListObjectsV1()
+        {
+            this.UseV2 = false;
+            return this;
+        }
+
         internal override RestRequest BuildRequest(RestRequest request)
         {
             if (this.Versions)
             {
                 request.AddQueryParameter("versions", "");
             }
-            else
+            else if(this.UseV2)
             {
                 request.AddQueryParameter("list-type", "2");
             }
             request.AddQueryParameter("delimiter",this.Delimiter);
-            request.AddQueryParameter("prefix",this.Prefix);
+            if (!string.IsNullOrWhiteSpace(this.Prefix))
+            {
+                request.AddQueryParameter("prefix",this.Prefix);
+            }
             request.AddQueryParameter("max-keys", "1000");
             request.AddQueryParameter("encoding-type","url");
-            if (!string.IsNullOrWhiteSpace(this.KeyMarker))
+            if (!string.IsNullOrWhiteSpace(this.KeyMarker) && this.UseV2)
             {
                 request.AddQueryParameter("key-marker",this.KeyMarker);
+            }
+            if (!this.UseV2)
+            {
+                request.AddQueryParameter("marker",string.IsNullOrWhiteSpace(this.Marker)?string.Empty:this.Marker);
             }
             if (!string.IsNullOrWhiteSpace(this.VersionIdMarker))
             {

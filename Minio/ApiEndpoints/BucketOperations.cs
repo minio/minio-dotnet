@@ -261,6 +261,12 @@ namespace Minio
                                                               .WithContinuationToken(nextContinuationToken)
                                                               .WithKeyMarker(keyMarker)
                                                               .WithVersionIdMarker(versionIdMarker);
+                          if (!args.UseV2 && !args.Versions)
+                          {
+                              goArgs = goArgs.WithListObjectsV1()
+                                             .WithMarker(marker);
+
+                          }
                           if (args.Versions)
                           {
                               Tuple<ListVersionsResult, List<Item>> objectList = await this.GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
