@@ -108,7 +108,8 @@ namespace Minio
     {
         internal string Delimiter { get; private set; }
         internal string Prefix { get; private set; }
-        internal string Marker { get; private set; }
+        internal string KeyMarker { get; private set; }
+        internal string VersionIdMarker { get; private set; }
         internal bool Versions { get; private set; }
         internal string ContinuationToken { get; set; }
 
@@ -118,7 +119,6 @@ namespace Minio
             // Avoiding null values. Default is empty strings.
             this.Delimiter = string.Empty;
             this.Prefix = string.Empty;
-            this.Marker = string.Empty;
         }
 
         public GetObjectListArgs WithDelimiter(string delim)
@@ -133,9 +133,15 @@ namespace Minio
             return this;
         }
 
-        public GetObjectListArgs WithMarker(string marker)
+        internal GetObjectListArgs WithVersionIdMarker(string marker)
         {
-            this.Marker = marker ?? string.Empty;
+            this.VersionIdMarker = string.IsNullOrWhiteSpace(marker)? string.Empty : marker;
+            return this;
+        }
+
+        internal GetObjectListArgs WithKeyMarker(string marker)
+        {
+            this.KeyMarker = string.IsNullOrWhiteSpace(marker)? string.Empty : marker;
             return this;
         }
 
@@ -165,9 +171,13 @@ namespace Minio
             request.AddQueryParameter("prefix",this.Prefix);
             request.AddQueryParameter("max-keys", "1000");
             request.AddQueryParameter("encoding-type","url");
-            if (!string.IsNullOrWhiteSpace(this.Marker))
+            if (!string.IsNullOrWhiteSpace(this.KeyMarker))
             {
-                request.AddQueryParameter("marker",this.Marker);
+                request.AddQueryParameter("key-marker",this.KeyMarker);
+            }
+            if (!string.IsNullOrWhiteSpace(this.VersionIdMarker))
+            {
+                request.AddQueryParameter("version-id-marker",this.VersionIdMarker);
             }
             if (!string.IsNullOrWhiteSpace(this.ContinuationToken))
             {

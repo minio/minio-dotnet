@@ -52,7 +52,6 @@ namespace Minio.Functional.Tests
         private const string bucketExistsSignature = "Task<bool> BucketExistsAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))";
         private const string removeBucketSignature = "Task RemoveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken))";
         private const string listObjectsSignature = "IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = false, CancellationToken cancellationToken = default(CancellationToken))";
-        private const string listObjectVersionsSignature = "IObservable<VersionItem> ListObjectVersionsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string putObjectSignature = "Task PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string getObjectSignature = "Task GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string listIncompleteUploadsSignature = "IObservable<Upload> ListIncompleteUploads(ListIncompleteUploads args, CancellationToken cancellationToken = default(CancellationToken))";
@@ -525,27 +524,15 @@ namespace Minio.Functional.Tests
             if (!bktExists)
                 return;
             List<Task> taskList = new List<Task>();
+            bool getVersions = true;
             // Get Versioning/Retention Info.
-            GetVersioningArgs getVersioningArgs = new GetVersioningArgs()
-                                                                .WithBucket(bucketName);
-            VersioningConfiguration versioningConfig = null;
-            try
-            {
-                versioningConfig =  await minio.GetVersioningAsync(getVersioningArgs);
-            }
-            catch (NotImplementedException)
-            {
-                // No throw. Continue to next step.
-            }
-            catch(Exception)
-            {
-                throw;
-            }
             GetObjectLockConfigurationArgs lockConfigurationArgs = new GetObjectLockConfigurationArgs()
                                                                                         .WithBucket(bucketName);
             ObjectLockConfiguration lockConfig = null;
             try
             {
+                await minio.GetVersioningAsync(new GetVersioningArgs()
+                                                            .WithBucket(bucketName));
                 lockConfig = await minio.GetObjectLockConfigurationAsync(lockConfigurationArgs);
             }
             catch (MissingObjectLockConfiguration)
@@ -554,35 +541,42 @@ namespace Minio.Functional.Tests
             }
             catch (NotImplementedException)
             {
-                // No throw. Continue to next step.
+                // No throw. Move to the next step without versions.
+                getVersions = false;
             }
             catch(Exception)
             {
                 throw;
             }
+            List<Task> tasks = new List<Task>();
+            ListObjectsArgs listObjectsArgs = new ListObjectsArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithRecursive(true)
+                                                        .WithVersions(getVersions);
+            List<Tuple<string, string>> objectNamesVersions = new List<Tuple<string, string>>();
+            List<string> objectNames = new List<string>();
+            IObservable<Item> observable = minio.ListObjectsAsync(listObjectsArgs);
+
+            IDisposable subscription = observable.Subscribe(
+                (item) =>
+                {
+                    if (getVersions)
+                        objectNamesVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
+                    else
+                        objectNames.Add(item.Key);
+                },
+                ex => throw ex,
+                () =>
+                {
+                    if (objectNamesVersions.Count <= 0 && objectNames.Count <= 0)
+                        return;
+                });
+            System.Threading.Thread.Sleep(2000);
+            if (objectNames.Count > 1000)
+                System.Threading.Thread.Sleep(2600);
             if (lockConfig != null && lockConfig.ObjectLockEnabled.Equals(ObjectLockConfiguration.LockEnabled))
             {
-                ListObjectsArgs listObjectsArgs = new ListObjectsArgs()
-                                                            .WithBucket(bucketName)
-                                                            .WithRecursive(true)
-                                                            .WithVersions(true);
-                List<Tuple<string, string>> objectNames = new List<Tuple<string, string>>();
-                IObservable<VersionItem> observable = minio.ListObjectVersionsAsync(listObjectsArgs);
-
-                IDisposable subscription = observable.Subscribe(
-                    (item) =>
-                    {
-                        //await Task.Yield();
-                        objectNames.Add(new Tuple<string, string>(item.Key, item.VersionId));
-                    },
-                    ex => throw ex,
-                    () =>
-                    {
-                        if (objectNames.Count <= 0)
-                            return;
-                    });
-                System.Threading.Thread.Sleep(2000);
-                foreach (var item in objectNames)
+                foreach (var item in objectNamesVersions)
                 {
                     GetObjectRetentionArgs objectRetentionArgs = new GetObjectRetentionArgs()
                                                                                 .WithBucket(bucketName)
@@ -596,73 +590,32 @@ namespace Minio.Functional.Tests
                                                                     .WithVersionId(item.Item2);
                     if (bypassGovMode)
                         removeObjectArgs = removeObjectArgs.WithBypassGovernanceMode(bypassGovMode);
-                    await minio.RemoveObjectAsync(removeObjectArgs);
-                }
-            }
-            else if (versioningConfig == null || (versioningConfig != null && versioningConfig.Status.ToLower().Equals("off")))
-            {
-                // No Versioning. Just a list of objects.
-                ListObjectsArgs listObjectsArgs = new ListObjectsArgs()
-                                                            .WithBucket(bucketName)
-                                                            .WithRecursive(true);
-                List<string> objectNames = new List<string>();
-                IObservable<Item> observable = minio.ListObjectsAsync(listObjectsArgs);
-                IDisposable subscription = observable.Subscribe(
-                    item =>
-                    {
-                        objectNames.Add(item.Key);
-                    },
-                    ex => throw ex,
-                    () =>
-                    {
-                        if (objectNames.Count <= 0)
-                            return;
-                    });
-                System.Threading.Thread.Sleep(1600);
-                if (objectNames.Count > 0)
-                {
-                    DeleteError de;
-                    RemoveObjectsArgs removeObjectArgs = new RemoveObjectsArgs()
-                                                                    .WithBucket(bucketName)
-                                                                    .WithObjects(objectNames);
-                    IObservable<DeleteError> del_obs = await minio.RemoveObjectsAsync(removeObjectArgs);
-                    IDisposable del_subs = del_obs.Subscribe(
-                        deleteError => de = deleteError,
-                        () => {}
-                    );
+                    Task t = minio.RemoveObjectAsync(removeObjectArgs);
+                    tasks.Add(t);
                 }
             }
             else
             {
-                // Just versioning enabled
-                ListObjectsArgs listObjectsArgs = new ListObjectsArgs()
-                                                            .WithBucket(bucketName)
-                                                            .WithRecursive(true)
-                                                            .WithVersions(true);
-                List<Tuple<string, string>> objectNames = new List<Tuple<string, string>>();
-                IObservable<VersionItem> observable = minio.ListObjectVersionsAsync(listObjectsArgs);
-                IDisposable subscription = observable.Subscribe(
-                    (item) =>
-                    {
-                        objectNames.Add(new Tuple<string, string>(item.Key, item.VersionId));
-                    },
-                    ex => throw ex,
-                    () =>
-                    {
-                    });
-                System.Threading.Thread.Sleep(1500);
+                // Just versioning enabled OR
+                // No Versioning. Just a list of objects.
+                if (objectNamesVersions.Count > 0)
+                {
+                    RemoveObjectsArgs removeObjectArgs = new RemoveObjectsArgs()
+                                                                    .WithBucket(bucketName)
+                                                                    .WithObjectsVersions(objectNamesVersions);
+                    Task t = minio.RemoveObjectsAsync(removeObjectArgs);
+                    tasks.Add(t);
+                }
                 if (objectNames.Count > 0)
                 {
                     RemoveObjectsArgs removeObjectArgs = new RemoveObjectsArgs()
                                                                     .WithBucket(bucketName)
-                                                                    .WithObjectsVersions(objectNames);
-                    await minio.RemoveObjectsAsync(removeObjectArgs);
-                    if (objectNames.Count > 1000)
-                    {
-                        System.Threading.Thread.Sleep(4500);
-                    }
+                                                                    .WithObjects(objectNames);
+                    Task t = minio.RemoveObjectsAsync(removeObjectArgs);
+                    tasks.Add(t);
                 }
             }
+            await Task.WhenAll(tasks);
             RemoveBucketArgs rbArgs = new RemoveBucketArgs()
                                                 .WithBucket(bucketName);
             await minio.RemoveBucketAsync(rbArgs);
@@ -2794,7 +2747,7 @@ namespace Minio.Functional.Tests
                     {
                         Assert.AreEqual(count, numObjects);
                     });
-                System.Threading.Thread.Sleep(5500);
+                System.Threading.Thread.Sleep(3500);
                 new MintLogger("ListObjects_Test6", listObjectsSignature, "Tests whether ListObjects lists all objects when number of objects == 100", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (Exception ex)
@@ -2842,7 +2795,7 @@ namespace Minio.Functional.Tests
                 int count = 0;
                 int numObjectVersions = 8;
 
-                IObservable<VersionItem> observable = minio.ListObjectVersionsAsync(listObjectsArgs);
+                IObservable<Item> observable = minio.ListObjectsAsync(listObjectsArgs);
                 IDisposable subscription = observable.Subscribe(
                     item =>
                     {
@@ -2857,11 +2810,11 @@ namespace Minio.Functional.Tests
                     });
 
                 System.Threading.Thread.Sleep(4000);
-                new MintLogger("ListObjectVersions_Test1", listObjectVersionsSignature, "Tests whether ListObjects with versions lists all objects along with all version ids for each object matching a prefix non-recursive", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+                new MintLogger("ListObjectVersions_Test1", listObjectsSignature, "Tests whether ListObjects with versions lists all objects along with all version ids for each object matching a prefix non-recursive", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (Exception ex)
             {
-                new MintLogger("ListObjectVersions_Test1", listObjectVersionsSignature, "Tests whether ListObjects with versions lists all objects along with all version ids for each object matching a prefix non-recursive", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
+                new MintLogger("ListObjectVersions_Test1", listObjectsSignature, "Tests whether ListObjects with versions lists all objects along with all version ids for each object matching a prefix non-recursive", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args:args).Log();
                 throw ex;
             }
             finally
@@ -2898,7 +2851,7 @@ namespace Minio.Functional.Tests
             }
             else
             {
-                IObservable<VersionItem> observable = minio.ListObjectVersionsAsync(args);
+                IObservable<Item> observable = minio.ListObjectsAsync(args);
                 IDisposable subscription = observable.Subscribe(
                     item =>
                     {
@@ -2974,7 +2927,7 @@ namespace Minio.Functional.Tests
                 }
                 Task.WhenAll(tasks).Wait();
                 System.Threading.Thread.Sleep(1000);
-                new MintLogger("RemoveObject_Test2", removeObjectSignature2, "Tests whether RemoveObjectAsync for multi objects delete passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+                new MintLogger("RemoveObjects_Test2", removeObjectSignature2, "Tests whether RemoveObjectAsync for multi objects delete passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (Exception ex)
             {
@@ -3015,7 +2968,7 @@ namespace Minio.Functional.Tests
                                                             .WithBucket(bucketName)
                                                             .WithRecursive(true)
                                                             .WithVersions(true);
-                IObservable<VersionItem> observable = minio.ListObjectVersionsAsync(listObjectsArgs);
+                IObservable<Item> observable = minio.ListObjectsAsync(listObjectsArgs);
                 List<Tuple<string, string>> objVersions = new List<Tuple<string, string>>();
                 IDisposable subscription = observable.Subscribe(
                     item =>
@@ -3046,7 +2999,7 @@ namespace Minio.Functional.Tests
                     });
 
                 Thread.Sleep(2 * 1000);
-                new MintLogger("RemoveObject_Test3", removeObjectSignature2, "Tests whether RemoveObjectsAsync for multi objects/versions delete passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
+                new MintLogger("RemoveObjects_Test3", removeObjectSignature2, "Tests whether RemoveObjectsAsync for multi objects/versions delete passes", TestStatus.PASS, (DateTime.Now - startTime), args:args).Log();
             }
             catch (NotImplementedException ex)
             {
@@ -4443,7 +4396,7 @@ namespace Minio.Functional.Tests
                     int objectVersionIndex = 0;
                     ListObjectsArgs listArgs = new ListObjectsArgs()
                                                         .WithBucket(bucketName);
-                    IObservable<VersionItem> observable = minio.ListObjectVersionsAsync(listArgs);
+                    IObservable<Item> observable = minio.ListObjectsAsync(listArgs);
                     List<Tuple<string, string>> objVersions = new List<Tuple<string, string>>();
                     IDisposable subscription = observable.Subscribe(
                         item =>
