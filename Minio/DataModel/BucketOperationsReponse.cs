@@ -80,6 +80,7 @@ namespace Minio
         {
             this.ItemObservable = obs;
             string marker = string.Empty;
+            this.NextMarker = string.Empty;
             foreach (Item item in objectList.Item2)
             {
                 this.BucketObjectsLastItem = item;

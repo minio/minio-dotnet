@@ -246,7 +246,6 @@ namespace Minio
                   var delimiter = (args.Recursive) ? string.Empty : "/";
                   string marker = string.Empty;
                   uint count = 0;
-                  string keyMarker = string.Empty;
                   string versionIdMarker = string.Empty;
                   string nextContinuationToken = string.Empty;
                   using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
@@ -259,14 +258,9 @@ namespace Minio
                                                               .WithDelimiter(delimiter)
                                                               .WithVersions(args.Versions)
                                                               .WithContinuationToken(nextContinuationToken)
-                                                              .WithKeyMarker(keyMarker)
+                                                              .WithMarker(marker)
+                                                              .WithListObjectsV1(!args.UseV2)
                                                               .WithVersionIdMarker(versionIdMarker);
-                          if (!args.UseV2 && !args.Versions)
-                          {
-                              goArgs = goArgs.WithListObjectsV1()
-                                             .WithMarker(marker);
-
-                          }
                           if (args.Versions)
                           {
                               Tuple<ListVersionsResult, List<Item>> objectList = await this.GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
@@ -279,8 +273,7 @@ namespace Minio
                                 throw new EmptyBucketOperation("Bucket " + name + " is empty.");
                               }
                               obs = listObjectsItemResponse.ItemObservable;
-                              marker = listObjectsItemResponse.NextMarker;
-                              keyMarker = listObjectsItemResponse.NextKeyMarker;
+                              marker = listObjectsItemResponse.NextKeyMarker;
                               versionIdMarker = listObjectsItemResponse.NextVerMarker;
                               isRunning = objectList.Item1.IsTruncated;
                           }
@@ -791,7 +784,8 @@ namespace Minio
             GetObjectListArgs args = new GetObjectListArgs()
                                             .WithBucket(bucketName)
                                             .WithPrefix(prefix)
-                                            .WithDelimiter(delimiter);
+                                            .WithDelimiter(delimiter)
+                                            .WithMarker(marker);
             return this.GetObjectListAsync(args, cancellationToken);
         }
 
