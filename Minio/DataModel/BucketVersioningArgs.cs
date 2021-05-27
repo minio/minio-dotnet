@@ -20,7 +20,6 @@ using System;
 using System.Text;
 using System.Net.Http;
 using System.Xml.Serialization;
-using System.Reflection;
 
 namespace Minio
 {

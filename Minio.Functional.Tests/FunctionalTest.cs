@@ -27,8 +27,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 
-using System.Reflection;
-
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
 using Minio.DataModel.ILM;
@@ -571,9 +569,11 @@ namespace Minio.Functional.Tests
                     else
                         objectNames.Add(item.Key);
                 },
-                ex => {
+                ex =>
+                {
                     // Collect all exceptions but the one raised because the bucket is empty
-                    if (ex.GetType().ToString() != "Minio.EmptyBucketOperation") {
+                    if (ex.GetType().ToString() != "Minio.EmptyBucketOperation")
+                    {
                         exceptionList.Add(ex);
                         return;
                     }
@@ -626,9 +626,11 @@ namespace Minio.Functional.Tests
             }
             await Task.WhenAll(tasks);
             // Show exceptions if any happened during listing
-            if (exceptionList.Count > 0) {
+            if (exceptionList.Count > 0)
+            {
                 Console.WriteLine("The following exception(s) happened during after test cleanup (TearDown)");
-                foreach (var ex in exceptionList) {
+                foreach (var ex in exceptionList)
+                {
                     Console.WriteLine(ex.ToString());
                 }
             }
@@ -3872,6 +3874,16 @@ namespace Minio.Functional.Tests
                         Assert.IsTrue(notification.Records[0].eventName.Contains("s3:ObjectCreated:Put"));
                         Assert.IsTrue(objectName.Contains(System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key)));
                         Assert.IsTrue(contentType.Contains(notification.Records[0].s3.objectMeta.contentType));
+                        // Assert.AreEqual("s3:ObjectCreated:Put", notification.Records[0].eventName);  // RestSharp
+                        // if (notification.Records[0].s3.bucketMeta != null)
+                        // {
+                        //     // todo s3 is null, how to complete this test.
+                        //     Assert.AreEqual(bucketName, notification.Records[0].s3.bucketMeta.name);
+                        // }
+                        // Assert.AreEqual(objectName, System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key));
+                        // Assert.AreEqual(contentType, notification.Records[0].s3.objectMeta.contentType);
+                        // Console.WriteLine("PASSED");
+                        // testOutcome = TestStatus.PASS;
                         break;
                     }
                     else
@@ -4504,6 +4516,10 @@ namespace Minio.Functional.Tests
             }
             finally
             {
+                // var resp = await  minio.SelectObjectContentAsync(bucketName, objectName, opts);  // RestSharp
+                // var output = await new StreamReader(resp.Payload).ReadToEndAsync();
+                // Assert.AreEqual(ReplaceNewline(output), ReplaceNewline(csvString.ToString()));
+                // await minio.RemoveObjectAsync(bucketName, objectName);
                 await TearDown(minio, bucketName);
             }
         }
@@ -4645,6 +4661,16 @@ namespace Minio.Functional.Tests
                 System.Threading.Thread.Sleep(1500);
                 await TearDown(minio, bucketName);
             }
+        }
+
+
+        private static string ReplaceNewline(string text)
+        {
+            if (text.Contains(Environment.NewLine))
+            {
+                return text;
+            }
+            return text.Replace("\n", Environment.NewLine);
         }
 
         #endregion

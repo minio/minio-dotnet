@@ -106,12 +106,15 @@ namespace Minio.Credentials
 
         internal async virtual Task<HttpRequestMessageBuilder> BuildRequest()
         {
+            HttpRequestMessage req = null;
             HttpRequestMessageBuilder reqBuilder = null;
             if (Client == null)
             {
                 throw new InvalidOperationException("MinioClient is not set in AssumeRoleBaseProvider");
             }
-            reqBuilder = await Client.CreateRequest(HttpMethod.Post);
+            req = await Client.CreateRequest(HttpMethod.Post);
+            reqBuilder = new HttpRequestMessageBuilder(
+                req.Method, req.RequestUri, req.RequestUri.AbsolutePath);
             reqBuilder.AddQueryParameter("Version", "2011-06-15");
             if (!string.IsNullOrWhiteSpace(this.Policy))
             {

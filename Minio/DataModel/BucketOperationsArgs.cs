@@ -24,7 +24,6 @@ using Minio.DataModel.ObjectLock;
 using Minio.Exceptions;
 using System.Net.Http;
 using System.Text;
-using System.Reflection;
 
 namespace Minio
 {
@@ -607,7 +606,6 @@ namespace Minio
             string body = utils.MarshalXML(this.LockConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
             // Convert a C# string to a byte array  
             byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
-
             requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
             requestMessageBuilder.SetBody(bodyInBytes);
 

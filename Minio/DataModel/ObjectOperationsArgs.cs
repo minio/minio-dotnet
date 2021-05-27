@@ -57,7 +57,10 @@ namespace Minio
         }
         internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
         {
-            var requestMessageBuilder = base.BuildRequest(request);
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+
+            // requestMessageBuilder = base.BuildRequest(requestMessageBuilder);
             if (this.RequestBody == null)
             {
                 this.RequestBody = Encoding.UTF8.GetBytes(this.SelectOptions.MarshalXML());

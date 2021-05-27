@@ -17,9 +17,11 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Minio.Exceptions;
+
+using Minio;
 
 using Polly;
+using Polly.Retry;
 
 namespace Minio.Examples.Cases
 {
@@ -41,17 +43,17 @@ namespace Minio.Examples.Cases
             return result < maxRetryInterval ? result : maxRetryInterval;
         }
 
-        public static PolicyBuilder<ResponseResult> CreatePolicyBuilder()
+        public static PolicyBuilder<HttpResponseMessage> CreatePolicyBuilder()
         {
-            return Policy<ResponseResult>
+            return Policy<HttpResponseMessage>
                 .Handle<ConnectionException>()
                 .Or<InternalClientException>(ex => ex.Message.StartsWith("Unsuccessful response from server"));
         }
 
-        public static AsyncPolicy<ResponseResult> GetDefaultRetryPolicy() =>
+        public static AsyncPolicy<HttpResponseMessage> GetDefaultRetryPolicy() =>
             GetDefaultRetryPolicy(defaultRetryCount, defaultRetryInterval, defaultMaxRetryInterval);
 
-        public static AsyncPolicy<ResponseResult> GetDefaultRetryPolicy(
+        public static AsyncPolicy<HttpResponseMessage> GetDefaultRetryPolicy(
             int retryCount,
             TimeSpan retryInterval,
             TimeSpan maxRetryInterval) =>
@@ -60,12 +62,12 @@ namespace Minio.Examples.Cases
                     retryCount,
                     i => CalcBackoff(i, retryInterval, maxRetryInterval));
 
-        public static RetryPolicyHandlingDelegate AsRetryDelegate(this AsyncPolicy<ResponseResult> policy) =>
+        public static RetryPolicyHandlingDelegate AsRetryDelegate(this AsyncPolicy<HttpResponseMessage> policy) =>
             policy == null
                 ? (RetryPolicyHandlingDelegate)null
                 : async executeCallback => await policy.ExecuteAsync(executeCallback);
 
-        public static MinioClient WithRetryPolicy(this MinioClient client, AsyncPolicy<ResponseResult> policy) =>
+        public static MinioClient WithRetryPolicy(MinioClient client, AsyncPolicy<HttpResponseMessage> policy) =>
             client.WithRetryPolicy(policy.AsRetryDelegate());
     }
 

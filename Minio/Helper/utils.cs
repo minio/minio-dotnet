@@ -28,7 +28,6 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
-using System.Reflection;
 
 namespace Minio
 {
@@ -974,8 +973,6 @@ namespace Minio
         // Converts an object to a byte array
         public static byte[] ObjectToByteArray(Object obj)
         {
-            if (obj == null)
-                return null;
             BinaryFormatter bf = new BinaryFormatter();
             using (var ms = new MemoryStream())
             {
@@ -984,18 +981,5 @@ namespace Minio
             }
         }
 
-        // Print object key properties and their values
-        // Added for debugging purposes
-
-        public static void Print(Object obj)
-        {
-            Console.WriteLine("\n******** Properties of {0} ********", obj.GetType().FullName);
-            foreach (PropertyInfo prop in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-            {
-                object value = prop.GetValue(obj, new object[] { });
-                Console.WriteLine("{0} = {1}", prop.Name, value);
-            }
-            Console.WriteLine("Print is DONE!\n\n");
-        }
     }
 }

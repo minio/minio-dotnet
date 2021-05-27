@@ -48,18 +48,7 @@ namespace Minio
             {
                 return;
             }
-
-            try
-            {
-
-                using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
-                {
-                    stream.Position = 0;
-
-                    this.VersioningConfig = (VersioningConfiguration)new XmlSerializer(typeof(VersioningConfiguration)).Deserialize(stream);
-                }
-            }
-            catch (Exception ex)
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 throw ex;
             }
