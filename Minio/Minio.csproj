@@ -52,6 +52,9 @@
     <Reference Include="System.Net.Primitives">
       <Private>True</Private>
     </Reference>
-
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web" />
   </ItemGroup>
-</Project>
+
+</Project>  

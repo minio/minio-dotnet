@@ -15,28 +15,29 @@
  * limitations under the License.
  */
 
-using RestSharp;
+using Minio.DataModel;
+using Minio.Exceptions;
+using Minio.Helper;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
-using Minio.DataModel;
 using Minio.DataModel.Tags;
-using Minio.Exceptions;
-using Minio.Helper;
 using Minio.DataModel.ObjectLock;
 
 namespace Minio
 {
     public partial class MinioClient : IObjectOperations
     {
+        
         /// <summary>
         /// Tests the object's existence and returns metadata about existing objects.
         /// </summary>
@@ -46,17 +47,18 @@ namespace Minio
         public async Task<ObjectStat> StatObjectAsync(StatObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-            Dictionary<string, string> responseHeaders = new Dictionary<string, string>();
-            foreach (var param in response.Headers.ToList())
-            {
-                responseHeaders.Add(param.Name.ToString(), param.Value.ToString());
-            }
-            StatObjectResponse statResponse = new StatObjectResponse(response.StatusCode, response.Content, responseHeaders, args);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+               .ConfigureAwait(false);
+            StatObjectResponse statResponse = new StatObjectResponse(response.StatusCode, response.Content, response.Headers, args);
+
             return statResponse.ObjectInfo;
         }
 
+        private readonly List<string> supportedHeaders = new List<string>
+            {"cache-control", "content-encoding", "content-type", "x-amz-acl", "content-disposition"};
 
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
@@ -88,9 +90,13 @@ namespace Minio
         public async Task<SelectResponseStream> SelectObjectContentAsync(SelectObjectContentArgs args,CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-            SelectObjectContentResponse selectObjectContentResponse = new SelectObjectContentResponse(response.StatusCode, response.Content, response.RawBytes);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+                .ConfigureAwait(false);
+            SelectObjectContentResponse selectObjectContentResponse = new SelectObjectContentResponse(response.StatusCode, response.Content, response.ContentBytes);
             return selectObjectContentResponse.ResponseStream;
         }
 
@@ -149,6 +155,13 @@ namespace Minio
               });
         }
 
+        // public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb,
+        //     ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        // {
+        //     // Stat to see if the object exists
+        //     // NOTE: This avoids writing the error body to the action stream passed (Do not remove).
+        //     await StatObjectAsync(bucketName, objectName, sse: sse, cancellationToken: cancellationToken)
+        //         .ConfigureAwait(false);
 
         /// <summary>
         /// Get list of multi-part uploads matching particular uploadIdMarker
@@ -160,17 +173,17 @@ namespace Minio
                                                                                      CancellationToken cancellationToken)
         {
             args.Validate();
-            IRestResponse response = null;
+            ResponseResult response = null;
             try
             {
-                RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-                response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+                var request = await this.CreateRequest(args.RequestMethod, args.BucketName).ConfigureAwait(false);
+                response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception)
             {
                 throw;
             }
-            GetMultipartUploadsListResponse getUploadResponse = new GetMultipartUploadsListResponse(response.StatusCode, response.Content);
+            GetMultipartUploadsListResponse getUploadResponse = new GetMultipartUploadsListResponse(response.StatusCode, response.Content.ToString());
             return getUploadResponse.UploadResult;
         }
 
@@ -184,8 +197,20 @@ namespace Minio
         private async Task RemoveUploadAsync(RemoveUploadArgs args, CancellationToken cancellationToken)
         {
             args.Validate();
-            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+                .ConfigureAwait(false);
+
+            // var request = await this.CreateRequest(HttpMethod.Get,
+            //         bucketName,
+            //         objectName: objectName,
+            //         headerMap: headers)
+            //     .ConfigureAwait(false);
+            // var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            //     .ConfigureAwait(false);
+            // cb.Invoke(new MemoryStream(response.ContentBytes));
         }
 
 
@@ -202,6 +227,9 @@ namespace Minio
         /// <exception cref="ObjectNotFoundException">When object is not found</exception>
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task RemoveIncompleteUploadAsync(RemoveIncompleteUploadArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        // public async Task GetObjectAsync(string bucketName, string objectName, long offset, long length,
+        //     Action<Stream> cb, ServerSideEncryption sse = null,
+        //     CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
             ListIncompleteUploadsArgs listUploadArgs = new ListIncompleteUploadsArgs()
@@ -253,8 +281,11 @@ namespace Minio
         public async Task<string> PresignedGetObjectAsync(PresignedGetObjectArgs args)
         {
             args.Validate();
-            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            return this.authenticator.PresignURL(this.restClient, request, args.Expiry, this.Region, this.SessionToken, args.RequestDate);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            var authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region,
+                sessionToken: this.SessionToken);
+
+            return authenticator.PresignURL(request, args.Expiry, this.Region, this.SessionToken, args.RequestDate);
         }
 
 
@@ -273,12 +304,16 @@ namespace Minio
         {
             string region = await this.GetRegion(args.BucketName);
             args.Validate();
+            var authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region,
+                sessionToken: this.SessionToken);
+
+        //     return authenticator.PresignURL(request, expiresInt, Region, this.SessionToken, reqDate);
             args =  args.WithSessionToken(this.SessionToken)
-                        .WithCredential(this.authenticator.GetCredentialString(DateTime.UtcNow, region))
-                        .WithSignature(this.authenticator.PresignPostSignature(region, DateTime.UtcNow, args.Policy.Base64()))
+                        .WithCredential(authenticator.GetCredentialString(DateTime.UtcNow, region))
+                        .WithSignature(authenticator.PresignPostSignature(region, DateTime.UtcNow, args.Policy.Base64()))
                         .WithRegion(region);
-            this.SetTargetURL(RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, args.BucketName, args.Region, usePathStyle: false));
-            PresignedPostPolicyResponse policyResponse = new PresignedPostPolicyResponse(args, this.restClient.BaseUrl.AbsoluteUri);
+            // this.SetTargetURL(RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, args.BucketName, args.Region, usePathStyle: false));
+            PresignedPostPolicyResponse policyResponse = new PresignedPostPolicyResponse(args, this.uri.ToString());
             return policyResponse.URIPolicyTuple;
         }
 
@@ -298,8 +333,11 @@ namespace Minio
         public async Task<string> PresignedPutObjectAsync(PresignedPutObjectArgs args)
         {
             args.Validate();
-            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            return this.authenticator.PresignURL(this.restClient, request, args.Expiry, Region, this.SessionToken);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            var authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region,
+                sessionToken: this.SessionToken);
+
+            return authenticator.PresignURL(request, args.Expiry, this.Region, this.SessionToken);
         }
 
         /// <summary>
@@ -313,14 +351,16 @@ namespace Minio
         /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        /// <exception cref="MissingObjectLockConfigurationException">When object lock configuration on bucket is not set</exception>
         /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task<bool> GetObjectLegalHoldAsync(GetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            var request = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             var legalHoldConfig = new GetLegalHoldResponse(response.StatusCode, response.Content);
             return (legalHoldConfig.CurrentLegalHoldConfiguration == null)?false: legalHoldConfig.CurrentLegalHoldConfiguration.Status.ToLower().Equals("on");
         }
@@ -337,14 +377,17 @@ namespace Minio
         /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        /// <exception cref="MissingObjectLockConfigurationException">When object lock configuration on bucket is not set</exception>
         /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task SetObjectLegalHoldAsync(SetObjectLegalHoldArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            var request = await this.CreateRequest(args).ConfigureAwait(false);
-            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+                .ConfigureAwait(false);
         }
 
 
@@ -363,8 +406,11 @@ namespace Minio
         public async Task<Tagging> GetObjectTagsAsync(GetObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+                .ConfigureAwait(false);
             GetObjectTagsResponse getObjectTagsResponse = new GetObjectTagsResponse(response.StatusCode, response.Content);
             return getObjectTagsResponse.ObjectTags;
         }
@@ -385,8 +431,8 @@ namespace Minio
         public async Task RemoveObjectAsync(RemoveObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            var restResponse = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
         }
 
 
@@ -416,15 +462,73 @@ namespace Minio
                 errs = await removeObjectsHelper(args, errs, cancellationToken);
             }
 
-            return Observable.Create<DeleteError>(
-              async(obs) =>
-              {
-                await Task.Yield();
-                foreach (DeleteError error in errs)
+            return Observable.Create<DeleteError>(   // From Current change
+                async(obs) =>
                 {
-                    obs.OnNext(error);
+                    await Task.Yield();
+                    foreach (DeleteError error in errs)
+                    {
+                        obs.OnNext(error);
+                    }
                 }
-              });
+            );
+            
+            // var request = await this.CreateRequest(args.RequestMethod,
+            //         args.BucketName,
+            //         objectName: args.ObjectNames,
+            //         headerMap: args.Headers)
+            //     .ConfigureAwait(false);
+
+            // var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            //     .ConfigureAwait(false);
+
+            // cb.Invoke(new MemoryStream(response.ContentBytes));
+        // public async Task<IObservable<DeleteError>> RemoveObjectAsync(string bucketName,  // Rest Sharp
+        //     IEnumerable<string> objectNames, CancellationToken cancellationToken = default(CancellationToken))
+        // {
+        //     if (objectNames == null)
+        //     {
+        //         return null;
+        //     }
+
+        //     utils.ValidateBucketName(bucketName);
+        //     List<DeleteObject> objectList;
+        //     return Observable.Create<DeleteError>(
+        //         async obs =>
+        //         {
+        //             bool process = true;
+        //             int count = objectNames.Count();
+        //             int i = 0;
+
+        //             while (process)
+        //             {
+        //                 objectList = new List<DeleteObject>();
+        //                 while (i < count)
+        //                 {
+        //                     string objectName = objectNames.ElementAt(i);
+        //                     utils.ValidateObjectName(objectName);
+        //                     objectList.Add(new DeleteObject(objectName));
+        //                     i++;
+        //                     if (i % 1000 == 0)
+        //                         break;
+        //                 }
+
+        //                 if (objectList.Count > 0)
+        //                 {
+        //                     var errorsList = await removeObjectsAsync(bucketName, objectList, cancellationToken)
+        //                         .ConfigureAwait(false);
+        //                     foreach (DeleteError error in errorsList)
+        //                     {
+        //                         obs.OnNext(error);
+        //                     }
+        //                 }
+
+        //                 if (i >= objectNames.Count())
+        //                 {
+        //                     process = !process;
+        //                 }
+        //             }
+        //         });
         }
 
 
@@ -444,8 +548,11 @@ namespace Minio
         public async Task SetObjectTagsAsync(SetObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+                .ConfigureAwait(false);
         }
 
 
@@ -463,12 +570,22 @@ namespace Minio
         /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task RemoveObjectTagsAsync(RemoveObjectTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))
+        // public async Task GetObjectAsync(string bucketName, string objectName, string fileName, // From RestSharp
+        //     ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            var restResponse = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+                .ConfigureAwait(false);
         }
 
+            // ObjectStat objectStat =   // From RestSharp
+            //     await StatObjectAsync(bucketName, objectName, sse: sse, cancellationToken: cancellationToken)
+            //         .ConfigureAwait(false);
+            // long length = objectStat.Size;
+            // string etag = objectStat.ETag;
 
         /// <summary>
         /// Set the Retention using the configuration object
@@ -481,14 +598,14 @@ namespace Minio
         /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        /// <exception cref="MissingObjectLockConfigurationException">When object lock configuration on bucket is not set</exception>
         /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task SetObjectRetentionAsync(SetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            var request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -504,12 +621,14 @@ namespace Minio
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         /// <exception cref="ObjectNotFoundException">When object is not found</exception>
         /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
-        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        /// <exception cref="MissingObjectLockConfigurationException">When object lock configuration on bucket is not set</exception>
         public async Task<ObjectRetentionConfiguration> GetObjectRetentionAsync(GetObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            var request = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             var retentionResponse = new GetRetentionResponse(response.StatusCode, response.Content);
             return retentionResponse.CurrentRetentionConfiguration;
         }
@@ -526,14 +645,14 @@ namespace Minio
         /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        /// <exception cref="MissingObjectLockConfigurationException">When object lock configuration on bucket is not set</exception>
         /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task ClearObjectRetentionAsync(ClearObjectRetentionArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            var request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -554,8 +673,10 @@ namespace Minio
         private async Task<string> PutObjectSinglePartAsync(PutObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             //Skipping validate as we need the case where stream sends 0 bytes
-            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken);
             PutObjectResponse putObjectResponse = new PutObjectResponse(response.StatusCode, response.Content, response.Headers);
             return putObjectResponse.Etag;
         }
@@ -810,6 +931,9 @@ namespace Minio
                 if (args.SourceObject.SSE != null && args.SourceObject.SSE is SSECopy)
                 {
                     args.SourceObject.SSE.Marshal(newMeta);
+                    // throw new ArgumentException("'" + fileName + "': object size " + length +
+                    //                             " is smaller than file size "
+                    //                             + fileSize, nameof(fileSize));
                 }
                 if (args.SSE != null)
                 {
@@ -854,6 +978,8 @@ namespace Minio
             double expectedReadSize = partSize;
             int partNumber;
             for (partNumber = 1; partNumber <= partCount; partNumber++)
+
+            // await GetObjectAsync(bucketName, objectName, (stream) => // From RestSharp
             {
                 CopyConditions partCondition = args.SourceObject.CopyOperationConditions.Clone();
                 partCondition.byteRangeStart = (long)partSize * (partNumber - 1) + partCondition.byteRangeStart;
@@ -925,8 +1051,10 @@ namespace Minio
         private async Task<string> NewMultipartUploadAsync(NewMultipartUploadPutArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken);
             NewMultipartUploadResponse uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
             return uploadResponse.UploadId;
         }
@@ -947,8 +1075,10 @@ namespace Minio
         private async Task<string> NewMultipartUploadAsync(NewMultipartUploadCopyArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken);
             NewMultipartUploadResponse uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
             return uploadResponse.UploadId;
         }
@@ -962,8 +1092,11 @@ namespace Minio
         private async Task<object> CopyObjectRequestAsync(CopyObjectRequestArgs args, CancellationToken cancellationToken)
         {
             args.Validate();
-            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+                .ConfigureAwait(false);
             CopyObjectResponse copyObjectResponse = new CopyObjectResponse(response.StatusCode, response.Content, args.CopyOperationObjectType);
             return copyObjectResponse.CopyPartRequestResult;
         }
@@ -984,8 +1117,11 @@ namespace Minio
         private async Task CompleteMultipartUploadAsync(CompleteMultipartUploadArgs args, CancellationToken cancellationToken)
         {
             args.Validate();
-            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            IRestResponse response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var request = await this.CreateRequest(args.RequestMethod, args.BucketName, args.ObjectName).ConfigureAwait(false);
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+                .ConfigureAwait(false);
         }
 
 
@@ -1049,6 +1185,13 @@ namespace Minio
                                             .WithFile(fileName)
                                             .WithServerSideEncryption(sse);
             return this.GetObjectAsync(args, cancellationToken);
+            //         throw new IOException(tempFileName + ": unexpected data written.  expected = " +  // RestSharp changes(7 lines)
+            //                               (length - tempFileSize)
+            //                               + ", written = " + writtenSize);
+            //     }
+
+            //     utils.MoveWithReplace(tempFileName, fileName);
+            // }, sse, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -1072,6 +1215,34 @@ namespace Minio
                                                         .WithServerSideEncryption(opts.SSE)
                                                         .WithRequestProgress(opts.RequestProgress);
             return this.SelectObjectContentAsync(args, cancellationToken);
+        // public async Task<SelectResponseStream> SelectObjectContentAsync(string bucketName, string objectName, // RestSharp changes
+        //     SelectObjectOptions opts, CancellationToken cancellationToken = default(CancellationToken))
+        // {
+        //     utils.ValidateBucketName(bucketName);
+        //     utils.ValidateObjectName(objectName);
+        //     if (opts == null)
+        //     {
+        //         throw new ArgumentException("Options cannot be null", nameof(opts));
+        //     }
+
+        //     Dictionary<string, string> sseHeaders = null;
+        //     if (opts.SSE != null)
+        //     {
+        //         sseHeaders = new Dictionary<string, string>();
+        //         opts.SSE.Marshal(sseHeaders);
+        //     }
+
+        //     var request = await this.CreateRequest(HttpMethod.Post, bucketName,
+        //             objectName: objectName,
+        //             headerMap: sseHeaders)
+        //         .ConfigureAwait(false);
+        //     request.Properties.Add("select", "");
+        //     request.Properties.Add("select-type", "2");
+        //     request.AddXmlBody(opts.MarshalXML());
+
+        //     var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+        //         .ConfigureAwait(false);
+        //     return new SelectResponseStream(new MemoryStream(response.ContentBytes));
         }
 
         /// <summary>
@@ -1095,6 +1266,18 @@ namespace Minio
                                             .WithHeaders(metaData)
                                             .WithServerSideEncryption(sse);
             return this.PutObjectAsync(args, cancellationToken);
+        // public async Task PutObjectAsync(string bucketName, string objectName, string fileName, // RestSharp changes
+        //     string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null,
+        //     CancellationToken cancellationToken = default(CancellationToken))
+        // {
+        //     utils.ValidateFile(fileName, contentType);
+        //     FileInfo fileInfo = new FileInfo(fileName);
+        //     long size = fileInfo.Length;
+        //     using (FileStream file = new FileStream(fileName, FileMode.Open, FileAccess.Read))
+        //     {
+        //         await PutObjectAsync(bucketName, objectName, file, size, contentType, metaData, sse, cancellationToken)
+        //             .ConfigureAwait(false);
+        //     }
         }
 
         /// <summary>
@@ -1120,6 +1303,125 @@ namespace Minio
                                             .WithHeaders(metaData)
                                             .WithServerSideEncryption(sse);
             return this.PutObjectAsync(args, cancellationToken);
+        // public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, // RestSharp changes
+        //     string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null,
+        //     CancellationToken cancellationToken = default(CancellationToken))
+        // {
+        //     utils.ValidateBucketName(bucketName);
+        //     utils.ValidateObjectName(objectName);
+
+        //     var sseHeaders = new Dictionary<string, string>();
+        //     var meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        //     if (metaData != null)
+        //     {
+        //         foreach (KeyValuePair<string, string> p in metaData)
+        //         {
+        //             var key = p.Key;
+        //             if (!supportedHeaders.Contains(p.Key, StringComparer.OrdinalIgnoreCase) &&
+        //                 !p.Key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
+        //             {
+        //                 key = "x-amz-meta-" + key.ToLowerInvariant();
+        //             }
+
+        //             meta[key] = p.Value;
+
+        //         }
+        //     }
+
+        //     if (sse != null)
+        //     {
+        //         sse.Marshal(sseHeaders);
+        //     }
+
+        //     if (string.IsNullOrWhiteSpace(contentType))
+        //     {
+        //         contentType = "application/octet-stream";
+        //     }
+
+        //     if (!meta.ContainsKey("Content-Type"))
+        //     {
+        //         meta["Content-Type"] = contentType;
+        //     }
+
+        //     if (data == null)
+        //     {
+        //         throw new ArgumentNullException(nameof(data), "Invalid input stream, cannot be null");
+        //     }
+
+        //     // for sizes less than 5Mb , put a single object
+        //     if (size < Constants.MinimumPartSize && size >= 0)
+        //     {
+        //         var bytes = await ReadFullAsync(data, (int) size).ConfigureAwait(false);
+        //         if (bytes != null && bytes.Length != (int) size)
+        //         {
+        //             throw new UnexpectedShortReadException(
+        //                 $"Data read {bytes.Length} is shorter than the size {size} of input buffer.");
+        //         }
+
+        //         await this.PutObjectAsync(bucketName, objectName, null, 0, bytes, meta, sseHeaders, cancellationToken)
+        //             .ConfigureAwait(false);
+        //         return;
+        //     }
+        //     // For all sizes greater than 5MiB do multipart.
+
+        //     dynamic multiPartInfo = utils.CalculateMultiPartSize(size);
+        //     double partSize = multiPartInfo.partSize;
+        //     double partCount = multiPartInfo.partCount;
+        //     double lastPartSize = multiPartInfo.lastPartSize;
+        //     Part[] totalParts = new Part[(int) partCount];
+
+        //     string uploadId = await this
+        //         .NewMultipartUploadAsync(bucketName, objectName, meta, sseHeaders, cancellationToken)
+        //         .ConfigureAwait(false);
+
+        //     // Remove SSE-S3 and KMS headers during PutObjectPart operations.
+        //     if (sse != null &&
+        //         (sse.GetType().Equals(EncryptionType.SSE_S3) ||
+        //          sse.GetType().Equals(EncryptionType.SSE_KMS)))
+        //     {
+        //         sseHeaders.Remove(Constants.SSEGenericHeader);
+        //         sseHeaders.Remove(Constants.SSEKMSContext);
+        //         sseHeaders.Remove(Constants.SSEKMSKeyId);
+        //     }
+
+        //     double expectedReadSize = partSize;
+        //     int partNumber;
+        //     int numPartsUploaded = 0;
+        //     for (partNumber = 1; partNumber <= partCount; partNumber++)
+        //     {
+        //         byte[] dataToCopy = await ReadFullAsync(data, (int) partSize).ConfigureAwait(false);
+        //         if (dataToCopy == null && numPartsUploaded > 0)
+        //         {
+        //             break;
+        //         }
+
+        //         if (partNumber == partCount)
+        //         {
+        //             expectedReadSize = lastPartSize;
+        //         }
+
+        //         numPartsUploaded += 1;
+        //         string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, meta,
+        //             sseHeaders, cancellationToken).ConfigureAwait(false);
+        //         totalParts[partNumber - 1] = new Part
+        //             {PartNumber = partNumber, ETag = etag, Size = (long) expectedReadSize};
+        //     }
+
+        //     // This shouldn't happen where stream size is known.
+        //     if (partCount != numPartsUploaded && size != -1)
+        //     {
+        //         await this.RemoveUploadAsync(bucketName, objectName, uploadId, cancellationToken).ConfigureAwait(false);
+        //         return;
+        //     }
+
+        //     Dictionary<int, string> etags = new Dictionary<int, string>();
+        //     for (partNumber = 1; partNumber <= numPartsUploaded; partNumber++)
+        //     {
+        //         etags[partNumber] = totalParts[partNumber - 1].ETag;
+        //     }
+
+        //     await this.CompleteMultipartUploadAsync(bucketName, objectName, uploadId, etags, cancellationToken)
+        //         .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1131,29 +1433,32 @@ namespace Minio
         /// <param name="etags">Etags</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        private async Task CompleteMultipartUploadAsync(string bucketName, string objectName, string uploadId, Dictionary<int, string> etags, CancellationToken cancellationToken)
+        private async Task CompleteMultipartUploadAsync(string bucketName, string objectName, string uploadId,
+            Dictionary<int, string> etags, CancellationToken cancellationToken)
         {
-            var request = await this.CreateRequest(Method.POST, bucketName,
-                                                     objectName: objectName)
-                                    .ConfigureAwait(false);
-            request.AddQueryParameter("uploadId",$"{uploadId}");
+            var requestBuilder = await this.CreateRequest(HttpMethod.Post, bucketName,
+                    objectName: objectName)
+                .ConfigureAwait(false);
+            requestBuilder.AddQueryParameter("uploadId", $"{uploadId}");
 
             List<XElement> parts = new List<XElement>();
 
             for (int i = 1; i <= etags.Count; i++)
             {
                 parts.Add(new XElement("Part",
-                                       new XElement("PartNumber", i),
-                                       new XElement("ETag", etags[i])));
+                    new XElement("PartNumber", i),
+                    new XElement("ETag", etags[i])));
             }
 
             var completeMultipartUploadXml = new XElement("CompleteMultipartUpload", parts);
             var bodyString = completeMultipartUploadXml.ToString();
-            var body = System.Text.Encoding.UTF8.GetBytes(bodyString);
 
-            request.AddParameter("application/xml", body, ParameterType.RequestBody);
+            // request.Headers.Add("application/xml", body);   // Current change
 
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            // var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+            requestBuilder.AddXmlBody(bodyString);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestBuilder, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1164,24 +1469,28 @@ namespace Minio
         /// <param name="uploadId"></param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        private IObservable<Part> ListParts(string bucketName, string objectName, string uploadId, CancellationToken cancellationToken)
+        private IObservable<Part> ListParts(string bucketName, string objectName, string uploadId,
+            CancellationToken cancellationToken)
         {
             return Observable.Create<Part>(
-              async obs =>
-              {
-                  int nextPartNumberMarker = 0;
-                  bool isRunning = true;
-                  while (isRunning)
-                  {
-                      var uploads = await this.GetListPartsAsync(bucketName, objectName, uploadId, nextPartNumberMarker, cancellationToken).ConfigureAwait(false);
-                      foreach (Part part in uploads.Item2)
-                      {
-                          obs.OnNext(part);
-                      }
-                      nextPartNumberMarker = uploads.Item1.NextPartNumberMarker;
-                      isRunning = uploads.Item1.IsTruncated;
-                  }
-              });
+                async obs =>
+                {
+                    int nextPartNumberMarker = 0;
+                    bool isRunning = true;
+                    while (isRunning)
+                    {
+                        var uploads = await this
+                            .GetListPartsAsync(bucketName, objectName, uploadId, nextPartNumberMarker,
+                                cancellationToken).ConfigureAwait(false);
+                        foreach (Part part in uploads.Item2)
+                        {
+                            obs.OnNext(part);
+                        }
+
+                        nextPartNumberMarker = uploads.Item1.NextPartNumberMarker;
+                        isRunning = uploads.Item1.IsTruncated;
+                    }
+                });
         }
 
         /// <summary>
@@ -1193,36 +1502,41 @@ namespace Minio
         /// <param name="partNumberMarker"></param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        private async Task<Tuple<ListPartsResult, List<Part>>> GetListPartsAsync(string bucketName, string objectName, string uploadId, int partNumberMarker, CancellationToken cancellationToken)
+        private async Task<Tuple<ListPartsResult, List<Part>>> GetListPartsAsync(string bucketName, string objectName,
+            string uploadId, int partNumberMarker, CancellationToken cancellationToken)
         {
-            var request = await this.CreateRequest(Method.GET, bucketName,
-                                                     objectName: objectName)
-                                .ConfigureAwait(false);
-            request.AddQueryParameter("uploadId",$"{uploadId}");
+            var requestBuilder = await this.CreateRequest(HttpMethod.Get, bucketName,
+                    objectName: objectName)
+                .ConfigureAwait(false);
+            requestBuilder.AddQueryParameter("uploadId", $"{uploadId}");
             if (partNumberMarker > 0)
             {
-                request.AddQueryParameter("part-number-marker",$"{partNumberMarker}");
+                requestBuilder.AddQueryParameter("part-number-marker", $"{partNumberMarker}");
             }
-            request.AddQueryParameter("max-parts","1000");
 
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            requestBuilder.AddQueryParameter("max-parts", "1000");
 
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestBuilder, cancellationToken)
+                .ConfigureAwait(false);
+
+            var contentBytes = response.ContentBytes;
             ListPartsResult listPartsResult = null;
             using (var stream = new MemoryStream(contentBytes))
             {
-                listPartsResult = (ListPartsResult)new XmlSerializer(typeof(ListPartsResult)).Deserialize(stream);
+                listPartsResult = (ListPartsResult) new XmlSerializer(typeof(ListPartsResult)).Deserialize(stream);
             }
 
             XDocument root = XDocument.Parse(response.Content);
 
             var uploads = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Part")
-                          select new Part
-                          {
-                              PartNumber = int.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}PartNumber").Value, CultureInfo.CurrentCulture),
-                              ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value.Replace("\"", string.Empty),
-                              Size = long.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture)
-                          };
+                select new Part
+                {
+                    PartNumber = int.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}PartNumber").Value,
+                        CultureInfo.CurrentCulture),
+                    ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value.Replace("\"", string.Empty),
+                    Size = long.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value,
+                        CultureInfo.CurrentCulture)
+                };
 
             return Tuple.Create(listPartsResult, uploads.ToList());
         }
@@ -1236,26 +1550,30 @@ namespace Minio
         /// <param name="sseHeaders"> Server-side encryption options</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        private async Task<string> NewMultipartUploadAsync(string bucketName, string objectName, Dictionary<string, string> metaData, Dictionary<string, string> sseHeaders, CancellationToken cancellationToken = default(CancellationToken))
+        private async Task<string> NewMultipartUploadAsync(string bucketName, string objectName,
+            Dictionary<string, string> metaData, Dictionary<string, string> sseHeaders,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
 
             foreach (KeyValuePair<string, string> kv in sseHeaders)
             {
                 metaData.Add(kv.Key, kv.Value);
             }
-            var request = await this.CreateRequest(Method.POST, bucketName, objectName: objectName,
-                            headerMap: metaData).ConfigureAwait(false);
-            request.AddQueryParameter("uploads","");
 
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var requestBuilder = await this.CreateRequest(HttpMethod.Post, bucketName, objectName: objectName,
+                headerMap: metaData).ConfigureAwait(false);
+            requestBuilder.AddQueryParameter("uploads", "");
 
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-            InitiateMultipartUploadResult newUpload = null;
-            using (var stream = new MemoryStream(contentBytes))
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestBuilder, cancellationToken)
+                .ConfigureAwait(false);
+
+            using (var contentStream = new MemoryStream(response.ContentBytes))
             {
-                newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult)).Deserialize(stream);
+                InitiateMultipartUploadResult newUpload = null;
+                newUpload = (InitiateMultipartUploadResult) new XmlSerializer(typeof(InitiateMultipartUploadResult))
+                    .Deserialize(contentStream);
+                return newUpload.UploadId;
             }
-            return newUpload.UploadId;
         }
 
         /// <summary>
@@ -1272,6 +1590,9 @@ namespace Minio
         /// <returns></returns>
         [Obsolete("Use PutObjectAsync method with PutObjectArgs object. Refer PutObject example code.")]
         private async Task<string> PutObjectAsync(string bucketName, string objectName, string uploadId, int partNumber, byte[] data, Dictionary<string, string> metaData, Dictionary<string, string> sseHeaders, CancellationToken cancellationToken)
+        // private async Task<string> PutObjectAsync(string bucketName, string objectName, string uploadId, int partNumber, //RestSharp
+        //     byte[] data, Dictionary<string, string> metaData, Dictionary<string, string> sseHeaders,
+        //     CancellationToken cancellationToken)
         {
             // For multi-part upload requests, metadata needs to be passed in the NewMultiPartUpload request
             string contentType = metaData["Content-Type"];
@@ -1284,27 +1605,109 @@ namespace Minio
             {
                 metaData.Add(kv.Key, kv.Value);
             }
-            var request = await this.CreateRequest(Method.PUT, bucketName,
-                                                     objectName: objectName,
-                                                     contentType: contentType,
-                                                     headerMap: metaData,
-                                                     body: data)
-                                    .ConfigureAwait(false);
+
+            var requestBuilder = await this.CreateRequest(HttpMethod.Put, bucketName,
+                    objectName: objectName,
+                    contentType: contentType,
+                    headerMap: metaData,
+                    body: data)
+                .ConfigureAwait(false);
             if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
             {
-                request.AddQueryParameter("uploadId",$"{uploadId}");
-                request.AddQueryParameter("partNumber",$"{partNumber}");
+                requestBuilder.AddQueryParameter("uploadId", $"{uploadId}");
+                requestBuilder.AddQueryParameter("partNumber", $"{partNumber}");
             }
 
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestBuilder, cancellationToken)
+                .ConfigureAwait(false);
 
-            string etag = response.Headers
-                                    .Where(param => (param.Name.ToLower().Equals("etag")))
-                                    .Select(param => param.Value.ToString())
-                                    .FirstOrDefault()
-                                    .ToString();
+            // string etag = response.Headers   // Current change
+            //                         .Where(param => (param.Name.ToLower().Equals("etag")))
+            //                         .Select(param => param.Value.ToString())
+            //                         .FirstOrDefault()
+            //                         .ToString();
+
+            string etag = null;
+            foreach (var parameter in response.Headers)
+            {
+                if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
+                {
+                    etag = parameter.Value.ToString();
+                }
+            }
+
             return etag;
         }
+
+        // /// <summary>
+        // /// Get list of multi-part uploads matching particular uploadIdMarker     // RestSharp changes
+        // /// </summary>
+        // /// <param name="bucketName">Bucket Name</param>
+        // /// <param name="prefix">prefix</param>
+        // /// <param name="keyMarker"></param>
+        // /// <param name="uploadIdMarker"></param>
+        // /// <param name="delimiter"></param>
+        // /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        // /// <returns></returns>
+        // private async Task<Tuple<ListMultipartUploadsResult, List<Upload>>> GetMultipartUploadsListAsync(
+        //     string bucketName,
+        //     string prefix,
+        //     string keyMarker,
+        //     string uploadIdMarker,
+        //     string delimiter,
+        //     CancellationToken cancellationToken)
+        // {
+        //     // null values are treated as empty strings.
+        //     if (delimiter == null)
+        //     {
+        //         delimiter = string.Empty;
+        //     }
+
+        //     if (prefix == null)
+        //     {
+        //         prefix = string.Empty;
+        //     }
+
+        //     if (keyMarker == null)
+        //     {
+        //         keyMarker = string.Empty;
+        //     }
+
+        //     if (uploadIdMarker == null)
+        //     {
+        //         uploadIdMarker = string.Empty;
+        //     }
+
+        //     var request = await this.CreateRequest(HttpMethod.Get, bucketName).ConfigureAwait(false);
+        //     request.Properties.Add("uploads", "");
+        //     request.Properties.Add("prefix", prefix);
+        //     request.Properties.Add("delimiter", delimiter);
+        //     request.Properties.Add("key-marker", keyMarker);
+        //     request.Properties.Add("upload-id-marker", uploadIdMarker);
+        //     request.Properties.Add("max-uploads", "1000");
+        //     var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+        //         .ConfigureAwait(false);
+
+        //     ListMultipartUploadsResult listBucketResult = null;
+        //     using (var stream = new MemoryStream(response.ContentBytes))
+        //     {
+        //         listBucketResult =
+        //             (ListMultipartUploadsResult) new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(
+        //                 stream);
+        //     }
+
+        //     XDocument root = XDocument.Parse(response.Content);
+
+        //     var uploads = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
+        //         select new Upload
+        //         {
+        //             Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
+        //             UploadId = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}UploadId").Value,
+        //             Initiated = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Initiated").Value
+        //         };
+
+        //     return Tuple.Create(listBucketResult, uploads.ToList());
+        // }
 
         /// <summary>
         /// Lists all incomplete uploads in a given bucket and prefix recursively
@@ -1316,6 +1719,8 @@ namespace Minio
         /// <returns>A lazily populated list of incomplete uploads</returns>
         [Obsolete("Use ListIncompleteUploads method with ListIncompleteUploadsArgs object. Refer ListIncompleteUploads example code.")]
         public IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix = null, bool recursive = true, CancellationToken cancellationToken = default(CancellationToken))
+        // public IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix = null, bool recursive = true,    // RestSharp change
+        //     CancellationToken cancellationToken = default(CancellationToken))
         {
             ListIncompleteUploadsArgs args = new ListIncompleteUploadsArgs()
                                                             .WithBucket(bucketName)
@@ -1327,6 +1732,42 @@ namespace Minio
                 return this.ListIncompleteUploads(args, cancellationToken);
             }
             return this.ListIncompleteUploads(args, cancellationToken);
+
+        //     return this.listIncompleteUploads(bucketName, prefix, "/", cancellationToken);    // RestSharp change
+        // }
+
+        // /// <summary>
+        // /// Lists all or delimited incomplete uploads in a given bucket with a given objectName
+        // /// </summary>
+        // /// <param name="bucketName">Bucket to list incomplete uploads from</param>
+        // /// <param name="prefix">Key of object to list incomplete uploads from</param>
+        // /// <param name="delimiter">delimiter of object to list incomplete uploads</param>
+        // /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        // /// <returns>Observable that notifies when next next upload becomes available</returns>
+        // private IObservable<Upload> listIncompleteUploads(string bucketName, string prefix, string delimiter,
+        //     CancellationToken cancellationToken)
+        // {
+        //     return Observable.Create<Upload>(
+        //         async obs =>
+        //         {
+        //             string nextKeyMarker = null;
+        //             string nextUploadIdMarker = null;
+        //             bool isRunning = true;
+
+        //             while (isRunning)
+        //             {
+        //                 var uploads = await this.GetMultipartUploadsListAsync(bucketName, prefix, nextKeyMarker,
+        //                     nextUploadIdMarker, delimiter, cancellationToken).ConfigureAwait(false);
+        //                 foreach (Upload upload in uploads.Item2)
+        //                 {
+        //                     obs.OnNext(upload);
+        //                 }
+
+        //                 nextKeyMarker = uploads.Item1.NextKeyMarker;
+        //                 nextUploadIdMarker = uploads.Item1.NextUploadIdMarker;
+        //                 isRunning = uploads.Item1.IsTruncated;
+        //             }
+        //         });
         }
 
         /// <summary>
@@ -1343,6 +1784,19 @@ namespace Minio
                                                                 .WithBucket(bucketName)
                                                                 .WithObject(objectName);
             return this.RemoveIncompleteUploadAsync(args);
+        // public async Task RemoveIncompleteUploadAsync(string bucketName, string objectName,   //RestSharp
+        //     CancellationToken cancellationToken = default(CancellationToken))
+        // {
+        //     var uploads = await this.ListIncompleteUploads(bucketName, objectName, cancellationToken: cancellationToken)
+        //         .ToArray();
+        //     foreach (Upload upload in uploads)
+        //     {
+        //         if (objectName == upload.Key)
+        //         {
+        //             await this.RemoveUploadAsync(bucketName, objectName, upload.UploadId, cancellationToken)
+        //                 .ConfigureAwait(false);
+        //         }
+        //     }
         }
 
         /// <summary>
@@ -1361,6 +1815,15 @@ namespace Minio
                                                 .WithObject(objectName)
                                                 .WithUploadId(uploadId);
             return this.RemoveUploadAsync(args, cancellationToken);
+        // private async Task RemoveUploadAsync(string bucketName, string objectName, string uploadId,    // RestSharp change
+        //     CancellationToken cancellationToken)
+        // {
+        //     var request = await this.CreateRequest(HttpMethod.Delete, bucketName,
+        //             objectName: objectName)
+        //         .ConfigureAwait(false);
+        //     request.Properties.Add("uploadId", $"{uploadId}");
+        //     var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+        //         .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1377,49 +1840,57 @@ namespace Minio
                                     .WithBucket(bucketName)
                                     .WithObject(objectName);
             return this.RemoveObjectAsync(args, cancellationToken);
+        // public async Task RemoveObjectAsync(string bucketName, string objectName,    // RestSharp change
+        //     CancellationToken cancellationToken = default(CancellationToken))
+        // {
+        //     var request = await this.CreateRequest(HttpMethod.Delete, bucketName, objectName: objectName)
+        //         .ConfigureAwait(false);
+
+        //     var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+        //         .ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// private helper method to remove list of objects from bucket
-        /// </summary>
-        /// <param name="bucketName">Bucket Name</param>
-        /// <param name="objectsList"></param>
-        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <returns></returns>
-        [Obsolete("Use RemoveObjectsAsync method with RemoveObjectsArgs object. Refer RemoveObjects example code.")]
-        private async Task<List<DeleteError>> removeObjectsAsync(string bucketName, List<DeleteObject> objectsList, CancellationToken cancellationToken)
-        {
-            var request = await this.CreateRequest(Method.POST, bucketName).ConfigureAwait(false);
-            request.AddQueryParameter("delete","");
-            List<XElement> objects = new List<XElement>();
+        // /// <summary>
+        // /// private helper method to remove list of objects from bucket
+        // /// </summary>
+        // /// <param name="bucketName">Bucket Name</param>
+        // /// <param name="objectsList"></param>
+        // /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        // /// <returns></returns>
+        // [Obsolete("Use RemoveObjectsAsync method with RemoveObjectsArgs object. Refer RemoveObjects example code.")]
+        // private async Task<List<DeleteError>> removeObjectsAsync(string bucketName, List<DeleteObject> objectsList, CancellationToken cancellationToken)
+        // {
+        //     var request = await this.CreateRequest(HttpMethod.Post, bucketName).ConfigureAwait(false);
+        //     request.Properties.Add("delete", "");
+        //     List<XElement> objects = new List<XElement>();
 
-            foreach (var obj in objectsList)
-            {
-                objects.Add(new XElement("Object",
-                                       new XElement("Key", obj.Key)));
-            }
+        //     foreach (var obj in objectsList)
+        //     {
+        //         objects.Add(new XElement("Object",
+        //             new XElement("Key", obj.Key)));
+        //     }
 
-            var deleteObjectsRequest = new XElement("Delete", objects,
-                                        new XElement("Quiet", true));
+        //     var deleteObjectsRequest = new XElement("Delete", objects,
+        //         new XElement("Quiet", true));
 
-            request.AddXmlBody(deleteObjectsRequest);
-            request.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
-            request.RequestFormat = DataFormat.Xml;
+        //     request.AddXmlBody(deleteObjectsRequest.ToString());
+        //     var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+        //             .ConfigureAwait(false);
+        //     // var contentBytes = Encoding.UTF8.GetBytes(response.Content);
+        //     // using (var stream = new MemoryStream(contentBytes))
+        //     // using (var contentStream = new MemoryStream(response.ContentBytes))
+        //     {
+        //         var deleteResult =
+        //             (DeleteObjectsResult) new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(response.ContentStream);
 
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-            DeleteObjectsResult deleteResult = null;
-            using (var stream = new MemoryStream(contentBytes))
-            {
-                deleteResult = (DeleteObjectsResult)new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(stream);
-            }
+        //         if (deleteResult == null)
+        //         {
+        //             return new List<DeleteError>();
+        //         }
 
-            if (deleteResult == null)
-            {
-                return new List<DeleteError>();
-            }
-            return deleteResult.ErrorList();
-        }
+        //         return deleteResult.ErrorList();
+        //     }
+        // }
 
         /// <summary>
         /// Removes multiple objects from a specific bucket
@@ -1434,7 +1905,7 @@ namespace Minio
             RemoveObjectsArgs args = new RemoveObjectsArgs()
                                                 .WithBucket(bucketName)
                                                 .WithObjects(new List<string>(objectNames));
-            return this.RemoveObjectsAsync(args, cancellationToken);
+            return this.RemoveObjectsAsync(args);
         }
 
         /// <summary>
@@ -1453,6 +1924,60 @@ namespace Minio
                                             .WithObject(objectName)
                                             .WithServerSideEncryption(sse);
             return this.StatObjectAsync(args, cancellationToken: cancellationToken);
+        // public async Task<ObjectStat> StatObjectAsync(string bucketName, string objectName,   //Rest Sharp
+        //     ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        // {
+        //     var headerMap = new Dictionary<string, string>();
+
+        //     if (sse != null && sse.GetType().Equals(EncryptionType.SSE_C))
+        //     {
+        //         sse.Marshal(headerMap);
+        //     }
+
+        //     var request = await this
+        //         .CreateRequest(HttpMethod.Head, bucketName, objectName: objectName, headerMap: headerMap)
+        //         .ConfigureAwait(false);
+
+        //     var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+        //         .ConfigureAwait(false);
+
+        //     // Extract stats from response
+        //     long size = 0;
+        //     DateTime lastModified = new DateTime();
+        //     string etag = string.Empty;
+        //     string contentType = null;
+        //     var metaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        //     foreach (var parameter in response.Headers)
+        //     {
+        //         if (parameter.Key.Equals("Content-Length", StringComparison.OrdinalIgnoreCase))
+        //         {
+        //             size = long.Parse(parameter.Value.ToString());
+        //         }
+        //         else if (parameter.Key.Equals("Last-Modified", StringComparison.OrdinalIgnoreCase))
+        //         {
+        //             lastModified = DateTime.Parse(parameter.Value.ToString(), CultureInfo.InvariantCulture);
+        //         }
+        //         else if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
+        //         {
+        //             etag = parameter.Value.ToString().Replace("\"", string.Empty);
+        //         }
+        //         else if (parameter.Key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase))
+        //         {
+        //             contentType = parameter.Value.ToString();
+        //             metaData["Content-Type"] = contentType;
+        //         }
+        //         else if (supportedHeaders.Contains(parameter.Key, StringComparer.OrdinalIgnoreCase))
+        //         {
+        //             metaData[parameter.Key] = parameter.Value.ToString();
+        //         }
+        //         else if (parameter.Key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
+        //         {
+        //             metaData[parameter.Key.Substring("x-amz-meta-".Length)] = parameter.Value.ToString();
+        //         }
+        //     }
+
+        //     return new ObjectStat(objectName, size, lastModified, etag, contentType, metaData);
         }
 
         /// <summary>
@@ -1473,10 +1998,12 @@ namespace Minio
                 {
                     break;
                 }
+
                 for (int i = 0; i < curRead; i++)
                 {
                     result[totalRead + i] = curData[i];
                 }
+
                 totalRead += curRead;
             }
 
@@ -1495,6 +2022,7 @@ namespace Minio
             {
                 truncatedResult[i] = result[i];
             }
+
             return truncatedResult;
         }
 
@@ -1526,6 +2054,107 @@ namespace Minio
                                             .WithHeaders(metadata)
                                             .WithServerSideEncryption(sseDest);
             return this.CopyObjectAsync(args, cancellationToken);
+        // public async Task CopyObjectAsync(string bucketName, string objectName, string destBucketName,   //RestSharp
+        //     string destObjectName = null, CopyConditions copyConditions = null,
+        //     Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null,
+        //     ServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken))
+        // {
+        //     if (bucketName == null)
+        //     {
+        //         throw new ArgumentException("Source bucket name cannot be empty", nameof(bucketName));
+        //     }
+
+        //     if (objectName == null)
+        //     {
+        //         throw new ArgumentException("Source object name cannot be empty", nameof(objectName));
+        //     }
+
+        //     if (destBucketName == null)
+        //     {
+        //         throw new ArgumentException("Destination bucket name cannot be empty", nameof(destBucketName));
+        //     }
+
+        //     // Escape source object path.
+        //     string sourceObjectPath = $"{bucketName}/{utils.UrlEncode(objectName)}";
+
+        //     // Destination object name is optional, if empty default to source object name.
+        //     if (destObjectName == null)
+        //     {
+        //         destObjectName = objectName;
+        //     }
+
+        //     ServerSideEncryption sseGet = sseSrc;
+        //     if (sseSrc is SSECopy sseCpy)
+        //     {
+        //         sseGet = sseCpy.CloneToSSEC();
+        //     }
+
+        //     // Get Stats on the source object
+        //     ObjectStat srcStats = await this
+        //         .StatObjectAsync(bucketName, objectName, sse: sseGet, cancellationToken: cancellationToken)
+        //         .ConfigureAwait(false);
+        //     // Copy metadata from the source object if no metadata replace directive
+        //     var meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        //     Dictionary<string, string> m = metadata;
+        //     if (copyConditions != null && !copyConditions.HasReplaceMetadataDirective())
+        //     {
+        //         m = srcStats.MetaData;
+        //     }
+
+        //     if (m != null)
+        //     {
+        //         foreach (var item in m)
+        //         {
+        //             var key = item.Key;
+        //             if (!supportedHeaders.Contains(key, StringComparer.OrdinalIgnoreCase) &&
+        //                 !key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
+        //             {
+        //                 key = "x-amz-meta-" + key.ToLowerInvariant();
+        //             }
+
+        //             meta[key] = item.Value;
+        //         }
+        //     }
+
+        //     long srcByteRangeSize = 0L;
+
+        //     if (copyConditions != null)
+        //     {
+        //         srcByteRangeSize = copyConditions.GetByteRange();
+        //     }
+
+        //     long copySize = (srcByteRangeSize == 0) ? srcStats.Size : srcByteRangeSize;
+
+        //     if ((srcByteRangeSize > srcStats.Size) ||
+        //         ((srcByteRangeSize > 0) && (copyConditions.byteRangeEnd >= srcStats.Size)))
+        //     {
+        //         throw new ArgumentException("Specified byte range (" + copyConditions.byteRangeStart.ToString() + "-" +
+        //                                     copyConditions.byteRangeEnd.ToString() +
+        //                                     ") does not fit within source object (size=" + srcStats.Size.ToString() +
+        //                                     ")");
+        //     }
+
+        //     if ((copySize > Constants.MaxSingleCopyObjectSize) ||
+        //         (srcByteRangeSize > 0 && (srcByteRangeSize != srcStats.Size)))
+        //     {
+        //         await MultipartCopyUploadAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions,
+        //             copySize, meta, sseSrc, sseDest, cancellationToken).ConfigureAwait(false);
+        //     }
+        //     else
+        //     {
+        //         if (sseSrc != null && sseSrc is SSECopy)
+        //         {
+        //             sseSrc.Marshal(meta);
+        //         }
+
+        //         if (sseDest != null)
+        //         {
+        //             sseDest.Marshal(meta);
+        //         }
+
+        //         await this.CopyObjectRequestAsync(bucketName, objectName, destBucketName, destObjectName,
+        //             copyConditions, meta, null, cancellationToken, typeof(CopyObjectResult)).ConfigureAwait(false);
+        //     }
         }
 
         /// <summary>
@@ -1541,7 +2170,9 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <param name="type">Type of XML serialization to be applied on the server response</param>
         /// <returns></returns>
-        private async Task<object> CopyObjectRequestAsync(string bucketName, string objectName, string destBucketName, string destObjectName, CopyConditions copyConditions, Dictionary<string, string> customHeaders, Dictionary<string, string> queryMap, CancellationToken cancellationToken, Type type)
+        private async Task<object> CopyObjectRequestAsync(string bucketName, string objectName, string destBucketName,
+            string destObjectName, CopyConditions copyConditions, Dictionary<string, string> customHeaders,
+            Dictionary<string, string> queryMap, CancellationToken cancellationToken, Type type)
         {
             // Escape source object path.
             string sourceObjectPath = bucketName + "/" + utils.UrlEncode(objectName);
@@ -1552,49 +2183,50 @@ namespace Minio
                 destObjectName = objectName;
             }
 
-            var request = await this.CreateRequest(Method.PUT, destBucketName,
-                                                   objectName: destObjectName,
-                                                   headerMap: customHeaders)
-                                .ConfigureAwait(false);
+            var requestBuilder = await this.CreateRequest(HttpMethod.Put, destBucketName,
+                    objectName: destObjectName,
+                    headerMap: customHeaders)
+                .ConfigureAwait(false);
             if (queryMap != null)
             {
                 foreach (var query in queryMap)
                 {
-                    request.AddQueryParameter(query.Key,query.Value);
+                    requestBuilder.AddQueryParameter(query.Key, query.Value);
                 }
             }
+
             // Set the object source
-            request.AddHeader("x-amz-copy-source", sourceObjectPath);
+            requestBuilder.AddHeaderParameter("x-amz-copy-source", sourceObjectPath);
 
             // If no conditions available, skip addition else add the conditions to the header
             if (copyConditions != null)
             {
                 foreach (var item in copyConditions.GetConditions())
                 {
-                    request.AddHeader(item.Key, item.Value);
+                    requestBuilder.AddHeaderParameter(item.Key, item.Value);
                 }
             }
 
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestBuilder, cancellationToken)
+                .ConfigureAwait(false);
 
             // Just read the result and parse content.
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-
-            object copyResult = null;
-            using (var stream = new MemoryStream(contentBytes))
+            using (var contentStream = new MemoryStream(response.ContentBytes))
             {
+                object copyResult = null;
                 if (type == typeof(CopyObjectResult))
                 {
-                    copyResult = (CopyObjectResult)new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream);
+                    copyResult =
+                        (CopyObjectResult) new XmlSerializer(typeof(CopyObjectResult)).Deserialize(contentStream);
                 }
 
                 if (type == typeof(CopyPartResult))
                 {
-                    copyResult = (CopyPartResult)new XmlSerializer(typeof(CopyPartResult)).Deserialize(stream);
+                    copyResult = (CopyPartResult) new XmlSerializer(typeof(CopyPartResult)).Deserialize(contentStream);
                 }
-            }
 
-            return copyResult;
+                return copyResult;
+            }
         }
 
         /// <summary>
@@ -1611,7 +2243,10 @@ namespace Minio
         /// <param name="sseDest">optional Server-side encryption options</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
-        private async Task MultipartCopyUploadAsync(string bucketName, string objectName, string destBucketName, string destObjectName, CopyConditions copyConditions, long copySize, Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken))
+        private async Task MultipartCopyUploadAsync(string bucketName, string objectName, string destBucketName,
+            string destObjectName, CopyConditions copyConditions, long copySize,
+            Dictionary<string, string> metadata = null, ServerSideEncryption sseSrc = null,
+            ServerSideEncryption sseDest = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // For all sizes greater than 5GB or if Copy byte range specified in conditions and byte range larger
             // than minimum part size (5 MB) do multipart.
@@ -1620,7 +2255,7 @@ namespace Minio
             double partSize = multiPartInfo.partSize;
             double partCount = multiPartInfo.partCount;
             double lastPartSize = multiPartInfo.lastPartSize;
-            Part[] totalParts = new Part[(int)partCount];
+            Part[] totalParts = new Part[(int) partCount];
 
             var sseHeaders = new Dictionary<string, string>();
             if (sseDest != null)
@@ -1629,7 +2264,9 @@ namespace Minio
             }
 
             // No need to resume upload since this is a Server-side copy. Just initiate a new upload.
-            string uploadId = await this.NewMultipartUploadAsync(destBucketName, destObjectName, metadata, sseHeaders, cancellationToken).ConfigureAwait(false);
+            string uploadId = await this
+                .NewMultipartUploadAsync(destBucketName, destObjectName, metadata, sseHeaders, cancellationToken)
+                .ConfigureAwait(false);
 
             // Upload each part
             double expectedReadSize = partSize;
@@ -1637,39 +2274,47 @@ namespace Minio
             for (partNumber = 1; partNumber <= partCount; partNumber++)
             {
                 CopyConditions partCondition = copyConditions.Clone();
-                partCondition.byteRangeStart = (long)partSize * (partNumber - 1) + partCondition.byteRangeStart;
+                partCondition.byteRangeStart = (long) partSize * (partNumber - 1) + partCondition.byteRangeStart;
                 if (partNumber < partCount)
                 {
-                    partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)partSize - 1;
+                    partCondition.byteRangeEnd = partCondition.byteRangeStart + (long) partSize - 1;
                 }
                 else
                 {
-                    partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)lastPartSize - 1;
+                    partCondition.byteRangeEnd = partCondition.byteRangeStart + (long) lastPartSize - 1;
                 }
 
-                var queryMap = new Dictionary<string,string>();
+                var queryMap = new Dictionary<string, string>();
                 if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
                 {
-                    queryMap.Add("uploadId",uploadId);
-                    queryMap.Add("partNumber",partNumber.ToString());
+                    queryMap.Add("uploadId", uploadId);
+                    queryMap.Add("partNumber", partNumber.ToString());
                 }
 
                 var customHeader = new Dictionary<string, string>
                 {
-                    { "x-amz-copy-source-range", "bytes=" + partCondition.byteRangeStart.ToString() + "-" + partCondition.byteRangeEnd.ToString() }
+                    {
+                        "x-amz-copy-source-range",
+                        "bytes=" + partCondition.byteRangeStart.ToString() + "-" + partCondition.byteRangeEnd.ToString()
+                    }
                 };
 
                 if (sseSrc != null && sseSrc is SSECopy)
                 {
                     sseSrc.Marshal(customHeader);
                 }
+
                 if (sseDest != null)
                 {
                     sseDest.Marshal(customHeader);
                 }
-                CopyPartResult cpPartResult = (CopyPartResult)await this.CopyObjectRequestAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, customHeader, queryMap, cancellationToken, typeof(CopyPartResult)).ConfigureAwait(false);
 
-                totalParts[partNumber - 1] = new Part { PartNumber = partNumber, ETag = cpPartResult.ETag, Size = (long)expectedReadSize };
+                CopyPartResult cpPartResult = (CopyPartResult) await this.CopyObjectRequestAsync(bucketName, objectName,
+                    destBucketName, destObjectName, copyConditions, customHeader, queryMap, cancellationToken,
+                    typeof(CopyPartResult)).ConfigureAwait(false);
+
+                totalParts[partNumber - 1] = new Part
+                    {PartNumber = partNumber, ETag = cpPartResult.ETag, Size = (long) expectedReadSize};
             }
 
             Dictionary<int, string> etags = new Dictionary<int, string>();
@@ -1677,8 +2322,10 @@ namespace Minio
             {
                 etags[partNumber] = totalParts[partNumber - 1].ETag;
             }
+
             // Complete multi part upload
-            await this.CompleteMultipartUploadAsync(destBucketName, destObjectName, uploadId, etags, cancellationToken).ConfigureAwait(false);
+            await this.CompleteMultipartUploadAsync(destBucketName, destObjectName, uploadId, etags, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1702,6 +2349,24 @@ namespace Minio
                                                         .WithRequestDate(reqDate);
 
             return this.PresignedGetObjectAsync(args);
+        // public async Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt,
+        //     Dictionary<string, string> reqParams = null, DateTime? reqDate = null)
+        // {
+        //     if (!utils.IsValidExpiry(expiresInt))
+        //     {
+        //         throw new InvalidExpiryRangeException("expiry range should be between 1 and " +
+        //                                               Constants.DefaultExpiryTime.ToString());
+        //     }
+
+        //     var request = await this.CreateRequest(HttpMethod.Get, bucketName,
+        //             objectName: objectName,
+        //             headerMap: reqParams)
+        //         .ConfigureAwait(false);
+
+        //     var authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region,
+        //         sessionToken: this.SessionToken);
+
+        //     return authenticator.PresignURL(request, expiresInt, Region, this.SessionToken, reqDate);
         }
 
         /// <summary>
@@ -1720,6 +2385,18 @@ namespace Minio
                                                         .WithObject(objectName)
                                                         .WithExpiry(expiresInt);
             return this.PresignedPutObjectAsync(args);
+        //     // if (!utils.IsValidExpiry(expiresInt))  // Rest Sharp
+        //     // {
+        //     //     throw new InvalidExpiryRangeException("expiry range should be between 1 and " +
+        //     //                                           Constants.DefaultExpiryTime.ToString());
+        //     // }
+
+        //     // var request = await this.CreateRequest(HttpMethod.Put, bucketName, objectName: objectName)
+        //     //     .ConfigureAwait(false);
+
+        //     // var authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region,
+        //     //     sessionToken: this.SessionToken);
+        //     // return authenticator.PresignURL(request, expiresInt, Region, this.SessionToken);
         }
 
         /// <summary>
@@ -1734,6 +2411,53 @@ namespace Minio
                                                         .WithObject(policy.Key)
                                                         .WithPolicy(policy);
             return this.PresignedPostPolicyAsync(args);
+            // string region = null;
+
+            // if (!policy.IsBucketSet())
+            // {
+            //     throw new ArgumentException("bucket should be set", nameof(policy));
+            // }
+
+            // if (!policy.IsKeySet())
+            // {
+            //     throw new ArgumentException("key should be set", nameof(policy));
+            // }
+
+            // if (!policy.IsExpirationSet())
+            // {
+            //     throw new ArgumentException("expiration should be set", nameof(policy));
+            // }
+
+            // // Initialize a new client.
+            // if (!BucketRegionCache.Instance.Exists(policy.Bucket))
+            // {
+            //     region = await BucketRegionCache.Instance.Update(this, policy.Bucket).ConfigureAwait(false);
+            // }
+
+            // if (region == null)
+            // {
+            //     region = BucketRegionCache.Instance.Region(policy.Bucket);
+            // }
+
+            // // Set Target URL
+            // Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, bucketName: policy.Bucket,
+            //     region: region, usePathStyle: false);
+            // DateTime signingDate = DateTime.UtcNow;
+
+            // var authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region,
+            //     sessionToken: this.SessionToken);
+
+            // policy.SetAlgorithm("AWS4-HMAC-SHA256");
+            // policy.SetCredential(authenticator.GetCredentialString(signingDate, region));
+            // policy.SetDate(signingDate);
+            // policy.SetSessionToken(this.SessionToken);
+            // string policyBase64 = policy.Base64();
+            // string signature = authenticator.PresignPostSignature(region, signingDate, policyBase64);
+
+            // policy.SetPolicy(policyBase64);
+            // policy.SetSignature(signature);
+
+            // return Tuple.Create(this.uri.AbsoluteUri, policy.GetFormData());
         }
     }
 }

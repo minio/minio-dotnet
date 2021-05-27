@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-using RestSharp;
 
 namespace Minio.Exceptions
 {
     public class ConnectionException : MinioException
     {
-        public ConnectionException(string message, IRestResponse response) : base(message, response)
+        public ConnectionException(string message, ResponseResult response) : base(message, response)
         {
         }
     }
+}
 }

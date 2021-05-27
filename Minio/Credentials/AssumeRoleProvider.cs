@@ -18,7 +18,6 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using RestSharp;
 
 namespace Minio.Credentials
 {
@@ -29,7 +28,7 @@ namespace Minio.Credentials
         internal string AccessKey { get; set; }
         internal string SecretKey { get; set; }
         internal string ContentSHA256 { get; set; }
-        internal RestRequest Request { get; set; }
+        internal HttpRequestMessage Request { get; set; }
         internal string Url { get; set; }
         private readonly uint DefaultDurationInSeconds = 1;
         private readonly string AssumeRole = "AssumeRole";
@@ -86,18 +85,19 @@ namespace Minio.Credentials
             return (T)this;
         }
 
-        internal override async Task<IRestRequest> BuildRequest()
+        internal override async Task<HttpRequestMessageBuilder> BuildRequest()
         {
             this.Action = this.AssumeRole;
             if (this.DurationInSeconds != null && this.DurationInSeconds.Value == 0)
                 this.DurationInSeconds = DefaultDurationInSeconds;
 
-            var restRequest = await base.BuildRequest();
+            var requestMessageBuilder = await base.BuildRequest();
             if (string.IsNullOrWhiteSpace(this.ExternalID))
             {
-                restRequest.AddQueryParameter("ExternalId", this.ExternalID);
+                requestMessageBuilder.AddQueryParameter("ExternalId", this.ExternalID);
             }
             throw new System.NotImplementedException();
         }
     }
+}   }
 }

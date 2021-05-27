@@ -22,7 +22,7 @@ using System.Linq;
 
 using Minio.DataModel;
 using System.IO;
-using RestSharp;
+using System.Net.Http;
 using Minio.Exceptions;
 using Minio.Helper;
 
@@ -122,8 +122,10 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         private async Task getObjectStreamAsync(GetObjectArgs args, ObjectStat objectStat, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
         {
-            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken);
+            HttpRequestMessage request = await this.CreateRequest(args).ConfigureAwait(false);
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+            await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken);
         }
 
 
@@ -142,7 +144,9 @@ namespace Minio
         private async Task<List<DeleteError>> removeObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken)
         {
             var request = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             RemoveObjectsResponse removeObjectsResponse = new RemoveObjectsResponse(response.StatusCode, response.Content);
             return removeObjectsResponse.DeletedObjectsResult.errorList;
         }
