@@ -20,12 +20,12 @@ using System.Xml.Linq;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Xml.Serialization;
 
 using Minio.DataModel;
 using Minio.DataModel.Tags;
 using Minio.DataModel.ObjectLock;
-using RestSharp;
 
 namespace Minio
 {
@@ -58,7 +58,7 @@ namespace Minio
         internal RemoveObjectsResponse(HttpStatusCode statusCode, string responseContent)
                     : base(statusCode, responseContent)
         {
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 this.DeletedObjectsResult = (DeleteObjectsResult)new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(stream);
             }
@@ -72,7 +72,7 @@ namespace Minio
                     : base(statusCode, responseContent)
         {
             ListMultipartUploadsResult uploadsResult = null;
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 uploadsResult = (ListMultipartUploadsResult)new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(stream);
             }
@@ -118,7 +118,7 @@ namespace Minio
                 this.CurrentLegalHoldConfiguration = null;
                 return;
             }
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 CurrentLegalHoldConfiguration = (ObjectLegalHoldConfiguration)new XmlSerializer(typeof(ObjectLegalHoldConfiguration)).Deserialize(stream);
             }
@@ -146,7 +146,7 @@ namespace Minio
                 return;
             }
             responseContent = utils.RemoveNamespaceInXML(responseContent);
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 this.ObjectTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(stream);
             }
@@ -166,7 +166,7 @@ namespace Minio
                 this.CurrentRetentionConfiguration = null;
                 return;
             }
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 CurrentRetentionConfiguration = (ObjectRetentionConfiguration)new XmlSerializer(typeof(ObjectRetentionConfiguration)).Deserialize(stream);
             }
@@ -181,7 +181,7 @@ namespace Minio
         public CopyObjectResponse(HttpStatusCode statusCode, string content, Type reqType)
             : base(statusCode, content)
         {
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(content)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
             {
                 if (reqType == typeof(CopyObjectResult))
                 {
@@ -202,7 +202,7 @@ namespace Minio
                     : base(statusCode, responseContent)
         {
             InitiateMultipartUploadResult newUpload = null;
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult)).Deserialize(stream);
             }
@@ -214,17 +214,23 @@ namespace Minio
     {
         internal string Etag;
 
-        internal PutObjectResponse(HttpStatusCode statusCode, string responseContent, IList<Parameter> responseHeaders)
+        internal PutObjectResponse(HttpStatusCode statusCode, string responseContent, Dictionary<string, string> responseHeaders)
                     : base(statusCode, responseContent)
         {
-            foreach (Parameter parameter in responseHeaders)
+            if (responseHeaders["Etag"] != null)
             {
-                if (parameter.Name.Equals("ETag", StringComparison.OrdinalIgnoreCase))
-                {
-                    this.Etag = parameter.Value.ToString();
-                    return;
-                }
+                this.Etag = responseHeaders["ETag"];
+                return;
             }
+
+            // foreach (Parameter parameter in responseHeaders)
+            // {
+            //     if (parameter.Name.Equals("ETag", StringComparison.OrdinalIgnoreCase))
+            //     {
+            //         this.Etag = parameter.Value.ToString();
+            //         return;
+            //     }
+            // }
         }
 
     }

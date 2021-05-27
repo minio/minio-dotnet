@@ -66,9 +66,9 @@ namespace Minio
 
             foreach (var item in responseHeaders)
             {
-                sb.Append(item.Name);
+                sb.Append(item.Key);
                 sb.Append(": ");
-                sb.AppendLine(item.Value.ToString());
+                sb.AppendLine(item.Value);
             }
 
             sb.AppendLine();

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-using RestSharp;
+using System.Net.Http;
 
 namespace Minio
 {
@@ -23,11 +23,14 @@ namespace Minio
 
         // RequestMethod will be the HTTP Method for request variable which is of type RestRequest.
         // Will be one of the type - HEAD, GET, PUT, DELETE. etc.
-        internal Method RequestMethod { get; set; }
+        internal HttpMethod RequestMethod { get; set; }
 
-        internal virtual RestRequest BuildRequest(RestRequest request)
+        internal virtual HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
         {
-            return request;
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+
+            return requestMessageBuilder;
         }
     }
 }

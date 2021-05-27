@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-using RestSharp;
 
 namespace Minio.Exceptions
 {
     public class ErrorResponseException : MinioException
     {
-        public ErrorResponseException(ErrorResponse errorResponse, IRestResponse serverResponse) :
+        public ErrorResponseException(ErrorResponse errorResponse, ResponseResult serverResponse) :
             base(serverResponse)
         {
             Response = errorResponse;
         }
     }
+}
 }

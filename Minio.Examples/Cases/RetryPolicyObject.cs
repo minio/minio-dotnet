@@ -21,8 +21,6 @@ using Minio.Exceptions;
 
 using Polly;
 
-using RestSharp;
-
 namespace Minio.Examples.Cases
 {
     static class RetryPolicyHelper
@@ -44,17 +42,17 @@ namespace Minio.Examples.Cases
             return result < maxRetryInterval ? result : maxRetryInterval;
         }
 
-        public static PolicyBuilder<IRestResponse> CreatePolicyBuilder()
+        public static PolicyBuilder<ResponseResult> CreatePolicyBuilder()
         {
-            return Policy<IRestResponse>
+            return Policy<ResponseResult>
                 .Handle<ConnectionException>()
                 .Or<InternalClientException>(ex => ex.Message.StartsWith("Unsuccessful response from server"));
         }
 
-        public static AsyncPolicy<IRestResponse> GetDefaultRetryPolicy() =>
+        public static AsyncPolicy<ResponseResult> GetDefaultRetryPolicy() =>
             GetDefaultRetryPolicy(defaultRetryCount, defaultRetryInterval, defaultMaxRetryInterval);
 
-        public static AsyncPolicy<IRestResponse> GetDefaultRetryPolicy(
+        public static AsyncPolicy<ResponseResult> GetDefaultRetryPolicy(
             int retryCount,
             TimeSpan retryInterval,
             TimeSpan maxRetryInterval) =>
@@ -63,12 +61,12 @@ namespace Minio.Examples.Cases
                     retryCount,
                     i => CalcBackoff(i, retryInterval, maxRetryInterval));
 
-        public static RetryPolicyHandlingDelegate AsRetryDelegate(this AsyncPolicy<IRestResponse> policy) =>
+        public static RetryPolicyHandlingDelegate AsRetryDelegate(this AsyncPolicy<ResponseResult> policy) =>
             policy == null
                 ? (RetryPolicyHandlingDelegate)null
                 : async executeCallback => await policy.ExecuteAsync(executeCallback);
 
-        public static MinioClient WithRetryPolicy(this MinioClient client, AsyncPolicy<IRestResponse> policy) =>
+        public static MinioClient WithRetryPolicy(this MinioClient client, AsyncPolicy<ResponseResult> policy) =>
             client.WithRetryPolicy(policy.AsRetryDelegate());
     }
 
@@ -116,5 +114,7 @@ namespace Minio.Examples.Cases
                 minio.WithRetryPolicy(null);
             }
         }
+    }
+}
     }
 }

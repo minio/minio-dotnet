@@ -18,7 +18,6 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using RestSharp;
 using System.Linq;
 using System.Net;
 
@@ -27,7 +26,6 @@ using Minio.Exceptions;
 using Newtonsoft.Json;
 using System.IO;
 using Newtonsoft.Json.Serialization;
-using System.Collections.Generic;
 
 /*
  * IAM roles for Amazon EC2
@@ -99,8 +97,12 @@ namespace Minio.Credentials
         public async Task<AccessCredentials> GetAccessCredentials(Uri url)
         {
             this.Validate();
-            RestRequest request = new RestRequest(url.ToString(), Method.GET);
-            var response = await this.Minio_Client.ExecuteAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), request);
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url.ToString());
+
+            var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, url);
+            requestBuilder.AddQueryParameter("location","");
+
+            var response = await this.Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
             if (string.IsNullOrWhiteSpace(response.Content) ||
                     !HttpStatusCode.OK.Equals(response.StatusCode))
             {
@@ -158,8 +160,13 @@ namespace Minio.Credentials
         {
             this.Validate();
             string[] roleNames = null;
-            RestRequest request = new RestRequest(url.ToString(), Method.GET);
-            var response = await this.Minio_Client.ExecuteAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), request);
+
+            var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, url);
+            requestBuilder.AddQueryParameter("location","");
+
+            var response = await this.Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
+
+
             if (string.IsNullOrWhiteSpace(response.Content) ||
                     !HttpStatusCode.OK.Equals(response.StatusCode))
             {

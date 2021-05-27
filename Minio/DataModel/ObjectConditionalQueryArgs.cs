@@ -15,7 +15,7 @@
  */
 
 using System;
-using RestSharp;
+using System.Net.Http;
 
 namespace Minio
 {
@@ -41,26 +41,28 @@ namespace Minio
             }
         }
 
-        internal override RestRequest BuildRequest(RestRequest request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
         {
-            request = base.BuildRequest(request);
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+
             if (!string.IsNullOrEmpty(this.MatchETag))
             {
-                request.AddOrUpdateParameter("If-Match", this.MatchETag, ParameterType.HttpHeader);
+                requestMessageBuilder.AddHeaderParameter("If-Match", this.MatchETag);
             }
             if (!string.IsNullOrEmpty(this.NotMatchETag))
             {
-                request.AddOrUpdateParameter("If-None-Match", this.NotMatchETag, ParameterType.HttpHeader);
+                requestMessageBuilder.AddHeaderParameter("If-None-Match", this.NotMatchETag);
             }
             if (this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
             {
-                request.AddOrUpdateParameter("If-Modified-Since", utils.To8601String(this.ModifiedSince), ParameterType.HttpHeader);
+                requestMessageBuilder.AddHeaderParameter("If-Modified-Since", utils.To8601String(this.ModifiedSince));
             }
             if(this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
             {
-                request.AddOrUpdateParameter("If-Unmodified-Since", utils.To8601String(this.UnModifiedSince), ParameterType.HttpHeader);
+                requestMessageBuilder.AddHeaderParameter("If-Unmodified-Since", utils.To8601String(this.UnModifiedSince));
             }
-            return request;
+            return requestMessageBuilder;
         }
         public T WithMatchETag(string etag)
         {

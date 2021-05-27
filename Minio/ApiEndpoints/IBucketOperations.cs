@@ -206,7 +206,7 @@ namespace Minio
         /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
         /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        /// <exception cref="MissingObjectLockConfigurationException">When object lock configuration on bucket is not set</exception>
         /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         Task SetObjectLockConfigurationAsync(SetObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken));
@@ -221,7 +221,7 @@ namespace Minio
         /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
-        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        /// <exception cref="MissingObjectLockConfigurationException">When object lock configuration on bucket is not set</exception>
         Task<ObjectLockConfiguration> GetObjectLockConfigurationAsync(GetObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
 
@@ -234,7 +234,7 @@ namespace Minio
         /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
         /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-        /// <exception cref="MissingObjectLockConfiguration">When object lock configuration on bucket is not set</exception>
+        /// <exception cref="MissingObjectLockConfigurationException">When object lock configuration on bucket is not set</exception>
         /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         Task RemoveObjectLockConfigurationAsync(RemoveObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken));
@@ -417,6 +417,7 @@ namespace Minio
         /// <returns>Replication configuration object</returns>
         /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
         /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="MissingBucketReplicationConfigurationException">When bucket replication configuration is not set</exception>
         /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         Task<ReplicationConfiguration> GetBucketReplicationAsync(GetBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken));
@@ -429,6 +430,7 @@ namespace Minio
         /// <returns></returns>
         /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
         /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="MissingBucketReplicationConfigurationException">When bucket replication configuration is not set</exception>
         /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         Task SetBucketReplicationAsync(SetBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken));
@@ -441,6 +443,7 @@ namespace Minio
         /// <returns></returns>
         /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
         /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+        /// <exception cref="MissingBucketReplicationConfigurationException">When bucket replication configuration is not set</exception>
         /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         Task RemoveBucketReplicationAsync(RemoveBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken));

@@ -2347,7 +2347,7 @@ __Parameters__
 |        |  ``InvalidObjectNameException`` : upon invalid object name |
 |        |  ``BucketNotFoundException`` : upon bucket with name not found   |
 |        |  ``ObjectNotFoundException`` : upon object with name not found |
-|        |  ``MissingObjectLockConfiguration`` : upon bucket created with object lock not enabled |
+|        |  ``MissingObjectLockConfigurationException`` : upon bucket created with object lock not enabled |
 |        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
 
 
@@ -2397,7 +2397,7 @@ __Parameters__
 |        |  ``InvalidObjectNameException`` : upon invalid object name |
 |        |  ``BucketNotFoundException`` : upon bucket with name not found  |
 |        |  ``ObjectNotFoundException`` : upon object with name not found |
-|        |  ``MissingObjectLockConfiguration`` : upon bucket created with object lock not enabled |
+|        |  ``MissingObjectLockConfigurationException`` : upon bucket created with object lock not enabled |
 |        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
 
 
@@ -2598,7 +2598,7 @@ __Parameters__
 |        |  ``InvalidObjectNameException`` : upon invalid object name |
 |        |  ``BucketNotFoundException`` : upon bucket with name not found |
 |        |  ``ObjectNotFoundException`` : upon object with name not found |
-|        |  ``MissingObjectLockConfiguration`` : upon bucket created with object lock not enabled |
+|        |  ``MissingObjectLockConfigurationException`` : upon bucket created with object lock not enabled |
 |        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
 
 
@@ -2650,7 +2650,7 @@ __Parameters__
 |        |  ``InvalidObjectNameException`` : upon invalid object name |
 |        |  ``BucketNotFoundException`` : upon bucket with name not found  |
 |        |  ``ObjectNotFoundException`` : upon object with name not found |
-|        |  ``MissingObjectLockConfiguration`` : upon bucket created with object lock not enabled |
+|        |  ``MissingObjectLockConfigurationException`` : upon bucket created with object lock not enabled |
 |        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
 
 
@@ -2699,7 +2699,7 @@ __Parameters__
 |        |  ``InvalidObjectNameException`` : upon invalid object name |
 |        |  ``BucketNotFoundException`` : upon bucket with name not found   |
 |        |  ``ObjectNotFoundException`` : upon object with name not found |
-|        |  ``MissingObjectLockConfiguration`` : upon bucket created with object lock not enabled |
+|        |  ``MissingObjectLockConfigurationException`` : upon bucket created with object lock not enabled |
 |        |  ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
 
 
