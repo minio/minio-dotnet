@@ -524,15 +524,20 @@ namespace Minio.Functional.Tests
             if (!bktExists)
                 return;
             List<Task> taskList = new List<Task>();
-            bool getVersions = true;
+            bool getVersions = false;
             // Get Versioning/Retention Info.
             GetObjectLockConfigurationArgs lockConfigurationArgs = new GetObjectLockConfigurationArgs()
                                                                                         .WithBucket(bucketName);
             ObjectLockConfiguration lockConfig = null;
+            VersioningConfiguration versioningConfig = null;
             try
             {
-                await minio.GetVersioningAsync(new GetVersioningArgs()
+                versioningConfig = await minio.GetVersioningAsync(new GetVersioningArgs()
                                                             .WithBucket(bucketName));
+                if (versioningConfig != null  && (versioningConfig.Status.Contains("Enabled") || versioningConfig.Status.Contains("Suspended")))
+                {
+                    getVersions = true;
+                }
                 lockConfig = await minio.GetObjectLockConfigurationAsync(lockConfigurationArgs);
             }
             catch (MissingObjectLockConfiguration)
@@ -542,7 +547,6 @@ namespace Minio.Functional.Tests
             catch (NotImplementedException)
             {
                 // No throw. Move to the next step without versions.
-                getVersions = false;
             }
             catch(Exception)
             {
@@ -556,7 +560,6 @@ namespace Minio.Functional.Tests
             List<Tuple<string, string>> objectNamesVersions = new List<Tuple<string, string>>();
             List<string> objectNames = new List<string>();
             IObservable<Item> observable = minio.ListObjectsAsync(listObjectsArgs);
-
             IDisposable subscription = observable.Subscribe(
                 (item) =>
                 {
@@ -571,9 +574,7 @@ namespace Minio.Functional.Tests
                     if (objectNamesVersions.Count <= 0 && objectNames.Count <= 0)
                         return;
                 });
-            System.Threading.Thread.Sleep(2000);
-            if (objectNames.Count > 1000)
-                System.Threading.Thread.Sleep(2600);
+            System.Threading.Thread.Sleep(4500);
             if (lockConfig != null && lockConfig.ObjectLockEnabled.Equals(ObjectLockConfiguration.LockEnabled))
             {
                 foreach (var item in objectNamesVersions)
