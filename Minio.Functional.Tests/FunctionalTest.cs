@@ -552,6 +552,7 @@ namespace Minio.Functional.Tests
             {
                 throw;
             }
+
             List<Task> tasks = new List<Task>();
             ListObjectsArgs listObjectsArgs = new ListObjectsArgs()
                                                         .WithBucket(bucketName)
@@ -560,6 +561,8 @@ namespace Minio.Functional.Tests
             List<Tuple<string, string>> objectNamesVersions = new List<Tuple<string, string>>();
             List<string> objectNames = new List<string>();
             IObservable<Item> observable = minio.ListObjectsAsync(listObjectsArgs);
+
+            List<Exception> exceptionList = new List<Exception>();
             IDisposable subscription = observable.Subscribe(
                 (item) =>
                 {
@@ -568,11 +571,16 @@ namespace Minio.Functional.Tests
                     else
                         objectNames.Add(item.Key);
                 },
-                ex => throw ex,
+                ex => {
+                    // Collect all exceptions but the one raised because the bucket is empty
+                    if (ex.GetType().ToString() != "Minio.EmptyBucketOperation") {
+                        exceptionList.Add(ex);
+                        return;
+                    }
+                },
                 () =>
                 {
-                    if (objectNamesVersions.Count <= 0 && objectNames.Count <= 0)
-                        return;
+                    return;
                 });
             System.Threading.Thread.Sleep(4500);
             if (lockConfig != null && lockConfig.ObjectLockEnabled.Equals(ObjectLockConfiguration.LockEnabled))
@@ -617,6 +625,14 @@ namespace Minio.Functional.Tests
                 }
             }
             await Task.WhenAll(tasks);
+            // Show exceptions if any happened during listing
+            if (exceptionList.Count > 0) {
+                Console.WriteLine("The following exception(s) happened during after test cleanup (TearDown)");
+                foreach (var ex in exceptionList) {
+                    Console.WriteLine(ex.ToString());
+                }
+            }
+            subscription.Dispose();
             RemoveBucketArgs rbArgs = new RemoveBucketArgs()
                                                 .WithBucket(bucketName);
             await minio.RemoveBucketAsync(rbArgs);
