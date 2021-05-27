@@ -766,14 +766,20 @@ namespace Minio
                 Parameter legalHold = new Parameter("legal-hold", "", ParameterType.QueryString);
                 if (response.Request.Parameters.Contains(legalHold))
                 {
-                    throw new MissingObjectLockConfiguration(errResponse.BucketName, errResponse.Message);
+                    throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
                 }
             }
 
             if (response.StatusCode.Equals(HttpStatusCode.NotFound)
                 && errResponse.Code.Equals("ObjectLockConfigurationNotFoundError"))
             {
-                throw new MissingObjectLockConfiguration(errResponse.BucketName, errResponse.Message);
+                throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
+            }
+
+            if (response.StatusCode.Equals(HttpStatusCode.NotFound)
+                && errResponse.Code.Equals("ReplicationConfigurationNotFoundError"))
+            {
+                throw new MissingBucketReplicationConfigurationException(errResponse.BucketName, errResponse.Message);
             }
 
             throw new UnexpectedMinioException(errResponse.Message)

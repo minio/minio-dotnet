@@ -540,7 +540,7 @@ namespace Minio.Functional.Tests
                 }
                 lockConfig = await minio.GetObjectLockConfigurationAsync(lockConfigurationArgs);
             }
-            catch (MissingObjectLockConfiguration)
+            catch (MissingObjectLockConfigurationException)
             {
                 // This exception is expected for those buckets created without a lock.
             }
