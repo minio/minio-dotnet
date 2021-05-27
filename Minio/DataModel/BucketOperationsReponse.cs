@@ -27,6 +27,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reactive.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Linq;
@@ -45,7 +46,7 @@ namespace Minio
             {
                 return;
             }
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 this.VersioningConfig = (VersioningConfiguration)new XmlSerializer(typeof(VersioningConfiguration)).Deserialize(stream);
             }
@@ -63,7 +64,7 @@ namespace Minio
             {
                 return;
             }
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 this.BucketsResult = (ListAllMyBucketsResult)new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream);
             }
@@ -180,7 +181,7 @@ namespace Minio
             {
                 return;
             }
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 this.BucketResult = (ListBucketResult)new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream);
             }
@@ -217,7 +218,7 @@ namespace Minio
             {
                 return;
             }
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 this.BucketResult = (ListVersionsResult)new XmlSerializer(typeof(ListVersionsResult)).Deserialize(stream);
             }
@@ -248,7 +249,7 @@ namespace Minio
 
         private async Task Initialize()
         {
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(ResponseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ResponseContent)))
             using (var streamReader = new StreamReader(stream))
             {
                 this.PolicyJsonString =  await streamReader.ReadToEndAsync()
@@ -279,7 +280,7 @@ namespace Minio
                 this.BucketNotificationConfiguration = new BucketNotification();
                 return;
             }
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 this.BucketNotificationConfiguration = (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(stream);
             }
@@ -298,7 +299,7 @@ namespace Minio
                 this.BucketEncryptionConfiguration = null;
                 return;
             }
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 BucketEncryptionConfiguration = (ServerSideEncryptionConfiguration)new XmlSerializer(typeof(ServerSideEncryptionConfiguration)).Deserialize(stream);
             }
@@ -319,7 +320,7 @@ namespace Minio
             }
             // Remove namespace from response content, if present.
             responseContent = utils.RemoveNamespaceInXML(responseContent);
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 this.BucketTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(stream);
             }
@@ -338,7 +339,7 @@ namespace Minio
                 this.LockConfiguration = null;
                 return;
             }
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 this.LockConfiguration = (ObjectLockConfiguration)new XmlSerializer(typeof(ObjectLockConfiguration)).Deserialize(stream);
             }
@@ -359,7 +360,7 @@ namespace Minio
             }
             //Remove xmlns content for config serialization
             responseContent = utils.RemoveNamespaceInXML(responseContent);
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 this.BucketLifecycle = (LifecycleConfiguration)new XmlSerializer(typeof(LifecycleConfiguration)).Deserialize(stream);
             }
@@ -378,7 +379,7 @@ namespace Minio
                 this.Config = null;
                 return;
             }
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 this.Config = (ReplicationConfiguration)new XmlSerializer(typeof(ReplicationConfiguration)).Deserialize(stream);
             }

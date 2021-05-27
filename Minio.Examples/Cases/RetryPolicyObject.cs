@@ -15,13 +15,13 @@
  */
 
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 
-using Minio.Exceptions;
+using Minio;
 
 using Polly;
-
-using RestSharp;
+using Polly.Retry;
 
 namespace Minio.Examples.Cases
 {
@@ -44,17 +44,17 @@ namespace Minio.Examples.Cases
             return result < maxRetryInterval ? result : maxRetryInterval;
         }
 
-        public static PolicyBuilder<IRestResponse> CreatePolicyBuilder()
+        public static PolicyBuilder<HttpResponseMessage> CreatePolicyBuilder()
         {
-            return Policy<IRestResponse>
+            return Policy<HttpResponseMessage>
                 .Handle<ConnectionException>()
                 .Or<InternalClientException>(ex => ex.Message.StartsWith("Unsuccessful response from server"));
         }
 
-        public static AsyncPolicy<IRestResponse> GetDefaultRetryPolicy() =>
+        public static AsyncPolicy<HttpResponseMessage> GetDefaultRetryPolicy() =>
             GetDefaultRetryPolicy(defaultRetryCount, defaultRetryInterval, defaultMaxRetryInterval);
 
-        public static AsyncPolicy<IRestResponse> GetDefaultRetryPolicy(
+        public static AsyncPolicy<HttpResponseMessage> GetDefaultRetryPolicy(
             int retryCount,
             TimeSpan retryInterval,
             TimeSpan maxRetryInterval) =>
@@ -63,12 +63,12 @@ namespace Minio.Examples.Cases
                     retryCount,
                     i => CalcBackoff(i, retryInterval, maxRetryInterval));
 
-        public static RetryPolicyHandlingDelegate AsRetryDelegate(this AsyncPolicy<IRestResponse> policy) =>
+        public static RetryPolicyHandlingDelegate AsRetryDelegate(this AsyncPolicy<HttpResponseMessage> policy) =>
             policy == null
                 ? (RetryPolicyHandlingDelegate)null
                 : async executeCallback => await policy.ExecuteAsync(executeCallback);
 
-        public static MinioClient WithRetryPolicy(this MinioClient client, AsyncPolicy<IRestResponse> policy) =>
+        public static MinioClient WithRetryPolicy(MinioClient client, AsyncPolicy<HttpResponseMessage> policy) =>
             client.WithRetryPolicy(policy.AsRetryDelegate());
     }
 

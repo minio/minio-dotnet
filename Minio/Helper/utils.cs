@@ -16,7 +16,6 @@
 
 using Minio.Exceptions;
 using Minio.Helper;
-using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -27,6 +26,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+
 
 namespace Minio
 {
@@ -949,11 +950,23 @@ namespace Minio
             return url;
         }
 
-        public static IRestRequest GetEmptyRestRequest(IRestRequest request)
+        public static HttpRequestMessageBuilder GetEmptyRestRequest(HttpRequestMessageBuilder requestBuilder)
         {
             string serializedBody = Newtonsoft.Json.JsonConvert.SerializeObject("");
-            request.AddParameter("application/json; charset=utf-8", serializedBody, ParameterType.RequestBody);
-            return request;
+            requestBuilder.AddHeaderParameter("application/json; charset=utf-8", serializedBody);
+            return requestBuilder;
         }
+
+        // Converts an object to a byte array
+        public static byte[] ObjectToByteArray(Object obj)
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            using (var ms = new MemoryStream())
+            {
+                bf.Serialize(ms, obj);
+                return ms.ToArray();
+            }
+        }
+
     }
 }

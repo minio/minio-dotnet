@@ -16,8 +16,9 @@
  */
 
 using System;
-using RestSharp;
 using System.Net;
+using System.Text;
+using System.Net.Http;
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -57,25 +58,29 @@ namespace Minio.Credentials
             this.STSEndpoint = endpoint;
             return (T)this;
         }
-        internal async override Task<IRestRequest> BuildRequest()
+        internal async override Task<HttpRequestMessageBuilder> BuildRequest()
         {
             this.Validate();
             JsonWebToken jwt = this.JWTSupplier();
-            IRestRequest restRequest = await base.BuildRequest();
-            restRequest = utils.GetEmptyRestRequest(restRequest);
-            restRequest.AddQueryParameter("WebIdentityToken", jwt.AccessToken);
+            HttpRequestMessageBuilder requestMessageBuilder = await base.BuildRequest();
+            requestMessageBuilder = utils.GetEmptyRestRequest(requestMessageBuilder);
+            requestMessageBuilder.AddQueryParameter("WebIdentityToken", jwt.AccessToken);
             await Task.Yield();
-            return restRequest;
+            return requestMessageBuilder;
         }
 
-        internal override AccessCredentials ParseResponse(IRestResponse response)
+        internal override AccessCredentials ParseResponse(HttpResponseMessage response)
         {
             this.Validate();
-            if (string.IsNullOrWhiteSpace(response.Content) || !HttpStatusCode.OK.Equals(response.StatusCode))
+            // Stream receiveStream = response.Content.ReadAsStreamAsync();
+            // StreamReader readStream = new StreamReader (receiveStream, Encoding.UTF8);
+            // txtBlock.Text = readStream.ReadToEnd();
+            if (string.IsNullOrWhiteSpace(Convert.ToString(response.Content)) ||
+                !HttpStatusCode.OK.Equals(response.StatusCode))
             {
                 throw new ArgumentNullException("Unable to get credentials. Response error.");
             }
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(response.Content)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(Convert.ToString(response.Content))))
             {
                 return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(stream);
             }

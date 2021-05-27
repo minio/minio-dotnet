@@ -16,9 +16,10 @@
 
 using Minio.Exceptions;
 using Minio.Helper;
-using RestSharp;
+using System.Net.Http;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Minio
@@ -148,7 +149,7 @@ namespace Minio
             return true;
         }
 
-        internal static RestRequest CreateRequest(string baseURL, RestSharp.Method method, RestSharp.Authenticators.IAuthenticator authenticator,
+        internal static HttpRequestMessage CreateRequest(string baseURL, HttpMethod method, V4Authenticator authenticator,
                         string bucketName = null, bool secure=false, string objectName = null,
                         Dictionary<string, string> headerMap = null,
                         string contentType = "application/octet-stream",
@@ -169,7 +170,7 @@ namespace Minio
             {
                 if (s3utils.IsAmazonEndPoint(baseURL))
                 {
-                    if (method == RestSharp.Method.PUT && objectName == null && resourcePath == null)
+                    if (method == HttpMethod.Put && objectName == null && resourcePath == null)
                     {
                         // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
                         usePathStyle = true;
@@ -184,7 +185,7 @@ namespace Minio
                         // use path style where '.' in bucketName causes SSL certificate validation error
                         usePathStyle = true;
                     }
-                    else if ( method == RestSharp.Method.HEAD && secure )
+                    else if ( method == HttpMethod.Head && secure )
                     {
                         usePathStyle = true;
                     }
@@ -210,21 +211,23 @@ namespace Minio
                 resource += resourcePath;
             }
 
-            RestRequest request = new RestRequest(resource, method);
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(method, resource);
 
             if (body != null)
             {
-                request.AddParameter(contentType, body, RestSharp.ParameterType.RequestBody);
+                // requestMessageBuilder.Request.Content.Headers.Add("content-type", contentType);
+                requestMessageBuilder.Request.Content = new StringContent(
+                        Convert.ToString(body), Encoding.UTF8, contentType);
             }
 
             if (headerMap != null)
             {
                 foreach (var entry in headerMap)
                 {
-                    request.AddHeader(entry.Key, entry.Value);
+                    requestMessageBuilder.AddHeaderParameter(entry.Key, entry.Value);
                 }
             }
-            return request;
+            return requestMessageBuilder.Request;
         }
     }
 }

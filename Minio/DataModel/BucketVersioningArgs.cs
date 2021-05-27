@@ -16,7 +16,11 @@
 
 using Minio.DataModel;
 using Minio.Exceptions;
-using RestSharp;
+using System;
+using System.Text;
+using System.Net.Http;
+using System.Xml.Serialization;
+
 
 namespace Minio
 {
@@ -24,13 +28,16 @@ namespace Minio
     {
         public GetVersioningArgs()
         {
-            this.RequestMethod = Method.GET;
+            this.RequestMethod = HttpMethod.Get;
         }
 
-        internal override RestRequest BuildRequest(RestRequest req)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
         {
-            req.AddQueryParameter("versioning","");
-            return req;
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+
+            requestMessageBuilder.AddQueryParameter("versioning","");
+            return requestMessageBuilder;
         }
     }
 
@@ -45,7 +52,7 @@ namespace Minio
         }
         public SetVersioningArgs()
         {
-            this.RequestMethod = Method.PUT;
+            this.RequestMethod = HttpMethod.Put;
             this.CurrentVersioningStatus = VersioningStatus.Off;
         }
         internal override void Validate()
@@ -69,16 +76,27 @@ namespace Minio
             return this;
         }
 
-        internal override RestRequest BuildRequest(RestRequest req)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
         {
+            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
+                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+
             VersioningConfiguration config = new VersioningConfiguration((this.CurrentVersioningStatus == VersioningStatus.Enabled));
-            req.XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer();
-            req.XmlSerializer.Namespace = "http://s3.amazonaws.com/doc/2006-03-01/";
-            req.XmlSerializer.ContentType = "application/xml";
-            string body = utils.MarshalXML(config, req.XmlSerializer.Namespace);
-            req.AddQueryParameter("versioning","");
-            req.AddParameter("text/xml", body, ParameterType.RequestBody);
-            return req;
+            XmlSerializer serializer = new XmlSerializer(typeof(HttpContent));
+
+            // requestMessageBuilder.XmlSerializer.Namespace = "http://s3.amazonaws.com/doc/2006-03-01/";
+            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+            ns.Add("xmlns", "http://s3.amazonaws.com/doc/2006-03-01/");
+
+            // requestMessageBuilder.XmlSerializer.ContentType = "application/xml";
+
+            string body = utils.MarshalXML(config, Convert.ToString(ns));
+            requestMessageBuilder.AddQueryParameter("versioning","");
+
+            requestMessageBuilder.Request.Content = new StringContent(
+                        Convert.ToString(body), Encoding.UTF8, "application/xml");
+
+            return requestMessageBuilder;
         }
     }
 }

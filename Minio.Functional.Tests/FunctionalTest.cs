@@ -15,13 +15,6 @@
 * limitations under the License.
 */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minio.DataModel;
-using Minio.DataModel.ILM;
-using Minio.DataModel.Tags;
-using Minio.DataModel.ObjectLock;
-using Minio.Exceptions;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,9 +22,18 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Minio.DataModel;
+using Minio.DataModel.ILM;
+using Minio.DataModel.Tags;
+using Minio.DataModel.ObjectLock;
+using Minio.Exceptions;
+using Newtonsoft.Json;
 
 namespace Minio.Functional.Tests
 {
@@ -3843,6 +3845,16 @@ namespace Minio.Functional.Tests
                         Assert.IsTrue(notification.Records[0].eventName.Contains("s3:ObjectCreated:Put"));
                         Assert.IsTrue(objectName.Contains(System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key)));
                         Assert.IsTrue(contentType.Contains(notification.Records[0].s3.objectMeta.contentType));
+                        // Assert.AreEqual("s3:ObjectCreated:Put", notification.Records[0].eventName);  // RestSharp
+                        // if (notification.Records[0].s3.bucketMeta != null)
+                        // {
+                        //     // todo s3 is null, how to complete this test.
+                        //     Assert.AreEqual(bucketName, notification.Records[0].s3.bucketMeta.name);
+                        // }
+                        // Assert.AreEqual(objectName, System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key));
+                        // Assert.AreEqual(contentType, notification.Records[0].s3.objectMeta.contentType);
+                        // Console.WriteLine("PASSED");
+                        // testOutcome = TestStatus.PASS;
                         break;
                     } else {
                         Console.WriteLine($"ListenBucketNotificationsAsync: waiting for notification (t={attempt})");
@@ -3896,7 +3908,7 @@ namespace Minio.Functional.Tests
                 csvString.AppendLine("Employee1,,1000");
                 csvString.AppendLine("Employee5,Employee1,500");
                 csvString.AppendLine("Employee2,Employee1,800");
-                var csvBytes = System.Text.Encoding.UTF8.GetBytes(csvString.ToString());
+                var csvBytes = Encoding.UTF8.GetBytes(csvString.ToString());
                 using (var stream = new MemoryStream(csvBytes))
                 {
                     PutObjectArgs putObjectArgs = new PutObjectArgs()
@@ -3935,16 +3947,16 @@ namespace Minio.Functional.Tests
                                                                 .WithOutputSerialization(outputSerialization);
                 var resp = await  minio.SelectObjectContentAsync(selArgs).ConfigureAwait(false);
                 var output = await new StreamReader(resp.Payload).ReadToEndAsync();
-                var csvStringNoWS = System.Text.RegularExpressions.Regex.Replace(csvString.ToString(), @"\s+", "");
-                var outputNoWS = System.Text.RegularExpressions.Regex.Replace(output, @"\s+", "");
+                var csvStringNoWS = Regex.Replace(csvString.ToString(), @"\s+", "");
+                var outputNoWS = Regex.Replace(output, @"\s+", "");
                 // Compute MD5 for a better result.
                 var hashedOutputBytes = System.Security.Cryptography.MD5
                                                                 .Create()
-                                                                .ComputeHash(System.Text.Encoding.UTF8.GetBytes(outputNoWS));
+                                                                .ComputeHash(Encoding.UTF8.GetBytes(outputNoWS));
                 var outputMd5 = Convert.ToBase64String(hashedOutputBytes);
                 var hashedCSVBytes = System.Security.Cryptography.MD5
                                                                 .Create()
-                                                                .ComputeHash(System.Text.Encoding.UTF8.GetBytes(csvStringNoWS));
+                                                                .ComputeHash(Encoding.UTF8.GetBytes(csvStringNoWS));
                 var csvMd5 = Convert.ToBase64String(hashedCSVBytes);
 
                 Assert.IsTrue(csvMd5.Contains(outputMd5));
@@ -4473,6 +4485,10 @@ namespace Minio.Functional.Tests
             }
             finally
             {
+                // var resp = await  minio.SelectObjectContentAsync(bucketName, objectName, opts);  // RestSharp
+                // var output = await new StreamReader(resp.Payload).ReadToEndAsync();
+                // Assert.AreEqual(ReplaceNewline(output), ReplaceNewline(csvString.ToString()));
+                // await minio.RemoveObjectAsync(bucketName, objectName);
                 await TearDown(minio, bucketName);
             }
         }
@@ -4614,6 +4630,16 @@ namespace Minio.Functional.Tests
                 System.Threading.Thread.Sleep(1500);
                 await TearDown(minio, bucketName);
             }
+        }
+
+
+        private static string ReplaceNewline(string text)
+        {
+            if (text.Contains(Environment.NewLine))
+            {
+                return text;
+            }
+            return text.Replace("\n", Environment.NewLine);
         }
 
         #endregion

@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 using Minio.Exceptions;
-
 using System;
 using System.Collections.Generic;
-
 using System.IO;
 using System.Xml.Serialization;
 using System.Text;
