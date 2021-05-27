@@ -56,19 +56,32 @@ namespace SimpleTest
             }
 
             //Supply a new bucket name
+            string bucketName = "mynewbucket";
+            if (isBucketExists(minio, bucketName))
+            {
+                RemoveBucketArgs remBuckArgs = new Minio.RemoveBucketArgs()
+                                                    .WithBucket(bucketName);
+                var removeBucketTask = minio.RemoveBucketAsync(remBuckArgs);
+                Task.WaitAll(removeBucketTask);
+            }
+
             MakeBucketArgs mkBktArgs = new MakeBucketArgs()
-                                                .WithBucket("mynewbucket");
+                                                .WithBucket(bucketName);
             Task.WaitAll(minio.MakeBucketAsync(mkBktArgs));
 
+            bool found = isBucketExists(minio, bucketName);
+            Console.WriteLine("Bucket exists? = " + found);
+            Console.ReadLine();
+        }
+
+        private static bool isBucketExists(MinioClient minio,
+                                                string bucketName)
+        {
             BucketExistsArgs bktExistsArgs = new BucketExistsArgs()
-                                                        .WithBucket("mynewbucket");
+                                                        .WithBucket(bucketName);
             var bucketExistTask = minio.BucketExistsAsync(bktExistsArgs);
             Task.WaitAll(bucketExistTask);
-            var found = bucketExistTask.Result;
-            Console.WriteLine("Bucket exists: " + found);
-            // Added for Windows folks. Without it, the window, tests
-            // run in, dissappears as soon as the test code completes.
-            Console.ReadLine();
+            return bucketExistTask.Result;
         }
 
         private static bool HandleBatchExceptions(Exception exceptionToHandle)

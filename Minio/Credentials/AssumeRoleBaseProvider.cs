@@ -19,10 +19,11 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using System.Collections.Generic;
-using RestSharp;
+using System.Net.Http;
 
 using Minio.DataModel;
 
@@ -30,7 +31,7 @@ namespace Minio.Credentials
 {
     // Assume-role credential provider
     public abstract class AssumeRoleBaseProvider<T> : ClientProvider
-                                where T: AssumeRoleBaseProvider<T>
+                                where T : AssumeRoleBaseProvider<T>
     {
         internal AccessCredentials Credentials { get; set; }
         internal MinioClient Client { get; set; }
@@ -39,7 +40,7 @@ namespace Minio.Credentials
         internal uint? DurationInSeconds { get; set; }
         internal string Region { get; set; }
         internal string RoleSessionName { get; set; }
-        internal string Policy{ get; set; }
+        internal string Policy { get; set; }
         internal string RoleARN { get; set; }
         internal string ExternalID { get; set; }
 
@@ -61,7 +62,7 @@ namespace Minio.Credentials
 
         public T WithRegion(string region)
         {
-            this.Region = (!string.IsNullOrWhiteSpace(region))? region : "";
+            this.Region = (!string.IsNullOrWhiteSpace(region)) ? region : "";
             return (T)this;
         }
 
@@ -103,33 +104,29 @@ namespace Minio.Credentials
             return (T)this;
         }
 
-        internal async virtual Task<IRestRequest> BuildRequest()
+        internal async virtual Task<HttpRequestMessageBuilder> BuildRequest()
         {
-            IRestRequest restRequest = null;
-            if (Client != null)
-            {
-                restRequest = await Client.CreateRequest(Method.POST);
-            }
-            else
+            HttpRequestMessageBuilder reqBuilder = null;
+            if (Client == null)
             {
                 throw new InvalidOperationException("MinioClient is not set in AssumeRoleBaseProvider");
             }
-            restRequest = restRequest.AddQueryParameter("Action", this.Action)
-                                     .AddQueryParameter("Version", "2011-06-15");
+            reqBuilder = await Client.CreateRequest(HttpMethod.Post);
+            reqBuilder.AddQueryParameter("Version", "2011-06-15");
             if (!string.IsNullOrWhiteSpace(this.Policy))
             {
-                restRequest = restRequest.AddQueryParameter("Policy", this.Policy);
+                reqBuilder.AddQueryParameter("Policy", this.Policy);
             }
             if (!string.IsNullOrWhiteSpace(this.RoleARN))
             {
-                restRequest = restRequest.AddQueryParameter("RoleArn", this.RoleARN);
+                reqBuilder.AddQueryParameter("RoleArn", this.RoleARN);
             }
             if (!string.IsNullOrWhiteSpace(this.RoleSessionName))
             {
-                restRequest = restRequest.AddQueryParameter("RoleSessionName", this.RoleARN);
+                reqBuilder.AddQueryParameter("RoleSessionName", this.RoleARN);
             }
 
-            return restRequest;
+            return reqBuilder;
         }
 
         public async override Task<AccessCredentials> GetCredentialsAsync()
@@ -139,13 +136,13 @@ namespace Minio.Credentials
                 return this.Credentials;
             }
 
-            var request = await this.BuildRequest();
+            var requestBuilder = await this.BuildRequest();
             if (this.Client != null)
             {
-                IRestResponse restResponse = null;
+                ResponseResult responseMessage = null;
                 try
                 {
-                    restResponse = await Client.ExecuteAsync(this.NoErrorHandlers, request);
+                    responseMessage = await Client.ExecuteTaskAsync(this.NoErrorHandlers, requestBuilder);
                 }
                 catch (Exception)
                 {
@@ -155,13 +152,13 @@ namespace Minio.Credentials
             return null;
         }
 
-        internal virtual AccessCredentials ParseResponse(IRestResponse response)
+        internal virtual AccessCredentials ParseResponse(HttpResponseMessage response)
         {
-            if (string.IsNullOrEmpty(response.Content) || !HttpStatusCode.OK.Equals(response.StatusCode))
+            if (string.IsNullOrEmpty(Convert.ToString(response.Content)) || !HttpStatusCode.OK.Equals(response.StatusCode))
             {
                 throw new ArgumentNullException("Unable to generate credentials. Response error.");
             }
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(response.Content)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(Convert.ToString(response.Content))))
             {
                 return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(stream);
             }

@@ -3,6 +3,7 @@ using Minio.DataModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace Minio.Tests
 {
@@ -19,7 +20,7 @@ namespace Minio.Tests
 
             try
             {
-                var contentBytes = System.Text.Encoding.UTF8.GetBytes(notificationString);
+                var contentBytes = Encoding.UTF8.GetBytes(notificationString);
                 using (var stream = new MemoryStream(contentBytes))
                 {
                     BucketNotification notification = (BucketNotification)(new System.Xml.Serialization.XmlSerializer(typeof(BucketNotification)).Deserialize(stream));

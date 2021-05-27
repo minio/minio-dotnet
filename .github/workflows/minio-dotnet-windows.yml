@@ -2,57 +2,50 @@ name: Minio-dotnet Windows Tests
 
 on:
   push:
-    branches: 
-    - master
+    branches:
+      - master
   pull_request:
-    branches: 
-    - master
+    branches:
+      - master
 
 jobs:
-
   build:
-
     strategy:
       matrix:
-        configuration: [ Release ]
+        configuration: [Release]
 
     runs-on: windows-latest
     env:
       Solution_Name: Minio.sln
-      Test_Project_Path: ./Minio.Tests/Minio.Tests.csproj -f netcoreapp2.1
+      Test_Project_Path: ./Minio.Tests/Minio.Tests.csproj
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-    # Install the .NET Core workload
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 2.1.810
+      # Install the .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.402
 
-    # Add  MSBuild to the PATH:
-    - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1.0.2
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          dotnet clean ./Minio.sln --configuration Release && dotnet nuget locals all --clear
+          dotnet restore
 
-    # Install dependencies
-    - name: Install dependencies
-      run: |
-        dotnet clean ./Minio.sln --configuration Release && dotnet nuget locals all --clear
-        dotnet restore
+      # Build and Execute build tests
+      - name: Build & Unit Test
+        run: |
+          dotnet build --configuration Release --no-restore
+          dotnet pack ./Minio/Minio.csproj --no-build --configuration Release -output ./artifacts
+          dotnet test ./Minio.Tests/Minio.Tests.csproj
 
-    # Build and Execute Build tests
-    - name: Build & Unit Test
-      run: |
-        dotnet build -c Release
-        dotnet pack ./Minio/Minio.csproj --no-build -c Release -o ./artifacts
-        dotnet test ./Minio.Tests/Minio.Tests.csproj -f netcoreapp2.1
-
-    # Execute all functional tests in the solution
-    - name: Execute Functional tests
-      run: |
-        dotnet build  Minio.Functional.Tests -c Release --framework netcoreapp2.1
-        dotnet Minio.Functional.Tests/bin/Release/netcoreapp2.1/Minio.Functional.Tests.dll
-
+      # Execute all functional tests in the solution
+      - name: Execute Functional Tests
+        run: |
+          dotnet build  Minio.Functional.Tests --configuration Release
+          dotnet Minio.Functional.Tests/bin/Release/net5.0/Minio.Functional.Tests.dll

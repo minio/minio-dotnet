@@ -15,13 +15,15 @@
  */
 
 using System.Collections.Generic;
+using System;
 
 namespace Minio
 {
-    public abstract class BucketArgs<T> : Args 
+    public abstract class BucketArgs<T> : Args
                 where T : BucketArgs<T>
     {
         internal string BucketName { get; set; }
+
         internal Dictionary<string, string> Headers { get; set; }
 
         public BucketArgs()
@@ -44,6 +46,8 @@ namespace Minio
             this.Headers = this.Headers ?? new Dictionary<string, string>();
             foreach (string key in headers.Keys)
             {
+                if (this.Headers.ContainsKey(key))
+                    this.Headers.Remove(key);
                 this.Headers[key] = headers[key];
             }
             return (T)this;

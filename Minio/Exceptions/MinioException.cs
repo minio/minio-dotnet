@@ -17,14 +17,12 @@
 
 using System;
 
-using RestSharp;
-
 namespace Minio.Exceptions
 {
     [Serializable]
     public class MinioException : Exception
     {
-        private static string GetMessage(string message, IRestResponse serverResponse)
+        private static string GetMessage(string message, ResponseResult serverResponse)
         {
             if (serverResponse == null && string.IsNullOrEmpty(message))
                 throw new ArgumentNullException(nameof(message));
@@ -32,13 +30,16 @@ namespace Minio.Exceptions
             if (serverResponse == null)
                 return $"MinIO API responded with message={message}";
 
-            if (message == null)
-                return $"MinIO API responded with status code={serverResponse.StatusCode}, response={serverResponse.ErrorMessage}, content={serverResponse.Content}";
+            var contentString = serverResponse.Content;
 
-            return $"MinIO API responded with message={message}. Status code={serverResponse.StatusCode}, response={serverResponse.ErrorMessage}, content={serverResponse.Content}";
+            if (message == null)
+                return $"MinIO API responded with status code={serverResponse.StatusCode}, response={serverResponse.ErrorMessage}, content={contentString}";
+
+            return
+                $"MinIO API responded with message={message}. Status code={serverResponse.StatusCode}, response={serverResponse.ErrorMessage}, content={contentString}";
         }
 
-        public MinioException(IRestResponse serverResponse)
+        public MinioException(ResponseResult serverResponse)
             : this(null, serverResponse)
         {
         }
@@ -48,7 +49,7 @@ namespace Minio.Exceptions
         {
         }
 
-        public MinioException(string message, IRestResponse serverResponse)
+        public MinioException(string message, ResponseResult serverResponse)
             : base(GetMessage(message, serverResponse))
         {
             this.ServerMessage = message;
@@ -58,7 +59,7 @@ namespace Minio.Exceptions
 
         public string ServerMessage { get; }
 
-        public IRestResponse ServerResponse { get; }
+        public ResponseResult ServerResponse { get; }
 
         public ErrorResponse Response { get; internal set; }
 

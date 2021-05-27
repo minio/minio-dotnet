@@ -28,10 +28,10 @@ namespace Minio.DataModel
     public class SelectObjectOptions
     {
         [XmlIgnore]
-        public  ServerSideEncryption SSE{ get; set; }
-        
+        public ServerSideEncryption SSE { get; set; }
+
         public String Expression { get; set; }
-        
+
         [XmlElement("ExpressionType")]
         public QueryExpressionType ExpressionType { get; set; }
         public SelectObjectInputSerialization InputSerialization { get; set; }
@@ -79,7 +79,6 @@ namespace Minio.DataModel
                     xw.Close();
                 }
             }
-            Console.WriteLine(str);
             return str;
         }
     }

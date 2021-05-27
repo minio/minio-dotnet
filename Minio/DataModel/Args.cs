@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-using RestSharp;
+using System.Net.Http;
 
 namespace Minio
 {
     public abstract class Args
     {
 
-        // RequestMethod will be the HTTP Method for request variable which is of type RestRequest.
-        // Will be one of the type - HEAD, GET, PUT, DELETE. etc.
-        internal Method RequestMethod { get; set; }
+        // RequestMethod will be the HTTP Method for request variable,
+        // which is of type HttpRequestMessage.
+        // Will be one of the types: - HEAD, GET, PUT, DELETE. etc.
+        internal HttpMethod RequestMethod { get; set; }
 
-        internal virtual RestRequest BuildRequest(RestRequest request)
+        internal virtual HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            return request;
+            return requestMessageBuilder;
         }
     }
 }

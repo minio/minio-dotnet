@@ -18,16 +18,23 @@ using Minio;
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace FileUploader
 {
     /// <summary>
-    /// This example creates a new bucket if it does not already exist, and uploads a file
-    /// to the bucket.
+    /// This example creates a new bucket if it does not already exist, and
+    /// uploads a file to the bucket. The file name is chosen to be
+    /// "C:\\Users\\vagrant\\Downloads\\golden_oldies.mp3"
+    /// Either create a file with this name or change it with your own file,
+    /// where it is defined down below.
     /// </summary>
     public class FileUpload
     {
-        static void Main()
+        private static bool IsWindows() =>
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+        static void Main(string[] args)
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                                  | SecurityProtocolType.Tls11
@@ -49,9 +56,10 @@ namespace FileUploader
             {
                 Console.WriteLine(ex.Message);
             }
-            // Added for Windows folks. Without it, the window, tests
-            // run in, dissappears as soon as the test code completes.
-            Console.ReadLine();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Console.ReadLine();
+            }
         }
 
         /// <summary>
@@ -89,7 +97,7 @@ namespace FileUploader
                                                         .WithFileName(filePath)
                                                         .WithContentType(contentType);
                 await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
-                Console.WriteLine("Successfully uploaded " + objectName);
+                Console.WriteLine($"\nSuccessfully uploaded {objectName}\n");
             }
             catch (Exception e)
             {

@@ -37,7 +37,7 @@ namespace Minio.Examples.Cases
                     Console.WriteLine($"Object lock configuration on bucket {bucketName} is : " + config.ObjectLockEnabled);
                     if (config.Rule != null && config.Rule.DefaultRetention != null)
                     {
-                        string mode = (config.Rule.DefaultRetention.Mode == RetentionMode.GOVERNANCE)? "GOVERNANCE" : "COMPLIANCE";
+                        string mode = (config.Rule.DefaultRetention.Mode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE";
                         Console.WriteLine("Object Lock Configuration Rule Mode: " + mode + " Duration: " + config.Rule.DefaultRetention.Days + " days.");
                     }
                     Console.WriteLine();

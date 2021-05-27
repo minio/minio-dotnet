@@ -16,9 +16,11 @@
 
 using Minio.Exceptions;
 using Minio.Helper;
-using RestSharp;
+using System.Net.Http;
 using System;
 using System.Collections.Generic;
+using System.Web;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Minio
@@ -58,19 +60,22 @@ namespace Minio
             {
                 // Fetch new host based on the bucket location.
                 host = AWSS3Endpoints.Instance.Endpoint(region);
-                if (!usePathStyle)
-                {
-                    string prefix = (bucketName != null) ? utils.UrlEncode(bucketName) + "." : "";
-                    host = prefix + utils.UrlEncode(host) + "/";
-                }
             }
-            Uri uri = TryCreateUri(host, secure);
+            if (!usePathStyle)
+            {
+                string suffix = (bucketName != null) ? bucketName + "/" : "";
+                host = host + "/" + suffix;
+            }
+
+            var scheme = secure ? "https" : "http";
+            string endpointURL = string.Format("{0}://{1}", scheme, host);
+            Uri uri = new Uri(endpointURL, UriKind.Absolute);
             return uri;
         }
 
         internal static Uri TryCreateUri(string endpoint, bool secure)
         {
-            var scheme = secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
+            var scheme = secure ? HttpUtility.UrlEncode("https") : HttpUtility.UrlEncode("http");
 
             // This is the actual url pointed to for all HTTP requests
             string endpointURL = string.Format("{0}://{1}", scheme, endpoint);
@@ -148,83 +153,5 @@ namespace Minio
             return true;
         }
 
-        internal static RestRequest CreateRequest(string baseURL, RestSharp.Method method, RestSharp.Authenticators.IAuthenticator authenticator,
-                        string bucketName = null, bool secure=false, string objectName = null,
-                        Dictionary<string, string> headerMap = null,
-                        string contentType = "application/octet-stream",
-                        object body = null, string resourcePath = null)
-        {
-            utils.ValidateBucketName(bucketName);
-            if (objectName != null)
-            {
-                utils.ValidateObjectName(objectName);
-            }
-
-            // Start with user specified endpoint
-            string host = baseURL;
-
-            string resource = string.Empty;
-            bool usePathStyle = false;
-            if (bucketName != null)
-            {
-                if (s3utils.IsAmazonEndPoint(baseURL))
-                {
-                    if (method == RestSharp.Method.PUT && objectName == null && resourcePath == null)
-                    {
-                        // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
-                        usePathStyle = true;
-                    }
-                    else if (resourcePath != null && resourcePath.Contains("location"))
-                    {
-                        // use path style for location query
-                        usePathStyle = true;
-                    }
-                    else if (bucketName != null && bucketName.Contains(".") && secure)
-                    {
-                        // use path style where '.' in bucketName causes SSL certificate validation error
-                        usePathStyle = true;
-                    }
-                    else if ( method == RestSharp.Method.HEAD && secure )
-                    {
-                        usePathStyle = true;
-                    }
-
-                    if (usePathStyle)
-                    {
-                        resource += utils.UrlEncode(bucketName) + "/";
-                    }
-                }
-                else
-                {
-                    resource += utils.UrlEncode(bucketName) + "/";
-                }
-            }
-            if (objectName != null)
-            {
-                resource += utils.EncodePath(objectName);
-            }
-
-            // Append query string passed in
-            if (resourcePath != null)
-            {
-                resource += resourcePath;
-            }
-
-            RestRequest request = new RestRequest(resource, method);
-
-            if (body != null)
-            {
-                request.AddParameter(contentType, body, RestSharp.ParameterType.RequestBody);
-            }
-
-            if (headerMap != null)
-            {
-                foreach (var entry in headerMap)
-                {
-                    request.AddHeader(entry.Key, entry.Value);
-                }
-            }
-            return request;
-        }
     }
 }

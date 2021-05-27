@@ -15,13 +15,11 @@
  */
 
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
-
 using Minio.Exceptions;
 
 using Polly;
-
-using RestSharp;
 
 namespace Minio.Examples.Cases
 {
@@ -30,7 +28,6 @@ namespace Minio.Examples.Cases
         private const int defaultRetryCount = 3;
         private static readonly TimeSpan defaultRetryInterval = TimeSpan.FromMilliseconds(200);
         private static readonly TimeSpan defaultMaxRetryInterval = TimeSpan.FromSeconds(10);
-
         // exponential backoff with jitter, truncated by max retry interval
         public static TimeSpan CalcBackoff(int retryAttempt, TimeSpan retryInterval, TimeSpan maxRetryInterval)
         {
@@ -44,17 +41,17 @@ namespace Minio.Examples.Cases
             return result < maxRetryInterval ? result : maxRetryInterval;
         }
 
-        public static PolicyBuilder<IRestResponse> CreatePolicyBuilder()
+        public static PolicyBuilder<ResponseResult> CreatePolicyBuilder()
         {
-            return Policy<IRestResponse>
+            return Policy<ResponseResult>
                 .Handle<ConnectionException>()
                 .Or<InternalClientException>(ex => ex.Message.StartsWith("Unsuccessful response from server"));
         }
 
-        public static AsyncPolicy<IRestResponse> GetDefaultRetryPolicy() =>
+        public static AsyncPolicy<ResponseResult> GetDefaultRetryPolicy() =>
             GetDefaultRetryPolicy(defaultRetryCount, defaultRetryInterval, defaultMaxRetryInterval);
 
-        public static AsyncPolicy<IRestResponse> GetDefaultRetryPolicy(
+        public static AsyncPolicy<ResponseResult> GetDefaultRetryPolicy(
             int retryCount,
             TimeSpan retryInterval,
             TimeSpan maxRetryInterval) =>
@@ -63,12 +60,12 @@ namespace Minio.Examples.Cases
                     retryCount,
                     i => CalcBackoff(i, retryInterval, maxRetryInterval));
 
-        public static RetryPolicyHandlingDelegate AsRetryDelegate(this AsyncPolicy<IRestResponse> policy) =>
+        public static RetryPolicyHandlingDelegate AsRetryDelegate(this AsyncPolicy<ResponseResult> policy) =>
             policy == null
                 ? (RetryPolicyHandlingDelegate)null
                 : async executeCallback => await policy.ExecuteAsync(executeCallback);
 
-        public static MinioClient WithRetryPolicy(this MinioClient client, AsyncPolicy<IRestResponse> policy) =>
+        public static MinioClient WithRetryPolicy(this MinioClient client, AsyncPolicy<ResponseResult> policy) =>
             client.WithRetryPolicy(policy.AsRetryDelegate());
     }
 
@@ -104,7 +101,6 @@ namespace Minio.Examples.Cases
                 {
                     Console.WriteLine("Request failed: " + ex.Message);
                 }
-
                 Console.WriteLine();
             }
             catch (Exception e)

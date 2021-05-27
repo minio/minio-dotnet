@@ -18,7 +18,6 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using RestSharp;
 using System.Linq;
 using System.Net;
 
@@ -27,7 +26,6 @@ using Minio.Exceptions;
 using Newtonsoft.Json;
 using System.IO;
 using Newtonsoft.Json.Serialization;
-using System.Collections.Generic;
 
 /*
  * IAM roles for Amazon EC2
@@ -78,7 +76,7 @@ namespace Minio.Credentials
             if (url == null || string.IsNullOrWhiteSpace(urlStr))
             {
                 string region = Environment.GetEnvironmentVariable("AWS_REGION");
-                urlStr = (region == null)?"https://sts.amazonaws.com":"https://sts." + region + ".amazonaws.com";
+                urlStr = (region == null) ? "https://sts.amazonaws.com" : "https://sts." + region + ".amazonaws.com";
                 url = new Uri(urlStr);
             }
             ClientProvider provider = new WebIdentityProvider()
@@ -99,8 +97,12 @@ namespace Minio.Credentials
         public async Task<AccessCredentials> GetAccessCredentials(Uri url)
         {
             this.Validate();
-            RestRequest request = new RestRequest(url.ToString(), Method.GET);
-            var response = await this.Minio_Client.ExecuteAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), request);
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url.ToString());
+
+            var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, url);
+            requestBuilder.AddQueryParameter("location", "");
+
+            var response = await this.Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
             if (string.IsNullOrWhiteSpace(response.Content) ||
                     !HttpStatusCode.OK.Equals(response.StatusCode))
             {
@@ -139,7 +141,7 @@ namespace Minio.Credentials
             string containerFullUri = Environment.GetEnvironmentVariable("AWS_CONTAINER_CREDENTIALS_FULL_URI");
             bool isURLEmpty = (url == null);
             if (!string.IsNullOrWhiteSpace(containerRelativeUri) && isURLEmpty)
-            {    
+            {
                 url = RequestUtil.MakeTargetURL("169.254.170.2" + "/" + containerRelativeUri, false);
             }
             else if (!string.IsNullOrWhiteSpace(containerFullUri) && isURLEmpty)
@@ -158,8 +160,13 @@ namespace Minio.Credentials
         {
             this.Validate();
             string[] roleNames = null;
-            RestRequest request = new RestRequest(url.ToString(), Method.GET);
-            var response = await this.Minio_Client.ExecuteAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), request);
+
+            var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, url);
+            requestBuilder.AddQueryParameter("location", "");
+
+            var response = await this.Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
+
+
             if (string.IsNullOrWhiteSpace(response.Content) ||
                     !HttpStatusCode.OK.Equals(response.StatusCode))
             {
@@ -168,7 +175,7 @@ namespace Minio.Credentials
             roleNames = response.Content.Split('\n');
             if (roleNames.Length <= 0)
             {
-                throw new CredentialsProviderException("IAMAWSProvider", "No IAM roles are attached to AWS service at "+ url.ToString());
+                throw new CredentialsProviderException("IAMAWSProvider", "No IAM roles are attached to AWS service at " + url.ToString());
             }
             int index = 0;
             foreach (var item in roleNames)
