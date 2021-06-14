@@ -79,7 +79,6 @@ namespace Minio.DataModel
                     xw.Close();
                 }
             }
-            Console.WriteLine(str);
             return str;
         }
     }

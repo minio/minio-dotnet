@@ -197,7 +197,6 @@ namespace Minio.DataModel
                     }
                     if (value.Equals("Stats"))
                     {
-                        Console.WriteLine("payload|"+Encoding.UTF7.GetString(payload));
                         StatsMessage stats = new StatsMessage();
                         using (var stream = new MemoryStream(payload))
                         stats = (StatsMessage)new XmlSerializer(typeof(StatsMessage)).Deserialize(stream);

@@ -3784,12 +3784,8 @@ namespace Minio.Functional.Tests
                 IObservable<MinioNotificationRaw> events = minio.ListenBucketNotificationsAsync(listenArgs);
                 subscription = events.Subscribe(
                     ev => {
-                        Console.WriteLine($"ListenBucketNotificationsAsync received: " + ev.json);
                         received.Add(ev);
-                    },
-                    ex => Console.WriteLine("OnError: {0}", ex.Message),
-                    () => Console.WriteLine($"ListenBucketNotificationsAsync finished")
-                );
+                    });
                 await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
 
                 // wait for notifications
@@ -3834,8 +3830,6 @@ namespace Minio.Functional.Tests
                         Assert.IsTrue(objectName.Contains(System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key)));
                         Assert.IsTrue(contentType.Contains(notification.Records[0].s3.objectMeta.contentType));
                         break;
-                    } else {
-                        Console.WriteLine($"ListenBucketNotificationsAsync: waiting for notification (t={attempt})");
                     }
                 }
 
