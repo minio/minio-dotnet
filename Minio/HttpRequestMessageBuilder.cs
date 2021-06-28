@@ -59,11 +59,7 @@ namespace Minio
 
                 foreach (var parameter in this.BodyParameters)
                 {
-                    if (request.Content == null)
-                    {
-                        throw new MinioException("Can not send empty content.");
-                    }
-                    request.Content.Headers.TryAddWithoutValidation(parameter.Key, parameter.Value);
+                    request.Content?.Headers.TryAddWithoutValidation(parameter.Key, parameter.Value);
                 }
 
                 return request;

@@ -13,7 +13,7 @@
 
   <PropertyGroup Label="Package">
     <Product>Minio</Product>
-    <Version>3.1.14</Version>
+    <Version>3.1.13.4</Version>
     <Description>Minio .NET SDK for Amazon S3 Compatible Cloud Storage.</Description>
     <Copyright>Copyright (c) 2018.  All rights reserved.</Copyright>
     <Authors>Minio, Inc.</Authors>
@@ -29,7 +29,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/minio/minio-dotnet</RepositoryUrl>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Crc32.NET" Version="1.2.0" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="All" />
@@ -48,4 +48,4 @@
     <Reference Include="System.Web" />
   </ItemGroup>
 
-</Project>  
+</Project>
