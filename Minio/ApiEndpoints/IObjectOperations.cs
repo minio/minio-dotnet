@@ -42,12 +42,32 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Name of object to retrieve</param>
+        /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        Task<byte[]> GetObjectAsync(string bucketName, string objectName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Get an object. The object will be streamed to the callback given by the user.
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Name of object to retrieve</param>
         /// <param name="offset">offset of the object from where stream will start </param>
         /// <param name="length">length of object to read in from the stream</param>
         /// <param name="cb">A stream will be passed to the callback</param>
         /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Get an object. The object will be streamed to the callback given by the user.
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Name of object to retrieve</param>
+        /// <param name="offset">offset of the object from where stream will start </param>
+        /// <param name="length">length of object to read in from the stream</param>
+        /// <param name="sse">Optional Server-side encryption option. Defaults to null.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        Task<byte[]> GetObjectAsync(string bucketName, string objectName, long offset, long length, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Select an object's content. The object will be streamed to the callback given by the user.

@@ -70,6 +70,57 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Name of object to retrieve</param>
+        /// <param name="sse">Server-side encryption option. Defaults to null.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        public async Task<byte[]> GetObjectAsync(string bucketName, string objectName, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            // Stat to see if the object exists
+            // NOTE: This avoids writing the error body to the action stream passed (Do not remove).
+            await StatObjectAsync(bucketName, objectName, sse: sse, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            var headers = new Dictionary<string, string>();
+            if (sse != null && sse.GetType().Equals(EncryptionType.SSE_C))
+            {
+                sse.Marshal(headers);
+            }
+            var taskCompletionSource = new TaskCompletionSource<byte[]>();
+            try
+            {
+                var request = await this.CreateRequest(Method.GET,
+                                                    bucketName,
+                                                    objectName: objectName,
+                                                    headerMap: headers)
+                                        .ConfigureAwait(false);
+                request.ResponseWriter = (stream) => {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
+
+                    using (var ms = new MemoryStream())
+                    {
+                        stream.CopyToAsync(ms).ConfigureAwait(false).GetAwaiter().GetResult();
+                        taskCompletionSource.SetResult(ms.ToArray());
+                    }
+                };
+
+                var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+                var body = await taskCompletionSource.Task;
+
+                return body;
+            }
+            catch(Exception e)
+            {
+                taskCompletionSource.TrySetException(e);
+                throw new MinioException(e.Message, e);
+            }
+        }
+
+        /// <summary>
+        /// Get an object. The object will be streamed to the callback given by the user.
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Name of object to retrieve</param>
         /// <param name="offset"> Offset of the object from where stream will start</param>
         /// <param name="length">length of the object that will be read in the stream </param>
         /// <param name="cb">A stream will be passed to the callback</param>
@@ -109,6 +160,74 @@ namespace Minio
 
             request.ResponseWriter = cb;
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Get an object. The object will be streamed to the callback given by the user.
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Name of object to retrieve</param>
+        /// <param name="offset"> Offset of the object from where stream will start</param>
+        /// <param name="length">length of the object that will be read in the stream </param>
+        /// <param name="sse">Server-side encryption option. Defaults to null.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        public async Task<byte[]> GetObjectAsync(string bucketName, string objectName, long offset, long length, ServerSideEncryption sse = null, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (offset < 0)
+            {
+                throw new ArgumentException("Offset should be zero or greater", nameof(offset));
+            }
+
+            if (length < 0)
+            {
+                throw new ArgumentException("Length should be greater than zero", nameof(length));
+            }
+
+            // Stat to see if the object exists
+            // NOTE: This avoids writing the error body to the action stream passed (Do not remove).
+            await StatObjectAsync(bucketName, objectName, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            var headerMap = new Dictionary<string, string>();
+            if (length > 0)
+            {
+                headerMap.Add("Range", "bytes=" + offset.ToString() + "-" + (offset + length - 1).ToString());
+            }
+
+            if (sse != null && sse.GetType().Equals(EncryptionType.SSE_C))
+            {
+                sse.Marshal(headerMap);
+            }
+            var taskCompletionSource = new TaskCompletionSource<byte[]>();
+            try
+            {
+                var request = await this.CreateRequest(Method.GET,
+                                                         bucketName,
+                                                         objectName: objectName,
+                                                         headerMap: headerMap)
+                                    .ConfigureAwait(false);
+
+                request.ResponseWriter = stream => {
+                    if(cancellationToken.IsCancellationRequested)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
+
+                    using (var ms = new MemoryStream())
+                    {
+                        stream.CopyToAsync(ms).ConfigureAwait(false).GetAwaiter().GetResult();
+                        taskCompletionSource.SetResult(ms.ToArray());
+                    }
+                };
+                var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+                var body = await taskCompletionSource.Task;
+
+                return body;
+            }
+            catch(Exception e)
+            {
+                taskCompletionSource.TrySetException(e);
+                throw new MinioException(e.Message, e);
+            }
         }
 
         /// <summary>

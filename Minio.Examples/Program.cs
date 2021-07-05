@@ -140,6 +140,8 @@ namespace Minio.Examples
 
                 // Get the file and Download the object as file
                 Cases.GetObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
+                Cases.GetObjectAsync.Run(minioClient, bucketName, objectName, smallFileName).Wait();
+
                 // Select content from object
                 Cases.SelectObjectContent.Run(minioClient, bucketName, objectName).Wait();
                 // Delete the file and Download partial object as file

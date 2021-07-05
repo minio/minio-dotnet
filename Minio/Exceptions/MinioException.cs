@@ -44,7 +44,12 @@ namespace Minio.Exceptions
         }
 
         public MinioException(string message)
-            : this(message, null)
+            : this(message, (IRestResponse)null)
+        {
+        }
+
+        public MinioException(string message, Exception exception)
+            : base(message, exception)
         {
         }
 
