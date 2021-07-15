@@ -34,6 +34,8 @@ using Minio.DataModel.Tags;
 using Minio.Exceptions;
 using Minio.Helper;
 
+using Newtonsoft.Json;
+
 namespace Minio
 {
     public partial class MinioClient : IBucketOperations
@@ -81,9 +83,10 @@ namespace Minio
             args.Validate();
             try
             {
-                HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+                // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+                Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
                 HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                    requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                    args.RequestMethod, requestUrl, "/" + args.BucketName);
                 var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
                 .ConfigureAwait(false);
             }
@@ -119,9 +122,10 @@ namespace Minio
         public async Task RemoveBucketAsync(RemoveBucketArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             await this.ExecuteTaskAsync(this.NoErrorHandlers,
                 requestMessageBuilder, cancellationToken).ConfigureAwait(false);
 
@@ -141,19 +145,25 @@ namespace Minio
             args.Validate();
             if (string.IsNullOrEmpty(args.Location))
             {
-                args.Location = "us-east-1";
+                if (string.IsNullOrEmpty(this.Region))
+                {
+                    args.Location = "us-east-1";
+                }
+                else
+                {
+                    args.Location = this.Region;
+                }
             }
-            // Set Target URL for MakeBucket
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, region: args.Location);
-            SetTargetURL(requestUrl);
+
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, args.Location);
             // Set Authenticator, if necessary.
-            if (string.IsNullOrEmpty(this.Region) && !s3utils.IsAmazonEndPoint(this.BaseUrl) && args.Location != "us-east-1")
+            if (string.IsNullOrEmpty(this.Region) && !s3utils.IsAmazonEndPoint(this.BaseUrl) && args.Location != "us-east-1" && this.HttpClient != null)
             {
-                this.authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: args.Location, sessionToken: this.SessionToken);
+                // this.authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: args.Location, sessionToken: this.SessionToken);
             }
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken);
         }
 
@@ -172,9 +182,10 @@ namespace Minio
         public async Task<VersioningConfiguration> GetVersioningAsync(GetVersioningArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             ResponseResult responseResult = await ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             GetVersioningResponse versioningResponse = new GetVersioningResponse(responseResult.StatusCode, responseResult.Content);
             return versioningResponse.VersioningConfig;
@@ -195,9 +206,10 @@ namespace Minio
         public async Task SetVersioningAsync(SetVersioningArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
@@ -213,9 +225,10 @@ namespace Minio
         /// <exception cref="UnexpectedMinioException">When a policy is not set</exception>
         public async Task<string> GetPolicyAsync(GetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             ResponseResult responseResult = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             GetPolicyResponse getPolicyResponse = new GetPolicyResponse(responseResult.StatusCode, responseResult.Content);
             return getPolicyResponse.PolicyJsonString;
@@ -233,9 +246,10 @@ namespace Minio
         /// <returns>Task to set a policy</returns>
         public async Task SetPolicyAsync(SetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             _ = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
@@ -251,9 +265,10 @@ namespace Minio
         /// <exception cref="UnexpectedMinioException">When a policy is not set</exception>
         public async Task RemovePolicyAsync(RemovePolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
@@ -267,9 +282,10 @@ namespace Minio
         public async Task<ListAllMyBucketsResult> ListBucketsAsync(
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            HttpRequestMessage requestMessage = await this.CreateRequest(HttpMethod.Get, resourcePath: "/").ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(HttpMethod.Get, resourcePath: "/").ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                HttpMethod.Get, requestUrl);
             ResponseResult responseResult = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             ListBucketsResponse listBucketsResponse = new ListBucketsResponse(responseResult.StatusCode, responseResult.Content);
             return listBucketsResponse.BucketsResult;
@@ -369,9 +385,10 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(GetObjectListArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             ResponseResult responseResult = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             GetObjectsListResponse getObjectsListResponse = new GetObjectsListResponse(responseResult.StatusCode, responseResult.Content);
             return getObjectsListResponse.ObjectsTuple;
@@ -386,9 +403,10 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         private async Task<Tuple<ListVersionsResult, List<Item>>> GetObjectVersionsListAsync(GetObjectListArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             ResponseResult responseResult = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             GetObjectsVersionsListResponse getObjectsVersionsListResponse = new GetObjectsVersionsListResponse(responseResult.StatusCode, responseResult.Content);
             return getObjectsVersionsListResponse.ObjectsTuple;
@@ -406,9 +424,10 @@ namespace Minio
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         public async Task<BucketNotification> GetBucketNotificationsAsync(GetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             ResponseResult responseResult = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             GetBucketNotificationsResponse getBucketNotificationsResponse = new GetBucketNotificationsResponse(responseResult.StatusCode, responseResult.Content);
             return getBucketNotificationsResponse.BucketNotificationConfiguration;
@@ -426,9 +445,10 @@ namespace Minio
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task SetBucketNotificationsAsync(SetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             var restResponse = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
@@ -446,9 +466,10 @@ namespace Minio
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task RemoveAllBucketNotificationsAsync(RemoveAllBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             var restResponse = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
@@ -471,12 +492,12 @@ namespace Minio
                     using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
                     {
                         cts.Token.ThrowIfCancellationRequested();
-                        args = args.WithNotificationObserver(obs)
-                                   .WithEnableTrace(this.trace);
-                        HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+                        args = args.WithNotificationObserver(obs);
+                        Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
                         HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                            requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
-                        await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+                            args.RequestMethod, requestUrl, "/" + args.BucketName);
+                        await this.ExecuteTaskAsync(this.NoErrorHandlers,
+                            requestMessageBuilder, cancellationToken).ConfigureAwait(false);
                     }
                 });
         }
@@ -494,9 +515,10 @@ namespace Minio
         public async Task<Tagging> GetBucketTagsAsync(GetBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             ResponseResult responseResult = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             GetBucketTagsResponse getBucketNotificationsResponse = new GetBucketTagsResponse(responseResult.StatusCode, responseResult.Content);
             return getBucketNotificationsResponse.BucketTags;
@@ -517,9 +539,10 @@ namespace Minio
         public async Task SetBucketEncryptionAsync(SetBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             var restResponse = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
@@ -537,9 +560,10 @@ namespace Minio
         public async Task<ServerSideEncryptionConfiguration> GetBucketEncryptionAsync(GetBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             ResponseResult responseResult = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             GetBucketEncryptionResponse getBucketEncryptionResponse = new GetBucketEncryptionResponse(responseResult.StatusCode, responseResult.Content);
             return getBucketEncryptionResponse.BucketEncryptionConfiguration;
@@ -560,9 +584,10 @@ namespace Minio
         public async Task RemoveBucketEncryptionAsync(RemoveBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             var restResponse = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
@@ -581,9 +606,10 @@ namespace Minio
         public async Task SetBucketTagsAsync(SetBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             var restResponse = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
@@ -602,9 +628,10 @@ namespace Minio
         public async Task RemoveBucketTagsAsync(RemoveBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             var restResponse = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
@@ -624,9 +651,10 @@ namespace Minio
         public async Task SetObjectLockConfigurationAsync(SetObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             var restResponse = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
@@ -645,9 +673,10 @@ namespace Minio
         public async Task<ObjectLockConfiguration> GetObjectLockConfigurationAsync(GetObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             ResponseResult responseResult = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             GetObjectLockConfigurationResponse resp = new GetObjectLockConfigurationResponse(responseResult.StatusCode, responseResult.Content);
             return resp.LockConfiguration;
@@ -669,9 +698,10 @@ namespace Minio
         public async Task RemoveObjectLockConfigurationAsync(RemoveObjectLockConfigurationArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             var restResponse = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
@@ -690,9 +720,10 @@ namespace Minio
         public async Task SetBucketLifecycleAsync(SetBucketLifecycleArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             var restResponse = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
@@ -710,9 +741,10 @@ namespace Minio
         public async Task<LifecycleConfiguration> GetBucketLifecycleAsync(GetBucketLifecycleArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             ResponseResult responseResult = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             GetBucketLifecycleResponse response = new GetBucketLifecycleResponse(responseResult.StatusCode, responseResult.Content);
             return response.BucketLifecycle;
@@ -733,9 +765,10 @@ namespace Minio
         public async Task RemoveBucketLifecycleAsync(RemoveBucketLifecycleArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             var restResponse = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
@@ -754,9 +787,10 @@ namespace Minio
         public async Task<ReplicationConfiguration> GetBucketReplicationAsync(GetBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             ResponseResult responseResult = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             GetBucketReplicationResponse response = new GetBucketReplicationResponse(responseResult.StatusCode, responseResult.Content);
             return response.Config;
@@ -777,9 +811,10 @@ namespace Minio
         public async Task SetBucketReplicationAsync(SetBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             var restResponse = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
@@ -798,9 +833,10 @@ namespace Minio
         public async Task RemoveBucketReplicationAsync(RemoveBucketReplicationArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                requestMessage.Method, requestMessage.RequestUri, requestMessage.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl, "/" + args.BucketName);
             var restResponse = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 

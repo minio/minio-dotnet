@@ -30,13 +30,13 @@ namespace Minio
             this.RequestMethod = HttpMethod.Get;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("versioning", "");
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -75,7 +75,7 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
@@ -95,7 +95,7 @@ namespace Minio
             requestMessageBuilder.Request.Content = new StringContent(
                         Convert.ToString(body), Encoding.UTF8, "application/xml");
 
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 }

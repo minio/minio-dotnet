@@ -497,6 +497,8 @@ namespace Minio.Functional.Tests
                                                 .WithBucket(bucketName);
             BucketExistsArgs beArgs = new BucketExistsArgs()
                                                 .WithBucket(bucketName);
+            string json = JsonConvert.SerializeObject(mbArgs, Newtonsoft.Json.Formatting.Indented);
+
             await minio.MakeBucketAsync(mbArgs);
             bool found = await minio.BucketExistsAsync(beArgs);
             Assert.IsTrue(found);
@@ -668,8 +670,7 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_Test(minio, bucketName);
-                // await PutObject_Tester(minio, bucketName, objectName, objectName, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
-                await PutObject_Tester(minio, bucketName, objectName, objectName, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
+                await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
                 new MintLogger(nameof(PutObject_Test1), putObjectSignature, "Tests whether PutObject passes for small object", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (Exception ex)
@@ -699,7 +700,7 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_Test(minio, bucketName);
-                await PutObject_Tester(minio, bucketName, objectName, objectName, contentType, 0, null, rsg.GenerateStreamFromSeed(6 * MB));
+                await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(6 * MB));
                 new MintLogger(nameof(PutObject_Test2), putObjectSignature, "Tests whether multipart PutObject passes", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (Exception ex)
@@ -730,7 +731,7 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_Test(minio, bucketName);
-                await PutObject_Tester(minio, bucketName, objectName, objectName, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
+                await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
                 new MintLogger(nameof(PutObject_Test3), putObjectSignature, "Tests whether PutObject with custom content-type passes", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (Exception ex)
@@ -771,8 +772,8 @@ namespace Minio.Functional.Tests
                 Assert.IsTrue(statObject != null);
                 Assert.IsTrue(statObject.MetaData != null);
                 var statMeta = new Dictionary<string, string>(statObject.MetaData, StringComparer.OrdinalIgnoreCase);
-                // Assert.IsTrue(statMeta.ContainsKey("Customheader"));
-                Assert.IsTrue(statObject.MetaData.ContainsKey("Content-Type") && statObject.MetaData["Content-Type"].Equals("binary/octet-stream"));
+                Assert.IsTrue(statMeta.ContainsKey("Customheader"));
+                Assert.IsTrue(statObject.MetaData.ContainsKey("Content-Type") && statObject.MetaData["Content-Type"].Equals("custom/contenttype"));
                 new MintLogger(nameof(PutObject_Test4), putObjectSignature, "Tests whether PutObject with different content-type and custom header passes", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (Exception ex)
@@ -805,7 +806,7 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_Test(minio, bucketName);
-                await PutObject_Tester(minio, bucketName, objectName, objectName, null, 0, null, rsg.GenerateStreamFromSeed(1));
+                await PutObject_Tester(minio, bucketName, objectName, null, null, 0, null, rsg.GenerateStreamFromSeed(1));
                 new MintLogger(nameof(PutObject_Test5), putObjectSignature, "Tests whether PutObject with no content-type passes for small object", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (Exception ex)
@@ -1260,8 +1261,8 @@ namespace Minio.Functional.Tests
 
             try
             {
-                await Setup_Test(minio, bucketName).ConfigureAwait(false);
-                await PutObject_Tester(minio, bucketName, objectName, objectName, null, 0, null, rsg.GenerateStreamFromSeed(1)).ConfigureAwait(false);
+                await Setup_Test(minio, bucketName);
+                await PutObject_Tester(minio, bucketName, objectName, null, null, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
                 new MintLogger(nameof(StatObject_Test1), statObjectSignature, "Tests whether StatObject passes", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (Exception ex)
@@ -3822,11 +3823,8 @@ namespace Minio.Functional.Tests
                 subscription = events.Subscribe(
                     ev =>
                     {
-                        Console.WriteLine($"ListenBucketNotificationsAsync received: " + ev.json);
                         received.Add(ev);
-                    },
-                    ex => Console.WriteLine("OnError: {0}", ex.Message),
-                    () => Console.WriteLine($"ListenBucketNotificationsAsync finished")
+                    }
                 );
                 await PutObject_Tester(minio, bucketName, objectName, objectName, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
 
@@ -3882,13 +3880,11 @@ namespace Minio.Functional.Tests
                         // }
                         // Assert.AreEqual(objectName, System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key));
                         // Assert.AreEqual(contentType, notification.Records[0].s3.objectMeta.contentType);
-                        // Console.WriteLine("PASSED");
                         // testOutcome = TestStatus.PASS;
                         break;
                     }
                     else
                     {
-                        Console.WriteLine($"ListenBucketNotificationsAsync: waiting for notification (t={attempt})");
                     }
                 }
 
