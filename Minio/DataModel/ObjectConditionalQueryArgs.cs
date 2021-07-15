@@ -20,7 +20,7 @@ using System.Net.Http;
 namespace Minio
 {
     public abstract class ObjectConditionalQueryArgs<T> : ObjectVersionArgs<T>
-                                    where T: ObjectConditionalQueryArgs<T>
+                                    where T : ObjectConditionalQueryArgs<T>
     {
         internal string MatchETag { get; set; }
         internal string NotMatchETag { get; set; }
@@ -34,14 +34,14 @@ namespace Minio
             {
                 throw new InvalidOperationException("Cannot set both " + nameof(MatchETag) + " and " + nameof(NotMatchETag) + " for query.");
             }
-            if((this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
+            if ((this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
                 && (this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime)))
             {
                 throw new InvalidOperationException("Cannot set both " + nameof(ModifiedSince) + " and " + nameof(UnModifiedSince) + " for query.");
             }
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
@@ -58,11 +58,11 @@ namespace Minio
             {
                 requestMessageBuilder.AddHeaderParameter("If-Modified-Since", utils.To8601String(this.ModifiedSince));
             }
-            if(this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
+            if (this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
             {
                 requestMessageBuilder.AddHeaderParameter("If-Unmodified-Since", utils.To8601String(this.UnModifiedSince));
             }
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
         public T WithMatchETag(string etag)
         {

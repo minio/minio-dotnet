@@ -21,16 +21,14 @@ namespace Minio
     public abstract class Args
     {
 
-        // RequestMethod will be the HTTP Method for request variable which is of type RestRequest.
-        // Will be one of the type - HEAD, GET, PUT, DELETE. etc.
+        // RequestMethod will be the HTTP Method for request variable,
+        // which is of type HttpRequestMessage.
+        // Will be one of the types: - HEAD, GET, PUT, DELETE. etc.
         internal HttpMethod RequestMethod { get; set; }
 
-        internal virtual HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal virtual HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
-
-            return requestMessageBuilder;
+            return request;
         }
     }
 }

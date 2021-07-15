@@ -33,7 +33,7 @@ using System.Security.Cryptography;
 
 namespace Minio
 {
-    public class SelectObjectContentArgs: EncryptionArgs<SelectObjectContentArgs>
+    public class SelectObjectContentArgs : EncryptionArgs<SelectObjectContentArgs>
     {
         private SelectObjectOptions SelectOptions;
 
@@ -55,7 +55,7 @@ namespace Minio
                 throw new InvalidOperationException("The Input/Output serialization members for SelectObjectContentArgs should be initialized " + nameof(this.SelectOptions.InputSerialization) + " " + nameof(this.SelectOptions.OutputSerialization));
             }
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
@@ -65,11 +65,11 @@ namespace Minio
             {
                 this.RequestBody = Encoding.UTF8.GetBytes(this.SelectOptions.MarshalXML());
             }
-            requestMessageBuilder.AddQueryParameter("select","");
-            requestMessageBuilder.AddQueryParameter("select-type","2");
+            requestMessageBuilder.AddQueryParameter("select", "");
+            requestMessageBuilder.AddQueryParameter("select-type", "2");
             requestMessageBuilder.BodyParameters.Add("content-type", "application/xml");
             requestMessageBuilder.SetBody((byte[])this.RequestBody);
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
 
         public SelectObjectContentArgs WithExpressionType(QueryExpressionType e)
@@ -128,7 +128,7 @@ namespace Minio
         public ListIncompleteUploadsArgs WithRecursive(bool recursive)
         {
             this.Recursive = recursive;
-            this.Delimiter = (recursive)? string.Empty : "/";
+            this.Delimiter = (recursive) ? string.Empty : "/";
             return this;
         }
     }
@@ -169,18 +169,18 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
-            requestMessageBuilder.AddQueryParameter("uploads","");
-            requestMessageBuilder.AddQueryParameter("prefix",this.Prefix);
-            requestMessageBuilder.AddQueryParameter("delimiter",this.Delimiter);
-            requestMessageBuilder.AddQueryParameter("key-marker",this.KeyMarker);
-            requestMessageBuilder.AddQueryParameter("upload-id-marker",this.UploadIdMarker);
-            requestMessageBuilder.AddQueryParameter("max-uploads",this.MAX_UPLOAD_COUNT.ToString());
-            return requestMessageBuilder;
+            requestMessageBuilder.AddQueryParameter("uploads", "");
+            requestMessageBuilder.AddQueryParameter("prefix", this.Prefix);
+            requestMessageBuilder.AddQueryParameter("delimiter", this.Delimiter);
+            requestMessageBuilder.AddQueryParameter("key-marker", this.KeyMarker);
+            requestMessageBuilder.AddQueryParameter("upload-id-marker", this.UploadIdMarker);
+            requestMessageBuilder.AddQueryParameter("max-uploads", this.MAX_UPLOAD_COUNT.ToString());
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -227,16 +227,16 @@ namespace Minio
             this.RequestMethod = HttpMethod.Head;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             if (!string.IsNullOrEmpty(this.VersionId))
             {
-                requestMessageBuilder.AddQueryParameter("versionId",$"{this.VersionId}");
+                requestMessageBuilder.AddQueryParameter("versionId", $"{this.VersionId}");
             }
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
 
         internal override void Validate()
@@ -281,8 +281,8 @@ namespace Minio
         public StatObjectArgs WithOffsetAndLength(long offset, long length)
         {
             this.OffsetLengthSet = true;
-            this.ObjectOffset = (offset < 0)?0:offset;
-            this.ObjectLength = (length < 0)?0:length;
+            this.ObjectOffset = (offset < 0) ? 0 : offset;
+            this.ObjectLength = (length < 0) ? 0 : length;
             return this;
         }
 
@@ -290,7 +290,7 @@ namespace Minio
         {
             this.OffsetLengthSet = true;
             this.ObjectOffset = 0;
-            this.ObjectLength = (length < 0)?0:length;
+            this.ObjectLength = (length < 0) ? 0 : length;
             return this;
         }
     }
@@ -353,12 +353,12 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
 
         internal PresignedPostPolicyArgs WithRegion(string region)
@@ -433,18 +433,18 @@ namespace Minio
         internal override void Validate()
         {
             base.Validate();
-            if(string.IsNullOrEmpty(this.UploadId))
+            if (string.IsNullOrEmpty(this.UploadId))
             {
                 throw new InvalidOperationException(nameof(UploadId) + " cannot be empty. Please assign a valid upload ID to remove.");
             }
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
-            requestMessageBuilder.AddQueryParameter("uploadId",$"{this.UploadId}");
-            return requestMessageBuilder;
+            requestMessageBuilder.AddQueryParameter("uploadId", $"{this.UploadId}");
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -463,17 +463,17 @@ namespace Minio
         {
             this.RequestMethod = HttpMethod.Get;
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("legal-hold", "");
-            if( !string.IsNullOrEmpty(this.VersionId) )
+            if (!string.IsNullOrEmpty(this.VersionId))
             {
                 requestMessageBuilder.AddQueryParameter("versionId", this.VersionId);
             }
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -493,13 +493,13 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("legal-hold", "");
-            if( !string.IsNullOrEmpty(this.VersionId) )
+            if (!string.IsNullOrEmpty(this.VersionId))
             {
                 requestMessageBuilder.AddQueryParameter("versionId", this.VersionId);
             }
@@ -507,7 +507,7 @@ namespace Minio
             string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
             requestMessageBuilder.AddHeaderParameter("text/xml", body);
             requestMessageBuilder.AddHeaderParameter("Content-MD5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -563,29 +563,29 @@ namespace Minio
             {
                 this.Headers["Range"] = "bytes=" + this.ObjectOffset.ToString() + "-" + (this.ObjectOffset + this.ObjectLength - 1).ToString();
             }
-            else if(this.ObjectLength == 0 && this.ObjectOffset > 0)
+            else if (this.ObjectLength == 0 && this.ObjectOffset > 0)
             {
                 this.Headers["Range"] = "bytes=" + this.ObjectOffset.ToString() + "-";
             }
-            else if(this.ObjectLength > 0 && this.ObjectOffset == 0)
+            else if (this.ObjectLength > 0 && this.ObjectOffset == 0)
             {
                 this.Headers["Range"] = "bytes=-" + (this.ObjectLength - 1).ToString();
             }
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             if (!string.IsNullOrEmpty(this.VersionId))
             {
-                requestMessageBuilder.AddQueryParameter("versionId",$"{this.VersionId}");
+                requestMessageBuilder.AddQueryParameter("versionId", $"{this.VersionId}");
             }
             // requestMessageBuilder.ResponseWriter = this.CallBack;
 
-            return requestMessageBuilder;
-        }   
+            return requestMessageBuilder.Request;
+        }
 
 
         public GetObjectArgs WithCallbackStream(Action<Stream> cb)
@@ -597,8 +597,8 @@ namespace Minio
         public GetObjectArgs WithOffsetAndLength(long offset, long length)
         {
             this.OffsetLengthSet = true;
-            this.ObjectOffset = (offset < 0)?0:offset;
-            this.ObjectLength = (length < 0)?0:length;
+            this.ObjectOffset = (offset < 0) ? 0 : offset;
+            this.ObjectLength = (length < 0) ? 0 : length;
             return this;
         }
 
@@ -606,7 +606,7 @@ namespace Minio
         {
             this.OffsetLengthSet = true;
             this.ObjectOffset = 0;
-            this.ObjectLength = (length < 0)?0:length;
+            this.ObjectLength = (length < 0) ? 0 : length;
             return this;
         }
 
@@ -628,20 +628,20 @@ namespace Minio
             this.BypassGovernanceMode = null;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             if (!string.IsNullOrEmpty(this.VersionId))
             {
-                requestMessageBuilder.AddQueryParameter("versionId",$"{this.VersionId}");
+                requestMessageBuilder.AddQueryParameter("versionId", $"{this.VersionId}");
                 if (this.BypassGovernanceMode != null && this.BypassGovernanceMode.Value)
                 {
                     requestMessageBuilder.AddHeaderParameter("x-amz-bypass-governance-retention", this.BypassGovernanceMode.Value.ToString());
                 }
             }
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
 
         public RemoveObjectArgs WithVersionId(string ver)
@@ -661,7 +661,7 @@ namespace Minio
     {
         internal List<string> ObjectNames { get; private set; }
         // Each element in the list is a Tuple. Each Tuple has an Object name & the version ID.
-        internal List<Tuple<string, string>> ObjectNamesVersions  { get; private set; }
+        internal List<Tuple<string, string>> ObjectNamesVersions { get; private set; }
 
         public RemoveObjectsArgs()
         {
@@ -711,7 +711,7 @@ namespace Minio
             utils.ValidateBucketName(this.BucketName);
             if (!string.IsNullOrEmpty(this.ObjectName))
             {
-                throw new InvalidOperationException(nameof(ObjectName)  + " is set. Please use " + nameof(WithObjects) + "or " +
+                throw new InvalidOperationException(nameof(ObjectName) + " is set. Please use " + nameof(WithObjects) + "or " +
                     nameof(WithObjectsVersions) + " method to set objects to be deleted.");
             }
             if ((this.ObjectNames == null && this.ObjectNamesVersions == null) ||
@@ -722,7 +722,7 @@ namespace Minio
             }
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
@@ -754,7 +754,7 @@ namespace Minio
                                                 new XElement("Quiet", true));
                 requestMessageBuilder.AddXmlBody(Convert.ToString(deleteObjectsRequest));
             }
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -773,23 +773,23 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
-            requestMessageBuilder.AddQueryParameter("tagging","");
+            requestMessageBuilder.AddQueryParameter("tagging", "");
             if (!string.IsNullOrEmpty(this.VersionId))
             {
                 requestMessageBuilder.AddQueryParameter("versionId", this.VersionId);
             }
             string body = this.ObjectTags.MarshalXML();
             // Convert a C# string to a byte array  
-            byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);  
+            byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
             requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
             requestMessageBuilder.SetBody(bodyInBytes);
 
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
 
         internal override void Validate()
@@ -809,17 +809,17 @@ namespace Minio
             this.RequestMethod = HttpMethod.Get;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
-            requestMessageBuilder.AddQueryParameter("tagging","");
+            requestMessageBuilder.AddQueryParameter("tagging", "");
             if (!string.IsNullOrEmpty(this.VersionId))
             {
                 requestMessageBuilder.AddQueryParameter("versionId", this.VersionId);
             }
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -830,17 +830,17 @@ namespace Minio
             this.RequestMethod = HttpMethod.Delete;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
-            requestMessageBuilder.AddQueryParameter("tagging","");
+            requestMessageBuilder.AddQueryParameter("tagging", "");
             if (!string.IsNullOrEmpty(this.VersionId))
             {
                 requestMessageBuilder.AddQueryParameter("versionId", this.VersionId);
             }
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -865,7 +865,7 @@ namespace Minio
                 throw new InvalidOperationException("Retention Period is not set. Please set using " +
                         nameof(WithRetentionUntilDate) + ".");
             }
-            if (DateTime.Compare(this.RetentionUntilDate, DateTime.Now)  <= 0)
+            if (DateTime.Compare(this.RetentionUntilDate, DateTime.Now) <= 0)
             {
                 throw new InvalidOperationException("Retention until date set using " + nameof(WithRetentionUntilDate) + " needs to be in the future.");
             }
@@ -888,13 +888,13 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("retention", "");
-            if( !string.IsNullOrEmpty(this.VersionId) )
+            if (!string.IsNullOrEmpty(this.VersionId))
             {
                 requestMessageBuilder.AddQueryParameter("versionId", this.VersionId);
             }
@@ -906,7 +906,7 @@ namespace Minio
             string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
             requestMessageBuilder.AddHeaderParameter("text/xml", body);
             requestMessageBuilder.AddHeaderParameter("Content-MD5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -917,17 +917,17 @@ namespace Minio
             this.RequestMethod = HttpMethod.Get;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("retention", "");
-            if( !string.IsNullOrEmpty(this.VersionId) )
+            if (!string.IsNullOrEmpty(this.VersionId))
             {
                 requestMessageBuilder.AddQueryParameter("versionId", this.VersionId);
             }
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -951,13 +951,13 @@ namespace Minio
             xw.Flush();
             return sw.ToString();
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("retention", "");
-            if( !string.IsNullOrEmpty(this.VersionId) )
+            if (!string.IsNullOrEmpty(this.VersionId))
             {
                 requestMessageBuilder.AddQueryParameter("versionId", this.VersionId);
             }
@@ -966,7 +966,7 @@ namespace Minio
             string body = EmptyRetentionConfigXML();
             requestMessageBuilder.AddHeaderParameter("text/xml", body);
             requestMessageBuilder.AddHeaderParameter("Content-MD5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -988,7 +988,7 @@ namespace Minio
 
         public CopySourceObjectArgs WithCopyConditions(CopyConditions cp)
         {
-            this.CopyOperationConditions = (cp != null)? cp.Clone() : new CopyConditions();
+            this.CopyOperationConditions = (cp != null) ? cp.Clone() : new CopyConditions();
             return this;
         }
     }
@@ -1070,13 +1070,13 @@ namespace Minio
             this.SourceObjectInfo = stat;
             return this;
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             string sourceObjectPath = this.SourceObject.BucketName + "/" + utils.UrlEncode(this.SourceObject.ObjectName);
-            if(!string.IsNullOrEmpty(this.SourceObject.VersionId))
+            if (!string.IsNullOrEmpty(this.SourceObject.VersionId))
             {
                 sourceObjectPath += "?versionId=" + this.SourceObject.VersionId;
             }
@@ -1087,7 +1087,7 @@ namespace Minio
             {
                 foreach (var query in this.QueryMap)
                 {
-                    requestMessageBuilder.AddQueryParameter(query.Key,query.Value);
+                    requestMessageBuilder.AddQueryParameter(query.Key, query.Value);
                 }
             }
 
@@ -1110,7 +1110,7 @@ namespace Minio
             {
                 requestMessageBuilder.AddHeaderParameter("x-amz-copy-source-if-unmodified-since", utils.To8601String(this.ModifiedSince));
             }
-            if(this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
+            if (this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
             {
                 requestMessageBuilder.AddHeaderParameter("x-amz-copy-source-if-modified-since", utils.To8601String(this.UnModifiedSince));
             }
@@ -1118,7 +1118,7 @@ namespace Minio
                     && this.ObjectTags.TaggingSet.Tag.Count > 0)
             {
                 requestMessageBuilder.AddHeaderParameter("x-amz-tagging", this.ObjectTags.GetTagString());
-                requestMessageBuilder.AddHeaderParameter("x-amz-tagging-directive", this.ReplaceTagsDirective?"REPLACE":"COPY");
+                requestMessageBuilder.AddHeaderParameter("x-amz-tagging-directive", this.ReplaceTagsDirective ? "REPLACE" : "COPY");
             }
             string replaceDirective = "COPY";
             if (this.ReplaceMetadataDirective)
@@ -1136,10 +1136,10 @@ namespace Minio
                 {
                     requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-retain-until-date", utils.To8601String(this.RetentionUntilDate));
                 }
-                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-mode", (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE)?"GOVERNANCE":"COMPLIANCE");
+                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-mode", (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
             }
 
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
 
         internal CopyObjectRequestArgs WithCopyOperationObjectType(Type cp)
@@ -1175,7 +1175,7 @@ namespace Minio
 
         internal void Populate()
         {
-            this.ObjectName = string.IsNullOrEmpty(this.ObjectName)?this.SourceObject.ObjectName:this.ObjectName;
+            this.ObjectName = string.IsNullOrEmpty(this.ObjectName) ? this.SourceObject.ObjectName : this.ObjectName;
             // Opting for concat as Headers may have byte range info .etc.
             if (!this.ReplaceMetadataDirective && this.SourceObjectInfo.MetaData != null)
             {
@@ -1249,7 +1249,7 @@ namespace Minio
             if (!this.ReplaceMetadataDirective)
             {
                 // Check in copy conditions if replace metadata has been set
-                bool copyReplaceMeta = (this.SourceObject.CopyOperationConditions != null )?this.SourceObject.CopyOperationConditions.HasReplaceMetadataDirective() : false;
+                bool copyReplaceMeta = (this.SourceObject.CopyOperationConditions != null) ? this.SourceObject.CopyOperationConditions.HasReplaceMetadataDirective() : false;
                 this.WithReplaceMetadataDirective(copyReplaceMeta);
             }
             if (!this.ReplaceMetadataDirective)
@@ -1354,7 +1354,7 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
@@ -1371,11 +1371,11 @@ namespace Minio
             {
                 requestMessageBuilder.AddHeaderParameter("x-amz-copy-source-if-unmodified-since", utils.To8601String(this.ModifiedSince));
             }
-            if(this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
+            if (this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
             {
-                request.Headers. Add("x-amz-copy-source-if-modified-since", utils.To8601String(this.UnModifiedSince));
+                request.Headers.Add("x-amz-copy-source-if-modified-since", utils.To8601String(this.UnModifiedSince));
             }
-            if( !string.IsNullOrEmpty(this.VersionId) )
+            if (!string.IsNullOrEmpty(this.VersionId))
             {
                 requestMessageBuilder.AddQueryParameter("versionId", this.VersionId);
             }
@@ -1383,7 +1383,7 @@ namespace Minio
                     && this.ObjectTags.TaggingSet.Tag.Count > 0)
             {
                 requestMessageBuilder.AddHeaderParameter("x-amz-tagging", this.ObjectTags.GetTagString());
-                requestMessageBuilder.AddHeaderParameter("x-amz-tagging-directive", this.ReplaceTagsDirective?"COPY":"REPLACE");
+                requestMessageBuilder.AddHeaderParameter("x-amz-tagging-directive", this.ReplaceTagsDirective ? "COPY" : "REPLACE");
             }
             if (this.ReplaceMetadataDirective)
             {
@@ -1403,10 +1403,10 @@ namespace Minio
                 {
                     requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-retain-until-date", utils.To8601String(this.RetentionUntilDate));
                 }
-                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-mode", (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE)?"GOVERNANCE":"COMPLIANCE");
+                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-mode", (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
             }
 
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -1437,21 +1437,21 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
-            requestMessageBuilder.AddQueryParameter("uploads","");
+            requestMessageBuilder.AddQueryParameter("uploads", "");
             if (this.ObjectLockSet)
             {
                 if (!this.RetentionUntilDate.Equals(default(DateTime)))
                 {
                     requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-retain-until-date", utils.To8601String(this.RetentionUntilDate));
                 }
-                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-mode", (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE)?"GOVERNANCE":"COMPLIANCE");
+                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-mode", (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
             }
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -1475,8 +1475,8 @@ namespace Minio
         {
             if (args == null || args.SourceObject == null)
             {
-                string message = (args == null)? $"The constructor of " + nameof(CopyObjectRequestArgs) + "initialized with arguments of CopyObjectArgs null." :
-                                                    $"The constructor of " + nameof(CopyObjectRequestArgs) + "initialized with arguments of CopyObjectArgs type but with " + nameof(args.SourceObject) + " not initialized.";
+                string message = (args == null) ? $"The constructor of " + nameof(CopyObjectRequestArgs) + "initialized with arguments of CopyObjectArgs null." :
+                    $"The constructor of " + nameof(CopyObjectRequestArgs) + "initialized with arguments of CopyObjectArgs type but with " + nameof(args.SourceObject) + " not initialized.";
                 throw new InvalidOperationException(message);
             }
             this.RequestMethod = HttpMethod.Put;
@@ -1490,7 +1490,7 @@ namespace Minio
             this.SourceObject.ModifiedSince = args.SourceObject.ModifiedSince;
             this.SourceObject.NotMatchETag = args.SourceObject.NotMatchETag;
             this.SourceObject.UnModifiedSince = args.SourceObject.UnModifiedSince;
-           
+
             // Destination part.
             this.BucketName = args.BucketName;
             this.ObjectName = args.ObjectName ?? args.SourceObject.ObjectName;
@@ -1548,7 +1548,7 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
@@ -1557,7 +1557,7 @@ namespace Minio
                     && this.ObjectTags.TaggingSet.Tag.Count > 0)
             {
                 requestMessageBuilder.AddHeaderParameter("x-amz-tagging", this.ObjectTags.GetTagString());
-                requestMessageBuilder.AddHeaderParameter("x-amz-tagging-directive", this.ReplaceTagsDirective?"REPLACE":"COPY");
+                requestMessageBuilder.AddHeaderParameter("x-amz-tagging-directive", this.ReplaceTagsDirective ? "REPLACE" : "COPY");
             }
             string replaceDirective = "COPY";
             if (this.ReplaceMetadataDirective)
@@ -1575,10 +1575,10 @@ namespace Minio
                 {
                     requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-retain-until-date", utils.To8601String(this.RetentionUntilDate));
                 }
-                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-mode", (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE)?"GOVERNANCE":"COMPLIANCE");
+                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-mode", (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
             }
 
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
 
         internal MultipartCopyUploadArgs WithReplaceMetadataDirective(bool replace)
@@ -1669,7 +1669,7 @@ namespace Minio
             return this;
         }
 
-      internal NewMultipartUploadCopyArgs WithStorageClass(string storageClass)
+        internal NewMultipartUploadCopyArgs WithStorageClass(string storageClass)
         {
             this.StorageClass = storageClass;
             return this;
@@ -1715,17 +1715,17 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
-            requestMessageBuilder.AddQueryParameter("uploads","");
+            requestMessageBuilder.AddQueryParameter("uploads", "");
             if (this.ObjectTags != null && this.ObjectTags.TaggingSet != null
                     && this.ObjectTags.TaggingSet.Tag.Count > 0)
             {
                 requestMessageBuilder.AddHeaderParameter("x-amz-tagging", this.ObjectTags.GetTagString());
-                requestMessageBuilder.AddHeaderParameter("x-amz-tagging-directive", this.ReplaceTagsDirective?"REPLACE":"COPY");
+                requestMessageBuilder.AddHeaderParameter("x-amz-tagging-directive", this.ReplaceTagsDirective ? "REPLACE" : "COPY");
             }
             string replaceDirective = "COPY";
             if (this.ReplaceMetadataDirective)
@@ -1743,15 +1743,15 @@ namespace Minio
                 {
                     requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-retain-until-date", utils.To8601String(this.RetentionUntilDate));
                 }
-                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-mode", (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE)?"GOVERNANCE":"COMPLIANCE");
+                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-mode", (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
             }
 
 
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
-    internal class CompleteMultipartUploadArgs: ObjectWriteArgs<CompleteMultipartUploadArgs>
+    internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUploadArgs>
     {
         internal string UploadId { get; set; }
         internal Dictionary<int, string> ETags { get; set; }
@@ -1804,12 +1804,12 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
-            requestMessageBuilder.AddQueryParameter("uploadId",$"{this.UploadId}");
+            requestMessageBuilder.AddQueryParameter("uploadId", $"{this.UploadId}");
             List<XElement> parts = new List<XElement>();
 
             for (int i = 1; i <= this.ETags.Count; i++)
@@ -1825,7 +1825,7 @@ namespace Minio
             requestMessageBuilder.BodyParameters.Add("content-type", "appllication/xml");
             requestMessageBuilder.SetBody(bodyInBytes);
 
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -1920,7 +1920,7 @@ namespace Minio
             {
                 throw new ArgumentNullException("Invalid input. " + nameof(RequestBody) + ", " + nameof(FileName) + " and " + nameof(ObjectStreamData) + " cannot be empty.");
             }
-            if (this.PartNumber < 0 )
+            if (this.PartNumber < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(PartNumber), this.PartNumber, "Invalid Part number value. Cannot be less than 0");
             }
@@ -1951,7 +1951,7 @@ namespace Minio
             }
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
@@ -1966,8 +1966,8 @@ namespace Minio
             }
             if (!string.IsNullOrWhiteSpace(this.UploadId) && this.PartNumber > 0)
             {
-                requestMessageBuilder.AddQueryParameter("uploadId",$"{this.UploadId}");
-                requestMessageBuilder.AddQueryParameter("partNumber",$"{this.PartNumber}");
+                requestMessageBuilder.AddQueryParameter("uploadId", $"{this.UploadId}");
+                requestMessageBuilder.AddQueryParameter("partNumber", $"{this.PartNumber}");
             }
             if (this.ObjectTags != null && this.ObjectTags.TaggingSet != null
                     && this.ObjectTags.TaggingSet.Tag.Count > 0)
@@ -1981,7 +1981,7 @@ namespace Minio
             }
             if (this.LegalHoldEnabled != null)
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-legal-hold", ((this.LegalHoldEnabled == true)?"ON":"OFF"));
+                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-legal-hold", ((this.LegalHoldEnabled == true) ? "ON" : "OFF"));
             }
             if (this.RequestBody != null)
             {
@@ -1991,14 +1991,15 @@ namespace Minio
                 requestMessageBuilder.AddHeaderParameter("x-amz-content-sha256", hex);
             }
 
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
- 
+
         public new PutObjectArgs WithHeaders(Dictionary<string, string> metaData)
         {
             var sseHeaders = new Dictionary<string, string>();
             this.Headers = this.Headers ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            if (metaData != null) {
+            if (metaData != null)
+            {
                 foreach (KeyValuePair<string, string> p in metaData)
                 {
                     var key = p.Key;
@@ -2056,10 +2057,11 @@ namespace Minio
             if (!string.IsNullOrWhiteSpace(this.FileName) && this.ObjectStreamData != null)
             {
                 ((FileStream)this.ObjectStreamData).Close();
-            } else if (this.ObjectStreamData != null)
+            }
+            else if (this.ObjectStreamData != null)
             {
                 this.ObjectStreamData.Close();
             }
         }
-   }
+    }
 }

@@ -31,13 +31,13 @@ namespace Minio
             this.RequestMethod = HttpMethod.Get;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
-            requestMessageBuilder.AddQueryParameter("versioning","");
-            return requestMessageBuilder;
+            requestMessageBuilder.AddQueryParameter("versioning", "");
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -58,7 +58,7 @@ namespace Minio
         internal override void Validate()
         {
             utils.ValidateBucketName(this.BucketName);
-            if (this.CurrentVersioningStatus > VersioningStatus.Suspended )
+            if (this.CurrentVersioningStatus > VersioningStatus.Suspended)
             {
                 throw new UnexpectedMinioException("CurrentVersioningStatus invalid value .");
             }
@@ -76,7 +76,7 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
@@ -91,12 +91,12 @@ namespace Minio
             // requestMessageBuilder.XmlSerializer.ContentType = "application/xml";
 
             string body = utils.MarshalXML(config, Convert.ToString(ns));
-            requestMessageBuilder.AddQueryParameter("versioning","");
+            requestMessageBuilder.AddQueryParameter("versioning", "");
 
             requestMessageBuilder.Request.Content = new StringContent(
                         Convert.ToString(body), Encoding.UTF8, "application/xml");
 
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 }

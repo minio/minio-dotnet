@@ -65,7 +65,7 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
@@ -80,7 +80,7 @@ namespace Minio
             {
                 requestMessageBuilder.AddHeaderParameter("X-Amz-Bucket-Object-Lock-Enabled", "true");
             }
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
     public class ListObjectsArgs : BucketArgs<ListObjectsArgs>
@@ -182,7 +182,7 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             // using System.Web; Not sure if we need to add query parameters like this vs. requestMessageBuilder.AddQueryParameter()
             // var query = HttpUtility.ParseQueryString(string.Empty);
@@ -232,7 +232,7 @@ namespace Minio
             {
                 throw new InvalidOperationException("Wrong set of properties set.");
             }
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -242,13 +242,13 @@ namespace Minio
         {
             this.RequestMethod = HttpMethod.Get;
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("policy", "");
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -259,7 +259,7 @@ namespace Minio
         {
             this.RequestMethod = HttpMethod.Put;
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             if (string.IsNullOrEmpty(this.PolicyJsonString))
             {
@@ -270,7 +270,7 @@ namespace Minio
 
             requestMessageBuilder.AddQueryParameter("policy", "");
             requestMessageBuilder.AddJsonBody(this.PolicyJsonString);
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
         public SetPolicyArgs WithPolicy(string policy)
         {
@@ -285,13 +285,13 @@ namespace Minio
         {
             this.RequestMethod = HttpMethod.Delete;
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("policy", "");
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -301,13 +301,13 @@ namespace Minio
         {
             this.RequestMethod = HttpMethod.Get;
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("notification", "");
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
     public class SetBucketNotificationsArgs : BucketArgs<SetBucketNotificationsArgs>
@@ -317,7 +317,7 @@ namespace Minio
         {
             this.RequestMethod = HttpMethod.Put;
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             if (this.BucketNotificationConfiguration == null)
             {
@@ -329,7 +329,7 @@ namespace Minio
             requestMessageBuilder.AddQueryParameter("notification", "");
             string body = this.BucketNotificationConfiguration.ToXML();
             request.Headers.Add("text/xml", body);
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
         public SetBucketNotificationsArgs WithBucketNotificationConfiguration(BucketNotification config)
         {
@@ -344,7 +344,7 @@ namespace Minio
         {
             this.RequestMethod = HttpMethod.Put;
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
@@ -354,7 +354,7 @@ namespace Minio
             string body = utils.MarshalXML(bucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
             requestMessageBuilder.AddHeaderParameter("text/xml", body);
 
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -380,7 +380,7 @@ namespace Minio
             this.NotificationObserver = obs;
             return this;
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
@@ -391,68 +391,7 @@ namespace Minio
             {
                 requestMessageBuilder.AddQueryParameter("events", eventType.value);
             }
-            // request.ResponseWriter = async responseStream =>
-            // {
-            //     using (responseStream)
-            //     {
-            //         var sr = new StreamReader(responseStream);
-            //         while (!sr.EndOfStream)
-            //         {
-            //             try
-            //             {
-            //                 string line = await sr.ReadLineAsync();
-            //                 if (this.EnableTrace)
-            //                 {
-            //                     Console.WriteLine("== ListenBucketNotificationsAsync read line ==");
-            //                     Console.WriteLine(line);
-            //                     Console.WriteLine("==============================================");
-            //                 }
-            //                 string trimmed = line.Trim();
-            //                 if (trimmed.Length > 2)
-            //                 {
-            //                     this.NotificationObserver.OnNext(new MinioNotificationRaw(trimmed));
-            //                 }
-            //             }
-            //             catch (Exception)
-            //             {
-            //                 break;
-            //             }
-            //         }
-            //     }
-            // };
-
-            // var response =
-            //     await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
-            // 
-            // 
-            // requestMessageBuilder.ResponseWriter = responseStream =>
-            // {
-            //     using (responseStream)
-            //     {
-            //         var sr = new StreamReader(responseStream);
-            //         while (true)
-            //         {
-            //             string line = sr.ReadLine();
-            //             if (this.EnableTrace)
-            //             {
-            //                 Console.WriteLine("== ListenBucketNotificationsAsync read line ==");
-            //                 Console.WriteLine(line);
-            //                 Console.WriteLine("==============================================");
-            //             }
-            //             if (line == null)
-            //             {
-            //                 break;
-            //             }
-            //             string trimmed = line.Trim();
-            //             if (trimmed.Length > 2)
-            //             {
-            //                 this.NotificationObserver.OnNext(new MinioNotificationRaw(trimmed));
-            //             }
-            //         }
-            //     }
-            // };
-
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
 
         internal ListenBucketNotificationsArgs WithEnableTrace(bool trace)
@@ -508,7 +447,7 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             if (this.EncryptionConfig == null)
             {
@@ -524,7 +463,7 @@ namespace Minio
             requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
             requestMessageBuilder.SetBody(bodyInBytes);
 
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -534,13 +473,13 @@ namespace Minio
         {
             this.RequestMethod = HttpMethod.Get;
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("encryption", "");
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -550,13 +489,13 @@ namespace Minio
         {
             this.RequestMethod = HttpMethod.Delete;
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("encryption", "");
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -574,7 +513,7 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
@@ -589,7 +528,7 @@ namespace Minio
 
             requestMessageBuilder.AddHeaderParameter("Content-MD5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
 
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
 
         internal override void Validate()
@@ -609,13 +548,13 @@ namespace Minio
             this.RequestMethod = HttpMethod.Get;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("tagging", "");
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -626,13 +565,13 @@ namespace Minio
             this.RequestMethod = HttpMethod.Delete;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("tagging", "");
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -659,7 +598,7 @@ namespace Minio
             }
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
@@ -671,7 +610,7 @@ namespace Minio
             requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
             requestMessageBuilder.SetBody(bodyInBytes);
 
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -682,13 +621,13 @@ namespace Minio
             this.RequestMethod = HttpMethod.Get;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("object-lock", "");
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -699,7 +638,7 @@ namespace Minio
             this.RequestMethod = HttpMethod.Put;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
@@ -711,7 +650,7 @@ namespace Minio
             requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
             requestMessageBuilder.SetBody(bodyInBytes);
 
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -729,7 +668,7 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
@@ -741,7 +680,7 @@ namespace Minio
             requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
             requestMessageBuilder.SetBody(bodyInBytes);
             requestMessageBuilder.AddHeaderParameter("Content-MD5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
 
         internal override void Validate()
@@ -761,13 +700,13 @@ namespace Minio
             this.RequestMethod = HttpMethod.Get;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("lifecycle", "");
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -778,13 +717,13 @@ namespace Minio
             this.RequestMethod = HttpMethod.Delete;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("lifecycle", "");
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -795,13 +734,13 @@ namespace Minio
             this.RequestMethod = HttpMethod.Get;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("replication", "");
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -819,7 +758,7 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
@@ -832,7 +771,7 @@ namespace Minio
             requestMessageBuilder.SetBody(bodyInBytes);
             requestMessageBuilder.AddHeaderParameter("Content-MD5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
 
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 
@@ -843,13 +782,13 @@ namespace Minio
             this.RequestMethod = HttpMethod.Delete;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("replication", "");
-            return requestMessageBuilder;
+            return requestMessageBuilder.Request;
         }
     }
 }

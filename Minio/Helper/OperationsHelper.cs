@@ -30,7 +30,7 @@ namespace Minio
 {
     public partial class MinioClient : IObjectOperations
     {
-        
+
         /// <summary>
         /// private helper method to remove list of objects from bucket
         /// </summary>
@@ -94,21 +94,21 @@ namespace Minio
                 File.Delete(tempFileName);
             }
 
-            args = args.WithCallbackStream( stream =>
-                                    {
-                                        using (var fileStream = File.Create(tempFileName))
-                                        {
-                                            stream.CopyTo(fileStream);
-                                        }
-                                        FileInfo writtenInfo = new FileInfo(tempFileName);
-                                        long writtenSize = writtenInfo.Length;
-                                        if (writtenSize != (length - tempFileSize))
-                                        {
-                                            throw new IOException(tempFileName + ": unexpected data written.  expected = " + (length - tempFileSize)
-                                                                + ", written = " + writtenSize);
-                                        }
-                                        utils.MoveWithReplace(tempFileName, args.FileName);
-                                    });
+            args = args.WithCallbackStream(stream =>
+                                   {
+                                       using (var fileStream = File.Create(tempFileName))
+                                       {
+                                           stream.CopyTo(fileStream);
+                                       }
+                                       FileInfo writtenInfo = new FileInfo(tempFileName);
+                                       long writtenSize = writtenInfo.Length;
+                                       if (writtenSize != (length - tempFileSize))
+                                       {
+                                           throw new IOException(tempFileName + ": unexpected data written.  expected = " + (length - tempFileSize)
+                                                               + ", written = " + writtenSize);
+                                       }
+                                       utils.MoveWithReplace(tempFileName, args.FileName);
+                                   });
             return getObjectStreamAsync(args, objectStat, null, cancellationToken);
         }
 
@@ -122,9 +122,10 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         private async Task getObjectStreamAsync(GetObjectArgs args, ObjectStat objectStat, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
         {
-            HttpRequestMessage request = await this.CreateRequest(args).ConfigureAwait(false);
+            // HttpRequestMessage request = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl);
             await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken);
         }
 
@@ -143,9 +144,10 @@ namespace Minio
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         private async Task<List<DeleteError>> removeObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken)
         {
-            var request = await this.CreateRequest(args).ConfigureAwait(false);
+            // var request = await this.CreateRequest(args).ConfigureAwait(false);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
+                args.RequestMethod, requestUrl);
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             RemoveObjectsResponse removeObjectsResponse = new RemoveObjectsResponse(response.StatusCode, response.Content);
             return removeObjectsResponse.DeletedObjectsResult.errorList;
@@ -237,7 +239,7 @@ namespace Minio
             return fullErrorsList;
         }
 
-                /// <summary>
+        /// <summary>
         /// private helper method to remove objects in iterations of 1000 each from bucket
         /// </summary>
         /// <param name="args">RemoveObjectsArgs Arguments Object encapsulates information like - bucket name, List of objects, optional list of versions (for each object) to be deleted</param>
@@ -253,12 +255,12 @@ namespace Minio
         private async Task<List<DeleteError>> removeObjectsHelper(RemoveObjectsArgs args, List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
         {
             List<string> iterObjects = new List<string>(1000);
-            int i =0;
-            foreach(var objName in args.ObjectNames)
+            int i = 0;
+            foreach (var objName in args.ObjectNames)
             {
                 utils.ValidateObjectName(objName);
                 iterObjects.Insert(i, objName);
-                if ((i + 1)  == 1000)
+                if ((i + 1) == 1000)
                 {
                     fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList, cancellationToken);
                     iterObjects.Clear();
