@@ -16,7 +16,6 @@
  */
 
 using System;
-using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,7 +24,6 @@ using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using System.Xml.Serialization;
 using Minio.Credentials;
 using Minio.DataModel;
@@ -53,8 +51,8 @@ namespace Minio
         // Indicates if we are using HTTPS or not
         internal bool Secure { get; private set; }
 
-        // Custom authenticator for HttpClient
-        internal V4Authenticator authenticator;
+        // // Custom authenticator for HttpClient
+        // internal V4Authenticator authenticator;
 
         // Handler for task retry policy
         internal RetryPolicyHandlingDelegate retryPolicyHandler;
@@ -108,7 +106,7 @@ namespace Minio
         /// <summary>
         /// Returns the User-Agent header for the request
         /// </summary>
-        public string FullUserAgent
+        private string FullUserAgent
         {
             get
             {
@@ -131,6 +129,7 @@ namespace Minio
 
             // pick region from endpoint if present
             string region = Regions.GetRegionFromEndpoint(this.Endpoint);
+            // string region = "us-east-1";
 
             // Pick region from location HEAD request
             if (region == string.Empty)
@@ -161,44 +160,45 @@ namespace Minio
             }
         }
 
-        // /// <summary>
-        // /// Constructs a HttpRequestMessage using bucket/object names from Args.
-        // /// Calls overloaded CreateRequest method.
-        // /// </summary>
-        // /// <param name="args">The direct descendant of BucketArgs class, args with populated values from Input</param>
-        // /// <returns>A HttpRequestMessage</returns>
-        // internal async Task<HttpRequestMessage> CreateRequest<T>(BucketArgs<T> args) where T : BucketArgs<T>
-        // {
-        //     this.ArgsCheck(args);
-        //     HttpRequestMessage requestMesssage = await this.CreateRequest(args.RequestMethod, args.BucketName).ConfigureAwait(false);
-        //     return requestMesssage;
-        // }
+        /// <summary>
+        /// Constructs a HttpRequestMessageBuilder using bucket/object names from Args.
+        /// Calls overloaded CreateRequest method.
+        /// </summary>
+        /// <param name="args">The direct descendant of BucketArgs class, args with populated values from Input</param>
+        /// <returns>A HttpRequestMessageBuilder</returns>
+        internal async Task<HttpRequestMessageBuilder> CreateRequest<T>(BucketArgs<T> args) where T : BucketArgs<T>
+        {
+            this.ArgsCheck(args);
 
-
-        // /// <summary>
-        // /// Constructs a HttpRequestMessage using bucket/object names from Args.
-        // /// Calls overloaded CreateRequest method.
-        // /// </summary>
-        // /// <param name="args">The direct descendant of ObjectArgs class, args with populated values from Input</param>
-        // /// <returns>A HttpRequestMessage</returns>
-        // internal async Task<HttpRequestMessage> CreateRequest<T>(ObjectArgs<T> args) where T : ObjectArgs<T>
-        // {
-        //     this.ArgsCheck(args);
-        //     string contentType = "application/octet-stream";
-        //     args.Headers?.TryGetValue("Content-Type", out contentType);
-        //     byte[] bodyAsByteArr = utils.ObjectToByteArray(args.RequestBody);
-        //     HttpRequestMessage requestMesssage = await this.CreateRequest(args.RequestMethod,
-        //                                         args.BucketName,
-        //                                         args.ObjectName,
-        //                                         args.Headers,
-        //                                         contentType,
-        //                                         bodyAsByteArr,
-        //                                         null).ConfigureAwait(false);
-        //     return requestMesssage;
-        // }
+            HttpRequestMessageBuilder requestMesssageBuilder = await CreateRequest(args.RequestMethod, args.BucketName).ConfigureAwait(false);
+            return requestMesssageBuilder;
+        }
 
         /// <summary>
-        /// Constructs a HttpRequestMessage builder. For AWS, this function has the side-effect of overriding the baseUrl
+        /// Constructs a HttpRequestMessage using bucket/object names from Args.
+        /// Calls overloaded CreateRequest method.
+        /// </summary>
+        /// <param name="args">The direct descendant of ObjectArgs class, args with populated values from Input</param>
+        /// <returns>A HttpRequestMessage</returns>
+        internal async Task<HttpRequestMessageBuilder> CreateRequest<T>(ObjectArgs<T> args) where T : ObjectArgs<T>
+        {
+            this.ArgsCheck(args);
+            string contentType = "application/octet-stream";
+            args.Headers?.TryGetValue("Content-Type", out contentType);
+            byte[] bodyAsByteArr = utils.ObjectToByteArray(args.RequestBody);
+            HttpRequestMessageBuilder requestMessageBuilder =
+                    await this.CreateRequest(args.RequestMethod,
+                                             args.BucketName,
+                                             args.ObjectName,
+                                             args.Headers,
+                                             contentType,
+                                             bodyAsByteArr,
+                                             null).ConfigureAwait(false);
+            return requestMessageBuilder;
+        }
+
+        /// <summary>
+        /// Constructs an HttpRequestMessage builder. For AWS, this function has the side-effect of overriding the baseUrl
         /// in the HttpClient with region specific host path or virtual style path.
         /// </summary>
         /// <param name="method">HTTP method</param>
@@ -210,13 +210,14 @@ namespace Minio
         /// <param name="resourcePath">query string</param>
         /// <returns>A HttpRequestMessage builder</returns>
         /// <exception cref="BucketNotFoundException">When bucketName is invalid</exception>
-        internal async Task<HttpRequestMessage> CreateRequest(
+        internal async Task<HttpRequestMessageBuilder> CreateRequest(
             HttpMethod method,
             string bucketName = null,
             string objectName = null,
             Dictionary<string, string> headerMap = null,
             string contentType = "application/octet-stream",
-            byte[] body = null, string resourcePath = null)
+            byte[] body = null,
+            string resourcePath = null)
         {
             string region = string.Empty;
             if (bucketName != null)
@@ -231,38 +232,33 @@ namespace Minio
                 utils.ValidateObjectName(objectName);
             }
 
-            // Start with user specified endpoint
-            // string host = this.BaseUrl;
-
-            if (this.Provider != null)
-            {
-                bool isAWSEnvProvider = (this.Provider is AWSEnvironmentProvider) ||
-                                        (this.Provider is ChainedProvider ch && ch.CurrentProvider is AWSEnvironmentProvider);
-                bool isIAMAWSProvider = (this.Provider is IAMAWSProvider) ||
-                                        (this.Provider is ChainedProvider chained && chained.CurrentProvider is AWSEnvironmentProvider);
-                AccessCredentials creds = null;
-                if (isAWSEnvProvider)
-                {
-                    var aWSEnvProvider = (AWSEnvironmentProvider)this.Provider;
-                    creds = await aWSEnvProvider.GetCredentialsAsync();
-                }
-                else if (isIAMAWSProvider)
-                {
-                    var iamAWSProvider = (IAMAWSProvider)this.Provider;
-                    creds = iamAWSProvider.Credentials;
-                }
-                else
-                {
-                    creds = await this.Provider.GetCredentialsAsync();
-                }
-                if (creds != null)
-                {
-                    this.AccessKey = creds.AccessKey;
-                    this.SecretKey = creds.SecretKey;
-                }
-            }
-
-            this.authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: string.IsNullOrWhiteSpace(this.Region) ? region : this.Region, sessionToken: this.SessionToken);
+            // if (this.Provider != null)
+            // {
+            //     bool isAWSEnvProvider = (this.Provider is AWSEnvironmentProvider) ||
+            //                             (this.Provider is ChainedProvider ch && ch.CurrentProvider is AWSEnvironmentProvider);
+            //     bool isIAMAWSProvider = (this.Provider is IAMAWSProvider) ||
+            //                             (this.Provider is ChainedProvider chained && chained.CurrentProvider is AWSEnvironmentProvider);
+            //     AccessCredentials creds = null;
+            //     if (isAWSEnvProvider)
+            //     {
+            //         var aWSEnvProvider = (AWSEnvironmentProvider)this.Provider;
+            //         creds = await aWSEnvProvider.GetCredentialsAsync();
+            //     }
+            //     else if (isIAMAWSProvider)
+            //     {
+            //         var iamAWSProvider = (IAMAWSProvider)this.Provider;
+            //         creds = iamAWSProvider.Credentials;
+            //     }
+            //     else
+            //     {
+            //         creds = await this.Provider.GetCredentialsAsync();
+            //     }
+            //     if (creds != null)
+            //     {
+            //         this.AccessKey = creds.AccessKey;
+            //         this.SecretKey = creds.SecretKey;
+            //     }
+            // }
 
             // This section reconstructs the url with scheme followed by location specific endpoint (s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
@@ -302,9 +298,7 @@ namespace Minio
                 }
             }
 
-            // Set Target URL
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, bucketName, region, usePathStyle);
-            // SetTargetURL(requestUrl);
 
             if (objectName != null)
             {
@@ -336,27 +330,26 @@ namespace Minio
             }
 
 
-            if (this.Provider != null)
-            {
-                bool isAWSProvider = (this.Provider is AWSEnvironmentProvider aWSEnvProvider) ||
-                                     (this.Provider is ChainedProvider chained && chained.CurrentProvider is AWSEnvironmentProvider);
-                bool isIAMAWSProvider = (this.Provider is IAMAWSProvider);
-                AccessCredentials creds = null;
-                if (isAWSProvider)
-                    creds = await this.Provider.GetCredentialsAsync();
-                else if (isIAMAWSProvider)
-                {
-                    var iamAWSProvider = (IAMAWSProvider)this.Provider;
-                    creds = iamAWSProvider.Credentials;
-                }
-                if (creds != null &&
-                    (isAWSProvider || isIAMAWSProvider) && !string.IsNullOrWhiteSpace(creds.SessionToken))
-                {
-                    messageBuilder.AddHeaderParameter("X-Amz-Security-Token", creds.SessionToken);
-                }
-            }
-
-            return messageBuilder.Request;
+            // if (this.Provider != null)
+            // {
+            //     bool isAWSProvider = (this.Provider is AWSEnvironmentProvider aWSEnvProvider) ||
+            //                          (this.Provider is ChainedProvider chained && chained.CurrentProvider is AWSEnvironmentProvider);
+            //     bool isIAMAWSProvider = (this.Provider is IAMAWSProvider);
+            //     AccessCredentials creds = null;
+            //     if (isAWSProvider)
+            //         creds = await this.Provider.GetCredentialsAsync();
+            //     else if (isIAMAWSProvider)
+            //     {
+            //         var iamAWSProvider = (IAMAWSProvider)this.Provider;
+            //         creds = iamAWSProvider.Credentials;
+            //     }
+            //     if (creds != null &&
+            //         (isAWSProvider || isIAMAWSProvider) && !string.IsNullOrWhiteSpace(creds.SessionToken))
+            //     {
+            //         messageBuilder.AddHeaderParameter("X-Amz-Security-Token", creds.SessionToken);
+            //     }
+            // }
+            return messageBuilder;
         }
 
         /// <summary>
@@ -414,7 +407,7 @@ namespace Minio
             // Instantiate a region cache
             this.regionCache = BucketRegionCache.Instance;
 
-            if (string.IsNullOrEmpty(this.BaseUrl))   // Replaced this.InitClient()
+            if (string.IsNullOrEmpty(this.BaseUrl))
             {
                 throw new InvalidEndpointException("Endpoint cannot be empty.");
             }
@@ -511,19 +504,11 @@ namespace Minio
             return this;
         }
 
-        // /// <summary>
-        // /// Sets endpoint URL on the client object that request will be made against
-        // /// </summary>
-        // {
-        //     this.BaseUrl = Convert.ToString(uri);
-        // }
-
-
         /// <summary>
         /// Actual doer that executes the http request to the server
         /// </summary>
         /// <param name="errorHandlers">List of handlers to override default handling</param>
-        /// <param name="requestMessageBuilder">The build of HttpRequestMessage builder</param>
+        /// <param name="requestMessageBuilder">The build of HttpRequestMessageBuilder </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Response result</returns>
         internal Task<ResponseResult> ExecuteTaskAsync(
@@ -545,12 +530,11 @@ namespace Minio
             if (this.trace)
             {
                 var fullUrl = requestMessageBuilder.RequestUri;
-                Console.WriteLine($"Full URL of Request {fullUrl}");
             }
 
             var v4Authenticator = new V4Authenticator(this.Secure,
-                this.AccessKey, this.SecretKey, region: this.Region,
-                sessionToken: this.SessionToken);
+                this.AccessKey, this.SecretKey, this.Region,
+                this.SessionToken);
 
             requestMessageBuilder.AddHeaderParameter("Authorization",
                         v4Authenticator.Authenticate(requestMessageBuilder));
@@ -767,6 +751,7 @@ namespace Minio
                 && errResponse.Code.Equals("InvalidRequest"))
             {
                 // Parameter legalHold = new Parameter("legal-hold", "", ParameterType.QueryString);
+                var legalHold = new Dictionary<string, string>() { { "legal-hold", "" } };
                 if (response.Request.RequestUri.Query.Contains("legalHold") &&
                     response.Request.RequestUri.Query.Equals(""))
                 {

@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+using Minio.DataModel;
+using Minio.DataModel.Tags;
+using Minio.Exceptions;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,15 +29,12 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using Minio.Helper;
 using System.Web;
-using Minio.DataModel;
+
 using Minio.DataModel.ILM;
 using Minio.DataModel.Replication;
 using Minio.DataModel.ObjectLock;
-using Minio.DataModel.Tags;
-using Minio.Exceptions;
-using Minio.Helper;
-
 using Newtonsoft.Json;
 
 namespace Minio
@@ -145,22 +146,19 @@ namespace Minio
             args.Validate();
             if (string.IsNullOrEmpty(args.Location))
             {
-                if (string.IsNullOrEmpty(this.Region))
-                {
-                    args.Location = "us-east-1";
-                }
-                else
-                {
-                    args.Location = this.Region;
-                }
+                args.Location = this.Region;
             }
-
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, args.Location);
+            // Set Target URL for MakeBucket
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, region: args.Location);
+            // SetTargetURL(requestUrl);
             // Set Authenticator, if necessary.
-            if (string.IsNullOrEmpty(this.Region) && !s3utils.IsAmazonEndPoint(this.BaseUrl) && args.Location != "us-east-1" && this.HttpClient != null)
-            {
-                // this.authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: args.Location, sessionToken: this.SessionToken);
-            }
+            // if (string.IsNullOrEmpty(this.Region) && !s3utils.IsAmazonEndPoint(this.BaseUrl) && args.Location != "us-east-1" && this.restClient != null)
+            // {
+            //     // this.authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: args.Location, sessionToken: this.SessionToken);
+            //     var requestMessageBuilder = new HttpRequestMessageBuilder(HttpMethod.Put, requestUrl, "/" + args.BucketName);
+            //     CreateBucketConfiguration config = new CreateBucketConfiguration(args.Location);
+            //     requestMessageBuilder.AddXmlBody(config.ToXml());
+            // }
             // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 args.RequestMethod, requestUrl, "/" + args.BucketName);
@@ -424,10 +422,7 @@ namespace Minio
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         public async Task<BucketNotification> GetBucketNotificationsAsync(GetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
-            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                args.RequestMethod, requestUrl, "/" + args.BucketName);
+            HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
             ResponseResult responseResult = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             GetBucketNotificationsResponse getBucketNotificationsResponse = new GetBucketNotificationsResponse(responseResult.StatusCode, responseResult.Content);
             return getBucketNotificationsResponse.BucketNotificationConfiguration;
@@ -445,11 +440,8 @@ namespace Minio
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task SetBucketNotificationsAsync(SetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
-            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                args.RequestMethod, requestUrl, "/" + args.BucketName);
-            var restResponse = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+            HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -466,11 +458,8 @@ namespace Minio
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public async Task RemoveAllBucketNotificationsAsync(RemoveAllBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
-            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                args.RequestMethod, requestUrl, "/" + args.BucketName);
-            var restResponse = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+            HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
+            await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -491,13 +480,12 @@ namespace Minio
                 {
                     using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
                     {
-                        cts.Token.ThrowIfCancellationRequested();
-                        args = args.WithNotificationObserver(obs);
-                        Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
-                        HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                            args.RequestMethod, requestUrl, "/" + args.BucketName);
+                        args = args.WithNotificationObserver(obs)
+                                        .WithEnableTrace(this.trace);
+                        HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
                         await this.ExecuteTaskAsync(this.NoErrorHandlers,
                             requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+                        cts.Token.ThrowIfCancellationRequested();
                     }
                 });
         }
@@ -515,10 +503,7 @@ namespace Minio
         public async Task<Tagging> GetBucketTagsAsync(GetBucketTagsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                args.RequestMethod, requestUrl, "/" + args.BucketName);
+            HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
             ResponseResult responseResult = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             GetBucketTagsResponse getBucketNotificationsResponse = new GetBucketTagsResponse(responseResult.StatusCode, responseResult.Content);
             return getBucketNotificationsResponse.BucketTags;

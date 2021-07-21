@@ -218,20 +218,21 @@ namespace Minio
         internal PutObjectResponse(HttpStatusCode statusCode, string responseContent, Dictionary<string, string> responseHeaders)
                     : base(statusCode, responseContent)
         {
-            if (responseHeaders["Etag"] != null)
+            if (responseHeaders.ContainsKey("Etag"))
             {
-                this.Etag = responseHeaders["ETag"];
+                if (!string.IsNullOrEmpty("Etag"))
+                    this.Etag = responseHeaders["ETag"];
                 return;
             }
 
-            // foreach (Parameter parameter in responseHeaders)
-            // {
-            //     if (parameter.Name.Equals("ETag", StringComparison.OrdinalIgnoreCase))
-            //     {
-            //         this.Etag = parameter.Value.ToString();
-            //         return;
-            //     }
-            // }
+            foreach (KeyValuePair<string, string> parameter in responseHeaders)
+            {
+                if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
+                {
+                    this.Etag = parameter.Value.ToString();
+                    return;
+                }
+            }
         }
 
     }
