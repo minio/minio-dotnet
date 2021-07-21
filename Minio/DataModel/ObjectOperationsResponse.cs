@@ -23,6 +23,7 @@ using System.Net;
 using System.Text;
 using System.Xml.Serialization;
 
+
 using Minio.DataModel;
 using Minio.DataModel.Tags;
 using Minio.DataModel.ObjectLock;
@@ -82,7 +83,7 @@ namespace Minio
             {
                 return;
             }
-            var uploads  = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
+            var uploads = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
                           select new Upload
                           {
                               Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
@@ -106,10 +107,10 @@ namespace Minio
         }
     }
 
-    public class GetLegalHoldResponse: GenericResponse
+    public class GetLegalHoldResponse : GenericResponse
     {
         internal ObjectLegalHoldConfiguration CurrentLegalHoldConfiguration { get; private set; }
-        internal string Status { get; private set;}
+        internal string Status { get; private set; }
         public GetLegalHoldResponse(HttpStatusCode statusCode, string responseContent)
             : base(statusCode, responseContent)
         {
@@ -122,8 +123,8 @@ namespace Minio
             {
                 CurrentLegalHoldConfiguration = (ObjectLegalHoldConfiguration)new XmlSerializer(typeof(ObjectLegalHoldConfiguration)).Deserialize(stream);
             }
-            if ( this.CurrentLegalHoldConfiguration == null
-                    || string.IsNullOrEmpty(this.CurrentLegalHoldConfiguration.Status) )
+            if (this.CurrentLegalHoldConfiguration == null
+                    || string.IsNullOrEmpty(this.CurrentLegalHoldConfiguration.Status))
             {
                 Status = "OFF";
             }
@@ -155,13 +156,13 @@ namespace Minio
         public Tagging ObjectTags { get; set; }
     }
 
-    internal class GetRetentionResponse: GenericResponse
+    internal class GetRetentionResponse : GenericResponse
     {
         internal ObjectRetentionConfiguration CurrentRetentionConfiguration { get; private set; }
         public GetRetentionResponse(HttpStatusCode statusCode, string responseContent)
             : base(statusCode, responseContent)
         {
-            if ( string.IsNullOrEmpty(responseContent) && !HttpStatusCode.OK.Equals(statusCode))
+            if (string.IsNullOrEmpty(responseContent) && !HttpStatusCode.OK.Equals(statusCode))
             {
                 this.CurrentRetentionConfiguration = null;
                 return;
@@ -195,7 +196,7 @@ namespace Minio
         }
     }
 
-    internal class NewMultipartUploadResponse: GenericResponse
+    internal class NewMultipartUploadResponse : GenericResponse
     {
         internal string UploadId { get; private set; }
         internal NewMultipartUploadResponse(HttpStatusCode statusCode, string responseContent)
@@ -217,20 +218,21 @@ namespace Minio
         internal PutObjectResponse(HttpStatusCode statusCode, string responseContent, Dictionary<string, string> responseHeaders)
                     : base(statusCode, responseContent)
         {
-            if (responseHeaders["Etag"] != null)
+            if (responseHeaders.ContainsKey("Etag"))
             {
-                this.Etag = responseHeaders["ETag"];
+                if (!string.IsNullOrEmpty("Etag"))
+                    this.Etag = responseHeaders["ETag"];
                 return;
             }
 
-            // foreach (Parameter parameter in responseHeaders)
-            // {
-            //     if (parameter.Name.Equals("ETag", StringComparison.OrdinalIgnoreCase))
-            //     {
-            //         this.Etag = parameter.Value.ToString();
-            //         return;
-            //     }
-            // }
+            foreach (KeyValuePair<string, string> parameter in responseHeaders)
+            {
+                if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
+                {
+                    this.Etag = parameter.Value.ToString();
+                    return;
+                }
+            }
         }
 
     }

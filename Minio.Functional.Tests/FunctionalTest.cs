@@ -495,8 +495,6 @@ namespace Minio.Functional.Tests
                                                 .WithBucket(bucketName);
             BucketExistsArgs beArgs = new BucketExistsArgs()
                                                 .WithBucket(bucketName);
-            string json = JsonConvert.SerializeObject(mbArgs, Newtonsoft.Json.Formatting.Indented);
-
             await minio.MakeBucketAsync(mbArgs);
             bool found = await minio.BucketExistsAsync(beArgs);
             Assert.IsTrue(found);
@@ -3807,8 +3805,11 @@ namespace Minio.Functional.Tests
                 subscription = events.Subscribe(
                     ev =>
                     {
+                        Console.WriteLine($"ListenBucketNotificationsAsync received: " + ev.json);
                         received.Add(ev);
-                    }
+                    },
+                    ex => Console.WriteLine("OnError: {0}", ex.Message),
+                    () => Console.WriteLine($"ListenBucketNotificationsAsync finished")
                 );
                 await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
 
@@ -3856,19 +3857,11 @@ namespace Minio.Functional.Tests
                         Assert.IsTrue(notification.Records[0].eventName.Contains("s3:ObjectCreated:Put"));
                         Assert.IsTrue(objectName.Contains(System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key)));
                         Assert.IsTrue(contentType.Contains(notification.Records[0].s3.objectMeta.contentType));
-                        // Assert.AreEqual("s3:ObjectCreated:Put", notification.Records[0].eventName);  // RestSharp
-                        // if (notification.Records[0].s3.bucketMeta != null)
-                        // {
-                        //     // todo s3 is null, how to complete this test.
-                        //     Assert.AreEqual(bucketName, notification.Records[0].s3.bucketMeta.name);
-                        // }
-                        // Assert.AreEqual(objectName, System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key));
-                        // Assert.AreEqual(contentType, notification.Records[0].s3.objectMeta.contentType);
-                        // testOutcome = TestStatus.PASS;
                         break;
                     }
                     else
                     {
+                        Console.WriteLine($"ListenBucketNotificationsAsync: waiting for notification (t={attempt})");
                     }
                 }
 
@@ -4496,10 +4489,6 @@ namespace Minio.Functional.Tests
             }
             finally
             {
-                // var resp = await  minio.SelectObjectContentAsync(bucketName, objectName, opts);  // RestSharp
-                // var output = await new StreamReader(resp.Payload).ReadToEndAsync();
-                // Assert.AreEqual(ReplaceNewline(output), ReplaceNewline(csvString.ToString()));
-                // await minio.RemoveObjectAsync(bucketName, objectName);
                 await TearDown(minio, bucketName);
             }
         }
@@ -4641,16 +4630,6 @@ namespace Minio.Functional.Tests
                 System.Threading.Thread.Sleep(1500);
                 await TearDown(minio, bucketName);
             }
-        }
-
-
-        private static string ReplaceNewline(string text)
-        {
-            if (text.Contains(Environment.NewLine))
-            {
-                return text;
-            }
-            return text.Replace("\n", Environment.NewLine);
         }
 
         #endregion

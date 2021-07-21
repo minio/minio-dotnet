@@ -17,24 +17,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
-using System.Web;
 using Minio.DataModel;
 using Minio.DataModel.ILM;
 using Minio.DataModel.Replication;
 using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Tags;
 using Minio.Exceptions;
-using Minio.Helper;
-
-using Newtonsoft.Json;
 
 namespace Minio
 {
@@ -111,28 +104,30 @@ namespace Minio
         public async Task MakeBucketAsync(MakeBucketArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
+
             if (string.IsNullOrEmpty(args.Location))
             {
-                if (string.IsNullOrEmpty(this.Region))
-                {
-                    args.Location = "us-east-1";
-                }
-                else
+                args.Location = "us-east-1";
+            }
+
+            if (args.Location == "us-east-1")
+            {
+                if (this.Region != string.Empty)
                 {
                     args.Location = this.Region;
                 }
             }
 
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, args.Location);
-            // Set Authenticator, if necessary.
-            if (string.IsNullOrEmpty(this.Region) && !s3utils.IsAmazonEndPoint(this.BaseUrl) && args.Location != "us-east-1" && this.HttpClient != null)
+            var requestMessageBuilder = new HttpRequestMessageBuilder(HttpMethod.Put, requestUrl, "/" + args.BucketName);
+
+            if (args.Location != "us-east-1")
             {
-                // this.authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: args.Location, sessionToken: this.SessionToken);
+                CreateBucketConfiguration config = new CreateBucketConfiguration(args.Location);
+                requestMessageBuilder.AddXmlBody(config.ToXml());
             }
-            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                args.RequestMethod, requestUrl, "/" + args.BucketName);
-            await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+                            .ConfigureAwait(false);
         }
 
 

@@ -31,7 +31,7 @@ namespace Minio.Credentials
 {
     // Assume-role credential provider
     public abstract class AssumeRoleBaseProvider<T> : ClientProvider
-                                where T: AssumeRoleBaseProvider<T>
+                                where T : AssumeRoleBaseProvider<T>
     {
         internal AccessCredentials Credentials { get; set; }
         internal MinioClient Client { get; set; }
@@ -40,7 +40,7 @@ namespace Minio.Credentials
         internal uint? DurationInSeconds { get; set; }
         internal string Region { get; set; }
         internal string RoleSessionName { get; set; }
-        internal string Policy{ get; set; }
+        internal string Policy { get; set; }
         internal string RoleARN { get; set; }
         internal string ExternalID { get; set; }
 
@@ -62,7 +62,7 @@ namespace Minio.Credentials
 
         public T WithRegion(string region)
         {
-            this.Region = (!string.IsNullOrWhiteSpace(region))? region : "";
+            this.Region = (!string.IsNullOrWhiteSpace(region)) ? region : "";
             return (T)this;
         }
 
@@ -106,15 +106,12 @@ namespace Minio.Credentials
 
         internal async virtual Task<HttpRequestMessageBuilder> BuildRequest()
         {
-            HttpRequestMessage req = null;
             HttpRequestMessageBuilder reqBuilder = null;
             if (Client == null)
             {
                 throw new InvalidOperationException("MinioClient is not set in AssumeRoleBaseProvider");
             }
-            req = await Client.CreateRequest(HttpMethod.Post);
-            reqBuilder = new HttpRequestMessageBuilder(
-                req.Method, req.RequestUri, req.RequestUri.AbsolutePath);
+            reqBuilder = await Client.CreateRequest(HttpMethod.Post);
             reqBuilder.AddQueryParameter("Version", "2011-06-15");
             if (!string.IsNullOrWhiteSpace(this.Policy))
             {

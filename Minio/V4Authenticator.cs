@@ -21,7 +21,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Security.Cryptography;
-
+using System.Xml.Linq;
 
 namespace Minio
 {
@@ -128,14 +128,14 @@ namespace Minio
             SortedDictionary<string, string> headersToSign = this.GetHeadersToSign(requestBuilder);
             string signedHeaders = this.GetSignedHeaders(headersToSign);
             string canonicalRequest = this.GetCanonicalRequest(requestBuilder, headersToSign);
-            byte[] canonicalRequestBytes = Encoding.UTF8.GetBytes(canonicalRequest);
+            byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = this.BytesToHex(this.ComputeSha256(canonicalRequestBytes));
             string region = this.GetRegion(requestUri.Host);
             string stringToSign = this.GetStringToSign(region, signingDate, canonicalRequestHash);
 
             byte[] signingKey = this.GenerateSigningKey(region, signingDate);
 
-            byte[] stringToSignBytes = Encoding.UTF8.GetBytes(stringToSign);
+            byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(stringToSign);
 
             byte[] signatureBytes = this.SignHmac(signingKey, stringToSignBytes);
 
@@ -189,17 +189,17 @@ namespace Minio
         /// <returns>bytes of computed hmac</returns>
         private byte[] GenerateSigningKey(string region, DateTime signingDate)
         {
-            byte[] formattedDateBytes = Encoding.UTF8.GetBytes(signingDate.ToString("yyyMMdd"));
-            byte[] formattedKeyBytes = Encoding.UTF8.GetBytes($"AWS4{this.secretKey}");
+            byte[] formattedDateBytes = System.Text.Encoding.UTF8.GetBytes(signingDate.ToString("yyyMMdd"));
+            byte[] formattedKeyBytes = System.Text.Encoding.UTF8.GetBytes($"AWS4{this.secretKey}");
             byte[] dateKey = this.SignHmac(formattedKeyBytes, formattedDateBytes);
 
-            byte[] regionBytes = Encoding.UTF8.GetBytes(region);
+            byte[] regionBytes = System.Text.Encoding.UTF8.GetBytes(region);
             byte[] dateRegionKey = this.SignHmac(dateKey, regionBytes);
 
-            byte[] serviceBytes = Encoding.UTF8.GetBytes("s3");
+            byte[] serviceBytes = System.Text.Encoding.UTF8.GetBytes("s3");
             byte[] dateRegionServiceKey = this.SignHmac(dateRegionKey, serviceBytes);
 
-            byte[] requestBytes = Encoding.UTF8.GetBytes("aws4_request");
+            byte[] requestBytes = System.Text.Encoding.UTF8.GetBytes("aws4_request");
             return this.SignHmac(dateRegionServiceKey, requestBytes);
         }
 
@@ -271,7 +271,7 @@ namespace Minio
         public string PresignPostSignature(string region, DateTime signingDate, string policyBase64)
         {
             byte[] signingKey = this.GenerateSigningKey(region, signingDate);
-            byte[] stringToSignBytes = Encoding.UTF8.GetBytes(policyBase64);
+            byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(policyBase64);
 
             byte[] signatureBytes = this.SignHmac(signingKey, stringToSignBytes);
             string signature = this.BytesToHex(signatureBytes);
@@ -325,11 +325,11 @@ namespace Minio
             var presignUri = new UriBuilder(requestUri) { Query = requestQuery }.Uri;
             string canonicalRequest = this.GetPresignCanonicalRequest(requestBuilder.Method, presignUri, headersToSign);
             string headers = string.Concat(headersToSign.Select(p => $"&{p.Key}={utils.UrlEncode(p.Value)}"));
-            byte[] canonicalRequestBytes = Encoding.UTF8.GetBytes(canonicalRequest);
+            byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = this.BytesToHex(ComputeSha256(canonicalRequestBytes));
             string stringToSign = this.GetStringToSign(region, signingDate, canonicalRequestHash);
             byte[] signingKey = this.GenerateSigningKey(region, signingDate);
-            byte[] stringToSignBytes = Encoding.UTF8.GetBytes(stringToSign);
+            byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(stringToSign);
             byte[] signatureBytes = this.SignHmac(signingKey, stringToSignBytes);
             string signature = this.BytesToHex(signatureBytes);
 
@@ -409,27 +409,17 @@ namespace Minio
                 path[0] = $"/{path[0]}";
             }
             canonicalStringList.AddLast(path[0]);
-            // Removed the following Incoming Change during Rebase Conflict resolition
-            // string query = string.Empty;
-            // var queryParams = new List<KeyValuePair<string, string>>();
-
-            // foreach (var p in request.Parameters)
-            // {
-            //     if (p.Type == ParameterType.QueryString){
-            //         queryParams.Add(new KeyValuePair<string, string>(p.Name, Uri.EscapeDataString((string)p.Value)));
-            //     } 
-            // }
             Dictionary<string, string> queryParams =
                 requestBuilder.QueryParameters.ToDictionary(o => o.Key, o => Uri.EscapeDataString(o.Value));
             var sb1 = new StringBuilder();
-            // queryParams = queryParams.OrderBy(_ => _.Key)
-            //     .ThenBy(_ => _.Value).ToList();
-            // foreach (var p in queryParams)
-            // {
-            //     if (sb1.Length > 0)
-            //         sb1.Append("&");
-            //     sb1.AppendFormat("{0}={1}", p.Key, p.Value);
-            // }
+            var queryKeys = new List<string>(queryParams.Keys);
+            queryKeys.Sort(StringComparer.Ordinal);
+            foreach (var p in queryKeys)
+            {
+                if (sb1.Length > 0)
+                    sb1.Append("&");
+                sb1.AppendFormat("{0}={1}", p, queryParams[p]);
+            }
             var query = sb1.ToString();
             canonicalStringList.AddLast(query);
 
@@ -462,8 +452,6 @@ namespace Minio
             var sortedHeaders = new SortedDictionary<string, string>(StringComparer.Ordinal);
             foreach (var header in headers)
             {
-                // string headerName = header.Name.ToLower();
-                // string headerValue = (header.Value != null)?header.Value.ToString():"";
                 string headerName = header.Key.ToLower();
                 string headerValue = header.Value;
 
@@ -554,7 +542,6 @@ namespace Minio
                 {
                     return;
                 }
-
                 // For insecure, authenticated requests set sha256 header instead of MD5.
                 if (!isSecure && !isAnonymous)
                 {
@@ -566,7 +553,7 @@ namespace Minio
                 byte[] hash = md5.ComputeHash(body);
 
                 string base64 = Convert.ToBase64String(hash);
-                requestBuilder.AddHeaderParameter("Content-MD5", base64);
+                requestBuilder.AddBodyParameter("Content-MD5", base64);
             }
         }
     }

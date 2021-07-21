@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Minio.DataModel;
 using Minio.DataModel.ILM;
 using Minio.DataModel.Replication;
