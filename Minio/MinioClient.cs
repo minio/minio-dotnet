@@ -129,7 +129,6 @@ namespace Minio
 
             // pick region from endpoint if present
             string region = Regions.GetRegionFromEndpoint(this.Endpoint);
-            // string region = "us-east-1";
 
             // Pick region from location HEAD request
             if (region == string.Empty)
@@ -169,9 +168,8 @@ namespace Minio
         internal async Task<HttpRequestMessageBuilder> CreateRequest<T>(BucketArgs<T> args) where T : BucketArgs<T>
         {
             this.ArgsCheck(args);
-
             HttpRequestMessageBuilder requestMesssageBuilder = await CreateRequest(args.RequestMethod, args.BucketName).ConfigureAwait(false);
-            return requestMesssageBuilder;
+            return args.BuildRequest(requestMesssageBuilder.Request);
         }
 
         /// <summary>
@@ -185,16 +183,15 @@ namespace Minio
             this.ArgsCheck(args);
             string contentType = "application/octet-stream";
             args.Headers?.TryGetValue("Content-Type", out contentType);
-            byte[] bodyAsByteArr = utils.ObjectToByteArray(args.RequestBody);
             HttpRequestMessageBuilder requestMessageBuilder =
                     await this.CreateRequest(args.RequestMethod,
                                              args.BucketName,
                                              args.ObjectName,
                                              args.Headers,
                                              contentType,
-                                             bodyAsByteArr,
+                                             args.RequestBody,
                                              null).ConfigureAwait(false);
-            return requestMessageBuilder;
+            return args.BuildRequest(requestMessageBuilder.Request);
         }
 
         /// <summary>
@@ -232,33 +229,33 @@ namespace Minio
                 utils.ValidateObjectName(objectName);
             }
 
-            // if (this.Provider != null)
-            // {
-            //     bool isAWSEnvProvider = (this.Provider is AWSEnvironmentProvider) ||
-            //                             (this.Provider is ChainedProvider ch && ch.CurrentProvider is AWSEnvironmentProvider);
-            //     bool isIAMAWSProvider = (this.Provider is IAMAWSProvider) ||
-            //                             (this.Provider is ChainedProvider chained && chained.CurrentProvider is AWSEnvironmentProvider);
-            //     AccessCredentials creds = null;
-            //     if (isAWSEnvProvider)
-            //     {
-            //         var aWSEnvProvider = (AWSEnvironmentProvider)this.Provider;
-            //         creds = await aWSEnvProvider.GetCredentialsAsync();
-            //     }
-            //     else if (isIAMAWSProvider)
-            //     {
-            //         var iamAWSProvider = (IAMAWSProvider)this.Provider;
-            //         creds = iamAWSProvider.Credentials;
-            //     }
-            //     else
-            //     {
-            //         creds = await this.Provider.GetCredentialsAsync();
-            //     }
-            //     if (creds != null)
-            //     {
-            //         this.AccessKey = creds.AccessKey;
-            //         this.SecretKey = creds.SecretKey;
-            //     }
-            // }
+            if (this.Provider != null)
+            {
+                bool isAWSEnvProvider = (this.Provider is AWSEnvironmentProvider) ||
+                                        (this.Provider is ChainedProvider ch && ch.CurrentProvider is AWSEnvironmentProvider);
+                bool isIAMAWSProvider = (this.Provider is IAMAWSProvider) ||
+                                        (this.Provider is ChainedProvider chained && chained.CurrentProvider is AWSEnvironmentProvider);
+                AccessCredentials creds = null;
+                if (isAWSEnvProvider)
+                {
+                    var aWSEnvProvider = (AWSEnvironmentProvider)this.Provider;
+                    creds = await aWSEnvProvider.GetCredentialsAsync();
+                }
+                else if (isIAMAWSProvider)
+                {
+                    var iamAWSProvider = (IAMAWSProvider)this.Provider;
+                    creds = iamAWSProvider.Credentials;
+                }
+                else
+                {
+                    creds = await this.Provider.GetCredentialsAsync();
+                }
+                if (creds != null)
+                {
+                    this.AccessKey = creds.AccessKey;
+                    this.SecretKey = creds.SecretKey;
+                }
+            }
 
             // This section reconstructs the url with scheme followed by location specific endpoint (s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
@@ -298,6 +295,7 @@ namespace Minio
                 }
             }
 
+            // Set Target URL
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, bucketName, region, usePathStyle);
 
             if (objectName != null)
@@ -330,25 +328,25 @@ namespace Minio
             }
 
 
-            // if (this.Provider != null)
-            // {
-            //     bool isAWSProvider = (this.Provider is AWSEnvironmentProvider aWSEnvProvider) ||
-            //                          (this.Provider is ChainedProvider chained && chained.CurrentProvider is AWSEnvironmentProvider);
-            //     bool isIAMAWSProvider = (this.Provider is IAMAWSProvider);
-            //     AccessCredentials creds = null;
-            //     if (isAWSProvider)
-            //         creds = await this.Provider.GetCredentialsAsync();
-            //     else if (isIAMAWSProvider)
-            //     {
-            //         var iamAWSProvider = (IAMAWSProvider)this.Provider;
-            //         creds = iamAWSProvider.Credentials;
-            //     }
-            //     if (creds != null &&
-            //         (isAWSProvider || isIAMAWSProvider) && !string.IsNullOrWhiteSpace(creds.SessionToken))
-            //     {
-            //         messageBuilder.AddHeaderParameter("X-Amz-Security-Token", creds.SessionToken);
-            //     }
-            // }
+            if (this.Provider != null)
+            {
+                bool isAWSProvider = (this.Provider is AWSEnvironmentProvider aWSEnvProvider) ||
+                                     (this.Provider is ChainedProvider chained && chained.CurrentProvider is AWSEnvironmentProvider);
+                bool isIAMAWSProvider = (this.Provider is IAMAWSProvider);
+                AccessCredentials creds = null;
+                if (isAWSProvider)
+                    creds = await this.Provider.GetCredentialsAsync();
+                else if (isIAMAWSProvider)
+                {
+                    var iamAWSProvider = (IAMAWSProvider)this.Provider;
+                    creds = iamAWSProvider.Credentials;
+                }
+                if (creds != null &&
+                    (isAWSProvider || isIAMAWSProvider) && !string.IsNullOrWhiteSpace(creds.SessionToken))
+                {
+                    messageBuilder.AddHeaderParameter("X-Amz-Security-Token", creds.SessionToken);
+                }
+            }
             return messageBuilder;
         }
 
@@ -530,6 +528,7 @@ namespace Minio
             if (this.trace)
             {
                 var fullUrl = requestMessageBuilder.RequestUri;
+                Console.WriteLine($"Full URL of Request {fullUrl}");
             }
 
             var v4Authenticator = new V4Authenticator(this.Secure,
@@ -538,17 +537,17 @@ namespace Minio
 
             requestMessageBuilder.AddHeaderParameter("Authorization",
                         v4Authenticator.Authenticate(requestMessageBuilder));
-            var request = requestMessageBuilder.Request;
+            HttpRequestMessage request = requestMessageBuilder.Request;
             ResponseResult responseResult;
-            // HttpClient httpClient = new HttpClient();
             try
             {
                 if (requestTimeout > 0)
                 {
                     this.HttpClient.Timeout = new TimeSpan(0, 0, 0, 0, requestTimeout);
                 }
-                HttpResponseMessage response = await this.HttpClient.SendAsync(request,
-                        HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                var response = await this.HttpClient.SendAsync(request,
+                    HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                    .ConfigureAwait(false);
                 responseResult = new ResponseResult(request, response);
             }
             catch (OperationCanceledException)
@@ -559,6 +558,7 @@ namespace Minio
             {
                 responseResult = new ResponseResult(request, e);
             }
+
             this.HandleIfErrorResponse(responseResult, errorHandlers, startTime);
             return responseResult;
         }
@@ -600,9 +600,9 @@ namespace Minio
             }
 
             if (response.StatusCode == 0)
-                throw new ConnectionException("Connection error", response);
+                throw new ConnectionException("Connection error:" + response.ErrorMessage, response);
             throw new InternalClientException(
-                "Unsuccessful response from server without XML", response);
+                "Unsuccessful response from server without XML:" + response.ErrorMessage, response);
         }
 
         private static void ParseWellKnownErrorNoContent(ResponseResult response)
@@ -640,8 +640,8 @@ namespace Minio
                 int pathLength = resourceSplits.Length;
                 // bool isAWS = host.EndsWith("s3.amazonaws.com"); PR#442
                 // bool isVirtual = isAWS && !host.StartsWith("s3.amazonaws.com");
-                bool isAWS = response.Request.RequestUri.AbsolutePath.EndsWith("s3.amazonaws.com");
-                bool isVirtual = isAWS && !response.Request.RequestUri.AbsolutePath.StartsWith("s3.amazonaws.com");
+                bool isAWS = host.EndsWith("s3.amazonaws.com");
+                bool isVirtual = isAWS && !host.StartsWith("s3.amazonaws.com");
 
                 if (pathLength > 1)
                 {
@@ -706,8 +706,7 @@ namespace Minio
                 throw new BucketNotFoundException(bucketName, "Not found.");
             }
 
-            var contentBytes = response.ContentBytes;
-            var contentString = response.Content;
+            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
             ErrorResponse errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream);
 
@@ -725,7 +724,8 @@ namespace Minio
             {
                 throw new ErrorResponseException(errResponse, response)
                 {
-                    XmlError = contentString
+                    XmlError = response.Content
+
                 };
             }
 
@@ -752,8 +752,7 @@ namespace Minio
             {
                 // Parameter legalHold = new Parameter("legal-hold", "", ParameterType.QueryString);
                 var legalHold = new Dictionary<string, string>() { { "legal-hold", "" } };
-                if (response.Request.RequestUri.Query.Contains("legalHold") &&
-                    response.Request.RequestUri.Query.Equals(""))
+                if (response.Request.RequestUri.Query.Contains("legalHold")) // && response.Request.RequestUri.Query.Equals(""))
                 {
                     throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
                 }
@@ -842,7 +841,7 @@ namespace Minio
                 {
                     name = parameter.Key,
                     value = parameter.Value,
-                    // type = parameter.Type.ToString()  // Do we need this?
+                    type = parameter.GetType().ToString()
                 }),
                 // ToString() here to have the method as a nice string otherwise it will just show the enum value
                 method = request.Method.ToString(),

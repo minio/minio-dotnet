@@ -21,11 +21,13 @@ using System.Net.Http;
 using System.Text;
 using System.Web;
 
+using System.Reflection;
+
 namespace Minio
 {
     internal class HttpRequestMessageBuilder
     {
-        public Uri RequestUri { get; }
+        public Uri RequestUri { get; set; }
         public HttpMethod Method { get; }
 
         public HttpRequestMessage Request
@@ -63,15 +65,10 @@ namespace Minio
                 return request;
             }
         }
-        public HttpRequestMessageBuilder(HttpMethod method, Uri host, string path)
-            : this(method,
-                new UriBuilder(host)
-                {
-                    Path = path
-                }.Uri
-            )
-        {
 
+        public HttpRequestMessageBuilder(HttpMethod method, Uri host, string path)
+        : this(method, new UriBuilder(host) { Path = path }.Uri)
+        {
         }
 
         public HttpRequestMessageBuilder(HttpMethod method, string requestUrl)
@@ -100,7 +97,7 @@ namespace Minio
 
         public void AddHeaderParameter(string key, string value)
         {
-            if (key == this.ContentTypeKey)
+            if ((key == this.ContentTypeKey) && (!string.IsNullOrEmpty(value)))
             {
                 this.BodyParameters.Add(key, value);
             }
@@ -137,6 +134,6 @@ namespace Minio
             this.BodyParameters.Add(this.ContentTypeKey, "application/json");
         }
 
-        private string ContentTypeKey => "Content-Type";
+        public string ContentTypeKey => "Content-Type";
     }
 }

@@ -20,6 +20,7 @@ using System;
 using System.Text;
 using System.Net.Http;
 using System.Xml.Serialization;
+using System.Reflection;
 
 namespace Minio
 {
@@ -30,13 +31,13 @@ namespace Minio
             this.RequestMethod = HttpMethod.Get;
         }
 
-        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("versioning", "");
-            return requestMessageBuilder.Request;
+            return requestMessageBuilder;
         }
     }
 
@@ -75,7 +76,7 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
@@ -95,7 +96,7 @@ namespace Minio
             requestMessageBuilder.Request.Content = new StringContent(
                         Convert.ToString(body), Encoding.UTF8, "application/xml");
 
-            return requestMessageBuilder.Request;
+            return requestMessageBuilder;
         }
     }
 }
