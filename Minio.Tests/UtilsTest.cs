@@ -90,7 +90,7 @@ namespace Minio.Tests
             {
                 Assert.AreEqual(ex.ServerMessage, "Object name cannot be greater than 1024 characters.");
             }
-            
+
         }
 
         [TestMethod]
@@ -205,7 +205,7 @@ namespace Minio.Tests
         }
 
         [TestMethod]
-        public  void TestBucketConfiguration()
+        public void TestBucketConfiguration()
         {
             CreateBucketConfiguration config = new CreateBucketConfiguration("us-west-1");
             XmlSerializer xs = new XmlSerializer(typeof(CreateBucketConfiguration));

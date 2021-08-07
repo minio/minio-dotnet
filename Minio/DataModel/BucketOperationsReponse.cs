@@ -33,6 +33,8 @@ using System.Web;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
+using System.Reflection;
+
 namespace Minio
 {
     internal class GetVersioningResponse : GenericResponse
@@ -46,9 +48,20 @@ namespace Minio
             {
                 return;
             }
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
+
+            try
             {
-                this.VersioningConfig = (VersioningConfiguration)new XmlSerializer(typeof(VersioningConfiguration)).Deserialize(stream);
+
+                using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+                {
+                    stream.Position = 0;
+
+                    this.VersioningConfig = (VersioningConfiguration)new XmlSerializer(typeof(VersioningConfiguration)).Deserialize(stream);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
     }
@@ -252,7 +265,7 @@ namespace Minio
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ResponseContent)))
             using (var streamReader = new StreamReader(stream))
             {
-                this.PolicyJsonString =  await streamReader.ReadToEndAsync()
+                this.PolicyJsonString = await streamReader.ReadToEndAsync()
                                                     .ConfigureAwait(false);
             }
         }

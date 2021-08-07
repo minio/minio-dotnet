@@ -189,7 +189,7 @@ namespace Minio
         /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-        Task<SelectResponseStream> SelectObjectContentAsync(SelectObjectContentArgs args,CancellationToken cancellationToken = default(CancellationToken));
+        Task<SelectResponseStream> SelectObjectContentAsync(SelectObjectContentArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Lists all incomplete uploads in a given bucket and prefix recursively
@@ -229,7 +229,7 @@ namespace Minio
         /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-        Task<string> PresignedGetObjectAsync(PresignedGetObjectArgs args);
+        string PresignedGetObjectAsync(PresignedGetObjectArgs args);
 
         /// <summary>
         /// Presigned post policy
@@ -408,7 +408,7 @@ namespace Minio
         /// <param name="reqParams">Optional override response headers</param>
         /// <param name="reqDate">Optional request date and time in UTC</param>
         [Obsolete("Use PresignedGetObjectAsync method with PresignedGetObjectArgs object.")]
-        Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null);
+        string PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null);
 
         /// <summary>
         /// Presigned Put url - returns a presigned url to upload an object without credentials.URL can have a maximum expiry of

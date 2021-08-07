@@ -91,12 +91,16 @@ namespace Minio.Functional.Tests
                 // Check if bucket exists
                 FunctionalTest.BucketExists_Test(minioClient).Wait();
 
-                // Create a new bucket and test valid bucket names
+                // Create a new bucket
                 FunctionalTest.MakeBucket_Test1(minioClient).Wait();
-                FunctionalTest.MakeBucket_Test2(minioClient).Wait();
-                FunctionalTest.MakeBucket_Test3(minioClient).Wait();
-                FunctionalTest.MakeBucket_Test4(minioClient).Wait();
                 FunctionalTest.MakeBucket_Test5(minioClient).Wait();
+
+                if (useAWS)
+                {
+                    FunctionalTest.MakeBucket_Test2(minioClient, useAWS).Wait();
+                    FunctionalTest.MakeBucket_Test3(minioClient, useAWS).Wait();
+                    FunctionalTest.MakeBucket_Test4(minioClient, useAWS).Wait();
+                }
 
                 // Test removal of bucket
                 FunctionalTest.RemoveBucket_Test1(minioClient).Wait();
@@ -123,7 +127,7 @@ namespace Minio.Functional.Tests
 
                 // Test File GetObject and PutObject functions
                 FunctionalTest.FGetObject_Test1(minioClient).Wait();
-                // FIX=> FPutObject_Test1(minioClient).Wait();
+                // FIX => FPutObject_Test1(minioClient).Wait();
                 FunctionalTest.FPutObject_Test2(minioClient).Wait();
 
                 // Test SelectObjectContentAsync function

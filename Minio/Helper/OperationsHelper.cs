@@ -57,11 +57,11 @@ namespace Minio
             args.Validate();
             if (args.FileName != null)
             {
-                await this.getObjectFileAsync(args, objStat, cancellationToken);
+                await this.getObjectFileAsync(args, objStat, cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                await this.getObjectStreamAsync(args, objStat, args.CallBack, cancellationToken);
+                await this.getObjectStreamAsync(args, objStat, args.CallBack, cancellationToken).ConfigureAwait(false);
             }
             return objStat;
 
@@ -122,11 +122,9 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         private async Task getObjectStreamAsync(GetObjectArgs args, ObjectStat objectStat, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
         {
-            // HttpRequestMessage request = await this.CreateRequest(args).ConfigureAwait(false);
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                args.RequestMethod, requestUrl);
-            await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken);
+            HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+            // cb.Invoke(response.ContentStream);
         }
 
 
@@ -144,10 +142,7 @@ namespace Minio
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         private async Task<List<DeleteError>> removeObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken)
         {
-            // var request = await this.CreateRequest(args).ConfigureAwait(false);
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                args.RequestMethod, requestUrl);
+            var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             RemoveObjectsResponse removeObjectsResponse = new RemoveObjectsResponse(response.StatusCode, response.Content);
             return removeObjectsResponse.DeletedObjectsResult.errorList;

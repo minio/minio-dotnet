@@ -79,6 +79,7 @@ namespace Minio.DataModel.ILM
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
+                // throw ex;
             }
             finally
             {

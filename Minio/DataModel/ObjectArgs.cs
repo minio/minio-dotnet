@@ -21,7 +21,7 @@ namespace Minio
                             where T : ObjectArgs<T>
     {
         internal string ObjectName { get; set; }
-        internal object RequestBody { get; set; }
+        internal byte[] RequestBody { get; set; }
 
         public T WithObject(string obj)
         {
@@ -29,7 +29,7 @@ namespace Minio
             return (T)this;
         }
 
-        public T WithRequestBody(object data)
+        public T WithRequestBody(byte[] data)
         {
             this.RequestBody = data;
             return (T)this;

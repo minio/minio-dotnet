@@ -28,15 +28,15 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                var reqParams = new Dictionary<string, string> { {"response-content-type", "application/json" } };
+                var reqParams = new Dictionary<string, string> { { "response-content-type", "application/json" } };
                 PresignedGetObjectArgs args = new PresignedGetObjectArgs()
                                                             .WithBucket(bucketName)
                                                             .WithObject(objectName)
                                                             .WithExpiry(1000)
                                                             .WithHeaders(reqParams);
-                string presignedUrl = await client.PresignedGetObjectAsync(args);
+                string presignedUrl = client.PresignedGetObjectAsync(args);
                 Console.WriteLine(presignedUrl);
-            } 
+            }
             catch (Exception e)
             {
                 Console.WriteLine($"Exception {e.Message}");

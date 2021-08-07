@@ -40,11 +40,11 @@ namespace Minio.DataModel.Replication
         [XmlElement("Rule")]
         public List<ReplicationRule> Rules { get; set; }
 
-        public ReplicationConfiguration() 
-        {               
+        public ReplicationConfiguration()
+        {
         }
 
-        public ReplicationConfiguration(string role, List<ReplicationRule> rules) 
+        public ReplicationConfiguration(string role, List<ReplicationRule> rules)
         {
             if (string.IsNullOrEmpty(role) || string.IsNullOrWhiteSpace(role))
             {
@@ -92,6 +92,7 @@ namespace Minio.DataModel.Replication
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
+                // throw ex;
             }
             finally
             {

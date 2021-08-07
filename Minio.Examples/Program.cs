@@ -69,7 +69,7 @@ namespace Minio.Examples
                 int posColon = endPoint.LastIndexOf(':');
                 if (posColon != -1)
                 {
-                    port = Int32.Parse(endPoint.Substring(posColon+1, (endPoint.Length - posColon - 1)));
+                    port = Int32.Parse(endPoint.Substring(posColon + 1, (endPoint.Length - posColon - 1)));
                     endPoint = endPoint.Substring(0, posColon);
                 }
                 accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
@@ -140,7 +140,7 @@ namespace Minio.Examples
 
                 // Create a new bucket
                 Cases.MakeBucket.Run(minioClient, bucketName).Wait();
- 
+
                 Cases.MakeBucket.Run(minioClient, destBucketName).Wait();
 
                 // Bucket with Lock tests
@@ -205,11 +205,11 @@ namespace Minio.Examples
                 // var sseKms = new SSEKMS("kms-key", new Dictionary<string, string>{{ "kms-context", "somevalue"}});
 
                 // Upload encrypted object
-                Cases.PutObject.Run(minioClient, bucketName, objectName, smallFileName, sse:ssec).Wait();
+                Cases.PutObject.Run(minioClient, bucketName, objectName, smallFileName, sse: ssec).Wait();
                 // Copy SSE-C encrypted object to unencrypted object
-                Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName, sseSrc:sseCpy, sseDest:ssec).Wait();
+                Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName, sseSrc: sseCpy, sseDest: ssec).Wait();
                 // Download SSE-C encrypted object
-                Cases.FGetObject.Run(minioClient, destBucketName, objectName, bigFileName, sse:ssec).Wait();
+                Cases.FGetObject.Run(minioClient, destBucketName, objectName, bigFileName, sse: ssec).Wait();
 
                 // List the incomplete uploads
                 Cases.ListIncompleteUploads.Run(minioClient, bucketName);

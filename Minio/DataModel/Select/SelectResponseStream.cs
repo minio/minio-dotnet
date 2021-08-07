@@ -28,8 +28,8 @@ namespace Minio.DataModel
     public class SelectResponseStream
     {
         // SelectResponseStream is a struct for selectobjectcontent response.
-        
-        public Stream Payload  { get ; set; }  
+
+        public Stream Payload { get; set; }
 
         [XmlElement("Stats", IsNullable = false)]
         public StatsMessage Stats { get; set; }
@@ -44,7 +44,7 @@ namespace Minio.DataModel
 
         private MemoryStream payloadStream = null;
         private bool _isProcessing;
-        
+
         public SelectResponseStream()
         {
         }
@@ -52,9 +52,9 @@ namespace Minio.DataModel
         protected int ReadFromStream(byte[] buffer)
         {
             int read = -1;
-            if  (!this._isProcessing)
+            if (!this._isProcessing)
             {
-               return read;
+                return read;
             }
             read = this.payloadStream.Read(buffer, 0, buffer.Length);
             if (!this.payloadStream.CanRead)
@@ -65,7 +65,8 @@ namespace Minio.DataModel
         }
         public SelectResponseStream(Stream s)
         {
-            if (s != null) {
+            if (s != null)
+            {
                 var _ms = new MemoryStream();
                 s.CopyTo(_ms);
                 this.payloadStream = _ms;
@@ -75,23 +76,23 @@ namespace Minio.DataModel
             this.payloadStream.Seek(0, SeekOrigin.Begin);
             this.start();
         }
-        
+
         private void start()
         {
             int numBytesRead = 0;
             while (_isProcessing)
-            {   
-                var n =  ReadFromStream(prelude);
+            {
+                var n = ReadFromStream(prelude);
                 numBytesRead += n;
-                n =  ReadFromStream(preludeCRC);
+                n = ReadFromStream(preludeCRC);
                 var preludeCRCBytes = preludeCRC.ToArray();
                 if (BitConverter.IsLittleEndian)
                 {
-                    Array.Reverse(preludeCRCBytes); 
+                    Array.Reverse(preludeCRCBytes);
                 }
                 numBytesRead += n;
-                var inputArray = new byte[prelude.Length + 4 ];
-                System.Buffer.BlockCopy(prelude,0,inputArray,0, prelude.Length);
+                var inputArray = new byte[prelude.Length + 4];
+                System.Buffer.BlockCopy(prelude, 0, inputArray, 0, prelude.Length);
 
                 // write real data to inputArray
                 Crc32Algorithm.ComputeAndWriteToEnd(inputArray); // last 4 bytes contains CRC
@@ -105,23 +106,23 @@ namespace Minio.DataModel
                 {
                     throw new ArgumentException("Prelude CRC Mismatch");
                 }
-                 var bytes = prelude.Take(4).ToArray();
-                 if (BitConverter.IsLittleEndian)
-                 {
-                    Array.Reverse(bytes); 
-                 }
+                var bytes = prelude.Take(4).ToArray();
+                if (BitConverter.IsLittleEndian)
+                {
+                    Array.Reverse(bytes);
+                }
                 int totalLength = BitConverter.ToInt32(bytes, 0);
                 bytes = prelude.Skip(4).Take(4).ToArray();
                 if (BitConverter.IsLittleEndian)
                 {
-                    Array.Reverse(bytes); 
+                    Array.Reverse(bytes);
                 }
 
                 int headerLength = BitConverter.ToInt32(bytes, 0);
                 int payloadLength = totalLength - headerLength - 16;
 
                 var headers = new byte[headerLength];
-                var payload  = new byte[payloadLength];
+                var payload = new byte[payloadLength];
                 int num = ReadFromStream(headers);
                 if (num != headerLength)
                 {
@@ -139,14 +140,14 @@ namespace Minio.DataModel
                 var messageCRCBytes = messageCRC.ToArray();
                 if (BitConverter.IsLittleEndian)
                 {
-                    Array.Reverse(messageCRCBytes); 
+                    Array.Reverse(messageCRCBytes);
                 }
                 // now verify message CRC
                 inputArray = new byte[totalLength];
-                System.Buffer.BlockCopy(prelude,0,inputArray,0, prelude.Length);
-                System.Buffer.BlockCopy(preludeCRC,0,inputArray,prelude.Length, preludeCRC.Length);
-                System.Buffer.BlockCopy(headers,0,inputArray,prelude.Length+ preludeCRC.Length, headerLength);
-                System.Buffer.BlockCopy(payload,0,inputArray,prelude.Length+ preludeCRC.Length+headerLength, payloadLength);
+                System.Buffer.BlockCopy(prelude, 0, inputArray, 0, prelude.Length);
+                System.Buffer.BlockCopy(preludeCRC, 0, inputArray, prelude.Length, preludeCRC.Length);
+                System.Buffer.BlockCopy(headers, 0, inputArray, prelude.Length + preludeCRC.Length, headerLength);
+                System.Buffer.BlockCopy(payload, 0, inputArray, prelude.Length + preludeCRC.Length + headerLength, payloadLength);
 
                 // write real data to inputArray
                 Crc32Algorithm.ComputeAndWriteToEnd(inputArray); // last 4 bytes contains CRC
@@ -156,7 +157,7 @@ namespace Minio.DataModel
                     throw new ArgumentException("invalid message CRC");
                 }
 
-                if (!Enumerable.SequenceEqual(inputArray.Skip(totalLength-4).Take(4), messageCRCBytes))
+                if (!Enumerable.SequenceEqual(inputArray.Skip(totalLength - 4).Take(4), messageCRCBytes))
                 {
                     throw new ArgumentException("message CRC Mismatch");
                 }
@@ -190,20 +191,19 @@ namespace Minio.DataModel
                     {
                         ProgressMessage progress = new ProgressMessage();
                         using (var stream = new MemoryStream(payload))
-                        progress = (ProgressMessage)new XmlSerializer(typeof(ProgressMessage)).Deserialize(stream);
+                            progress = (ProgressMessage)new XmlSerializer(typeof(ProgressMessage)).Deserialize(stream);
                         this.Progress = progress;
                     }
                     if (value.Equals("Stats"))
                     {
-                        Console.WriteLine("payload|"+Encoding.UTF7.GetString(payload));
                         StatsMessage stats = new StatsMessage();
                         using (var stream = new MemoryStream(payload))
-                        stats = (StatsMessage)new XmlSerializer(typeof(StatsMessage)).Deserialize(stream);
+                            stats = (StatsMessage)new XmlSerializer(typeof(StatsMessage)).Deserialize(stream);
                         this.Stats = stats;
                     }
                     if (value.Equals("Records"))
                     {
-                        this.Payload.Write(payload,0, payloadLength);
+                        this.Payload.Write(payload, 0, payloadLength);
                         continue;
                     }
                 }
@@ -212,12 +212,12 @@ namespace Minio.DataModel
             this.Payload.Seek(0, SeekOrigin.Begin);
             this.payloadStream.Close();
         }
-        
-        protected Dictionary<String,String> extractHeaders(byte[] data)
+
+        protected Dictionary<String, String> extractHeaders(byte[] data)
         {
             var headerMap = new Dictionary<String, String>();
             int offset = 0;
-       
+
             while (offset < data.Length)
             {
                 byte nameLength = data[offset++];
@@ -232,14 +232,14 @@ namespace Minio.DataModel
                 b = data.Skip(offset).Take(2).ToArray();
                 if (BitConverter.IsLittleEndian)
                 {
-                    Array.Reverse(b); 
+                    Array.Reverse(b);
                 }
                 offset += 2;
                 int headerValLength = BitConverter.ToInt16(b, 0);
                 b = data.Skip(offset).Take(headerValLength).ToArray();
                 String value = Encoding.UTF8.GetString(b, 0, b.Length);
                 offset += headerValLength;
-                headerMap.Add(name,value);
+                headerMap.Add(name, value);
             }
             return headerMap;
         }

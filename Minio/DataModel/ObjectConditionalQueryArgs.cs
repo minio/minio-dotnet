@@ -41,7 +41,7 @@ namespace Minio
             }
         }
 
-        internal override HttpRequestMessage BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
         {
             HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
                 request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
@@ -62,7 +62,7 @@ namespace Minio
             {
                 requestMessageBuilder.AddHeaderParameter("If-Unmodified-Since", utils.To8601String(this.UnModifiedSince));
             }
-            return requestMessageBuilder.Request;
+            return requestMessageBuilder;
         }
         public T WithMatchETag(string etag)
         {

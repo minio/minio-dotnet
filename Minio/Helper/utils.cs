@@ -28,6 +28,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
+using System.Reflection;
 
 namespace Minio
 {
@@ -105,22 +106,35 @@ namespace Minio
         // Return url encoded string where reserved characters have been percent-encoded
         internal static string UrlEncode(string input)
         {
+            // The following characters are not allowed on the server side
+            // '-', '_', '.', '/', '*'
             return Uri.EscapeDataString(input).Replace("\\!", "%21")
-                                              .Replace("\\$", "%24")
-                                              .Replace("\\&", "%26")
-                                              .Replace("\\'", "%27")
-                                              .Replace("\\(", "%28")
-                                              .Replace("\\)", "%29")
-                                              .Replace("\\*", "%2A")
-                                              .Replace("\\+", "%2B")
-                                              .Replace("\\,", "%2C")
-                                              .Replace("\\/", "%2F")
-                                              .Replace("\\:", "%3A")
-                                              .Replace("\\;", "%3B")
-                                              .Replace("\\=", "%3D")
-                                              .Replace("\\@", "%40")
-                                              .Replace("\\[", "%5B")
-                                              .Replace("\\]", "%5D");
+                                             .Replace("\\\"", "%22")
+                                             .Replace("\\#", "%23")
+                                             .Replace("\\$", "%24")
+                                             .Replace("\\%", "%25")
+                                             .Replace("\\&", "%26")
+                                             .Replace("\\'", "%27")
+                                             .Replace("\\(", "%28")
+                                             .Replace("\\)", "%29")
+                                             .Replace("\\+", "%2B")
+                                             .Replace("\\,", "%2C")
+                                             .Replace("\\:", "%3A")
+                                             .Replace("\\;", "%3B")
+                                             .Replace("\\<", "%3C")
+                                             .Replace("\\=", "%3D")
+                                             .Replace("\\>", "%3E")
+                                             .Replace("\\?", "%3F")
+                                             .Replace("\\@", "%40")
+                                             .Replace("\\[", "%5B")
+                                             .Replace("\\\\", "%5C")
+                                             .Replace("\\]", "%5D")
+                                             .Replace("\\^", "%5E")
+                                             .Replace("\\'", "%60")
+                                             .Replace("\\{", "%7B")
+                                             .Replace("\\|", "%7C")
+                                             .Replace("\\}", "%7D")
+                                             .Replace("\\~", "%7E");
         }
 
         // Return encoded path where extra "/" are trimmed off.
@@ -251,7 +265,7 @@ namespace Minio
             }
 
             double partSize = (double)Math.Ceiling((decimal)size / Constants.MaxParts);
-            long minPartSize = copy ? Constants.MinimumCOPYPartSize: Constants.MinimumPUTPartSize;
+            long minPartSize = copy ? Constants.MinimumCOPYPartSize : Constants.MinimumPUTPartSize;
             partSize = (double)Math.Ceiling((decimal)partSize / minPartSize) * minPartSize;
             double partCount = Math.Ceiling(size / partSize);
             double lastPartSize = size - (partCount - 1) * partSize;
@@ -913,7 +927,7 @@ namespace Minio
         {
             if (String.IsNullOrEmpty(endpoint))
             {
-                throw new ArgumentException(String.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint),"endpoint");
+                throw new ArgumentException(String.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint), "endpoint");
             }
             if (endpoint.EndsWith("/"))
             {
@@ -921,15 +935,15 @@ namespace Minio
             }
             if (!endpoint.StartsWith("http") && !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
             {
-                throw new InvalidEndpointException(String.Format("{0} is invalid hostname.", endpoint),"endpoint");
+                throw new InvalidEndpointException(String.Format("{0} is invalid hostname.", endpoint), "endpoint");
             }
             string conn_url;
             if (endpoint.StartsWith("http"))
             {
-                throw new InvalidEndpointException(String.Format("{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),"endpoint");
+                throw new InvalidEndpointException(String.Format("{0} the value of the endpoint has the scheme (http/https) in it.", endpoint), "endpoint");
             }
             string enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
-            string scheme = (enable_https != null && enable_https.Equals("1"))? "https://":"http://";
+            string scheme = (enable_https != null && enable_https.Equals("1")) ? "https://" : "http://";
             conn_url = scheme + endpoint;
             string hostnameOfUri = string.Empty;
             Uri url = null;
@@ -944,7 +958,7 @@ namespace Minio
             }
             if (!String.IsNullOrWhiteSpace(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
             {
-                throw new InvalidEndpointException(String.Format("{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),"endpoint");
+                throw new InvalidEndpointException(String.Format("{0}, {1} is invalid hostname.", endpoint, hostnameOfUri), "endpoint");
             }
 
             return url;
@@ -960,6 +974,8 @@ namespace Minio
         // Converts an object to a byte array
         public static byte[] ObjectToByteArray(Object obj)
         {
+            if (obj == null)
+                return null;
             BinaryFormatter bf = new BinaryFormatter();
             using (var ms = new MemoryStream())
             {
@@ -968,5 +984,18 @@ namespace Minio
             }
         }
 
+        // Print object key properties and their values
+        // Added for debugging purposes
+
+        public static void Print(Object obj)
+        {
+            Console.WriteLine("\n******** Properties of {0} ********", obj.GetType().FullName);
+            foreach (PropertyInfo prop in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+            {
+                object value = prop.GetValue(obj, new object[] { });
+                Console.WriteLine("{0} = {1}", prop.Name, value);
+            }
+            Console.WriteLine("Print is DONE!\n\n");
+        }
     }
 }
