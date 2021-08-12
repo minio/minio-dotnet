@@ -360,28 +360,31 @@ namespace Minio
             {
                 request.AddQueryParameter("events",eventType.value);
             }
-            request.ResponseWriter = responseStream =>
+            request.ResponseWriter = async responseStream =>
             {
                 using (responseStream)
                 {
                     var sr = new StreamReader(responseStream);
-                    while (true)
+                    while (!sr.EndOfStream)
                     {
-                        string line = sr.ReadLine();
-                        if (this.EnableTrace)
+                        try
                         {
-                            Console.WriteLine("== ListenBucketNotificationsAsync read line ==");
-                            Console.WriteLine(line);
-                            Console.WriteLine("==============================================");
+                            string line = await sr.ReadLineAsync();
+                            if (this.EnableTrace)
+                            {
+                                Console.WriteLine("== ListenBucketNotificationsAsync read line ==");
+                                Console.WriteLine(line);
+                                Console.WriteLine("==============================================");
+                            }
+                            string trimmed = line.Trim();
+                            if (trimmed.Length > 2)
+                            {
+                                this.NotificationObserver.OnNext(new MinioNotificationRaw(trimmed));
+                            }
                         }
-                        if (line == null)
+                        catch(Exception)
                         {
                             break;
-                        }
-                        string trimmed = line.Trim();
-                        if (trimmed.Length > 2)
-                        {
-                            this.NotificationObserver.OnNext(new MinioNotificationRaw(trimmed));
                         }
                     }
                 }
