@@ -27,7 +27,7 @@ namespace FileUploader
     /// </summary>
     public class FileUpload
     {
-        static void Main(string[] args)
+        static void Main()
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                                  | SecurityProtocolType.Tls11
@@ -35,18 +35,22 @@ namespace FileUploader
             var endpoint = "play.min.io";
             var accessKey = "Q3AM3UQ867SPQQA43P2F";
             var secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
+
             try
             {
                 var minio = new MinioClient()
                                     .WithEndpoint(endpoint)
                                     .WithCredentials(accessKey, secretKey)
-                                    .WithSSL();
+                                    .WithSSL()
+                                    .Build();
                 Run(minio).Wait();
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
+            // Added for Windows folks. Without it, the window, tests
+            // run in, dissappears as soon as the test code completes.
             Console.ReadLine();
         }
 
@@ -62,6 +66,8 @@ namespace FileUploader
             var location = "us-east-1";
             // Upload the zip file
             var objectName = "my-golden-oldies.mp3";
+            // The following is a source file that needs to be created in
+            // your local filesystem.
             var filePath = "C:\\Users\\vagrant\\Downloads\\golden_oldies.mp3";
             var contentType = "application/zip";
 
@@ -81,7 +87,7 @@ namespace FileUploader
                                                         .WithBucket(bucketName)
                                                         .WithObject(objectName)
                                                         .WithFileName(filePath)
-                                                        .WithContentType(contentType);           
+                                                        .WithContentType(contentType);
                 await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
                 Console.WriteLine("Successfully uploaded " + objectName);
             }
@@ -89,6 +95,9 @@ namespace FileUploader
             {
                 Console.WriteLine(e);
             }
+            // Added for Windows folks. Without it, the window, tests
+            // run in, dissappears as soon as the test code completes.
+            Console.ReadLine();
         }
     }
 }

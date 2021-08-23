@@ -39,7 +39,7 @@ namespace Minio
 
         private void SetBaseURL(Uri url)
         {
-            if ( url.IsDefaultPort )
+            if (url.IsDefaultPort)
             {
                 this.BaseUrl = url.Host;
             }
@@ -52,7 +52,7 @@ namespace Minio
         {
             if (String.IsNullOrEmpty(endpoint))
             {
-                throw new ArgumentException(String.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint),"endpoint");
+                throw new ArgumentException(String.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint), "endpoint");
             }
             if (endpoint.EndsWith("/"))
             {
@@ -60,15 +60,15 @@ namespace Minio
             }
             if (!endpoint.StartsWith("http") && !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
             {
-                throw new InvalidEndpointException(String.Format("{0} is invalid hostname.", endpoint),"endpoint");
+                throw new InvalidEndpointException(String.Format("{0} is invalid hostname.", endpoint), "endpoint");
             }
             string conn_url;
             if (endpoint.StartsWith("http"))
             {
-                throw new InvalidEndpointException(String.Format("{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),"endpoint");
+                throw new InvalidEndpointException(String.Format("{0} the value of the endpoint has the scheme (http/https) in it.", endpoint), "endpoint");
             }
             string enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
-            string scheme = (enable_https != null && enable_https.Equals("1"))? "https://":"http://";
+            string scheme = (enable_https != null && enable_https.Equals("1")) ? "https://" : "http://";
             conn_url = scheme + endpoint;
             string hostnameOfUri = string.Empty;
             Uri url = null;
@@ -81,9 +81,9 @@ namespace Minio
             {
                 throw;
             }
-            if ( !String.IsNullOrEmpty(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
+            if (!String.IsNullOrEmpty(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
             {
-                throw new InvalidEndpointException(String.Format("{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),"endpoint");
+                throw new InvalidEndpointException(String.Format("{0}, {1} is invalid hostname.", endpoint, hostnameOfUri), "endpoint");
             }
 
             return url;
@@ -100,14 +100,14 @@ namespace Minio
         {
             if (port < 1 || port > 65535)
             {
-                throw new ArgumentException(String.Format("Port {0} is not a number between 1 and 65535",port), "port");
+                throw new ArgumentException(String.Format("Port {0} is not a number between 1 and 65535", port), "port");
             }
             return WithEndpoint(endpoint + ":" + port);
         }
 
         public MinioClient WithEndpoint(Uri url)
         {
-            if (url == null )
+            if (url == null)
             {
                 throw new ArgumentException(String.Format("URL is null. Can't create endpoint."));
             }
@@ -118,9 +118,18 @@ namespace Minio
         {
             if (String.IsNullOrEmpty(region))
             {
-                throw new ArgumentException(String.Format("{0} the region value can't be null or empty.", region),"region");
+                // Set region to its default value if empty or null
+                this.Region = "us-east-1";
+                return this;
             }
             this.Region = region;
+            return this;
+        }
+
+        public MinioClient WithRegion()
+        {
+            // Set region to its default value if empty or null
+            this.Region = "us-east-1";
             return this;
         }
 
@@ -158,9 +167,9 @@ namespace Minio
 
             var scheme = this.Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
 
-            if ( !this.BaseUrl.StartsWith("http") )
+            if (!this.BaseUrl.StartsWith("http"))
             {
-               this.Endpoint = string.Format("{0}://{1}", scheme, host);
+                this.Endpoint = string.Format("{0}://{1}", scheme, host);
             }
             else
             {

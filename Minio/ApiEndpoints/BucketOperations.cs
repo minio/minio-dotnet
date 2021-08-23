@@ -108,7 +108,19 @@ namespace Minio
             {
                 this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: args.Location, sessionToken: this.SessionToken);
             }
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, args.BuildRequest(request), cancellationToken);
+            try
+            {
+                await this.ExecuteAsync(this.NoErrorHandlers, args.BuildRequest(request), cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                var bucketAlreadyExistsMsg = "Your previous request to create " +
+                            "the named bucket succeeded and you already own it.";
+                if (ex.Message.Contains(bucketAlreadyExistsMsg))
+                {
+                    Console.WriteLine("Bucket has been already created and owned by you! Continuing...");
+                }
+            }
         }
 
 
@@ -267,10 +279,10 @@ namespace Minio
                               ListObjectVersionResponse listObjectsItemResponse = new ListObjectVersionResponse(args, objectList, obs);
                               if (objectList.Item2.Count == 0 && count == 0)
                               {
-                                string name = args.BucketName;
-                                if (!string.IsNullOrEmpty(args.Prefix))
-                                    name += "/" + args.Prefix;
-                                throw new EmptyBucketOperation("Bucket " + name + " is empty.");
+                                  string name = args.BucketName;
+                                  if (!string.IsNullOrEmpty(args.Prefix))
+                                      name += "/" + args.Prefix;
+                                  throw new EmptyBucketOperation("Bucket " + name + " is empty.");
                               }
                               obs = listObjectsItemResponse.ItemObservable;
                               marker = listObjectsItemResponse.NextKeyMarker;
@@ -282,10 +294,10 @@ namespace Minio
                               Tuple<ListBucketResult, List<Item>> objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
                               if (objectList.Item2.Count == 0 && objectList.Item1.KeyCount.Equals("0") && count == 0)
                               {
-                                string name = args.BucketName;
-                                if (!string.IsNullOrEmpty(args.Prefix))
-                                    name += "/" + args.Prefix;
-                                throw new EmptyBucketOperation("Bucket " + name + " is empty.");
+                                  string name = args.BucketName;
+                                  if (!string.IsNullOrEmpty(args.Prefix))
+                                      name += "/" + args.Prefix;
+                                  throw new EmptyBucketOperation("Bucket " + name + " is empty.");
                               }
                               ListObjectsItemResponse listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);
                               marker = listObjectsItemResponse.NextMarker;
