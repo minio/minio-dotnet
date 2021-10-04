@@ -21,13 +21,13 @@ using System.Net.Http;
 using System.Text;
 using System.Web;
 
-using System.Reflection;
 
 namespace Minio
 {
     internal class HttpRequestMessageBuilder
     {
         public Uri RequestUri { get; set; }
+        public Action<System.IO.Stream> ResponseWriter { get; set; }
         public HttpMethod Method { get; }
 
         public HttpRequestMessage Request
@@ -54,12 +54,18 @@ namespace Minio
 
                 foreach (var parameter in this.HeaderParameters)
                 {
-                    request.Headers.TryAddWithoutValidation(parameter.Key, parameter.Value);
-                }
-
-                foreach (var parameter in this.BodyParameters)
-                {
-                    request.Content?.Headers.TryAddWithoutValidation(parameter.Key, parameter.Value);
+                    var key = parameter.Key;
+                    var val = parameter.Value;
+                    StringComparison comparison = StringComparison.InvariantCultureIgnoreCase;
+                    if (key.StartsWith("content-", comparison))
+                    {
+                        if (this.BodyParameters.ContainsKey(key))
+                            this.BodyParameters.Remove(key);
+                        this.BodyParameters.Add(key, val);
+                        request.Content?.Headers.TryAddWithoutValidation(key, val);
+                        continue;
+                    }
+                    bool bo = request.Headers.TryAddWithoutValidation(key, val);
                 }
 
                 return request;
@@ -100,6 +106,19 @@ namespace Minio
             if ((key == this.ContentTypeKey) && (!string.IsNullOrEmpty(value)))
             {
                 this.BodyParameters.Add(key, value);
+            }
+            else
+            {
+                this.HeaderParameters[key] = value;
+            }
+        }
+
+        public void AddOrUpdateHeaderParameter(string key, string value)
+        {
+            if (this.GetType().GetProperty(key) != null)
+            {
+                this.HeaderParameters.Remove(key);
+                this.HeaderParameters[key] = value;
             }
             else
             {

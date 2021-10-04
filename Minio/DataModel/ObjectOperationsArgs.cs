@@ -55,17 +55,20 @@ namespace Minio
                 throw new InvalidOperationException("The Input/Output serialization members for SelectObjectContentArgs should be initialized " + nameof(this.SelectOptions.InputSerialization) + " " + nameof(this.SelectOptions.OutputSerialization));
             }
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            var requestMessageBuilder = base.BuildRequest(request);
+            // requestMessageBuilder = base.BuildRequest(requestMessageBuilder);
             if (this.RequestBody == null)
             {
-                this.RequestBody = Encoding.UTF8.GetBytes(this.SelectOptions.MarshalXML());
+                this.RequestBody = System.Text.Encoding.UTF8.GetBytes(this.SelectOptions.MarshalXML());
             }
             requestMessageBuilder.AddQueryParameter("select", "");
             requestMessageBuilder.AddQueryParameter("select-type", "2");
-            requestMessageBuilder.BodyParameters.Add("content-type", "application/xml");
-            requestMessageBuilder.SetBody((byte[])this.RequestBody);
+            requestMessageBuilder.AddXmlBody(Encoding.UTF8.GetString(this.RequestBody));
+            // var bodyInCharArr = Encoding.UTF8.GetString(requestMessageBuilder.Content).ToCharArray();
+            // requestMessageBuilder.AddHeaderParameter("Content-Md5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(bodyInCharArr)));
+
             return requestMessageBuilder;
         }
 
@@ -166,11 +169,9 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
-
+            // requestMessageBuilder = base.BuildRequest(requestMessageBuilder);
             requestMessageBuilder.AddQueryParameter("uploads", "");
             requestMessageBuilder.AddQueryParameter("prefix", this.Prefix);
             requestMessageBuilder.AddQueryParameter("delimiter", this.Delimiter);
@@ -224,11 +225,9 @@ namespace Minio
             this.RequestMethod = HttpMethod.Head;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
-
+            // requestMessageBuilder = base.BuildRequest(requestMessageBuilder);
             if (!string.IsNullOrEmpty(this.VersionId))
             {
                 requestMessageBuilder.AddQueryParameter("versionId", $"{this.VersionId}");
@@ -350,11 +349,9 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
-
+            // requestMessageBuilder = base.BuildRequest(requestMessageBuilder);
             return requestMessageBuilder;
         }
 
@@ -411,6 +408,11 @@ namespace Minio
             this.Expiry = ex;
             return this;
         }
+
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+            return requestMessageBuilder;
+        }
     }
 
     public class RemoveUploadArgs : EncryptionArgs<RemoveUploadArgs>
@@ -435,11 +437,9 @@ namespace Minio
                 throw new InvalidOperationException(nameof(UploadId) + " cannot be empty. Please assign a valid upload ID to remove.");
             }
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
-
+            // requestMessageBuilder = base.BuildRequest(requestMessageBuilder);
             requestMessageBuilder.AddQueryParameter("uploadId", $"{this.UploadId}");
             return requestMessageBuilder;
         }
@@ -460,10 +460,8 @@ namespace Minio
         {
             this.RequestMethod = HttpMethod.Get;
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("legal-hold", "");
             if (!string.IsNullOrEmpty(this.VersionId))
@@ -490,10 +488,8 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("legal-hold", "");
             if (!string.IsNullOrEmpty(this.VersionId))
@@ -502,8 +498,11 @@ namespace Minio
             }
             ObjectLegalHoldConfiguration config = new ObjectLegalHoldConfiguration(this.LegalHoldON);
             string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
-            requestMessageBuilder.AddHeaderParameter("text/xml", body);
-            requestMessageBuilder.AddHeaderParameter("Content-MD5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Type", "text/xml");
+            var bodyInBytes = Encoding.ASCII.GetBytes(body);
+            requestMessageBuilder.SetBody(bodyInBytes);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-MD5",
+                utils.getMD5SumStr(bodyInBytes));
             return requestMessageBuilder;
         }
     }
@@ -570,16 +569,14 @@ namespace Minio
             }
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
-
+            // requestMessageBuilder = base.BuildRequest(requestMessageBuilder);
             if (!string.IsNullOrEmpty(this.VersionId))
             {
                 requestMessageBuilder.AddQueryParameter("versionId", $"{this.VersionId}");
             }
-            // requestMessageBuilder.ResponseWriter = this.CallBack;
+            requestMessageBuilder.ResponseWriter = this.CallBack;
 
             return requestMessageBuilder;
         }
@@ -625,17 +622,15 @@ namespace Minio
             this.BypassGovernanceMode = null;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             if (!string.IsNullOrEmpty(this.VersionId))
             {
                 requestMessageBuilder.AddQueryParameter("versionId", $"{this.VersionId}");
                 if (this.BypassGovernanceMode != null && this.BypassGovernanceMode.Value)
                 {
-                    requestMessageBuilder.AddHeaderParameter("x-amz-bypass-governance-retention", this.BypassGovernanceMode.Value.ToString());
+                    requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-bypass-governance-retention", this.BypassGovernanceMode.Value.ToString());
                 }
             }
             return requestMessageBuilder;
@@ -719,10 +714,9 @@ namespace Minio
             }
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             List<XElement> objects = new List<XElement>();
             requestMessageBuilder.AddQueryParameter("delete", "");
@@ -751,6 +745,9 @@ namespace Minio
                                                 new XElement("Quiet", true));
                 requestMessageBuilder.AddXmlBody(Convert.ToString(deleteObjectsRequest));
             }
+            // var bodyInCharArr = Encoding.UTF8.GetString(requestMessageBuilder.Content).ToCharArray();
+            // requestMessageBuilder.HeaderParameters.Add("Content-Md5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(bodyInCharArr)));
+
             return requestMessageBuilder;
         }
     }
@@ -770,10 +767,8 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("tagging", "");
             if (!string.IsNullOrEmpty(this.VersionId))
@@ -783,8 +778,9 @@ namespace Minio
             string body = this.ObjectTags.MarshalXML();
             // Convert a C# string to a byte array  
             byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
-            requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
+            requestMessageBuilder.AddBodyParameter("Content-Type", "text/xml");
             requestMessageBuilder.SetBody(bodyInBytes);
+            // requestMessageBuilder.AddHeaderParameter("Content-MD5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
 
             return requestMessageBuilder;
         }
@@ -806,10 +802,8 @@ namespace Minio
             this.RequestMethod = HttpMethod.Get;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("tagging", "");
             if (!string.IsNullOrEmpty(this.VersionId))
@@ -827,10 +821,8 @@ namespace Minio
             this.RequestMethod = HttpMethod.Delete;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("tagging", "");
             if (!string.IsNullOrEmpty(this.VersionId))
@@ -885,10 +877,8 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("retention", "");
             if (!string.IsNullOrEmpty(this.VersionId))
@@ -897,12 +887,15 @@ namespace Minio
             }
             if (this.BypassGovernanceMode)
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-bypass-governance-retention", "true");
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-bypass-governance-retention", "true");
             }
             ObjectRetentionConfiguration config = new ObjectRetentionConfiguration(this.RetentionUntilDate, this.Mode);
             string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
-            requestMessageBuilder.AddHeaderParameter("text/xml", body);
-            requestMessageBuilder.AddHeaderParameter("Content-MD5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            requestMessageBuilder.AddBodyParameter("Content-Type", "text/xml");
+            var bodyInBytes = Encoding.ASCII.GetBytes(body);
+            requestMessageBuilder.SetBody(bodyInBytes);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-MD5",
+                utils.getMD5SumStr(bodyInBytes));
             return requestMessageBuilder;
         }
     }
@@ -914,10 +907,8 @@ namespace Minio
             this.RequestMethod = HttpMethod.Get;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("retention", "");
             if (!string.IsNullOrEmpty(this.VersionId))
@@ -948,10 +939,8 @@ namespace Minio
             xw.Flush();
             return sw.ToString();
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
             requestMessageBuilder.AddQueryParameter("retention", "");
             if (!string.IsNullOrEmpty(this.VersionId))
@@ -959,10 +948,13 @@ namespace Minio
                 requestMessageBuilder.AddQueryParameter("versionId", this.VersionId);
             }
             // Required for Clear Object Retention.
-            requestMessageBuilder.AddHeaderParameter("x-amz-bypass-governance-retention", "true");
+            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-bypass-governance-retention", "true");
             string body = EmptyRetentionConfigXML();
-            requestMessageBuilder.AddHeaderParameter("text/xml", body);
-            requestMessageBuilder.AddHeaderParameter("Content-MD5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            requestMessageBuilder.AddBodyParameter("Content-Type", "text/xml");
+            var bodyInBytes = Encoding.ASCII.GetBytes(body);
+            requestMessageBuilder.SetBody(bodyInBytes);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-MD5",
+                utils.getMD5SumStr(bodyInBytes));
             return requestMessageBuilder;
         }
     }
@@ -987,6 +979,14 @@ namespace Minio
         {
             this.CopyOperationConditions = (cp != null) ? cp.Clone() : new CopyConditions();
             return this;
+        }
+
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+
+            // var bodyInCharArr = Encoding.UTF8.GetString(requestMessageBuilder.Content).ToCharArray();
+            // requestMessageBuilder.AddHeaderParameter("Content-Md5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(bodyInCharArr)));
+            return requestMessageBuilder;
         }
     }
 
@@ -1067,18 +1067,15 @@ namespace Minio
             this.SourceObjectInfo = stat;
             return this;
         }
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
-
             string sourceObjectPath = this.SourceObject.BucketName + "/" + utils.UrlEncode(this.SourceObject.ObjectName);
             if (!string.IsNullOrEmpty(this.SourceObject.VersionId))
             {
                 sourceObjectPath += "?versionId=" + this.SourceObject.VersionId;
             }
             // Set the object source
-            requestMessageBuilder.AddHeaderParameter("x-amz-copy-source", sourceObjectPath);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source", sourceObjectPath);
 
             if (this.QueryMap != null)
             {
@@ -1092,49 +1089,53 @@ namespace Minio
             {
                 foreach (var item in this.SourceObject.CopyOperationConditions.GetConditions())
                 {
-                    requestMessageBuilder.AddHeaderParameter(item.Key, item.Value);
+                    requestMessageBuilder.AddOrUpdateHeaderParameter(item.Key, item.Value);
                 }
             }
             if (!string.IsNullOrEmpty(this.MatchETag))
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-copy-source-if-match", this.MatchETag);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-match", this.MatchETag);
             }
             if (!string.IsNullOrEmpty(this.NotMatchETag))
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-copy-source-if-none-match", this.NotMatchETag);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-none-match", this.NotMatchETag);
             }
             if (this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-copy-source-if-unmodified-since", utils.To8601String(this.ModifiedSince));
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-unmodified-since", utils.To8601String(this.ModifiedSince));
             }
             if (this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-copy-source-if-modified-since", utils.To8601String(this.UnModifiedSince));
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-modified-since", utils.To8601String(this.UnModifiedSince));
             }
             if (this.ObjectTags != null && this.ObjectTags.TaggingSet != null
                     && this.ObjectTags.TaggingSet.Tag.Count > 0)
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-tagging", this.ObjectTags.GetTagString());
-                requestMessageBuilder.AddHeaderParameter("x-amz-tagging-directive", this.ReplaceTagsDirective ? "REPLACE" : "COPY");
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", this.ObjectTags.GetTagString());
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
+                    this.ReplaceTagsDirective ? "REPLACE" : "COPY");
             }
             string replaceDirective = "COPY";
             if (this.ReplaceMetadataDirective)
             {
                 replaceDirective = "REPLACE";
             }
-            requestMessageBuilder.AddHeaderParameter("x-amz-metadata-directive", replaceDirective);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-metadata-directive", replaceDirective);
             if (!string.IsNullOrEmpty(this.StorageClass))
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-storage-class", this.StorageClass);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-storage-class", this.StorageClass);
             }
             if (this.ObjectLockSet)
             {
                 if (!this.RetentionUntilDate.Equals(default(DateTime)))
                 {
-                    requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-retain-until-date", utils.To8601String(this.RetentionUntilDate));
+                    requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date", utils.To8601String(this.RetentionUntilDate));
                 }
-                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-mode", (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
+                    (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
             }
+            // var bodyInCharArr = Encoding.UTF8.GetString(requestMessageBuilder.Content).ToCharArray();
+            // requestMessageBuilder.AddHeaderParameter("Content-Md5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(bodyInCharArr)));
 
             return requestMessageBuilder;
         }
@@ -1264,7 +1265,7 @@ namespace Minio
                 foreach (var item in this.Headers)
                 {
                     var key = item.Key;
-                    if (!OperationsUtil.IsSupportedHeader(item.Key) && !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase) &&
+                    if (!item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase) &&
                         !OperationsUtil.IsSSEHeader(key))
                     {
                         newKVList.Add(new Tuple<string, string>("x-amz-meta-" + key.ToLowerInvariant(), item.Value));
@@ -1351,26 +1352,24 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
-
+            // requestMessageBuilder = base.BuildRequest(requestMessageBuilder);
             if (!string.IsNullOrEmpty(this.MatchETag))
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-copy-source-if-match", this.MatchETag);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-match", this.MatchETag);
             }
             if (!string.IsNullOrEmpty(this.NotMatchETag))
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-copy-source-if-none-match", this.NotMatchETag);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-none-match", this.NotMatchETag);
             }
             if (this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-copy-source-if-unmodified-since", utils.To8601String(this.ModifiedSince));
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-unmodified-since", utils.To8601String(this.ModifiedSince));
             }
             if (this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
             {
-                request.Headers.Add("x-amz-copy-source-if-modified-since", utils.To8601String(this.UnModifiedSince));
+                requestMessageBuilder.Request.Headers.Add("x-amz-copy-source-if-modified-since", utils.To8601String(this.UnModifiedSince));
             }
             if (!string.IsNullOrEmpty(this.VersionId))
             {
@@ -1379,29 +1378,33 @@ namespace Minio
             if (this.ObjectTags != null && this.ObjectTags.TaggingSet != null
                     && this.ObjectTags.TaggingSet.Tag.Count > 0)
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-tagging", this.ObjectTags.GetTagString());
-                requestMessageBuilder.AddHeaderParameter("x-amz-tagging-directive", this.ReplaceTagsDirective ? "COPY" : "REPLACE");
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", this.ObjectTags.GetTagString());
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
+                    this.ReplaceTagsDirective ? "COPY" : "REPLACE");
             }
             if (this.ReplaceMetadataDirective)
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-metadata-directive", "REPLACE");
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-metadata-directive", "REPLACE");
             }
             if (!string.IsNullOrEmpty(this.StorageClass))
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-storage-class", this.StorageClass);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-storage-class", this.StorageClass);
             }
             if (this.LegalHoldEnabled != null && this.LegalHoldEnabled.Value)
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-legal-hold", "ON");
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-legal-hold", "ON");
             }
             if (this.ObjectLockSet)
             {
                 if (!this.RetentionUntilDate.Equals(default(DateTime)))
                 {
-                    requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-retain-until-date", utils.To8601String(this.RetentionUntilDate));
+                    requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date", utils.To8601String(this.RetentionUntilDate));
                 }
-                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-mode", (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
+                    (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
             }
+            // var bodyInCharArr = Encoding.UTF8.GetString(requestMessageBuilder.Content).ToCharArray();
+            // requestMessageBuilder.AddHeaderParameter("Content-Md5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(bodyInCharArr)));
 
             return requestMessageBuilder;
         }
@@ -1434,20 +1437,22 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
-
+            // requestMessageBuilder = base.BuildRequest(requestMessageBuilder);
             requestMessageBuilder.AddQueryParameter("uploads", "");
             if (this.ObjectLockSet)
             {
                 if (!this.RetentionUntilDate.Equals(default(DateTime)))
                 {
-                    requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-retain-until-date", utils.To8601String(this.RetentionUntilDate));
+                    requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date", utils.To8601String(this.RetentionUntilDate));
                 }
-                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-mode", (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
+                    (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
             }
+            // var bodyInCharArr = Encoding.UTF8.GetString(requestMessageBuilder.Content).ToCharArray();
+            // requestMessageBuilder.AddHeaderParameter("Content-Md5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(bodyInCharArr)));
+
             return requestMessageBuilder;
         }
     }
@@ -1545,35 +1550,37 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
-
+            // requestMessageBuilder = base.BuildRequest(requestMessageBuilder);
             if (this.ObjectTags != null && this.ObjectTags.TaggingSet != null
                     && this.ObjectTags.TaggingSet.Tag.Count > 0)
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-tagging", this.ObjectTags.GetTagString());
-                requestMessageBuilder.AddHeaderParameter("x-amz-tagging-directive", this.ReplaceTagsDirective ? "REPLACE" : "COPY");
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", this.ObjectTags.GetTagString());
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
+                    this.ReplaceTagsDirective ? "REPLACE" : "COPY");
             }
             string replaceDirective = "COPY";
             if (this.ReplaceMetadataDirective)
             {
                 replaceDirective = "REPLACE";
             }
-            requestMessageBuilder.AddHeaderParameter("x-amz-metadata-directive", replaceDirective);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-metadata-directive", replaceDirective);
             if (!string.IsNullOrEmpty(this.StorageClass))
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-storage-class", this.StorageClass);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-storage-class", this.StorageClass);
             }
             if (this.ObjectLockSet)
             {
                 if (!this.RetentionUntilDate.Equals(default(DateTime)))
                 {
-                    requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-retain-until-date", utils.To8601String(this.RetentionUntilDate));
+                    requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date", utils.To8601String(this.RetentionUntilDate));
                 }
-                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-mode", (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
+                    (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
             }
+            // var bodyInCharArr = Encoding.UTF8.GetString(requestMessageBuilder.Content).ToCharArray();
+            // requestMessageBuilder.AddHeaderParameter("Content-Md5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(bodyInCharArr)));
 
             return requestMessageBuilder;
         }
@@ -1712,37 +1719,39 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
+            // requestMessageBuilder = base.BuildRequest(requestMessageBuilder);
             requestMessageBuilder.AddQueryParameter("uploads", "");
             if (this.ObjectTags != null && this.ObjectTags.TaggingSet != null
                     && this.ObjectTags.TaggingSet.Tag.Count > 0)
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-tagging", this.ObjectTags.GetTagString());
-                requestMessageBuilder.AddHeaderParameter("x-amz-tagging-directive", this.ReplaceTagsDirective ? "REPLACE" : "COPY");
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", this.ObjectTags.GetTagString());
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
+                    this.ReplaceTagsDirective ? "REPLACE" : "COPY");
             }
             string replaceDirective = "COPY";
             if (this.ReplaceMetadataDirective)
             {
                 replaceDirective = "REPLACE";
             }
-            requestMessageBuilder.AddHeaderParameter("x-amz-metadata-directive", replaceDirective);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-metadata-directive", replaceDirective);
             if (!string.IsNullOrWhiteSpace(this.StorageClass))
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-storage-class", this.StorageClass);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-storage-class", this.StorageClass);
             }
             if (this.ObjectLockSet)
             {
                 if (!this.RetentionUntilDate.Equals(default(DateTime)))
                 {
-                    requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-retain-until-date", utils.To8601String(this.RetentionUntilDate));
+                    requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date", utils.To8601String(this.RetentionUntilDate));
                 }
-                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-mode", (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
+                    (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
             }
-
+            // var bodyInCharArr = Encoding.UTF8.GetString(requestMessageBuilder.Content).ToCharArray();
+            // requestMessageBuilder.AddHeaderParameter("Content-Md5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(bodyInCharArr)));
 
             return requestMessageBuilder;
         }
@@ -1801,11 +1810,10 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
 
+            // requestMessageBuilder = base.BuildRequest(requestMessageBuilder);
             requestMessageBuilder.AddQueryParameter("uploadId", $"{this.UploadId}");
             List<XElement> parts = new List<XElement>();
 
@@ -1821,6 +1829,7 @@ namespace Minio
             var bodyInBytes = Encoding.UTF8.GetBytes(bodyString);
             requestMessageBuilder.BodyParameters.Add("content-type", "appllication/xml");
             requestMessageBuilder.SetBody(bodyInBytes);
+            // var bodyInCharArr = Encoding.UTF8.GetString(requestMessageBuilder.Content).ToCharArray();
 
             return requestMessageBuilder;
         }
@@ -1861,7 +1870,7 @@ namespace Minio
             return (PutObjectPartArgs)base.WithHeaders(hdr);
         }
 
-        public new PutObjectPartArgs WithRequestBody(object data)
+        public PutObjectPartArgs WithRequestBody(object data)
         {
             return (PutObjectPartArgs)base.WithRequestBody(utils.ObjectToByteArray(data));
         }
@@ -1877,6 +1886,13 @@ namespace Minio
         public new PutObjectPartArgs WithUploadId(string id)
         {
             return (PutObjectPartArgs)base.WithUploadId(id);
+        }
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+
+            // var bodyInCharArr = Encoding.UTF8.GetString(requestMessageBuilder.Content).ToCharArray();
+            // requestMessageBuilder.AddHeaderParameter("Content-Md5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(bodyInCharArr)));
+            return requestMessageBuilder;
         }
     }
 
@@ -1948,11 +1964,9 @@ namespace Minio
             }
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
-
+            // requestMessageBuilder = base.BuildRequest(requestMessageBuilder);
             if (string.IsNullOrWhiteSpace(this.ContentType))
             {
                 this.ContentType = "application/octet-stream";
@@ -1961,6 +1975,8 @@ namespace Minio
             {
                 this.Headers["Content-Type"] = this.ContentType;
             }
+
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Type", this.Headers["Content-Type"]);
             if (!string.IsNullOrWhiteSpace(this.UploadId) && this.PartNumber > 0)
             {
                 requestMessageBuilder.AddQueryParameter("uploadId", $"{this.UploadId}");
@@ -1969,24 +1985,37 @@ namespace Minio
             if (this.ObjectTags != null && this.ObjectTags.TaggingSet != null
                     && this.ObjectTags.TaggingSet.Tag.Count > 0)
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-tagging", this.ObjectTags.GetTagString());
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", this.ObjectTags.GetTagString());
             }
             if (this.Retention != null)
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-retain-until-date", this.Retention.RetainUntilDate);
-                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-mode", this.Retention.Mode.ToString());
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date", this.Retention.RetainUntilDate);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode", this.Retention.Mode.ToString());
             }
             if (this.LegalHoldEnabled != null)
             {
-                requestMessageBuilder.AddHeaderParameter("x-amz-object-lock-legal-hold", ((this.LegalHoldEnabled == true) ? "ON" : "OFF"));
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-legal-hold",
+                    ((this.LegalHoldEnabled == true) ? "ON" : "OFF"));
             }
             if (this.RequestBody != null)
             {
+                requestMessageBuilder.SetBody(this.RequestBody);
                 var sha256 = SHA256.Create();
-                byte[] hash = sha256.ComputeHash((byte[])this.RequestBody);
+                byte[] hash = sha256.ComputeHash(this.RequestBody);
                 string hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
-                requestMessageBuilder.AddHeaderParameter("x-amz-content-sha256", hex);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
             }
+
+            var customMetaData = Headers.Keys.Where(k => k.StartsWith("x-amz-meta")).ToDictionary(k => k, k => Headers[k]);
+            if (customMetaData != null)
+            {
+                foreach (KeyValuePair<string, string> kv in customMetaData)
+                {
+                    requestMessageBuilder.AddHeaderParameter(kv.Key, kv.Value);
+                }
+            }
+            // var bodyInCharArr = Encoding.UTF8.GetString(requestMessageBuilder.Content).ToCharArray();
+            // requestMessageBuilder.AddHeaderParameter("Content-Md5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(bodyInCharArr)));
 
             return requestMessageBuilder;
         }

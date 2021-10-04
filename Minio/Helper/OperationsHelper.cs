@@ -57,11 +57,11 @@ namespace Minio
             args.Validate();
             if (args.FileName != null)
             {
-                await this.getObjectFileAsync(args, objStat, cancellationToken).ConfigureAwait(false);
+                await this.getObjectFileAsync(args, objStat, cancellationToken);
             }
             else
             {
-                await this.getObjectStreamAsync(args, objStat, args.CallBack, cancellationToken).ConfigureAwait(false);
+                await this.getObjectStreamAsync(args, objStat, args.CallBack, cancellationToken);
             }
             return objStat;
 
@@ -77,7 +77,6 @@ namespace Minio
             long length = objectStat.Size;
             string etag = objectStat.ETag;
 
-            long tempFileSize = 0;
             string tempFileName = $"{args.FileName}.{etag}.part.minio";
             if (!string.IsNullOrEmpty(args.VersionId))
             {
@@ -94,21 +93,6 @@ namespace Minio
                 File.Delete(tempFileName);
             }
 
-            args = args.WithCallbackStream(stream =>
-                                   {
-                                       using (var fileStream = File.Create(tempFileName))
-                                       {
-                                           stream.CopyTo(fileStream);
-                                       }
-                                       FileInfo writtenInfo = new FileInfo(tempFileName);
-                                       long writtenSize = writtenInfo.Length;
-                                       if (writtenSize != (length - tempFileSize))
-                                       {
-                                           throw new IOException(tempFileName + ": unexpected data written.  expected = " + (length - tempFileSize)
-                                                               + ", written = " + writtenSize);
-                                       }
-                                       utils.MoveWithReplace(tempFileName, args.FileName);
-                                   });
             return getObjectStreamAsync(args, objectStat, null, cancellationToken);
         }
 
@@ -122,11 +106,9 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         private async Task getObjectStreamAsync(GetObjectArgs args, ObjectStat objectStat, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
         {
-            HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
-            // cb.Invoke(response.ContentStream);
+            HttpRequestMessageBuilder requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+            await ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
-
 
         /// <summary>
         /// private helper method to remove list of objects from bucket
@@ -177,6 +159,7 @@ namespace Minio
         /// <returns></returns>
         private async Task<List<DeleteError>> callRemoveObjects(RemoveObjectsArgs args, List<string> objNames, List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
         {
+            // var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
             RemoveObjectsArgs iterArgs = new RemoveObjectsArgs()
                                                 .WithBucket(args.BucketName)
                                                 .WithObjects(objNames);

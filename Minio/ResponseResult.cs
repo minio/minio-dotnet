@@ -29,7 +29,7 @@ namespace Minio
     {
         private Exception Exception { get; }
         public HttpRequestMessage Request { get; }
-        private HttpResponseMessage Response { get; }
+        public HttpResponseMessage Response { get; }
 
         public HttpStatusCode StatusCode
         {

@@ -27,7 +27,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-
+using System.Security.Cryptography;
 using System.Reflection;
 
 namespace Minio
@@ -967,7 +967,7 @@ namespace Minio
         public static HttpRequestMessageBuilder GetEmptyRestRequest(HttpRequestMessageBuilder requestBuilder)
         {
             string serializedBody = Newtonsoft.Json.JsonConvert.SerializeObject("");
-            requestBuilder.AddHeaderParameter("application/json; charset=utf-8", serializedBody);
+            requestBuilder.AddOrUpdateHeaderParameter("application/json; charset=utf-8", serializedBody);
             return requestBuilder;
         }
 
@@ -989,13 +989,24 @@ namespace Minio
 
         public static void Print(Object obj)
         {
-            Console.WriteLine("\n******** Properties of {0} ********", obj.GetType().FullName);
             foreach (PropertyInfo prop in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
                 object value = prop.GetValue(obj, new object[] { });
                 Console.WriteLine("{0} = {1}", prop.Name, value);
             }
             Console.WriteLine("Print is DONE!\n\n");
+        }
+
+        public static void printDict(Dictionary<string, string> d)
+        {
+            if (d != null)
+            {
+                foreach (KeyValuePair<string, string> kv in d)
+                {
+                    Console.WriteLine("     {0} = {1}", kv.Key, kv.Value);
+                }
+            }
+            Console.WriteLine("Done printing\n");
         }
     }
 }

@@ -33,6 +33,11 @@ using Minio.Helper;
 
 namespace Minio
 {
+    public class InnerItemType
+    {
+        public int sortOrder { get; set; }
+        public string value { get; set; }
+    }
     public partial class MinioClient
     {
         // Save Credentials from user
@@ -77,7 +82,6 @@ namespace Minio
         /// <summary>
         /// Default error handling delegate
         /// </summary>
-
         private readonly ApiResponseErrorHandlingDelegate _defaultErrorHandlingDelegate = (response) =>
         {
             if (response.StatusCode < HttpStatusCode.OK || response.StatusCode >= HttpStatusCode.BadRequest)
@@ -168,8 +172,8 @@ namespace Minio
         internal async Task<HttpRequestMessageBuilder> CreateRequest<T>(BucketArgs<T> args) where T : BucketArgs<T>
         {
             this.ArgsCheck(args);
-            HttpRequestMessageBuilder requestMesssageBuilder = await CreateRequest(args.RequestMethod, args.BucketName).ConfigureAwait(false);
-            return args.BuildRequest(requestMesssageBuilder.Request);
+            var requestMesssageBuilder = await this.CreateRequest(args.RequestMethod, args.BucketName).ConfigureAwait(false);
+            return args.BuildRequest(requestMesssageBuilder);
         }
 
         /// <summary>
@@ -178,9 +182,11 @@ namespace Minio
         /// </summary>
         /// <param name="args">The direct descendant of ObjectArgs class, args with populated values from Input</param>
         /// <returns>A HttpRequestMessage</returns>
+        // internal async Task<HttpRequestMessageBuilder> CreateRequest<T>(ObjectArgs<T> args) where T : ObjectArgs<T>
         internal async Task<HttpRequestMessageBuilder> CreateRequest<T>(ObjectArgs<T> args) where T : ObjectArgs<T>
         {
             this.ArgsCheck(args);
+
             string contentType = "application/octet-stream";
             args.Headers?.TryGetValue("Content-Type", out contentType);
             HttpRequestMessageBuilder requestMessageBuilder =
@@ -191,7 +197,7 @@ namespace Minio
                                              contentType,
                                              args.RequestBody,
                                              null).ConfigureAwait(false);
-            return args.BuildRequest(requestMessageBuilder.Request);
+            return args.BuildRequest(requestMessageBuilder);
         }
 
         /// <summary>
@@ -297,6 +303,7 @@ namespace Minio
 
             // Set Target URL
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, bucketName, region, usePathStyle);
+            // SetTargetURL(requestUrl);
 
             if (objectName != null)
             {
@@ -314,16 +321,16 @@ namespace Minio
             if (body != null)
             {
                 messageBuilder.SetBody(body);
+                messageBuilder.AddOrUpdateHeaderParameter("Content-Type", contentType);
             }
 
             if (headerMap != null)
             {
-                if (headerMap.ContainsKey(messageBuilder.ContentTypeKey) && (string.IsNullOrEmpty(headerMap[messageBuilder.ContentTypeKey])))
+                if (headerMap.ContainsKey(messageBuilder.ContentTypeKey) && (!string.IsNullOrEmpty(headerMap[messageBuilder.ContentTypeKey])))
                     headerMap[messageBuilder.ContentTypeKey] = contentType;
-
                 foreach (var entry in headerMap)
                 {
-                    messageBuilder.AddHeaderParameter(entry.Key, entry.Value);
+                    messageBuilder.AddOrUpdateHeaderParameter(entry.Key, entry.Value);
                 }
             }
 
@@ -344,7 +351,7 @@ namespace Minio
                 if (creds != null &&
                     (isAWSProvider || isIAMAWSProvider) && !string.IsNullOrWhiteSpace(creds.SessionToken))
                 {
-                    messageBuilder.AddHeaderParameter("X-Amz-Security-Token", creds.SessionToken);
+                    messageBuilder.AddOrUpdateHeaderParameter("X-Amz-Security-Token", creds.SessionToken);
                 }
             }
             return messageBuilder;
@@ -502,13 +509,28 @@ namespace Minio
             return this;
         }
 
+        // /// <summary>
+        // /// Sets endpoint URL on the client object that request will be made against
+        // /// </summary>
+        // internal void SetTargetURL(Uri uri)
+        // {
+        //     if (this.httppClient == null)
+        //     {
+        //         httpClient = new HttpClient.httpClient(uri)
+        //         {
+        //             UserAgent = this.FullUserAgent
+        //         };
+        //     }
+        //     this.httpClient.BaseUrl = uri;
+        // }
+
         /// <summary>
-        /// Actual doer that executes the http request to the server
+        /// Actual doer that executes the request on the server
         /// </summary>
         /// <param name="errorHandlers">List of handlers to override default handling</param>
         /// <param name="requestMessageBuilder">The build of HttpRequestMessageBuilder </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <returns>Response result</returns>
+        /// <returns>ResponseResult</returns>
         internal Task<ResponseResult> ExecuteTaskAsync(
             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             HttpRequestMessageBuilder requestMessageBuilder,
@@ -535,9 +557,11 @@ namespace Minio
                 this.AccessKey, this.SecretKey, this.Region,
                 this.SessionToken);
 
-            requestMessageBuilder.AddHeaderParameter("Authorization",
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Authorization",
                         v4Authenticator.Authenticate(requestMessageBuilder));
+
             HttpRequestMessage request = requestMessageBuilder.Request;
+
             ResponseResult responseResult;
             try
             {
@@ -546,9 +570,13 @@ namespace Minio
                     this.HttpClient.Timeout = new TimeSpan(0, 0, 0, 0, requestTimeout);
                 }
                 var response = await this.HttpClient.SendAsync(request,
-                    HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                    HttpCompletionOption.ResponseContentRead, cancellationToken)
                     .ConfigureAwait(false);
                 responseResult = new ResponseResult(request, response);
+                if (requestMessageBuilder.ResponseWriter != null)
+                {
+                    requestMessageBuilder.ResponseWriter(responseResult.ContentStream);
+                }
             }
             catch (OperationCanceledException)
             {
@@ -750,9 +778,8 @@ namespace Minio
             if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
                 && errResponse.Code.Equals("InvalidRequest"))
             {
-                // Parameter legalHold = new Parameter("legal-hold", "", ParameterType.QueryString);
                 var legalHold = new Dictionary<string, string>() { { "legal-hold", "" } };
-                if (response.Request.RequestUri.Query.Contains("legalHold")) // && response.Request.RequestUri.Query.Equals(""))
+                if (response.Request.RequestUri.Query.Contains("legalHold"))
                 {
                     throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
                 }

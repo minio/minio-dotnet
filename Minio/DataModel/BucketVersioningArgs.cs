@@ -31,11 +31,8 @@ namespace Minio
             this.RequestMethod = HttpMethod.Get;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
-
             requestMessageBuilder.AddQueryParameter("versioning", "");
             return requestMessageBuilder;
         }
@@ -76,11 +73,8 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
-
             VersioningConfiguration config = new VersioningConfiguration((this.CurrentVersioningStatus == VersioningStatus.Enabled));
             XmlSerializer serializer = new XmlSerializer(typeof(HttpContent));
 

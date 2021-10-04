@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\netfx.props"/>
   <PropertyGroup>
+    <LangVersion>latest</LangVersion>
     <AssemblyName>Minio</AssemblyName>
     <RootNamespace>Minio</RootNamespace>
     <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
@@ -12,6 +13,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Package">
+    <LangVersion>latest</LangVersion>
     <Product>Minio</Product>
     <Version>3.1.14</Version>
     <Description>Minio .NET SDK for Amazon S3 Compatible Cloud Storage.</Description>
@@ -34,7 +36,6 @@
     <PackageReference Include="Crc32.NET" Version="1.2.0"/>
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="All"/>
     <PackageReference Include="AsyncFixer" Version="1.1.6" PrivateAssets="All"/>
-    <PackageReference Include="RestSharp" Version="106.10.1"/>
     <PackageReference Include="System.Reactive.Linq" Version="4.0.0"/>
     <PackageReference Include="System.Net.Http" Version="4.3.0"/>
     <PackageReference Include="System.Net.Primitives" Version="4.3.0"/>
@@ -57,7 +58,6 @@
     <Reference Include="System.IO"/>
     <Reference Include="System.Text.Encoding"/>
     <Reference Include="System.Threading.Tasks"/>
-    <Reference Include="Minio.Exceptions"/>
   </ItemGroup>
 
 </Project>  

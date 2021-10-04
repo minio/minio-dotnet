@@ -658,20 +658,18 @@ namespace Minio.Functional.Tests
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
             string objectName = GetRandomObjectName(10);
-            // string contentType = "binary/octet-stream";
-            string contentType = "binary/octet-stream";
+            string contentType = "application/octet-stream";
             var args = new Dictionary<string, string>
             {
                 { "bucketName", bucketName },
                 { "objectName", objectName },
                 { "contentType", contentType },
-                { "size", "1KB" }
+                { "size", "1MB" }
             };
             try
             {
                 await Setup_Test(minio, bucketName);
-                // await PutObject_Tester(minio, bucketName, objectName, objectName, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
-                await PutObject_Tester(minio, bucketName, objectName, objectName, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
+                await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * MB));
                 new MintLogger(nameof(PutObject_Test1), putObjectSignature, "Tests whether PutObject passes for small object", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (Exception ex)
@@ -701,7 +699,7 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_Test(minio, bucketName);
-                await PutObject_Tester(minio, bucketName, objectName, objectName, contentType, 0, null, rsg.GenerateStreamFromSeed(6 * MB));
+                await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(6 * MB));
                 new MintLogger(nameof(PutObject_Test2), putObjectSignature, "Tests whether multipart PutObject passes", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (Exception ex)
@@ -720,7 +718,7 @@ namespace Minio.Functional.Tests
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
             string objectName = GetRandomObjectName(10);
-            string contentType = "binary/octet-stream";
+            string contentType = "custom-contenttype";
             var args = new Dictionary<string, string>
             {
                 { "bucketName", bucketName },
@@ -732,7 +730,7 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_Test(minio, bucketName);
-                await PutObject_Tester(minio, bucketName, objectName, objectName, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
+                await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * MB));
                 new MintLogger(nameof(PutObject_Test3), putObjectSignature, "Tests whether PutObject with custom content-type passes", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (Exception ex)
@@ -752,7 +750,7 @@ namespace Minio.Functional.Tests
             string bucketName = GetRandomName(15);
             string objectName = GetRandomObjectName(10);
             string fileName = CreateFile(1, dataFile1B);
-            string contentType = "binary/octet-stream";
+            string contentType = "custom/contenttype";
             var metaData = new Dictionary<string, string>
             {
                 { "customheader", "minio   dotnet" }
@@ -773,8 +771,9 @@ namespace Minio.Functional.Tests
                 Assert.IsTrue(statObject != null);
                 Assert.IsTrue(statObject.MetaData != null);
                 var statMeta = new Dictionary<string, string>(statObject.MetaData, StringComparer.OrdinalIgnoreCase);
-                // Assert.IsTrue(statMeta.ContainsKey("Customheader"));
-                Assert.IsTrue(statObject.MetaData.ContainsKey("Content-Type") && statObject.MetaData["Content-Type"].Equals("binary/octet-stream"));
+
+                Assert.IsTrue(statObject.MetaData.ContainsKey("customheader"));
+                Assert.IsTrue(statObject.MetaData.ContainsKey("Content-Type") && statObject.ContentType.Equals("custom/contenttype"));
                 new MintLogger(nameof(PutObject_Test4), putObjectSignature, "Tests whether PutObject with different content-type and custom header passes", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (Exception ex)
@@ -807,7 +806,7 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_Test(minio, bucketName);
-                await PutObject_Tester(minio, bucketName, objectName, objectName, null, 0, null, rsg.GenerateStreamFromSeed(1));
+                await PutObject_Tester(minio, bucketName, objectName, null, null, 0, null, rsg.GenerateStreamFromSeed(1));
                 new MintLogger(nameof(PutObject_Test5), putObjectSignature, "Tests whether PutObject with no content-type passes for small object", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (Exception ex)
@@ -970,7 +969,7 @@ namespace Minio.Functional.Tests
                                                                                     FileInfo writtenInfo = new FileInfo(tempFileName);
                                                                                     file_read_size = writtenInfo.Length;
 
-                                                                                    Assert.AreEqual(file_read_size, file_write_size);
+                                                                                    Assert.AreEqual(file_write_size, file_read_size);
                                                                                     File.Delete(tempFileName);
                                                                                 });
                     StatObjectArgs statObjectArgs = new StatObjectArgs()
@@ -1047,7 +1046,7 @@ namespace Minio.Functional.Tests
                                                                                     FileInfo writtenInfo = new FileInfo(tempFileName);
                                                                                     file_read_size = writtenInfo.Length;
 
-                                                                                    Assert.AreEqual(file_read_size, file_write_size);
+                                                                                    Assert.AreEqual(file_write_size, file_read_size);
                                                                                     File.Delete(tempFileName);
                                                                                 });
                     StatObjectArgs statObjectArgs = new StatObjectArgs()
@@ -1121,7 +1120,7 @@ namespace Minio.Functional.Tests
                                                                                     FileInfo writtenInfo = new FileInfo(tempFileName);
                                                                                     file_read_size = writtenInfo.Length;
 
-                                                                                    Assert.AreEqual(file_read_size, file_write_size);
+                                                                                    Assert.AreEqual(file_write_size, file_read_size);
                                                                                     File.Delete(tempFileName);
                                                                                 });
                     StatObjectArgs statObjectArgs = new StatObjectArgs()
@@ -1206,33 +1205,35 @@ namespace Minio.Functional.Tests
                                                         .WithContentType(contentType)
                                                         .WithHeaders(metaData);
                 await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
-                GetObjectArgs getObjectArgs = new GetObjectArgs()
-                                                        .WithBucket(bucketName)
-                                                        .WithObject(objectName)
-                                                        .WithFile(fileName)
-                                                        .WithCallbackStream((stream) =>
-                                                                            {
-                                                                                var fileStream = File.Create(tempFileName);
-                                                                                stream.CopyTo(fileStream);
-                                                                                fileStream.Dispose();
-                                                                                FileInfo writtenInfo = new FileInfo(tempFileName);
-                                                                                file_read_size = writtenInfo.Length;
 
-                                                                                Assert.AreEqual(file_read_size, file_write_size);
-                                                                                File.Delete(tempFileName);
-                                                                            });
+                GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObject(objectName)
+                                                .WithFile(fileName)
+                                                .WithCallbackStream((stream) =>
+                                                    {
+                                                        var fileStream = File.Create(tempFileName);
+                                                        stream.CopyTo(fileStream);
+                                                        fileStream.Dispose();
+                                                        FileInfo writtenInfo = new FileInfo(tempFileName);
+                                                        file_read_size = writtenInfo.Length;
+
+                                                        Assert.AreEqual(file_write_size, file_read_size);
+                                                        File.Delete(tempFileName);
+                                                    });
                 await minio.GetObjectAsync(getObjectArgs);
+
                 StatObjectArgs statObjectArgs = new StatObjectArgs()
                                                         .WithBucket(bucketName)
                                                         .WithObject(objectName);
                 statObject = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
                 Assert.IsNotNull(statObject);
-                Assert.IsTrue(statObject.ObjectName.Contains(objectName));
+                Assert.IsTrue(statObject.ObjectName.Equals(objectName));
                 Assert.AreEqual(statObject.Size, file_read_size);
                 if (contentType != null)
                 {
                     Assert.IsNotNull(statObject.ContentType);
-                    Assert.IsTrue(statObject.ContentType.Contains(contentType));
+                    Assert.IsTrue(statObject.ContentType.Equals(contentType));
                 }
 
                 RemoveObjectArgs rmArgs = new RemoveObjectArgs()
@@ -1250,7 +1251,6 @@ namespace Minio.Functional.Tests
             string objectName = GetRandomObjectName(10);
             string contentType = "gzip";
 
-            // string contentType = "binary/octet-stream";
             var args = new Dictionary<string, string>
             {
                 { "bucketName", bucketName },
@@ -1263,7 +1263,7 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_Test(minio, bucketName).ConfigureAwait(false);
-                await PutObject_Tester(minio, bucketName, objectName, objectName, null, 0, null, rsg.GenerateStreamFromSeed(1)).ConfigureAwait(false);
+                await PutObject_Tester(minio, bucketName, objectName, null, null, 0, null, rsg.GenerateStreamFromSeed(1 * KB)).ConfigureAwait(false);
                 new MintLogger(nameof(StatObject_Test1), statObjectSignature, "Tests whether StatObject passes", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (Exception ex)
@@ -1626,7 +1626,7 @@ namespace Minio.Functional.Tests
                 ObjectStat stats = await minio.StatObjectAsync(statObjectArgs);
                 Assert.IsNotNull(stats);
                 Assert.IsTrue(stats.ObjectName.Contains(objectName));
-                Assert.AreEqual(stats.Size, 6291455 - 1024 + 1);
+                Assert.AreEqual(6291455 - 1024 + 1, stats.Size);
                 new MintLogger("CopyObject_Test5", copyObjectSignature, "Tests whether CopyObject  multi-part copy upload for large files works", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (NotImplementedException ex)
@@ -1791,6 +1791,28 @@ namespace Minio.Functional.Tests
             }
         }
 
+        public static void Print(Object obj)
+        {
+            foreach (PropertyInfo prop in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+            {
+                object value = prop.GetValue(obj, new object[] { });
+                Console.WriteLine("{0} = {1}", prop.Name, value);
+            }
+            Console.WriteLine("DONE!\n\n");
+        }
+
+        public static void printDict(Dictionary<string, string> d)
+        {
+            if (d != null)
+            {
+                foreach (KeyValuePair<string, string> kv in d)
+                {
+                    Console.WriteLine("     {0} = {1}", kv.Key, kv.Value);
+                }
+            }
+            Console.WriteLine("DONE!\n\n");
+        }
+
         internal async static Task CopyObject_Test8(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
@@ -1837,7 +1859,7 @@ namespace Minio.Functional.Tests
                 {
                     { "Content-Type", "application/css" },
                     { "Mynewkey", "test   test" }
-                };
+                 };
                 CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
                                                                         .WithBucket(bucketName)
                                                                         .WithObject(objectName)
@@ -2254,7 +2276,7 @@ namespace Minio.Functional.Tests
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
             string objectName = GetRandomObjectName(10);
-            string contentType = "binary/octet-stream";
+            string contentType = null;
             string tempFileName = "tempFileName";
             var args = new Dictionary<string, string>
             {
@@ -2290,9 +2312,7 @@ namespace Minio.Functional.Tests
                                                                                     FileInfo writtenInfo = new FileInfo(tempFileName);
                                                                                     file_read_size = writtenInfo.Length;
 
-                                                                                    // Console.WriteLine("file_read_size = ", file_read_size);
-                                                                                    // Console.WriteLine("file_write_size = ", file_write_size);
-                                                                                    Assert.AreEqual(file_read_size, file_write_size);
+                                                                                    Assert.AreEqual(file_write_size, file_read_size);
                                                                                     File.Delete(tempFileName);
                                                                                 });
                     await minio.GetObjectAsync(getObjectArgs);
@@ -2307,8 +2327,8 @@ namespace Minio.Functional.Tests
             }
             finally
             {
-                if (File.Exists(tempFileName))
-                    File.Delete(tempFileName);
+                //     if (File.Exists(tempFileName))
+                //         File.Delete(tempFileName);
                 await TearDown(minio, bucketName);
             }
         }
@@ -2407,7 +2427,7 @@ namespace Minio.Functional.Tests
                                                                                     FileInfo writtenInfo = new FileInfo(tempFileName);
                                                                                     file_read_size = writtenInfo.Length;
 
-                                                                                    Assert.AreEqual(file_read_size, file_write_size);
+                                                                                    Assert.AreEqual(file_write_size, file_read_size);
                                                                                     File.Delete(tempFileName);
                                                                                 });
 
@@ -3800,7 +3820,7 @@ namespace Minio.Functional.Tests
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(15);
             string objectName = GetRandomName(10);
-            string contentType = "binary/octet-stream";
+            string contentType = "application/octet-stream";
             IDisposable subscription = null;
             var args = new Dictionary<string, string>
             {
@@ -3830,7 +3850,7 @@ namespace Minio.Functional.Tests
                     ex => Console.WriteLine("OnError: {0}", ex.Message),
                     () => Console.WriteLine($"ListenBucketNotificationsAsync finished")
                 );
-                await PutObject_Tester(minio, bucketName, objectName, objectName, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
+                await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
 
                 // wait for notifications
                 for (int attempt = 0; attempt < 10; attempt++)
@@ -3979,7 +3999,7 @@ namespace Minio.Functional.Tests
                 var outputMd5 = Convert.ToBase64String(hashedOutputBytes);
                 var hashedCSVBytes = System.Security.Cryptography.MD5
                                                                 .Create()
-                                                                .ComputeHash(Encoding.UTF8.GetBytes(csvStringNoWS));
+                                                                .ComputeHash(System.Text.Encoding.UTF8.GetBytes(csvStringNoWS));
                 var csvMd5 = Convert.ToBase64String(hashedCSVBytes);
 
                 Assert.IsTrue(csvMd5.Contains(outputMd5));

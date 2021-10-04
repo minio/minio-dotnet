@@ -182,7 +182,7 @@ namespace Minio.Functional.Tests
                 FunctionalTest.BucketTagsAsync_Test1(minioClient).Wait();
                 FunctionalTest.ObjectTagsAsync_Test1(minioClient).Wait();
 
-                //Test Bucket Lifecycle configuration
+                // Test Bucket Lifecycle configuration
                 FunctionalTest.BucketLifecycleAsync_Test1(minioClient).Wait();
 
                 // Test encryption

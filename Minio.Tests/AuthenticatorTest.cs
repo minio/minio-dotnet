@@ -33,12 +33,12 @@ namespace Minio.Tests
             //test anonymous insecure request headers
             var authenticator = new V4Authenticator(false, null, null);
             Assert.IsTrue(authenticator.isAnonymous);
-          
-            var request = new HttpRequestMessageBuilder( HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
+
+            var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
             request.AddJsonBody("[]");
             authenticator.Authenticate(request);
             Assert.IsFalse(hasPayloadHeader(request, "x-amz-content-sha256"));
-            Assert.IsTrue(hasPayloadHeader(request, "Content-MD5"));
+            Assert.IsTrue(hasPayloadHeader(request, "Content-Md5"));
         }
 
         [TestMethod]
@@ -52,7 +52,7 @@ namespace Minio.Tests
             request.AddJsonBody("[]");
             authenticator.Authenticate(request);
             Assert.IsFalse(hasPayloadHeader(request, "x-amz-content-sha256"));
-            Assert.IsTrue(hasPayloadHeader(request, "Content-MD5"));
+            Assert.IsTrue(hasPayloadHeader(request, "Content-Md5"));
         }
 
         [TestMethod]

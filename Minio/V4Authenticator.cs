@@ -16,6 +16,8 @@
 
 using Minio.Helper;
 using System;
+using System.Xml;
+using System.Xml.Serialization;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -111,6 +113,7 @@ namespace Minio
         public string Authenticate(HttpRequestMessageBuilder requestBuilder)
         {
             DateTime signingDate = DateTime.UtcNow;
+
             this.SetContentMd5(requestBuilder);
             this.SetContentSha256(requestBuilder);
             var requestUri = requestBuilder.RequestUri;
@@ -471,7 +474,7 @@ namespace Minio
         /// <param name="signingDate">Date for signature to be signed</param>
         private void SetDateHeader(HttpRequestMessageBuilder requestBuilder, DateTime signingDate)
         {
-            requestBuilder.AddHeaderParameter("x-amz-date", signingDate.ToString("yyyyMMddTHHmmssZ"));
+            requestBuilder.AddOrUpdateHeaderParameter("x-amz-date", signingDate.ToString("yyyyMMddTHHmmssZ"));
         }
 
         /// <summary>
@@ -481,7 +484,7 @@ namespace Minio
         /// <param name="hostUrl">Host url</param>
         private void SetHostHeader(HttpRequestMessageBuilder requestBuilder, string hostUrl)
         {
-            requestBuilder.AddHeaderParameter("Host", hostUrl);
+            requestBuilder.AddOrUpdateHeaderParameter("Host", hostUrl);
         }
 
         /// <summary>
@@ -493,7 +496,7 @@ namespace Minio
         {
             if (!string.IsNullOrEmpty(sessionToken))
             {
-                requestBuilder.AddHeaderParameter("X-Amz-Security-Token", sessionToken);
+                requestBuilder.AddOrUpdateHeaderParameter("X-Amz-Security-Token", sessionToken);
             }
         }
 
@@ -508,7 +511,7 @@ namespace Minio
             // No need to compute SHA256 if endpoint scheme is https
             if (isSecure)
             {
-                requestBuilder.AddHeaderParameter("x-amz-content-sha256", "UNSIGNED-PAYLOAD");
+                requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", "UNSIGNED-PAYLOAD");
                 return;
             }
             if (requestBuilder.Method == HttpMethod.Put || requestBuilder.Method.Equals(HttpMethod.Post))
@@ -516,44 +519,54 @@ namespace Minio
                 var body = requestBuilder.Content;
                 if (body == null)
                 {
-                    requestBuilder.AddHeaderParameter("x-amz-content-sha256", sha256EmptyFileHash);
+                    requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", sha256EmptyFileHash);
                     return;
                 }
                 var sha256 = SHA256.Create();
                 byte[] hash = sha256.ComputeHash(body);
                 string hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
-                requestBuilder.AddHeaderParameter("x-amz-content-sha256", hex);
+                requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
             }
             else
             {
-                requestBuilder.AddHeaderParameter("x-amz-content-sha256", sha256EmptyFileHash);
+                requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", sha256EmptyFileHash);
             }
         }
 
         /// <summary>
-        /// Set 'Content-MD5' http header.
+        /// Set 'Content-Md5' http header.
         /// </summary>
-        private void SetContentMd5(HttpRequestMessageBuilder requestBuilder)
+        private void SetContentMd5(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            if (requestBuilder.Method == HttpMethod.Put || requestBuilder.Method.Equals(HttpMethod.Post))
+            if (requestMessageBuilder.Method == HttpMethod.Put ||
+                requestMessageBuilder.Method == HttpMethod.Post)
             {
-                var body = requestBuilder.Content;
+                var body = requestMessageBuilder.Content;
                 if (body == null)
                 {
                     return;
                 }
+
+                var isMultiDeleteRequest = false;
+                if (requestMessageBuilder.Method == HttpMethod.Post)
+                {
+                    isMultiDeleteRequest = requestMessageBuilder.QueryParameters.Any(p => p.Key.Equals("delete", StringComparison.OrdinalIgnoreCase));
+                }
+
                 // For insecure, authenticated requests set sha256 header instead of MD5.
-                if (!isSecure && !isAnonymous)
+                if (!isSecure && !isAnonymous && !isMultiDeleteRequest)
                 {
                     return;
                 }
 
-                // All anonymous access requests get Content-MD5 header set.
+                requestMessageBuilder.AddHeaderParameter("Content-Md5", utils.getMD5SumStr(body));
+
                 var md5 = MD5.Create();
                 byte[] hash = md5.ComputeHash(body);
 
                 string base64 = Convert.ToBase64String(hash);
-                requestBuilder.AddBodyParameter("Content-MD5", base64);
+                requestMessageBuilder.AddBodyParameter("Content-Md5", base64);
+
             }
         }
     }

@@ -432,11 +432,10 @@ namespace Minio
                 {
                     using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
                     {
-                        args = args.WithNotificationObserver(obs)
-                                        .WithEnableTrace(this.trace);
                         HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-                        await this.ExecuteTaskAsync(this.NoErrorHandlers,
-                            requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+                        args = args.WithNotificationObserver(obs)
+                                   .WithEnableTrace(this.trace);
+                        await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
                         cts.Token.ThrowIfCancellationRequested();
                     }
                 });
@@ -593,9 +592,9 @@ namespace Minio
         {
             args.Validate();
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            requestMessageBuilder.AddQueryParameter("object-lock", "");
-            ResponseResult responseResult = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
-            GetObjectLockConfigurationResponse resp = new GetObjectLockConfigurationResponse(responseResult.StatusCode, responseResult.Content);
+            // requestMessageBuilder.AddQueryParameter("object-lock", "");
+            var responseResult = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+            var resp = new GetObjectLockConfigurationResponse(responseResult.StatusCode, responseResult.Content);
             return resp.LockConfiguration;
         }
 

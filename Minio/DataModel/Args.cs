@@ -26,11 +26,9 @@ namespace Minio
         // Will be one of the types: - HEAD, GET, PUT, DELETE. etc.
         internal HttpMethod RequestMethod { get; set; }
 
-        internal virtual HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal virtual HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder httpRequestMessageBuilder = new HttpRequestMessageBuilder(request.Method,
-                        request.RequestUri, request.RequestUri.AbsolutePath);
-            return httpRequestMessageBuilder;
+            return requestMessageBuilder;
         }
     }
 }

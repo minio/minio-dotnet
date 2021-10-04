@@ -140,7 +140,6 @@ namespace Minio
         /// <exception cref="DirectoryNotFoundException">If the directory to copy to is not found</exception>
         public Task<ObjectStat> GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
-            utils.Print(args);
             return getObjectHelper(args, cancellationToken);
         }
 
@@ -715,126 +714,6 @@ namespace Minio
             return etags;
         }
 
-        // public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, // RestSharp changes
-        //     string contentType = null, Dictionary<string, string> metaData = null, ServerSideEncryption sse = null,
-        //     CancellationToken cancellationToken = default(CancellationToken))
-        // {
-        //     utils.ValidateBucketName(bucketName);
-        //     utils.ValidateObjectName(objectName);
-
-        //     var sseHeaders = new Dictionary<string, string>();
-        //     var meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        //     if (metaData != null)
-        //     {
-        //         foreach (KeyValuePair<string, string> p in metaData)
-        //         {
-        //             var key = p.Key;
-        //             if (!supportedHeaders.Contains(p.Key, StringComparer.OrdinalIgnoreCase) &&
-        //                 !p.Key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
-        //             {
-        //                 key = "x-amz-meta-" + key.ToLowerInvariant();
-        //             }
-
-        //             meta[key] = p.Value;
-
-        //         }
-        //     }
-
-        //     if (sse != null)
-        //     {
-        //         sse.Marshal(sseHeaders);
-        //     }
-
-        //     if (string.IsNullOrWhiteSpace(contentType))
-        //     {
-        //         contentType = "application/octet-stream";
-        //     }
-
-        //     if (!meta.ContainsKey("Content-Type"))
-        //     {
-        //         meta["Content-Type"] = contentType;
-        //     }
-
-        //     if (data == null)
-        //     {
-        //         throw new ArgumentNullException(nameof(data), "Invalid input stream, cannot be null");
-        //     }
-
-        //     // for sizes less than 5Mb , put a single object
-        //     if (size < Constants.MinimumPartSize && size >= 0)
-        //     {
-        //         var bytes = await ReadFullAsync(data, (int) size).ConfigureAwait(false);
-        //         if (bytes != null && bytes.Length != (int) size)
-        //         {
-        //             throw new UnexpectedShortReadException(
-        //                 $"Data read {bytes.Length} is shorter than the size {size} of input buffer.");
-        //         }
-
-        //         await this.PutObjectAsync(bucketName, objectName, null, 0, bytes, meta, sseHeaders, cancellationToken)
-        //             .ConfigureAwait(false);
-        //         return;
-        //     }
-        //     // For all sizes greater than 5MiB do multipart.
-
-        //     dynamic multiPartInfo = utils.CalculateMultiPartSize(size);
-        //     double partSize = multiPartInfo.partSize;
-        //     double partCount = multiPartInfo.partCount;
-        //     double lastPartSize = multiPartInfo.lastPartSize;
-        //     Part[] totalParts = new Part[(int) partCount];
-
-        //     string uploadId = await this
-        //         .NewMultipartUploadAsync(bucketName, objectName, meta, sseHeaders, cancellationToken)
-        //         .ConfigureAwait(false);
-
-        //     // Remove SSE-S3 and KMS headers during PutObjectPart operations.
-        //     if (sse != null &&
-        //         (sse.GetType().Equals(EncryptionType.SSE_S3) ||
-        //          sse.GetType().Equals(EncryptionType.SSE_KMS)))
-        //     {
-        //         sseHeaders.Remove(Constants.SSEGenericHeader);
-        //         sseHeaders.Remove(Constants.SSEKMSContext);
-        //         sseHeaders.Remove(Constants.SSEKMSKeyId);
-        //     }
-
-        //     double expectedReadSize = partSize;
-        //     int partNumber;
-        //     int numPartsUploaded = 0;
-        //     for (partNumber = 1; partNumber <= partCount; partNumber++)
-        //     {
-        //         byte[] dataToCopy = await ReadFullAsync(data, (int) partSize).ConfigureAwait(false);
-        //         if (dataToCopy == null && numPartsUploaded > 0)
-        //         {
-        //             break;
-        //         }
-
-        //         if (partNumber == partCount)
-        //         {
-        //             expectedReadSize = lastPartSize;
-        //         }
-
-        //         numPartsUploaded += 1;
-        //         string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, meta,
-        //             sseHeaders, cancellationToken).ConfigureAwait(false);
-        //         totalParts[partNumber - 1] = new Part
-        //             {PartNumber = partNumber, ETag = etag, Size = (long) expectedReadSize};
-        //     }
-
-        //     // This shouldn't happen where stream size is known.
-        //     if (partCount != numPartsUploaded && size != -1)
-        //     {
-        //         await this.RemoveUploadAsync(bucketName, objectName, uploadId, cancellationToken).ConfigureAwait(false);
-        //         return;
-        //     }
-
-        //     Dictionary<int, string> etags = new Dictionary<int, string>();
-        //     for (partNumber = 1; partNumber <= numPartsUploaded; partNumber++)
-        //     {
-        //         etags[partNumber] = totalParts[partNumber - 1].ETag;
-        //     }
-
-        //     await this.CompleteMultipartUploadAsync(bucketName, objectName, uploadId, etags, cancellationToken)
-        //         .ConfigureAwait(false);
-
 
         /// <summary>
         /// Creates object in a bucket fom input stream or filename.
@@ -914,7 +793,6 @@ namespace Minio
                                                             .WithHeaders(args.Headers);
             Dictionary<int, string> etags = null;
             // Upload file contents.
-
             if (!string.IsNullOrEmpty(args.FileName))
             {
                 FileInfo fileInfo = new FileInfo(args.FileName);
@@ -961,6 +839,7 @@ namespace Minio
             {
                 sseGet = sSECopy.CloneToSSEC();
             }
+
             StatObjectArgs statArgs = new StatObjectArgs()
                                             .WithBucket(args.SourceObject.BucketName)
                                             .WithObject(args.SourceObject.ObjectName)
@@ -1025,9 +904,6 @@ namespace Minio
                 if (args.SourceObject.SSE != null && args.SourceObject.SSE is SSECopy)
                 {
                     args.SourceObject.SSE.Marshal(newMeta);
-                    // throw new ArgumentException("'" + fileName + "': object size " + length +
-                    //                             " is smaller than file size "
-                    //                             + fileSize, nameof(fileSize));
                 }
                 if (args.SSE != null)
                 {
@@ -1072,8 +948,6 @@ namespace Minio
             double expectedReadSize = partSize;
             int partNumber;
             for (partNumber = 1; partNumber <= partCount; partNumber++)
-
-            // await GetObjectAsync(bucketName, objectName, (stream) => // From RestSharp
             {
                 CopyConditions partCondition = args.SourceObject.CopyOperationConditions.Clone();
                 partCondition.byteRangeStart = (long)partSize * (partNumber - 1) + partCondition.byteRangeStart;
@@ -1311,7 +1185,7 @@ namespace Minio
             var bodyString = completeMultipartUploadXml.ToString();
             var body = System.Text.Encoding.UTF8.GetBytes(bodyString);
 
-            requestMessageBuilder.AddHeaderParameter("Content-Type", "application/xml");
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Type", "application/xml");
 
             requestMessageBuilder.AddXmlBody(bodyString);
             await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
@@ -1416,12 +1290,12 @@ namespace Minio
                 metaData.Add(kv.Key, kv.Value);
             }
 
-            var requestMessageBuilder = await this.CreateRequest(HttpMethod.Post, bucketName, objectName,
-                headerMap: metaData).ConfigureAwait(false);
+            var requestMessageBuilder = await this.CreateRequest(HttpMethod.Post, bucketName,
+                objectName: objectName, headerMap: metaData).ConfigureAwait(false);
             requestMessageBuilder.AddQueryParameter("uploads", "");
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
-                .ConfigureAwait(false);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers,
+                requestMessageBuilder, cancellationToken).ConfigureAwait(false);
 
             var contentBytes = Encoding.UTF8.GetBytes(response.Content);
             InitiateMultipartUploadResult newUpload = null;
@@ -1429,8 +1303,8 @@ namespace Minio
             {
                 newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult))
                     .Deserialize(contentStream);
-                return newUpload.UploadId;
             }
+            return newUpload.UploadId;
         }
 
         /// <summary>
@@ -1710,14 +1584,14 @@ namespace Minio
                 }
             }
             // Set the object source
-            requestMessageBuilder.AddHeaderParameter("x-amz-copy-source", sourceObjectPath);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source", sourceObjectPath);
 
             // If no conditions available, skip addition else add the conditions to the header
             if (copyConditions != null)
             {
                 foreach (var item in copyConditions.GetConditions())
                 {
-                    requestMessageBuilder.AddHeaderParameter(item.Key, item.Value);
+                    requestMessageBuilder.AddOrUpdateHeaderParameter(item.Key, item.Value);
                 }
             }
 
@@ -1725,7 +1599,7 @@ namespace Minio
                 .ConfigureAwait(false);
 
             // Just read the result and parse content.
-            var contentBytes = Encoding.UTF8.GetBytes(response.Content);
+            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
 
             object copyResult = null;
             using (var contentStream = new MemoryStream(response.ContentBytes))

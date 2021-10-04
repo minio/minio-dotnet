@@ -41,26 +41,23 @@ namespace Minio
             }
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessage request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                request.Method, request.RequestUri, request.RequestUri.AbsolutePath);
-
             if (!string.IsNullOrEmpty(this.MatchETag))
             {
-                requestMessageBuilder.AddHeaderParameter("If-Match", this.MatchETag);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("If-Match", this.MatchETag);
             }
             if (!string.IsNullOrEmpty(this.NotMatchETag))
             {
-                requestMessageBuilder.AddHeaderParameter("If-None-Match", this.NotMatchETag);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("If-None-Match", this.NotMatchETag);
             }
             if (this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
             {
-                requestMessageBuilder.AddHeaderParameter("If-Modified-Since", utils.To8601String(this.ModifiedSince));
+                requestMessageBuilder.AddOrUpdateHeaderParameter("If-Modified-Since", utils.To8601String(this.ModifiedSince));
             }
             if (this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
             {
-                requestMessageBuilder.AddHeaderParameter("If-Unmodified-Since", utils.To8601String(this.UnModifiedSince));
+                requestMessageBuilder.AddOrUpdateHeaderParameter("If-Unmodified-Since", utils.To8601String(this.UnModifiedSince));
             }
             return requestMessageBuilder;
         }
