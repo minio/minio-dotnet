@@ -34,7 +34,7 @@ namespace Minio.Examples.Cases
                                                             .WithObject(objectName)
                                                             .WithExpiry(1000)
                                                             .WithHeaders(reqParams);
-                string presignedUrl = client.PresignedGetObjectAsync(args);
+                var presignedUrl = await client.PresignedGetObjectAsync(args);
                 Console.WriteLine(presignedUrl);
             }
             catch (Exception e)

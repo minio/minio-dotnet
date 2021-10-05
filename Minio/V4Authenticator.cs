@@ -342,7 +342,7 @@ namespace Minio
             {
                 signedUri.Port = -1;
             }
-            return signedUri.ToString();
+            return Convert.ToString(signedUri);
         }
 
         /// <summary>

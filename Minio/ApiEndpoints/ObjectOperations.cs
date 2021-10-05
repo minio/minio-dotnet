@@ -322,15 +322,12 @@ namespace Minio
         /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-        public string PresignedGetObjectAsync(PresignedGetObjectArgs args)
+        public async Task<string> PresignedGetObjectAsync(PresignedGetObjectArgs args)
         {
             args.Validate();
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                args.RequestMethod, requestUrl, "/" + args.BucketName);
+            var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
             var authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region,
                 sessionToken: this.SessionToken);
-
             return authenticator.PresignURL(requestMessageBuilder, args.Expiry, this.Region, this.SessionToken, args.RequestDate);
         }
 
@@ -1731,7 +1728,7 @@ namespace Minio
         /// <param name="reqDate">optional request date and time in UTC</param>
         /// <returns></returns>
         [Obsolete("Use PresignedGetObjectAsync method with PresignedGetObjectArgs object.")]
-        public string PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null)
+        public Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt, Dictionary<string, string> reqParams = null, DateTime? reqDate = null)
         {
             PresignedGetObjectArgs args = new PresignedGetObjectArgs()
                                                         .WithBucket(bucketName)

@@ -3105,20 +3105,26 @@ namespace Minio.Functional.Tests
                                                         .WithBucket(bucketName)
                                                         .WithObject(objectName);
                 ObjectStat stats = await minio.StatObjectAsync(statObjectArgs);
+
                 PresignedGetObjectArgs preArgs = new PresignedGetObjectArgs()
                                                                 .WithBucket(bucketName)
                                                                 .WithObject(objectName)
                                                                 .WithExpiry(expiresInt);
-                string presigned_url = minio.PresignedGetObjectAsync(preArgs);
+                var presigned_url = await minio.PresignedGetObjectAsync(preArgs);
                 WebRequest httpRequest = WebRequest.Create(presigned_url);
+                // Execute http request to get the object 
                 var response = (HttpWebResponse)(await Task<WebResponse>.Factory.FromAsync(httpRequest.BeginGetResponse, httpRequest.EndGetResponse, null));
+                // Create the object from the captured stream response
                 Stream stream = response.GetResponseStream();
                 var fileStream = File.Create(downloadFile);
                 stream.CopyTo(fileStream);
+
+                stream.Dispose();
                 fileStream.Dispose();
                 FileInfo writtenInfo = new FileInfo(downloadFile);
                 long file_read_size = writtenInfo.Length;
-                // Compare size of file downloaded  with presigned curl request and actual object size on server
+                // Compare the size of the file downloaded using the generated
+                // presigned_url (expected value) and the actual object size on the server
                 Assert.AreEqual(file_read_size, stats.Size);
                 new MintLogger("PresignedGetObject_Test1", presignedGetObjectSignature, "Tests whether PresignedGetObject url retrieves object from bucket", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
@@ -3167,7 +3173,7 @@ namespace Minio.Functional.Tests
                                                                 .WithBucket(bucketName)
                                                                 .WithObject(objectName)
                                                                 .WithExpiry(0);
-                string presigned_url = minio.PresignedGetObjectAsync(preArgs);
+                var presigned_url = await minio.PresignedGetObjectAsync(preArgs);
                 throw new InvalidOperationException("PresignedGetObjectAsync expected to throw an InvalidExpiryRangeException.");
             }
             catch (InvalidExpiryRangeException)
@@ -3234,7 +3240,7 @@ namespace Minio.Functional.Tests
                                                                 .WithExpiry(1000)
                                                                 .WithHeaders(reqParams)
                                                                 .WithRequestDate(reqDate);
-                string presigned_url = minio.PresignedGetObjectAsync(preArgs);
+                var presigned_url = await minio.PresignedGetObjectAsync(preArgs);
                 WebRequest httpRequest = WebRequest.Create(presigned_url);
                 var response = (HttpWebResponse)(await Task<WebResponse>.Factory.FromAsync(httpRequest.BeginGetResponse, httpRequest.EndGetResponse, null));
                 Assert.IsTrue(response.ContentType.Contains(reqParams["response-content-type"]));
@@ -3248,7 +3254,8 @@ namespace Minio.Functional.Tests
                 FileInfo writtenInfo = new FileInfo(downloadFile);
                 long file_read_size = writtenInfo.Length;
 
-                // Compare size of file downloaded  with presigned curl request and actual object size on server
+                // Compare the size of the file downloaded with the generated
+                // presigned_url (expected) and the actual object size on the server
                 Assert.AreEqual(file_read_size, stats.Size);
                 new MintLogger("PresignedGetObject_Test3", presignedGetObjectSignature, "Tests whether PresignedGetObject url retrieves object from bucket when override response headers sent", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
