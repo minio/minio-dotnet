@@ -397,22 +397,16 @@ namespace Minio
             return Observable.Create<MinioNotificationRaw>(
                 async (obs, ct) =>
                 {
-                    bool isRunning = true;
-
                     using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
                     {
-                        while (isRunning)
-                        {
-                            args = args.WithNotificationObserver(obs)
-                                       .WithEnableTrace(this.trace);
-                            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-                            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
-                            cts.Token.ThrowIfCancellationRequested();
-                        }
+                        RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
+                        args = args.WithNotificationObserver(obs)
+                                    .WithEnableTrace(this.trace);
+                        await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+                        cts.Token.ThrowIfCancellationRequested();
                     }
                 });
         }
-
 
         /// <summary>
         /// Gets Tagging values set for this bucket
