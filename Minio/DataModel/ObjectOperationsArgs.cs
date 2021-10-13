@@ -490,7 +490,6 @@ namespace Minio
 
         internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-
             requestMessageBuilder.AddQueryParameter("legal-hold", "");
             if (!string.IsNullOrEmpty(this.VersionId))
             {
@@ -498,11 +497,9 @@ namespace Minio
             }
             ObjectLegalHoldConfiguration config = new ObjectLegalHoldConfiguration(this.LegalHoldON);
             string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
-            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Type", "text/xml");
-            var bodyInBytes = Encoding.ASCII.GetBytes(body);
-            requestMessageBuilder.SetBody(bodyInBytes);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("text/xml", body);
             requestMessageBuilder.AddOrUpdateHeaderParameter("Content-MD5",
-                utils.getMD5SumStr(bodyInBytes));
+                            utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
             return requestMessageBuilder;
         }
     }
@@ -776,11 +773,7 @@ namespace Minio
                 requestMessageBuilder.AddQueryParameter("versionId", this.VersionId);
             }
             string body = this.ObjectTags.MarshalXML();
-            // Convert a C# string to a byte array  
-            byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
-            requestMessageBuilder.AddBodyParameter("Content-Type", "text/xml");
-            requestMessageBuilder.SetBody(bodyInBytes);
-            // requestMessageBuilder.AddHeaderParameter("Content-MD5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            requestMessageBuilder.AddOrUpdateHeaderParameter("text/xml", body);
 
             return requestMessageBuilder;
         }
@@ -891,11 +884,9 @@ namespace Minio
             }
             ObjectRetentionConfiguration config = new ObjectRetentionConfiguration(this.RetentionUntilDate, this.Mode);
             string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
-            requestMessageBuilder.AddBodyParameter("Content-Type", "text/xml");
-            var bodyInBytes = Encoding.ASCII.GetBytes(body);
-            requestMessageBuilder.SetBody(bodyInBytes);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("text/xml", body);
             requestMessageBuilder.AddOrUpdateHeaderParameter("Content-MD5",
-                utils.getMD5SumStr(bodyInBytes));
+                            utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
             return requestMessageBuilder;
         }
     }
@@ -941,7 +932,6 @@ namespace Minio
         }
         internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-
             requestMessageBuilder.AddQueryParameter("retention", "");
             if (!string.IsNullOrEmpty(this.VersionId))
             {
@@ -950,11 +940,9 @@ namespace Minio
             // Required for Clear Object Retention.
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-bypass-governance-retention", "true");
             string body = EmptyRetentionConfigXML();
-            requestMessageBuilder.AddBodyParameter("Content-Type", "text/xml");
-            var bodyInBytes = Encoding.ASCII.GetBytes(body);
-            requestMessageBuilder.SetBody(bodyInBytes);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("text/xml", body);
             requestMessageBuilder.AddOrUpdateHeaderParameter("Content-MD5",
-                utils.getMD5SumStr(bodyInBytes));
+                            utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
             return requestMessageBuilder;
         }
     }
@@ -1966,7 +1954,7 @@ namespace Minio
 
         internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            // requestMessageBuilder = base.BuildRequest(requestMessageBuilder);
+            requestMessageBuilder = base.BuildRequest(requestMessageBuilder);
             if (string.IsNullOrWhiteSpace(this.ContentType))
             {
                 this.ContentType = "application/octet-stream";
@@ -1999,23 +1987,12 @@ namespace Minio
             }
             if (this.RequestBody != null)
             {
-                requestMessageBuilder.SetBody(this.RequestBody);
                 var sha256 = SHA256.Create();
                 byte[] hash = sha256.ComputeHash(this.RequestBody);
                 string hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
+                requestMessageBuilder.SetBody(this.RequestBody);
             }
-
-            var customMetaData = Headers.Keys.Where(k => k.StartsWith("x-amz-meta")).ToDictionary(k => k, k => Headers[k]);
-            if (customMetaData != null)
-            {
-                foreach (KeyValuePair<string, string> kv in customMetaData)
-                {
-                    requestMessageBuilder.AddHeaderParameter(kv.Key, kv.Value);
-                }
-            }
-            // var bodyInCharArr = Encoding.UTF8.GetString(requestMessageBuilder.Content).ToCharArray();
-            // requestMessageBuilder.AddHeaderParameter("Content-Md5", utils.getMD5SumStr(Encoding.UTF8.GetBytes(bodyInCharArr)));
 
             return requestMessageBuilder;
         }

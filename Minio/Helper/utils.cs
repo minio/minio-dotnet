@@ -992,9 +992,9 @@ namespace Minio
             foreach (PropertyInfo prop in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
                 object value = prop.GetValue(obj, new object[] { });
-                Console.WriteLine("{0} = {1}", prop.Name, value);
+                Console.WriteLine("DEBUG >>   {0} = {1}", prop.Name, value);
             }
-            Console.WriteLine("Print is DONE!\n\n");
+            Console.WriteLine("DEBUG >>   Print is DONE!\n\n");
         }
 
         public static void printDict(Dictionary<string, string> d)
@@ -1003,10 +1003,10 @@ namespace Minio
             {
                 foreach (KeyValuePair<string, string> kv in d)
                 {
-                    Console.WriteLine("     {0} = {1}", kv.Key, kv.Value);
+                    Console.WriteLine("DEBUG >>        {0} = {1}", kv.Key, kv.Value);
                 }
             }
-            Console.WriteLine("Done printing\n");
+            Console.WriteLine("DEBUG >>   Done printing\n");
         }
     }
 }

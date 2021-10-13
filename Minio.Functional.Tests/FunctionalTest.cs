@@ -771,9 +771,8 @@ namespace Minio.Functional.Tests
                 Assert.IsTrue(statObject != null);
                 Assert.IsTrue(statObject.MetaData != null);
                 var statMeta = new Dictionary<string, string>(statObject.MetaData, StringComparer.OrdinalIgnoreCase);
-
-                Assert.IsTrue(statObject.MetaData.ContainsKey("customheader"));
-                Assert.IsTrue(statObject.MetaData.ContainsKey("Content-Type") && statObject.ContentType.Equals("custom/contenttype"));
+                Assert.IsTrue(statMeta.ContainsKey("Customheader"));
+                Assert.IsTrue(statObject.MetaData.ContainsKey("Content-Type") && statObject.MetaData["Content-Type"].Equals("custom/contenttype"));
                 new MintLogger(nameof(PutObject_Test4), putObjectSignature, "Tests whether PutObject with different content-type and custom header passes", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (Exception ex)
@@ -1209,7 +1208,6 @@ namespace Minio.Functional.Tests
                 GetObjectArgs getObjectArgs = new GetObjectArgs()
                                                 .WithBucket(bucketName)
                                                 .WithObject(objectName)
-                                                .WithFile(fileName)
                                                 .WithCallbackStream((stream) =>
                                                     {
                                                         var fileStream = File.Create(tempFileName);
@@ -1859,7 +1857,7 @@ namespace Minio.Functional.Tests
                 {
                     { "Content-Type", "application/css" },
                     { "Mynewkey", "test   test" }
-                 };
+                };
                 CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
                                                                         .WithBucket(bucketName)
                                                                         .WithObject(objectName)
@@ -2303,7 +2301,6 @@ namespace Minio.Functional.Tests
                     GetObjectArgs getObjectArgs = new GetObjectArgs()
                                                             .WithBucket(bucketName)
                                                             .WithObject(objectName)
-                                                            .WithFile(objectName)
                                                             .WithCallbackStream((stream) =>
                                                                                 {
                                                                                     var fileStream = File.Create(tempFileName);
@@ -2327,8 +2324,8 @@ namespace Minio.Functional.Tests
             }
             finally
             {
-                //     if (File.Exists(tempFileName))
-                //         File.Delete(tempFileName);
+                if (File.Exists(tempFileName))
+                    File.Delete(tempFileName);
                 await TearDown(minio, bucketName);
             }
         }
@@ -3110,7 +3107,7 @@ namespace Minio.Functional.Tests
                                                                 .WithBucket(bucketName)
                                                                 .WithObject(objectName)
                                                                 .WithExpiry(expiresInt);
-                var presigned_url = await minio.PresignedGetObjectAsync(preArgs);
+                string presigned_url = await minio.PresignedGetObjectAsync(preArgs);
                 WebRequest httpRequest = WebRequest.Create(presigned_url);
                 // Execute http request to get the object 
                 var response = (HttpWebResponse)(await Task<WebResponse>.Factory.FromAsync(httpRequest.BeginGetResponse, httpRequest.EndGetResponse, null));
@@ -3173,7 +3170,7 @@ namespace Minio.Functional.Tests
                                                                 .WithBucket(bucketName)
                                                                 .WithObject(objectName)
                                                                 .WithExpiry(0);
-                var presigned_url = await minio.PresignedGetObjectAsync(preArgs);
+                string presigned_url = await minio.PresignedGetObjectAsync(preArgs);
                 throw new InvalidOperationException("PresignedGetObjectAsync expected to throw an InvalidExpiryRangeException.");
             }
             catch (InvalidExpiryRangeException)
@@ -3240,7 +3237,7 @@ namespace Minio.Functional.Tests
                                                                 .WithExpiry(1000)
                                                                 .WithHeaders(reqParams)
                                                                 .WithRequestDate(reqDate);
-                var presigned_url = await minio.PresignedGetObjectAsync(preArgs);
+                string presigned_url = await minio.PresignedGetObjectAsync(preArgs);
                 WebRequest httpRequest = WebRequest.Create(presigned_url);
                 var response = (HttpWebResponse)(await Task<WebResponse>.Factory.FromAsync(httpRequest.BeginGetResponse, httpRequest.EndGetResponse, null));
                 Assert.IsTrue(response.ContentType.Contains(reqParams["response-content-type"]));

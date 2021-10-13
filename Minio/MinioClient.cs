@@ -172,8 +172,8 @@ namespace Minio
         internal async Task<HttpRequestMessageBuilder> CreateRequest<T>(BucketArgs<T> args) where T : BucketArgs<T>
         {
             this.ArgsCheck(args);
-            var requestMesssageBuilder = await this.CreateRequest(args.RequestMethod, args.BucketName).ConfigureAwait(false);
-            return args.BuildRequest(requestMesssageBuilder);
+            var requestMessageBuilder = await this.CreateRequest(args.RequestMethod, args.BucketName).ConfigureAwait(false);
+            return args.BuildRequest(requestMessageBuilder);
         }
 
         /// <summary>
@@ -550,6 +550,7 @@ namespace Minio
             if (this.trace)
             {
                 var fullUrl = requestMessageBuilder.RequestUri;
+                Console.WriteLine("\n===================================");
                 Console.WriteLine($"Full URL of Request {fullUrl}");
             }
 

@@ -138,21 +138,26 @@ namespace Minio
             {
                 args.Location = this.Region;
             }
-            // Set Target URL for MakeBucket
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, region: args.Location);
-            // SetTargetURL(requestUrl);
-            // Set Authenticator, if necessary.
-            // if (string.IsNullOrEmpty(this.Region) && !s3utils.IsAmazonEndPoint(this.BaseUrl) && args.Location != "us-east-1" && this.restClient != null)
-            // {
-            //     // this.authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: args.Location, sessionToken: this.SessionToken);
-            //     var requestMessageBuilder = new HttpRequestMessageBuilder(HttpMethod.Put, requestUrl, "/" + args.BucketName);
-            //     CreateBucketConfiguration config = new CreateBucketConfiguration(args.Location);
-            //     requestMessageBuilder.AddXmlBody(config.ToXml());
-            // }
-            // HttpRequestMessage requestMessage = await this.CreateRequest(args).ConfigureAwait(false);
-            HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-                args.RequestMethod, requestUrl, "/" + args.BucketName);
-            await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken);
+
+            if (args.Location == "us-east-1")
+            {
+                if (this.Region != string.Empty)
+                {
+                    args.Location = this.Region;
+                }
+            }
+
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, args.Location);
+            var requestMessageBuilder = new HttpRequestMessageBuilder(HttpMethod.Put, requestUrl, "/" + args.BucketName);
+
+            if (args.Location != "us-east-1")
+            {
+                CreateBucketConfiguration config = new CreateBucketConfiguration(args.Location);
+                requestMessageBuilder.AddXmlBody(config.ToXml());
+            }
+            args.BuildRequest(requestMessageBuilder);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+                            .ConfigureAwait(false);
         }
 
 
