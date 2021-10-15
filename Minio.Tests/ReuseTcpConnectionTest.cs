@@ -11,20 +11,27 @@ namespace Minio.Tests
     public class ReuseTcpConnectionTest
     {
         private MinioClient MinioClient { get; }
+
         public ReuseTcpConnectionTest()
         {
-            this.MinioClient = new MinioClient("play.min.io", "Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG");
+            this.MinioClient = new MinioClient()
+                                .WithEndpoint("play.min.io")
+                                .WithCredentials("Q3AM3UQ867SPQQA43P2F",
+                                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG");
         }
 
         private async Task<bool> ObjectExistsAsync(MinioClient client, string bucket, string objectName)
         {
             try
             {
-                await client.GetObjectAsync("bucket", objectName, stream => { });
+                GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                    .WithBucket("bucket")
+                                                    .WithObject(objectName);
+                await client.GetObjectAsync(getObjectArgs);
 
                 return true;
             }
-            catch (ObjectNotFoundException e)
+            catch (ObjectNotFoundException)
             {
                 return false;
             }
@@ -36,9 +43,14 @@ namespace Minio.Tests
             var bucket = "bucket";
             var objectName = "object-name";
 
-            if (!await this.MinioClient.BucketExistsAsync(bucket))
+            var bktExistArgs = new BucketExistsArgs()
+                                            .WithBucket(bucket);
+            bool found = await this.MinioClient.BucketExistsAsync(bktExistArgs);
+            if (!found)
             {
-                await this.MinioClient.MakeBucketAsync(bucket);
+                var mkBktArgs = new MakeBucketArgs()
+                                            .WithBucket(bucket);
+                await this.MinioClient.MakeBucketAsync(mkBktArgs);
             }
 
             if (!await this.ObjectExistsAsync(this.MinioClient, bucket, objectName))
@@ -47,7 +59,12 @@ namespace Minio.Tests
                 var helloStream = new MemoryStream();
                 helloStream.Write(helloData);
                 helloStream.Seek(0, SeekOrigin.Begin);
-                await this.MinioClient.PutObjectAsync(bucket, objectName, helloStream, helloData.Length);
+                var putObjectArgs = new PutObjectArgs()
+                                        .WithBucket(bucket)
+                                        .WithObject(objectName)
+                                        .WithStreamData(helloStream)
+                                        .WithObjectSize(helloData.Length);
+                await this.MinioClient.PutObjectAsync(putObjectArgs);
             }
 
             var length = await this.GetObjectLength(bucket, objectName);
@@ -77,7 +94,12 @@ namespace Minio.Tests
         private async Task<double> GetObjectLength(string bucket, string objectName)
         {
             long objectLength = 0;
-            await this.MinioClient.GetObjectAsync(bucket, objectName, stream => { objectLength = stream.Length; });
+            var getObjectArgs = new GetObjectArgs()
+                                    .WithBucket(bucket)
+                                    .WithObject(objectName)
+                                    .WithCallbackStream((stream) =>
+                                        { objectLength = stream.Length; });
+            await this.MinioClient.GetObjectAsync(getObjectArgs);
 
             return objectLength;
         }
