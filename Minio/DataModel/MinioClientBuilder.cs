@@ -58,7 +58,7 @@ namespace Minio
             {
                 endpoint = endpoint.Substring(0, endpoint.Length - 1);
             }
-            if (!endpoint.StartsWith("http") && !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
+            if (!BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
             {
                 throw new InvalidEndpointException(String.Format("{0} is invalid hostname.", endpoint), "endpoint");
             }

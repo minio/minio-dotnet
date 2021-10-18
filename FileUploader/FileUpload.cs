@@ -22,8 +22,11 @@ using System.Threading.Tasks;
 namespace FileUploader
 {
     /// <summary>
-    /// This example creates a new bucket if it does not already exist, and uploads a file
-    /// to the bucket.
+    /// This example creates a new bucket if it does not already exist, and
+    /// uploads a file to the bucket. The file name is chosen to be
+    /// "C:\\Users\\vagrant\\Downloads\\golden_oldies.mp3"
+    /// Either create a file with this name or change it with your own file,
+    /// where it is defined down below.
     /// </summary>
     public class FileUpload
     {
