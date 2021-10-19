@@ -237,8 +237,8 @@ namespace Minio
             {
                 throw new InvalidOperationException("Invalid to set both Etag match conditions " + nameof(this.NotMatchETag) + " and " + nameof(this.MatchETag));
             }
-            if ((this.ModifiedSince != null && !this.ModifiedSince.Equals(default(DateTime))) &&
-                    (this.ModifiedSince != null && !this.UnModifiedSince.Equals(default(DateTime))))
+            if (!this.ModifiedSince.Equals(default(DateTime)) &&
+                !this.UnModifiedSince.Equals(default(DateTime)))
             {
                 throw new InvalidOperationException("Invalid to set both modified date match conditions " + nameof(this.ModifiedSince) + " and " + nameof(this.UnModifiedSince));
             }
@@ -1074,11 +1074,11 @@ namespace Minio
             {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-none-match", this.NotMatchETag);
             }
-            if (this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
+            if (this.ModifiedSince != default(DateTime))
             {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-unmodified-since", utils.To8601String(this.ModifiedSince));
             }
-            if (this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
+            if (this.UnModifiedSince != default(DateTime))
             {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-modified-since", utils.To8601String(this.UnModifiedSince));
             }
@@ -1197,8 +1197,8 @@ namespace Minio
             {
                 throw new InvalidOperationException("Invalid to set both Etag match conditions " + nameof(this.NotMatchETag) + " and " + nameof(this.MatchETag));
             }
-            if ((this.ModifiedSince != null && !this.ModifiedSince.Equals(default(DateTime))) &&
-                    (this.ModifiedSince != null && !this.UnModifiedSince.Equals(default(DateTime))))
+            if (!this.ModifiedSince.Equals(default(DateTime)) &&
+                !this.UnModifiedSince.Equals(default(DateTime)))
             {
                 throw new InvalidOperationException("Invalid to set both modified date match conditions " + nameof(this.ModifiedSince) + " and " + nameof(this.UnModifiedSince));
             }
@@ -1334,11 +1334,11 @@ namespace Minio
             {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-none-match", this.NotMatchETag);
             }
-            if (this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
+            if (this.ModifiedSince != default(DateTime))
             {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-unmodified-since", utils.To8601String(this.ModifiedSince));
             }
-            if (this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
+            if (this.UnModifiedSince != default(DateTime))
             {
                 requestMessageBuilder.Request.Headers.Add("x-amz-copy-source-if-modified-since", utils.To8601String(this.UnModifiedSince));
             }

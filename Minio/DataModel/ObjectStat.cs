@@ -166,10 +166,7 @@ namespace Minio.DataModel
             if (this.ObjectLockMode != null)
             {
                 objectLockInfo = "ObjectLock Mode(" + ((this.ObjectLockMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE") + ")";
-                if (this.ObjectLockRetainUntilDate != null)
-                {
-                    objectLockInfo += " Retain Until Date(" + utils.To8601String(this.ObjectLockRetainUntilDate.Value) + ")";
-                }
+                objectLockInfo += " Retain Until Date(" + utils.To8601String(this.ObjectLockRetainUntilDate.Value) + ")";
             }
             if (this.TaggingCount != null)
             {

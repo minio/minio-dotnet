@@ -32,7 +32,7 @@ namespace Minio.DataModel
 
         public Expiration(DateTime date, bool deleteMarker = false) : base(date)
         {
-            if (date == null || date == default(DateTime))
+            if (date == default(DateTime))
             {
                 this.ExpiredObjectDeleteMarker = deleteMarker;
                 return;

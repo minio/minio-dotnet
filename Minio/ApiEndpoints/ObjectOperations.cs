@@ -290,7 +290,7 @@ namespace Minio
                 //Bucket Not found. So, incomplete uploads are removed.
                 if (ex.GetType() != typeof(BucketNotFoundException))
                 {
-                    throw ex;
+                    throw;
                 }
             }
             if (uploads == null)

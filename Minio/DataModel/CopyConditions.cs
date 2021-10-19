@@ -52,10 +52,6 @@ namespace Minio.DataModel
         /// <exception cref="ArgumentException">When date is null</exception>
         public void SetModified(DateTime date)
         {
-            if (date == null)
-            {
-                throw new ArgumentException("Date cannot be empty", nameof(date));
-            }
             copyConditions.Add("x-amz-copy-source-if-modified-since", date.ToUniversalTime().ToString("r"));
         }
 
@@ -66,10 +62,6 @@ namespace Minio.DataModel
         /// <exception cref="ArgumentException">When date is null</exception>
         public void SetUnmodified(DateTime date)
         {
-            if (date == null)
-            {
-                throw new ArgumentException("Date cannot be empty", nameof(date));
-            }
             copyConditions.Add("x-amz-copy-source-if-unmodified-since", date.ToUniversalTime().ToString("r"));
         }
 

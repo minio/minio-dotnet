@@ -976,10 +976,10 @@ namespace Minio
         {
             if (obj == null)
                 return null;
-            BinaryFormatter bf = new BinaryFormatter();
+            XmlSerializer serializer = new XmlSerializer(typeof(object));
             using (var ms = new MemoryStream())
             {
-                bf.Serialize(ms, obj);
+                serializer.Serialize(ms, obj);
                 return ms.ToArray();
             }
         }

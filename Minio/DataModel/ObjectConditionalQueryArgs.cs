@@ -34,8 +34,8 @@ namespace Minio
             {
                 throw new InvalidOperationException("Cannot set both " + nameof(MatchETag) + " and " + nameof(NotMatchETag) + " for query.");
             }
-            if ((this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
-                && (this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime)))
+            if (this.ModifiedSince != default(DateTime) &&
+                this.UnModifiedSince != default(DateTime))
             {
                 throw new InvalidOperationException("Cannot set both " + nameof(ModifiedSince) + " and " + nameof(UnModifiedSince) + " for query.");
             }
@@ -51,11 +51,11 @@ namespace Minio
             {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("If-None-Match", this.NotMatchETag);
             }
-            if (this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
+            if (this.ModifiedSince != default(DateTime))
             {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("If-Modified-Since", utils.To8601String(this.ModifiedSince));
             }
-            if (this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
+            if (this.UnModifiedSince != default(DateTime))
             {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("If-Unmodified-Since", utils.To8601String(this.UnModifiedSince));
             }
