@@ -798,6 +798,12 @@ namespace Minio
                 throw new MissingBucketReplicationConfigurationException(errResponse.BucketName, errResponse.Message);
             }
 
+            if (response.StatusCode.Equals(HttpStatusCode.Conflict)
+                && errResponse.Code.Equals("BucketAlreadyOwnedByYou"))
+            {
+                throw new Exception("Bucket already owned by you: " + errResponse.BucketName);
+            }
+
             throw new UnexpectedMinioException(errResponse.Message)
             {
                 Response = errResponse,

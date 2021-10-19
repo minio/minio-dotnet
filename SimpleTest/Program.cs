@@ -52,21 +52,36 @@ namespace SimpleTest
             var list = getListBucketsTask.Result;
             foreach (Bucket bucket in list.Buckets)
             {
-                // Console.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
+                Console.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
             }
 
             //Supply a new bucket name
+            string bucketName = "mynewbucket";
+            if (isBucketExists(minio, bucketName))
+            {
+                RemoveBucketArgs remBuckArgs = new Minio.RemoveBucketArgs()
+                                                    .WithBucket(bucketName);
+                var removeBucketTask = minio.RemoveBucketAsync(remBuckArgs);
+                Task.WaitAll(removeBucketTask);
+            }
+
             MakeBucketArgs mkBktArgs = new MakeBucketArgs()
-                                                .WithBucket("mynewbucket");
+                                                .WithBucket(bucketName);
             Task.WaitAll(minio.MakeBucketAsync(mkBktArgs));
 
+            bool found = isBucketExists(minio, bucketName);
+            Console.WriteLine("Bucket exists? = " + found);
+            Console.ReadLine();
+        }
+
+        private static bool isBucketExists(MinioClient minio,
+                                                string bucketName)
+        {
             BucketExistsArgs bktExistsArgs = new BucketExistsArgs()
-                                                        .WithBucket("mynewbucket");
+                                                        .WithBucket(bucketName);
             var bucketExistTask = minio.BucketExistsAsync(bktExistsArgs);
             Task.WaitAll(bucketExistTask);
-            var found = bucketExistTask.Result;
-            // Console.WriteLine("bucket was " + found);
-            Console.ReadLine();
+            return bucketExistTask.Result;
         }
 
         private static bool HandleBatchExceptions(Exception exceptionToHandle)
@@ -74,13 +89,13 @@ namespace SimpleTest
             if (exceptionToHandle is ArgumentNullException)
             {
                 //I'm handling the ArgumentNullException.
-                // Console.WriteLine("Handling the ArgumentNullException.");
+                Console.WriteLine("Handling the ArgumentNullException.");
                 //I handled this Exception, return true.
                 return true;
             }
 
             //I'm only handling ArgumentNullExceptions.
-            // Console.WriteLine(string.Format("I'm not handling the {0}.", exceptionToHandle.GetType()));
+            Console.WriteLine(string.Format("I'm not handling the {0}.", exceptionToHandle.GetType()));
             //I didn't handle this Exception, return false.
             return false;
         }
