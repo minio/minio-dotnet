@@ -726,6 +726,7 @@ namespace Minio
 
         private static void ParseErrorFromContent(ResponseResult response)
         {
+
             if (response.StatusCode.Equals(HttpStatusCode.NotFound)
                 && response.Request.RequestUri.PathAndQuery.EndsWith("?location")
                 && response.Request.Method.Equals(HttpMethod.Get))

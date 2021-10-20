@@ -612,16 +612,16 @@ namespace Minio.Functional.Tests
                 if (objectNamesVersions.Count > 0)
                 {
                     RemoveObjectsArgs removeObjectArgs = new RemoveObjectsArgs()
-                                                                    .WithBucket(bucketName)
-                                                                    .WithObjectsVersions(objectNamesVersions);
+                                        .WithBucket(bucketName)
+                                        .WithObjectsVersions(objectNamesVersions);
                     Task t = minio.RemoveObjectsAsync(removeObjectArgs);
                     tasks.Add(t);
                 }
                 if (objectNames.Count > 0)
                 {
                     RemoveObjectsArgs removeObjectArgs = new RemoveObjectsArgs()
-                                                                    .WithBucket(bucketName)
-                                                                    .WithObjects(objectNames);
+                                                    .WithBucket(bucketName)
+                                                    .WithObjects(objectNames);
                     Task t = minio.RemoveObjectsAsync(removeObjectArgs);
                     tasks.Add(t);
                 }
@@ -2813,6 +2813,8 @@ namespace Minio.Functional.Tests
             }
             finally
             {
+                Console.WriteLine("\n\n ********\n ********\n ********\nTEAR DOWN\n ********\n ********\n ********\n\n");
+                minio.SetTraceOn(new JsonNetLogger());
                 await TearDown(minio, bucketName);
             }
         }

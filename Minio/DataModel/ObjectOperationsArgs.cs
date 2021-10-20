@@ -60,7 +60,7 @@ namespace Minio
         {
             if (this.RequestBody == null)
             {
-                this.RequestBody = System.Text.Encoding.UTF8.GetBytes(this.SelectOptions.MarshalXML());
+                this.RequestBody = Encoding.UTF8.GetBytes(this.SelectOptions.MarshalXML());
             }
             requestMessageBuilder.AddQueryParameter("select", "");
             requestMessageBuilder.AddQueryParameter("select-type", "2");
