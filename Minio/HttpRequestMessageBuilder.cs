@@ -115,7 +115,7 @@ namespace Minio
 
         public void AddOrUpdateHeaderParameter(string key, string value)
         {
-            if (this.GetType().GetProperty(key) != null)
+            if (this.HeaderParameters.GetType().GetProperty(key) != null)
             {
                 this.HeaderParameters.Remove(key);
                 this.HeaderParameters[key] = value;

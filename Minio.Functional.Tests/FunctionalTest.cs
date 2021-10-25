@@ -523,11 +523,11 @@ namespace Minio.Functional.Tests
             bool bktExists = await minio.BucketExistsAsync(beArgs);
             if (!bktExists)
                 return;
-            List<Task> taskList = new List<Task>();
             bool getVersions = false;
             // Get Versioning/Retention Info.
-            GetObjectLockConfigurationArgs lockConfigurationArgs = new GetObjectLockConfigurationArgs()
-                                                                                        .WithBucket(bucketName);
+            GetObjectLockConfigurationArgs lockConfigurationArgs =
+                                            new GetObjectLockConfigurationArgs()
+                                                        .WithBucket(bucketName);
             ObjectLockConfiguration lockConfig = null;
             VersioningConfiguration versioningConfig = null;
             try
@@ -548,17 +548,12 @@ namespace Minio.Functional.Tests
             {
                 // No throw. Move to the next step without versions.
             }
-            catch (Exception)
-            {
-                throw;
-            }
-
-            List<Task> tasks = new List<Task>();
             ListObjectsArgs listObjectsArgs = new ListObjectsArgs()
-                                                        .WithBucket(bucketName)
-                                                        .WithRecursive(true)
-                                                        .WithVersions(getVersions);
-            List<Tuple<string, string>> objectNamesVersions = new List<Tuple<string, string>>();
+                                                    .WithBucket(bucketName)
+                                                    .WithRecursive(true)
+                                                    .WithVersions(getVersions);
+            List<Tuple<string, string>> objectNamesVersions =
+                                            new List<Tuple<string, string>>();
             List<string> objectNames = new List<string>();
             IObservable<Item> observable = minio.ListObjectsAsync(listObjectsArgs);
 
@@ -601,45 +596,81 @@ namespace Minio.Functional.Tests
                                                                     .WithVersionId(item.Item2);
                     if (bypassGovMode)
                         removeObjectArgs = removeObjectArgs.WithBypassGovernanceMode(bypassGovMode);
-                    Task t = minio.RemoveObjectAsync(removeObjectArgs);
-                    tasks.Add(t);
+                    await minio.RemoveObjectAsync(removeObjectArgs);
                 }
             }
             else
             {
-                // Just versioning enabled OR
-                // No Versioning. Just a list of objects.
+                // Versioning enabled OR No Versioning. Just a list of objects.
+                // There is a max limit on the number of files to be deleted.
+                // It is set to 1000 at the backend/server side. Requesting
+                // deletion of more than 1000 objects, gets "Malformed XML"
+                // http response error.
+                int maxDeleteLimit = 1000;
                 if (objectNamesVersions.Count > 0)
                 {
-                    RemoveObjectsArgs removeObjectArgs = new RemoveObjectsArgs()
-                                        .WithBucket(bucketName)
-                                        .WithObjectsVersions(objectNamesVersions);
-                    Task t = minio.RemoveObjectsAsync(removeObjectArgs);
-                    tasks.Add(t);
+                    int rem = objectNamesVersions.Count % maxDeleteLimit;
+                    int div = objectNamesVersions.Count / maxDeleteLimit;
+                    int noOfLoops = rem == 0 ? div : div + 1;
+
+                    if (noOfLoops == 1)
+                    {
+                        RemoveObjectsArgs removeObjectArgs = new RemoveObjectsArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObjectsVersions(objectNamesVersions);
+                        await minio.RemoveObjectsAsync(removeObjectArgs);
+                    }
+                    else
+                    {
+                        // The number of objects to be deleted is more than
+                        // maxDeleteLimit. We need to loop...
+                        for (int i = 0; i < noOfLoops; i++)
+                        {
+                            var noOfLeftObj = objectNamesVersions.Count - i * maxDeleteLimit;
+                            var count = noOfLeftObj < maxDeleteLimit ? noOfLeftObj : maxDeleteLimit;
+
+                            var partialList = objectNamesVersions.GetRange(i * maxDeleteLimit, count);
+                            RemoveObjectsArgs removeObjectArgs = new RemoveObjectsArgs()
+                                                                            .WithBucket(bucketName)
+                                                                            .WithObjectsVersions(partialList);
+                            await minio.RemoveObjectsAsync(removeObjectArgs);
+                        }
+                    }
                 }
                 if (objectNames.Count > 0)
                 {
-                    RemoveObjectsArgs removeObjectArgs = new RemoveObjectsArgs()
-                                                    .WithBucket(bucketName)
-                                                    .WithObjects(objectNames);
-                    Task t = minio.RemoveObjectsAsync(removeObjectArgs);
-                    tasks.Add(t);
+                    int rem = objectNames.Count % maxDeleteLimit;
+                    int div = objectNames.Count / maxDeleteLimit;
+                    int noOfLoops = rem == 0 ? div : div + 1;
+
+                    if (noOfLoops == 1)
+                    {
+                        RemoveObjectsArgs removeObjectArgs = new RemoveObjectsArgs()
+                                                                        .WithBucket(bucketName)
+                                                                        .WithObjects(objectNames);
+                        await minio.RemoveObjectsAsync(removeObjectArgs);
+                    }
+                    else
+                    {
+                        // The number of objects to be deleted is more than
+                        // maxDeleteLimit. We need to loop...
+                        for (int i = 0; i < noOfLoops; i++)
+                        {
+                            var noOfLeftObj = objectNames.Count - i * maxDeleteLimit;
+                            var count = noOfLeftObj < maxDeleteLimit ? noOfLeftObj : maxDeleteLimit;
+
+                            var partialList = objectNames.GetRange(i * maxDeleteLimit, count);
+                            RemoveObjectsArgs removeObjectArgs = new RemoveObjectsArgs()
+                                                                            .WithBucket(bucketName)
+                                                                            .WithObjects(partialList);
+                            await minio.RemoveObjectsAsync(removeObjectArgs);
+                        }
+                        RemoveBucketArgs rbArgs = new RemoveBucketArgs()
+                                                            .WithBucket(bucketName);
+                        await minio.RemoveBucketAsync(rbArgs);
+                    }
                 }
             }
-            await Task.WhenAll(tasks);
-            // Show exceptions if any happened during listing
-            if (exceptionList.Count > 0)
-            {
-                Console.WriteLine("The following exception(s) happened during after test cleanup (TearDown)");
-                foreach (var ex in exceptionList)
-                {
-                    Console.WriteLine(ex.ToString());
-                }
-            }
-            subscription.Dispose();
-            RemoveBucketArgs rbArgs = new RemoveBucketArgs()
-                                                .WithBucket(bucketName);
-            await minio.RemoveBucketAsync(rbArgs);
         }
 
         internal static string XmlStrToJsonStr(string xml)
@@ -1231,6 +1262,8 @@ namespace Minio.Functional.Tests
                 if (contentType != null)
                 {
                     Assert.IsNotNull(statObject.ContentType);
+                    Console.WriteLine("statObject.ContentType = " + statObject.ContentType);
+                    Console.WriteLine("contentType = " + contentType);
                     Assert.IsTrue(statObject.ContentType.Equals(contentType));
                 }
 
@@ -2794,7 +2827,7 @@ namespace Minio.Functional.Tests
                         Assert.IsTrue(item.Key.StartsWith(objectNamePrefix));
                         if (!objectNamesSet.Add(item.Key))
                         {
-                            new MintLogger("ListObjects_Test6", listObjectsSignature, "Tests whether ListObjects lists more than 1000 objects correctly(max-keys = 1000)", TestStatus.FAIL, (DateTime.Now - startTime), "Object listing repeated for " + item.Key, "", args: args).Log();
+                            new MintLogger("ListObjects_Test6", listObjectsSignature, "Tests whether ListObjects lists more than 1000 objects correctly(max-keys = 1000)", TestStatus.FAIL, (DateTime.Now - startTime), "Failed to add. Object already exists: " + item.Key, "", args: args).Log();
                         }
                         count += 1;
                     },
@@ -2813,8 +2846,6 @@ namespace Minio.Functional.Tests
             }
             finally
             {
-                Console.WriteLine("\n\n ********\n ********\n ********\nTEAR DOWN\n ********\n ********\n ********\n\n");
-                minio.SetTraceOn(new JsonNetLogger());
                 await TearDown(minio, bucketName);
             }
         }

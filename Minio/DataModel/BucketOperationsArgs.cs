@@ -534,7 +534,6 @@ namespace Minio
             byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
             requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
             requestMessageBuilder.SetBody(bodyInBytes);
-            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-MD5", utils.getMD5SumStr(bodyInBytes));
 
             return requestMessageBuilder;
         }
@@ -676,7 +675,6 @@ namespace Minio
             byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
             requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
             requestMessageBuilder.SetBody(bodyInBytes);
-            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-MD5", utils.getMD5SumStr(bodyInBytes));
             return requestMessageBuilder;
         }
 
@@ -758,7 +756,6 @@ namespace Minio
             byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
             requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
             requestMessageBuilder.SetBody(bodyInBytes);
-            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-MD5", utils.getMD5SumStr(bodyInBytes));
 
             return requestMessageBuilder;
         }

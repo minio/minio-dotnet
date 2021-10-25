@@ -547,26 +547,8 @@ namespace Minio
                     return;
                 }
 
-                var isMultiDeleteRequest = false;
-                if (requestMessageBuilder.Method == HttpMethod.Post)
-                {
-                    isMultiDeleteRequest = requestMessageBuilder.QueryParameters.Any(p => p.Key.Equals("delete", StringComparison.OrdinalIgnoreCase));
-                }
-
-                // For insecure, authenticated requests set sha256 header instead of MD5.
-                if (!isSecure && !isAnonymous && !isMultiDeleteRequest)
-                {
-                    return;
-                }
-
-                requestMessageBuilder.AddHeaderParameter("Content-Md5", utils.getMD5SumStr(body));
-
-                var md5 = MD5.Create();
-                byte[] hash = md5.ComputeHash(body);
-
-                string base64 = Convert.ToBase64String(hash);
-                requestMessageBuilder.AddBodyParameter("Content-Md5", base64);
-
+                requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5", utils.getMD5SumStr(body));
+                requestMessageBuilder.AddBodyParameter("Content-Md5", utils.getMD5SumStr(body));
             }
         }
     }
