@@ -15,7 +15,7 @@
  */
 
 using System.Collections.Generic;
-using System.Net.Http;
+using System;
 
 namespace Minio
 {
@@ -46,6 +46,8 @@ namespace Minio
             this.Headers = this.Headers ?? new Dictionary<string, string>();
             foreach (string key in headers.Keys)
             {
+                if (this.Headers.ContainsKey(key))
+                    continue;
                 this.Headers[key] = headers[key];
             }
             return (T)this;

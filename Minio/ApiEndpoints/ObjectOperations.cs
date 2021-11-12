@@ -729,25 +729,26 @@ namespace Minio
         public async Task PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            var meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            if (args.Headers != null)
-            {
-                foreach (KeyValuePair<string, string> p in args.Headers)
-                {
-                    var key = p.Key;
-                    if (!OperationsUtil.IsSupportedHeader(p.Key) && !p.Key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase) &&
-                        !OperationsUtil.IsSSEHeader(p.Key))
-                    {
-                        key = "x-amz-meta-" + key.ToLowerInvariant();
-                    }
-                    meta[key] = p.Value;
-                }
-            }
+            // var meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            // if (args.Headers != null)
+            // {
+            // foreach (KeyValuePair<string, string> p in args.Headers)
+            // {
+            //     var key = p.Key;
+            // if (!OperationsUtil.IsSupportedHeader(p.Key) &&
+            //         !p.Key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase) &&
+            //         !OperationsUtil.IsSSEHeader(p.Key))
+            //     {
+            //         key = "x-amz-meta-" + key.ToLowerInvariant();
+            //     }
+            //     meta[key] = p.Value;
+            // }
+            // }
             if (args.SSE != null)
             {
-                args.SSE.Marshal(meta);
+                args.SSE.Marshal(args.Headers);
             }
-            args.WithHeaders(meta);
+            // args.WithHeaders(meta);
 
             // Upload object in single part if size falls under restricted part size.
             if (args.ObjectSize < Constants.MinimumPartSize && args.ObjectSize >= 0 && args.ObjectStreamData != null)

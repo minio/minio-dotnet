@@ -1262,8 +1262,6 @@ namespace Minio.Functional.Tests
                 if (contentType != null)
                 {
                     Assert.IsNotNull(statObject.ContentType);
-                    Console.WriteLine("statObject.ContentType = " + statObject.ContentType);
-                    Console.WriteLine("contentType = " + contentType);
                     Assert.IsTrue(statObject.ContentType.Equals(contentType));
                 }
 
@@ -1609,7 +1607,7 @@ namespace Minio.Functional.Tests
             string objectName = GetRandomObjectName(10);
             string destBucketName = GetRandomName(15);
             string destObjectName = GetRandomName(10);
-            string outFileName = "outFileName";
+            // string outFileName = "outFileName";
             var args = new Dictionary<string, string>
             {
                 { "bucketName", bucketName },
@@ -1635,6 +1633,7 @@ namespace Minio.Functional.Tests
                 }
                 CopyConditions conditions = new CopyConditions();
                 conditions.SetByteRange(1024, 6291455);
+                // conditions.SetByteRange(1048576, 6291455);
 
                 // omit dest object name.
                 CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
@@ -1642,21 +1641,24 @@ namespace Minio.Functional.Tests
                                                                         .WithObject(objectName)
                                                                         .WithCopyConditions(conditions);
                 CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
-                                                            .WithCopyObjectSource(copySourceObjectArgs)
-                                                            .WithBucket(destBucketName);
+                                                            .WithBucket(destBucketName)
+                                                            .WithObject(destObjectName)
+                                                            .WithCopyObjectSource(copySourceObjectArgs);
 
+                minio.SetTraceOn(new JsonNetLogger());
                 await minio.CopyObjectAsync(copyObjectArgs);
-                GetObjectArgs getObjectArgs = new GetObjectArgs()
-                                                        .WithBucket(bucketName)
-                                                        .WithObject(objectName)
-                                                        .WithFile(outFileName);
-                await minio.GetObjectAsync(getObjectArgs);
+                minio.SetTraceOff();
+                // GetObjectArgs getObjectArgs = new GetObjectArgs()
+                //                                         .WithBucket(bucketName)
+                //                                         .WithObject(objectName)
+                //                                         .WithFile(outFileName);
+                // await minio.GetObjectAsync(getObjectArgs);
                 StatObjectArgs statObjectArgs = new StatObjectArgs()
                                                         .WithBucket(destBucketName)
-                                                        .WithObject(objectName);
+                                                        .WithObject(destObjectName);
                 ObjectStat stats = await minio.StatObjectAsync(statObjectArgs);
                 Assert.IsNotNull(stats);
-                Assert.IsTrue(stats.ObjectName.Contains(objectName));
+                Assert.IsTrue(stats.ObjectName.Contains(destObjectName));
                 Assert.AreEqual(6291455 - 1024 + 1, stats.Size);
                 new MintLogger("CopyObject_Test5", copyObjectSignature, "Tests whether CopyObject  multi-part copy upload for large files works", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
@@ -1671,9 +1673,9 @@ namespace Minio.Functional.Tests
             }
             finally
             {
-                File.Delete(outFileName);
-                await TearDown(minio, bucketName);
-                await TearDown(minio, destBucketName);
+                // File.Delete(outFileName);
+                // await TearDown(minio, bucketName);
+                // await TearDown(minio, destBucketName);
             }
         }
 
@@ -1847,10 +1849,14 @@ namespace Minio.Functional.Tests
         internal async static Task CopyObject_Test8(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
-            string bucketName = GetRandomName(15);
-            string objectName = GetRandomObjectName(10);
-            string destBucketName = GetRandomName(15);
-            string destObjectName = GetRandomName(10);
+            // string bucketName = GetRandomName(15);
+            // string objectName = GetRandomObjectName(10);
+            // string destBucketName = GetRandomName(15);
+            // string destObjectName = GetRandomName(10);
+            string bucketName = "erssrcbucket";
+            string objectName = "erssrcobject";
+            string destBucketName = "ersdestbucket";
+            string destObjectName = "ersdestobject";
             var args = new Dictionary<string, string>
             {
                 { "bucketName", bucketName },
@@ -1868,12 +1874,14 @@ namespace Minio.Functional.Tests
                 using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
                     PutObjectArgs putObjectArgs = new PutObjectArgs()
-                                                            .WithBucket(bucketName)
-                                                            .WithObject(objectName)
-                                                            .WithStreamData(filestream)
-                                                            .WithObjectSize(filestream.Length)
-                                                            .WithHeaders(new Dictionary<string, string> { { "Orig", "orig-val with  spaces" } });
+                                .WithBucket(bucketName)
+                                .WithObject(objectName)
+                                .WithStreamData(filestream)
+                                .WithObjectSize(filestream.Length)
+                                .WithHeaders(new Dictionary<string, string> { { "Orig", "orig-val with  spaces" } });
+                    minio.SetTraceOn(new JsonNetLogger());
                     await minio.PutObjectAsync(putObjectArgs);
+                    minio.SetTraceOff();
                 }
                 StatObjectArgs statObjectArgs = new StatObjectArgs()
                                                         .WithBucket(bucketName)
@@ -1886,22 +1894,26 @@ namespace Minio.Functional.Tests
                 copyCond.SetReplaceMetadataDirective();
 
                 // set custom metadata
-                var metadata = new Dictionary<string, string>
+                var customMetadata = new Dictionary<string, string>
                 {
                     { "Content-Type", "application/css" },
-                    { "Mynewkey", "test   test" }
+                    { "Mynewkey", "test   test" },
+                    { "Orig", "orig-valwithoutspaces" }
                 };
                 CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
-                                                                        .WithBucket(bucketName)
-                                                                        .WithObject(objectName)
-                                                                        .WithCopyConditions(copyCond);
+                                                            .WithBucket(bucketName)
+                                                            .WithObject(objectName)
+                                                            .WithCopyConditions(copyCond);
                 CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
                                                             .WithCopyObjectSource(copySourceObjectArgs)
                                                             .WithBucket(destBucketName)
-                                                            .WithHeaders(metadata)
-                                                            .WithObject(destObjectName);
+                                                            .WithObject(destObjectName)
+                                                            .WithHeaders(customMetadata);
 
+                Print(copyObjectArgs);
+                minio.SetTraceOn(new JsonNetLogger());
                 await minio.CopyObjectAsync(copyObjectArgs);
+                minio.SetTraceOff();
 
                 statObjectArgs = new StatObjectArgs()
                                             .WithBucket(destBucketName)
@@ -1920,8 +1932,8 @@ namespace Minio.Functional.Tests
             }
             finally
             {
-                await TearDown(minio, bucketName);
-                await TearDown(minio, destBucketName);
+                // await TearDown(minio, bucketName);
+                // await TearDown(minio, destBucketName);
             }
         }
 

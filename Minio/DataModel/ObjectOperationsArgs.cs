@@ -958,10 +958,10 @@ namespace Minio
             return this;
         }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            return requestMessageBuilder;
-        }
+        // internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        // {
+        //     return requestMessageBuilder;
+        // }
     }
 
     internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
@@ -1088,13 +1088,13 @@ namespace Minio
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", this.ObjectTags.GetTagString());
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
                     this.ReplaceTagsDirective ? "REPLACE" : "COPY");
+                if (this.ReplaceMetadataDirective)
+                    requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive", "REPLACE");
             }
-            string replaceDirective = "COPY";
             if (this.ReplaceMetadataDirective)
             {
-                replaceDirective = "REPLACE";
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-metadata-directive", "REPLACE");
             }
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-metadata-directive", replaceDirective);
             if (!string.IsNullOrEmpty(this.StorageClass))
             {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-storage-class", this.StorageClass);
@@ -1222,26 +1222,49 @@ namespace Minio
                 bool copyReplaceMeta = (this.SourceObject.CopyOperationConditions != null) ? this.SourceObject.CopyOperationConditions.HasReplaceMetadataDirective() : false;
                 this.WithReplaceMetadataDirective(copyReplaceMeta);
             }
-            if (!this.ReplaceMetadataDirective)
+
+            this.Headers = this.Headers ?? new Dictionary<string, string>();
+            if (this.ReplaceMetadataDirective)
             {
-                this.Headers = this.Headers ?? new Dictionary<string, string>();
-                this.Headers = this.Headers.Concat(this.SourceObjectInfo.MetaData).GroupBy(item => item.Key).ToDictionary(item => item.Key, item => item.Last().Value);
+                if (this.Headers != null)
+                {
+                    foreach (KeyValuePair<string, string> pair in this.SourceObjectInfo.MetaData)
+                    {
+                        var comparer = StringComparer.OrdinalIgnoreCase;
+                        var newDictionary = new Dictionary<string, string>(this.Headers, comparer);
+
+                        if (newDictionary.ContainsKey(pair.Key))
+                        {
+                            this.SourceObjectInfo.MetaData.Remove(pair.Key);
+                        }
+                    }
+                }
+                this.Headers = this.Headers
+                                        .Concat(this.SourceObjectInfo.MetaData)
+                                        .GroupBy(item => item.Key)
+                                        .ToDictionary(item => item.Key, item =>
+                                         item.Last().Value);
             }
-            else if (this.ReplaceMetadataDirective)
-            {
-                this.Headers = this.Headers ?? new Dictionary<string, string>();
-            }
+
             if (this.Headers != null)
             {
                 List<Tuple<string, string>> newKVList = new List<Tuple<string, string>>();
                 foreach (var item in this.Headers)
                 {
                     var key = item.Key;
-                    if (!item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase) &&
-                        !OperationsUtil.IsSSEHeader(key))
+                    // if (!item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase) &&
+                    //     !OperationsUtil.IsSSEHeader(key))
+                    if (!OperationsUtil.IsSupportedHeader(item.Key) &&
+                                        !item.Key.StartsWith("x-amz-meta",
+                                            StringComparison.OrdinalIgnoreCase) &&
+                                        !OperationsUtil.IsSSEHeader(key))
                     {
-                        newKVList.Add(new Tuple<string, string>("x-amz-meta-" + key.ToLowerInvariant(), item.Value));
+                        newKVList.Add(new Tuple<string, string>("x-amz-meta-" +
+                                            key.ToLowerInvariant(), item.Value));
+                        this.Headers.Remove(item.Key);
                     }
+                    else
+                        newKVList.Add(new Tuple<string, string>(key, item.Value));
                 }
                 foreach (var item in newKVList)
                 {
@@ -1354,23 +1377,15 @@ namespace Minio
                     this.ReplaceTagsDirective ? "COPY" : "REPLACE");
             }
             if (this.ReplaceMetadataDirective)
-            {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-metadata-directive", "REPLACE");
-            }
             if (!string.IsNullOrEmpty(this.StorageClass))
-            {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-storage-class", this.StorageClass);
-            }
             if (this.LegalHoldEnabled != null && this.LegalHoldEnabled.Value)
-            {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-legal-hold", "ON");
-            }
             if (this.ObjectLockSet)
             {
                 if (!this.RetentionUntilDate.Equals(default(DateTime)))
-                {
                     requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date", utils.To8601String(this.RetentionUntilDate));
-                }
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
                     (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
             }
@@ -1525,22 +1540,14 @@ namespace Minio
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
                     this.ReplaceTagsDirective ? "REPLACE" : "COPY");
             }
-            string replaceDirective = "COPY";
             if (this.ReplaceMetadataDirective)
-            {
-                replaceDirective = "REPLACE";
-            }
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-metadata-directive", replaceDirective);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-metadata-directive", "REPLACE");
             if (!string.IsNullOrEmpty(this.StorageClass))
-            {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-storage-class", this.StorageClass);
-            }
             if (this.ObjectLockSet)
             {
                 if (!this.RetentionUntilDate.Equals(default(DateTime)))
-                {
                     requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date", utils.To8601String(this.RetentionUntilDate));
-                }
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
                     (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
             }
@@ -1693,12 +1700,8 @@ namespace Minio
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
                     this.ReplaceTagsDirective ? "REPLACE" : "COPY");
             }
-            string replaceDirective = "COPY";
             if (this.ReplaceMetadataDirective)
-            {
-                replaceDirective = "REPLACE";
-            }
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-metadata-directive", replaceDirective);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-metadata-directive", "REPLACE");
             if (!string.IsNullOrWhiteSpace(this.StorageClass))
             {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-storage-class", this.StorageClass);
@@ -1974,13 +1977,18 @@ namespace Minio
                 foreach (KeyValuePair<string, string> p in metaData)
                 {
                     var key = p.Key;
-                    if (!OperationsUtil.IsSupportedHeader(p.Key) && !p.Key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase) &&
+                    if (!OperationsUtil.IsSupportedHeader(p.Key) &&
+                        !p.Key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase) &&
                         !OperationsUtil.IsSSEHeader(p.Key))
                     {
                         key = "x-amz-meta-" + key.ToLowerInvariant();
+                        this.Headers.Remove(p.Key);
                     }
                     this.Headers[key] = p.Value;
+                    if (key == "Content-Type")
+                        this.ContentType = p.Value;
                 }
+
             }
             if (string.IsNullOrWhiteSpace(this.ContentType))
             {

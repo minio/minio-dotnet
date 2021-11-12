@@ -72,8 +72,8 @@ namespace Minio
         private static HashSet<string> ignoredHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "authorization",
-            "content-length",
-            "content-type",
+            // "content-length",
+            // "content-type",
             "user-agent"
         };
 
@@ -514,7 +514,8 @@ namespace Minio
                 requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", "UNSIGNED-PAYLOAD");
                 return;
             }
-            if (requestBuilder.Method == HttpMethod.Put || requestBuilder.Method.Equals(HttpMethod.Post))
+            if (requestBuilder.Method == HttpMethod.Put ||
+                requestBuilder.Method.Equals(HttpMethod.Post))
             {
                 var body = requestBuilder.Content;
                 if (body == null)
@@ -536,10 +537,11 @@ namespace Minio
         /// <summary>
         /// Set 'Content-Md5' http header.
         /// </summary>
+        /// <param name="requestMessageBuilder">Instantiated requestMessageBuilder object</param>
         private void SetContentMd5(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            if (requestMessageBuilder.Method == HttpMethod.Put ||
-                requestMessageBuilder.Method == HttpMethod.Post)
+            if (requestMessageBuilder.Method.Equals(HttpMethod.Put) ||
+                requestMessageBuilder.Method.Equals(HttpMethod.Post))
             {
                 var body = requestMessageBuilder.Content;
                 if (body == null)
@@ -547,8 +549,29 @@ namespace Minio
                     return;
                 }
 
-                requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5", utils.getMD5SumStr(body));
-                requestMessageBuilder.AddBodyParameter("Content-Md5", utils.getMD5SumStr(body));
+                var isMultiDeleteRequest = false;
+                if (requestMessageBuilder.Method == HttpMethod.Post)
+                {
+                    isMultiDeleteRequest = requestMessageBuilder.BodyParameters.Any(p => p.Key.Equals("delete", StringComparison.OrdinalIgnoreCase));
+                }
+                // For insecure, authenticated requests set sha256 header instead of MD5.
+                if (!isSecure && !isAnonymous && !isMultiDeleteRequest)
+                {
+                    return;
+                }
+
+                // There are changes introduced in minio-go for some time,
+                // and they have not been reflected on the dotnet SDK side yet.
+                //
+                // The following change is just done to try if refactoring the old
+                // code is possible without a rewrite of the whole logic of
+                // authentication of Http request messages.
+                //
+                // So, the name of this method and its structure will be changed.
+                // This is to stop creating md5 for all cases as a generic/common logic. 
+                // With the new approach, each api will create md5 at the api level.
+                // 
+                SetContentSha256(requestMessageBuilder);
             }
         }
     }

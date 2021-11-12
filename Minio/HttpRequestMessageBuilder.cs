@@ -18,7 +18,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 
 
@@ -26,6 +28,12 @@ namespace Minio
 {
     internal class HttpRequestMessageBuilder
     {
+        internal HttpRequestMessageBuilder(Uri requestUri, HttpMethod method)
+        {
+            this.RequestUri = requestUri;
+            this.Method = method;
+
+        }
         public Uri RequestUri { get; set; }
         public Action<System.IO.Stream> ResponseWriter { get; set; }
         public HttpMethod Method { get; }
@@ -56,16 +64,36 @@ namespace Minio
                 {
                     var key = parameter.Key;
                     var val = parameter.Value;
+                    key = Regex.Replace(parameter.Key, @"\s+", " ").Trim();
+                    val = Regex.Replace(parameter.Value, @"\s+", " ").Trim();
+
                     StringComparison comparison = StringComparison.InvariantCultureIgnoreCase;
                     if (key.StartsWith("content-", comparison))
                     {
-                        if (this.BodyParameters.ContainsKey(key))
-                            this.BodyParameters.Remove(key);
+                        if (this.BodyParameters != null)
+                        {
+                            if (this.BodyParameters.ContainsKey(key))
+                            {
+                                this.BodyParameters.Remove(key);
+                            }
+                        }
                         this.BodyParameters.Add(key, val);
-                        request.Content?.Headers.TryAddWithoutValidation(key, val);
+                        if (this.Method == HttpMethod.Put ||
+                            this.Method.Equals(HttpMethod.Post))
+                        {
+                            if (request.Content != null)
+                            {
+                                // request.Content = new StringContent("", Encoding.UTF8, this.HeaderParameters[ContentTypeKey]);
+                                request.Headers.TryAddWithoutValidation("content-type", this.HeaderParameters[ContentTypeKey]);
+                            }
+                            else
+                            {
+                                request.Content = new StringContent(request.Content.ToString(), Encoding.UTF8, this.HeaderParameters[ContentTypeKey]);
+                            }
+                        }
                         continue;
                     }
-                    bool bo = request.Headers.TryAddWithoutValidation(key, val);
+                    bool b = request.Headers.TryAddWithoutValidation(key, val);
                 }
 
                 return request;
@@ -103,6 +131,7 @@ namespace Minio
 
         public void AddHeaderParameter(string key, string value)
         {
+            // value = value.Trim();
             if ((key == this.ContentTypeKey) && (!string.IsNullOrEmpty(value)))
             {
                 this.BodyParameters.Add(key, value);
@@ -116,14 +145,8 @@ namespace Minio
         public void AddOrUpdateHeaderParameter(string key, string value)
         {
             if (this.HeaderParameters.GetType().GetProperty(key) != null)
-            {
                 this.HeaderParameters.Remove(key);
-                this.HeaderParameters[key] = value;
-            }
-            else
-            {
-                this.HeaderParameters[key] = value;
-            }
+            this.HeaderParameters[key] = value;
         }
 
         public void AddBodyParameter(string key, string value)
