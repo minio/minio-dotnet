@@ -856,14 +856,24 @@ namespace Minio
                 args.WithTagging(tag);
             }
             args.Validate();
-            long srcByteRangeSize = (args.SourceObject.CopyOperationConditions != null) ? args.SourceObject.CopyOperationConditions.GetByteRange() : 0L;
+            long srcByteRangeSize = (args.SourceObject.CopyOperationConditions != null) ?
+                                args.SourceObject.CopyOperationConditions.GetByteRange() : 0L;
             long copySize = (srcByteRangeSize == 0) ? args.SourceObjectInfo.Size : srcByteRangeSize;
-            if ((srcByteRangeSize > args.SourceObjectInfo.Size) || ((srcByteRangeSize > 0) && (args.SourceObject.CopyOperationConditions.byteRangeEnd >= args.SourceObjectInfo.Size)))
+
+            if ((srcByteRangeSize > args.SourceObjectInfo.Size) ||
+                ((srcByteRangeSize > 0) &&
+                (args.SourceObject.CopyOperationConditions.byteRangeEnd >= args.SourceObjectInfo.Size)))
             {
-                throw new ArgumentException("Specified byte range (" + args.SourceObject.CopyOperationConditions.byteRangeStart.ToString() + "-" + args.SourceObject.CopyOperationConditions.byteRangeEnd.ToString() + ") does not fit within source object (size=" + args.SourceObjectInfo.Size.ToString() + ")");
+                throw new ArgumentException("Specified byte range (" +
+                                args.SourceObject.CopyOperationConditions.byteRangeStart.ToString() +
+                                "-" + args.SourceObject.CopyOperationConditions.byteRangeEnd.ToString() +
+                                ") does not fit within source object (size=" +
+                                args.SourceObjectInfo.Size.ToString() + ")");
             }
 
-            if ((copySize > Constants.MaxSingleCopyObjectSize) || (srcByteRangeSize > 0 && (srcByteRangeSize != args.SourceObjectInfo.Size)))
+            if ((copySize > Constants.MaxSingleCopyObjectSize) ||
+                (srcByteRangeSize > 0 &&
+                (srcByteRangeSize != args.SourceObjectInfo.Size)))
             {
                 MultipartCopyUploadArgs multiArgs = new MultipartCopyUploadArgs(args)
                                                                 .WithCopySize(copySize);
@@ -883,7 +893,6 @@ namespace Minio
                                                                 .WithVersionId(args.VersionId)
                                                                 .WithHeaders(args.Headers)
                                                                 .WithCopyObjectSource(sourceObject)
-                                                                .WithRequestBody(args.RequestBody)
                                                                 .WithSourceObjectInfo(args.SourceObjectInfo)
                                                                 .WithCopyOperationObjectType(typeof(CopyObjectResult))
                                                                 .WithReplaceMetadataDirective(args.ReplaceMetadataDirective)

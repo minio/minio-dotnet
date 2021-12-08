@@ -26,6 +26,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using System.ComponentModel;
+using System.Linq;
 
 using System.Reflection;
 
@@ -44,6 +46,7 @@ namespace Minio.Functional.Tests
         private static readonly Random rnd = new Random();
         private const int KB = 1024;
         private const int MB = 1024 * 1024;
+        private const int GB = 1024 * 1024 * 1024;
 
         private const string dataFile1B = "datafile-1-b";
 
@@ -476,12 +479,43 @@ namespace Minio.Functional.Tests
         {
             DateTime startTime = DateTime.Now;
             var args = new Dictionary<string, string>();
+            var bucketList = new List<Bucket>();
+            string bucketName = "buucketnaame";
+            int noOfBuckets = 5;
+            try
+            {
+                foreach (int indx in Enumerable.Range(1, noOfBuckets))
+                {
+                    await Setup_Test(minio, bucketName + indx.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.StartsWith("Bucket already owned by you"))
+                {
+                    // You have your bucket already created, continue
+                }
+                else
+                    throw;
+            }
             try
             {
                 var list = await minio.ListBucketsAsync();
-                foreach (Bucket bucket in list.Buckets)
+                bucketList = list.Buckets;
+                bucketList = bucketList.Where(x => x.Name.StartsWith(bucketName)).ToList<Bucket>();
+                Assert.AreEqual(noOfBuckets, bucketList.Count());
+                bucketList.Sort(delegate (Bucket x, Bucket y)
                 {
-                    // Ignore
+                    if (x.Name == y.Name) return 0;
+                    else if (x.Name == null) return -1;
+                    else if (y.Name == null) return 1;
+                    else return x.Name.CompareTo(y.Name);
+                });
+                int indx = 0;
+                foreach (Bucket bucket in bucketList)
+                {
+                    indx++;
+                    Assert.AreEqual(bucketName + indx.ToString(), bucket.Name);
                     continue;
                 }
                 new MintLogger(nameof(ListBuckets_Test), listBucketsSignature, "Tests whether ListBucket passes", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
@@ -490,6 +524,16 @@ namespace Minio.Functional.Tests
             {
                 new MintLogger(nameof(ListBuckets_Test), listBucketsSignature, "Tests whether ListBucket passes", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args: args).Log();
                 throw;
+            }
+            finally
+            {
+                foreach (Bucket bucket in bucketList)
+                {
+                    RemoveBucketArgs rbArgs = new RemoveBucketArgs()
+                                                        .WithBucket(bucket.Name);
+                    await minio.RemoveBucketAsync(rbArgs);
+                }
+
             }
         }
 
@@ -523,6 +567,7 @@ namespace Minio.Functional.Tests
             bool bktExists = await minio.BucketExistsAsync(beArgs);
             if (!bktExists)
                 return;
+            List<Task> taskList = new List<Task>();
             bool getVersions = false;
             // Get Versioning/Retention Info.
             GetObjectLockConfigurationArgs lockConfigurationArgs =
@@ -548,6 +593,11 @@ namespace Minio.Functional.Tests
             {
                 // No throw. Move to the next step without versions.
             }
+            catch (Exception)
+            {
+                throw;
+            }
+            List<Task> tasks = new List<Task>();
             ListObjectsArgs listObjectsArgs = new ListObjectsArgs()
                                                     .WithBucket(bucketName)
                                                     .WithRecursive(true)
@@ -596,89 +646,41 @@ namespace Minio.Functional.Tests
                                                                     .WithVersionId(item.Item2);
                     if (bypassGovMode)
                         removeObjectArgs = removeObjectArgs.WithBypassGovernanceMode(bypassGovMode);
-                    await minio.RemoveObjectAsync(removeObjectArgs);
+                    Task t = minio.RemoveObjectAsync(removeObjectArgs);
+                    tasks.Add(t);
                 }
             }
             else
             {
-                // Versioning enabled OR No Versioning. Just a list of objects.
-                // There is a max limit on the number of files to be deleted.
-                // It is set to 1000 at the backend/server side. Requesting
-                // deletion of more than 1000 objects, gets "Malformed XML"
-                // http response error.
-                int maxDeleteLimit = 1000;
                 if (objectNamesVersions.Count > 0)
                 {
-                    int rem = objectNamesVersions.Count % maxDeleteLimit;
-                    int div = objectNamesVersions.Count / maxDeleteLimit;
-                    int noOfLoops = rem == 0 ? div : div + 1;
-
-                    if (noOfLoops == 1)
-                    {
-                        RemoveObjectsArgs removeObjectArgs = new RemoveObjectsArgs()
-                                                                        .WithBucket(bucketName)
-                                                                        .WithObjectsVersions(objectNamesVersions);
-                        await minio.RemoveObjectsAsync(removeObjectArgs);
-                    }
-                    else
-                    {
-                        // The number of objects to be deleted is more than
-                        // maxDeleteLimit. We need to loop...
-                        for (int i = 0; i < noOfLoops; i++)
-                        {
-                            var noOfLeftObj = objectNamesVersions.Count - i * maxDeleteLimit;
-                            var count = noOfLeftObj < maxDeleteLimit ? noOfLeftObj : maxDeleteLimit;
-
-                            var partialList = objectNamesVersions.GetRange(i * maxDeleteLimit, count);
-                            RemoveObjectsArgs removeObjectArgs = new RemoveObjectsArgs()
-                                                                            .WithBucket(bucketName)
-                                                                            .WithObjectsVersions(partialList);
-                            await minio.RemoveObjectsAsync(removeObjectArgs);
-                        }
-                    }
+                    RemoveObjectsArgs removeObjectArgs = new RemoveObjectsArgs()
+                                                                    .WithBucket(bucketName)
+                                                                    .WithObjectsVersions(objectNamesVersions);
+                    Task t = minio.RemoveObjectsAsync(removeObjectArgs);
+                    tasks.Add(t);
                 }
                 if (objectNames.Count > 0)
                 {
-                    int rem = objectNames.Count % maxDeleteLimit;
-                    int div = objectNames.Count / maxDeleteLimit;
-                    int noOfLoops = rem == 0 ? div : div + 1;
+                    RemoveObjectsArgs removeObjectArgs = new RemoveObjectsArgs()
+                                                                    .WithBucket(bucketName)
+                                                                    .WithObjects(objectNames);
 
-                    if (noOfLoops == 1)
-                    {
-                        RemoveObjectsArgs removeObjectArgs = new RemoveObjectsArgs()
-                                                                        .WithBucket(bucketName)
-                                                                        .WithObjects(objectNames);
-                        await minio.RemoveObjectsAsync(removeObjectArgs);
-                    }
-                    else
-                    {
-                        // The number of objects to be deleted is more than
-                        // maxDeleteLimit. We need to loop...
-                        for (int i = 0; i < noOfLoops; i++)
-                        {
-                            var noOfLeftObj = objectNames.Count - i * maxDeleteLimit;
-                            var count = noOfLeftObj < maxDeleteLimit ? noOfLeftObj : maxDeleteLimit;
-
-                            var partialList = objectNames.GetRange(i * maxDeleteLimit, count);
-                            RemoveObjectsArgs removeObjectArgs = new RemoveObjectsArgs()
-                                                                            .WithBucket(bucketName)
-                                                                            .WithObjects(partialList);
-                            await minio.RemoveObjectsAsync(removeObjectArgs);
-                        }
-                        RemoveBucketArgs rbArgs = new RemoveBucketArgs()
-                                                            .WithBucket(bucketName);
-                        await minio.RemoveBucketAsync(rbArgs);
-                    }
+                    Task t = minio.
+                    RemoveObjectsAsync(removeObjectArgs);
+                    tasks.Add(t);
                 }
             }
+            await Task.WhenAll(tasks);
+            RemoveBucketArgs rbArgs = new RemoveBucketArgs()
+                                                .WithBucket(bucketName);
+            await minio.RemoveBucketAsync(rbArgs);
         }
-
         internal static string XmlStrToJsonStr(string xml)
         {
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(xml);
             string json = JsonConvert.SerializeXmlNode(doc);
-
             return json;
         }
 
@@ -1336,8 +1338,8 @@ namespace Minio.Functional.Tests
                                                             .WithBucket(bucketName)
                                                             .WithObject(objectName)
                                                             .WithStreamData(filestream)
-                                                            .WithObjectSize(filestream.Length)
-                                                            .WithHeaders(null);
+                                                            .WithObjectSize(filestream.Length);
+                    // .WithHeaders(null);
                     await minio.PutObjectAsync(putObjectArgs);
                 }
 
@@ -1633,7 +1635,6 @@ namespace Minio.Functional.Tests
                 }
                 CopyConditions conditions = new CopyConditions();
                 conditions.SetByteRange(1024, 6291455);
-                // conditions.SetByteRange(1048576, 6291455);
 
                 // omit dest object name.
                 CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
@@ -1641,24 +1642,16 @@ namespace Minio.Functional.Tests
                                                                         .WithObject(objectName)
                                                                         .WithCopyConditions(conditions);
                 CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
-                                                            .WithBucket(destBucketName)
-                                                            .WithObject(destObjectName)
-                                                            .WithCopyObjectSource(copySourceObjectArgs);
+                                                            .WithCopyObjectSource(copySourceObjectArgs)
+                                                            .WithBucket(destBucketName);
 
-                minio.SetTraceOn(new JsonNetLogger());
                 await minio.CopyObjectAsync(copyObjectArgs);
-                minio.SetTraceOff();
-                // GetObjectArgs getObjectArgs = new GetObjectArgs()
-                //                                         .WithBucket(bucketName)
-                //                                         .WithObject(objectName)
-                //                                         .WithFile(outFileName);
-                // await minio.GetObjectAsync(getObjectArgs);
                 StatObjectArgs statObjectArgs = new StatObjectArgs()
                                                         .WithBucket(destBucketName)
-                                                        .WithObject(destObjectName);
+                                                        .WithObject(objectName);
                 ObjectStat stats = await minio.StatObjectAsync(statObjectArgs);
                 Assert.IsNotNull(stats);
-                Assert.IsTrue(stats.ObjectName.Contains(destObjectName));
+                Assert.IsTrue(stats.ObjectName.Contains(objectName));
                 Assert.AreEqual(6291455 - 1024 + 1, stats.Size);
                 new MintLogger("CopyObject_Test5", copyObjectSignature, "Tests whether CopyObject  multi-part copy upload for large files works", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
@@ -1674,8 +1667,8 @@ namespace Minio.Functional.Tests
             finally
             {
                 // File.Delete(outFileName);
-                // await TearDown(minio, bucketName);
-                // await TearDown(minio, destBucketName);
+                await TearDown(minio, bucketName);
+                await TearDown(minio, destBucketName);
             }
         }
 
@@ -1824,6 +1817,15 @@ namespace Minio.Functional.Tests
             }
         }
 
+        public static void objPrint(Object obj)
+        {
+            foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(obj))
+            {
+                string name = descriptor.Name;
+                object value = descriptor.GetValue(obj);
+                Console.WriteLine("{0}={1}", name, value);
+            }
+        }
         public static void Print(Object obj)
         {
             foreach (PropertyInfo prop in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
@@ -1849,14 +1851,10 @@ namespace Minio.Functional.Tests
         internal async static Task CopyObject_Test8(MinioClient minio)
         {
             DateTime startTime = DateTime.Now;
-            // string bucketName = GetRandomName(15);
-            // string objectName = GetRandomObjectName(10);
-            // string destBucketName = GetRandomName(15);
-            // string destObjectName = GetRandomName(10);
-            string bucketName = "erssrcbucket";
-            string objectName = "erssrcobject";
-            string destBucketName = "ersdestbucket";
-            string destObjectName = "ersdestobject";
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomObjectName(10);
+            string destBucketName = GetRandomName(15);
+            string destObjectName = GetRandomName(10);
             var args = new Dictionary<string, string>
             {
                 { "bucketName", bucketName },
@@ -1879,9 +1877,7 @@ namespace Minio.Functional.Tests
                                 .WithStreamData(filestream)
                                 .WithObjectSize(filestream.Length)
                                 .WithHeaders(new Dictionary<string, string> { { "Orig", "orig-val with  spaces" } });
-                    minio.SetTraceOn(new JsonNetLogger());
                     await minio.PutObjectAsync(putObjectArgs);
-                    minio.SetTraceOff();
                 }
                 StatObjectArgs statObjectArgs = new StatObjectArgs()
                                                         .WithBucket(bucketName)
@@ -1892,6 +1888,7 @@ namespace Minio.Functional.Tests
 
                 CopyConditions copyCond = new CopyConditions();
                 copyCond.SetReplaceMetadataDirective();
+
 
                 // set custom metadata
                 var customMetadata = new Dictionary<string, string>
@@ -1910,10 +1907,7 @@ namespace Minio.Functional.Tests
                                                             .WithObject(destObjectName)
                                                             .WithHeaders(customMetadata);
 
-                Print(copyObjectArgs);
-                minio.SetTraceOn(new JsonNetLogger());
                 await minio.CopyObjectAsync(copyObjectArgs);
-                minio.SetTraceOff();
 
                 statObjectArgs = new StatObjectArgs()
                                             .WithBucket(destBucketName)
@@ -1932,8 +1926,8 @@ namespace Minio.Functional.Tests
             }
             finally
             {
-                // await TearDown(minio, bucketName);
-                // await TearDown(minio, destBucketName);
+                await TearDown(minio, bucketName);
+                await TearDown(minio, destBucketName);
             }
         }
 
@@ -2393,8 +2387,8 @@ namespace Minio.Functional.Tests
             }
             catch (Exception ex)
             {
-                await TearDown(minio, bucketName);
                 new MintLogger("GetObject_Test2", getObjectSignature, "Tests for non-existent GetObject", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args: args).Log();
+                await TearDown(minio, bucketName);
                 throw;
             }
 
@@ -3526,10 +3520,10 @@ namespace Minio.Functional.Tests
             {
                 await Setup_Test(minio, bucketName);
                 CancellationTokenSource cts = new CancellationTokenSource();
-                cts.CancelAfter(TimeSpan.FromMilliseconds(50));
+                cts.CancelAfter(TimeSpan.FromMilliseconds(15));
                 try
                 {
-                    using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(10 * MB))
+                    using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(50 * MB))
                     {
                         long file_write_size = filestream.Length;
 
@@ -3544,6 +3538,7 @@ namespace Minio.Functional.Tests
                 }
                 catch (OperationCanceledException)
                 {
+                    Console.WriteLine("Successfully captured OperationCanceledException");
                     ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
                                                                     .WithBucket(bucketName);
                     IObservable<Upload> observable = minio.ListIncompleteUploads(listArgs);
@@ -3551,10 +3546,14 @@ namespace Minio.Functional.Tests
                     IDisposable subscription = observable.Subscribe(
                         item =>
                         {
+                            Console.WriteLine("Listing item.Key = " + item.Key);
+                            Console.WriteLine("Listing item.UploadId = " + item.UploadId);
+                            Console.WriteLine("Listing item.Initiated = " + item.Initiated);
                             Assert.IsTrue(item.Key.Contains(objectName));
                         },
                         ex =>
                         {
+                            Console.WriteLine("F A I L");
                             Assert.Fail();
                         });
                 }
@@ -3593,10 +3592,10 @@ namespace Minio.Functional.Tests
             {
                 await Setup_Test(minio, bucketName);
                 CancellationTokenSource cts = new CancellationTokenSource();
-                cts.CancelAfter(TimeSpan.FromMilliseconds(60));
+                cts.CancelAfter(TimeSpan.FromMilliseconds(15));
                 try
                 {
-                    using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(10 * MB))
+                    using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(50 * MB))
                     {
                         long file_write_size = filestream.Length;
 
@@ -3611,6 +3610,7 @@ namespace Minio.Functional.Tests
                 }
                 catch (OperationCanceledException)
                 {
+                    Console.WriteLine("Successfully captured OperationCanceledException");
                     ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
                                                                     .WithBucket(bucketName)
                                                                     .WithPrefix("minioprefix")
@@ -3651,10 +3651,10 @@ namespace Minio.Functional.Tests
             {
                 await Setup_Test(minio, bucketName);
                 CancellationTokenSource cts = new CancellationTokenSource();
-                cts.CancelAfter(TimeSpan.FromMilliseconds(50));
+                cts.CancelAfter(TimeSpan.FromMilliseconds(15));
                 try
                 {
-                    using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(6 * MB))
+                    using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(100 * MB))
                     {
                         long file_write_size = filestream.Length;
 
@@ -3669,6 +3669,7 @@ namespace Minio.Functional.Tests
                 }
                 catch (OperationCanceledException)
                 {
+                    Console.WriteLine("Successfully captured OperationCanceledException");
                     ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
                                                                     .WithBucket(bucketName)
                                                                     .WithPrefix(prefix)
@@ -3709,10 +3710,10 @@ namespace Minio.Functional.Tests
             {
                 await Setup_Test(minio, bucketName);
                 CancellationTokenSource cts = new CancellationTokenSource();
-                cts.CancelAfter(TimeSpan.FromMilliseconds(10));
+                cts.CancelAfter(TimeSpan.FromMilliseconds(2));
                 try
                 {
-                    using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(6 * MB))
+                    using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(30 * MB))
                     {
                         long file_write_size = filestream.Length;
 
@@ -3727,6 +3728,7 @@ namespace Minio.Functional.Tests
                 }
                 catch (OperationCanceledException)
                 {
+                    Console.WriteLine("Successfully captured OperationCanceledException");
                     RemoveIncompleteUploadArgs rmArgs = new RemoveIncompleteUploadArgs()
                                                                         .WithBucket(bucketName)
                                                                         .WithObject(objectName);
@@ -3905,29 +3907,27 @@ namespace Minio.Functional.Tests
                 for (int attempt = 0; attempt < 10; attempt++)
                 {
 
-
                     if (received.Count > 0)
                     {
+                        // Although the attribute is called "json",
+                        // returned data in list "received" is in xml
+                        // format and it is an error.Here, we convert xml
+                        // into json format.
+                        string receivedJson0 = received[0].json;
+
+                        string receivedJson1 = received[1].json;
 
                         // Check if there is any unexpected error returned
                         // and captured in the receivedJson list, like
                         // "NotImplemented" api error. If so, we throw an exception
                         // and skip running this test
-                        if (received.Count > 1 && received[1].json.StartsWith("<Error><Code>"))
+                        if (receivedJson1.StartsWith("<Error><Code>"))
                         {
-
-                            // Although the attribute is called "json",
-                            // returned data in list "received" is in xml
-                            // format and it is an error.Here, we convert xml
-                            // into json format.
-                            string receivedJson = XmlStrToJsonStr(received[1].json);
-
-
-                            // Cleanup the "Error" key encapsulating "receivedJson"
+                            // Cleanup the "Error" key encapsulating "receivedJson1"
                             // data. This is required to match and convert json data
-                            // "receivedJson" into class "ErrorResponse"
+                            // "receivedJson1" into class "ErrorResponse"
                             int len = "{'Error':".Length;
-                            string trimmedFront = receivedJson.Substring(len);
+                            string trimmedFront = receivedJson1.Substring(len);
                             string trimmedFull = trimmedFront.Substring(0, trimmedFront.Length - 1);
 
                             ErrorResponse err = JsonConvert.DeserializeObject<ErrorResponse>(trimmedFull);
@@ -3939,17 +3939,16 @@ namespace Minio.Functional.Tests
                             throw ex;
                         }
 
-                        MinioNotification notification = JsonConvert.DeserializeObject<MinioNotification>(received[0].json);
+                        string receivedJson = XmlStrToJsonStr(receivedJson0 + receivedJson1);
+                        MinioNotification notification = JsonConvert.DeserializeObject<MinioNotification>(receivedJson);
+
+                        // MinioNotification notification = JsonConvert.DeserializeObject<MinioNotification>(received[0].json);
 
                         Assert.AreEqual(1, notification.Records.Length);
                         Assert.IsTrue(notification.Records[0].eventName.Contains("s3:ObjectCreated:Put"));
                         Assert.IsTrue(objectName.Contains(System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key)));
                         Assert.IsTrue(contentType.Contains(notification.Records[0].s3.objectMeta.contentType));
                         break;
-                    }
-                    else
-                    {
-                        Console.WriteLine($"ListenBucketNotificationsAsync: waiting for notification (t={attempt})");
                     }
                 }
 

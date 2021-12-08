@@ -20,8 +20,9 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Web;
+
+using Minio.Exceptions;
 
 
 namespace Minio
@@ -62,40 +63,58 @@ namespace Minio
 
                 foreach (var parameter in this.HeaderParameters)
                 {
-                    var key = parameter.Key;
+                    var key = parameter.Key.ToLower();
                     var val = parameter.Value;
-                    key = Regex.Replace(parameter.Key, @"\s+", " ").Trim();
-                    val = Regex.Replace(parameter.Value, @"\s+", " ").Trim();
 
-                    StringComparison comparison = StringComparison.InvariantCultureIgnoreCase;
-                    if (key.StartsWith("content-", comparison))
+
+                    bool addSuccess = request.Headers.TryAddWithoutValidation(key, val);
+                    if (!addSuccess)
                     {
-                        if (this.BodyParameters != null)
+                        if (request.Content == null)
+                            request.Content = new StringContent("");
+                        switch (key)
                         {
-                            if (this.BodyParameters.ContainsKey(key))
-                            {
-                                this.BodyParameters.Remove(key);
-                            }
+                            case "content-type":
+                                try
+                                {
+                                    request.Content.Headers.ContentType = new MediaTypeHeaderValue(val);
+                                }
+                                catch
+                                {
+                                    bool success = request.Content.Headers.TryAddWithoutValidation(ContentTypeKey, val);
+                                }
+                                break;
+                            case "content-length":
+                                request.Content.Headers.ContentLength = Convert.ToInt32(val);
+                                break;
+                            case "content-md5":
+                                request.Content.Headers.ContentMD5 = Convert.FromBase64String(val);
+                                break;
+                            default:
+                                var errMessage = "Unsupported signed header: (" + key + ": " + val;
+                                throw new Minio.Exceptions.UnexpectedMinioException(errMessage);
                         }
-                        this.BodyParameters.Add(key, val);
-                        if (this.Method == HttpMethod.Put ||
-                            this.Method.Equals(HttpMethod.Post))
-                        {
-                            if (request.Content != null)
-                            {
-                                // request.Content = new StringContent("", Encoding.UTF8, this.HeaderParameters[ContentTypeKey]);
-                                request.Headers.TryAddWithoutValidation("content-type", this.HeaderParameters[ContentTypeKey]);
-                            }
-                            else
-                            {
-                                request.Content = new StringContent(request.Content.ToString(), Encoding.UTF8, this.HeaderParameters[ContentTypeKey]);
-                            }
-                        }
-                        continue;
                     }
-                    bool b = request.Headers.TryAddWithoutValidation(key, val);
                 }
 
+                if (request.Content != null)
+                {
+                    var isMultiDeleteRequest = false;
+                    if (this.Method == HttpMethod.Post)
+                    {
+                        isMultiDeleteRequest = this.QueryParameters.ContainsKey("delete");
+                    }
+                    bool isSecure = this.RequestUri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);
+
+                    if ((!isSecure || isMultiDeleteRequest) &&
+                    (this.BodyParameters.ContainsKey("Content-Md5") &&
+                    this.BodyParameters["Content-Md5"] != null))
+                    {
+                        string returnValue = "";
+                        this.BodyParameters.TryGetValue("Content-Md5", out returnValue);
+                        request.Content.Headers.ContentMD5 = Convert.FromBase64String(returnValue);
+                    }
+                }
                 return request;
             }
         }
@@ -116,9 +135,9 @@ namespace Minio
             this.Method = method;
             this.RequestUri = requestUri;
 
-            this.QueryParameters = new Dictionary<string, string>();
-            this.HeaderParameters = new Dictionary<string, string>();
-            this.BodyParameters = new Dictionary<string, string>();
+            this.QueryParameters = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            this.HeaderParameters = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            this.BodyParameters = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
         }
 
         public Dictionary<string, string> QueryParameters { get; }
@@ -131,15 +150,14 @@ namespace Minio
 
         public void AddHeaderParameter(string key, string value)
         {
-            // value = value.Trim();
-            if ((key == this.ContentTypeKey) && (!string.IsNullOrEmpty(value)))
+            StringComparison comparison = StringComparison.InvariantCultureIgnoreCase;
+            if (key.StartsWith("content-", comparison) &&
+               !string.IsNullOrEmpty(value) &&
+               !this.BodyParameters.ContainsKey(key))
             {
                 this.BodyParameters.Add(key, value);
             }
-            else
-            {
-                this.HeaderParameters[key] = value;
-            }
+            this.HeaderParameters[key] = value;
         }
 
         public void AddOrUpdateHeaderParameter(string key, string value)

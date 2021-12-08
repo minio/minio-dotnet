@@ -26,9 +26,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Security.Cryptography;
 using System.Reflection;
+using System.ComponentModel;
 
 namespace Minio
 {
@@ -986,6 +985,16 @@ namespace Minio
 
         // Print object key properties and their values
         // Added for debugging purposes
+
+        public static void objPrint(Object obj)
+        {
+            foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(obj))
+            {
+                string name = descriptor.Name;
+                object value = descriptor.GetValue(obj);
+                Console.WriteLine("{0}={1}", name, value);
+            }
+        }
 
         public static void Print(Object obj)
         {

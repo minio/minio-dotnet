@@ -74,7 +74,9 @@ namespace Minio
             {
                 CreateBucketConfiguration config = new CreateBucketConfiguration(this.Location);
                 string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
-                requestMessageBuilder.AddOrUpdateHeaderParameter("text/xml", body);
+                requestMessageBuilder.AddXmlBody(body);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+                                utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
             }
             if (this.ObjectLock)
             {
@@ -379,7 +381,7 @@ namespace Minio
                 requestMessageBuilder.AddQueryParameter("events", eventType.value);
             }
 
-            requestMessageBuilder.ResponseWriter = responseStream =>
+            requestMessageBuilder.ResponseWriter = async responseStream =>
             {
                 using (responseStream)
                 {
@@ -388,7 +390,7 @@ namespace Minio
                     {
                         try
                         {
-                            string line = sr.ReadLine();
+                            string line = await sr.ReadLineAsync();
                             if (this.EnableTrace)
                             {
                                 Console.WriteLine("== ListenBucketNotificationsAsync read line ==");
@@ -530,11 +532,11 @@ namespace Minio
             requestMessageBuilder.AddQueryParameter("tagging", "");
             string body = this.BucketTags.MarshalXML();
 
-            // Convert a C# string to a byte array  
-            byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
-            requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
-            requestMessageBuilder.SetBody(bodyInBytes);
+            requestMessageBuilder.AddXmlBody(body);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+                            utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
 
+            //
             return requestMessageBuilder;
         }
 
@@ -607,11 +609,16 @@ namespace Minio
             requestMessageBuilder.AddQueryParameter("object-lock", "");
             string body = utils.MarshalXML(this.LockConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
             // Convert a C# string to a byte array  
-            byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
+            // byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
 
-            requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
-            requestMessageBuilder.SetBody(bodyInBytes);
-
+            // requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
+            // requestMessageBuilder.SetBody(bodyInBytes);
+            //
+            // string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+            requestMessageBuilder.AddXmlBody(body);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+                            utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            //
             return requestMessageBuilder;
         }
     }
@@ -643,11 +650,9 @@ namespace Minio
 
             requestMessageBuilder.AddQueryParameter("object-lock", "");
             string body = utils.MarshalXML(new ObjectLockConfiguration(), "http://s3.amazonaws.com/doc/2006-03-01/");
-            // Convert a C# string to a byte array  
-            byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
-            requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
-            requestMessageBuilder.SetBody(bodyInBytes);
-
+            requestMessageBuilder.AddXmlBody(body);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+                            utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
             return requestMessageBuilder;
         }
     }
@@ -675,6 +680,12 @@ namespace Minio
             byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
             requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
             requestMessageBuilder.SetBody(bodyInBytes);
+            //
+            // string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+            // requestMessageBuilder.AddXmlBody(body);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+                            utils.getMD5SumStr(bodyInBytes));
+            // 
             return requestMessageBuilder;
         }
 

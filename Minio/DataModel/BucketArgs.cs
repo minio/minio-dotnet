@@ -47,7 +47,7 @@ namespace Minio
             foreach (string key in headers.Keys)
             {
                 if (this.Headers.ContainsKey(key))
-                    continue;
+                    this.Headers.Remove(key);
                 this.Headers[key] = headers[key];
             }
             return (T)this;

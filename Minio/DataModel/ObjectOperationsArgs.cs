@@ -491,7 +491,7 @@ namespace Minio
             ObjectLegalHoldConfiguration config = new ObjectLegalHoldConfiguration(this.LegalHoldON);
             string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
             requestMessageBuilder.AddXmlBody(body);
-            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-MD5",
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
                             utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
             return requestMessageBuilder;
         }
@@ -706,7 +706,7 @@ namespace Minio
 
         internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-
+            XElement deleteObjectsRequest = null;
             List<XElement> objects = new List<XElement>();
             requestMessageBuilder.AddQueryParameter("delete", "");
             if (this.ObjectNamesVersions.Count > 0)
@@ -718,7 +718,7 @@ namespace Minio
                                         new XElement("Key", objTuple.Item1),
                                         new XElement("VersionId", objTuple.Item2)));
                 }
-                var deleteObjectsRequest = new XElement("Delete", objects,
+                deleteObjectsRequest = new XElement("Delete", objects,
                                                 new XElement("Quiet", true));
                 requestMessageBuilder.AddXmlBody(Convert.ToString(deleteObjectsRequest));
             }
@@ -728,12 +728,15 @@ namespace Minio
                 foreach (var obj in this.ObjectNames)
                 {
                     objects.Add(new XElement("Object",
-                                        new XElement("Key", obj)));
+                                       new XElement("Key", obj)));
                 }
-                var deleteObjectsRequest = new XElement("Delete", objects,
+                deleteObjectsRequest = new XElement("Delete", objects,
                                                 new XElement("Quiet", true));
                 requestMessageBuilder.AddXmlBody(Convert.ToString(deleteObjectsRequest));
             }
+
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+                            utils.getMD5SumStr(Encoding.UTF8.GetBytes(Convert.ToString(deleteObjectsRequest))));
 
             return requestMessageBuilder;
         }
@@ -874,7 +877,7 @@ namespace Minio
             ObjectRetentionConfiguration config = new ObjectRetentionConfiguration(this.RetentionUntilDate, this.Mode);
             string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
             requestMessageBuilder.AddXmlBody(body);
-            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-MD5",
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
                             utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
             return requestMessageBuilder;
         }
@@ -930,7 +933,7 @@ namespace Minio
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-bypass-governance-retention", "true");
             string body = EmptyRetentionConfigXML();
             requestMessageBuilder.AddXmlBody(body);
-            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-MD5",
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
                             utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
             return requestMessageBuilder;
         }
@@ -1108,7 +1111,10 @@ namespace Minio
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
                     (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
             }
-
+            if (this.RequestBody != null)
+            {
+                requestMessageBuilder.SetBody(this.RequestBody);
+            }
             return requestMessageBuilder;
         }
 
@@ -1182,8 +1188,6 @@ namespace Minio
 
         internal override void Validate()
         {
-            // We don't need to call base validate.
-            // If object name is empty we default to source object name.
             utils.ValidateBucketName(this.BucketName);
             if (this.SourceObject == null)
             {
@@ -1219,7 +1223,8 @@ namespace Minio
             if (!this.ReplaceMetadataDirective)
             {
                 // Check in copy conditions if replace metadata has been set
-                bool copyReplaceMeta = (this.SourceObject.CopyOperationConditions != null) ? this.SourceObject.CopyOperationConditions.HasReplaceMetadataDirective() : false;
+                bool copyReplaceMeta = (this.SourceObject.CopyOperationConditions != null) ?
+                    this.SourceObject.CopyOperationConditions.HasReplaceMetadataDirective() : false;
                 this.WithReplaceMetadataDirective(copyReplaceMeta);
             }
 
@@ -1252,8 +1257,6 @@ namespace Minio
                 foreach (var item in this.Headers)
                 {
                     var key = item.Key;
-                    // if (!item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase) &&
-                    //     !OperationsUtil.IsSSEHeader(key))
                     if (!OperationsUtil.IsSupportedHeader(item.Key) &&
                                         !item.Key.StartsWith("x-amz-meta",
                                             StringComparison.OrdinalIgnoreCase) &&
@@ -1263,8 +1266,7 @@ namespace Minio
                                             key.ToLowerInvariant(), item.Value));
                         this.Headers.Remove(item.Key);
                     }
-                    else
-                        newKVList.Add(new Tuple<string, string>(key, item.Value));
+                    newKVList.Add(new Tuple<string, string>(key, item.Value));
                 }
                 foreach (var item in newKVList)
                 {
@@ -1433,6 +1435,8 @@ namespace Minio
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
                     (this.ObjectLockRetentionMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE");
             }
+
+            requestMessageBuilder.AddOrUpdateHeaderParameter("content-type", this.ContentType);
 
             return requestMessageBuilder;
         }
@@ -1789,7 +1793,7 @@ namespace Minio
             var bodyString = completeMultipartUploadXml.ToString();
             var body = Encoding.UTF8.GetBytes(bodyString);
             var bodyInBytes = Encoding.UTF8.GetBytes(bodyString);
-            requestMessageBuilder.BodyParameters.Add("content-type", "appllication/xml");
+            requestMessageBuilder.BodyParameters.Add("content-type", "application/xml");
             requestMessageBuilder.SetBody(bodyInBytes);
             // var bodyInCharArr = Encoding.UTF8.GetString(requestMessageBuilder.Content).ToCharArray();
 
@@ -1869,6 +1873,7 @@ namespace Minio
             this.RequestBody = null;
             this.ObjectStreamData = null;
             this.PartNumber = 0;
+            this.ContentType = "application/octet-stream";
         }
 
         internal PutObjectArgs(PutObjectPartArgs args)
@@ -1950,6 +1955,9 @@ namespace Minio
             {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date", this.Retention.RetainUntilDate);
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode", this.Retention.Mode.ToString());
+                requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+                                utils.getMD5SumStr(this.RequestBody));
+                //
             }
             if (this.LegalHoldEnabled != null)
             {

@@ -238,7 +238,7 @@ namespace Minio
             {
                 utils.ValidateObjectName(objName);
                 iterObjects.Insert(i, objName);
-                if ((i + 1) == 1000)
+                if (++i == 1000)
                 {
                     fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList, cancellationToken);
                     iterObjects.Clear();

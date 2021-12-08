@@ -550,8 +550,6 @@ namespace Minio
             if (this.trace)
             {
                 var fullUrl = requestMessageBuilder.RequestUri;
-                Console.WriteLine("\n===================================");
-                Console.WriteLine($"Full URL of Request {fullUrl}");
             }
 
             var v4Authenticator = new V4Authenticator(this.Secure,
@@ -570,6 +568,7 @@ namespace Minio
                 {
                     this.HttpClient.Timeout = new TimeSpan(0, 0, 0, 0, requestTimeout);
                 }
+
                 var response = await this.HttpClient.SendAsync(request,
                     HttpCompletionOption.ResponseContentRead, cancellationToken)
                     .ConfigureAwait(false);

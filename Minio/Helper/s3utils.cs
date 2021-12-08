@@ -106,6 +106,8 @@ namespace Minio.Helper
         // in http://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
         internal static string TrimAll(string s)
         {
+            if (string.IsNullOrEmpty(s))
+                return s;
             return TrimWhitespaceRegex.Replace(s, " ").Trim();
         }
     }

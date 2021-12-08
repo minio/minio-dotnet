@@ -16,8 +16,7 @@
 */
 
 using System;
-using System.Net;
-
+using System.Linq;
 namespace Minio.Functional.Tests
 {
     class Program
@@ -90,17 +89,14 @@ namespace Minio.Functional.Tests
 
                 // // Check if bucket exists
                 // FunctionalTest.BucketExists_Test(minioClient).Wait();
-
-                // // Create a new bucket
-                // FunctionalTest.MakeBucket_Test1(minioClient).Wait();
                 // FunctionalTest.MakeBucket_Test5(minioClient).Wait();
 
-                // if (useAWS)
-                // {
-                //     FunctionalTest.MakeBucket_Test2(minioClient, useAWS).Wait();
-                //     FunctionalTest.MakeBucket_Test3(minioClient, useAWS).Wait();
-                //     FunctionalTest.MakeBucket_Test4(minioClient, useAWS).Wait();
-                // }
+                // // if (useAWS)
+                // // {
+                // FunctionalTest.MakeBucket_Test2(minioClient, useAWS).Wait();
+                // FunctionalTest.MakeBucket_Test3(minioClient, useAWS).Wait();
+                // FunctionalTest.MakeBucket_Test4(minioClient, useAWS).Wait();
+                // // }
 
                 // // Test removal of bucket
                 // FunctionalTest.RemoveBucket_Test1(minioClient).Wait();
@@ -154,7 +150,7 @@ namespace Minio.Functional.Tests
                 // FunctionalTest.CopyObject_Test5(minioClient).Wait();
                 // FunctionalTest.CopyObject_Test6(minioClient).Wait();
                 // FunctionalTest.CopyObject_Test7(minioClient).Wait();
-                FunctionalTest.CopyObject_Test8(minioClient).Wait();
+                // FunctionalTest.CopyObject_Test8(minioClient).Wait();
 
                 // // Test SetPolicyAsync function
                 // FunctionalTest.SetBucketPolicy_Test1(minioClient).Wait();
@@ -167,10 +163,14 @@ namespace Minio.Functional.Tests
                 // FunctionalTest.PresignedPutObject_Test2(minioClient).Wait();
 
                 // // Test incomplete uploads
-                // FunctionalTest.ListIncompleteUpload_Test1(minioClient).Wait();
-                // FunctionalTest.ListIncompleteUpload_Test2(minioClient).Wait();
-                // FunctionalTest.ListIncompleteUpload_Test3(minioClient).Wait();
-                // FunctionalTest.RemoveIncompleteUpload_Test(minioClient).Wait();
+                foreach (int i in Enumerable.Range(1, 10))
+                {
+                    Console.WriteLine($"\n\nRun -{i}-");
+                    FunctionalTest.ListIncompleteUpload_Test1(minioClient).Wait();
+                    FunctionalTest.ListIncompleteUpload_Test2(minioClient).Wait();
+                    FunctionalTest.ListIncompleteUpload_Test3(minioClient).Wait();
+                    FunctionalTest.RemoveIncompleteUpload_Test(minioClient).Wait();
+                }
 
                 // // Test GetBucket policy
                 // FunctionalTest.GetBucketPolicy_Test1(minioClient).Wait();
@@ -185,7 +185,7 @@ namespace Minio.Functional.Tests
                 // // Test Bucket Lifecycle configuration
                 // FunctionalTest.BucketLifecycleAsync_Test1(minioClient).Wait();
 
-                // Test encryption
+                // // Test encryption
                 // if (enableHttps == "1")
                 // {
                 //     ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
