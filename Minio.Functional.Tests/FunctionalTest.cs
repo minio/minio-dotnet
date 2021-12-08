@@ -3538,7 +3538,6 @@ namespace Minio.Functional.Tests
                 }
                 catch (OperationCanceledException)
                 {
-                    Console.WriteLine("Successfully captured OperationCanceledException");
                     ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
                                                                     .WithBucket(bucketName);
                     IObservable<Upload> observable = minio.ListIncompleteUploads(listArgs);
@@ -3546,14 +3545,10 @@ namespace Minio.Functional.Tests
                     IDisposable subscription = observable.Subscribe(
                         item =>
                         {
-                            Console.WriteLine("Listing item.Key = " + item.Key);
-                            Console.WriteLine("Listing item.UploadId = " + item.UploadId);
-                            Console.WriteLine("Listing item.Initiated = " + item.Initiated);
                             Assert.IsTrue(item.Key.Contains(objectName));
                         },
                         ex =>
                         {
-                            Console.WriteLine("F A I L");
                             Assert.Fail();
                         });
                 }
@@ -3610,7 +3605,6 @@ namespace Minio.Functional.Tests
                 }
                 catch (OperationCanceledException)
                 {
-                    Console.WriteLine("Successfully captured OperationCanceledException");
                     ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
                                                                     .WithBucket(bucketName)
                                                                     .WithPrefix("minioprefix")
@@ -3669,7 +3663,6 @@ namespace Minio.Functional.Tests
                 }
                 catch (OperationCanceledException)
                 {
-                    Console.WriteLine("Successfully captured OperationCanceledException");
                     ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
                                                                     .WithBucket(bucketName)
                                                                     .WithPrefix(prefix)
@@ -3728,7 +3721,6 @@ namespace Minio.Functional.Tests
                 }
                 catch (OperationCanceledException)
                 {
-                    Console.WriteLine("Successfully captured OperationCanceledException");
                     RemoveIncompleteUploadArgs rmArgs = new RemoveIncompleteUploadArgs()
                                                                         .WithBucket(bucketName)
                                                                         .WithObject(objectName);
