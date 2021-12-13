@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using System.Web;
+using Minio.Helper;
 
 namespace Minio
 {
@@ -71,6 +72,14 @@ namespace Minio
                 throw new InvalidBucketNameException(bucketName, "bucketName cannot be null");
             }
 
+            if (location == "us-east-1")
+            {
+                if (this.Region != string.Empty)
+                {
+                    location = this.Region;
+                }
+            }
+
             // Set Target URL
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, location);
             SetTargetURL(requestUrl);
@@ -80,6 +89,15 @@ namespace Minio
                 XmlSerializer = new RestSharp.Serializers.DotNetXmlSerializer(),
                 RequestFormat = DataFormat.Xml
             };
+            if (s3utils.IsAmazonEndPoint(this.BaseUrl))
+            {
+                // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
+                if (location != "us-east-1")
+                {
+                    CreateBucketConfiguration config = new CreateBucketConfiguration(location);
+                    request.AddBody(config);
+                }
+            }
 
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
         }
