@@ -372,14 +372,15 @@ namespace Minio
         internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers = Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
 
         internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
 
-            requestMessageBuilder.AddQueryParameter("prefix", this.Prefix);
-            requestMessageBuilder.AddQueryParameter("suffix", this.Suffix);
+        {
             foreach (var eventType in this.Events)
             {
+                // requestMessageBuilder.AddQueryParameter("events", eventType.value);
                 requestMessageBuilder.AddQueryParameter("events", eventType.value);
             }
+            requestMessageBuilder.AddQueryParameter("prefix", this.Prefix);
+            requestMessageBuilder.AddQueryParameter("suffix", this.Suffix);
 
             requestMessageBuilder.ResponseWriter = async responseStream =>
             {
@@ -403,7 +404,7 @@ namespace Minio
                                 this.NotificationObserver.OnNext(new MinioNotificationRaw(trimmed));
                             }
                         }
-                        catch (Exception)
+                        catch
                         {
                             break;
                         }
@@ -434,6 +435,10 @@ namespace Minio
         public ListenBucketNotificationsArgs WithEvents(List<EventType> events)
         {
             this.Events.AddRange(events);
+            foreach (EventType ev in events)
+            {
+            }
+
             return this;
         }
     }

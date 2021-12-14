@@ -238,10 +238,14 @@ namespace Minio
             if (this.Provider != null)
             {
                 bool isAWSEnvProvider = (this.Provider is AWSEnvironmentProvider) ||
-                                        (this.Provider is ChainedProvider ch && ch.CurrentProvider is AWSEnvironmentProvider);
+                                        (this.Provider is ChainedProvider ch &&
+                                         ch.CurrentProvider is AWSEnvironmentProvider);
+
                 bool isIAMAWSProvider = (this.Provider is IAMAWSProvider) ||
                                         (this.Provider is ChainedProvider chained && chained.CurrentProvider is AWSEnvironmentProvider);
+
                 AccessCredentials creds = null;
+
                 if (isAWSEnvProvider)
                 {
                     var aWSEnvProvider = (AWSEnvironmentProvider)this.Provider;
@@ -334,26 +338,6 @@ namespace Minio
                 }
             }
 
-
-            if (this.Provider != null)
-            {
-                bool isAWSProvider = (this.Provider is AWSEnvironmentProvider aWSEnvProvider) ||
-                                     (this.Provider is ChainedProvider chained && chained.CurrentProvider is AWSEnvironmentProvider);
-                bool isIAMAWSProvider = (this.Provider is IAMAWSProvider);
-                AccessCredentials creds = null;
-                if (isAWSProvider)
-                    creds = await this.Provider.GetCredentialsAsync();
-                else if (isIAMAWSProvider)
-                {
-                    var iamAWSProvider = (IAMAWSProvider)this.Provider;
-                    creds = iamAWSProvider.Credentials;
-                }
-                if (creds != null &&
-                    (isAWSProvider || isIAMAWSProvider) && !string.IsNullOrWhiteSpace(creds.SessionToken))
-                {
-                    messageBuilder.AddOrUpdateHeaderParameter("X-Amz-Security-Token", creds.SessionToken);
-                }
-            }
             return messageBuilder;
         }
 
@@ -514,14 +498,8 @@ namespace Minio
         // /// </summary>
         // internal void SetTargetURL(Uri uri)
         // {
-        //     if (this.httppClient == null)
-        //     {
-        //         httpClient = new HttpClient.httpClient(uri)
-        //         {
-        //             UserAgent = this.FullUserAgent
-        //         };
-        //     }
-        //     this.httpClient.BaseUrl = uri;
+        //     var userAgent = this.FullUserAgent;
+        //     this.BaseUrl = uri.AbsoluteUri;
         // }
 
         /// <summary>
