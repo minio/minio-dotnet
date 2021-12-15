@@ -114,6 +114,8 @@ namespace Minio
             DateTime signingDate = DateTime.UtcNow;
 
             this.SetContentSha256(requestBuilder);
+
+            requestBuilder.RequestUri = requestBuilder.Request.RequestUri;
             var requestUri = requestBuilder.RequestUri;
 
             if (requestUri.Port == 80 || requestUri.Port == 443)
@@ -541,7 +543,7 @@ namespace Minio
                 string hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
                 requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
             }
-            else if (!isSecure || isMultiDeleteRequest)
+            else if ((!isSecure || isMultiDeleteRequest) && requestBuilder.Content != null)
             {
                 var md5 = MD5.Create();
                 byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(requestBuilder.Content.ToString()));
