@@ -32,6 +32,9 @@ using System.Xml.Serialization;
 using Minio.DataModel.ILM;
 using Minio.DataModel.Replication;
 using Minio.DataModel.ObjectLock;
+using Minio.DataModel.Tags;
+using Minio.Exceptions;
+using Minio.Helper;
 
 namespace Minio
 {
@@ -432,6 +435,12 @@ namespace Minio
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         public IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(ListenBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (s3utils.IsAmazonEndPoint(BaseUrl))
+            {
+                // Amazon AWS does not support bucket notifications
+                throw new Exception("Listening for bucket notification is specific only to `minio` server endpoints");
+            }
+
             return Observable.Create<MinioNotificationRaw>(
                 async (obs, ct) =>
                 {
