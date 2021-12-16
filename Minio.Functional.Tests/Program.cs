@@ -86,7 +86,7 @@ namespace Minio.Functional.Tests
             // Try catch as 'finally' section needs to run in the Functional Tests
             try
             {
-                FunctionalTest.ListenBucketNotificationsAsync_Test1(minioClient).Wait();
+                // FunctionalTest.ListenBucketNotificationsAsync_Test1(minioClient).Wait();
 
                 // Check if bucket exists
                 FunctionalTest.BucketExists_Test(minioClient).Wait();
