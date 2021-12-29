@@ -330,8 +330,11 @@ namespace Minio
 
             if (headerMap != null)
             {
-                if (headerMap.ContainsKey(messageBuilder.ContentTypeKey) && (!string.IsNullOrEmpty(headerMap[messageBuilder.ContentTypeKey])))
+                if (headerMap.ContainsKey(messageBuilder.ContentTypeKey) &&
+                    (!string.IsNullOrEmpty(headerMap[messageBuilder.ContentTypeKey])))
+                {
                     headerMap[messageBuilder.ContentTypeKey] = contentType;
+                }
                 foreach (var entry in headerMap)
                 {
                     messageBuilder.AddOrUpdateHeaderParameter(entry.Key, entry.Value);
@@ -523,6 +526,7 @@ namespace Minio
             HttpRequestMessageBuilder requestMessageBuilder,
             CancellationToken cancellationToken = default(CancellationToken))
         {
+
             var startTime = DateTime.Now;
             // Logs full url when HTTPtracing is enabled.
             if (this.trace)
@@ -548,7 +552,7 @@ namespace Minio
                 }
 
                 var response = await this.HttpClient.SendAsync(request,
-                    HttpCompletionOption.ResponseContentRead, cancellationToken)
+                    HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                     .ConfigureAwait(false);
                 responseResult = new ResponseResult(request, response);
                 if (requestMessageBuilder.ResponseWriter != null)

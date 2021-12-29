@@ -446,7 +446,8 @@ namespace Minio
                 {
                     using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
                     {
-                        HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
+                        HttpRequestMessageBuilder requestMessageBuilder =
+                                    await this.CreateRequest(args).ConfigureAwait(false);
                         args = args.WithNotificationObserver(obs)
                                    .WithEnableTrace(this.trace);
                         await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
@@ -919,7 +920,12 @@ namespace Minio
         /// <param name="suffix">Filter keys ending with this suffix</param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>An observable of JSON-based notification events</returns>
-        public IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events, string prefix = "", string suffix = "", CancellationToken cancellationToken = default(CancellationToken))
+        public IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(
+                    string bucketName,
+                    IList<EventType> events,
+                    string prefix = "",
+                    string suffix = "",
+                    CancellationToken cancellationToken = default(CancellationToken))
         {
             List<EventType> eventList = new List<EventType>(events);
             ListenBucketNotificationsArgs args = new ListenBucketNotificationsArgs()

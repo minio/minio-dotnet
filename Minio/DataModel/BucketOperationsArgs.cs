@@ -363,6 +363,25 @@ namespace Minio
             this.Suffix = "";
         }
 
+        public override string ToString()
+        {
+            string str = string.Join("\n", new string[]{
+            string.Format("\nRequestMethod= {0}", this.RequestMethod),
+            string.Format("EnableTrace= {0}", this.EnableTrace)});
+
+            var eventsAsStr = "";
+            foreach (var eventType in this.Events)
+            {
+                if (!string.IsNullOrEmpty(eventsAsStr))
+                    eventsAsStr += ", ";
+                eventsAsStr += eventType.value;
+            }
+            return string.Join("\n", new string[]{str,
+            string.Format("Events= [{0}]", eventsAsStr),
+            string.Format("Prefix= {0}", this.Prefix),
+            string.Format("Suffix= {0}\n", this.Suffix)});
+        }
+
         public ListenBucketNotificationsArgs WithNotificationObserver(IObserver<MinioNotificationRaw> obs)
         {
             this.NotificationObserver = obs;
@@ -376,7 +395,6 @@ namespace Minio
         {
             foreach (var eventType in this.Events)
             {
-                // requestMessageBuilder.AddQueryParameter("events", eventType.value);
                 requestMessageBuilder.AddQueryParameter("events", eventType.value);
             }
             requestMessageBuilder.AddQueryParameter("prefix", this.Prefix);

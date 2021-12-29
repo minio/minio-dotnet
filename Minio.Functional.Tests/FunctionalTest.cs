@@ -37,6 +37,7 @@ using Minio.DataModel.ILM;
 using Minio.DataModel.Tags;
 using Minio.DataModel.ObjectLock;
 using Minio.Exceptions;
+using Minio.Helper;
 using Newtonsoft.Json;
 
 namespace Minio.Functional.Tests
@@ -1222,13 +1223,11 @@ namespace Minio.Functional.Tests
             using (filestream)
             {
                 long file_write_size = filestream.Length;
-                long file_read_size = 0;
                 string tempFileName = "tempfile-" + GetRandomName(5);
                 if (size == 0)
                 {
                     size = filestream.Length;
                 }
-
                 PutObjectArgs putObjectArgs = new PutObjectArgs()
                                                         .WithBucket(bucketName)
                                                         .WithObject(objectName)
@@ -1238,29 +1237,15 @@ namespace Minio.Functional.Tests
                                                         .WithHeaders(metaData);
                 await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
 
-                GetObjectArgs getObjectArgs = new GetObjectArgs()
-                                                .WithBucket(bucketName)
-                                                .WithObject(objectName)
-                                                .WithCallbackStream((stream) =>
-                                                    {
-                                                        var fileStream = File.Create(tempFileName);
-                                                        stream.CopyTo(fileStream);
-                                                        fileStream.Dispose();
-                                                        FileInfo writtenInfo = new FileInfo(tempFileName);
-                                                        file_read_size = writtenInfo.Length;
-
-                                                        Assert.AreEqual(file_write_size, file_read_size);
-                                                        File.Delete(tempFileName);
-                                                    });
-                await minio.GetObjectAsync(getObjectArgs);
-
                 StatObjectArgs statObjectArgs = new StatObjectArgs()
                                                         .WithBucket(bucketName)
                                                         .WithObject(objectName);
+
                 statObject = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
                 Assert.IsNotNull(statObject);
                 Assert.IsTrue(statObject.ObjectName.Equals(objectName));
                 Assert.AreEqual(statObject.Size, size);
+
                 if (contentType != null)
                 {
                     Assert.IsNotNull(statObject.ContentType);
@@ -3886,15 +3871,13 @@ namespace Minio.Functional.Tests
                                                                         .WithEvents(eventsList);
                 IObservable<MinioNotificationRaw> events = minio.ListenBucketNotificationsAsync(listenArgs);
                 subscription = events.Subscribe(
-                    ev =>
-                    {
-                        Console.WriteLine($"ListenBucketNotificationsAsync received: {ev.json}");
-                        received.Add(ev);
-                    },
-                    ex => Console.WriteLine("OnError: {0}", ex.Message),
-                    () => Console.WriteLine("ListenBucketNotificationsAsync finished")
+                    ev => received.Add(ev),
+                    ex => { },
+                    () => { }
                 );
-                await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null, rsg.GenerateStreamFromSeed(1 * KB));
+
+                await PutObject_Tester(minio, bucketName, objectName, null, contentType,
+                                       0, null, rsg.GenerateStreamFromSeed(1 * KB));
 
                 // wait for notifications
                 bool eventDetected = false;
@@ -3903,76 +3886,99 @@ namespace Minio.Functional.Tests
 
                     if (received.Count > 0)
                     {
-                        string receivedXml = received[0].json + received[1].json;
-                        XmlDocument xDoc = new XmlDocument();
-                        xDoc.LoadXml(receivedXml);
-
-                        XmlNodeList error = xDoc.GetElementsByTagName("Error", "Code");
-                        string errorCode = "";
-                        string errorMessage = "";
-                        foreach (XmlNode xn in error)
+                        // Check if there is any unexpected error returned
+                        // and captured in the receivedJson list, like
+                        // "NotImplemented" api error. If so, we throw an exception
+                        // and skip running this test
+                        if (received.Count > 1 && received[1].json.StartsWith("<Error><Code>"))
                         {
-                            foreach (XmlNode cn in xn.ChildNodes)
-                            {
-                                if (cn.Name == "Code")
-                                {
-                                    errorCode = cn.Value;
-                                }
-                                if (cn.Name == "Message")
-                                {
-                                    errorMessage = cn.Value;
-                                }
-                            }
 
-                            // Check if there is any unexpected error returned
-                            // and captured in the received list, like
-                            // "NotImplemented" api error. If so, throw an exception
-                            // and skip running this test
-                            string receivedJson = XmlStrToJsonStr(receivedXml);
+                            // Although the attribute is called "json",
+                            // returned data in list "received" is in xml
+                            // format and it is an error.Here, we convert xml
+                            // into json format.
+                            string receivedJson = XmlStrToJsonStr(received[1].json);
 
-                            if (!string.IsNullOrEmpty(errorCode))
-                            {
-                                // Raise an exception with the captured
-                                // errorCode and errorMessage
-                                ErrorResponse err = new ErrorResponse();
-                                err.Code = errorCode;
-                                err.Message = errorMessage;
-                                Exception ex = new Exception(errorCode);
-                                if (errorCode == "NotImplemented")
-                                    ex = new NotImplementedException(errorMessage);
-                                throw ex;
-                            }
 
-                            MinioNotification notification = JsonConvert.DeserializeObject<MinioNotification>(receivedJson);
+                            // Cleanup the "Error" key encapsulating "receivedJson"
+                            // data. This is required to match and convert json data
+                            // "receivedJson" into class "ErrorResponse"
+                            int len = "{'Error':".Length;
+                            string trimmedFront = receivedJson.Substring(len);
+                            string trimmedFull = trimmedFront.Substring(0, trimmedFront.Length - 1);
 
-                            if (notification.Records != null)
-                            {
-                                Assert.AreEqual(1, notification.Records.Length);
-                                Assert.IsTrue(notification.Records[0].eventName.Contains("s3:ObjectCreated:Put"));
-                                Assert.IsTrue(objectName.Contains(System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key)));
-                                Assert.IsTrue(contentType.Contains(notification.Records[0].s3.objectMeta.contentType));
-                                eventDetected = true;
-                                break;
-                            }
+                            ErrorResponse err = JsonConvert.DeserializeObject<ErrorResponse>(trimmedFull);
+
+                            Exception ex = new UnexpectedMinioException(err.Message);
+                            if (err.Code == "NotImplemented")
+                                ex = new NotImplementedException(err.Message);
+
+                            throw ex;
                         }
 
+                        MinioNotification notification = JsonConvert.DeserializeObject<MinioNotification>(received[0].json);
+
+                        if (notification.Records != null)
+                        {
+                            Assert.AreEqual(1, notification.Records.Length);
+                            Assert.IsTrue(notification.Records[0].eventName.Contains("s3:ObjectCreated:Put"));
+                            Assert.IsTrue(objectName.Contains(System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key)));
+                            Assert.IsTrue(contentType.Contains(notification.Records[0].s3.objectMeta.contentType));
+                            eventDetected = true;
+                            break;
+                        }
                     }
-
-                    subscription.Dispose();
-                    if (!eventDetected)
-                        throw new UnexpectedMinioException("Failed to detect the expected bucket notification event.");
-
-                    new MintLogger(nameof(ListenBucketNotificationsAsync_Test1), listenBucketNotificationsSignature, "Tests whether ListenBucketNotifications passes for small object", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
                 }
+                // subscription.Dispose();
+                if (!eventDetected)
+                    throw new UnexpectedMinioException("Failed to detect the expected bucket notification event.");
+
+                new MintLogger(nameof(ListenBucketNotificationsAsync_Test1),
+                    listenBucketNotificationsSignature,
+                    "Tests whether ListenBucketNotifications passes for small object",
+                    TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (NotImplementedException ex)
             {
-                new MintLogger(nameof(ListenBucketNotificationsAsync_Test1), listenBucketNotificationsSignature, "Tests whether ListenBucketNotifications passes for small object", TestStatus.NA, (DateTime.Now - startTime), ex.Message, ex.ToString(), args: args).Log();
+                new MintLogger(nameof(ListenBucketNotificationsAsync_Test1),
+                    listenBucketNotificationsSignature,
+                    "Tests whether ListenBucketNotifications passes for small object",
+                    TestStatus.NA, (DateTime.Now - startTime), ex.Message,
+                    ex.ToString(), args: args).Log();
             }
             catch (Exception ex)
             {
-                new MintLogger(nameof(ListenBucketNotificationsAsync_Test1), listenBucketNotificationsSignature, "Tests whether ListenBucketNotifications passes for small object", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args: args).Log();
-                throw;
+                if (ex.Message == "Listening for bucket notification is specific" +
+                                 " only to `minio` server endpoints")
+                {
+                    // This is expected when bucket notification
+                    // is requested against AWS.
+                    // Check if endPoint is AWS
+                    bool isAWS(string endPoint)
+                    {
+                        Regex rgx = new Regex("^s3\\.?.*\\.amazonaws\\.com", RegexOptions.IgnoreCase);
+                        MatchCollection matches = rgx.Matches(endPoint);
+                        return matches.Count > 0;
+                    }
+                    if (Environment.GetEnvironmentVariable("AWS_ENDPOINT") != null ||
+                        isAWS(Environment.GetEnvironmentVariable("SERVER_ENDPOINT")))
+                    {
+                        // This is a PASS
+                        new MintLogger(nameof(ListenBucketNotificationsAsync_Test1),
+                        listenBucketNotificationsSignature,
+                        "Tests whether ListenBucketNotifications passes for small object",
+                        TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
+                    }
+                }
+                else
+                {
+                    new MintLogger(nameof(ListenBucketNotificationsAsync_Test1),
+                        listenBucketNotificationsSignature,
+                        "Tests whether ListenBucketNotifications passes for small object",
+                        TestStatus.FAIL, (DateTime.Now - startTime), ex.Message,
+                        ex.ToString(), args: args).Log();
+                    throw;
+                }
             }
             finally
             {

@@ -98,7 +98,7 @@ namespace Minio
                 Uri requestUrl = RequestUtil.MakeTargetURL(client.BaseUrl, client.Secure);
 
                 var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, requestUrl, path);
-                requestBuilder.AddQueryParameter("location","");
+                requestBuilder.AddQueryParameter("location", "");
                 var response = await client.ExecuteTaskAsync(client.NoErrorHandlers, requestBuilder).ConfigureAwait(false);
 
                 if (HttpStatusCode.OK.Equals(response.StatusCode))
