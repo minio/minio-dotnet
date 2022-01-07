@@ -201,8 +201,10 @@ namespace Minio
         public async Task SetVersioningAsync(SetVersioningArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+            HttpRequestMessageBuilder requestMessageBuilder = await this
+                                    .CreateRequest(args).ConfigureAwait(false);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers,
+                requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
 

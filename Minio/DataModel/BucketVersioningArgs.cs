@@ -76,20 +76,13 @@ namespace Minio
         internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
             VersioningConfiguration config = new VersioningConfiguration((this.CurrentVersioningStatus == VersioningStatus.Enabled));
-            XmlSerializer serializer = new XmlSerializer(typeof(HttpContent));
 
-            // requestMessageBuilder.XmlSerializer.Namespace = "http://s3.amazonaws.com/doc/2006-03-01/";
-            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-            ns.Add("xmlns", "http://s3.amazonaws.com/doc/2006-03-01/");
+            string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+            requestMessageBuilder.AddXmlBody(body);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+                            utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
 
-            // requestMessageBuilder.XmlSerializer.ContentType = "application/xml";
-
-            string body = utils.MarshalXML(config, Convert.ToString(ns));
             requestMessageBuilder.AddQueryParameter("versioning", "");
-
-            requestMessageBuilder.Request.Content = new StringContent(
-                        Convert.ToString(body), Encoding.UTF8, "application/xml");
-
             return requestMessageBuilder;
         }
     }
