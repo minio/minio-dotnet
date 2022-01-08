@@ -58,13 +58,16 @@ namespace Minio
 
         internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
+            requestMessageBuilder.AddQueryParameter("select", "");
+            requestMessageBuilder.AddQueryParameter("select-type", "2");
+
             if (this.RequestBody == null)
             {
                 this.RequestBody = Encoding.UTF8.GetBytes(this.SelectOptions.MarshalXML());
+                requestMessageBuilder.SetBody(this.RequestBody);
             }
-            requestMessageBuilder.AddQueryParameter("select", "");
-            requestMessageBuilder.AddQueryParameter("select-type", "2");
-            requestMessageBuilder.AddXmlBody(Encoding.UTF8.GetString(this.RequestBody));
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+                            utils.getMD5SumStr(RequestBody));
 
             return requestMessageBuilder;
         }
@@ -1957,7 +1960,6 @@ namespace Minio
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode", this.Retention.Mode.ToString());
                 requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
                                 utils.getMD5SumStr(this.RequestBody));
-                //
             }
             if (this.LegalHoldEnabled != null)
             {

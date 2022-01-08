@@ -23,6 +23,7 @@ using System.IO;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Runtime.InteropServices;
 
 namespace Minio.Examples
 {
@@ -148,7 +149,7 @@ namespace Minio.Examples
                 Cases.BucketExists.Run(minioClient, lockBucketName).Wait();
                 Cases.RemoveBucket.Run(minioClient, lockBucketName).Wait();
 
-                //Versioning tests
+                // Versioning tests
                 Cases.GetVersioning.Run(minioClient, bucketName).Wait();
                 Cases.EnableSuspendVersioning.Run(minioClient, bucketName).Wait();
                 Cases.GetVersioning.Run(minioClient, bucketName).Wait();
@@ -277,7 +278,10 @@ namespace Minio.Examples
                 File.Delete(smallFileName);
                 File.Delete(bigFileName);
 
-                Console.ReadLine();
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    Console.ReadLine();
+                }
             }
             catch (MinioException ex)
             {

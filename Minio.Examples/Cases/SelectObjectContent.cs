@@ -16,6 +16,8 @@
 using Minio.DataModel;
 
 using System;
+using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
@@ -28,33 +30,51 @@ namespace Minio.Examples.Cases
                                      string objectName = "my-object-name",
                                      string fileName = "my-file-name")
         {
+            string newObjectName = "new" + objectName;
             try
             {
                 Console.WriteLine("Running example for API: SelectObjectContentAsync");
 
+                StringBuilder csvString = new StringBuilder();
+                csvString.AppendLine("Employee,Manager,Group");
+                csvString.AppendLine("Employee4,Employee2,500");
+                csvString.AppendLine("Employee3,Employee1,500");
+                csvString.AppendLine("Employee1,,1000");
+                csvString.AppendLine("Employee5,Employee1,500");
+                csvString.AppendLine("Employee2,Employee1,800");
+                var csvBytes = Encoding.UTF8.GetBytes(csvString.ToString());
+                using (var stream = new MemoryStream(csvBytes))
+                {
+                    PutObjectArgs putObjectArgs = new PutObjectArgs()
+                                                            .WithBucket(bucketName)
+                                                            .WithObject(newObjectName)
+                                                            .WithStreamData(stream)
+                                                            .WithObjectSize(stream.Length);
+                    await minio.PutObjectAsync(putObjectArgs);
+                }
                 QueryExpressionType queryType = QueryExpressionType.SQL;
                 string queryExpr = "select count(*) from s3object";
                 SelectObjectInputSerialization inputSerialization = new SelectObjectInputSerialization()
+                {
+                    CompressionType = SelectCompressionType.NONE,
+                    CSV = new CSVInputOptions()
                     {
-                        CompressionType = SelectCompressionType.NONE,
-                        CSV = new CSVInputOptions()
-                        {
-                            FileHeaderInfo = CSVFileHeaderInfo.None,
-                            RecordDelimiter = "\n",
-                            FieldDelimiter = ",",
-                        }                    
-                    };
+                        FileHeaderInfo = CSVFileHeaderInfo.None,
+                        RecordDelimiter = "\n",
+                        FieldDelimiter = ",",
+                    }
+                };
                 SelectObjectOutputSerialization outputSerialization = new SelectObjectOutputSerialization()
+                {
+                    CSV = new CSVOutputOptions()
                     {
-                        CSV = new CSVOutputOptions()
-                        {
-                            RecordDelimiter = "\n",
-                            FieldDelimiter =  ",",
-                        }
-                    };
+                        RecordDelimiter = "\n",
+                        FieldDelimiter = ",",
+                    }
+                };
                 SelectObjectContentArgs args = new SelectObjectContentArgs()
                                                             .WithBucket(bucketName)
-                                                            .WithObject(objectName)
+                                                            .WithObject(newObjectName)
                                                             .WithExpressionType(queryType)
                                                             .WithQueryExpression(queryExpr)
                                                             .WithInputSerialization(inputSerialization)
