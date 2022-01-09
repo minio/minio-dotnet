@@ -14,9 +14,6 @@
 * limitations under the License.
 */
 
-using Minio.DataModel;
-using Minio.DataModel.ObjectLock;
-using Minio.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,6 +21,10 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Runtime.InteropServices;
+
+using Minio.DataModel;
+using Minio.Exceptions;
+using Minio.DataModel.ObjectLock;
 
 namespace Minio.Examples
 {
@@ -191,6 +192,7 @@ namespace Minio.Examples
                 Cases.PutObject.Run(minioClient, bucketName, objectName, bigFileName).Wait();
 
                 // Specify SSE-C encryption options
+                Console.WriteLine("Specifying SSE-C encryption options");
                 var aesEncryption = Aes.Create();
                 aesEncryption.KeySize = 256;
                 aesEncryption.GenerateKey();
@@ -200,19 +202,24 @@ namespace Minio.Examples
                 var sseCpy = new SSECopy(aesEncryption.Key);
 
                 // Uncomment to specify SSE-S3 encryption option
-                // var sses3 = new SSES3();
+                var sses3 = new SSES3();
 
                 // Uncomment to specify SSE-KMS encryption option
-                // var sseKms = new SSEKMS("kms-key", new Dictionary<string, string>{{ "kms-context", "somevalue"}});
+                var sseKms = new SSEKMS("kms-key", new Dictionary<string, string> { { "kms-context", "somevalue" } });
 
                 // Upload encrypted object
-                Cases.PutObject.Run(minioClient, bucketName, objectName, smallFileName, sse: ssec).Wait();
+                Console.WriteLine("Running PutObject");
+                string putFileName1 = CreateFile(1 * UNIT_MB);
+                Cases.PutObject.Run(minioClient, bucketName, objectName, putFileName1, sse: ssec).Wait();
                 // Copy SSE-C encrypted object to unencrypted object
+                Console.WriteLine("Running CopyObject");
                 Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName, sseSrc: sseCpy, sseDest: ssec).Wait();
                 // Download SSE-C encrypted object
+                Console.WriteLine("Running FGetObject");
                 Cases.FGetObject.Run(minioClient, destBucketName, objectName, bigFileName, sse: ssec).Wait();
 
                 // List the incomplete uploads
+                Console.WriteLine("Running ListIncompleteUploads");
                 Cases.ListIncompleteUploads.Run(minioClient, bucketName);
 
                 // Remove all the incomplete uploads

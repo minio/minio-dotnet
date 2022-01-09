@@ -24,7 +24,7 @@ namespace Minio.Examples.Cases
     {
         // Set bucket notifications. The resource ARN needs to exist on AWS with correct permissions.
         // For further info: see http://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html
-        public async static Task Run(MinioClient minio, 
+        public async static Task Run(MinioClient minio,
                                      string bucketName = "my-bucket-name")
         {
             try
@@ -56,7 +56,7 @@ namespace Minio.Examples.Cases
                 notification.AddQueue(queueConfiguration);
                 */
                 await minio.SetBucketNotificationsAsync(args);
-             
+
                 Console.WriteLine("Notifications set for the bucket {bucketName} were set successfully");
                 Console.WriteLine();
             }
