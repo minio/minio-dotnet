@@ -189,7 +189,6 @@ namespace Minio.Functional.Tests
                 // Test encryption
                 if (enableHttps == "1")
                 {
-                    ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
                     FunctionalTest.PutGetStatEncryptedObject_Test1(minioClient).Wait();
                     FunctionalTest.PutGetStatEncryptedObject_Test2(minioClient).Wait();
 
