@@ -15,6 +15,7 @@
 */
 
 using Minio.DataModel;
+using Minio.DataModel.ObjectLock;
 using Minio.Exceptions;
 using System;
 using System.Collections.Generic;
@@ -60,15 +61,26 @@ namespace Minio.Examples
             string accessKey = null;
             string secretKey = null;
             bool enableHTTPS = false;
+            int port = 80;
 
             if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
             {
                 endPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");
+                int posColon = endPoint.LastIndexOf(':');
+                if (posColon != -1)
+                {
+                    port = Int32.Parse(endPoint.Substring(posColon+1, (endPoint.Length - posColon - 1)));
+                    endPoint = endPoint.Substring(0, posColon);
+                }
                 accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
                 secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
                 if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") != null)
                 {
                     enableHTTPS = Environment.GetEnvironmentVariable("ENABLE_HTTPS").Equals("1");
+                    if (enableHTTPS && port == 80)
+                    {
+                        port = 443;
+                    }
                 }
             }
             else
@@ -77,19 +89,26 @@ namespace Minio.Examples
                 accessKey = "Q3AM3UQ867SPQQA43P2F";
                 secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
                 enableHTTPS = true;
+                port = 443;
             }
 
             // WithSSL() enables SSL support in MinIO client
             MinioClient minioClient = null;
             if (enableHTTPS)
             {
-                minioClient = new MinioClient(endPoint, accessKey, secretKey).WithSSL((sender, certificate, chain, sslPolicyErrors) => true);
+                minioClient = new MinioClient()
+                                        .WithEndpoint(endPoint, port)
+                                        .WithCredentials(accessKey, secretKey)
+                                        .WithSSL((sender, certificate, chain, sslPolicyErrors) => true)
+                                        .Build();
             }
             else
             {
-                minioClient = new MinioClient(endPoint, accessKey, secretKey);
+                minioClient = new MinioClient()
+                                        .WithEndpoint(endPoint, port)
+                                        .WithCredentials(accessKey, secretKey)
+                                        .Build();
             }
-
             try
             {
                 // Assign parameters before starting the test 
@@ -99,6 +118,7 @@ namespace Minio.Examples
                 string objectName = GetRandomName();
                 string destBucketName = GetRandomName();
                 string destObjectName = GetRandomName();
+                string lockBucketName = GetRandomName();
                 List<string> objectsList = new List<string>();
                 for (int i = 0; i < 10; i++)
                 {
@@ -120,6 +140,15 @@ namespace Minio.Examples
  
                 Cases.MakeBucket.Run(minioClient, destBucketName).Wait();
 
+                // Bucket with Lock tests
+                Cases.MakeBucketWithLock.Run(minioClient, lockBucketName).Wait();
+                Cases.BucketExists.Run(minioClient, lockBucketName).Wait();
+                Cases.RemoveBucket.Run(minioClient, lockBucketName).Wait();
+
+                //Versioning tests
+                Cases.GetVersioning.Run(minioClient, bucketName).Wait();
+                Cases.EnableSuspendVersioning.Run(minioClient, bucketName).Wait();
+                Cases.GetVersioning.Run(minioClient, bucketName).Wait();
                 // List all the buckets on the server
                 Cases.ListBuckets.Run(minioClient).Wait();
 
@@ -199,6 +228,19 @@ namespace Minio.Examples
                 // Remove all bucket notifications
                 Cases.RemoveAllBucketNotifications.Run(minioClient, bucketName).Wait();
 
+                // Object Lock Configuration operations
+                lockBucketName = GetRandomName();
+                Cases.MakeBucketWithLock.Run(minioClient, lockBucketName).Wait();
+                ObjectLockConfiguration configuration = new ObjectLockConfiguration(RetentionMode.GOVERNANCE, 35);
+                Cases.SetObjectLockConfiguration.Run(minioClient, lockBucketName, configuration).Wait();
+                Cases.GetObjectLockConfiguration.Run(minioClient, lockBucketName).Wait();
+                Cases.RemoveObjectLockConfiguration.Run(minioClient, lockBucketName).Wait();
+                Cases.RemoveBucket.Run(minioClient, lockBucketName).Wait();
+
+                // Bucket Replication operations
+                Cases.RemoveBucketReplication.Run(minioClient, bucketName).Wait();
+                Cases.GetBucketReplication.Run(minioClient, bucketName).Wait();
+
                 // Get the presigned url for a GET object request
                 Cases.PresignedGetObject.Run(minioClient, bucketName, objectName).Wait();
 
@@ -224,6 +266,7 @@ namespace Minio.Examples
                 Cases.CustomRequestLogger.Run(minioClient).Wait();
 
                 // Remove the buckets
+                Console.WriteLine();
                 Cases.RemoveBucket.Run(minioClient, bucketName).Wait();
                 Cases.RemoveBucket.Run(minioClient, destBucketName).Wait();
 

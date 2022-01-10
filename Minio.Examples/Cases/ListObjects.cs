@@ -1,5 +1,5 @@
 ﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,19 +25,21 @@ namespace Minio.Examples.Cases
         public static void Run(MinioClient minio,
                                      string bucketName = "my-bucket-name",
                                      string prefix = null,
-                                     bool recursive = true)
+                                     bool recursive = true,
+                                     bool versions=false)
         {
             try
             {
                 Console.WriteLine("Running example for API: ListObjectsAsync");
-                IObservable<Item> observable = minio.ListObjectsAsync(bucketName, prefix, recursive);
-
+                ListObjectsArgs listArgs = new ListObjectsArgs()
+                                                    .WithBucket(bucketName)
+                                                    .WithPrefix(prefix)
+                                                    .WithRecursive(recursive);
+                IObservable<Item> observable = minio.ListObjectsAsync(listArgs);
                 IDisposable subscription = observable.Subscribe(
                     item => Console.WriteLine($"Object: {item.Key}"),
                     ex => Console.WriteLine($"OnError: {ex}"),
                     () => Console.WriteLine($"Listed all objects in bucket {bucketName}\n"));
-
-                // subscription.Dispose();
             }
             catch (Exception e)
             {

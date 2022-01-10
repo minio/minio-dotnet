@@ -1,5 +1,5 @@
 ﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,10 @@ namespace Minio.Examples.Cases
         {
             try
             {
+                var args = new GetPolicyArgs()
+                                    .WithBucket(bucketName);
                 Console.WriteLine("Running example for API: GetPolicyAsync");
-                string policyJson = await minio.GetPolicyAsync(bucketName);
+                string policyJson = await minio.GetPolicyAsync(args);
                 Console.WriteLine($"Current Policy is {policyJson} for bucket {bucketName}");
                 Console.WriteLine();
             }

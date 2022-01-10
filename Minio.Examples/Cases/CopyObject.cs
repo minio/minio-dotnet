@@ -1,5 +1,5 @@
 ﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 using Minio.DataModel;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
@@ -34,14 +35,21 @@ namespace Minio.Examples.Cases
             try
             {
                 Console.WriteLine("Running example for API: CopyObjectAsync");
+                var metaData = new Dictionary<string, string>
+                {
+                    { "Test-Metadata", "Test  Test" }
+                };
                 // Optionally pass copy conditions
-                await minio.CopyObjectAsync(fromBucketName,
-                                                fromObjectName,
-                                                destBucketName,
-                                                destObjectName,
-                                                copyConditions: null,
-                                                sseSrc: sseSrc,
-                                                sseDest: sseDest);
+                CopySourceObjectArgs cpSrcArgs = new CopySourceObjectArgs()
+                                                            .WithBucket(fromBucketName)
+                                                            .WithObject(fromObjectName)
+                                                            .WithServerSideEncryption(sseSrc);
+                CopyObjectArgs args = new CopyObjectArgs()
+                                                .WithBucket(destBucketName)
+                                                .WithObject(destObjectName)
+                                                .WithCopyObjectSource(cpSrcArgs)
+                                                .WithServerSideEncryption(sseDest);
+                await minio.CopyObjectAsync(args);
                 Console.WriteLine("Copied object {0} from bucket {1} to bucket {2}", fromObjectName, fromBucketName, destBucketName);
                 Console.WriteLine();
             }

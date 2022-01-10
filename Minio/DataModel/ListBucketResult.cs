@@ -27,11 +27,12 @@ namespace Minio.DataModel
     {
         public string Name { get; set; }
         public string Prefix { get; set; }
-        public string Marker { get; set; }
         public string NextMarker { get; set; }
         public string MaxKeys { get; set; }
         public string Delimiter { get; set; }
+        public string KeyCount { get; set; }
         public bool IsTruncated { get; set; }
+        public string NextContinuationToken { get; set; }
         public string EncodingType { get; set; }
     }
 }

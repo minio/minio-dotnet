@@ -32,10 +32,12 @@ namespace SimpleTest
 
             /// Note: s3 AccessKey and SecretKey needs to be added in App.config file
             /// See instructions in README.md on running examples for more information.
-            var minio = new MinioClient("play.min.io",
-                                             "Q3AM3UQ867SPQQA43P2F",
-                                             "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG").WithSSL();
-
+            var minio = new MinioClient()
+                                    .WithEndpoint("play.min.io")
+                                    .WithCredentials("Q3AM3UQ867SPQQA43P2F",
+                                             "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+                                    .WithSSL()
+                                    .Build();
             var getListBucketsTask = minio.ListBucketsAsync();
 
             try
@@ -54,9 +56,13 @@ namespace SimpleTest
             }
 
             //Supply a new bucket name
-            Task.WaitAll(minio.MakeBucketAsync("mynewbucket"));
+            MakeBucketArgs mkBktArgs = new MakeBucketArgs()
+                                                .WithBucket("mynewbucket");
+            Task.WaitAll(minio.MakeBucketAsync(mkBktArgs));
 
-            var bucketExistTask = minio.BucketExistsAsync("mynewbucket");
+            BucketExistsArgs bktExistsArgs = new BucketExistsArgs()
+                                                        .WithBucket("mynewbucket");
+            var bucketExistTask = minio.BucketExistsAsync(bktExistsArgs);
             Task.WaitAll(bucketExistTask);
             var found = bucketExistTask.Result;
             Console.WriteLine("bucket was " + found);

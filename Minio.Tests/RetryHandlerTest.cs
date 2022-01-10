@@ -29,9 +29,12 @@ namespace Minio.Tests
         [TestMethod]
         public async Task TestRetryPolicyOnSuccess()
         {
-            var client = new MinioClient("play.min.io",
-                                         "Q3AM3UQ867SPQQA43P2F",
-                                         "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG").WithSSL();
+            var client = new MinioClient()
+                                    .WithEndpoint("play.min.io")
+                                    .WithCredentials("Q3AM3UQ867SPQQA43P2F",
+                                             "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+                                    .WithSSL()
+                                    .Build();
 
             int invokeCount = 0;
             client.WithRetryPolicy(
@@ -41,7 +44,9 @@ namespace Minio.Tests
                     return await callback();
                 });
 
-            var result = await client.BucketExistsAsync(Guid.NewGuid().ToString());
+            BucketExistsArgs bktArgs = new BucketExistsArgs()
+                                                .WithBucket(Guid.NewGuid().ToString());
+            var result = await client.BucketExistsAsync(bktArgs);
             Assert.IsFalse(result);
             Assert.AreEqual(invokeCount, 1);
         }
@@ -49,9 +54,12 @@ namespace Minio.Tests
         [TestMethod]
         public async Task TestRetryPolicyOnFailure()
         {
-            var client = new MinioClient("play.min.io",
-                                         "Q3AM3UQ867SPQQA43P2F",
-                                         "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG").WithSSL();
+            var client = new MinioClient()
+                                    .WithEndpoint("play.min.io")
+                                    .WithCredentials("Q3AM3UQ867SPQQA43P2F",
+                                             "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+                                    .WithSSL()
+                                    .Build();
 
             int invokeCount = 0;
             var retryCount = 3;
@@ -74,8 +82,12 @@ namespace Minio.Tests
                     throw exception;
                 });
 
+            GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                    .WithBucket(Guid.NewGuid().ToString())
+                                                    .WithObject("aa")
+                                                    .WithCallbackStream(s => { });
             await Assert.ThrowsExceptionAsync<BucketNotFoundException>(
-                () => client.GetObjectAsync(Guid.NewGuid().ToString(), "", s => { }));
+                () => client.GetObjectAsync(getObjectArgs));
             Assert.AreEqual(invokeCount, retryCount);
         }
     }

@@ -1,5 +1,5 @@
 ﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,22 +34,29 @@ namespace Minio.Examples.Cases
                 Console.WriteLine("Running example for API: GetObjectAsync");
                 // Check whether the object exists using StatObjectAsync(). If the object is not found,
                 // StatObjectAsync() will throw an exception.
-                await minio.StatObjectAsync(bucketName, objectName);
+                var statObjectArgs = new StatObjectArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObject(objectName);
+                await minio.StatObjectAsync(statObjectArgs);
 
                 // Get object content starting at byte position 1024 and length of 4096
-                await minio.GetObjectAsync(bucketName, objectName, 1024L, 4096L,
-                (stream) =>
-                {
-                    var fileStream = File.Create(fileName);
-                    stream.CopyTo(fileStream);
-                    fileStream.Dispose();
-                    var writtenInfo = new FileInfo(fileName);
-                    long file_read_size = writtenInfo.Length;
-                    // Uncomment to print the file on output console
-                    // stream.CopyTo(Console.OpenStandardOutput());
-                    Console.WriteLine($"Successfully downloaded object with requested offset and length {writtenInfo.Length} into file");
-                    stream.Dispose();
-                });
+                GetObjectArgs getObjectArgs = new GetObjectArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName)
+                                                        .WithOffsetAndLength(1024L, 4096L)
+                                                        .WithCallbackStream((stream) =>
+                                                                            {
+                                                                                var fileStream = File.Create(fileName);
+                                                                                stream.CopyTo(fileStream);
+                                                                                fileStream.Dispose();
+                                                                                var writtenInfo = new FileInfo(fileName);
+                                                                                long file_read_size = writtenInfo.Length;
+                                                                                // Uncomment to print the file on output console
+                                                                                // stream.CopyTo(Console.OpenStandardOutput());
+                                                                                Console.WriteLine($"Successfully downloaded object with requested offset and length {writtenInfo.Length} into file");
+                                                                                stream.Dispose();
+                                                                            });
+                await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
                 Console.WriteLine();
             }
             catch (Exception e)

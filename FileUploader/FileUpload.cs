@@ -1,5 +1,5 @@
 ﻿/*
-* MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+* MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -37,7 +37,10 @@ namespace FileUploader
             var secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
             try
             {
-                var minio = new MinioClient(endpoint, accessKey, secretKey).WithSSL();
+                var minio = new MinioClient()
+                                    .WithEndpoint(endpoint)
+                                    .WithCredentials(accessKey, secretKey)
+                                    .WithSSL();
                 Run(minio).Wait();
             }
             catch (Exception ex)
@@ -64,12 +67,22 @@ namespace FileUploader
 
             try
             {
-                bool found = await minio.BucketExistsAsync(bucketName);
+                var bktExistArgs = new BucketExistsArgs()
+                                                .WithBucket(bucketName);
+                bool found = await minio.BucketExistsAsync(bktExistArgs);
                 if (!found)
                 {
-                    await minio.MakeBucketAsync(bucketName, location);
+                    var mkBktArgs = new MakeBucketArgs()
+                                                .WithBucket(bucketName)
+                                                .WithLocation(location);
+                    await minio.MakeBucketAsync(mkBktArgs);
                 }
-                await minio.PutObjectAsync(bucketName, objectName, filePath, contentType);
+                PutObjectArgs putObjectArgs = new PutObjectArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName)
+                                                        .WithFileName(filePath)
+                                                        .WithContentType(contentType);           
+                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
                 Console.WriteLine("Successfully uploaded " + objectName);
             }
             catch (Exception e)

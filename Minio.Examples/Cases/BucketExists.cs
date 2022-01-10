@@ -1,5 +1,5 @@
 ﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,9 @@ namespace Minio.Examples.Cases
             try
             {
                 Console.WriteLine("Running example for API: BucketExistsAsync");
-                bool found = await minio.BucketExistsAsync(bucketName);
+                BucketExistsArgs args = new BucketExistsArgs()
+                                                    .WithBucket(bucketName);
+                bool found = await minio.BucketExistsAsync(args);
                 Console.WriteLine((found ? "Found" : "Couldn't find ") + "bucket " + bucketName);
                 Console.WriteLine();
             }

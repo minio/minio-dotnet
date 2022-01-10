@@ -1,5 +1,5 @@
 ﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,17 @@
 
 using Minio.Exceptions;
 using Minio.Helper;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace Minio
 {
@@ -42,7 +46,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to test existence of</param>
         internal static void ValidateBucketName(string bucketName)
         {
-            if (bucketName.Trim() == string.Empty)
+            if (string.IsNullOrEmpty(bucketName))
             {
                 throw new InvalidBucketNameException(bucketName, "Bucket name cannot be empty.");
             }
@@ -75,7 +79,7 @@ namespace Minio
         // http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
         internal static void ValidateObjectName(string objectName)
         {
-            if (objectName.Trim() == string.Empty)
+            if (string.IsNullOrEmpty(objectName) || objectName.Trim() == string.Empty)
             {
                 throw new InvalidObjectNameException(objectName, "Object name cannot be empty.");
             }
@@ -231,8 +235,9 @@ namespace Minio
         /// Calculate part size and number of parts required.
         /// </summary>
         /// <param name="size"></param>
+        /// <param name="copy"> If true, use COPY part size, else use PUT part size</param>
         /// <returns></returns>
-        public static object CalculateMultiPartSize(long size)
+        public static object CalculateMultiPartSize(long size, bool copy = false)
         {
             if (size == -1)
             {
@@ -245,7 +250,8 @@ namespace Minio
             }
 
             double partSize = (double)Math.Ceiling((decimal)size / Constants.MaxParts);
-            partSize = (double)Math.Ceiling((decimal)partSize / Constants.MinimumPartSize) * Constants.MinimumPartSize;
+            long minPartSize = copy ? Constants.MinimumCOPYPartSize: Constants.MinimumPUTPartSize;
+            partSize = (double)Math.Ceiling((decimal)partSize / minPartSize) * minPartSize;
             double partCount = Math.Ceiling(size / partSize);
             double lastPartSize = size - (partCount - 1) * partSize;
             dynamic obj = new ExpandoObject();
@@ -830,6 +836,124 @@ namespace Minio
                 {".z", "application/x-compress"},
                 {".zip", "application/zip"}
             };
+        }
+
+        public static string MarshalXML(object obj, string nmspc)
+        {
+            XmlSerializer xs = null;
+            XmlWriterSettings settings = null;
+            XmlSerializerNamespaces ns = null;
+
+            XmlWriter xw = null;
+
+            String str = String.Empty;
+
+            try
+            {
+                settings = new XmlWriterSettings();
+                settings.OmitXmlDeclaration = true;
+
+                ns = new XmlSerializerNamespaces();
+                ns.Add("", nmspc);
+
+                StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
+
+                xs = new XmlSerializer(obj.GetType());
+                xw = XmlWriter.Create(sw, settings);
+                xs.Serialize(xw, obj, ns);
+                xw.Flush();
+
+                str = sw.ToString();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                if (xw != null)
+                {
+                    xw.Close();
+                }
+            }
+            return str;
+        }
+
+        public static string To8601String(DateTime dt)
+        {
+            return dt.ToString("yyyy-MM-dd'T'HH:mm:ssZ", CultureInfo.InvariantCulture);
+        }
+
+        public static string RemoveNamespaceInXML(string config)
+        {
+            // We'll need to remove the namespace within the serialized configuration
+            const RegexOptions regexOptions =
+                        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline;
+            string patternToReplace = @"<\w+\s+\w+:nil=""true""(\s+xmlns:\w+=""http://www.w3.org/2001/XMLSchema-instance"")?\s*/>";
+            string patternToMatch = @"<\w+\s+xmlns=""http://s3.amazonaws.com/doc/2006-03-01/""\s*>";
+            if (Regex.Match(config, patternToMatch, regexOptions).Success)
+            {
+                patternToReplace = @"xmlns=""http://s3.amazonaws.com/doc/2006-03-01/""\s*";
+            }
+            config = Regex.Replace(
+                config,
+                patternToReplace,
+                string.Empty,
+                regexOptions
+            );
+            return config;
+        }
+        public static DateTime From8601String(string dt)
+        {
+            return DateTime.Parse(dt, null, System.Globalization.DateTimeStyles.RoundtripKind);
+        }
+
+        public static Uri GetBaseUrl(string endpoint)
+        {
+            if (String.IsNullOrEmpty(endpoint))
+            {
+                throw new ArgumentException(String.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint),"endpoint");
+            }
+            if (endpoint.EndsWith("/"))
+            {
+                endpoint = endpoint.Substring(0, endpoint.Length - 1);
+            }
+            if (!endpoint.StartsWith("http") && !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
+            {
+                throw new InvalidEndpointException(String.Format("{0} is invalid hostname.", endpoint),"endpoint");
+            }
+            string conn_url;
+            if (endpoint.StartsWith("http"))
+            {
+                throw new InvalidEndpointException(String.Format("{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),"endpoint");
+            }
+            string enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
+            string scheme = (enable_https != null && enable_https.Equals("1"))? "https://":"http://";
+            conn_url = scheme + endpoint;
+            string hostnameOfUri = string.Empty;
+            Uri url = null;
+            try
+            {
+                url = new Uri(conn_url);
+                hostnameOfUri = url.Authority;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            if (!String.IsNullOrWhiteSpace(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
+            {
+                throw new InvalidEndpointException(String.Format("{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),"endpoint");
+            }
+
+            return url;
+        }
+
+        public static IRestRequest GetEmptyRestRequest(IRestRequest request)
+        {
+            string serializedBody = Newtonsoft.Json.JsonConvert.SerializeObject("");
+            request.AddParameter("application/json; charset=utf-8", serializedBody, ParameterType.RequestBody);
+            return request;
         }
     }
 }

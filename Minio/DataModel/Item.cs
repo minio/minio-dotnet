@@ -48,6 +48,9 @@ namespace Minio.DataModel
 
         public bool IsDir { get; set; }
 
+        public string VersionId { get; set; }
+        public bool IsLatest { get; set; }
+
         public DateTime? LastModifiedDateTime
         {
             get

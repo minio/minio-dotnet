@@ -1,4 +1,4 @@
-# MinIO Client SDK for .NET  [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io) [![Build status](https://ci.appveyor.com/api/projects/status/tvdpoypdmbuwg0me/branch/master?svg=true)](https://ci.appveyor.com/project/Harshavardhana/minio-dotnet/branch/master)
+# MinIO Client SDK for .NET  [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io)
 
 MinIO Client SDK provides higher level APIs for MinIO and Amazon S3 compatible cloud storage services.For a complete list of APIs and examples, please take a look at the [Dotnet Client API Reference](https://docs.min.io/docs/dotnet-client-api-reference).This document assumes that you have a working VisualStudio development environment.
 
