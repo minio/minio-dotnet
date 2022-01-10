@@ -53,6 +53,8 @@ namespace Minio
 
         // Indicates if we are using HTTPS or not
         internal bool Secure { get; private set; }
+        //Calllback for https certificate validation
+        internal RemoteCertificateValidationCallback remoteCertificateValidationCallback = null;
 
         // RESTSharp client
         internal IRestClient restClient;
@@ -386,7 +388,8 @@ namespace Minio
             // is decided upon while constructing a request for Amazon.
             restClient = new RestSharp.RestClient(this.uri)
             {
-                UserAgent = this.FullUserAgent
+                UserAgent = this.FullUserAgent,
+                RemoteCertificateValidationCallback = remoteCertificateValidationCallback
             };
 
             authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, this.Region, this.SessionToken);
@@ -459,15 +462,17 @@ namespace Minio
         public MinioClient WithSSL(RemoteCertificateValidationCallback remoteCertificateValidationCallback = null)
         {
             this.Secure = true;
+            this.remoteCertificateValidationCallback = remoteCertificateValidationCallback;
             if (string.IsNullOrEmpty(this.BaseUrl))
             {
                 return this;
+            }
+            Uri secureUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
+            this.SetTargetURL(secureUrl);
             if (remoteCertificateValidationCallback != null)
             {
                 restClient.RemoteCertificateValidationCallback = remoteCertificateValidationCallback;
             }
-            Uri secureUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
-            this.SetTargetURL(secureUrl);
             return this;
         }
 
@@ -550,7 +555,8 @@ namespace Minio
             {
                 restClient = new RestSharp.RestClient(uri)
                 {
-                    UserAgent = this.FullUserAgent
+                    UserAgent = this.FullUserAgent,
+                    RemoteCertificateValidationCallback = remoteCertificateValidationCallback
                 };
             }
             this.restClient.BaseUrl = uri;
