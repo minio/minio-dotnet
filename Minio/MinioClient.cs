@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -327,10 +328,15 @@ namespace Minio
         /// <summary>
         /// Connects to Cloud Storage with HTTPS if this method is invoked on client object
         /// </summary>
+        /// <param name="remoteCertificateValidationCallback">sets the callback to validate a server certificate.</param>
         /// <returns></returns>
-        public MinioClient WithSSL()
+        public MinioClient WithSSL(RemoteCertificateValidationCallback remoteCertificateValidationCallback = null)
         {
             this.Secure = true;
+            if (remoteCertificateValidationCallback != null)
+            {
+                restClient.RemoteCertificateValidationCallback = remoteCertificateValidationCallback;
+            }
             Uri secureUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
             this.SetTargetURL(secureUrl);
             return this;

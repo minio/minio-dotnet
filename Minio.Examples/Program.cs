@@ -79,14 +79,11 @@ namespace Minio.Examples
                 enableHTTPS = true;
             }
 
-            ServicePointManager.ServerCertificateValidationCallback +=
-                        (sender, certificate, chain, sslPolicyErrors) => true;
-
             // WithSSL() enables SSL support in MinIO client
             MinioClient minioClient = null;
             if (enableHTTPS)
             {
-                minioClient = new MinioClient(endPoint, accessKey, secretKey).WithSSL();
+                minioClient = new MinioClient(endPoint, accessKey, secretKey).WithSSL((sender, certificate, chain, sslPolicyErrors) => true);
             }
             else
             {

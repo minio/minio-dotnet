@@ -51,7 +51,7 @@ namespace Minio.Functional.Tests
             MinioClient minioClient = null;
             if (enableHttps == "1")
                 // WithSSL() enables SSL support in MinIO client
-                minioClient = new MinioClient(endPoint, accessKey, secretKey).WithSSL();
+                minioClient = new MinioClient(endPoint, accessKey, secretKey).WithSSL((sender, certificate, chain, sslPolicyErrors) => true);
             else
                 minioClient = new MinioClient(endPoint, accessKey, secretKey);
 
@@ -168,7 +168,6 @@ namespace Minio.Functional.Tests
             // Test encryption
             if (enableHttps == "1")
             {
-                ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
                 FunctionalTest.PutGetStatEncryptedObject_Test1(minioClient).Wait();
                 FunctionalTest.PutGetStatEncryptedObject_Test2(minioClient).Wait();
 
