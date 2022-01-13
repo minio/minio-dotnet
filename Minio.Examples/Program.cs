@@ -249,8 +249,11 @@ namespace Minio.Examples
                 Cases.RemoveBucket.Run(minioClient, lockBucketName).Wait();
 
                 // Bucket Replication operations
-                Cases.RemoveBucketReplication.Run(minioClient, bucketName).Wait();
+                Console.WriteLine($"bucketName = {bucketName}");
+                Cases.SetBucketReplication.Run(minioClient, bucketName, destBucketName).Wait();
                 Cases.GetBucketReplication.Run(minioClient, bucketName).Wait();
+                Cases.RemoveBucketReplication.Run(minioClient, destBucketName).Wait();
+                Cases.RemoveBucketReplication.Run(minioClient, bucketName).Wait();
 
                 // Get the presigned url for a GET object request
                 Cases.PresignedGetObject.Run(minioClient, bucketName, objectName).Wait();

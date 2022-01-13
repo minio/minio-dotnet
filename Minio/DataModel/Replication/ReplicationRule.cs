@@ -88,7 +88,7 @@ namespace Minio.DataModel.Replication
             this.ID = id;
             this.Prefix = prefix;
             this.SourceSelectionCriteria = sourceSelectionCriteria;
-            this.Status = status;               
+            this.Status = status;
         }
     }
 }

@@ -318,7 +318,7 @@ namespace Minio
             requestMessageBuilder.AddQueryParameter("notification", "");
             BucketNotification bucketNotificationConfiguration = new BucketNotification();
             string body = utils.MarshalXML(bucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
-            // Convert string to a byte array  
+            // Convert string to a byte array
             byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
             requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
             requestMessageBuilder.SetBody(bodyInBytes);
@@ -344,7 +344,10 @@ namespace Minio
             requestMessageBuilder.AddQueryParameter("notification", "");
             BucketNotification bucketNotificationConfiguration = new BucketNotification();
             string body = utils.MarshalXML(bucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
-            requestMessageBuilder.AddOrUpdateHeaderParameter("text/xml", body);
+            // Convert string to a byte array
+            byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
+            requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
+            requestMessageBuilder.SetBody(bodyInBytes);
 
             return requestMessageBuilder;
         }
@@ -502,7 +505,7 @@ namespace Minio
 
             requestMessageBuilder.AddQueryParameter("encryption", "");
             string body = utils.MarshalXML(this.EncryptionConfig, "http://s3.amazonaws.com/doc/2006-03-01/");
-            // Convert string to a byte array  
+            // Convert string to a byte array
             byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
             requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
             requestMessageBuilder.SetBody(bodyInBytes);
@@ -635,7 +638,7 @@ namespace Minio
 
             requestMessageBuilder.AddQueryParameter("object-lock", "");
             string body = utils.MarshalXML(this.LockConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
-            // Convert string to a byte array  
+            // Convert string to a byte array
             // byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
 
             // requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
@@ -703,16 +706,13 @@ namespace Minio
 
             requestMessageBuilder.AddQueryParameter("lifecycle", "");
             string body = this.BucketLifecycle.MarshalXML();
-            // Convert string to a byte array  
+            // Convert string to a byte array
             byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
             requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
             requestMessageBuilder.SetBody(bodyInBytes);
-            //
-            // string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
-            // requestMessageBuilder.AddXmlBody(body);
             requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
                             utils.getMD5SumStr(bodyInBytes));
-            // 
+
             return requestMessageBuilder;
         }
 
@@ -787,10 +787,9 @@ namespace Minio
 
         internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-
             requestMessageBuilder.AddQueryParameter("replication", "");
             string body = this.BucketReplication.MarshalXML();
-            // Convert string to a byte array  
+            // Convert string to a byte array
             byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
             requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
             requestMessageBuilder.SetBody(bodyInBytes);
