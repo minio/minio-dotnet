@@ -33,13 +33,15 @@ namespace Minio.DataModel.Replication
     {
         [XmlElement("Status")]
         public string Status { get; set; }
+        public const string StatusEnabled = "Enabled";
+        public const string StatusDisabled = "Disabled";
 
         public ExistingObjectReplication()
         {
             this.Status = null;
         }
-        
-        public ExistingObjectReplication(string status) 
+
+        public ExistingObjectReplication(string status)
         {
             if (string.IsNullOrEmpty(status) || string.IsNullOrWhiteSpace(status))
             {

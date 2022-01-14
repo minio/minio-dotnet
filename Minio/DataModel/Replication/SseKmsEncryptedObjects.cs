@@ -34,6 +34,8 @@ namespace Minio.DataModel.Replication
     {
         [XmlElement("Status")]
         public string Status { get; set; }
+        public const string StatusEnabled = "Enabled";
+        public const string StatusDisabled = "Disabled";
 
         public SseKmsEncryptedObjects()
         {

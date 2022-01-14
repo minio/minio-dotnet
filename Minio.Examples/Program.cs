@@ -249,11 +249,17 @@ namespace Minio.Examples
                 Cases.RemoveBucket.Run(minioClient, lockBucketName).Wait();
 
                 // Bucket Replication operations
-                Console.WriteLine($"bucketName = {bucketName}");
-                Cases.SetBucketReplication.Run(minioClient, bucketName, destBucketName).Wait();
-                Cases.GetBucketReplication.Run(minioClient, bucketName).Wait();
-                Cases.RemoveBucketReplication.Run(minioClient, destBucketName).Wait();
-                Cases.RemoveBucketReplication.Run(minioClient, bucketName).Wait();
+                string replicationCfgID = "myreplicationID-3333";
+                Cases.SetBucketReplication.Run(minioClient, bucketName,
+                                        destBucketName, replicationCfgID).Wait();
+                Cases.GetBucketReplication.Run(minioClient, bucketName,
+                                               replicationCfgID).Wait();
+                // TODO: we can verify that the replication happens by checking
+                // the content in the destination matches the source content.
+                // We also cannot remove the replication config immediately
+                // after running GetBucketReplication command, as
+                // replicating the source in the destination takes some time.
+                // Cases.RemoveBucketReplication.Run(minioClient, bucketName).Wait();
 
                 // Get the presigned url for a GET object request
                 Cases.PresignedGetObject.Run(minioClient, bucketName, objectName).Wait();

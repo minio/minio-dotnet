@@ -58,7 +58,8 @@ namespace Minio.Examples.Cases
         // Set Replication configuration for the bucket
         public async static Task Run(MinioClient minio,
                                     string bucketName = "my-bucket-name",
-                                    string destBucketName = "dest-bucket-name")
+                                    string destBucketName = "dest-bucket-name",
+                                    string replicationCfgID = "my-replication-ID")
         {
             try
             {
@@ -71,12 +72,6 @@ namespace Minio.Examples.Cases
                                         .WithBucket(destBucketName)
                                         .WithVersioningEnabled();
                 await minio.SetVersioningAsync(setArgs);
-                Dictionary<string, string> tags = new Dictionary<string, string>()
-                                {
-                                    {"key1", "value1"},
-                                    {"key2", "value2"},
-                                    {"key3", "value3"}
-                                };
 
                 string serverEndPoint = "";
                 string schema = "";
@@ -119,17 +114,18 @@ namespace Minio.Examples.Cases
 
                 ReplicationRule rule =
                     new ReplicationRule(
-                        new DeleteMarkerReplication(DeleteMarkerReplication.StatusEnabled),
+                        new DeleteMarkerReplication(DeleteMarkerReplication.StatusDisabled),
                         new ReplicationDestination(null, null,
                                         "arn:aws:s3:::" + destBucketName,
                                         null, null, null, null),
-                        null,
-                        new RuleFilter(new AndOperator("PREFIX", Tagging.GetBucketTags(tags)), null, null),
+                        new ExistingObjectReplication(ExistingObjectReplication.StatusEnabled),
+                        new RuleFilter(null, null, null),
                         new DeleteReplication(DeleteReplication.StatusDisabled),
                         1,
-                        "REPLICATION-ID",
-                        "PREFIX",
-                        null,
+                        replicationCfgID,
+                        "",
+                        new SourceSelectionCriteria(new SseKmsEncryptedObjects(
+                                                    SseKmsEncryptedObjects.StatusEnabled)),
                         ReplicationRule.StatusEnabled
                     );
                 List<ReplicationRule> rules = new List<ReplicationRule>();
