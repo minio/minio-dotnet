@@ -165,7 +165,8 @@ namespace Minio.Functional.Tests
                 FunctionalTest.PresignedGetObject_Test2(minioClient).Wait();
                 FunctionalTest.PresignedGetObject_Test3(minioClient).Wait();
                 FunctionalTest.PresignedPutObject_Test1(minioClient).Wait();
-                FunctionalTest.PresignedPutObject_Test2(minioClient).Wait();
+                FunctionalTest.PresignedGetObject_Test1(minioClient).Wait();
+                FunctionalTest.PresignedPostPolicy_Test1(minioClient).Wait();
 
                 // Test incomplete uploads
                 FunctionalTest.ListIncompleteUpload_Test1(minioClient).Wait();

@@ -94,16 +94,13 @@ namespace Minio
         }
     }
 
-    internal class PresignedPostPolicyResponse
+    public class PresignedPostPolicyResponse
     {
         internal Tuple<string, Dictionary<string, string>> URIPolicyTuple { get; private set; }
 
-        public PresignedPostPolicyResponse(PresignedPostPolicyArgs args, string absURI)
+        public PresignedPostPolicyResponse(PresignedPostPolicyArgs args, Uri URI)
         {
-            args.Policy.SetAlgorithm("AWS4-HMAC-SHA256");
-            args.Policy.SetDate(DateTime.UtcNow);
-            args.Policy.SetPolicy(args.Policy.Base64());
-            URIPolicyTuple = Tuple.Create(absURI, args.Policy.GetFormData());
+            URIPolicyTuple = Tuple.Create(URI.AbsolutePath, args.Policy.GetFormData());
         }
     }
 

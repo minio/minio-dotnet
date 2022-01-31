@@ -364,12 +364,22 @@ namespace Minio
             return this;
         }
 
+        internal PresignedPostPolicyArgs WithDate(DateTime date)
+        {
+            this.Policy.SetDate(date);
+            return this;
+        }
+
         internal PresignedPostPolicyArgs WithCredential(string credential)
         {
             this.Policy.SetCredential(credential);
             return this;
         }
-
+        internal PresignedPostPolicyArgs WithAlgorithm(string algorithm)
+        {
+            this.Policy.SetAlgorithm(algorithm);
+            return this;
+        }
         internal PresignedPostPolicyArgs WithSignature(string signature)
         {
             this.Policy.SetSignature(signature);
@@ -378,6 +388,9 @@ namespace Minio
         public PresignedPostPolicyArgs WithPolicy(PostPolicy policy)
         {
             this.Policy = policy;
+            if (policy.expiration != DateTime.MinValue)
+                // policy.expiration has an assigned value
+                this.Expiration = policy.expiration;
             return this;
         }
     }

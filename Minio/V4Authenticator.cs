@@ -16,14 +16,11 @@
 
 using Minio.Helper;
 using System;
-using System.Xml;
-using System.Xml.Serialization;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Security.Cryptography;
-using System.Xml.Linq;
 using Newtonsoft.Json;
 
 namespace Minio
@@ -192,7 +189,7 @@ namespace Minio
         /// <returns>bytes of computed hmac</returns>
         private byte[] GenerateSigningKey(string region, DateTime signingDate)
         {
-            byte[] formattedDateBytes = System.Text.Encoding.UTF8.GetBytes(signingDate.ToString("yyyMMdd"));
+            byte[] formattedDateBytes = System.Text.Encoding.UTF8.GetBytes(signingDate.ToString("yyyyMMdd"));
             byte[] formattedKeyBytes = System.Text.Encoding.UTF8.GetBytes($"AWS4{this.secretKey}");
             byte[] dateKey = this.SignHmac(formattedKeyBytes, formattedDateBytes);
 

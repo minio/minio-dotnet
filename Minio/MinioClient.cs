@@ -125,6 +125,7 @@ namespace Minio
         /// <returns></returns>
         private async Task<string> GetRegion(string bucketName)
         {
+            string rgn = "";
             // Use user specified region in client constructor if present
             if (this.Region != string.Empty)
             {
@@ -132,22 +133,23 @@ namespace Minio
             }
 
             // pick region from endpoint if present
-            string region = Regions.GetRegionFromEndpoint(this.Endpoint);
+            if (!string.IsNullOrEmpty(this.Endpoint))
+                rgn = Regions.GetRegionFromEndpoint(this.Endpoint);
 
             // Pick region from location HEAD request
-            if (region == string.Empty)
+            if (rgn == string.Empty)
             {
                 if (!BucketRegionCache.Instance.Exists(bucketName))
                 {
-                    region = await BucketRegionCache.Instance.Update(this, bucketName).ConfigureAwait(false);
+                    rgn = await BucketRegionCache.Instance.Update(this, bucketName).ConfigureAwait(false);
                 }
                 else
                 {
-                    region = BucketRegionCache.Instance.Region(bucketName);
+                    rgn = BucketRegionCache.Instance.Region(bucketName);
                 }
             }
             // Default to us-east-1 if region could not be found
-            return (region == string.Empty) ? "us-east-1" : region;
+            return (rgn == string.Empty) ? "us-east-1" : rgn;
         }
 
         /// <summary>
@@ -307,7 +309,6 @@ namespace Minio
 
             // Set Target URL
             Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, bucketName, region, usePathStyle);
-            // SetTargetURL(requestUrl);
 
             if (objectName != null)
             {
@@ -495,15 +496,6 @@ namespace Minio
             }
             return this;
         }
-
-        // /// <summary>
-        // /// Sets endpoint URL on the client object that request will be made against
-        // /// </summary>
-        // internal void SetTargetURL(Uri uri)
-        // {
-        //     var userAgent = this.FullUserAgent;
-        //     this.BaseUrl = uri.AbsoluteUri;
-        // }
 
         /// <summary>
         /// Actual doer that executes the request on the server

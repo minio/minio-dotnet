@@ -19,13 +19,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Web;
 using System.ComponentModel;
 using System.Linq;
 
@@ -150,7 +150,7 @@ namespace Minio.Functional.Tests
                 result.Append(characters[rnd.Next(characters.Length)]);
             }
 
-            return $"miniodotnet{result}";
+            return "minio-dotnet-example-" + result.ToString();
         }
 
         // Return true if running in Mint mode
@@ -3425,50 +3425,63 @@ namespace Minio.Functional.Tests
             string objectName = GetRandomObjectName(10);
             string metadataKey = GetRandomName(10);
             string metadataValue = GetRandomName(10);
+
             // Generate presigned post policy url
-            PostPolicy form = new PostPolicy();
-            DateTime expiration = DateTime.UtcNow;
-            form.SetExpires(expiration.AddDays(10));
-            form.SetKey(objectName);
-            form.SetBucket(bucketName);
-            form.SetUserMetadata(metadataKey, metadataValue);
+            PostPolicy formPolicy = new PostPolicy();
+            var expiresOn = DateTime.UtcNow.AddMinutes(15);
+            formPolicy.SetExpires(expiresOn);
+            formPolicy.SetBucket(bucketName);
+            formPolicy.SetKey(objectName);
+            formPolicy.SetUserMetadata(metadataKey, metadataValue);
+
             var args = new Dictionary<string, string>
             {
-                { "form", form.Base64() },
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "expiresOn", expiresOn.ToString() },
             };
-            string fileName = CreateFile(10 * KB, dataFile10KB);
+
+            // File to be uploaded
+            var size = 10 * KB;
+            var sizeExpected = 10240;
+            var contentType = "application/octet-stream";
+            string fileName = CreateFile(size, dataFile10KB);
+
 
             try
             {
+                // Creates the bucket
                 await Setup_Test(minio, bucketName);
-                PutObjectArgs putObjectArgs = new PutObjectArgs()
-                                                        .WithBucket(bucketName)
-                                                        .WithObject(objectName)
-                                                        .WithFileName(fileName);
 
-                await minio.PutObjectAsync(putObjectArgs);
-                var pairs = new List<KeyValuePair<string, string>>();
-                string url = "https://s3.amazonaws.com/" + bucketName;
-                PresignedPostPolicyArgs polArgs = new PresignedPostPolicyArgs()
-                                                                .WithBucket(bucketName)
-                                                                .WithObject(objectName)
-                                                                .WithPolicy(form);
-                Tuple<string, System.Collections.Generic.Dictionary<string, string>> policyTuple = await minio.PresignedPostPolicyAsync(polArgs);
-                var httpClient = new HttpClient();
+                var polArgs = new PresignedPostPolicyArgs().WithBucket(bucketName)
+                                                           .WithObject(objectName)
+                                                           .WithPolicy(formPolicy);
 
-                using (var stream = File.OpenRead(fileName))
+                var policyTuple = await minio.PresignedPostPolicyAsync(polArgs);
+                var uri = policyTuple.Item1.AbsoluteUri;
+
+                var curlCommand = "curl";
+                foreach (KeyValuePair<string, string> pair in policyTuple.Item2)
                 {
-                    MultipartFormDataContent multipartContent = new MultipartFormDataContent();
-                    multipartContent.Add(new StreamContent(stream), fileName, objectName);
-                    multipartContent.Add(new FormUrlEncodedContent(pairs));
-                    var response = await httpClient.PostAsync(url, multipartContent);
-                    response.EnsureSuccessStatusCode();
+                    curlCommand += $" -F {pair.Key}=\"{pair.Value}\"";
                 }
+                curlCommand += $" -F file=\"@{fileName}\" {uri} >/dev/null 2>&1";
+
+                ShellHelper.Bash(curlCommand);
 
                 // Validate
-                var policyArgs = new GetPolicyArgs()
-                                            .WithBucket(bucketName);
-                string policy = await minio.GetPolicyAsync(policyArgs);
+                StatObjectArgs statObjectArgs = new StatObjectArgs()
+                                                .WithBucket(bucketName)
+                                                .WithObject(objectName);
+
+                var statObject = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+                Assert.IsNotNull(statObject);
+                Assert.IsTrue(statObject.ObjectName.Equals(objectName));
+                Assert.AreEqual(statObject.Size, sizeExpected);
+                Assert.IsTrue(statObject.MetaData["Content-Type"] != null);
+                Assert.IsTrue(statObject.ContentType.Equals(contentType));
+                Assert.IsTrue(statObject.MetaData[metadataKey].Equals(metadataValue));
+
                 new MintLogger("PresignedPostPolicy_Test1", presignedPostPolicySignature, "Tests whether PresignedPostPolicy url applies policy on server", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (Exception ex)
@@ -3922,7 +3935,7 @@ namespace Minio.Functional.Tests
                         {
                             Assert.AreEqual(1, notification.Records.Length);
                             Assert.IsTrue(notification.Records[0].eventName.Contains("s3:ObjectCreated:Put"));
-                            Assert.IsTrue(objectName.Contains(System.Web.HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key)));
+                            Assert.IsTrue(objectName.Contains(HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key)));
                             Assert.IsTrue(contentType.Contains(notification.Records[0].s3.objectMeta.contentType));
                             eventDetected = true;
                             break;

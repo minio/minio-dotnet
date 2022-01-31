@@ -19,6 +19,7 @@ using Minio.Helper;
 using System.Net.Http;
 using System;
 using System.Collections.Generic;
+using System.Web;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -59,19 +60,22 @@ namespace Minio
             {
                 // Fetch new host based on the bucket location.
                 host = AWSS3Endpoints.Instance.Endpoint(region);
-                if (!usePathStyle)
-                {
-                    string prefix = (bucketName != null) ? utils.UrlEncode(bucketName) + "." : "";
-                    host = prefix + utils.UrlEncode(host) + "/";
-                }
             }
-            Uri uri = TryCreateUri(host, secure);
+            if (!usePathStyle)
+            {
+                string suffix = (bucketName != null) ? bucketName + "/" : "";
+                host = host + "/" + suffix;
+            }
+
+            var scheme = secure ? "https" : "http";
+            string endpointURL = string.Format("{0}://{1}", scheme, host);
+            Uri uri = new Uri(endpointURL, UriKind.Absolute);
             return uri;
         }
 
         internal static Uri TryCreateUri(string endpoint, bool secure)
         {
-            var scheme = secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
+            var scheme = secure ? HttpUtility.UrlEncode("https") : HttpUtility.UrlEncode("http");
 
             // This is the actual url pointed to for all HTTP requests
             string endpointURL = string.Format("{0}://{1}", scheme, endpoint);

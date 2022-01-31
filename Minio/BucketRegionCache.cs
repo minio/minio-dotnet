@@ -90,7 +90,7 @@ namespace Minio
             string region = null;
 
             if (bucketName != null && client.AccessKey != null
-            && client.SecretKey != null && !Instance.Exists(bucketName))
+                && client.SecretKey != null && !Instance.Exists(bucketName))
             {
                 string location = null;
                 var path = utils.UrlEncode(bucketName);
@@ -99,9 +99,10 @@ namespace Minio
 
                 var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, requestUrl, path);
                 requestBuilder.AddQueryParameter("location", "");
-                var response = await client.ExecuteTaskAsync(client.NoErrorHandlers, requestBuilder).ConfigureAwait(false);
+                ResponseResult response = null;
+                response = await client.ExecuteTaskAsync(client.NoErrorHandlers, requestBuilder).ConfigureAwait(false);
 
-                if (HttpStatusCode.OK.Equals(response.StatusCode))
+                if (response != null && HttpStatusCode.OK.Equals(response.StatusCode))
                 {
                     XDocument root = XDocument.Parse(response.Content);
                     location = root.Root.Value;

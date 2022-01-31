@@ -21,31 +21,44 @@ using System.Threading.Tasks;
 
 namespace Minio.Examples.Cases
 {
+    public delegate PostPolicy DefaultPolicy(string bucketName,
+                                             string objectName,
+                                             DateTime expiration);
     public class PresignedPostPolicy
     {
-        public async static Task Run(MinioClient client)
+        public async static Task Run(MinioClient client,
+                                     string bucketName = "my-bucketname",
+                                     string objectName = "my-objectname")
         {
-            try
-            {
-                PostPolicy form = new PostPolicy();
-                DateTime expiration = DateTime.UtcNow;
-                form.SetExpires(expiration.AddDays(10));
-                form.SetKey("my-objectname");
-                form.SetBucket("my-bucketname");
+            // default value for expiration is 2 minutes
+            DateTime expiration = DateTime.UtcNow.AddMinutes(2);
 
-                Tuple<string, Dictionary<string, string>> tuple = await client.PresignedPostPolicyAsync(form);
-                string curlCommand = "curl -X POST ";
-                foreach (KeyValuePair<string, string> pair in tuple.Item2)
-                {
-                    curlCommand = curlCommand + $" -F {pair.Key}={pair.Value}";
-                }
-                curlCommand = curlCommand + " -F file=@/etc/bashrc " + tuple.Item1; // https://s3.amazonaws.com/my-bucketname";
-                Console.WriteLine(curlCommand);
-            }
-            catch (Exception e)
+            // DefaultPolicy defaultPolicy = delegate (string bucketName,
+            //                                         string objectName,
+            //                                         DateTime expiration)
+            // {
+            PostPolicy form = new PostPolicy();
+            form.SetKey(objectName);
+            form.SetBucket(bucketName);
+            form.SetExpires(expiration);
+            // return policy;
+            // };
+            // PostPolicy postPolicy = defaultPolicy(bucketName,
+            //                                       objectName,
+            //                                       expiration);
+
+            PresignedPostPolicyArgs args = new PresignedPostPolicyArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName)
+                                                        .WithPolicy(form);
+
+            var tuple = await client.PresignedPostPolicyAsync(form);
+            string curlCommand = "curl -k --insecure -X POST";
+            foreach (KeyValuePair<string, string> pair in tuple.Item2)
             {
-                Console.WriteLine($"Exception {e.Message}");
+                curlCommand = curlCommand + $" -F {pair.Key}={pair.Value}";
             }
+            curlCommand = curlCommand + " -F file=@/etc/issue " + tuple.Item1 + bucketName + "/";
         }
     }
 }

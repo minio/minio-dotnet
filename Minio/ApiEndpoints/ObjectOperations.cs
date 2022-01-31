@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reactive.Linq;
 using System.Text;
@@ -343,21 +344,51 @@ namespace Minio
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         /// <exception cref="ObjectNotFoundException">When object is not found</exception>
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-        public async Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PresignedPostPolicyArgs args)
+        public async Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PresignedPostPolicyArgs args)
         {
+            // string region = string.Empty;
             string region = await this.GetRegion(args.BucketName);
-            args.Validate();
-            var authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region: this.Region,
-                sessionToken: this.SessionToken);
 
-            //     return authenticator.PresignURL(request, expiresInt, Region, this.SessionToken, reqDate);
-            args = args.WithSessionToken(this.SessionToken)
-                        .WithCredential(authenticator.GetCredentialString(DateTime.UtcNow, region))
-                        .WithSignature(authenticator.PresignPostSignature(region, DateTime.UtcNow, args.Policy.Base64()))
-                        .WithRegion(region);
-            // this.SetTargetURL(RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, args.BucketName, args.Region, usePathStyle: false));
-            PresignedPostPolicyResponse policyResponse = new PresignedPostPolicyResponse(args, this.uri.ToString());
-            return policyResponse.URIPolicyTuple;
+            args.Validate();
+
+
+            // Presigned operations are not allowed for anonymous users
+            if (string.IsNullOrEmpty(this.AccessKey) && string.IsNullOrEmpty(this.SecretKey))
+                throw new MinioException("Presigned operations are not supported for anonymous credentials");
+
+            var authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey,
+                                                    region, this.SessionToken);
+
+            // Get base64 encoded policy.
+            var policyBase64 = args.Policy.Base64();
+
+            var t = DateTime.UtcNow;
+            var signV4Algorithm = "AWS4-HMAC-SHA256";
+            var credential = authenticator.GetCredentialString(t, region);
+            var signature = authenticator.PresignPostSignature(region, t, policyBase64);
+            args = args.WithDate(t)
+                       .WithAlgorithm(signV4Algorithm)
+                       .WithSessionToken(this.SessionToken)
+                       .WithCredential(credential)
+                       .WithRegion(region);
+
+
+            // Fill in the form data.
+            args.Policy.formData["bucket"] = args.BucketName;
+            args.Policy.formData["key"] = "\\\"" + args.ObjectName + "\\\"";
+            args.Policy.formData["policy"] = policyBase64;
+            args.Policy.formData["x-amz-algorithm"] = signV4Algorithm;
+            args.Policy.formData["x-amz-credential"] = credential;
+            args.Policy.formData["x-amz-date"] = t.ToString("yyyyMMddTHHmmssZ");
+            if (this.SessionToken != "")
+            {
+                args.Policy.formData["x-amz-security-token"] = this.SessionToken;
+
+            }
+            args.Policy.formData["x-amz-signature"] = signature;
+
+            this.uri = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, args.BucketName, region, usePathStyle: false);
+            return (this.uri, args.Policy.formData);
         }
 
 
@@ -1773,7 +1804,7 @@ namespace Minio
         /// </summary>
         /// <param name="policy"></param>
         /// <returns></returns>
-        public Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy)
+        public Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PostPolicy policy)
         {
             PresignedPostPolicyArgs args = new PresignedPostPolicyArgs()
                                                         .WithBucket(policy.Bucket)

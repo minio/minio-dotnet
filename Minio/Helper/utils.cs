@@ -31,7 +31,7 @@ using System.ComponentModel;
 
 namespace Minio
 {
-    internal class utils
+    public class utils
     {
         // We support '.' with bucket names but we fallback to using path
         // style requests instead for such buckets.
@@ -963,7 +963,7 @@ namespace Minio
             return url;
         }
 
-        public static HttpRequestMessageBuilder GetEmptyRestRequest(HttpRequestMessageBuilder requestBuilder)
+        internal static HttpRequestMessageBuilder GetEmptyRestRequest(HttpRequestMessageBuilder requestBuilder)
         {
             string serializedBody = Newtonsoft.Json.JsonConvert.SerializeObject("");
             requestBuilder.AddOrUpdateHeaderParameter("application/json; charset=utf-8", serializedBody);

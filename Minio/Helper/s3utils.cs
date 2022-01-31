@@ -71,8 +71,8 @@ namespace Minio.Helper
             try
             {
                 string combination = Path.Combine(p1, p2);
-                combination = Uri.EscapeUriString(combination);
-                // combination = utils.EncodePath(combination);
+                // combination = Uri.EscapeUriString(combination);
+                combination = utils.EncodePath(combination);
                 return combination;
             }
             catch (Exception ex)

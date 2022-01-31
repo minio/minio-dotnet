@@ -26,21 +26,13 @@ namespace Minio.Examples.Cases
                                      string bucketName = "my-bucket-name",
                                      string objectName = "my-object-name")
         {
-            try
-            {
-                var reqParams = new Dictionary<string, string> { { "response-content-type", "application/json" } };
-                PresignedGetObjectArgs args = new PresignedGetObjectArgs()
-                                                            .WithBucket(bucketName)
-                                                            .WithObject(objectName)
-                                                            .WithExpiry(1000)
-                                                            .WithHeaders(reqParams);
-                var presignedUrl = await client.PresignedGetObjectAsync(args);
-                Console.WriteLine(presignedUrl);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Exception {e.Message}");
-            }
+            var reqParams = new Dictionary<string, string> { { "response-content-type", "application/json" } };
+            PresignedGetObjectArgs args = new PresignedGetObjectArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName)
+                                                        .WithExpiry(1000)
+                                                        .WithHeaders(reqParams);
+            var presignedUrl = await client.PresignedGetObjectAsync(args);
         }
     }
 }
