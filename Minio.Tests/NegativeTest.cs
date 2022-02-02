@@ -78,7 +78,7 @@ namespace Minio.Tests
                                             .WithObject(badName);
                 var ex = await Assert.ThrowsExceptionAsync<InvalidObjectNameException>(
                     () => minio.StatObjectAsync(statObjArgs));
-                for(int i=0;
+                for (int i = 0;
                         i < tryCount &&
                             (ex.ServerResponse != null &&
                                 ex.ServerResponse.StatusCode.Equals(HttpStatusCode.ServiceUnavailable)); ++i)
@@ -92,7 +92,7 @@ namespace Minio.Tests
                 GetObjectArgs getObjectArgs = new GetObjectArgs()
                                                         .WithBucket(bucketName)
                                                         .WithObject(badName)
-                                                        .WithCallbackStream(s =>{});
+                                                        .WithCallbackStream(s => { });
                 ex = await Assert.ThrowsExceptionAsync<InvalidObjectNameException>(
                     () => minio.GetObjectAsync(getObjectArgs));
                 Assert.AreEqual(ex.Response.Code, "InvalidObjectName");

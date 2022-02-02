@@ -65,7 +65,9 @@ namespace SimpleTest
             var bucketExistTask = minio.BucketExistsAsync(bktExistsArgs);
             Task.WaitAll(bucketExistTask);
             var found = bucketExistTask.Result;
-            Console.WriteLine("bucket was " + found);
+            Console.WriteLine("Bucket exists: " + found);
+            // Added for Windows folks. Without it, the window, tests
+            // run in, dissappears as soon as the test code completes.
             Console.ReadLine();
         }
 
