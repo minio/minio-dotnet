@@ -86,7 +86,7 @@ namespace Minio
             this.isSecure = secure;
             this.accessKey = accessKey;
             this.secretKey = secretKey;
-            this.isAnonymous = string.IsNullOrEmpty(accessKey) && string.IsNullOrEmpty(secretKey);
+            this.isAnonymous = utils.IsAnonymousClient(accessKey, secretKey);
             this.region = region;
             this.sessionToken = sessionToken;
         }
@@ -513,20 +513,20 @@ namespace Minio
         {
             if (this.isAnonymous)
                 return;
-            // No need to compute SHA256 if endpoint scheme is https and the command
-            // is not a Post multi delete
+            // No need to compute SHA256 if the endpoint scheme is https
+            // or the command method is not a Post to delete multiple files
             var isMultiDeleteRequest = false;
             if (requestBuilder.Method == HttpMethod.Post)
             {
                 isMultiDeleteRequest = requestBuilder.QueryParameters.Any(p => p.Key.Equals("delete", StringComparison.OrdinalIgnoreCase));
             }
-            if (isSecure && !isMultiDeleteRequest)
+            if (isSecure || isMultiDeleteRequest)
             {
                 requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", "UNSIGNED-PAYLOAD");
                 return;
             }
             // For insecure, authenticated requests set sha256 header instead of MD5.
-            if (requestBuilder.Method == HttpMethod.Put ||
+            if (requestBuilder.Method.Equals(HttpMethod.Put) ||
                 requestBuilder.Method.Equals(HttpMethod.Post))
             {
                 var body = requestBuilder.Content;
@@ -540,7 +540,7 @@ namespace Minio
                 string hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
                 requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
             }
-            else if ((!isSecure || isMultiDeleteRequest) && requestBuilder.Content != null)
+            else if (!isSecure && requestBuilder.Content != null)
             {
                 var md5 = MD5.Create();
                 byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(requestBuilder.Content.ToString()));

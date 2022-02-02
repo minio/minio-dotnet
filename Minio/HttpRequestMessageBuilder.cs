@@ -106,9 +106,9 @@ namespace Minio
                     }
                     bool isSecure = this.RequestUri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);
 
-                    if ((!isSecure || isMultiDeleteRequest) &&
-                    (this.BodyParameters.ContainsKey("Content-Md5") &&
-                    this.BodyParameters["Content-Md5"] != null))
+                    if (!isSecure && !isMultiDeleteRequest &&
+                        this.BodyParameters.ContainsKey("Content-Md5") &&
+                        this.BodyParameters["Content-Md5"] != null)
                     {
                         string returnValue = "";
                         this.BodyParameters.TryGetValue("Content-Md5", out returnValue);

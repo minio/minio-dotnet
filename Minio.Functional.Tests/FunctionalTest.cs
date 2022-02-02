@@ -3447,7 +3447,6 @@ namespace Minio.Functional.Tests
             var contentType = "application/octet-stream";
             string fileName = CreateFile(size, dataFile10KB);
 
-
             try
             {
                 // Creates the bucket
@@ -3460,7 +3459,7 @@ namespace Minio.Functional.Tests
                 var policyTuple = await minio.PresignedPostPolicyAsync(polArgs);
                 var uri = policyTuple.Item1.AbsoluteUri;
 
-                var curlCommand = "curl";
+                var curlCommand = "curl --insecure";
                 foreach (KeyValuePair<string, string> pair in policyTuple.Item2)
                 {
                     curlCommand += $" -F {pair.Key}=\"{pair.Value}\"";
