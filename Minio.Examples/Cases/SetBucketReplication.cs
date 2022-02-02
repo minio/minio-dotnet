@@ -67,7 +67,7 @@ namespace Minio.Examples.Cases
             await minio.SetVersioningAsync(setArgs);
 
             string serverEndPoint = "";
-            string schema = "";
+            string schema = "http://";
             string accessKey = "";
             string secretKey = "";
 
