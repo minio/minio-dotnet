@@ -1,32 +1,43 @@
-name: Minio-dontet Linux Tests
+name: Minio-dotnet Linux Tests
 
 on:
   pull_request:
-    branches: 
-    - master
+    branches:
+      - master
   push:
-    branches: 
-    - master
+    branches:
+      - master
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: ["5.0.x"]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 5.0.402
-    - name: Install dependencies
-      run: dotnet restore
-    - name: Build & Unit Test
-      run: |
-        dotnet build -c Release
-        dotnet pack ./Minio/Minio.csproj --no-build -c Release -o ./artifacts
-        dotnet test ./Minio.Tests/Minio.Tests.csproj -f net5.0
-    - name: Functional Tests
-      run: |
-        dotnet build  Minio.Functional.Tests -c Release --framework net5.0
-        dotnet Minio.Functional.Tests/bin/Release/net5.0/Minio.Functional.Tests.dll
+      - name: Checkout
+        uses: actions/checkout@v2
+      # Install the .NET
+      - name: Setup dotnet ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: Install dependencies
+        run: |
+          dotnet clean --configuration Release
+          dotnet restore
+
+      # Build and Execute build tests
+      - name: Build & Unit Test
+        run: |
+          dotnet build --configuration Release --no-restore
+          dotnet pack ./Minio/Minio.csproj --no-build --configuration Release --output ./artifacts
+          dotnet test ./Minio.Tests/Minio.Tests.csproj
+
+      # Execute all functional tests in the solution
+      - name: Execute Functional Tests
+        run: |
+          dotnet build  Minio.Functional.Tests --configuration Release
+          dotnet Minio.Functional.Tests/bin/Release/net5.0/Minio.Functional.Tests.dll

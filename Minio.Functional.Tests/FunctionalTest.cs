@@ -37,7 +37,6 @@ using Minio.DataModel.ILM;
 using Minio.DataModel.Tags;
 using Minio.DataModel.ObjectLock;
 using Minio.Exceptions;
-using Minio.Helper;
 using Newtonsoft.Json;
 
 namespace Minio.Functional.Tests
@@ -102,6 +101,40 @@ namespace Minio.Functional.Tests
         private const string setBucketLifecycleSignature = "Task SetBucketLifecycleAsync(SetBucketLifecycleArgs args, CancellationToken cancellationToken = default(CancellationToken))";
         private const string deleteBucketLifecycleSignature = "Task RemoveBucketLifecycleAsync(RemoveBucketLifecycleArgs args, CancellationToken cancellationToken = default(CancellationToken))";
 
+        private static string Bash(string cmd)
+        {
+            var Replacements = new Dictionary<string, string>()
+                                                { {"$", "\\$"}, {"(", "\\("},
+                                                  {")", "\\)"}, {"{", "\\{"},
+                                                  {"}", "\\}"}, {"[", "\\["},
+                                                  {"]", "\\]"}, {"@", "\\@"},
+                                                  {"%", "\\%"}, {"&", "\\&"},
+                                                  {"#", "\\#"}, {"+", "\\+"} };
+
+            foreach (string toReplace in Replacements.Keys)
+            {
+                cmd = cmd.Replace(toReplace, Replacements[toReplace]);
+            }
+            var cmdNoReturn = cmd + " >/dev/null 2>&1";
+
+            var process = new System.Diagnostics.Process
+            {
+                StartInfo = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "/bin/bash",
+                    Arguments = $"-c \"{cmdNoReturn}\"",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    CreateNoWindow = true
+                }
+            };
+
+            process.Start();
+            string result = process.StandardOutput.ReadLine();
+            process.WaitForExit();
+
+            return result;
+        }
 
         // Create a file of given size from random byte array or optionally create a symbolic link
         // to the dataFileName residing in MINT_DATA_DIR
@@ -3464,9 +3497,9 @@ namespace Minio.Functional.Tests
                 {
                     curlCommand += $" -F {pair.Key}=\"{pair.Value}\"";
                 }
-                curlCommand += $" -F file=\"@{fileName}\" {uri} >/dev/null 2>&1";
+                curlCommand += $" -F file=\"@{fileName}\" {uri}";
 
-                ShellHelper.Bash(curlCommand);
+                Bash(curlCommand);
 
                 // Validate
                 StatObjectArgs statObjectArgs = new StatObjectArgs()

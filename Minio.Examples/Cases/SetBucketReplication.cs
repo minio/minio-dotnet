@@ -16,13 +16,36 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
+using System.Diagnostics;
 using Minio.DataModel.Replication;
 
 namespace Minio.Examples.Cases
 {
     public class SetBucketReplication
     {
+        private static string Bash(string cmd)
+        {
+            string escapedArgs = "";
+            foreach (string str in new List<string> { "$", "(", ")", "{", "}",
+                                                      "[", "]", "@", "#", "$",
+                                                      "%", "&", "+" })
+            {
+                escapedArgs = cmd.Replace("str", "\\str");
+            }
+
+            var fileName = "/bin/bash";
+            var arguments = $"-c \"{escapedArgs}\"" +
+                            "RedirectStandardOutput = true" +
+                            "UseShellExecute = false" +
+                            "CreateNoWindow = true";
+            var startInfo = new System.Diagnostics.ProcessStartInfo(fileName, arguments);
+            var process = System.Diagnostics.Process.Start(startInfo);
+
+            string result = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+
+            return result;
+        }
 
         // Set Replication configuration for the bucket
         public async static Task Run(MinioClient minio,
@@ -65,11 +88,10 @@ namespace Minio.Examples.Cases
                 schema = "http://";
             }
 
-            // var cmdFullPathMC = "which mc".Bash().TrimEnd('\r', '\n', ' ');
-            var cmdFullPathMC = Minio.Helper.ShellHelper.Bash("which mc").TrimEnd('\r', '\n', ' ');
+            var cmdFullPathMC = Bash("which mc").TrimEnd('\r', '\n', ' ');
             var cmdAlias = cmdFullPathMC + " alias list | egrep -B1 \"" +
                            schema + serverEndPoint + "\" | grep -v URL";
-            var alias = Minio.Helper.ShellHelper.Bash(cmdAlias).TrimEnd('\r', '\n', ' ');
+            var alias = Bash(cmdAlias).TrimEnd('\r', '\n', ' ');
 
             var cmdRemoteAdd = cmdFullPathMC + " admin bucket remote add " +
                           alias + "/" + bucketName + "/ " + schema +
@@ -77,7 +99,7 @@ namespace Minio.Examples.Cases
                           serverEndPoint + "/" + destBucketName +
                           " --service replication --region us-east-1";
 
-            var arn = Minio.Helper.ShellHelper.Bash(cmdRemoteAdd).Replace("Remote ARN = `", "").Replace("`.", "");
+            var arn = Bash(cmdRemoteAdd).Replace("Remote ARN = `", "").Replace("`.", "");
 
             ReplicationRule rule =
                 new ReplicationRule(

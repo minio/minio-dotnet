@@ -375,7 +375,10 @@ namespace Minio
 
             // Fill in the form data.
             args.Policy.formData["bucket"] = args.BucketName;
-            args.Policy.formData["key"] = "\\\"" + args.ObjectName + "\\\"";
+            // args.Policy.formData["key"] = "\\\"" + args.ObjectName + "\\\"";
+
+            args.Policy.formData["key"] = args.ObjectName;
+
             args.Policy.formData["policy"] = policyBase64;
             args.Policy.formData["x-amz-algorithm"] = signV4Algorithm;
             args.Policy.formData["x-amz-credential"] = credential;
