@@ -3,10 +3,12 @@ name: Minio-dontet Linux Tests
 on:
   pull_request:
     branches: 
-    - master
+      - httpClient-refactoring-1
+      - master
   push:
     branches: 
-    - master
+      - httpClient-refactoring-1
+      - master
 
 jobs:
   build:
