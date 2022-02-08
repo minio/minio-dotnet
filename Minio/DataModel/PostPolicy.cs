@@ -107,7 +107,7 @@ namespace Minio.DataModel
         /// Set content type policy.
         /// </summary>
         /// <param name="contentType">ContentType for the policy</param>
-        public void SetcontentType(string contentType)
+        public void SetContentType(string contentType)
         {
             if (string.IsNullOrEmpty(contentType))
             {
