@@ -321,8 +321,11 @@ namespace Minio
                 resource += resourcePath;
             }
 
-            var messageBuilder = new HttpRequestMessageBuilder(method, requestUrl, resource);
-
+            var messageBuilder = new HttpRequestMessageBuilder(method, requestUrl);
+            if (!string.IsNullOrEmpty(resource))
+            {
+                messageBuilder = new HttpRequestMessageBuilder(method, requestUrl, resource);
+            }
             if (body != null)
             {
                 messageBuilder.SetBody(body);
