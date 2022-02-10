@@ -51,7 +51,7 @@ namespace Minio.Examples.Cases
         public async static Task Run(MinioClient minio,
                                     string bucketName = "my-bucket-name",
                                     string destBucketName = "dest-bucket-name",
-                                    string replicationCfgID = "my-replication-ID")
+                                    string replicationRuleID = "my-replication-ID")
         {
             var setArgs = new SetVersioningArgs()
                                     .WithBucket(bucketName)
