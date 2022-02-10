@@ -122,7 +122,6 @@ namespace Minio
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers,
                 requestMessageBuilder, cancellationToken).ConfigureAwait(false);
-
         }
 
         /// <summary>
