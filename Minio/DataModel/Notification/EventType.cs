@@ -35,6 +35,11 @@ namespace Minio.DataModel
             this.value = value;
         }
 
+        public override string ToString()
+        {
+            return string.Format("EventType= {0}", this.value);
+        }
+
         // Valid Event types as described in:
         // http://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html#notification-how-to-event-types-and-destinations
 

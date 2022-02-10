@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 
@@ -31,18 +32,22 @@ namespace Minio
         /// <returns>Region corresponding to the endpoint. Default is 'us-east-1'</returns>
         public static string GetRegionFromEndpoint(string endpoint)
         {
-            return cache.GetOrAdd(endpoint, GetRegionFromEndpointImpl);
+            if (!string.IsNullOrEmpty(endpoint))
+                return cache.GetOrAdd(endpoint, GetRegionFromEndpointImpl);
+            else
+                return string.Empty;
         }
 
         private static string GetRegionFromEndpointImpl(string endpoint)
         {
-            Match match = endpointRegex.Match(endpoint);
 
-            if (match.Success)
+            if (!string.IsNullOrEmpty(endpoint))
             {
-                return match.Groups[1].Value;
-            }
+                Match match = endpointRegex.Match(endpoint);
 
+                if (match.Success)
+                    return match.Groups[1].Value;
+            }
             return string.Empty;
         }
     }

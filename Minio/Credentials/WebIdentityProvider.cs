@@ -17,9 +17,10 @@
 
 using System;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using RestSharp;
+using System.Net.Http;
 
 using Minio.DataModel;
 
@@ -71,7 +72,7 @@ namespace Minio.Credentials
             return this;
         }
 
-        internal async override Task<IRestRequest> BuildRequest()
+        internal async override Task<HttpRequestMessageBuilder> BuildRequest()
         {
             this.Validate();
             this.CurrentJsonWebToken = this.JWTSupplier();
@@ -82,15 +83,15 @@ namespace Minio.Credentials
             {
                 this.RoleSessionName = utils.To8601String(DateTime.Now);
             }
-            IRestRequest restRequest = await base.BuildRequest();
-            return restRequest;
+            HttpRequestMessageBuilder requestMessageBuilder = await base.BuildRequest();
+            return requestMessageBuilder;
         }
 
-        internal override AccessCredentials ParseResponse(IRestResponse response)
+        internal override AccessCredentials ParseResponse(HttpResponseMessage response)
         {
             this.Validate();
             AccessCredentials credentials = base.ParseResponse(response);
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(response.Content)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(Convert.ToString(response.Content))))
             {
                 return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(stream);
             }

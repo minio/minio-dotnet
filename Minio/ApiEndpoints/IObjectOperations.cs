@@ -189,7 +189,7 @@ namespace Minio
         /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-        Task<SelectResponseStream> SelectObjectContentAsync(SelectObjectContentArgs args,CancellationToken cancellationToken = default(CancellationToken));
+        Task<SelectResponseStream> SelectObjectContentAsync(SelectObjectContentArgs args, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Lists all incomplete uploads in a given bucket and prefix recursively
@@ -242,7 +242,7 @@ namespace Minio
         /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
         /// <exception cref="ObjectNotFoundException">When object is not found</exception>
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-        Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PresignedPostPolicyArgs args);
+        Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PresignedPostPolicyArgs args);
 
         /// <summary>
         /// Presigned Put url -returns a presigned url to upload an object without credentials.URL can have a maximum expiry of
@@ -425,7 +425,7 @@ namespace Minio
         /// </summary>
         /// <param name="policy"></param>
         /// <returns></returns>
-        Task<Tuple<string, Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy);
+        Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PostPolicy policy);
 
         /// <summary>
         /// Gets Tagging values set for this object

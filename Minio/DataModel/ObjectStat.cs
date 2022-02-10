@@ -41,22 +41,22 @@ namespace Minio.DataModel
             foreach (var paramName in responseHeaders.Keys)
             {
                 string paramValue = responseHeaders[paramName];
-                switch(paramName.ToLower())
+                switch (paramName.ToLower())
                 {
-                    case "content-length" :
+                    case "content-length":
                         objInfo.Size = long.Parse(paramValue);
                         break;
-                    case "last-modified" :
+                    case "last-modified":
                         objInfo.LastModified = DateTime.Parse(paramValue, CultureInfo.InvariantCulture);
                         break;
-                    case "etag" :
+                    case "etag":
                         objInfo.ETag = paramValue.Replace("\"", string.Empty);
                         break;
-                    case "content-type" :
+                    case "content-type":
                         objInfo.ContentType = paramValue.ToString();
                         objInfo.MetaData["Content-Type"] = objInfo.ContentType;
                         break;
-                    case "x-amz-version-id" :
+                    case "x-amz-version-id":
                         objInfo.VersionId = paramValue;
                         break;
                     case "x-amz-delete-marker":
@@ -84,20 +84,18 @@ namespace Minio.DataModel
                         }
                         break;
                     case "x-amz-object-lock-mode":
-                        Console.WriteLine(paramValue.ToString());
                         if (!string.IsNullOrWhiteSpace(paramValue.ToString()))
                         {
-                            objInfo.ObjectLockMode = (paramValue.ToString().ToLower().Equals("governance"))?RetentionMode.GOVERNANCE:RetentionMode.COMPLIANCE;
+                            objInfo.ObjectLockMode = (paramValue.ToString().ToLower().Equals("governance")) ? RetentionMode.GOVERNANCE : RetentionMode.COMPLIANCE;
                         }
                         break;
                     case "x-amz-object-lock-retain-until-date":
-                        Console.WriteLine(paramValue.ToString());
                         string lockUntilDate = paramValue.ToString();
                         if (!string.IsNullOrWhiteSpace(lockUntilDate))
                         {
                             objInfo.ObjectLockRetainUntilDate = DateTime.SpecifyKind(
                                                                     DateTime.Parse(lockUntilDate),
-                                                                    DateTimeKind.Utc);;
+                                                                    DateTimeKind.Utc); ;
                         }
                         break;
                     case "x-amz-object-lock-legal-hold":
@@ -129,7 +127,7 @@ namespace Minio.DataModel
 
         public string ObjectName { get; private set; }
         public long Size { get; private set; }
-        public DateTime LastModified { get; private set;  }
+        public DateTime LastModified { get; private set; }
         public string ETag { get; private set; }
         public string ContentType { get; private set; }
         public Dictionary<string, string> MetaData { get; private set; }
@@ -137,7 +135,7 @@ namespace Minio.DataModel
         public bool DeleteMarker { get; private set; }
         public Dictionary<string, string> ExtraHeaders { get; private set; }
         public uint? TaggingCount { get; private set; }
-        public string ArchiveStatus  { get; private set; }
+        public string ArchiveStatus { get; private set; }
         public DateTime? Expires { get; private set; }
         public string ReplicationStatus { get; private set; }
         public RetentionMode? ObjectLockMode { get; private set; }
@@ -163,15 +161,12 @@ namespace Minio.DataModel
             }
             if (this.Expires != null)
             {
-                expires = "Expiry(" + utils.To8601String(this.Expires.Value)+ ")";
+                expires = "Expiry(" + utils.To8601String(this.Expires.Value) + ")";
             }
             if (this.ObjectLockMode != null)
             {
-                objectLockInfo = "ObjectLock Mode(" + ((this.ObjectLockMode == RetentionMode.GOVERNANCE)?"GOVERNANCE":"COMPLIANCE") + ")";
-                if (this.ObjectLockRetainUntilDate != null)
-                {
-                    objectLockInfo += " Retain Until Date(" + utils.To8601String(this.ObjectLockRetainUntilDate.Value) + ")";
-                }
+                objectLockInfo = "ObjectLock Mode(" + ((this.ObjectLockMode == RetentionMode.GOVERNANCE) ? "GOVERNANCE" : "COMPLIANCE") + ")";
+                objectLockInfo += " Retain Until Date(" + utils.To8601String(this.ObjectLockRetainUntilDate.Value) + ")";
             }
             if (this.TaggingCount != null)
             {
@@ -179,7 +174,7 @@ namespace Minio.DataModel
             }
             if (this.LegalHoldEnabled != null)
             {
-                legalHold = "LegalHold(" + ((this.LegalHoldEnabled.Value)?"Enabled":"Disabled") + ")";
+                legalHold = "LegalHold(" + ((this.LegalHoldEnabled.Value) ? "Enabled" : "Disabled") + ")";
             }
             if (!string.IsNullOrWhiteSpace(this.ReplicationStatus))
             {
@@ -192,7 +187,7 @@ namespace Minio.DataModel
             string lineTwo = $"{expires} {objectLockInfo} {legalHold} {taggingCount} {archiveStatus} {replicationStatus}";
 
             return $"{this.ObjectName} : {versionInfo} Size({this.Size}) LastModified({this.LastModified}) ETag({this.ETag}) Content-Type({this.ContentType})" +
-                    (string.IsNullOrWhiteSpace(lineTwo)?"":("\n" + lineTwo));
+                    (string.IsNullOrWhiteSpace(lineTwo) ? "" : ("\n" + lineTwo));
         }
     }
 }

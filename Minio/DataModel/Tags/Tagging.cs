@@ -56,7 +56,7 @@ namespace Minio.DataModel.Tags
             uint tagging_upper_limit = isObjects ? MAX_TAG_COUNT_PER_OBJECT : MAX_TAG_COUNT_PER_RESOURCE;
             if (tags.Count > tagging_upper_limit)
             {
-                throw new ArgumentOutOfRangeException(nameof(tags) + ". Count of tags exceeds maximum limit allowed for " + ((isObjects)?"objects.":"buckets."));
+                throw new ArgumentOutOfRangeException(nameof(tags) + ". Count of tags exceeds maximum limit allowed for " + ((isObjects) ? "objects." : "buckets."));
             }
             foreach (var tag in tags)
             {
@@ -166,9 +166,9 @@ namespace Minio.DataModel.Tags
             }
             string tagStr = "";
             int i = 0;
-            foreach(var tag in this.TaggingSet.Tag)
+            foreach (var tag in this.TaggingSet.Tag)
             {
-                string append = (i++ < (this.TaggingSet.Tag.Count - 1))?"&":"";
+                string append = (i++ < (this.TaggingSet.Tag.Count - 1)) ? "&" : "";
                 tagStr += tag.Key + "=" + tag.Value + append;
             }
             return tagStr;

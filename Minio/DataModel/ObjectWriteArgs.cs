@@ -35,7 +35,7 @@ namespace Minio
 
         public T WithContentType(string type)
         {
-            this.ContentType = string.IsNullOrWhiteSpace(type)?"application/octet-stream":type;
+            this.ContentType = string.IsNullOrWhiteSpace(type) ? "application/octet-stream" : type;
             if (!this.Headers.ContainsKey("Content-Type"))
             {
                 this.Headers["Content-Type"] = type;

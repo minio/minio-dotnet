@@ -30,6 +30,7 @@ namespace Minio.Functional.Tests
             string enableHttps = "0";
             string kmsEnabled = "0";
 
+            bool useAWS = Environment.GetEnvironmentVariable("AWS_ENDPOINT") != null;
             if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
             {
                 endPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");
@@ -86,17 +87,22 @@ namespace Minio.Functional.Tests
             // Try catch as 'finally' section needs to run in the Functional Tests
             try
             {
+                // Bucket notification is a minio specific feature.
+                // If the following test is run against AWS, then the SDK throws
+                // "Listening for bucket notification is specific only to `minio`
+                // server endpoints".
                 FunctionalTest.ListenBucketNotificationsAsync_Test1(minioClient).Wait();
 
                 // Check if bucket exists
                 FunctionalTest.BucketExists_Test(minioClient).Wait();
-
-                // Create a new bucket and test valid bucket names
-                FunctionalTest.MakeBucket_Test1(minioClient).Wait();
-                FunctionalTest.MakeBucket_Test2(minioClient).Wait();
-                FunctionalTest.MakeBucket_Test3(minioClient).Wait();
-                FunctionalTest.MakeBucket_Test4(minioClient).Wait();
                 FunctionalTest.MakeBucket_Test5(minioClient).Wait();
+
+                if (useAWS)
+                {
+                    FunctionalTest.MakeBucket_Test2(minioClient, useAWS).Wait();
+                    FunctionalTest.MakeBucket_Test3(minioClient, useAWS).Wait();
+                    FunctionalTest.MakeBucket_Test4(minioClient, useAWS).Wait();
+                }
 
                 // Test removal of bucket
                 FunctionalTest.RemoveBucket_Test1(minioClient).Wait();
@@ -123,7 +129,6 @@ namespace Minio.Functional.Tests
 
                 // Test File GetObject and PutObject functions
                 FunctionalTest.FGetObject_Test1(minioClient).Wait();
-                // FIX=> FPutObject_Test1(minioClient).Wait();
                 FunctionalTest.FPutObject_Test2(minioClient).Wait();
 
                 // Test SelectObjectContentAsync function
@@ -161,6 +166,8 @@ namespace Minio.Functional.Tests
                 FunctionalTest.PresignedGetObject_Test3(minioClient).Wait();
                 FunctionalTest.PresignedPutObject_Test1(minioClient).Wait();
                 FunctionalTest.PresignedPutObject_Test2(minioClient).Wait();
+                FunctionalTest.PresignedGetObject_Test1(minioClient).Wait();
+                // FunctionalTest.PresignedPostPolicy_Test1(minioClient).Wait();
 
                 // Test incomplete uploads
                 FunctionalTest.ListIncompleteUpload_Test1(minioClient).Wait();
@@ -178,7 +185,7 @@ namespace Minio.Functional.Tests
                 FunctionalTest.BucketTagsAsync_Test1(minioClient).Wait();
                 FunctionalTest.ObjectTagsAsync_Test1(minioClient).Wait();
 
-                //Test Bucket Lifecycle configuration
+                // Test Bucket Lifecycle configuration
                 FunctionalTest.BucketLifecycleAsync_Test1(minioClient).Wait();
 
                 // Test encryption

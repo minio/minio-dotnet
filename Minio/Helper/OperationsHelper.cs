@@ -22,7 +22,7 @@ using System.Linq;
 
 using Minio.DataModel;
 using System.IO;
-using RestSharp;
+using System.Net.Http;
 using Minio.Exceptions;
 using Minio.Helper;
 
@@ -30,7 +30,7 @@ namespace Minio
 {
     public partial class MinioClient : IObjectOperations
     {
-        
+
         /// <summary>
         /// private helper method to remove list of objects from bucket
         /// </summary>
@@ -77,7 +77,6 @@ namespace Minio
             long length = objectStat.Size;
             string etag = objectStat.ETag;
 
-            long tempFileSize = 0;
             string tempFileName = $"{args.FileName}.{etag}.part.minio";
             if (!string.IsNullOrEmpty(args.VersionId))
             {
@@ -94,21 +93,6 @@ namespace Minio
                 File.Delete(tempFileName);
             }
 
-            args = args.WithCallbackStream( stream =>
-                                    {
-                                        using (var fileStream = File.Create(tempFileName))
-                                        {
-                                            stream.CopyTo(fileStream);
-                                        }
-                                        FileInfo writtenInfo = new FileInfo(tempFileName);
-                                        long writtenSize = writtenInfo.Length;
-                                        if (writtenSize != (length - tempFileSize))
-                                        {
-                                            throw new IOException(tempFileName + ": unexpected data written.  expected = " + (length - tempFileSize)
-                                                                + ", written = " + writtenSize);
-                                        }
-                                        utils.MoveWithReplace(tempFileName, args.FileName);
-                                    });
             return getObjectStreamAsync(args, objectStat, null, cancellationToken);
         }
 
@@ -122,10 +106,9 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         private async Task getObjectStreamAsync(GetObjectArgs args, ObjectStat objectStat, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
         {
-            RestRequest request = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken);
+            HttpRequestMessageBuilder requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+            await ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
-
 
         /// <summary>
         /// private helper method to remove list of objects from bucket
@@ -141,8 +124,8 @@ namespace Minio
         /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
         private async Task<List<DeleteError>> removeObjectsAsync(RemoveObjectsArgs args, CancellationToken cancellationToken)
         {
-            var request = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
+            var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             RemoveObjectsResponse removeObjectsResponse = new RemoveObjectsResponse(response.StatusCode, response.Content);
             return removeObjectsResponse.DeletedObjectsResult.errorList;
         }
@@ -176,6 +159,7 @@ namespace Minio
         /// <returns></returns>
         private async Task<List<DeleteError>> callRemoveObjects(RemoveObjectsArgs args, List<string> objNames, List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
         {
+            // var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
             RemoveObjectsArgs iterArgs = new RemoveObjectsArgs()
                                                 .WithBucket(args.BucketName)
                                                 .WithObjects(objNames);
@@ -233,7 +217,7 @@ namespace Minio
             return fullErrorsList;
         }
 
-                /// <summary>
+        /// <summary>
         /// private helper method to remove objects in iterations of 1000 each from bucket
         /// </summary>
         /// <param name="args">RemoveObjectsArgs Arguments Object encapsulates information like - bucket name, List of objects, optional list of versions (for each object) to be deleted</param>
@@ -249,12 +233,12 @@ namespace Minio
         private async Task<List<DeleteError>> removeObjectsHelper(RemoveObjectsArgs args, List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
         {
             List<string> iterObjects = new List<string>(1000);
-            int i =0;
-            foreach(var objName in args.ObjectNames)
+            int i = 0;
+            foreach (var objName in args.ObjectNames)
             {
                 utils.ValidateObjectName(objName);
                 iterObjects.Insert(i, objName);
-                if ((i + 1)  == 1000)
+                if (++i == 1000)
                 {
                     fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList, cancellationToken);
                     iterObjects.Clear();
@@ -271,8 +255,16 @@ namespace Minio
 
     public class OperationsUtil
     {
-        private static readonly List<string> SupportedHeaders = new List<string> { "cache-control", "content-encoding", "content-type", "x-amz-acl", "content-disposition" };
-        private static readonly List<string> SSEHeaders = new List<string> { "X-Amz-Server-Side-Encryption-Customer-Algorithm", "X-Amz-Server-Side-Encryption-Customer-Key", "X-Amz-Server-Side-Encryption-Customer-Key-Md5", Constants.SSEGenericHeader, Constants.SSEKMSKeyId, Constants.SSEKMSContext };
+        private static readonly List<string> SupportedHeaders = new List<string> {
+                                "cache-control", "content-encoding", "content-type",
+                                "x-amz-acl", "content-disposition" };
+        private static readonly List<string> SSEHeaders = new List<string> {
+                            "X-Amz-Server-Side-Encryption-Customer-Algorithm",
+                            "X-Amz-Server-Side-Encryption-Customer-Key",
+                            "X-Amz-Server-Side-Encryption-Customer-Key-Md5",
+                            Constants.SSEGenericHeader,
+                            Constants.SSEKMSKeyId,
+                            Constants.SSEKMSContext };
         internal static bool IsSupportedHeader(string hdr, IEqualityComparer<string> comparer = null)
         {
             comparer = comparer ?? StringComparer.OrdinalIgnoreCase;

@@ -15,12 +15,12 @@
  */
 
 using System;
-using RestSharp;
+using System.Net.Http;
 
 namespace Minio
 {
     public abstract class ObjectConditionalQueryArgs<T> : ObjectVersionArgs<T>
-                                    where T: ObjectConditionalQueryArgs<T>
+                                    where T : ObjectConditionalQueryArgs<T>
     {
         internal string MatchETag { get; set; }
         internal string NotMatchETag { get; set; }
@@ -34,33 +34,32 @@ namespace Minio
             {
                 throw new InvalidOperationException("Cannot set both " + nameof(MatchETag) + " and " + nameof(NotMatchETag) + " for query.");
             }
-            if((this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
-                && (this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime)))
+            if (this.ModifiedSince != default(DateTime) &&
+                this.UnModifiedSince != default(DateTime))
             {
                 throw new InvalidOperationException("Cannot set both " + nameof(ModifiedSince) + " and " + nameof(UnModifiedSince) + " for query.");
             }
         }
 
-        internal override RestRequest BuildRequest(RestRequest request)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            request = base.BuildRequest(request);
             if (!string.IsNullOrEmpty(this.MatchETag))
             {
-                request.AddOrUpdateParameter("If-Match", this.MatchETag, ParameterType.HttpHeader);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("If-Match", this.MatchETag);
             }
             if (!string.IsNullOrEmpty(this.NotMatchETag))
             {
-                request.AddOrUpdateParameter("If-None-Match", this.NotMatchETag, ParameterType.HttpHeader);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("If-None-Match", this.NotMatchETag);
             }
-            if (this.ModifiedSince != null && this.ModifiedSince != default(DateTime))
+            if (this.ModifiedSince != default(DateTime))
             {
-                request.AddOrUpdateParameter("If-Modified-Since", utils.To8601String(this.ModifiedSince), ParameterType.HttpHeader);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("If-Modified-Since", utils.To8601String(this.ModifiedSince));
             }
-            if(this.UnModifiedSince != null && this.UnModifiedSince != default(DateTime))
+            if (this.UnModifiedSince != default(DateTime))
             {
-                request.AddOrUpdateParameter("If-Unmodified-Since", utils.To8601String(this.UnModifiedSince), ParameterType.HttpHeader);
+                requestMessageBuilder.AddOrUpdateHeaderParameter("If-Unmodified-Since", utils.To8601String(this.UnModifiedSince));
             }
-            return request;
+            return requestMessageBuilder;
         }
         public T WithMatchETag(string etag)
         {

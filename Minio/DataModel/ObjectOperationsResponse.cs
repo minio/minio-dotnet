@@ -20,12 +20,13 @@ using System.Xml.Linq;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Xml.Serialization;
+
 
 using Minio.DataModel;
 using Minio.DataModel.Tags;
 using Minio.DataModel.ObjectLock;
-using RestSharp;
 
 namespace Minio
 {
@@ -58,7 +59,7 @@ namespace Minio
         internal RemoveObjectsResponse(HttpStatusCode statusCode, string responseContent)
                     : base(statusCode, responseContent)
         {
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 this.DeletedObjectsResult = (DeleteObjectsResult)new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(stream);
             }
@@ -72,7 +73,7 @@ namespace Minio
                     : base(statusCode, responseContent)
         {
             ListMultipartUploadsResult uploadsResult = null;
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 uploadsResult = (ListMultipartUploadsResult)new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(stream);
             }
@@ -82,7 +83,7 @@ namespace Minio
             {
                 return;
             }
-            var uploads  = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
+            var uploads = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
                           select new Upload
                           {
                               Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
@@ -93,23 +94,20 @@ namespace Minio
         }
     }
 
-    internal class PresignedPostPolicyResponse
+    public class PresignedPostPolicyResponse
     {
         internal Tuple<string, Dictionary<string, string>> URIPolicyTuple { get; private set; }
 
-        public PresignedPostPolicyResponse(PresignedPostPolicyArgs args, string absURI)
+        public PresignedPostPolicyResponse(PresignedPostPolicyArgs args, Uri URI)
         {
-            args.Policy.SetAlgorithm("AWS4-HMAC-SHA256");
-            args.Policy.SetDate(DateTime.UtcNow);
-            args.Policy.SetPolicy(args.Policy.Base64());
-            URIPolicyTuple = Tuple.Create(absURI, args.Policy.GetFormData());
+            URIPolicyTuple = Tuple.Create(URI.AbsolutePath, args.Policy.GetFormData());
         }
     }
 
-    public class GetLegalHoldResponse: GenericResponse
+    public class GetLegalHoldResponse : GenericResponse
     {
         internal ObjectLegalHoldConfiguration CurrentLegalHoldConfiguration { get; private set; }
-        internal string Status { get; private set;}
+        internal string Status { get; private set; }
         public GetLegalHoldResponse(HttpStatusCode statusCode, string responseContent)
             : base(statusCode, responseContent)
         {
@@ -118,12 +116,12 @@ namespace Minio
                 this.CurrentLegalHoldConfiguration = null;
                 return;
             }
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 CurrentLegalHoldConfiguration = (ObjectLegalHoldConfiguration)new XmlSerializer(typeof(ObjectLegalHoldConfiguration)).Deserialize(stream);
             }
-            if ( this.CurrentLegalHoldConfiguration == null
-                    || string.IsNullOrEmpty(this.CurrentLegalHoldConfiguration.Status) )
+            if (this.CurrentLegalHoldConfiguration == null
+                    || string.IsNullOrEmpty(this.CurrentLegalHoldConfiguration.Status))
             {
                 Status = "OFF";
             }
@@ -146,7 +144,7 @@ namespace Minio
                 return;
             }
             responseContent = utils.RemoveNamespaceInXML(responseContent);
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 this.ObjectTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(stream);
             }
@@ -155,18 +153,18 @@ namespace Minio
         public Tagging ObjectTags { get; set; }
     }
 
-    internal class GetRetentionResponse: GenericResponse
+    internal class GetRetentionResponse : GenericResponse
     {
         internal ObjectRetentionConfiguration CurrentRetentionConfiguration { get; private set; }
         public GetRetentionResponse(HttpStatusCode statusCode, string responseContent)
             : base(statusCode, responseContent)
         {
-            if ( string.IsNullOrEmpty(responseContent) && !HttpStatusCode.OK.Equals(statusCode))
+            if (string.IsNullOrEmpty(responseContent) && !HttpStatusCode.OK.Equals(statusCode))
             {
                 this.CurrentRetentionConfiguration = null;
                 return;
             }
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 CurrentRetentionConfiguration = (ObjectRetentionConfiguration)new XmlSerializer(typeof(ObjectRetentionConfiguration)).Deserialize(stream);
             }
@@ -181,7 +179,7 @@ namespace Minio
         public CopyObjectResponse(HttpStatusCode statusCode, string content, Type reqType)
             : base(statusCode, content)
         {
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(content)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
             {
                 if (reqType == typeof(CopyObjectResult))
                 {
@@ -195,14 +193,14 @@ namespace Minio
         }
     }
 
-    internal class NewMultipartUploadResponse: GenericResponse
+    internal class NewMultipartUploadResponse : GenericResponse
     {
         internal string UploadId { get; private set; }
         internal NewMultipartUploadResponse(HttpStatusCode statusCode, string responseContent)
                     : base(statusCode, responseContent)
         {
             InitiateMultipartUploadResult newUpload = null;
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
             {
                 newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult)).Deserialize(stream);
             }
@@ -214,12 +212,19 @@ namespace Minio
     {
         internal string Etag;
 
-        internal PutObjectResponse(HttpStatusCode statusCode, string responseContent, IList<Parameter> responseHeaders)
+        internal PutObjectResponse(HttpStatusCode statusCode, string responseContent, Dictionary<string, string> responseHeaders)
                     : base(statusCode, responseContent)
         {
-            foreach (Parameter parameter in responseHeaders)
+            if (responseHeaders.ContainsKey("Etag"))
             {
-                if (parameter.Name.Equals("ETag", StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty("Etag"))
+                    this.Etag = responseHeaders["ETag"];
+                return;
+            }
+
+            foreach (KeyValuePair<string, string> parameter in responseHeaders)
+            {
+                if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
                 {
                     this.Etag = parameter.Value.ToString();
                     return;

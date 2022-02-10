@@ -37,14 +37,15 @@ namespace Minio.DataModel.Replication
     {
         [XmlElement("Role")]
         public string Role { get; set; }
+
         [XmlElement("Rule")]
         public List<ReplicationRule> Rules { get; set; }
 
-        public ReplicationConfiguration() 
-        {               
+        public ReplicationConfiguration()
+        {
         }
 
-        public ReplicationConfiguration(string role, List<ReplicationRule> rules) 
+        public ReplicationConfiguration(string role, List<ReplicationRule> rules)
         {
             if (string.IsNullOrEmpty(role) || string.IsNullOrWhiteSpace(role))
             {
@@ -59,7 +60,7 @@ namespace Minio.DataModel.Replication
                 throw new ArgumentOutOfRangeException(nameof(this.Rules) + " Count of rules cannot exceed maximum limit of 1000.");
             }
             this.Role = role;
-            this.Rules = new List<ReplicationRule>(rules);
+            this.Rules = rules;
         }
 
         public string MarshalXML()
@@ -87,11 +88,12 @@ namespace Minio.DataModel.Replication
                 xs.Serialize(xw, this, ns);
                 xw.Flush();
 
-                str = utils.RemoveNamespaceInXML(sw.ToString());
+                str = utils.RemoveNamespaceInXML(sw.ToString()).Replace("\r", "").Replace("\n", "");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
+                // throw ex;
             }
             finally
             {

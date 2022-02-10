@@ -28,7 +28,7 @@ namespace Minio.Examples.Cases
 
         // Put an object from a local stream into bucket
         public async static Task Run(MinioClient minio,
-                                     string bucketName = "my-bucket-name", 
+                                     string bucketName = "my-bucket-name",
                                      string objectName = "my-object-name",
                                      string fileName = "location-of-file",
                                      ServerSideEncryption sse = null)
@@ -54,7 +54,7 @@ namespace Minio.Examples.Cases
                                                     .WithServerSideEncryption(sse);
                     await minio.PutObjectAsync(args);
                 }
-            
+
                 Console.WriteLine($"Uploaded object {objectName} to bucket {bucketName}");
                 Console.WriteLine();
             }

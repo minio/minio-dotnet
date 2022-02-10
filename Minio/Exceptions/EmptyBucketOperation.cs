@@ -17,7 +17,7 @@
 
 using System;
 using Minio.Exceptions;
-using RestSharp;
+using System.Net.Http;
 
 namespace Minio
 {
@@ -28,11 +28,11 @@ namespace Minio
         {
         }
 
-        public EmptyBucketOperation(IRestResponse serverResponse) : base(serverResponse)
+        public EmptyBucketOperation(ResponseResult serverResponse) : base(serverResponse)
         {
         }
 
-        public EmptyBucketOperation(string message, IRestResponse serverResponse) : base(message, serverResponse)
+        public EmptyBucketOperation(string message, ResponseResult serverResponse) : base(message, serverResponse)
         {
         }
 

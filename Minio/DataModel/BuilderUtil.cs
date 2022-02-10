@@ -27,12 +27,14 @@ namespace Minio
         }
         public static bool IsAwsAccelerateEndpoint(string endpoint)
         {
-        return endpoint.ToLower().StartsWith("s3-accelerate.");
+            return endpoint.ToLower().StartsWith("s3-accelerate.");
         }
         public static bool IsAwsEndpoint(string endpoint)
         {
-        return (endpoint.ToLower().StartsWith("s3.") || IsAwsAccelerateEndpoint(endpoint))
-            && (endpoint.ToLower().EndsWith(".amazonaws.com") || endpoint.ToLower().EndsWith(".amazonaws.com.cn"));
+            return (endpoint.ToLower().StartsWith("s3.") ||
+                            IsAwsAccelerateEndpoint(endpoint)) &&
+                   (endpoint.ToLower().EndsWith(".amazonaws.com") ||
+                    endpoint.ToLower().EndsWith(".amazonaws.com.cn"));
         }
 
         public static bool IsChineseDomain(string host)
@@ -40,23 +42,20 @@ namespace Minio
             return host.ToLower().EndsWith(".cn");
         }
 
-        public static string ExtractRegion(string endpoint) {
+        public static string ExtractRegion(string endpoint)
+        {
             string[] tokens = endpoint.Split('.');
-            if ( tokens.Length < 2 )
-            {
-                    return null;
-            }
+            if (tokens.Length < 2)
+                return null;
             string token = tokens[1];
 
             // If token is "dualstack", then region might be in next token.
-            if (token.Equals("dualstack") && tokens.Length >= 3) {
+            if (token.Equals("dualstack") && tokens.Length >= 3)
                 token = tokens[2];
-            }
 
             // If token is equal to "amazonaws", region is not passed in the endpoint.
-            if (token.Equals("amazonaws")) {
+            if (token.Equals("amazonaws"))
                 return null;
-            }
 
             // Return token as region.
             return token;
@@ -70,13 +69,13 @@ namespace Minio
 
         private static bool isValidOctetVal(string val)
         {
-            const byte uLimit = (byte) 255;
+            const byte uLimit = (byte)255;
             return (Byte.Parse(val) <= uLimit);
         }
         private static bool IsValidIPv4(string ip)
         {
             int posColon = ip.LastIndexOf(':');
-            if ( posColon != -1 )
+            if (posColon != -1)
             {
                 ip = ip.Substring(0, posColon);
             }
@@ -86,7 +85,7 @@ namespace Minio
                 return false;
             }
             bool isValidSmallInt = Array.TrueForAll(octetsStr, IsValidSmallInt);
-            if ( !isValidSmallInt )
+            if (!isValidSmallInt)
             {
                 return false;
             }
@@ -120,13 +119,13 @@ namespace Minio
             // Remove any port in endpoint, in such a case.
             int posColon = host.LastIndexOf(':');
             int port = -1;
-            if ( posColon != -1 )
+            if (posColon != -1)
             {
                 try
                 {
                     port = Int32.Parse(host.Substring(posColon + 1, (host.Length - posColon - 1)));
                 }
-                catch ( System.FormatException )
+                catch (System.FormatException)
                 {
                     return false;
                 }

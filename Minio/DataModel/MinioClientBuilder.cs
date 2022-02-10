@@ -58,7 +58,7 @@ namespace Minio
             {
                 endpoint = endpoint.Substring(0, endpoint.Length - 1);
             }
-            if (!endpoint.StartsWith("http") && !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
+            if (!BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
             {
                 throw new InvalidEndpointException(String.Format("{0} is invalid hostname.", endpoint), "endpoint");
             }
@@ -118,9 +118,7 @@ namespace Minio
         {
             if (String.IsNullOrEmpty(region))
             {
-                // Set region to its default value if empty or null
-                this.Region = "us-east-1";
-                return this;
+                throw new ArgumentException(String.Format("{0} the region value can't be null or empty.", region), "region");
             }
             this.Region = region;
             return this;
@@ -175,7 +173,6 @@ namespace Minio
             {
                 this.Endpoint = host;
             }
-            Init();
             return this;
         }
     }

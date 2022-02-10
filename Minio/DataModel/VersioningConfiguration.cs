@@ -29,7 +29,7 @@ namespace Minio.DataModel
             this.MfaDelete = "Disabled";
         }
 
-        public VersioningConfiguration(bool enableVersioning = true )
+        public VersioningConfiguration(bool enableVersioning = true)
         {
             if (enableVersioning)
             {
@@ -48,7 +48,7 @@ namespace Minio.DataModel
         }
 
         [XmlElement]
-        public string Status { get;  set; }
-        public string MfaDelete { get;  set; }
+        public string Status { get; set; }
+        public string MfaDelete { get; set; }
     }
 }
