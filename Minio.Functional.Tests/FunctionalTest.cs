@@ -306,8 +306,10 @@ namespace Minio.Functional.Tests
             }
         }
 
-        internal async static Task MakeBucket_Test2(MinioClient minio)
+        internal async static Task MakeBucket_Test2(MinioClient minio, bool aws = false)
         {
+            if (!aws)
+                return;
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(length: 10) + ".withperiod";
             MakeBucketArgs mbArgs = new MakeBucketArgs()
@@ -341,8 +343,10 @@ namespace Minio.Functional.Tests
             }
         }
 
-        internal async static Task MakeBucket_Test3(MinioClient minio)
+        internal async static Task MakeBucket_Test3(MinioClient minio, bool aws = false)
         {
+            if (!aws)
+                return;
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(length: 60);
             MakeBucketArgs mbArgs = new MakeBucketArgs()
@@ -376,8 +380,10 @@ namespace Minio.Functional.Tests
             }
         }
 
-        internal async static Task MakeBucket_Test4(MinioClient minio)
+        internal async static Task MakeBucket_Test4(MinioClient minio, bool aws = false)
         {
+            if (!aws)
+                return;
             DateTime startTime = DateTime.Now;
             string bucketName = GetRandomName(length: 20) + ".withperiod";
             MakeBucketArgs mbArgs = new MakeBucketArgs()

@@ -32,8 +32,6 @@ using System.Xml.Serialization;
 using Minio.DataModel.ILM;
 using Minio.DataModel.Replication;
 using Minio.DataModel.ObjectLock;
-using Minio.DataModel.Tags;
-using Minio.Exceptions;
 using Minio.Helper;
 
 namespace Minio

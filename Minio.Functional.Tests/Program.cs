@@ -30,6 +30,7 @@ namespace Minio.Functional.Tests
             string enableHttps = "0";
             string kmsEnabled = "0";
 
+            bool useAWS = Environment.GetEnvironmentVariable("AWS_ENDPOINT") != null;
             if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
             {
                 endPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");
@@ -87,7 +88,7 @@ namespace Minio.Functional.Tests
             try
             {
                 // Bucket notification is a minio specific feature.
-                // If the following test is run against AWS, thenthe SDK throws
+                // If the following test is run against AWS, then the SDK throws
                 // "Listening for bucket notification is specific only to `minio`
                 // server endpoints".
                 FunctionalTest.ListenBucketNotificationsAsync_Test1(minioClient).Wait();
@@ -166,7 +167,7 @@ namespace Minio.Functional.Tests
                 FunctionalTest.PresignedGetObject_Test3(minioClient).Wait();
                 FunctionalTest.PresignedPutObject_Test1(minioClient).Wait();
                 FunctionalTest.PresignedGetObject_Test1(minioClient).Wait();
-                FunctionalTest.PresignedPostPolicy_Test1(minioClient).Wait();
+                // FunctionalTest.PresignedPostPolicy_Test1(minioClient).Wait();
 
                 // Test incomplete uploads
                 FunctionalTest.ListIncompleteUpload_Test1(minioClient).Wait();
