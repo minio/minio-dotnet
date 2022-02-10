@@ -35,7 +35,7 @@
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="All" />
     <PackageReference Include="AsyncFixer" Version="1.1.6" PrivateAssets="All" />
 
-    <PackageReference Include="RestSharp" Version="106.10.1" />
+    <PackageReference Include="RestSharp" Version="106.12.0" />
     <PackageReference Include="System.Reactive.Linq" Version="4.0.0" />
   </ItemGroup>
 
