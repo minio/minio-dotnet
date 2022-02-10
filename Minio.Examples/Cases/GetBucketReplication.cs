@@ -41,7 +41,7 @@ namespace Minio.Examples.Cases
                         if (rule.ID != replicationCfgID)
                         {
                             // failed test due to replication config id mismatch
-                            var errMessage = "Unexpected replication config ID: " +
+                            var errMessage = "Unexpected replication rule ID: " +
                                     $"expected: {replicationCfgID}, got: {rule.ID}";
                             throw new Minio.Exceptions.UnexpectedMinioException(errMessage);
                         }
