@@ -56,7 +56,7 @@ namespace FileUploader
             {
                 Console.WriteLine(ex.Message);
             }
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if IsWindows()
             {
                 Console.ReadLine();
             }

@@ -24,7 +24,7 @@ namespace Minio.Examples.Cases
         // Get Replication configuration assigned to the bucket
         public async static Task Run(MinioClient minio,
                                     string bucketName = "my-bucket-name",
-                                    string replicationCfgID = "my-replication-ID")
+                                    string replicationRuleID = "my-replication-ID")
         {
             try
             {
