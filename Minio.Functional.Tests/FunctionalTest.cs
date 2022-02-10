@@ -3400,34 +3400,35 @@ namespace Minio.Functional.Tests
             };
             try
             {
-                try
+                // try
+                // {
+                await Setup_Test(minio, bucketName);
+                using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
-                    await Setup_Test(minio, bucketName);
-                    using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
-                    {
-                        PutObjectArgs putObjectArgs = new PutObjectArgs()
-                                                                .WithBucket(bucketName)
-                                                                .WithObject(objectName)
-                                                                .WithStreamData(filestream)
-                                                                .WithObjectSize(filestream.Length);
-
-                        await minio.PutObjectAsync(putObjectArgs);
-                    }
-                    StatObjectArgs statObjectArgs = new StatObjectArgs()
+                    PutObjectArgs putObjectArgs = new PutObjectArgs()
                                                             .WithBucket(bucketName)
-                                                            .WithObject(objectName);
-                    ObjectStat stats = await minio.StatObjectAsync(statObjectArgs);
-                    PresignedPutObjectArgs presignedPutObjectArgs = new PresignedPutObjectArgs()
-                                                                                .WithBucket(bucketName)
-                                                                                .WithObject(objectName)
-                                                                                .WithExpiry(0);
-                    string presigned_url = await minio.PresignedPutObjectAsync(presignedPutObjectArgs);
+                                                            .WithObject(objectName)
+                                                            .WithStreamData(filestream)
+                                                            .WithObjectSize(filestream.Length);
+
+                    await minio.PutObjectAsync(putObjectArgs);
                 }
-                catch (InvalidExpiryRangeException)
-                {
-                    new MintLogger("PresignedPutObject_Test2", presignedPutObjectSignature, "Tests whether PresignedPutObject url retrieves object from bucket when invalid expiry is set.", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
-                }
+                StatObjectArgs statObjectArgs = new StatObjectArgs()
+                                                        .WithBucket(bucketName)
+                                                        .WithObject(objectName);
+                ObjectStat stats = await minio.StatObjectAsync(statObjectArgs);
+                PresignedPutObjectArgs presignedPutObjectArgs = new PresignedPutObjectArgs()
+                                                                            .WithBucket(bucketName)
+                                                                            .WithObject(objectName)
+                                                                            .WithExpiry(0);
+                string presigned_url = await minio.PresignedPutObjectAsync(presignedPutObjectArgs);
+                new MintLogger("PresignedPutObject_Test2", presignedPutObjectSignature, "Tests whether PresignedPutObject url retrieves object from bucket when invalid expiry is set.", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
+            catch (InvalidExpiryRangeException)
+            {
+                new MintLogger("PresignedPutObject_Test2", presignedPutObjectSignature, "Tests whether PresignedPutObject url retrieves object from bucket when invalid expiry is set.", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
+            }
+            // }
             catch (Exception ex)
             {
                 new MintLogger("PresignedPutObject_Test2", presignedPutObjectSignature, "Tests whether PresignedPutObject url retrieves object from bucket when invalid expiry is set.", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args: args).Log();

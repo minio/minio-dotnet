@@ -56,7 +56,7 @@ namespace FileUploader
             {
                 Console.WriteLine(ex.Message);
             }
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (IsWindows())
             {
                 Console.ReadLine();
             }
@@ -105,7 +105,10 @@ namespace FileUploader
             }
             // Added for Windows folks. Without it, the window, tests
             // run in, dissappears as soon as the test code completes.
-            Console.ReadLine();
+            if (IsWindows())
+            {
+                Console.ReadLine();
+            }
         }
     }
 }

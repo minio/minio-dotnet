@@ -24,7 +24,7 @@ namespace Minio.Examples.Cases
         // Get Replication configuration assigned to the bucket
         public async static Task Run(MinioClient minio,
                                     string bucketName = "my-bucket-name",
-                                    string replicationCfgID = "my-replication-ID")
+                                    string replicationRuleID = "my-replication-rule-ID")
         {
             try
             {
@@ -38,11 +38,11 @@ namespace Minio.Examples.Cases
                     Console.WriteLine($"Got Bucket Replication Configuration set for bucket {bucketName}.");
                     foreach (var rule in repl.Rules)
                     {
-                        if (rule.ID != replicationCfgID)
+                        if (rule.ID != replicationRuleID)
                         {
-                            // failed test due to replication config id mismatch
-                            var errMessage = "Unexpected replication config ID: " +
-                                    $"expected: {replicationCfgID}, got: {rule.ID}";
+                            // failed test due to replication rule id mismatch
+                            var errMessage = "Unexpected replication rule ID: " +
+                                    $"expected: {replicationRuleID}, got: {rule.ID}";
                             throw new Minio.Exceptions.UnexpectedMinioException(errMessage);
                         }
                         Console.WriteLine("ID: " + rule.ID + ", Status: " + rule.Status);

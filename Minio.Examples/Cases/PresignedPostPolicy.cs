@@ -33,19 +33,10 @@ namespace Minio.Examples.Cases
             // default value for expiration is 2 minutes
             DateTime expiration = DateTime.UtcNow.AddMinutes(2);
 
-            // DefaultPolicy defaultPolicy = delegate (string bucketName,
-            //                                         string objectName,
-            //                                         DateTime expiration)
-            // {
             PostPolicy form = new PostPolicy();
             form.SetKey(objectName);
             form.SetBucket(bucketName);
             form.SetExpires(expiration);
-            // return policy;
-            // };
-            // PostPolicy postPolicy = defaultPolicy(bucketName,
-            //                                       objectName,
-            //                                       expiration);
 
             PresignedPostPolicyArgs args = new PresignedPostPolicyArgs()
                                                         .WithBucket(bucketName)

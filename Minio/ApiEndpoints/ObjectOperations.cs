@@ -258,7 +258,6 @@ namespace Minio
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
                 .ConfigureAwait(false);
-            // cb.Invoke(new MemoryStream(response.ContentBytes));
         }
 
 
@@ -348,10 +347,7 @@ namespace Minio
         {
             // string region = string.Empty;
             string region = await this.GetRegion(args.BucketName);
-
             args.Validate();
-
-
             // Presigned operations are not allowed for anonymous users
             if (string.IsNullOrEmpty(this.AccessKey) && string.IsNullOrEmpty(this.SecretKey))
                 throw new MinioException("Presigned operations are not supported for anonymous credentials");
@@ -763,26 +759,10 @@ namespace Minio
         public async Task PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            // var meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            // if (args.Headers != null)
-            // {
-            // foreach (KeyValuePair<string, string> p in args.Headers)
-            // {
-            //     var key = p.Key;
-            // if (!OperationsUtil.IsSupportedHeader(p.Key) &&
-            //         !p.Key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase) &&
-            //         !OperationsUtil.IsSSEHeader(p.Key))
-            //     {
-            //         key = "x-amz-meta-" + key.ToLowerInvariant();
-            //     }
-            //     meta[key] = p.Value;
-            // }
-            // }
             if (args.SSE != null)
             {
                 args.SSE.Marshal(args.Headers);
             }
-            // args.WithHeaders(meta);
 
             // Upload object in single part if size falls under restricted part size.
             if (args.ObjectSize < Constants.MinimumPartSize && args.ObjectSize >= 0 && args.ObjectStreamData != null)
@@ -1681,7 +1661,6 @@ namespace Minio
         {
             // For all sizes greater than 5GB or if Copy byte range specified in conditions and byte range larger
             // than minimum part size (5 MB) do multipart.
-
             dynamic multiPartInfo = utils.CalculateMultiPartSize(copySize, copy: true);
             double partSize = multiPartInfo.partSize;
             double partCount = multiPartInfo.partCount;

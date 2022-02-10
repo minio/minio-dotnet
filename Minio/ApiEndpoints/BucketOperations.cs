@@ -46,14 +46,6 @@ namespace Minio
         public async Task<ListAllMyBucketsResult> ListBucketsAsync(
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            // // HttpRequestMessage requestMessage = await this.CreateRequest(HttpMethod.Get, resourcePath: "/").ConfigureAwait(false);
-            // Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, this.Region);
-            // HttpRequestMessageBuilder requestMessageBuilder = new HttpRequestMessageBuilder(
-            //     HttpMethod.Get, requestUrl);
-            // ResponseResult responseResult = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
-            // ListBucketsResponse listBucketsResponse = new ListBucketsResponse(responseResult.StatusCode, responseResult.Content);
-            // return listBucketsResponse.BucketsResult;
-            //
             var requestMessageBuilder = await this.CreateRequest(HttpMethod.Get).ConfigureAwait(false);
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
                 .ConfigureAwait(false);
@@ -597,7 +589,6 @@ namespace Minio
         {
             args.Validate();
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            // requestMessageBuilder.AddQueryParameter("object-lock", "");
             var responseResult = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             var resp = new GetObjectLockConfigurationResponse(responseResult.StatusCode, responseResult.Content);
             return resp.LockConfiguration;

@@ -129,7 +129,6 @@ namespace Minio.Functional.Tests
 
                 // Test File GetObject and PutObject functions
                 FunctionalTest.FGetObject_Test1(minioClient).Wait();
-                // FIX => FPutObject_Test1(minioClient).Wait();
                 FunctionalTest.FPutObject_Test2(minioClient).Wait();
 
                 // Test SelectObjectContentAsync function
@@ -166,6 +165,7 @@ namespace Minio.Functional.Tests
                 FunctionalTest.PresignedGetObject_Test2(minioClient).Wait();
                 FunctionalTest.PresignedGetObject_Test3(minioClient).Wait();
                 FunctionalTest.PresignedPutObject_Test1(minioClient).Wait();
+                FunctionalTest.PresignedPutObject_Test2(minioClient).Wait();
                 FunctionalTest.PresignedGetObject_Test1(minioClient).Wait();
                 // FunctionalTest.PresignedPostPolicy_Test1(minioClient).Wait();
 

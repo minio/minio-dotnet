@@ -241,11 +241,11 @@ namespace Minio.Examples
             Cases.RemoveBucket.Run(minioClient, lockBucketName).Wait();
 
             // Bucket Replication operations
-            string replicationCfgID = "myreplicationID-3333";
+            string replicationRuleID = "myreplicationID-3333";
             Cases.SetBucketReplication.Run(minioClient, bucketName,
-                                    destBucketName, replicationCfgID).Wait();
+                                    destBucketName, replicationRuleID).Wait();
             Cases.GetBucketReplication.Run(minioClient, bucketName,
-                                           replicationCfgID).Wait();
+                                           replicationRuleID).Wait();
             // TODO: we can verify that the replication happens by checking
             // the content in the destination matches the source content.
             //     We also cannot remove the replication config immediately
