@@ -56,7 +56,7 @@ namespace Minio
             // ListBucketsResponse listBucketsResponse = new ListBucketsResponse(responseResult.StatusCode, responseResult.Content);
             // return listBucketsResponse.BucketsResult;
             //
-            var requestMessageBuilder = await this.CreateRequest(HttpMethod.Get, resourcePath: "/").ConfigureAwait(false);
+            var requestMessageBuilder = await this.CreateRequest(HttpMethod.Get).ConfigureAwait(false);
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -149,16 +149,7 @@ namespace Minio
                     args.Location = this.Region;
                 }
             }
-
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure, args.Location);
-            var requestMessageBuilder = new HttpRequestMessageBuilder(HttpMethod.Put, requestUrl, "/" + args.BucketName);
-
-            if (args.Location != "us-east-1")
-            {
-                CreateBucketConfiguration config = new CreateBucketConfiguration(args.Location);
-                requestMessageBuilder.AddXmlBody(config.ToXml());
-            }
-            args.BuildRequest(requestMessageBuilder);
+            var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
                             .ConfigureAwait(false);
         }

@@ -228,8 +228,11 @@ namespace Minio
             if (bucketName != null)
             {
                 utils.ValidateBucketName(bucketName);
-                // Fetch correct region for bucket
-                region = await GetRegion(bucketName).ConfigureAwait(false);
+                // Fetch correct region for bucket if this is not a bucket creation
+                if (!string.IsNullOrEmpty(objectName) && method != HttpMethod.Put)
+                {
+                    region = await GetRegion(bucketName).ConfigureAwait(false);
+                }
             }
 
             if (objectName != null)
@@ -278,8 +281,6 @@ namespace Minio
             {
                 if (s3utils.IsAmazonEndPoint(this.BaseUrl))
                 {
-                    usePathStyle = false;
-
                     if (method == HttpMethod.Put && objectName == null && resourcePath == null)
                     {
                         // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
@@ -301,10 +302,6 @@ namespace Minio
                         resource += utils.UrlEncode(bucketName) + "/";
                     }
                 }
-                else
-                {
-                    resource += utils.UrlEncode(bucketName) + "/";
-                }
             }
 
             // Set Target URL
@@ -321,10 +318,15 @@ namespace Minio
                 resource += resourcePath;
             }
 
-            var messageBuilder = new HttpRequestMessageBuilder(method, requestUrl);
+
+            HttpRequestMessageBuilder messageBuilder;
             if (!string.IsNullOrEmpty(resource))
             {
                 messageBuilder = new HttpRequestMessageBuilder(method, requestUrl, resource);
+            }
+            else
+            {
+                messageBuilder = new HttpRequestMessageBuilder(method, requestUrl);
             }
             if (body != null)
             {
@@ -469,7 +471,7 @@ namespace Minio
         /// With provider for credentials and session token if being used
         /// </summary>
         /// <returns></returns>
-    	public MinioClient WithCredentialsProvider(ClientProvider provider)
+        public MinioClient WithCredentialsProvider(ClientProvider provider)
         {
             this.Provider = provider;
             AccessCredentials credentials = null;
