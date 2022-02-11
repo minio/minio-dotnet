@@ -351,7 +351,7 @@ namespace Minio
         }
 
         /// <summary>
-        /// Sets app version and name. Used by RestSharp for constructing User-Agent header in all HTTP requests
+        /// Sets app version and name. Used for constructing User-Agent header in all HTTP requests
         /// </summary>
         /// <param name="appName"></param>
         /// <param name="appVersion"></param>
