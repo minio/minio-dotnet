@@ -175,14 +175,6 @@ namespace Minio.Tests
                     .WithEndpoint("s3-us-west-1.amazonaws.com")
                     .Build();
         }
-
-        //[TestMethod]
-        //[ExpectedException(typeof(ArgumentException))]
-        //public void TestPutObject()
-        //{
-        //    var client = new MinioClient("localhost", 9000);
-        //    await client.PutObjectAsync("bucket-name", "object-name", null, 5 * 1024L * 1024L * 11000, null);
-        //}
     }
 
     /// <summary>
@@ -292,7 +284,7 @@ namespace Minio.Tests
         [ExpectedException(typeof(ArgumentException))]
         public void TestSetAppInfoFailsNullVersion()
         {
-            var client =new MinioClient()
+            var client = new MinioClient()
                                 .WithEndpoint("localhost", 9000)
                                 .WithCredentials("minio", "minio")
                                 .Build();

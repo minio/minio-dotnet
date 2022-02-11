@@ -17,6 +17,7 @@
 
 using System;
 using System.Net;
+using System.Net.Http;
 
 namespace Minio.Functional.Tests
 {
@@ -49,17 +50,21 @@ namespace Minio.Functional.Tests
             }
 
             MinioClient minioClient = null;
+            HttpClient hc = new HttpClient();
+
             if (enableHttps == "1")
                 // WithSSL() enables SSL support in MinIO client
                 minioClient = new MinioClient()
                                         .WithSSL()
                                         .WithCredentials(accessKey, secretKey)
                                         .WithEndpoint(endPoint)
+                                        .WithHttpClient(hc)
                                         .Build();
             else
                 minioClient = new MinioClient()
                                         .WithCredentials(accessKey, secretKey)
                                         .WithEndpoint(endPoint)
+                                        .WithHttpClient(hc)
                                         .Build();
 
             // Assign parameters before starting the test
