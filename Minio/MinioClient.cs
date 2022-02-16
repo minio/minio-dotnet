@@ -30,6 +30,8 @@ using Minio.DataModel;
 using Minio.DataModel.Tracing;
 using Minio.Exceptions;
 using Minio.Helper;
+using Microsoft.Extensions.DependencyInjection;
+
 
 namespace Minio
 {
@@ -377,7 +379,9 @@ namespace Minio
             this.Region = "";
             this.SessionToken = "";
             this.Provider = null;
-            this.HTTPClient = new HttpClient();
+            var serviceProvider = new ServiceCollection().AddHttpClient().BuildServiceProvider();
+            var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+            this.HTTPClient = httpClientFactory.CreateClient();
         }
 
         /// <summary>
