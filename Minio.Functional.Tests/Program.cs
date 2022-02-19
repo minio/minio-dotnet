@@ -18,7 +18,6 @@
 using System;
 using System.Net;
 using System.Net.Http;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Minio.Functional.Tests
 {
@@ -50,17 +49,8 @@ namespace Minio.Functional.Tests
                 kmsEnabled = "1";
             }
 
-            // HttpClient instance needs to be created based on HttpClientFactory
-            // to prevent 2 known serious issues:
-            // 1. Socket leakage or socket exhaustion happens and it hogs the
-            //    system or in its best it causes heavy performance issues.
-            // 2. Regular HttpClient library does not respect DNS record updates in
-            //    case of failover scenarios.
-            var serviceProvider = new ServiceCollection().AddHttpClient().BuildServiceProvider();
-            var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
-            var hc = httpClientFactory.CreateClient();
-
             MinioClient minioClient = null;
+            HttpClient hc = new HttpClient();
 
             if (enableHttps == "1")
                 // WithSSL() enables SSL support in MinIO client
