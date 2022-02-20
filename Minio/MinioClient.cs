@@ -56,8 +56,9 @@ namespace Minio
         // Indicates if we are using HTTPS or not
         internal bool Secure { get; private set; }
 
-        // // Custom authenticator for HttpClient
-        // internal V4Authenticator authenticator;
+        internal HttpClient HTTPClient { get; private set; }
+
+        private string CustomUserAgent = string.Empty;
 
         // Handler for task retry policy
         internal RetryPolicyHandlingDelegate retryPolicyHandler;
@@ -75,7 +76,6 @@ namespace Minio
         private int requestTimeout;
 
         private const string RegistryAuthHeaderKey = "X-Registry-Auth";
-        private HttpClient HttpClient { get; } = new HttpClient();
 
         internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers = Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
 
@@ -104,8 +104,6 @@ namespace Minio
 #endif
             }
         }
-
-        private string CustomUserAgent = string.Empty;
 
         /// <summary>
         /// Returns the User-Agent header for the request
@@ -148,7 +146,7 @@ namespace Minio
                     rgn = BucketRegionCache.Instance.Region(bucketName);
                 }
             }
-            // Default to us-east-1 if region could not be found
+            // Defaults to us-east-1 if region could not be found
             return (rgn == string.Empty) ? "us-east-1" : rgn;
         }
 
@@ -184,7 +182,6 @@ namespace Minio
         /// </summary>
         /// <param name="args">The direct descendant of ObjectArgs class, args with populated values from Input</param>
         /// <returns>A HttpRequestMessage</returns>
-        // internal async Task<HttpRequestMessageBuilder> CreateRequest<T>(ObjectArgs<T> args) where T : ObjectArgs<T>
         internal async Task<HttpRequestMessageBuilder> CreateRequest<T>(ObjectArgs<T> args) where T : ObjectArgs<T>
         {
             this.ArgsCheck(args);
@@ -203,8 +200,9 @@ namespace Minio
         }
 
         /// <summary>
-        /// Constructs an HttpRequestMessage builder. For AWS, this function has the side-effect of overriding the baseUrl
-        /// in the HttpClient with region specific host path or virtual style path.
+        /// Constructs an HttpRequestMessage builder. For AWS, this function
+        /// has the side-effect of overriding the baseUrl in the HttpClient
+        /// with region specific host path or virtual style path.
         /// </summary>
         /// <param name="method">HTTP method</param>
         /// <param name="bucketName">Bucket Name</param>
@@ -379,6 +377,7 @@ namespace Minio
             this.Region = "";
             this.SessionToken = "";
             this.Provider = null;
+            this.HTTPClient = new HttpClient();
         }
 
         /// <summary>
@@ -417,7 +416,7 @@ namespace Minio
             this.uri = RequestUtil.GetEndpointURL(this.BaseUrl, this.Secure);
             RequestUtil.ValidateEndpoint(this.uri, this.Endpoint);
 
-            this.HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", this.FullUserAgent);
+            this.HTTPClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", this.FullUserAgent);
         }
 
         /// <summary>
@@ -464,6 +463,20 @@ namespace Minio
         public MinioClient WithRetryPolicy(RetryPolicyHandlingDelegate retryPolicyHandler)
         {
             this.retryPolicyHandler = retryPolicyHandler;
+            return this;
+        }
+
+        /// <summary>
+        /// Allows end user to define the Http server and pass it as a parameter
+        /// </summary>
+        /// <param name="httpClient"> Instance of HttpClient</param>
+        /// <returns></returns>
+        public MinioClient WithHttpClient(HttpClient httpClient)
+        {
+            if (httpClient != null)
+            {
+                this.HTTPClient = httpClient;
+            }
             return this;
         }
 
@@ -545,10 +558,10 @@ namespace Minio
             {
                 if (requestTimeout > 0)
                 {
-                    this.HttpClient.Timeout = new TimeSpan(0, 0, 0, 0, requestTimeout);
+                    this.HTTPClient.Timeout = new TimeSpan(0, 0, 0, 0, requestTimeout);
                 }
 
-                var response = await this.HttpClient.SendAsync(request,
+                var response = await this.HTTPClient.SendAsync(request,
                     HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                     .ConfigureAwait(false);
                 responseResult = new ResponseResult(request, response);
@@ -645,8 +658,6 @@ namespace Minio
             if (HttpStatusCode.NotFound.Equals(response.StatusCode))
             {
                 int pathLength = resourceSplits.Length;
-                // bool isAWS = host.EndsWith("s3.amazonaws.com"); PR#442
-                // bool isVirtual = isAWS && !host.StartsWith("s3.amazonaws.com");
                 bool isAWS = host.EndsWith("s3.amazonaws.com");
                 bool isVirtual = isAWS && !host.StartsWith("s3.amazonaws.com");
 

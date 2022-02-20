@@ -3400,8 +3400,6 @@ namespace Minio.Functional.Tests
             };
             try
             {
-                // try
-                // {
                 await Setup_Test(minio, bucketName);
                 using (MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
@@ -3428,7 +3426,6 @@ namespace Minio.Functional.Tests
             {
                 new MintLogger("PresignedPutObject_Test2", presignedPutObjectSignature, "Tests whether PresignedPutObject url retrieves object from bucket when invalid expiry is set.", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
-            // }
             catch (Exception ex)
             {
                 new MintLogger("PresignedPutObject_Test2", presignedPutObjectSignature, "Tests whether PresignedPutObject url retrieves object from bucket when invalid expiry is set.", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args: args).Log();
