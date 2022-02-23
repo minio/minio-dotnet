@@ -15,10 +15,10 @@
   <PropertyGroup Label="Package">
     <LangVersion>latest</LangVersion>
     <Product>Minio</Product>
-    <Version>3.1.14</Version>
-    <Description>Minio .NET SDK for Amazon S3 Compatible Cloud Storage.</Description>
-    <Copyright>Copyright (c) 2018.  All rights reserved.</Copyright>
-    <Authors>Minio, Inc.</Authors>
+    <Version>4.0.0</Version>
+    <Description>MinIO .NET SDK for Amazon S3 Compatible Cloud Storage.</Description>
+    <Copyright>Copyright (c) 2022.  All rights reserved.</Copyright>
+    <Authors>MinIO, Inc.</Authors>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageOutputPath>$(SolutionDir)artifacts</PackageOutputPath>
