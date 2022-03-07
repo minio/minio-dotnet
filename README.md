@@ -28,10 +28,12 @@ The following examples uses a freely hosted public MinIO service 'play.min.io' f
 using Minio;
 
 // Initialize the client with access credentials.
-private static MinioClient minio = new MinioClient("play.min.io",
-                "Q3AM3UQ867SPQQA43P2F",
-                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
-                ).WithSSL();
+private static MinioClient minio = new MinioClient()
+                                    .WithEndpoint("play.min.io")
+                                    .WithCredentials("Q3AM3UQ867SPQQA43P2F",
+                                             "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+                                    .WithSSL()
+                                    .Build();
 
 // Create an async task for listing buckets.
 var getListBucketsTask = minio.ListBucketsAsync();
@@ -65,7 +67,12 @@ namespace FileUploader
             var secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
             try
             {
-                var minio = new MinioClient(endpoint, accessKey, secretKey).WithSSL();
+                var minio = new MinioClient()
+                                    .WithEndpoint(endpoint)
+                                    .WithCredentials(accessKey,
+                                             secretKey)
+                                    .WithSSL()
+                                    .Build();
                 FileUpload.Run(minio).Wait();
             }
             catch (Exception ex)
