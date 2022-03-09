@@ -40,10 +40,11 @@ namespace Minio.DataModel
             {
                 throw new ArgumentNullException(nameof(this.AccessKey) + " and " + nameof(this.SecretKey) + " cannot be null or empty.");
             }
+            Console.WriteLine("Iniitialzing AccessCredentials");
             this.AccessKey = accessKey;
             this.SecretKey = secretKey;
             this.SessionToken = sessionToken;
-            this.Expiration = (expiration.Equals(default(DateTime)))?null:utils.To8601String(expiration);
+            this.Expiration = (expiration.Equals(default(DateTime))) ? null : utils.To8601String(expiration);
         }
 
         public AccessCredentials()
