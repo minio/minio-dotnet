@@ -41,163 +41,163 @@ namespace Minio.Credentials
     [XmlRoot(ElementName = "AssumeRoleWithCertificateResponse", Namespace = "https://sts.amazonaws.com/doc/2011-06-15/")]
     public class CertificateResponse
     {
-	[XmlElement(ElementName = "AssumeRoleWithCertificateResult")]
-	public CertificateResult cr { get; set; }
-	public string ToXML()
-	{
-	    XmlWriterSettings settings = new XmlWriterSettings
-	    {
-		OmitXmlDeclaration = true
-	    };
-	    using (MemoryStream ms = new MemoryStream())
-	    {
-		var xmlWriter = XmlWriter.Create(ms, settings);
-		XmlSerializerNamespaces names = new XmlSerializerNamespaces();
-		names.Add(string.Empty, "https://sts.amazonaws.com/doc/2011-06-15/");
+        [XmlElement(ElementName = "AssumeRoleWithCertificateResult")]
+        public CertificateResult cr { get; set; }
+        public string ToXML()
+        {
+            XmlWriterSettings settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true
+            };
+            using (MemoryStream ms = new MemoryStream())
+            {
+                var xmlWriter = XmlWriter.Create(ms, settings);
+                XmlSerializerNamespaces names = new XmlSerializerNamespaces();
+                names.Add(string.Empty, "https://sts.amazonaws.com/doc/2011-06-15/");
 
-		XmlSerializer cs = new XmlSerializer(typeof(CertificateResponse));
-		cs.Serialize(xmlWriter, this, names);
+                XmlSerializer cs = new XmlSerializer(typeof(CertificateResponse));
+                cs.Serialize(xmlWriter, this, names);
 
-		ms.Flush();
-		ms.Seek(0, SeekOrigin.Begin);
-		var streamReader = new StreamReader(ms);
-		var xml = streamReader.ReadToEnd();
-		return xml;
-	    }
-	}
+                ms.Flush();
+                ms.Seek(0, SeekOrigin.Begin);
+                var streamReader = new StreamReader(ms);
+                var xml = streamReader.ReadToEnd();
+                return xml;
+            }
+        }
 
-	[Serializable]
-	[XmlRoot(ElementName = "AssumeRoleWithCertificateResult")]
-	public class CertificateResult
-	{
-	    public CertificateResult() { }
+        [Serializable]
+        [XmlRoot(ElementName = "AssumeRoleWithCertificateResult")]
+        public class CertificateResult
+        {
+            public CertificateResult() { }
 
-	    [XmlElement(ElementName = "Credentials")]
-	    public AccessCredentials Credentials { get; set; }
-	    public AccessCredentials GetAccessCredentials()
-	    {
-		return this.Credentials;
-	    }
-	}
+            [XmlElement(ElementName = "Credentials")]
+            public AccessCredentials Credentials { get; set; }
+            public AccessCredentials GetAccessCredentials()
+            {
+                return this.Credentials;
+            }
+        }
     }
     public class CertificateIdentityProvider : ClientProvider
     {
-	int DEFAULT_DURATION_IN_SECONDS = 300;
-	internal string stsEndpoint { get; set; }
-	internal int durationInSeconds { get; set; }
-	internal X509Certificate2 clientCertificate { get; set; }
-	internal string postEndpoint { get; set; }
-	internal HttpClient httpClient { get; set; }
-	internal AccessCredentials credentials { get; set; }
+        int DEFAULT_DURATION_IN_SECONDS = 300;
+        internal string stsEndpoint { get; set; }
+        internal int durationInSeconds { get; set; }
+        internal X509Certificate2 clientCertificate { get; set; }
+        internal string postEndpoint { get; set; }
+        internal HttpClient httpClient { get; set; }
+        internal AccessCredentials credentials { get; set; }
 
-	public CertificateIdentityProvider()
-	{
-	    this.durationInSeconds = DEFAULT_DURATION_IN_SECONDS;
-	}
+        public CertificateIdentityProvider()
+        {
+            this.durationInSeconds = DEFAULT_DURATION_IN_SECONDS;
+        }
 
-	public CertificateIdentityProvider WithStsEndpoint(string stsEndpoint)
-	{
-	    if (string.IsNullOrEmpty(stsEndpoint))
-	    {
-		throw new InvalidEndpointException("Missing mandatory argument: stsEndpoint");
-	    }
-	    if (!stsEndpoint.StartsWith("https", StringComparison.OrdinalIgnoreCase))
-	    {
-		throw new InvalidEndpointException(
-		    $"stsEndpoint {stsEndpoint} is invalid." +
-		    " The scheme must be https");
-	    }
+        public CertificateIdentityProvider WithStsEndpoint(string stsEndpoint)
+        {
+            if (string.IsNullOrEmpty(stsEndpoint))
+            {
+                throw new InvalidEndpointException("Missing mandatory argument: stsEndpoint");
+            }
+            if (!stsEndpoint.StartsWith("https", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidEndpointException(
+                    $"stsEndpoint {stsEndpoint} is invalid." +
+                    " The scheme must be https");
+            }
 
-	    this.stsEndpoint = stsEndpoint;
-	    return this;
-	}
+            this.stsEndpoint = stsEndpoint;
+            return this;
+        }
 
-	public CertificateIdentityProvider WithHttpClient(HttpClient httpClient = null)
-	{
-	    this.httpClient = httpClient;
-	    return this;
-	}
+        public CertificateIdentityProvider WithHttpClient(HttpClient httpClient = null)
+        {
+            this.httpClient = httpClient;
+            return this;
+        }
 
-	public CertificateIdentityProvider WithCertificate(X509Certificate2 cert = null)
-	{
-	    this.clientCertificate = cert;
-	    return this;
-	}
+        public CertificateIdentityProvider WithCertificate(X509Certificate2 cert = null)
+        {
+            this.clientCertificate = cert;
+            return this;
+        }
 
-	public override AccessCredentials GetCredentials()
-	{
-	    if (this.credentials != null && !this.credentials.AreExpired())
-	    {
-		return this.credentials;
-	    }
+        public override AccessCredentials GetCredentials()
+        {
+            if (this.credentials != null && !this.credentials.AreExpired())
+            {
+                return this.credentials;
+            }
 
-	    if (this.httpClient == null)
-	    {
-		throw new ArgumentException("httpClient cannot be null or empty");
-	    }
+            if (this.httpClient == null)
+            {
+                throw new ArgumentException("httpClient cannot be null or empty");
+            }
 
-	    if (this.clientCertificate == null)
-	    {
-		throw new ArgumentException("clientCertificate cannot be null or empty");
-	    }
+            if (this.clientCertificate == null)
+            {
+                throw new ArgumentException("clientCertificate cannot be null or empty");
+            }
 
-	    Task<HttpResponseMessage> t = Task.Run(async () => await this.httpClient.PostAsync(this.postEndpoint, null));
-	    t.Wait();
-	    HttpResponseMessage response = t.Result;
+            Task<HttpResponseMessage> t = Task.Run(async () => await this.httpClient.PostAsync(this.postEndpoint, null));
+            t.Wait();
+            HttpResponseMessage response = t.Result;
 
-	    CertificateResponse certResponse = new CertificateResponse();
-	    if (response.IsSuccessStatusCode)
-	    {
-		var content = response.Content.ReadAsStringAsync().Result;
-		var contentBytes = Encoding.UTF8.GetBytes(content);
+            CertificateResponse certResponse = new CertificateResponse();
+            if (response.IsSuccessStatusCode)
+            {
+                var content = response.Content.ReadAsStringAsync().Result;
+                var contentBytes = Encoding.UTF8.GetBytes(content);
 
-		using (var stream = new MemoryStream(contentBytes))
-		{
-		    certResponse =
-			(CertificateResponse)new XmlSerializer(typeof(CertificateResponse)).Deserialize(stream);
-		}
+                using (var stream = new MemoryStream(contentBytes))
+                {
+                    certResponse =
+                    (CertificateResponse)new XmlSerializer(typeof(CertificateResponse)).Deserialize(stream);
+                }
 
-	    }
-	    if (this.credentials == null && certResponse != null)
-	    {
-		this.credentials = certResponse.cr.Credentials;
-	    }
-	    return this.credentials;
-	}
+            }
+            if (this.credentials == null && certResponse != null)
+            {
+                this.credentials = certResponse.cr.Credentials;
+            }
+            return this.credentials;
+        }
 
-	public override async Task<AccessCredentials> GetCredentialsAsync()
-	{
-	    AccessCredentials credentials = this.GetCredentials();
-	    await Task.Yield();
-	    return credentials;
-	}
+        public override async Task<AccessCredentials> GetCredentialsAsync()
+        {
+            AccessCredentials credentials = this.GetCredentials();
+            await Task.Yield();
+            return credentials;
+        }
 
-	public CertificateIdentityProvider Build()
-	{
-	    if (string.IsNullOrEmpty(this.durationInSeconds.ToString()))
-	    {
-		this.durationInSeconds = DEFAULT_DURATION_IN_SECONDS;
-	    }
+        public CertificateIdentityProvider Build()
+        {
+            if (string.IsNullOrEmpty(this.durationInSeconds.ToString()))
+            {
+                this.durationInSeconds = DEFAULT_DURATION_IN_SECONDS;
+            }
 
-	    var builder = new UriBuilder(stsEndpoint);
-	    var query = HttpUtility.ParseQueryString(builder.Query);
-	    query["Action"] = "AssumeRoleWithCertificate";
-	    query["Version"] = "2011-06-15";
-	    query["DurationInSeconds"] = this.durationInSeconds.ToString();
-	    builder.Query = query.ToString();
-	    this.postEndpoint = builder.ToString();
+            var builder = new UriBuilder(stsEndpoint);
+            var query = HttpUtility.ParseQueryString(builder.Query);
+            query["Action"] = "AssumeRoleWithCertificate";
+            query["Version"] = "2011-06-15";
+            query["DurationInSeconds"] = this.durationInSeconds.ToString();
+            builder.Query = query.ToString();
+            this.postEndpoint = builder.ToString();
 
-	    var handler = new HttpClientHandler();
-	    handler.ClientCertificateOptions = ClientCertificateOption.Manual;
-	    handler.SslProtocols = System.Security.Authentication.SslProtocols.Tls12;
-	    handler.ClientCertificates.Add(this.clientCertificate);
-	    this.httpClient = new HttpClient(handler)
-	    {
-		BaseAddress = new Uri(stsEndpoint)
-	    };
+            var handler = new HttpClientHandler();
+            handler.ClientCertificateOptions = ClientCertificateOption.Manual;
+            handler.SslProtocols = System.Security.Authentication.SslProtocols.Tls12;
+            handler.ClientCertificates.Add(this.clientCertificate);
+            this.httpClient = new HttpClient(handler)
+            {
+                BaseAddress = new Uri(stsEndpoint)
+            };
 
-	    this.credentials = GetCredentials();
-	    return this;
-	}
+            this.credentials = GetCredentials();
+            return this;
+        }
     }
 }

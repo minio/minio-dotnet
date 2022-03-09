@@ -36,34 +36,34 @@ namespace Minio.Examples.Cases
             // STS endpoint
             var stsEndpoint = "https://myminio:9000/";
 
-	    // Generatng pfx cert for this call.
-	    // openssl pkcs12 -export -out client.pfx -inkey client.key -in client.crt -certfile server.crt
-            using(var cert = new X509Certificate2("C:\\dev\\client.pfx", "optional-password"))
-	    {
-		var provider = new CertificateIdentityProvider()
-		    .WithStsEndpoint(stsEndpoint)
-		    .WithCertificate(cert)
-		    .Build();
+            // Generatng pfx cert for this call.
+            // openssl pkcs12 -export -out client.pfx -inkey client.key -in client.crt -certfile server.crt
+            using (var cert = new X509Certificate2("C:\\dev\\client.pfx", "optional-password"))
+            {
+                var provider = new CertificateIdentityProvider()
+                    .WithStsEndpoint(stsEndpoint)
+                    .WithCertificate(cert)
+                    .Build();
 
-		MinioClient minioClient = new MinioClient()
-		    .WithEndpoint("myminio:9000")
-		    .WithSSL()
-		    .WithCredentialsProvider(provider)
-		    .Build();
+                MinioClient minioClient = new MinioClient()
+                    .WithEndpoint("myminio:9000")
+                    .WithSSL()
+                    .WithCredentialsProvider(provider)
+                    .Build();
 
-		try
-		{
-		    StatObjectArgs statObjectArgs = new StatObjectArgs()
-			.WithBucket("bucket-name")
-			.WithObject("object-name");
-		    ObjectStat result = await minioClient.StatObjectAsync(statObjectArgs);
-		    Console.WriteLine("Object Stat: \n" + result.ToString());
-		}
-		catch (Exception e)
-		{
-		    Console.WriteLine($"CertificateIdentityExample test exception: {e}");
-		}
-	    }
+                try
+                {
+                    StatObjectArgs statObjectArgs = new StatObjectArgs()
+                    .WithBucket("bucket-name")
+                    .WithObject("object-name");
+                    ObjectStat result = await minioClient.StatObjectAsync(statObjectArgs);
+                    Console.WriteLine("Object Stat: \n" + result.ToString());
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"CertificateIdentityExample test exception: {e}");
+                }
+            }
         }
     }
 }
