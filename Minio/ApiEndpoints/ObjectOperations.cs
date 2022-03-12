@@ -117,7 +117,7 @@ namespace Minio
         {
             args.Validate();
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
                .ConfigureAwait(false);
             Dictionary<string, string> responseHeaders = new Dictionary<string, string>();
             foreach (var param in response.Headers.ToList())
@@ -125,6 +125,7 @@ namespace Minio
                 responseHeaders.Add(param.Key.ToString(), param.Value.ToString());
             }
             StatObjectResponse statResponse = new StatObjectResponse(response.StatusCode, response.Content, response.Headers, args);
+
             return statResponse.ObjectInfo;
         }
 
@@ -159,7 +160,7 @@ namespace Minio
         {
             args.Validate();
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
                 .ConfigureAwait(false);
             SelectObjectContentResponse selectObjectContentResponse = new SelectObjectContentResponse(response.StatusCode, response.Content, response.ContentBytes);
             return selectObjectContentResponse.ResponseStream;
@@ -242,6 +243,8 @@ namespace Minio
                 throw;
             }
             GetMultipartUploadsListResponse getUploadResponse = new GetMultipartUploadsListResponse(response.StatusCode, response.Content.ToString());
+            response.Dispose();
+
             return getUploadResponse.UploadResult;
         }
 
@@ -256,7 +259,7 @@ namespace Minio
         {
             args.Validate();
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -434,7 +437,7 @@ namespace Minio
         {
             args.Validate();
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             var legalHoldConfig = new GetLegalHoldResponse(response.StatusCode, response.Content);
             return (legalHoldConfig.CurrentLegalHoldConfiguration == null) ? false : legalHoldConfig.CurrentLegalHoldConfiguration.Status.ToLower().Equals("on");
         }
@@ -458,7 +461,7 @@ namespace Minio
         {
             args.Validate();
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -479,7 +482,7 @@ namespace Minio
         {
             args.Validate();
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
                 .ConfigureAwait(false);
             GetObjectTagsResponse getObjectTagsResponse = new GetObjectTagsResponse(response.StatusCode, response.Content);
             return getObjectTagsResponse.ObjectTags;
@@ -502,7 +505,7 @@ namespace Minio
         {
             args.Validate();
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            var restResponse = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken);
+            using var restResponse = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken);
         }
 
 
@@ -562,7 +565,7 @@ namespace Minio
         {
             args.Validate();
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -584,7 +587,7 @@ namespace Minio
         {
             args.Validate();
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -607,7 +610,7 @@ namespace Minio
         {
             args.Validate();
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -628,7 +631,7 @@ namespace Minio
         {
             args.Validate();
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
             var retentionResponse = new GetRetentionResponse(response.StatusCode, response.Content);
             return retentionResponse.CurrentRetentionConfiguration;
         }
@@ -652,7 +655,7 @@ namespace Minio
         {
             args.Validate();
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -674,7 +677,7 @@ namespace Minio
         {
             //Skipping validate as we need the case where stream sends 0 bytes
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken);
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken);
             PutObjectResponse putObjectResponse = new PutObjectResponse(response.StatusCode, response.Content, response.Headers);
             return putObjectResponse.Etag;
         }
@@ -1041,7 +1044,7 @@ namespace Minio
         {
             args.Validate();
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken);
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken);
             NewMultipartUploadResponse uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
             return uploadResponse.UploadId;
         }
@@ -1062,7 +1065,7 @@ namespace Minio
         {
             args.Validate();
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken);
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken);
             NewMultipartUploadResponse uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
             return uploadResponse.UploadId;
         }
@@ -1077,7 +1080,7 @@ namespace Minio
         {
             args.Validate();
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
                 .ConfigureAwait(false);
             CopyObjectResponse copyObjectResponse = new CopyObjectResponse(response.StatusCode, response.Content, args.CopyOperationObjectType);
             return copyObjectResponse.CopyPartRequestResult;
@@ -1100,7 +1103,7 @@ namespace Minio
         {
             args.Validate();
             HttpRequestMessageBuilder requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -1209,7 +1212,7 @@ namespace Minio
             requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Type", "application/xml");
 
             requestMessageBuilder.AddXmlBody(bodyString);
-            await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -1267,7 +1270,7 @@ namespace Minio
             }
             requestMessageBuilder.AddQueryParameter("max-parts", "1000");
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
                 .ConfigureAwait(false);
 
             var contentBytes = Encoding.UTF8.GetBytes(response.Content);
@@ -1315,7 +1318,7 @@ namespace Minio
                 objectName: objectName, headerMap: metaData).ConfigureAwait(false);
             requestMessageBuilder.AddQueryParameter("uploads", "");
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers,
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers,
                 requestMessageBuilder, cancellationToken).ConfigureAwait(false);
 
             var contentBytes = Encoding.UTF8.GetBytes(response.Content);
@@ -1369,7 +1372,7 @@ namespace Minio
                 requestMessageBuilder.AddQueryParameter("partNumber", $"{partNumber}");
             }
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
                 .ConfigureAwait(false);
 
             string etag = null;
@@ -1616,7 +1619,7 @@ namespace Minio
                 }
             }
 
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            using var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, requestMessageBuilder, cancellationToken)
                 .ConfigureAwait(false);
 
             // Just read the result and parse content.

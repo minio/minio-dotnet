@@ -25,7 +25,7 @@ using System.Text;
 
 namespace Minio
 {
-    public class ResponseResult
+    public class ResponseResult : IDisposable
     {
         private Exception Exception { get; }
         public HttpRequestMessage Request { get; }
@@ -144,6 +144,13 @@ namespace Minio
             : this(request, response: null)
         {
             this.Exception = exception;
+        }
+
+        public void Dispose()
+        {
+            _stream?.Dispose();
+            Request?.Dispose();
+            Response?.Dispose();
         }
     }
 }
