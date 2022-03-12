@@ -99,8 +99,7 @@ namespace Minio
 
                 var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, requestUrl, path);
                 requestBuilder.AddQueryParameter("location", "");
-                ResponseResult response = null;
-                response = await client.ExecuteTaskAsync(client.NoErrorHandlers, requestBuilder).ConfigureAwait(false);
+                using var response = await client.ExecuteTaskAsync(client.NoErrorHandlers, requestBuilder).ConfigureAwait(false);
 
                 if (response != null && HttpStatusCode.OK.Equals(response.StatusCode))
                 {
