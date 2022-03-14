@@ -165,7 +165,7 @@ namespace Minio
 
         internal static bool IsAnonymousClient(string accessKey, string secretKey)
         {
-            return secretKey == string.Empty || accessKey == string.Empty;
+            return secretKey == string.Empty && accessKey == string.Empty;
         }
 
         internal static void ValidateFile(string filePath, string contentType = null)

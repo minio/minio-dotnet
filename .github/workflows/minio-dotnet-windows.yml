@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         configuration: [Release]
-        dotnet-version: ["5.0.x", "6.0.x"]
+        dotnet-version: ["6.0.x"]
 
     runs-on: windows-latest
     env:
@@ -49,4 +49,4 @@ jobs:
       - name: Execute Functional Tests
         run: |
           dotnet build  Minio.Functional.Tests --configuration Release
-          dotnet Minio.Functional.Tests/bin/Release/net5.0/Minio.Functional.Tests.dll
+          dotnet Minio.Functional.Tests/bin/Release/net6.0/Minio.Functional.Tests.dll
