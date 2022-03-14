@@ -3,7 +3,7 @@
 MinIO Client SDK provides higher level APIs for MinIO and Amazon S3 compatible cloud storage services.For a complete list of APIs and examples, please take a look at the [Dotnet Client API Reference](https://docs.min.io/docs/dotnet-client-api-reference).This document assumes that you have a working VisualStudio development environment.
 
 ## Minimum Requirements
- * .NET 4.5.2, .NetStandard 2.0 or higher
+ * .NET 5.0
  * Visual Studio 2017
 
 ## Install from NuGet
@@ -122,16 +122,26 @@ namespace FileUploader
   //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
 ```
 * Run the Minio.Client.Examples project from Visual Studio
-#### On Linux (Ubuntu 16.04)
+#### On Linux
 
-##### Setting up Mono and .NETCore on Linux
-<blockquote> NOTE: minio-dotnet requires mono 5.0.1 stable release and .NET Core 2.0 SDK to build on Linux. </blockquote>
+##### Setting .NET SDK on Linux (Ubuntu 21.10)
+<blockquote> NOTE: minio-dotnet requires .NET 5.x SDK to build on Linux. </blockquote>
 
-* Install [.NETCore](https://www.microsoft.com/net/core#linuxredhat) and [Mono](http://www.mono-project.com/download/#download-lin) for your distro. See sample script  to install .NETCore and Mono for Ubuntu Xenial [mono_install.sh](https://github.com/minio/minio-dotnet/blob/master/mono_install.sh)
+* Install [.Net SDK](https://docs.microsoft.com/en-us/dotnet/core/install/linux?WT.mc_id=dotnet-35129-website)
 
 ```
-$ ./mono_install.sh
+wget https://packages.microsoft.com/config/ubuntu/21.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
 ```
+
+```
+sudo apt-get update; \
+  sudo apt-get install -y apt-transport-https && \
+  sudo apt-get update && \
+  sudo apt-get install -y dotnet-sdk-5.0
+```
+
 ##### Running Minio.Examples
 * Clone this project.
 
@@ -144,11 +154,13 @@ $ git clone https://github.com/minio/minio-dotnet && cd minio-dotnet
 ```cs
   //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
 ```
+
 ```
-$ cd Minio.Examples
-$ dotnet build -c Release
-$ dotnet run
+dotnet build --configuration Release --no-restore
+dotnet pack ./Minio/Minio.csproj --no-build --configuration Release --output ./artifacts
+dotnet test ./Minio.Tests/Minio.Tests.csproj
 ```
+
 #### Bucket Operations
 
 * [MakeBucket.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/MakeBucket.cs)

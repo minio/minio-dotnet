@@ -102,7 +102,7 @@ namespace Minio.Credentials
             var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, url);
             requestBuilder.AddQueryParameter("location", "");
 
-            var response = await this.Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
+            using var response = await this.Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
             if (string.IsNullOrWhiteSpace(response.Content) ||
                     !HttpStatusCode.OK.Equals(response.StatusCode))
             {
@@ -164,7 +164,7 @@ namespace Minio.Credentials
             var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, url);
             requestBuilder.AddQueryParameter("location", "");
 
-            var response = await this.Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
+            using var response = await this.Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
 
 
             if (string.IsNullOrWhiteSpace(response.Content) ||

@@ -148,6 +148,10 @@ namespace Minio.Credentials
                 {
                     throw;
                 }
+                finally
+                {
+                    responseMessage?.Dispose();
+                }
             }
             return null;
         }

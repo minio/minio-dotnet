@@ -26,7 +26,8 @@ namespace Minio.Tests
             {
                 GetObjectArgs getObjectArgs = new GetObjectArgs()
                                                     .WithBucket("bucket")
-                                                    .WithObject(objectName);
+                                                    .WithObject(objectName)
+						    .WithFile("testfile");
                 await client.GetObjectAsync(getObjectArgs);
 
                 return true;
@@ -67,15 +68,12 @@ namespace Minio.Tests
                 await this.MinioClient.PutObjectAsync(putObjectArgs);
             }
 
-            var length = await this.GetObjectLength(bucket, objectName);
-
-            Assert.IsTrue(length > 0);
+	    await this.GetObjectLength(bucket, objectName);
 
             for (int i = 0; i < 100; i++)
             {
                 // sequential execution, produce one tcp connection, check by netstat -an | grep 9000
-                length = this.GetObjectLength(bucket, objectName).Result;
-                Assert.IsTrue(length > 0);
+                await this.GetObjectLength(bucket, objectName);
             }
 
             Parallel.ForEach(Enumerable.Range(0, 500),
@@ -83,11 +81,10 @@ namespace Minio.Tests
                 {
                     MaxDegreeOfParallelism = 8
                 },
-                i =>
+                async(i) => 
                 {
                     // concurrent execution, produce eight tcp connections.
-                    length = this.GetObjectLength(bucket, objectName).Result;
-                    Assert.IsTrue(length > 0);
+                    await this.GetObjectLength(bucket, objectName);
                 });
         }
 
@@ -98,7 +95,7 @@ namespace Minio.Tests
                                     .WithBucket(bucket)
                                     .WithObject(objectName)
                                     .WithCallbackStream((stream) =>
-                                        { objectLength = stream.Length; });
+                                        { stream.Dispose(); });
             await this.MinioClient.GetObjectAsync(getObjectArgs);
 
             return objectLength;

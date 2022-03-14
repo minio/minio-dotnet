@@ -13,6 +13,7 @@ jobs:
     strategy:
       matrix:
         configuration: [Release]
+        dotnet-version: ["6.0.x"]
 
     runs-on: windows-latest
     env:
@@ -26,10 +27,10 @@ jobs:
           fetch-depth: 0
 
       # Install the .NET
-      - name: Setup .NET
+      - name: Setup .NET ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 5.0.402
+          dotnet-version: ${{ matrix.dotnet-version }}
 
       # Install dependencies
       - name: Install dependencies
@@ -48,4 +49,4 @@ jobs:
       - name: Execute Functional Tests
         run: |
           dotnet build  Minio.Functional.Tests --configuration Release
-          dotnet Minio.Functional.Tests/bin/Release/net5.0/Minio.Functional.Tests.dll
+          dotnet Minio.Functional.Tests/bin/Release/net6.0/Minio.Functional.Tests.dll
