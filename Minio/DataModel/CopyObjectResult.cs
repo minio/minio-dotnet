@@ -20,7 +20,7 @@ using System.Xml.Serialization;
 namespace Minio.DataModel
 {
     [Serializable]
-    [XmlRoot(ElementName = "CopyObjectResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+    [XmlRoot(ElementName = "CopyObjectResult")]
     public class CopyObjectResult
     {
         public string ETag { get; set; }
