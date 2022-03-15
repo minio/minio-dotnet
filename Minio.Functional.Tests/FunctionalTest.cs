@@ -520,13 +520,13 @@ namespace Minio.Functional.Tests
             DateTime startTime = DateTime.Now;
             var args = new Dictionary<string, string>();
             var bucketList = new List<Bucket>();
-            string bucketName = "buucketnaame";
+            string bucketName = "bucketnaame";
             int noOfBuckets = 5;
             try
             {
                 foreach (int indx in Enumerable.Range(1, noOfBuckets))
                 {
-                    await Setup_Test(minio, bucketName + indx.ToString());
+                    await Setup_Test(minio, bucketName + GetRandomName(8));
                 }
             }
             catch (Exception ex)
