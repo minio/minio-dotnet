@@ -43,7 +43,7 @@ namespace Minio.DataModel
             this.AccessKey = accessKey;
             this.SecretKey = secretKey;
             this.SessionToken = sessionToken;
-            this.Expiration = (expiration.Equals(default(DateTime)))?null:utils.To8601String(expiration);
+            this.Expiration = (expiration.Equals(default(DateTime))) ? null : utils.To8601String(expiration);
         }
 
         public AccessCredentials()
