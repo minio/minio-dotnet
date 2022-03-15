@@ -497,16 +497,19 @@ namespace Minio
             {
                 credentials = this.Provider.GetCredentials();
             }
+
             if (credentials == null)
             {
                 // Unable to fetch credentials.
                 return this;
             }
+
             this.AccessKey = credentials.AccessKey;
             this.SecretKey = credentials.SecretKey;
             bool isSessionTokenAvailable = !string.IsNullOrEmpty(credentials.SessionToken);
             if ((this.Provider is AWSEnvironmentProvider ||
                  this.Provider is IAMAWSProvider ||
+                 this.Provider is CertificateIdentityProvider ||
                 (this.Provider is ChainedProvider chainedProvider && chainedProvider.CurrentProvider is AWSEnvironmentProvider))
                     && isSessionTokenAvailable)
             {

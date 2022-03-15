@@ -1,6 +1,6 @@
 /*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
- * (C) 2021 MinIO, Inc.
+ * (C) 2022 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ using System.IO;
 using System.Text;
 using System.Web;
 using System.Threading.Tasks;
+using System.Net;
 using System.Net.Http;
 using System.Xml;
 using System.Security.Cryptography.X509Certificates;
-using Newtonsoft.Json;
 using System.Xml.Serialization;
 
 using Minio.DataModel;
@@ -36,32 +36,49 @@ using Minio.Exceptions;
 
 namespace Minio.Credentials
 {
-
     [Serializable]
     [XmlRoot(ElementName = "AssumeRoleWithCertificateResponse", Namespace = "https://sts.amazonaws.com/doc/2011-06-15/")]
-    public class CertificateResponse : CertificateResult
+    public class CertificateResponse
     {
+        [XmlElement(ElementName = "AssumeRoleWithCertificateResult")]
+        public CertificateResult cr { get; set; }
+        public string ToXML()
+        {
+            XmlWriterSettings settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true
+            };
+            using (MemoryStream ms = new MemoryStream())
+            {
+                var xmlWriter = XmlWriter.Create(ms, settings);
+                XmlSerializerNamespaces names = new XmlSerializerNamespaces();
+                names.Add(string.Empty, "https://sts.amazonaws.com/doc/2011-06-15/");
+
+                XmlSerializer cs = new XmlSerializer(typeof(CertificateResponse));
+                cs.Serialize(xmlWriter, this, names);
+
+                ms.Flush();
+                ms.Seek(0, SeekOrigin.Begin);
+                var streamReader = new StreamReader(ms);
+                var xml = streamReader.ReadToEnd();
+                return xml;
+            }
+        }
+
+        [Serializable]
+        [XmlRoot(ElementName = "AssumeRoleWithCertificateResult")]
+        public class CertificateResult
+        {
+            public CertificateResult() { }
+
+            [XmlElement(ElementName = "Credentials")]
+            public AccessCredentials Credentials { get; set; }
+            public AccessCredentials GetAccessCredentials()
+            {
+                return this.Credentials;
+            }
+        }
     }
-
-
-    [Serializable]
-    [XmlRoot(ElementName = "AssumeRoleWithCertificateResult")]
-    public class CertificateResult : AccessCredentials
-    {
-    }
-
-    // [Serializable]
-    // public class CertificateResponse
-    // {
-    //     public string AssumeRoleWithCertificateResult;
-    //     [XmlElement("Credentials")]
-    //     public AccessCredentials Credentials { get; set; }
-    //     public AccessCredentials GetAccessCredentials()
-    //     {
-    //         return this.Credentials;
-    //     }
-    // }
-
     public class CertificateIdentityProvider : ClientProvider
     {
         int DEFAULT_DURATION_IN_SECONDS = 300;
@@ -71,8 +88,8 @@ namespace Minio.Credentials
         internal string clientKeyPassword { get; set; }
         internal string serverKeyPassword { get; set; }
         internal string serverPublicCrt { get; set; }
-        internal string serverPfxCert { get; set; }
-        internal string clientPfxCert { get; set; }
+        // internal string serverPfxCert { get; set; }
+        // internal string clientPfxCert { get; set; }
         internal int durationInSeconds { get; set; }
         internal HttpClient httpClient { get; set; }
 
@@ -81,7 +98,6 @@ namespace Minio.Credentials
         public CertificateIdentityProvider()
         {
             this.durationInSeconds = DEFAULT_DURATION_IN_SECONDS;
-
         }
 
         public CertificateIdentityProvider WithStsEndpoint(string stsEndpoint)
@@ -100,6 +116,17 @@ namespace Minio.Credentials
             this.stsEndpoint = stsEndpoint;
             return this;
         }
+        public CertificateIdentityProvider WithClientPrivateKey(string clientPrivateKey = null)
+        {
+            this.clientPrivateKey = clientPrivateKey;
+            return this;
+        }
+
+        public CertificateIdentityProvider WithClientPublicCrt(string clientPublicCrt = null)
+        {
+            this.clientPublicCrt = clientPublicCrt;
+            return this;
+        }
 
         public CertificateIdentityProvider WithClientKeyPassword(string clientKeyPassword = null)
         {
@@ -116,16 +143,6 @@ namespace Minio.Credentials
         public CertificateIdentityProvider WithServerPublicCrt(string serverPublicCrt = null)
         {
             this.serverPublicCrt = serverPublicCrt;
-            return this;
-        }
-
-        public CertificateIdentityProvider WithClientPfxCert(string clientPfxCert = null)
-        {
-            if (string.IsNullOrEmpty(clientPfxCert))
-            {
-                throw new InvalidEndpointException("PFX certificate a is mandatory argument.");
-            }
-            this.clientPfxCert = clientPfxCert;
             return this;
         }
 
@@ -151,7 +168,6 @@ namespace Minio.Credentials
 
         public override AccessCredentials GetCredentials()
         {
-            Console.WriteLine("Get Credential _ _ _ _ _\nNot Null = " + (this.credentials != null));
             if (this.credentials != null && !this.credentials.AreExpired())
             {
                 return this.credentials;
@@ -165,56 +181,23 @@ namespace Minio.Credentials
             Task<HttpResponseMessage> t = Task.Run(async () => await this.httpClient.PostAsync(this.stsEndpoint, null));
             t.Wait();
             HttpResponseMessage response = t.Result;
-            var content = response.Content.ReadAsStringAsync().Result;
-            Console.WriteLine("Printing response content\n" + content);
-            XmlDocument doc = new XmlDocument();
-            // doc.LoadXml(content);
-            // var credDoc = doc.GetElementsByTagName("Credentials");
-            // // Console.WriteLine("node1.FirstChild = " + node1.LocalName);
-            // // var node2 = doc.GetElementsByTagName("AssumeRoleWithCertificateResult");
-            // // Console.WriteLine("node2.Count = " + node2.Count);
-            // // Console.WriteLine("node2.Item = " + node2[0]);
 
-            // XmlNodeList nodes = doc.GetElementsByTagName("Credentials");
-            // XmlNodeList xnList = doc.SelectNodes("/AssumeRoleWithCertificateResponse[@*]/AssumeRoleWithCertificateResult");
-            // string ak = "";
-            // foreach (XmlNode node in nodes)
-            // {
-            //     Console.WriteLine("node.Name = " + node.Name);
-            //     // Console.WriteLine("aaaaaaaaaaaaaaaaaaaaaaaa"); utils.Print(node);
-            //     // foreach (XmlNode child in node.ChildNodes)
-            //     foreach (XmlNode xn in xnList)
-            //     {
-            //         XmlNode creds = xn.SelectSingleNode("Credentials");
-            //         // if (example != null)
-            //         // {
-            //         ak = creds["AccessKeyId"].InnerText;
-            //         // string no = creds["NO"].InnerText;
-            //         // Console.WriteLine(" name = " + child.Name);
-            //         // Console.WriteLine(" value " + child.Value);
-            //     }
-            // }
-            // Console.WriteLine("access key id = " + ak);
-            string json = JsonConvert.SerializeXmlNode(doc, Newtonsoft.Json.Formatting.None, true);
-            Console.WriteLine("\nJ S O N\n" + json + "\n");
-            var certResponse = JsonConvert.DeserializeObject<CertificateResponse>(json);
-            // Console.WriteLine("certResponse\n" + certResponse);
-            Console.WriteLine("      ========== certResponse ========\n"); utils.Print(certResponse);
-
-            if (this.credentials == null //&&
-                                         // certResponse.AccessKey != null &&
-                                         // certResponse.SecretKey != null &&
-                                         // !certResponse.AreExpired()
-                )
+            CertificateResponse certResponse = new CertificateResponse();
+            if (response.IsSuccessStatusCode)
             {
-                this.credentials.AccessKey = certResponse.AccessKey;
-                this.credentials.SecretKey = certResponse.SecretKey;
-                this.credentials.SessionToken = certResponse.SessionToken;
-                this.credentials.Expiration = certResponse.Expiration;
+                var content = response.Content.ReadAsStringAsync().Result;
+                var contentBytes = Encoding.UTF8.GetBytes(content);
 
-                // DateTime.Parse(certResponse.Expiration));
+                using (var stream = new MemoryStream(contentBytes))
+                    certResponse =
+                        (CertificateResponse)new XmlSerializer(typeof(CertificateResponse)).Deserialize(stream);
+
             }
-            return credentials;
+            if (this.credentials == null && certResponse != null)
+            {
+                this.credentials = certResponse.cr.Credentials;
+            }
+            return this.credentials;
         }
 
         public override async Task<AccessCredentials> GetCredentialsAsync()
@@ -224,38 +207,8 @@ namespace Minio.Credentials
             return credentials;
         }
 
-        internal AccessCredentials ParseResponse(string content)
-        {
-            Console.WriteLine("Entered ParseResponse");
-            // Stream receiveStream = content.ReadAsStreamAsync();
-            // StreamReader readStream = new StreamReader (content, Encoding.UTF8);
-            // // txtBlock.Text = readStream.ReadToEnd();
-            // Console.WriteLine("response\n"); utils.Print(response.Content);
-            // if (string.IsNullOrWhiteSpace(Convert.ToString(response.Content)) ||
-            //     !response.IsSuccessStatusCode)
-            // {
-            //     throw new ArgumentNullException("Unable to get credentials. Response error.");
-            // }
-            // Console.WriteLine("Parsing\n"); utils.Print(response.Content);
-
-
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
-            {
-                return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(stream);
-            }
-
-            // using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
-            // {
-            //     var szed = new XmlSerializer(typeof(AccessCredentials));
-            //     var dszed = szed.Deserialize(stream);
-            //     Console.WriteLine($"\n\n       ddddd\n{dszed}");
-            //     return (AccessCredentials)dszed;
-            // }
-        }
-
         public CertificateIdentityProvider Build()
         {
-            // this.Validate();
             if (string.IsNullOrEmpty(this.durationInSeconds.ToString()))
             {
                 this.durationInSeconds = DEFAULT_DURATION_IN_SECONDS;
@@ -274,43 +227,17 @@ namespace Minio.Credentials
             {
                 var handler = new HttpClientHandler();
 
-                // Add server public crt
-                if (serverPublicCrt != null)
-                {
-                    X509Certificate2 origServerCrt = new X509Certificate2(this.serverPublicCrt, this.serverKeyPassword);
-                    String b64ServerCrt = Convert.ToBase64String(origServerCrt.RawData);
-                    X509Certificate2 serverCrt = new X509Certificate2(Convert.FromBase64String(b64ServerCrt), this.serverKeyPassword);
-                    handler.ClientCertificates.Add(serverCrt);
-                }
+                X509Certificate2 serverCrt = new X509Certificate2(this.serverPublicCrt, this.serverKeyPassword);
+                handler.ClientCertificates.Add(serverCrt);
 
-                // // Add client public crt
-                // if (clientPublicCrt != null)
-                // {
-                //     X509Certificate2 origClientCrt = new X509Certificate2(this.clientPublicCrt, this.clientKeyPassword);
-                //     String b64ClientCrt = Convert.ToBase64String(origClientCrt.RawData);
-                //     X509Certificate2 clientCrt = new X509Certificate2(Convert.FromBase64String(b64ClientCrt), this.clientKeyPassword);
-                //     handler.ClientCertificates.Add(clientCrt);
-                // }
+                X509Certificate2 clientCrt = new X509Certificate2(this.clientPublicCrt, this.clientKeyPassword);
+                handler.ClientCertificates.Add(clientCrt);
 
-                // // Add client private key
-                // using (var rsa = RSA.Create())
-                // {
-                //     X509Certificate2 origClientKey = new X509Certificate2(this.clientPrivateKey, this.clientKeyPassword);
-                //     byte[] decryptedClientKey = rsa.Decrypt(origClientKey.RawData, RSAEncryptionPadding.Pkcs1);
-                //     String b64ClientKey = Convert.ToBase64String(decryptedClientKey);
-                //     X509Certificate2 clientKey = new X509Certificate2(decryptedClientKey, this.clientKeyPassword);
-                // }
-
-                // Add client certificate pfx package
-                if (clientPfxCert != null)
-                {
-                    X509Certificate2 clientPfx = new X509Certificate2(this.clientPfxCert, this.clientKeyPassword);
-                    handler.ClientCertificates.Add(clientPfx);
-                }
+                X509Certificate2 clientKey = new X509Certificate2(this.clientPrivateKey, this.clientKeyPassword);
+                handler.ClientCertificates.Add(clientKey);
 
                 handler.ClientCertificateOptions = ClientCertificateOption.Manual;
                 handler.SslProtocols = System.Security.Authentication.SslProtocols.Tls12;
-
                 this.httpClient = new HttpClient(handler)
                 {
                     BaseAddress = new Uri(stsEndpoint)
@@ -321,7 +248,6 @@ namespace Minio.Credentials
 
             }
             this.credentials = GetCredentials();
-            // Console.WriteLine($"credentials.AccessKey = {this.credentials.AccessKey}");
             return this;
         }
     }
