@@ -17,6 +17,7 @@
 
 using System;
 using System.Threading.Tasks;
+using System.Security.Cryptography.X509Certificates;
 
 using Minio.Credentials;
 using Minio.DataModel;
@@ -34,42 +35,35 @@ namespace Minio.Examples.Cases
         {
             // STS endpoint
             var stsEndpoint = "https://myminio:9000/";
-            // client side certs
-            var clientPublicCrt = "client.crt";
-            var clientPrivateKey = "client.key";
-            var clientKeyPassword = "1234";
-            // server side certs
-            var serverPublicCrt = "public.crt";
-            var serverKeyPassword = "1234";
 
-            var provider = new CertificateIdentityProvider()
-                                    .WithStsEndpoint(stsEndpoint)
-                                    .WithClientPublicCrt(clientPublicCrt)
-                                    .WithClientPrivateKey(clientPrivateKey)
-                                    .WithClientKeyPassword(clientKeyPassword)
-                                    .WithServerKeyPassword(serverKeyPassword)
-                                    .WithServerPublicCrt(serverPublicCrt)
-                                    .Build();
+	    // Generatng pfx cert for this call.
+	    // openssl pkcs12 -export -out client.pfx -inkey client.key -in client.crt -certfile server.crt
+            using(var cert = new X509Certificate2("C:\\dev\\client.pfx", "optional-password"))
+	    {
+		var provider = new CertificateIdentityProvider()
+		    .WithStsEndpoint(stsEndpoint)
+		    .WithCertificate(cert)
+		    .Build();
 
+		MinioClient minioClient = new MinioClient()
+		    .WithEndpoint("myminio:9000")
+		    .WithSSL()
+		    .WithCredentialsProvider(provider)
+		    .Build();
 
-            MinioClient minioClient = new MinioClient()
-                                                .WithEndpoint("myminio:9000")
-                                                .WithSSL()
-                                                .WithCredentialsProvider(provider)
-                                                .Build();
-
-            try
-            {
-                StatObjectArgs statObjectArgs = new StatObjectArgs()
-                                                            .WithBucket("bucket-name")
-                                                            .WithObject("object-name");
-                ObjectStat result = await minioClient.StatObjectAsync(statObjectArgs);
-                Console.WriteLine("Object Stat: \n" + result.ToString());
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"CertificateIdentityExample test exception: {e}");
-            }
+		try
+		{
+		    StatObjectArgs statObjectArgs = new StatObjectArgs()
+			.WithBucket("bucket-name")
+			.WithObject("object-name");
+		    ObjectStat result = await minioClient.StatObjectAsync(statObjectArgs);
+		    Console.WriteLine("Object Stat: \n" + result.ToString());
+		}
+		catch (Exception e)
+		{
+		    Console.WriteLine($"CertificateIdentityExample test exception: {e}");
+		}
+	    }
         }
     }
 }
