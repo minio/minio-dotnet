@@ -29,33 +29,23 @@ namespace Minio.Examples.Cases
 
     public class CeritificateIdentityProviderExample
     {
-        internal class JsonNetLogger : IRequestLogger
-        {
-            public void LogRequest(RequestToLog requestToLog, ResponseToLog responseToLog, double durationMs)
-            {
-                Console.WriteLine(string.Format("Request completed in {0} ms\nRequest:\n{1}\nResponse:\n{2}",
-                    durationMs,
-                    JsonConvert.SerializeObject(requestToLog, Formatting.Indented),
-                    JsonConvert.SerializeObject(responseToLog, Formatting.Indented)));
-            }
-        }
-
         // Establish Authentication on both ways with client and server certificates
         public async static Task Run()
         {
             // STS endpoint
             var stsEndpoint = "https://myminio:9000/";
-            // passwords
-            var clientKeyPassword = "minio123";
-            var serverKeyPassword = "";
-            // server side public crt
+            // client side certs
+            var clientPublicCrt = "client.crt";
+            var clientPrivateKey = "client.key";
+            var clientKeyPassword = "1234";
+            // server side certs
             var serverPublicCrt = "public.crt";
-            // client side pfx certificate
-            var clientPfxCert = "client1.pfx";
+            var serverKeyPassword = "1234";
 
             var provider = new CertificateIdentityProvider()
                                     .WithStsEndpoint(stsEndpoint)
-                                    .WithClientPfxCert(clientPfxCert)
+                                    .WithClientPublicCrt(clientPublicCrt)
+                                    .WithClientPrivateKey(clientPrivateKey)
                                     .WithClientKeyPassword(clientKeyPassword)
                                     .WithServerKeyPassword(serverKeyPassword)
                                     .WithServerPublicCrt(serverPublicCrt)
@@ -68,13 +58,11 @@ namespace Minio.Examples.Cases
                                                 .WithCredentialsProvider(provider)
                                                 .Build();
 
-            minioClient.SetTraceOn(new JsonNetLogger());
-
             try
             {
                 StatObjectArgs statObjectArgs = new StatObjectArgs()
-                                                            .WithBucket("ers")
-                                                            .WithObject("issue");
+                                                            .WithBucket("bucket-name")
+                                                            .WithObject("object-name");
                 ObjectStat result = await minioClient.StatObjectAsync(statObjectArgs);
                 Console.WriteLine("Object Stat: \n" + result.ToString());
             }

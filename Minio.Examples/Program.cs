@@ -115,19 +115,19 @@ namespace Minio.Examples
                                         .Build();
             }
             // Assign parameters before starting the test 
-            // string bucketName = GetRandomName();
-            // string smallFileName = CreateFile(1 * UNIT_MB);
-            // string bigFileName = CreateFile(6 * UNIT_MB);
-            // string objectName = GetRandomName();
-            // string destBucketName = GetRandomName();
-            // string destObjectName = GetRandomName();
-            // string lockBucketName = GetRandomName();
-            // List<string> objectsList = new List<string>();
-            // for (int i = 0; i < 10; i++)
-            // {
-            //     objectsList.Add(objectName + i.ToString());
-            // }
-            // // Set app Info 
+            string bucketName = GetRandomName();
+            string smallFileName = CreateFile(1 * UNIT_MB);
+            string bigFileName = CreateFile(6 * UNIT_MB);
+            string objectName = GetRandomName();
+            string destBucketName = GetRandomName();
+            string destObjectName = GetRandomName();
+            string lockBucketName = GetRandomName();
+            List<string> objectsList = new List<string>();
+            for (int i = 0; i < 10; i++)
+            {
+                objectsList.Add(objectName + i.ToString());
+            }
+            // Set app Info 
             minioClient.SetAppInfo("app-name", "app-version");
 
             // Set HTTP Tracing On
@@ -136,160 +136,154 @@ namespace Minio.Examples
             // Set HTTP Tracing Off
             // minioClient.SetTraceOff();
             // Check if bucket exists
-            // Cases.BucketExists.Run(minioClient, bucketName).Wait();
+            Cases.BucketExists.Run(minioClient, bucketName).Wait();
 
-            // // Create a new bucket
-            // Cases.MakeBucket.Run(minioClient, bucketName).Wait();
-            // Cases.MakeBucket.Run(minioClient, destBucketName).Wait();
+            // Create a new bucket
+            Cases.MakeBucket.Run(minioClient, bucketName).Wait();
+            Cases.MakeBucket.Run(minioClient, destBucketName).Wait();
 
-            // // Bucket with Lock tests
-            // Cases.MakeBucketWithLock.Run(minioClient, lockBucketName).Wait();
-            // Cases.BucketExists.Run(minioClient, lockBucketName).Wait();
-            // Cases.RemoveBucket.Run(minioClient, lockBucketName).Wait();
+            // Bucket with Lock tests
+            Cases.MakeBucketWithLock.Run(minioClient, lockBucketName).Wait();
+            Cases.BucketExists.Run(minioClient, lockBucketName).Wait();
+            Cases.RemoveBucket.Run(minioClient, lockBucketName).Wait();
 
-            // // Versioning tests
-            // Cases.GetVersioning.Run(minioClient, bucketName).Wait();
-            // Cases.EnableSuspendVersioning.Run(minioClient, bucketName).Wait();
-            // Cases.GetVersioning.Run(minioClient, bucketName).Wait();
-            // // List all the buckets on the server
-            // Cases.ListBuckets.Run(minioClient).Wait();
+            // Versioning tests
+            Cases.GetVersioning.Run(minioClient, bucketName).Wait();
+            Cases.EnableSuspendVersioning.Run(minioClient, bucketName).Wait();
+            Cases.GetVersioning.Run(minioClient, bucketName).Wait();
+            // List all the buckets on the server
+            Cases.ListBuckets.Run(minioClient).Wait();
 
-            // // Start listening for bucket notifications
-            // Cases.ListenBucketNotifications.Run(minioClient, bucketName, new List<EventType> { EventType.ObjectCreatedAll });
+            // Start listening for bucket notifications
+            Cases.ListenBucketNotifications.Run(minioClient, bucketName, new List<EventType> { EventType.ObjectCreatedAll });
 
-            // // Put an object to the new bucket
-            // Cases.PutObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
+            // Put an object to the new bucket
+            Cases.PutObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
 
-            // // Get object metadata
-            // Cases.StatObject.Run(minioClient, bucketName, objectName).Wait();
+            // Get object metadata
+            Cases.StatObject.Run(minioClient, bucketName, objectName).Wait();
 
-            // // List the objects in the new bucket
-            // Cases.ListObjects.Run(minioClient, bucketName);
+            // List the objects in the new bucket
+            Cases.ListObjects.Run(minioClient, bucketName);
 
-            // // Get the file and Download the object as file
-            // Cases.GetObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
-            // // Select content from object
-            // Cases.SelectObjectContent.Run(minioClient, bucketName, objectName).Wait();
-            // // Delete the file and Download partial object as file
-            // Cases.GetPartialObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
+            // Get the file and Download the object as file
+            Cases.GetObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
+            // Select content from object
+            Cases.SelectObjectContent.Run(minioClient, bucketName, objectName).Wait();
+            // Delete the file and Download partial object as file
+            Cases.GetPartialObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
 
-            // // Server side copyObject
-            // Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName).Wait();
+            // Server side copyObject
+            Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName).Wait();
 
-            // // Server side copyObject with metadata replacement
-            // Cases.CopyObjectMetadata.Run(minioClient, bucketName, objectName, destBucketName, objectName).Wait();
+            // Server side copyObject with metadata replacement
+            Cases.CopyObjectMetadata.Run(minioClient, bucketName, objectName, destBucketName, objectName).Wait();
 
-            // // Upload a File with PutObject
-            // Cases.FPutObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
+            // Upload a File with PutObject
+            Cases.FPutObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
 
-            // // Delete the file and Download the object as file
-            // Cases.FGetObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
+            // Delete the file and Download the object as file
+            Cases.FGetObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
 
-            // // Automatic Multipart Upload with object more than 5Mb
-            // Cases.PutObject.Run(minioClient, bucketName, objectName, bigFileName).Wait();
+            // Automatic Multipart Upload with object more than 5Mb
+            Cases.PutObject.Run(minioClient, bucketName, objectName, bigFileName).Wait();
 
-            // // Specify SSE-C encryption options
-            // var aesEncryption = Aes.Create();
-            // aesEncryption.KeySize = 256;
-            // aesEncryption.GenerateKey();
+            // Specify SSE-C encryption options
+            var aesEncryption = Aes.Create();
+            aesEncryption.KeySize = 256;
+            aesEncryption.GenerateKey();
 
-            // var ssec = new SSEC(aesEncryption.Key);
-            // // Specify SSE-C source side encryption for Copy operations
-            // var sseCpy = new SSECopy(aesEncryption.Key);
+            var ssec = new SSEC(aesEncryption.Key);
+            // Specify SSE-C source side encryption for Copy operations
+            var sseCpy = new SSECopy(aesEncryption.Key);
 
-            // // Uncomment to specify SSE-S3 encryption option
-            // var sses3 = new SSES3();
+            // Uncomment to specify SSE-S3 encryption option
+            var sses3 = new SSES3();
 
-            // // Uncomment to specify SSE-KMS encryption option
-            // var sseKms = new SSEKMS("kms-key", new Dictionary<string, string> { { "kms-context", "somevalue" } });
+            // Uncomment to specify SSE-KMS encryption option
+            var sseKms = new SSEKMS("kms-key", new Dictionary<string, string> { { "kms-context", "somevalue" } });
 
-            // // Upload encrypted object
-            // string putFileName1 = CreateFile(1 * UNIT_MB);
-            // Cases.PutObject.Run(minioClient, bucketName, objectName, putFileName1, sse: ssec).Wait();
-            // // Copy SSE-C encrypted object to unencrypted object
-            // Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName, sseSrc: sseCpy, sseDest: ssec).Wait();
-            // // Download SSE-C encrypted object
-            // Cases.FGetObject.Run(minioClient, destBucketName, objectName, bigFileName, sse: ssec).Wait();
+            // Upload encrypted object
+            string putFileName1 = CreateFile(1 * UNIT_MB);
+            Cases.PutObject.Run(minioClient, bucketName, objectName, putFileName1, sse: ssec).Wait();
+            // Copy SSE-C encrypted object to unencrypted object
+            Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName, sseSrc: sseCpy, sseDest: ssec).Wait();
+            // Download SSE-C encrypted object
+            Cases.FGetObject.Run(minioClient, destBucketName, objectName, bigFileName, sse: ssec).Wait();
 
-            // // List the incomplete uploads
-            // Cases.ListIncompleteUploads.Run(minioClient, bucketName);
-
-            // // Remove all the incomplete uploads
-            // Cases.RemoveIncompleteUpload.Run(minioClient, bucketName, objectName).Wait();
+            // List the incomplete uploads
+            Cases.ListIncompleteUploads.Run(minioClient, bucketName);
 
             // Remove all the incomplete uploads
-            // Cases.AWSEnvironmentProviderExample.Run().Wait();
-            // Cases.ChainedCredentialProviderExample.Run().Wait();  // DOES NOT EXIST!
-            // Cases.IAMAWSProviderExample.Run().Wait();
-            Cases.CeritificateIdentityProviderExample.Run().Wait();
+            Cases.RemoveIncompleteUpload.Run(minioClient, bucketName, objectName).Wait();
 
-            // // Set a policy for given bucket
-            // Cases.SetBucketPolicy.Run(minioClient, bucketName).Wait();
-            // // Get the policy for given bucket
-            // Cases.GetBucketPolicy.Run(minioClient, bucketName).Wait();
+            // Set a policy for given bucket
+            Cases.SetBucketPolicy.Run(minioClient, bucketName).Wait();
+            // Get the policy for given bucket
+            Cases.GetBucketPolicy.Run(minioClient, bucketName).Wait();
 
-            // // Set bucket notifications
-            // Cases.SetBucketNotification.Run(minioClient, bucketName).Wait();
+            // Set bucket notifications
+            Cases.SetBucketNotification.Run(minioClient, bucketName).Wait();
 
-            // // Get bucket notifications
-            // Cases.GetBucketNotification.Run(minioClient, bucketName).Wait();
+            // Get bucket notifications
+            Cases.GetBucketNotification.Run(minioClient, bucketName).Wait();
 
-            // // Remove all bucket notifications
-            // Cases.RemoveAllBucketNotifications.Run(minioClient, bucketName).Wait();
+            // Remove all bucket notifications
+            Cases.RemoveAllBucketNotifications.Run(minioClient, bucketName).Wait();
 
-            // // Object Lock Configuration operations
-            // lockBucketName = GetRandomName();
-            // Cases.MakeBucketWithLock.Run(minioClient, lockBucketName).Wait();
-            // ObjectLockConfiguration configuration = new ObjectLockConfiguration(RetentionMode.GOVERNANCE, 35);
-            // Cases.SetObjectLockConfiguration.Run(minioClient, lockBucketName, configuration).Wait();
-            // Cases.GetObjectLockConfiguration.Run(minioClient, lockBucketName).Wait();
-            // Cases.RemoveObjectLockConfiguration.Run(minioClient, lockBucketName).Wait();
-            // Cases.RemoveBucket.Run(minioClient, lockBucketName).Wait();
+            // Object Lock Configuration operations
+            lockBucketName = GetRandomName();
+            Cases.MakeBucketWithLock.Run(minioClient, lockBucketName).Wait();
+            ObjectLockConfiguration configuration = new ObjectLockConfiguration(RetentionMode.GOVERNANCE, 35);
+            Cases.SetObjectLockConfiguration.Run(minioClient, lockBucketName, configuration).Wait();
+            Cases.GetObjectLockConfiguration.Run(minioClient, lockBucketName).Wait();
+            Cases.RemoveObjectLockConfiguration.Run(minioClient, lockBucketName).Wait();
+            Cases.RemoveBucket.Run(minioClient, lockBucketName).Wait();
 
-            // // Bucket Replication operations
-            // string replicationRuleID = "myreplicationID-3333";
-            // Cases.SetBucketReplication.Run(minioClient, bucketName,
-            //                         destBucketName, replicationRuleID).Wait();
-            // Cases.GetBucketReplication.Run(minioClient, bucketName,
-            //                                replicationRuleID).Wait();
-            // // TODO: we can verify that the replication happens by checking
-            // // the content in the destination matches the source content.
-            // //     We also cannot remove the replication config immediately
-            // //     after running GetBucketReplication command, as
-            // //     replicating the source in the destination takes some time.
-            // Cases.RemoveBucketReplication.Run(minioClient, bucketName).Wait();
+            // Bucket Replication operations
+            string replicationRuleID = "myreplicationID-3333";
+            Cases.SetBucketReplication.Run(minioClient, bucketName,
+                                    destBucketName, replicationRuleID).Wait();
+            Cases.GetBucketReplication.Run(minioClient, bucketName,
+                                           replicationRuleID).Wait();
+            // TODO: we can verify that the replication happens by checking
+            // the content in the destination matches the source content.
+            //     We also cannot remove the replication config immediately
+            //     after running GetBucketReplication command, as
+            //     replicating the source in the destination takes some time.
+            Cases.RemoveBucketReplication.Run(minioClient, bucketName).Wait();
 
-            // // Get the presigned url for a GET object request
-            // Cases.PresignedGetObject.Run(minioClient, bucketName, objectName).Wait();
+            // Get the presigned url for a GET object request
+            Cases.PresignedGetObject.Run(minioClient, bucketName, objectName).Wait();
 
-            // // Get the presigned POST policy curl url
-            // Cases.PresignedPostPolicy.Run(minioClient, bucketName, objectName).Wait();
+            // Get the presigned POST policy curl url
+            Cases.PresignedPostPolicy.Run(minioClient, bucketName, objectName).Wait();
 
-            // // Get the presigned url for a PUT object request
-            // Cases.PresignedPutObject.Run(minioClient, bucketName, objectName).Wait();
+            // Get the presigned url for a PUT object request
+            Cases.PresignedPutObject.Run(minioClient, bucketName, objectName).Wait();
 
-            // // Delete the list of objects
-            // Cases.RemoveObjects.Run(minioClient, bucketName, objectsList).Wait();
+            // Delete the list of objects
+            Cases.RemoveObjects.Run(minioClient, bucketName, objectsList).Wait();
 
-            // // Delete the object
-            // Cases.RemoveObject.Run(minioClient, bucketName, objectName).Wait();
+            // Delete the object
+            Cases.RemoveObject.Run(minioClient, bucketName, objectName).Wait();
 
-            // // Delete the object
-            // Cases.RemoveObject.Run(minioClient, destBucketName, objectName).Wait();
+            // Delete the object
+            Cases.RemoveObject.Run(minioClient, destBucketName, objectName).Wait();
 
-            // // Retry on failure
-            // Cases.RetryPolicyObject.Run(minioClient, destBucketName, objectName).Wait();
+            // Retry on failure
+            Cases.RetryPolicyObject.Run(minioClient, destBucketName, objectName).Wait();
 
-            // // Tracing request with custom logger
-            // Cases.CustomRequestLogger.Run(minioClient).Wait();
+            // Tracing request with custom logger
+            Cases.CustomRequestLogger.Run(minioClient).Wait();
 
-            // // Remove the buckets
-            // Cases.RemoveBucket.Run(minioClient, bucketName).Wait();
-            // Cases.RemoveBucket.Run(minioClient, destBucketName).Wait();
+            // Remove the buckets
+            Cases.RemoveBucket.Run(minioClient, bucketName).Wait();
+            Cases.RemoveBucket.Run(minioClient, destBucketName).Wait();
 
-            // // Remove the binary files created for test
-            // File.Delete(smallFileName);
-            // File.Delete(bigFileName);
+            // Remove the binary files created for test
+            File.Delete(smallFileName);
+            File.Delete(bigFileName);
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
