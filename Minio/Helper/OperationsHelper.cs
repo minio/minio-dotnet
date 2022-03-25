@@ -77,6 +77,7 @@ namespace Minio
             long length = objectStat.Size;
             string etag = objectStat.ETag;
 
+            long tempFileSize = 0;
             string tempFileName = $"{args.FileName}.{etag}.part.minio";
             if (!string.IsNullOrEmpty(args.VersionId))
             {
@@ -93,6 +94,22 @@ namespace Minio
                 File.Delete(tempFileName);
             }
 
+            args = args.WithCallbackStream((stream) =>
+                                   {
+                                       var fileStream = File.Create(tempFileName);
+                                       stream.CopyTo(fileStream);
+                                       fileStream.Dispose();
+                                       FileInfo writtenInfo = new FileInfo(tempFileName);
+                                       long writtenSize = writtenInfo.Length;
+                                       if (writtenSize != (length - tempFileSize))
+                                       {
+                                           throw new IOException(tempFileName +
+                                                ": Unexpected data written. Expected = "
+                                                + (length - tempFileSize)
+                                                + ", written = " + writtenSize);
+                                       }
+                                       utils.MoveWithReplace(tempFileName, args.FileName);
+                                   });
             return getObjectStreamAsync(args, objectStat, null, cancellationToken);
         }
 
