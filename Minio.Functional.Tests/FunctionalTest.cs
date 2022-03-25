@@ -2408,10 +2408,22 @@ namespace Minio.Functional.Tests
             try
             {
                 await Setup_Test(minio, bucketName);
+                using (System.IO.MemoryStream filestream = rsg.GenerateStreamFromSeed(1 * MB))
+                {
+                    // long file_write_size = filestream.Length;
+                    PutObjectArgs putObjectArgs = new PutObjectArgs()
+                                                            .WithBucket(bucketName)
+                                                            .WithObject(objectName)
+                                                            .WithStreamData(filestream)
+                                                            .WithObjectSize(filestream.Length);
+
+                    await minio.PutObjectAsync(putObjectArgs);
+                }
+
             }
             catch (Exception ex)
             {
-                new MintLogger("GetObject_Test2", getObjectSignature, "Tests for non-existent GetObject", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args: args).Log();
+                new MintLogger("GetObject_Test2", getObjectSignature, "Test setup for GetObject with a filename", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args: args).Log();
                 await TearDown(minio, bucketName);
                 throw;
             }
@@ -2422,25 +2434,29 @@ namespace Minio.Functional.Tests
                                                         .WithBucket(bucketName)
                                                         .WithObject(objectName)
                                                         .WithFile(fileName);
+
                 await minio.GetObjectAsync(getObjectArgs);
-                throw new InvalidOperationException("GetObjectAsync expected to throw an exception for non-existent object");
+                Assert.IsTrue(File.Exists(fileName));
+                new MintLogger("GetObject_Test2", getObjectSignature, "Tests whether GetObject with a file name works", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (ObjectNotFoundException)
             {
-                new MintLogger("GetObject_Test2", getObjectSignature, "Tests for non-existent GetObject", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
+                new MintLogger("GetObject_Test2", getObjectSignature, "Tests for GetObject with a file name", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (InvalidOperationException ex)
             {
-                new MintLogger("GetObject_Test2", getObjectSignature, "Tests for non-existent GetObject", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args: args).Log();
+                new MintLogger("GetObject_Test2", getObjectSignature, "Tests for GetObject with a file name", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args: args).Log();
                 throw;
             }
             catch (Exception ex)
             {
-                new MintLogger("GetObject_Test2", getObjectSignature, "Tests for non-existent GetObject", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args: args).Log();
+                new MintLogger("GetObject_Test2", getObjectSignature, "Tests for GetObject with a file name", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args: args).Log();
                 throw;
             }
             finally
             {
+                if (File.Exists(fileName))
+                    File.Delete(fileName);
                 await TearDown(minio, bucketName);
             }
         }
