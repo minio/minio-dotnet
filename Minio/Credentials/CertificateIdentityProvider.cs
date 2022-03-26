@@ -82,7 +82,7 @@ namespace Minio.Credentials
     }
     public class CertificateIdentityProvider : ClientProvider
     {
-        int DEFAULT_DURATION_IN_SECONDS = 300;
+        int DEFAULT_DURATION_IN_SECONDS = 3600;
         internal string stsEndpoint { get; set; }
         internal int durationInSeconds { get; set; }
         internal X509Certificate2 clientCertificate { get; set; }
