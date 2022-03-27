@@ -5,20 +5,22 @@
 ## MinIO
 
 ```cs
-var minioClient = new MinioClient("play.min.io",
-                                       "Q3AM3UQ867SPQQA43P2F",
-                                       "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
-                                 ).WithSSL();
+MinioClient minioClient = new MinioClient()
+                                    .WithEndpoint("play.min.io")
+                                    .WithCredentials("Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+                                    .WithSSL()
+                                    .Build();
 ```
 
 ## AWS S3
 
 
 ```cs
-var s3Client = new MinioClient("s3.amazonaws.com",
-                                   "YOUR-ACCESSKEYID",
-                                   "YOUR-SECRETACCESSKEY"
-                               ).WithSSL();
+MinioClient minioClient = new MinioClient()
+                                    .WithEndpoint("s3.amazonaws.com")
+                                    .WithCredentials("YOUR-ACCESSKEYID", "YOUR-SECRETACCESSKEY")
+                                    .WithSSL()
+                                    .Build();
 ```
 
 | Bucket operations |  Object operations | Presigned operations  | Bucket Policy Operations
@@ -169,8 +171,7 @@ MinioClient minioClient = new MinioClient("play.min.io");
 // 2. public MinioClient(String endpoint, String accessKey, String secretKey)
 MinioClient minioClient = new MinioClient("play.min.io",
                                           accessKey:"Q3AM3UQ867SPQQA43P2F",
-                                          secretKey:"zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
-                                          ).WithSSL();
+                                          secretKey:"zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG");
 
 // 3. Initializing minio client with proxy
 IWebProxy proxy = new WebProxy("192.168.0.1", 8000);
@@ -204,7 +205,7 @@ MinioClient s3Client = new MinioClient("s3.amazonaws.com").WithSSL();
 // 2. public MinioClient(String endpoint, String accessKey, String secretKey)
 MinioClient s3Client = new MinioClient("s3.amazonaws.com",
                                        accessKey:"YOUR-ACCESSKEYID",
-                                       secretKey:"YOUR-SECRETACCESSKEY").WithSSL();
+                                       secretKey:"YOUR-SECRETACCESSKEY");
 // 3. Using Builder with public MinioClient(), Endpoint, Credentials & Secure connection
 MinioClient minioClient = new MinioClient()
                                     .WithEndpoint("s3.amazonaws.com")
