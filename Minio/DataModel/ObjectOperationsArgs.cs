@@ -1931,6 +1931,11 @@ namespace Minio
             {
                 utils.ValidateFile(this.FileName);
             }
+            // Check object size when using stream data
+            if (ObjectStreamData != null && ObjectSize == 0)
+            {
+                throw new ArgumentException($"{nameof(ObjectSize)} must be set");
+            }
             this.Populate();
         }
 
