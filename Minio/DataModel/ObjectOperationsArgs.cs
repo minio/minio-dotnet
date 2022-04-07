@@ -1909,9 +1909,9 @@ namespace Minio
         internal override void Validate()
         {
             base.Validate();
-            if (this.RequestBody == null && this.ObjectStreamData == null && string.IsNullOrWhiteSpace(this.FileName))
+            if (string.IsNullOrWhiteSpace(FileName) && ObjectStreamData == null)
             {
-                throw new ArgumentNullException("Invalid input. " + nameof(RequestBody) + ", " + nameof(FileName) + " and " + nameof(ObjectStreamData) + " cannot be empty.");
+                throw new ArgumentException("One of " + nameof(FileName) + " or " + nameof(ObjectStreamData) + " must be set.");
             }
             if (this.PartNumber < 0)
             {
