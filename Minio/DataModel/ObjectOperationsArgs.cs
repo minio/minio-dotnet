@@ -1909,6 +1909,7 @@ namespace Minio
         internal override void Validate()
         {
             base.Validate();
+            // Check atleast one of filename or stream are initialized
             if (string.IsNullOrWhiteSpace(FileName) && ObjectStreamData == null)
             {
                 throw new ArgumentException("One of " + nameof(FileName) + " or " + nameof(ObjectStreamData) + " must be set.");
@@ -1921,11 +1922,6 @@ namespace Minio
             if (!string.IsNullOrWhiteSpace(this.FileName) && this.ObjectStreamData != null)
             {
                 throw new ArgumentException("Only one of " + nameof(FileName) + " or " + nameof(ObjectStreamData) + " should be set.");
-            }
-            // Check atleast one of filename or stream are initialized
-            if (string.IsNullOrWhiteSpace(this.FileName) && this.ObjectStreamData == null)
-            {
-                throw new ArgumentException("One of " + nameof(FileName) + " or " + nameof(ObjectStreamData) + " must be set.");
             }
             if (!string.IsNullOrWhiteSpace(this.FileName))
             {
