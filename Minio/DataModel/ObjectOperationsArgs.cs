@@ -1909,9 +1909,10 @@ namespace Minio
         internal override void Validate()
         {
             base.Validate();
-            if (this.RequestBody == null && this.ObjectStreamData == null && string.IsNullOrWhiteSpace(this.FileName))
+            // Check atleast one of filename or stream are initialized
+            if (string.IsNullOrWhiteSpace(FileName) && ObjectStreamData == null)
             {
-                throw new ArgumentNullException("Invalid input. " + nameof(RequestBody) + ", " + nameof(FileName) + " and " + nameof(ObjectStreamData) + " cannot be empty.");
+                throw new ArgumentException("One of " + nameof(FileName) + " or " + nameof(ObjectStreamData) + " must be set.");
             }
             if (this.PartNumber < 0)
             {
@@ -1922,14 +1923,14 @@ namespace Minio
             {
                 throw new ArgumentException("Only one of " + nameof(FileName) + " or " + nameof(ObjectStreamData) + " should be set.");
             }
-            // Check atleast one of filename or stream are initialized
-            if (string.IsNullOrWhiteSpace(this.FileName) && this.ObjectStreamData == null)
-            {
-                throw new ArgumentException("One of " + nameof(FileName) + " or " + nameof(ObjectStreamData) + " must be set.");
-            }
             if (!string.IsNullOrWhiteSpace(this.FileName))
             {
                 utils.ValidateFile(this.FileName);
+            }
+            // Check object size when using stream data
+            if (ObjectStreamData != null && ObjectSize == 0)
+            {
+                throw new ArgumentException($"{nameof(ObjectSize)} must be set");
             }
             this.Populate();
         }
