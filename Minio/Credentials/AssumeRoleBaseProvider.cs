@@ -112,6 +112,7 @@ namespace Minio.Credentials
                 throw new InvalidOperationException("MinioClient is not set in AssumeRoleBaseProvider");
             }
             reqBuilder = await Client.CreateRequest(HttpMethod.Post);
+            reqBuilder.AddQueryParameter("Action", this.Action);
             reqBuilder.AddQueryParameter("Version", "2011-06-15");
             if (!string.IsNullOrWhiteSpace(this.Policy))
             {

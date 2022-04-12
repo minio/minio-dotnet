@@ -524,20 +524,24 @@ namespace Minio
         /// <param name="errorHandlers">List of handlers to override default handling</param>
         /// <param name="requestMessageBuilder">The build of HttpRequestMessageBuilder </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <param name="assumeRole">boolean; if true role credentials, otherwise IAM user</param>
         /// <returns>ResponseResult</returns>
         internal Task<ResponseResult> ExecuteTaskAsync(
             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             HttpRequestMessageBuilder requestMessageBuilder,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default(CancellationToken),
+            bool assumeRole = false)
         {
             return ExecuteWithRetry(
-                () => ExecuteTaskCoreAsync(errorHandlers, requestMessageBuilder, cancellationToken));
+                () => ExecuteTaskCoreAsync(errorHandlers, requestMessageBuilder,
+                                           cancellationToken, assumeRole));
         }
 
         private async Task<ResponseResult> ExecuteTaskCoreAsync(
             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             HttpRequestMessageBuilder requestMessageBuilder,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default(CancellationToken),
+            bool assumeRole = false)
         {
 
             var startTime = DateTime.Now;
@@ -552,7 +556,7 @@ namespace Minio
                 this.SessionToken);
 
             requestMessageBuilder.AddOrUpdateHeaderParameter("Authorization",
-                        v4Authenticator.Authenticate(requestMessageBuilder));
+                v4Authenticator.Authenticate(requestMessageBuilder, assumeRole));
 
             HttpRequestMessage request = requestMessageBuilder.Request;
 

@@ -253,63 +253,64 @@ namespace Minio
         {
             args.Validate();
             return Observable.Create<Item>(
-              async (obs, ct) =>
-              {
-                  bool isRunning = true;
-                  var delimiter = (args.Recursive) ? string.Empty : "/";
-                  string marker = string.Empty;
-                  uint count = 0;
-                  string versionIdMarker = string.Empty;
-                  string nextContinuationToken = string.Empty;
-                  using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
-                  {
-                      while (isRunning)
-                      {
-                          GetObjectListArgs goArgs = new GetObjectListArgs()
-                                                              .WithBucket(args.BucketName)
-                                                              .WithPrefix(args.Prefix)
-                                                              .WithDelimiter(delimiter)
-                                                              .WithVersions(args.Versions)
-                                                              .WithContinuationToken(nextContinuationToken)
-                                                              .WithMarker(marker)
-                                                              .WithListObjectsV1(!args.UseV2)
-                                                              .WithVersionIdMarker(versionIdMarker);
-                          if (args.Versions)
-                          {
-                              Tuple<ListVersionsResult, List<Item>> objectList = await this.GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
-                              ListObjectVersionResponse listObjectsItemResponse = new ListObjectVersionResponse(args, objectList, obs);
-                              if (objectList.Item2.Count == 0 && count == 0)
-                              {
-                                  string name = args.BucketName;
-                                  if (!string.IsNullOrEmpty(args.Prefix))
-                                      name += "/" + args.Prefix;
-                                  throw new EmptyBucketOperation("Bucket " + name + " is empty.");
-                              }
-                              obs = listObjectsItemResponse.ItemObservable;
-                              marker = listObjectsItemResponse.NextKeyMarker;
-                              versionIdMarker = listObjectsItemResponse.NextVerMarker;
-                              isRunning = objectList.Item1.IsTruncated;
-                          }
-                          else
-                          {
-                              Tuple<ListBucketResult, List<Item>> objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
-                              if (objectList.Item2.Count == 0 && objectList.Item1.KeyCount.Equals("0") && count == 0)
-                              {
-                                  string name = args.BucketName;
-                                  if (!string.IsNullOrEmpty(args.Prefix))
-                                      name += "/" + args.Prefix;
-                                  throw new EmptyBucketOperation("Bucket " + name + " is empty.");
-                              }
-                              ListObjectsItemResponse listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);
-                              marker = listObjectsItemResponse.NextMarker;
-                              isRunning = objectList.Item1.IsTruncated;
-                              nextContinuationToken = (objectList.Item1.IsTruncated) ? objectList.Item1.NextContinuationToken : string.Empty;
-                          }
-                          cts.Token.ThrowIfCancellationRequested();
-                          count++;
-                      }
-                  }
-              });
+                async (obs, ct) =>
+                {
+                    bool isRunning = true;
+                    var delimiter = (args.Recursive) ? string.Empty : "/";
+                    string marker = string.Empty;
+                    uint count = 0;
+                    string versionIdMarker = string.Empty;
+                    string nextContinuationToken = string.Empty;
+                    using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
+                    {
+                        while (isRunning)
+                        {
+                            GetObjectListArgs goArgs = new GetObjectListArgs()
+                                                                .WithBucket(args.BucketName)
+                                                                .WithPrefix(args.Prefix)
+                                                                .WithDelimiter(delimiter)
+                                                                .WithVersions(args.Versions)
+                                                                .WithContinuationToken(nextContinuationToken)
+                                                                .WithMarker(marker)
+                                                                .WithListObjectsV1(!args.UseV2)
+                                                                .WithVersionIdMarker(versionIdMarker);
+                            if (args.Versions)
+                            {
+                                Tuple<ListVersionsResult, List<Item>> objectList = await this.GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
+                                ListObjectVersionResponse listObjectsItemResponse = new ListObjectVersionResponse(args, objectList, obs);
+                                if (objectList.Item2.Count == 0 && count == 0)
+                                {
+                                    string name = args.BucketName;
+                                    if (!string.IsNullOrEmpty(args.Prefix))
+                                        name += "/" + args.Prefix;
+                                    throw new EmptyBucketOperation("Bucket " + name + " is empty.");
+                                }
+                                obs = listObjectsItemResponse.ItemObservable;
+                                marker = listObjectsItemResponse.NextKeyMarker;
+                                versionIdMarker = listObjectsItemResponse.NextVerMarker;
+                                isRunning = objectList.Item1.IsTruncated;
+                            }
+                            else
+                            {
+                                Tuple<ListBucketResult, List<Item>> objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
+                                if (objectList.Item2.Count == 0 && objectList.Item1.KeyCount.Equals("0") && count == 0)
+                                {
+                                    string name = args.BucketName;
+                                    if (!string.IsNullOrEmpty(args.Prefix))
+                                        name += "/" + args.Prefix;
+                                    throw new EmptyBucketOperation("Bucket " + name + " is empty.");
+                                }
+                                ListObjectsItemResponse listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);
+                                marker = listObjectsItemResponse.NextMarker;
+                                isRunning = objectList.Item1.IsTruncated;
+                                nextContinuationToken = (objectList.Item1.IsTruncated) ? objectList.Item1.NextContinuationToken : string.Empty;
+                            }
+                            cts.Token.ThrowIfCancellationRequested();
+                            count++;
+                        }
+                    }
+                }
+            );
         }
 
 
