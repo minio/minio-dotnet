@@ -438,7 +438,6 @@ namespace Minio
             {
                 queryParams = string.Join("&", requestBuilder.QueryParameters.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
             }
-            var resource = requestBuilder.RequestUri.AbsolutePath + "?" + queryParams;
 
             var isFormData = false;
             var c = requestBuilder.Request.Content;
@@ -492,13 +491,16 @@ namespace Minio
                     if (sb1.Length > 0)
                         sb1.Append("&");
                     sb1.AppendFormat("{0}={1}", p, queryParamsDict[p]);
-                    requestBuilder.AddQueryParameter(p, queryParamsDict[p]);
                 }
                 queryParams = sb1.ToString();
             }
-
-            if (!string.IsNullOrEmpty(queryParams) && !isFormData)
+            if (!string.IsNullOrEmpty(queryParams) &&
+                !isFormData &&
+                requestBuilder.RequestUri.Query != "?location=")
+            {
                 requestBuilder.RequestUri = new Uri(requestBuilder.RequestUri + "?" + queryParams);
+            }
+
             canonicalStringList.AddLast(requestBuilder.RequestUri.AbsolutePath);
             canonicalStringList.AddLast(queryParams);
 
