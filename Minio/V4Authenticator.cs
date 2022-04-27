@@ -91,12 +91,12 @@ namespace Minio
         /// Implements Authenticate interface method for IAuthenticator.
         /// </summary>
         /// <param name="requestBuilder">Instantiated IRestRequest object</param>
-        /// <param name="assumeRole">boolean; if true role credentials, otherwise IAM user</param>
-        public string Authenticate(HttpRequestMessageBuilder requestBuilder, bool assumeRole)
+        /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
+        public string Authenticate(HttpRequestMessageBuilder requestBuilder, bool isSts = false)
         {
             DateTime signingDate = DateTime.UtcNow;
 
-            this.SetContentSha256(requestBuilder, assumeRole);
+            this.SetContentSha256(requestBuilder, isSts);
 
             requestBuilder.RequestUri = requestBuilder.Request.RequestUri;
             var requestUri = requestBuilder.RequestUri;
@@ -115,34 +115,17 @@ namespace Minio
             SortedDictionary<string, string> headersToSign = this.GetHeadersToSign(requestBuilder);
             string signedHeaders = this.GetSignedHeaders(headersToSign);
 
-            string canonicalRequest = this.GetCanonicalRequest(requestBuilder, headersToSign, assumeRole);
-            byte[] canonicalRequestBytes;
-            if (assumeRole)
-            {
-                canonicalRequestBytes = Encoding.ASCII.GetBytes(canonicalRequest);
-            }
-            else
-            {
-                canonicalRequestBytes = Encoding.UTF8.GetBytes(canonicalRequest);
-            }
+            string canonicalRequest = this.GetCanonicalRequest(requestBuilder, headersToSign);
+            byte[] canonicalRequestBytes = Encoding.UTF8.GetBytes(canonicalRequest);
             var hash = this.ComputeSha256(canonicalRequestBytes);
             string canonicalRequestHash = this.BytesToHex(hash);
             string region = this.GetRegion(requestUri.Host);
-            string stringToSign = this.GetStringToSign(region, signingDate, canonicalRequestHash, assumeRole);
-            byte[] signingKey = this.GenerateSigningKey(region, signingDate, assumeRole);
-            byte[] stringToSignBytes;
-            if (assumeRole)
-            {
-                stringToSignBytes = Encoding.ASCII.GetBytes(stringToSign);
-            }
-            else
-            {
-                stringToSignBytes = Encoding.UTF8.GetBytes(stringToSign);
-            }
-
+            string stringToSign = this.GetStringToSign(region, signingDate, canonicalRequestHash, isSts);
+            byte[] signingKey = this.GenerateSigningKey(region, signingDate, isSts);
+            byte[] stringToSignBytes = Encoding.UTF8.GetBytes(stringToSign);
             byte[] signatureBytes = this.SignHmac(signingKey, stringToSignBytes);
             string signature = this.BytesToHex(signatureBytes);
-            string authorization = this.GetAuthorizationHeader(signedHeaders, signature, signingDate, region, assumeRole);
+            string authorization = this.GetAuthorizationHeader(signedHeaders, signature, signingDate, region, isSts);
             return authorization;
         }
 
@@ -151,11 +134,11 @@ namespace Minio
         /// </summary>
         /// <param name="signingDate">Signature initiated date</param>
         /// <param name="region">Region for the credential string</param>
-        /// <param name="assumeRole">boolean; if true role credentials, otherwise IAM user</param>
+        /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
         /// <returns>Credential string for the authorization header</returns>
-        public string GetCredentialString(DateTime signingDate, string region, bool assumeRole = false)
+        public string GetCredentialString(DateTime signingDate, string region, bool isSts = false)
         {
-            var scope = this.GetScope(region, signingDate, assumeRole);
+            var scope = this.GetScope(region, signingDate, isSts);
             return $"{this.accessKey}/{scope}";
         }
 
@@ -166,11 +149,11 @@ namespace Minio
         /// <param name="signature">Hexadecimally encoded computed signature</param>
         /// <param name="signingDate">Date for signature to be signed</param>
         /// <param name="region">Requested region</param>
-        /// <param name="assumeRole">boolean; if true role credentials, otherwise IAM user</param>
+        /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
         /// <returns>Fully formed authorization header</returns>
-        private string GetAuthorizationHeader(string signedHeaders, string signature, DateTime signingDate, string region, bool assumeRole = false)
+        private string GetAuthorizationHeader(string signedHeaders, string signature, DateTime signingDate, string region, bool isSts = false)
         {
-            var scope = this.GetScope(region, signingDate, assumeRole);
+            var scope = this.GetScope(region, signingDate, isSts);
             return $"AWS4-HMAC-SHA256 Credential={this.accessKey}/{scope}, SignedHeaders={signedHeaders}, Signature={signature}";
         }
 
@@ -187,13 +170,11 @@ namespace Minio
         /// <summary>
         /// Determines and returns the kind of service
         /// </summary>
-        /// <param name="assumeRole">boolean; if true role credentials, otherwise IAM user</param>
+        /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
         /// <returns>returns the kind of service as a string</returns>
-        private string getServiceKind(bool assumeRole)
+        private string getService(bool isSts)
         {
-            var serviceKind = "s3";
-            if (assumeRole) serviceKind = "sts";
-            return serviceKind;
+            return isSts ? "sts" : "s3";
         }
 
         /// <summary>
@@ -201,34 +182,21 @@ namespace Minio
         /// </summary>
         /// <param name="region">Requested region</param>
         /// <param name="signingDate">Date for signature to be signed</param>
-        /// <param name="assumeRole">boolean; if true role credentials, otherwise IAM user</param>
+        /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
         /// <returns>bytes of computed hmac</returns>
-        private byte[] GenerateSigningKey(string region, DateTime signingDate, bool assumeRole = false)
+        private byte[] GenerateSigningKey(string region, DateTime signingDate, bool isSts = false)
         {
             byte[] dateRegionServiceKey;
             byte[] requestBytes;
-            if (assumeRole)
-            {
-                byte[] formattedDateBytes = Encoding.ASCII.GetBytes(signingDate.ToString("yyyyMMdd"));
-                byte[] formattedKeyBytes = Encoding.ASCII.GetBytes($"AWS4{this.secretKey}");
-                byte[] dateKey = this.SignHmac(formattedKeyBytes, formattedDateBytes);
-                byte[] regionBytes = Encoding.ASCII.GetBytes(region);
-                byte[] dateRegionKey = this.SignHmac(dateKey, regionBytes);
-                byte[] serviceBytes = Encoding.ASCII.GetBytes("sts");
-                dateRegionServiceKey = this.SignHmac(dateRegionKey, serviceBytes);
-                requestBytes = Encoding.ASCII.GetBytes("aws4_request");
-            }
-            else
-            {
-                byte[] formattedDateBytes = Encoding.UTF8.GetBytes(signingDate.ToString("yyyyMMdd"));
-                byte[] formattedKeyBytes = Encoding.UTF8.GetBytes($"AWS4{this.secretKey}");
-                byte[] dateKey = this.SignHmac(formattedKeyBytes, formattedDateBytes);
-                byte[] regionBytes = Encoding.UTF8.GetBytes(region);
-                byte[] dateRegionKey = this.SignHmac(dateKey, regionBytes);
-                byte[] serviceBytes = Encoding.UTF8.GetBytes("s3");
-                dateRegionServiceKey = this.SignHmac(dateRegionKey, serviceBytes);
-                requestBytes = Encoding.UTF8.GetBytes("aws4_request");
-            }
+
+            byte[] serviceBytes = Encoding.UTF8.GetBytes(getService(isSts));
+            byte[] formattedDateBytes = Encoding.UTF8.GetBytes(signingDate.ToString("yyyyMMdd"));
+            byte[] formattedKeyBytes = Encoding.UTF8.GetBytes($"AWS4{this.secretKey}");
+            byte[] dateKey = this.SignHmac(formattedKeyBytes, formattedDateBytes);
+            byte[] regionBytes = Encoding.UTF8.GetBytes(region);
+            byte[] dateRegionKey = this.SignHmac(dateKey, regionBytes);
+            dateRegionServiceKey = this.SignHmac(dateRegionKey, serviceBytes);
+            requestBytes = Encoding.UTF8.GetBytes("aws4_request");
             var signingKey = Encoding.UTF8.GetString(this.SignHmac(dateRegionServiceKey, requestBytes));
             return this.SignHmac(dateRegionServiceKey, requestBytes);
         }
@@ -252,12 +220,12 @@ namespace Minio
         /// <param name="region">Requested region</param>
         /// <param name="signingDate">Date for signature to be signed</param>
         /// <param name="canonicalRequestHash">Hexadecimal encoded sha256 checksum of canonicalRequest</param>
-        /// <param name="assumeRole">boolean; if true role credentials, otherwise IAM user</param>
+        /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
         /// <returns>String to sign</returns>
         private string GetStringToSign(string region, DateTime signingDate,
-                                       string canonicalRequestHash, bool assumeRole = false)
+                                       string canonicalRequestHash, bool isSts = false)
         {
-            var scope = this.GetScope(region, signingDate, assumeRole);
+            var scope = this.GetScope(region, signingDate, isSts);
             return $"AWS4-HMAC-SHA256\n{signingDate:yyyyMMddTHHmmssZ}\n{scope}\n{canonicalRequestHash}";
         }
 
@@ -266,11 +234,11 @@ namespace Minio
         /// </summary>
         /// <param name="region">Requested region</param>
         /// <param name="signingDate">Date for signature to be signed</param>
-        /// <param name="assumeRole">boolean; if true role credentials, otherwise IAM user</param>
+        /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
         /// <returns>Scope string</returns>
-        private string GetScope(string region, DateTime signingDate, bool assumeRole = false)
+        private string GetScope(string region, DateTime signingDate, bool isSts = false)
         {
-            return $"{signingDate:yyyyMMdd}/{region}/{getServiceKind(assumeRole)}/aws4_request";
+            return $"{signingDate:yyyyMMdd}/{region}/{getService(isSts)}/aws4_request";
         }
 
         /// <summary>
@@ -424,10 +392,9 @@ namespace Minio
         /// </summary>
         /// <param name="requestBuilder">Instantiated requestBuilder object</param>
         /// <param name="headersToSign">Dictionary of http headers to be signed</param>
-        /// <param name="assumeRole">boolean; if true role credentials, otherwise IAM user</param>
         /// <returns>Canonical Request</returns>
         private string GetCanonicalRequest(HttpRequestMessageBuilder requestBuilder,
-            SortedDictionary<string, string> headersToSign, bool assumeRole = false)
+                                    SortedDictionary<string, string> headersToSign)
         {
             var canonicalStringList = new LinkedList<string>();
             // METHOD
@@ -590,9 +557,9 @@ namespace Minio
         /// <summary>
         /// Set 'x-amz-content-sha256' http header.
         /// </summary>
-        /// <param name="assumeRole">boolean; if true role credentials, otherwise IAM user</param>
+        /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
         /// <param name="requestBuilder">Instantiated requestBuilder object</param>
-        private void SetContentSha256(HttpRequestMessageBuilder requestBuilder, bool assumeRole)
+        private void SetContentSha256(HttpRequestMessageBuilder requestBuilder, bool isSts = false)
         {
             if (this.isAnonymous)
                 return;
@@ -603,7 +570,7 @@ namespace Minio
             {
                 isMultiDeleteRequest = requestBuilder.QueryParameters.Any(p => p.Key.Equals("delete", StringComparison.OrdinalIgnoreCase));
             }
-            if (isSecure && !assumeRole || isMultiDeleteRequest)
+            if (isSecure && !isSts || isMultiDeleteRequest)
             {
                 requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", "UNSIGNED-PAYLOAD");
                 return;

@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -524,24 +525,24 @@ namespace Minio
         /// <param name="errorHandlers">List of handlers to override default handling</param>
         /// <param name="requestMessageBuilder">The build of HttpRequestMessageBuilder </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-        /// <param name="assumeRole">boolean; if true role credentials, otherwise IAM user</param>
+        /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
         /// <returns>ResponseResult</returns>
         internal Task<ResponseResult> ExecuteTaskAsync(
             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             HttpRequestMessageBuilder requestMessageBuilder,
             CancellationToken cancellationToken = default(CancellationToken),
-            bool assumeRole = false)
+            bool isSts = false)
         {
             return ExecuteWithRetry(
                 () => ExecuteTaskCoreAsync(errorHandlers, requestMessageBuilder,
-                                           cancellationToken, assumeRole));
+                                           cancellationToken, isSts));
         }
 
         private async Task<ResponseResult> ExecuteTaskCoreAsync(
             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             HttpRequestMessageBuilder requestMessageBuilder,
             CancellationToken cancellationToken = default(CancellationToken),
-            bool assumeRole = false)
+            bool isSts = false)
         {
 
             var startTime = DateTime.Now;
@@ -556,7 +557,7 @@ namespace Minio
                 this.SessionToken);
 
             requestMessageBuilder.AddOrUpdateHeaderParameter("Authorization",
-                v4Authenticator.Authenticate(requestMessageBuilder, assumeRole));
+                v4Authenticator.Authenticate(requestMessageBuilder, isSts));
 
             HttpRequestMessage request = requestMessageBuilder.Request;
 
@@ -732,7 +733,7 @@ namespace Minio
                 throw new BucketNotFoundException(bucketName, "Not found.");
             }
 
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+            var contentBytes = Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
             ErrorResponse errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream);
 

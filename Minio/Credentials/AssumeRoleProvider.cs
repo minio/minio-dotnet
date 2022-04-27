@@ -124,7 +124,7 @@ namespace Minio.Credentials
                 ResponseResult responseResult = null;
                 try
                 {
-                    responseResult = await Client.ExecuteTaskAsync(this.NoErrorHandlers, requestBuilder, assumeRole: true);
+                    responseResult = await Client.ExecuteTaskAsync(this.NoErrorHandlers, requestBuilder, isSts: true);
 
                     AssumeRoleResponse assumeRoleResp = null;
                     if (responseResult.Response.IsSuccessStatusCode)
