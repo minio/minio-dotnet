@@ -196,10 +196,7 @@ namespace Minio
             requestMessageBuilder.AddQueryParameter("delimiter", this.Delimiter);
             requestMessageBuilder.AddQueryParameter("max-keys", "1000");
             requestMessageBuilder.AddQueryParameter("encoding-type", "url");
-            if (!string.IsNullOrWhiteSpace(this.Prefix))
-            {
-                requestMessageBuilder.AddQueryParameter("prefix", this.Prefix);
-            }
+            requestMessageBuilder.AddQueryParameter("prefix", this.Prefix);
             if (this.Versions)
             {
                 requestMessageBuilder.AddQueryParameter("versions", "");
