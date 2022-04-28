@@ -252,16 +252,6 @@ namespace Minio
         public IObservable<Item> ListObjectsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))
         {
             args.Validate();
-            BucketExistsArgs bucketExistsArgs = new BucketExistsArgs()
-                                                            .WithBucket(args.BucketName);
-            // Check if the bucket exists.
-            var bucketExistTask = this.BucketExistsAsync(bucketExistsArgs, cancellationToken);
-            Task.WaitAll(bucketExistTask);
-            var found = bucketExistTask.Result;
-            if (!found)
-            {
-                throw new BucketNotFoundException(args.BucketName, "Bucket not found.");
-            }
             return Observable.Create<Item>(
               async (obs, ct) =>
               {
