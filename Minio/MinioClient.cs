@@ -380,6 +380,14 @@ namespace Minio
             this.HTTPClient = new HttpClient();
         }
 
+        public MinioClient(HttpClient httpClient) 
+        {
+            this.Region = "";
+            this.SessionToken = "";
+            this.Provider = null;
+            this.HTTPClient = httpClient;
+        }
+
         /// <summary>
         /// Creates and returns a Cloud Storage client
         /// </summary>
@@ -896,6 +904,11 @@ namespace Minio
             return retryPolicyHandler == null
                 ? executeRequestCallback()
                 : retryPolicyHandler(executeRequestCallback);
+        }
+
+        public void Dispose()
+        {
+            HTTPClient?.Dispose();
         }
     }
 
