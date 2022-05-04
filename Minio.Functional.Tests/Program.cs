@@ -192,6 +192,7 @@ namespace Minio.Functional.Tests
 
                 // Test Bucket Lifecycle configuration
                 FunctionalTest.BucketLifecycleAsync_Test1(minioClient).Wait();
+                FunctionalTest.BucketLifecycleAsync_Test2(minioClient).Wait();
 
                 // Test encryption
                 if (enableHttps == "1")
