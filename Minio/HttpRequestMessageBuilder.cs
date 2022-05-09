@@ -48,9 +48,7 @@ namespace Minio
                 foreach (var queryParameter in this.QueryParameters)
                 {
                     var query = HttpUtility.ParseQueryString(requestUriBuilder.Query);
-                    query[queryParameter.Key] = queryParameter.Value;
                     requestUriBuilder.Query = query.ToString();
-
                 }
 
                 var requestUri = requestUriBuilder.Uri;

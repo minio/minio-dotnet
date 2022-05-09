@@ -37,10 +37,10 @@ namespace Minio.Tests
             var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
             request.AddJsonBody("[]");
 
-	    var authenticatorInsecure = new V4Authenticator(false, "a", "b");
+            var authenticatorInsecure = new V4Authenticator(false, "a", "b");
             Assert.IsFalse(authenticatorInsecure.isAnonymous);
 
-            authenticatorInsecure.Authenticate(request);
+            authenticatorInsecure.Authenticate(request, false);
             Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
         }
 
@@ -54,10 +54,10 @@ namespace Minio.Tests
             var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
             request.AddJsonBody("[]");
 
-	    var authenticatorSecure = new V4Authenticator(true, "a", "b");
+            var authenticatorSecure = new V4Authenticator(true, "a", "b");
             Assert.IsFalse(authenticatorSecure.isAnonymous);
 
-            authenticatorSecure.Authenticate(request);
+            authenticatorSecure.Authenticate(request, false);
             Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
         }
 
@@ -71,7 +71,7 @@ namespace Minio.Tests
 
             var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
             request.AddJsonBody("[]");
-            authenticator.Authenticate(request);
+            authenticator.Authenticate(request, false);
             Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
             Tuple<string, string> match = GetHeaderKV(request, "x-amz-content-sha256");
             Assert.IsTrue(match != null && match.Item2.Equals("UNSIGNED-PAYLOAD"));
@@ -86,7 +86,7 @@ namespace Minio.Tests
             Assert.IsFalse(authenticator.isAnonymous);
             var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
             request.AddJsonBody("[]");
-            authenticator.Authenticate(request);
+            authenticator.Authenticate(request, false);
             Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
             Assert.IsFalse(hasPayloadHeader(request, "Content-Md5"));
         }

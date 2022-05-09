@@ -28,42 +28,43 @@ using Newtonsoft.Json;
 namespace Minio.Examples.Cases
 {
 
-    public class CeritificateIdentityProviderExample
+    public class CertificateIdentityProviderExample
     {
         // Establish Authentication on both ways with client and server certificates
         public async static Task Run()
         {
             // STS endpoint
-            var stsEndpoint = "https://myminio:9000/";
+            var stsEndpoint = "https://alias:port/";
 
-	    // Generatng pfx cert for this call.
-	    // openssl pkcs12 -export -out client.pfx -inkey client.key -in client.crt -certfile server.crt
-            using(var cert = new X509Certificate2("C:\\dev\\client.pfx", "optional-password"))
-	    {
-		var provider = new CertificateIdentityProvider()
-		    .WithStsEndpoint(stsEndpoint)
-		    .WithCertificate(cert)
-		    .Build();
+            // Generatng pfx cert for this call.
+            // openssl pkcs12 -export -out client.pfx -inkey client.key -in client.crt -certfile server.crt
+            using (var cert = new X509Certificate2("C:\\dev\\client.pfx", "optional-password"))
+            {
+                try
+                {
+                    var provider = new CertificateIdentityProvider()
+                        .WithStsEndpoint(stsEndpoint)
+                        .WithCertificate(cert)
+                        .Build();
 
-		MinioClient minioClient = new MinioClient()
-		    .WithEndpoint("myminio:9000")
-		    .WithSSL()
-		    .WithCredentialsProvider(provider)
-		    .Build();
+                    MinioClient minioClient = new MinioClient()
+                        .WithEndpoint("alias:port")
+                        .WithSSL()
+                        .WithCredentialsProvider(provider)
+                        .Build();
 
-		try
-		{
-		    StatObjectArgs statObjectArgs = new StatObjectArgs()
-			.WithBucket("bucket-name")
-			.WithObject("object-name");
-		    ObjectStat result = await minioClient.StatObjectAsync(statObjectArgs);
-		    Console.WriteLine("Object Stat: \n" + result.ToString());
-		}
-		catch (Exception e)
-		{
-		    Console.WriteLine($"CertificateIdentityExample test exception: {e}");
-		}
-	    }
+                    StatObjectArgs statObjectArgs = new StatObjectArgs()
+                    .WithBucket("bucket-name")
+                    .WithObject("object-name");
+                    ObjectStat result = await minioClient.StatObjectAsync(statObjectArgs);
+                    // Console.WriteLine("\nObject Stat: \n" + result.ToString());
+                    Console.WriteLine("\nCertificateIdentityProvider test PASSed\n");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"\nCertificateIdentityProvider test exception: {e}\n");
+                }
+            }
         }
     }
 }

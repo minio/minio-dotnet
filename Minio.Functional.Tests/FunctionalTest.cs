@@ -669,6 +669,7 @@ namespace Minio.Functional.Tests
                 {
                     return;
                 });
+
             System.Threading.Thread.Sleep(4500);
             if (lockConfig != null && lockConfig.ObjectLockEnabled.Equals(ObjectLockConfiguration.LockEnabled))
             {
@@ -2883,11 +2884,11 @@ namespace Minio.Functional.Tests
                         Assert.AreEqual(count, numObjects);
                     });
                 System.Threading.Thread.Sleep(3500);
-                new MintLogger("ListObjects_Test6", listObjectsSignature, "Tests whether ListObjects lists all objects when number of objects == 100", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
+                new MintLogger("ListObjects_Test6", listObjectsSignature, "Tests whether ListObjects lists more than 1000 objects correctly(max-keys = 1000)", TestStatus.PASS, (DateTime.Now - startTime), args: args).Log();
             }
             catch (Exception ex)
             {
-                new MintLogger("ListObjects_Test6", listObjectsSignature, "Tests whether ListObjects lists all objects when number of objects == 100", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args: args).Log();
+                new MintLogger("ListObjects_Test6", listObjectsSignature, "Tests whether ListObjects lists more than 1000 objects correctly(max-keys = 1000)", TestStatus.FAIL, (DateTime.Now - startTime), ex.Message, ex.ToString(), args: args).Log();
                 throw;
             }
             finally
@@ -3774,6 +3775,7 @@ namespace Minio.Functional.Tests
                     RemoveIncompleteUploadArgs rmArgs = new RemoveIncompleteUploadArgs()
                                                                         .WithBucket(bucketName)
                                                                         .WithObject(objectName);
+
                     await minio.RemoveIncompleteUploadAsync(rmArgs);
 
                     ListIncompleteUploadsArgs listArgs = new ListIncompleteUploadsArgs()
