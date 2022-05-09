@@ -25,15 +25,23 @@ namespace Minio.DataModel
         [XmlElement(ElementName = "Date", IsNullable = true)]
         public string Date { get; set; }
 
+        [XmlElement(ElementName = "Days", IsNullable = true)]
+        public Nullable<System.Double> Days { get; set; }
+
         public Duration()
         {
             this.Date = null;
+            this.Days = null;
         }
 
         public Duration(DateTime date)
         {
             date = new DateTime(date.Year, date.Month, date.Day, 0, 0, 0);
             this.Date = utils.To8601String(date);
+        }
+        public Duration(double days)
+        {
+            this.Days = days;
         }
     }
 }
