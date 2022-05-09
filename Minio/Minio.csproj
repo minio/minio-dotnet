@@ -4,6 +4,7 @@
     <AssemblyName>Minio</AssemblyName>
     <RootNamespace>Minio</RootNamespace>
     <TargetFrameworks>net5.0;net6.0;</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT'">net4.8;net5.0;net6.0;</TargetFrameworks>
     <DebugType>embedded</DebugType>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <AssemblyOriginatorKeyFile>..\Minio.snk</AssemblyOriginatorKeyFile>
