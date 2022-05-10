@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net5.0;net6.0;</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT'">net4.8;net5.0;net6.0;</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
     <IsPackable>False</IsPackable>
     <LangVersion>latest</LangVersion>
     <AssemblyOriginatorKeyFile>..\Minio.snk</AssemblyOriginatorKeyFile>
