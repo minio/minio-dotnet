@@ -416,7 +416,7 @@ namespace Minio
             this.Endpoint = string.Format("{0}://{1}", scheme, host);
             this.uri = RequestUtil.GetEndpointURL(this.BaseUrl, this.Secure);
             RequestUtil.ValidateEndpoint(this.uri, this.Endpoint);
-
+            this.HTTPClient = new HttpClient();
             this.HTTPClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", this.FullUserAgent);
         }
 
