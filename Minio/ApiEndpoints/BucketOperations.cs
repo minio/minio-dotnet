@@ -223,13 +223,7 @@ public partial class MinioClient : IBucketOperations
                         {
                             var objectList = await GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
                             var listObjectsItemResponse = new ListObjectVersionResponse(args, objectList, obs);
-                            if (objectList.Item2.Count == 0 && count == 0)
-                            {
-                                var name = args.BucketName;
-                                if (!string.IsNullOrEmpty(args.Prefix))
-                                    name += "/" + args.Prefix;
-                                throw new EmptyBucketOperation("Bucket " + name + " is empty.");
-                            }
+                            if (objectList.Item2.Count == 0 && count == 0) return;
 
                             obs = listObjectsItemResponse.ItemObservable;
                             marker = listObjectsItemResponse.NextKeyMarker;
@@ -240,12 +234,7 @@ public partial class MinioClient : IBucketOperations
                         {
                             var objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
                             if (objectList.Item2.Count == 0 && objectList.Item1.KeyCount.Equals("0") && count == 0)
-                            {
-                                var name = args.BucketName;
-                                if (!string.IsNullOrEmpty(args.Prefix))
-                                    name += "/" + args.Prefix;
-                                throw new EmptyBucketOperation("Bucket " + name + " is empty.");
-                            }
+                                return;
 
                             var listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);
                             marker = listObjectsItemResponse.NextMarker;
