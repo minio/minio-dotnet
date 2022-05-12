@@ -16,15 +16,11 @@
 
 using System;
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+// JSONOutputOptions - json output specific options
+[Serializable]
+public class JSONOutputOptions
 {
-    // JSONOutputOptions - json output specific options
-    [Serializable]
-    public class JSONOutputOptions
-    {
-        public string RecordDelimiter { get; set; }
-        public JSONOutputOptions()
-        {           
-        }
-    }
+    public string RecordDelimiter { get; set; }
 }

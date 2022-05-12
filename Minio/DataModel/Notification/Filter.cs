@@ -17,27 +17,28 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+// Filter - a tag in the notification xml structure which carries
+// suffix/prefix filters
+[Serializable]
+public class Filter
 {
-    // Filter - a tag in the notification xml structure which carries
-    // suffix/prefix filters
-    [Serializable]
-    public class Filter
+    public Filter()
     {
-        [XmlElement("S3Key")]
-        public S3Key S3Key { get;  set; }
+        S3Key = new S3Key();
+    }
 
-        public Filter()
-        {
-            this.S3Key = new S3Key();
-        }
+    public Filter(S3Key key)
+    {
+        S3Key = key;
+    }
 
-        public Filter(S3Key key)
-        {
-            this.S3Key = key;
-        }
+    [XmlElement("S3Key")] public S3Key S3Key { get; set; }
 
-        // Helper to XMLSerializer which decides whether to serialize S3Key
-        public bool ShouldSerializeS3Key() => S3Key.FilterRules.Count != 0;
+    // Helper to XMLSerializer which decides whether to serialize S3Key
+    public bool ShouldSerializeS3Key()
+    {
+        return S3Key.FilterRules.Count != 0;
     }
 }

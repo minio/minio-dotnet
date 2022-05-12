@@ -17,12 +17,10 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+[Serializable]
+public class Prefix
 {
-    [Serializable]
-    public class Prefix
-    {
-        [XmlAttribute("Prefix")]
-        public string Name { get; set; }
-    }
+    [XmlAttribute("Prefix")] public string Name { get; set; }
 }

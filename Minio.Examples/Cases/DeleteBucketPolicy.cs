@@ -18,37 +18,37 @@ using System;
 using System.Threading.Tasks;
 using Minio.Exceptions;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal class DeleteBucketPolicy
 {
-    class DeleteBucketPolicy
+    // Set bucket policy
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name")
     {
-        // Set bucket policy
-        public async static Task Run(MinioClient minio, 
-                                     string bucketName = "my-bucket-name")
+        try
         {
+            Console.WriteLine("Running example for API: DeletePolicyAsync");
+            var args = new RemovePolicyArgs()
+                .WithBucket(bucketName);
+            await minio.RemovePolicyAsync(args);
+            Console.WriteLine($"Policy previously set for the bucket {bucketName} removed.");
             try
             {
-                Console.WriteLine("Running example for API: DeletePolicyAsync");
-                var args = new RemovePolicyArgs()
-                                    .WithBucket(bucketName);
-                await minio.RemovePolicyAsync(args);
-                Console.WriteLine($"Policy previously set for the bucket {bucketName} removed.");
-                try
-                {
-                    var getArgs = new GetPolicyArgs()
-                                        .WithBucket(bucketName);
-                    string policy = await minio.GetPolicyAsync(getArgs);
-                }
-                catch(UnexpectedMinioException e)
-                {
-                    Console.WriteLine($"GetPolicy operation for {bucketName} result: {e.ServerMessage}");
-                }
-                Console.WriteLine();
+                var getArgs = new GetPolicyArgs()
+                    .WithBucket(bucketName);
+                var policy = await minio.GetPolicyAsync(getArgs);
             }
-            catch (Exception e)
+            catch (UnexpectedMinioException e)
             {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
+                Console.WriteLine($"GetPolicy operation for {bucketName} result: {e.ServerMessage}");
             }
+
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

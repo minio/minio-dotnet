@@ -17,25 +17,24 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
-{
-    [Serializable]
-    public sealed class SelectCompressionType
-    {
-        // Constants for compression types under select API.
-        public static readonly SelectCompressionType NONE = new SelectCompressionType("NONE");
-        public static readonly SelectCompressionType GZIP = new SelectCompressionType("GZIP");
-        public static readonly SelectCompressionType BZIP = new SelectCompressionType("BZIP2");
+namespace Minio.DataModel;
 
-        [XmlText]
-        public String CompressionType;
-        public SelectCompressionType()
-        {
-            
-        }
-        public SelectCompressionType(string value)
-        {
-            this.CompressionType = value;
-        }
+[Serializable]
+public sealed class SelectCompressionType
+{
+    // Constants for compression types under select API.
+    public static readonly SelectCompressionType NONE = new("NONE");
+    public static readonly SelectCompressionType GZIP = new("GZIP");
+    public static readonly SelectCompressionType BZIP = new("BZIP2");
+
+    [XmlText] public string CompressionType;
+
+    public SelectCompressionType()
+    {
+    }
+
+    public SelectCompressionType(string value)
+    {
+        CompressionType = value;
     }
 }

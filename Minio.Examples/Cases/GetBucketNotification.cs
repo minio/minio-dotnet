@@ -14,32 +14,31 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
 using System;
 using System.Threading.Tasks;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal class GetBucketNotification
 {
-    class GetBucketNotification
+    // Get bucket notifications - this works only with AWS endpoint
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name")
     {
-        // Get bucket notifications - this works only with AWS endpoint
-        public async static Task Run(MinioClient minio, 
-                                     string bucketName = "my-bucket-name")
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: GetBucketNotificationsAsync");
-                GetBucketNotificationsArgs args = new GetBucketNotificationsArgs()
-                                                                .WithBucket(bucketName);
-                BucketNotification notifications = await minio.GetBucketNotificationsAsync(args);
-                Console.WriteLine($"Notifications is {notifications.ToXML()} for bucket {bucketName}");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error parsing bucket notifications - make sure that you are running this call against AWS end point: {e.Message}");
-                Console.WriteLine(e.StackTrace);
-            }
+            Console.WriteLine("Running example for API: GetBucketNotificationsAsync");
+            var args = new GetBucketNotificationsArgs()
+                .WithBucket(bucketName);
+            var notifications = await minio.GetBucketNotificationsAsync(args);
+            Console.WriteLine($"Notifications is {notifications.ToXML()} for bucket {bucketName}");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(
+                $"Error parsing bucket notifications - make sure that you are running this call against AWS end point: {e.Message}");
+            Console.WriteLine(e.StackTrace);
         }
     }
 }

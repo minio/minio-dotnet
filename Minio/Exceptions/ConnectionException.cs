@@ -16,12 +16,11 @@
  */
 
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+public class ConnectionException : MinioException
 {
-    public class ConnectionException : MinioException
+    public ConnectionException(string message, ResponseResult response) : base(message, response)
     {
-        public ConnectionException(string message, ResponseResult response) : base(message, response)
-        {
-        }
     }
 }

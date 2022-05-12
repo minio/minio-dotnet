@@ -17,38 +17,38 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal class GetObjectQuery
 {
-    class GetObjectQuery
+    // Get object in a bucket
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name",
+        string objectName = "my-object-name",
+        string versionId = "my-version-id",
+        string fileName = "my-file-name",
+        string matchEtag = null,
+        DateTime modifiedSince = default)
     {
-        // Get object in a bucket
-        public async static Task Run(MinioClient minio,
-                                     string bucketName = "my-bucket-name",
-                                     string objectName = "my-object-name",
-                                     string versionId = "my-version-id",
-                                     string fileName = "my-file-name",
-                                     string matchEtag = null,
-                                     DateTime modifiedSince = default(DateTime))
+        try
         {
-            try
-            {
-                string withVersionId = (string.IsNullOrEmpty(versionId))?"":" with Version ID";
-                Console.WriteLine("Running example for API: GetObjectAsync" + withVersionId);
-                GetObjectArgs args = new GetObjectArgs()
-                                                .WithBucket(bucketName)
-                                                .WithObject(objectName)
-                                                .WithVersionId(versionId)
-                                                .WithFile(fileName)
-                                                .WithMatchETag(matchEtag)
-                                                .WithModifiedSince(modifiedSince);
-                await minio.GetObjectAsync(args);
-                Console.WriteLine($"Downloaded the file {fileName} for object {objectName} with given query parameters in bucket {bucketName}");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            var withVersionId = string.IsNullOrEmpty(versionId) ? "" : " with Version ID";
+            Console.WriteLine("Running example for API: GetObjectAsync" + withVersionId);
+            var args = new GetObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithVersionId(versionId)
+                .WithFile(fileName)
+                .WithMatchETag(matchEtag)
+                .WithModifiedSince(modifiedSince);
+            await minio.GetObjectAsync(args);
+            Console.WriteLine(
+                $"Downloaded the file {fileName} for object {objectName} with given query parameters in bucket {bucketName}");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

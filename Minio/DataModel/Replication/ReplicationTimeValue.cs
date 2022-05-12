@@ -25,20 +25,20 @@ using System.Xml.Serialization;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
  */
 
-namespace Minio.DataModel.Replication
+namespace Minio.DataModel.Replication;
+
+[Serializable]
+[XmlRoot(ElementName = "ReplicationTimeValue")]
+public class ReplicationTimeValue
 {
-    [Serializable]
-    [XmlRoot(ElementName = "ReplicationTimeValue")]
-    public class ReplicationTimeValue
+    public ReplicationTimeValue(int minutes)
     {
-        [XmlElement("Minutes")]
-        public int Minutes { get; set; }
-        public ReplicationTimeValue(int minutes) 
-        {
-            this.Minutes = minutes;
-        }
-        public ReplicationTimeValue()
-        {
-        }
+        Minutes = minutes;
     }
+
+    public ReplicationTimeValue()
+    {
+    }
+
+    [XmlElement("Minutes")] public int Minutes { get; set; }
 }

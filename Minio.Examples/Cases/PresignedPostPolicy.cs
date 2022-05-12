@@ -14,42 +14,38 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using Minio.DataModel;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public delegate PostPolicy DefaultPolicy(string bucketName,
+    string objectName,
+    DateTime expiration);
+
+public class PresignedPostPolicy
 {
-    public delegate PostPolicy DefaultPolicy(string bucketName,
-                                             string objectName,
-                                             DateTime expiration);
-    public class PresignedPostPolicy
+    public static async Task Run(MinioClient client,
+        string bucketName = "my-bucketname",
+        string objectName = "my-objectname")
     {
-        public async static Task Run(MinioClient client,
-                                     string bucketName = "my-bucketname",
-                                     string objectName = "my-objectname")
-        {
-            // default value for expiration is 2 minutes
-            DateTime expiration = DateTime.UtcNow.AddMinutes(2);
+        // default value for expiration is 2 minutes
+        var expiration = DateTime.UtcNow.AddMinutes(2);
 
-            PostPolicy form = new PostPolicy();
-            form.SetKey(objectName);
-            form.SetBucket(bucketName);
-            form.SetExpires(expiration);
+        var form = new PostPolicy();
+        form.SetKey(objectName);
+        form.SetBucket(bucketName);
+        form.SetExpires(expiration);
 
-            PresignedPostPolicyArgs args = new PresignedPostPolicyArgs()
-                                                        .WithBucket(bucketName)
-                                                        .WithObject(objectName)
-                                                        .WithPolicy(form);
+        var args = new PresignedPostPolicyArgs()
+            .WithBucket(bucketName)
+            .WithObject(objectName)
+            .WithPolicy(form);
 
-            var tuple = await client.PresignedPostPolicyAsync(form);
-            string curlCommand = "curl -k --insecure -X POST";
-            foreach (KeyValuePair<string, string> pair in tuple.Item2)
-            {
-                curlCommand = curlCommand + $" -F {pair.Key}={pair.Value}";
-            }
-            curlCommand = curlCommand + " -F file=@/etc/issue " + tuple.Item1 + bucketName + "/";
-        }
+        var tuple = await client.PresignedPostPolicyAsync(form);
+        var curlCommand = "curl -k --insecure -X POST";
+        foreach (var pair in tuple.Item2) curlCommand = curlCommand + $" -F {pair.Key}={pair.Value}";
+        curlCommand = curlCommand + " -F file=@/etc/issue " + tuple.Item1 + bucketName + "/";
     }
 }

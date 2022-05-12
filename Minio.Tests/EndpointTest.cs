@@ -14,177 +14,194 @@
  * limitations under the License.
  */
 
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Exceptions;
 using Minio.Helper;
-using System;
-using System.Collections.Generic;
 
-namespace Minio.Tests
+namespace Minio.Tests;
+
+[TestClass]
+public class EndpointTest
 {
-    [TestClass]
-    public class EndpointTest
+    [TestMethod]
+    public void TestGetEndpointURL()
     {
-        [TestMethod]
-        public void TestGetEndpointURL()
+        RequestUtil.GetEndpointURL("s3.amazonaws.com", true);
+        object[] parameterValuesArray =
         {
-            RequestUtil.GetEndpointURL("s3.amazonaws.com", true);
-            object[] parameterValuesArray =
-                        {
-                          new object[] { "s3.amazonaws.com", true, "testbucket", null, false },
-                          new object[] {"testbucket.s3.amazonaws.com", true }
+            new object[] { "s3.amazonaws.com", true, "testbucket", null, false },
+            new object[] { "testbucket.s3.amazonaws.com", true }
+        };
 
-                        };
+        object[] parameterValuesArray1 =
+        {
+            "s3.amazonaws.com", true, "testbucket", "testobject", false
+        };
 
-            object[] parameterValuesArray1 =
-                       {
-                           "s3.amazonaws.com", true, "testbucket", "testobject", false
-                       };
-
-            object[][] testCases =
+        object[][] testCases =
+        {
+            new object[]
             {
-                new object[] {
-                        new object[] { "s3.cn-north-1.amazonaws.com.cn", true },
-                        new object[] { "https://s3.cn-north-1.amazonaws.com.cn", null, true }
-                },
-                new object[] {
-                        new object[] { "s3.amazonaws.com:443", true },
-                        new object[] { "https://s3.amazonaws.com:443", null, true }
-                },
-                new object[] {
-                        new object[] { "s3.amazonaws.com", true },
-                        new object[] { "https://s3.amazonaws.com", null, true }
-                },
-
-                new object[] {
-                        new object[] { "s3.amazonaws.com", false },
-                        new object[] { "http://s3.amazonaws.com", null, true }
-                },
-
-                new object[] {
-                        new object[] { "192.168.1.1:9000", false},
-                        new object[] { "http://192.168.1.1:9000", null, true }
-                },
-                new object[] {
-                        new object[] { "192.168.1.1:9000", true },
-                        new object[] { "https://192.168.1.1:9000", null, true }
-                },
-                new object[] {
-                        new object[] { "13333.123123.-", true },
-                        new object[] { "", new InvalidEndpointException("Endpoint: 13333.123123.- does not follow ip address or domain name standards."), false }
-                },
-
-                new object[] {
-                        new object[] { "s3.aamzza.-", true },
-                        new object[] { "", new InvalidEndpointException("Endpoint: s3.aamzza.- does not follow ip address or domain name standards."), false }
-                },
-                new object[] {
-                        new object[] { "", true },
-                        new object[] { "", new InvalidEndpointException("Endpoint:  does not follow ip address or domain name standards."), false }
-                },
-            };
-
-            for (int i = 0; i < testCases.Length; i++)
+                new object[] { "s3.cn-north-1.amazonaws.com.cn", true },
+                new object[] { "https://s3.cn-north-1.amazonaws.com.cn", null, true }
+            },
+            new object[]
             {
-                object[] testdata = testCases[i];
-                object[] testCase = (object[])testdata[0];
-                object[] expectedValues = (object[])testdata[1];
-                try
+                new object[] { "s3.amazonaws.com:443", true },
+                new object[] { "https://s3.amazonaws.com:443", null, true }
+            },
+            new object[]
+            {
+                new object[] { "s3.amazonaws.com", true },
+                new object[] { "https://s3.amazonaws.com", null, true }
+            },
+
+            new object[]
+            {
+                new object[] { "s3.amazonaws.com", false },
+                new object[] { "http://s3.amazonaws.com", null, true }
+            },
+
+            new object[]
+            {
+                new object[] { "192.168.1.1:9000", false },
+                new object[] { "http://192.168.1.1:9000", null, true }
+            },
+            new object[]
+            {
+                new object[] { "192.168.1.1:9000", true },
+                new object[] { "https://192.168.1.1:9000", null, true }
+            },
+            new object[]
+            {
+                new object[] { "13333.123123.-", true },
+                new object[]
                 {
-                    Uri endPointURL = RequestUtil.GetEndpointURL((string)testCase[0], (bool)testCase[1]);
-                    Assert.AreEqual(endPointURL.OriginalString, expectedValues[0]);
+                    "",
+                    new InvalidEndpointException(
+                        "Endpoint: 13333.123123.- does not follow ip address or domain name standards."),
+                    false
                 }
-                catch (InvalidEndpointException ex)
+            },
+
+            new object[]
+            {
+                new object[] { "s3.aamzza.-", true },
+                new object[]
                 {
-                    Assert.AreEqual(ex.Message, ((InvalidEndpointException)expectedValues[1]).Message);
+                    "",
+                    new InvalidEndpointException(
+                        "Endpoint: s3.aamzza.- does not follow ip address or domain name standards."),
+                    false
+                }
+            },
+            new object[]
+            {
+                new object[] { "", true },
+                new object[]
+                {
+                    "", new InvalidEndpointException("Endpoint:  does not follow ip address or domain name standards."),
+                    false
                 }
             }
-        }
+        };
 
-        [TestMethod]
-        public void TestIfIPIsValid()
+        for (var i = 0; i < testCases.Length; i++)
         {
-            Dictionary<string, bool> testIPDict = new Dictionary<string, bool>
+            var testdata = testCases[i];
+            var testCase = (object[])testdata[0];
+            var expectedValues = (object[])testdata[1];
+            try
             {
-                { "192.168.1", false },
-                { "192.168.1.1", true },
-                { "192.168.1.1.1", false },
-                { "-192.168.1.1", false },
-                { "260.192.1.1", false },
-            };
-
-            foreach (KeyValuePair<string, bool> testCase in testIPDict)
+                var endPointURL = RequestUtil.GetEndpointURL((string)testCase[0], (bool)testCase[1]);
+                Assert.AreEqual(endPointURL.OriginalString, expectedValues[0]);
+            }
+            catch (InvalidEndpointException ex)
             {
-                Assert.AreEqual(s3utils.IsValidIP(testCase.Key), testCase.Value);
+                Assert.AreEqual(ex.Message, ((InvalidEndpointException)expectedValues[1]).Message);
             }
         }
+    }
 
-        [TestMethod]
-        public void TestIfDomainIsValid()
+    [TestMethod]
+    public void TestIfIPIsValid()
+    {
+        var testIPDict = new Dictionary<string, bool>
         {
-            Dictionary<string, bool> testDomainDict = new Dictionary<string, bool>
-            {
-                {"%$$$", false},
-                {"s3.amazonaws.com", true},
-                {"s3.cn-north-1.amazonaws.com.cn", true},
-                {"s3.amazonaws.com_", false},
-                {"s3.amz.test.com", true},
-                {"s3.%%", false},
-                {"localhost", true},
-                {"-localhost", false},
-                {"", false},
-                {"\n \t", false},
-                {"   ", false},
-            };
+            { "192.168.1", false },
+            { "192.168.1.1", true },
+            { "192.168.1.1.1", false },
+            { "-192.168.1.1", false },
+            { "260.192.1.1", false }
+        };
 
-            foreach (KeyValuePair<string, bool> testCase in testDomainDict)
-            {
-                Assert.AreEqual(RequestUtil.IsValidEndpoint(testCase.Key), testCase.Value);
-            }
+        foreach (var testCase in testIPDict) Assert.AreEqual(s3utils.IsValidIP(testCase.Key), testCase.Value);
+    }
+
+    [TestMethod]
+    public void TestIfDomainIsValid()
+    {
+        var testDomainDict = new Dictionary<string, bool>
+        {
+            { "%$$$", false },
+            { "s3.amazonaws.com", true },
+            { "s3.cn-north-1.amazonaws.com.cn", true },
+            { "s3.amazonaws.com_", false },
+            { "s3.amz.test.com", true },
+            { "s3.%%", false },
+            { "localhost", true },
+            { "-localhost", false },
+            { "", false },
+            { "\n \t", false },
+            { "   ", false }
+        };
+
+        foreach (var testCase in testDomainDict)
+            Assert.AreEqual(RequestUtil.IsValidEndpoint(testCase.Key), testCase.Value);
+    }
+
+    [TestMethod]
+    public void TestIsAmazonEndpoint()
+    {
+        var testAmazonDict = new Dictionary<string, bool>
+        {
+            { "192.168.1.1", false },
+            { "storage.googleapis.com", false },
+            { "s3.amazonaws.com", true },
+            { "amazons3.amazonaws.com", false },
+            { "-192.168.1.1", false },
+            { "260.192.1.1", false },
+            { "https://s3.amazonaws.com", false },
+            { "s3.cn-north-1.amazonaws.com.cn", true }
+        };
+
+        foreach (var testCase in testAmazonDict)
+        {
+            var value = s3utils.IsAmazonEndPoint(testCase.Key);
+            Assert.AreEqual(s3utils.IsAmazonEndPoint(testCase.Key), testCase.Value);
         }
+    }
 
-        [TestMethod]
-        public void TestIsAmazonEndpoint()
+    [TestMethod]
+    public void TestIsAmazonChinaEndpoint()
+    {
+        var testAmazonDict = new Dictionary<string, bool>
         {
-            Dictionary<string, bool> testAmazonDict = new Dictionary<string, bool>
-            {
-                {"192.168.1.1", false},
-                {"storage.googleapis.com", false},
-                {"s3.amazonaws.com", true},
-                {"amazons3.amazonaws.com", false},
-                {"-192.168.1.1", false},
-                {"260.192.1.1", false},
-		        {"https://s3.amazonaws.com", false},
-                {"s3.cn-north-1.amazonaws.com.cn", true},
-            };
+            { "192.168.1.1", false },
+            { "storage.googleapis.com", false },
+            { "s3.amazonaws.com", false },
+            { "amazons3.amazonaws.com", false },
+            { "-192.168.1.1", false },
+            { "260.192.1.1", false },
+            { "https://s3.amazonaws.com", false },
+            { "s3.cn-north-1.amazonaws.com.cn", true }
+        };
 
-            foreach (KeyValuePair<string, bool> testCase in testAmazonDict)
-            {
-                bool value = s3utils.IsAmazonEndPoint(testCase.Key);
-                Assert.AreEqual(s3utils.IsAmazonEndPoint(testCase.Key), testCase.Value);
-            }
-        }
-
-        [TestMethod]
-        public void TestIsAmazonChinaEndpoint()
+        foreach (var testCase in testAmazonDict)
         {
-            Dictionary<string, bool> testAmazonDict = new Dictionary<string, bool>
-            {
-                {"192.168.1.1", false},
-                {"storage.googleapis.com", false},
-                {"s3.amazonaws.com", false},
-                {"amazons3.amazonaws.com", false},
-                {"-192.168.1.1", false},
-                {"260.192.1.1", false},
-                {"https://s3.amazonaws.com", false},
-                {"s3.cn-north-1.amazonaws.com.cn", true},
-            };
-
-            foreach (KeyValuePair<string, bool> testCase in testAmazonDict)
-            {
-                bool value = s3utils.IsAmazonChinaEndPoint(testCase.Key);
-                Assert.AreEqual(s3utils.IsAmazonChinaEndPoint(testCase.Key), testCase.Value);
-            }
+            var value = s3utils.IsAmazonChinaEndPoint(testCase.Key);
+            Assert.AreEqual(s3utils.IsAmazonChinaEndPoint(testCase.Key), testCase.Value);
         }
     }
 }

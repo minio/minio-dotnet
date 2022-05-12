@@ -16,162 +16,138 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using System.Collections.Generic;
-using System.Net.Http;
-
 using Minio.DataModel;
 
-namespace Minio.Credentials
+namespace Minio.Credentials;
+
+// Assume-role credential provider
+public abstract class AssumeRoleBaseProvider<T> : ClientProvider
+    where T : AssumeRoleBaseProvider<T>
 {
-    // Assume-role credential provider
-    public abstract class AssumeRoleBaseProvider<T> : ClientProvider
-                                where T : AssumeRoleBaseProvider<T>
+    internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers =
+        Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
+
+    public AssumeRoleBaseProvider(MinioClient client)
     {
-        internal AccessCredentials Credentials { get; set; }
-        internal MinioClient Client { get; set; }
-        internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers = Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
-        internal string Action { get; set; }
-        internal uint? DurationInSeconds { get; set; }
-        internal string Region { get; set; }
-        internal string RoleSessionName { get; set; }
-        internal string Policy { get; set; }
-        internal string RoleARN { get; set; }
-        internal string ExternalID { get; set; }
+        Client = client;
+    }
 
-        public AssumeRoleBaseProvider(MinioClient client)
-        {
-            this.Client = client;
-        }
+    public AssumeRoleBaseProvider()
+    {
+        Client = null;
+    }
 
-        public AssumeRoleBaseProvider()
-        {
-            this.Client = null;
-        }
+    internal AccessCredentials Credentials { get; set; }
+    internal MinioClient Client { get; set; }
+    internal string Action { get; set; }
+    internal uint? DurationInSeconds { get; set; }
+    internal string Region { get; set; }
+    internal string RoleSessionName { get; set; }
+    internal string Policy { get; set; }
+    internal string RoleARN { get; set; }
+    internal string ExternalID { get; set; }
 
-        public T WithDurationInSeconds(uint? durationInSeconds)
-        {
-            this.DurationInSeconds = durationInSeconds;
-            return (T)this;
-        }
+    public T WithDurationInSeconds(uint? durationInSeconds)
+    {
+        DurationInSeconds = durationInSeconds;
+        return (T)this;
+    }
 
-        public T WithRegion(string region)
-        {
-            this.Region = (!string.IsNullOrWhiteSpace(region)) ? region : "";
-            return (T)this;
-        }
+    public T WithRegion(string region)
+    {
+        Region = !string.IsNullOrWhiteSpace(region) ? region : "";
+        return (T)this;
+    }
 
-        public T WithRoleARN(string roleArn)
-        {
-            this.RoleARN = roleArn;
-            return (T)this;
-        }
+    public T WithRoleARN(string roleArn)
+    {
+        RoleARN = roleArn;
+        return (T)this;
+    }
 
-        public T WithPolicy(string policy)
-        {
-            this.Policy = policy;
-            return (T)this;
-        }
+    public T WithPolicy(string policy)
+    {
+        Policy = policy;
+        return (T)this;
+    }
 
-        public T WithRoleSessionName(string sessionName)
-        {
-            this.RoleSessionName = sessionName;
-            return (T)this;
-        }
+    public T WithRoleSessionName(string sessionName)
+    {
+        RoleSessionName = sessionName;
+        return (T)this;
+    }
 
-        public T WithExternalID(string externalId)
+    public T WithExternalID(string externalId)
+    {
+        if (string.IsNullOrWhiteSpace(externalId))
+            throw new ArgumentNullException("The External ID cannot be null or empty.");
+        if (externalId.Length < 2 || externalId.Length > 1224)
+            throw new ArgumentOutOfRangeException("The External Id needs to be between 2 to 1224 characters in length");
+        ExternalID = externalId;
+        return (T)this;
+    }
+
+    public T WithRoleAction(string action)
+    {
+        Action = action;
+        return (T)this;
+    }
+
+    internal virtual async Task<HttpRequestMessageBuilder> BuildRequest()
+    {
+        HttpRequestMessageBuilder reqBuilder = null;
+        if (Client == null) throw new InvalidOperationException("MinioClient is not set in AssumeRoleBaseProvider");
+        reqBuilder = await Client.CreateRequest(HttpMethod.Post);
+        reqBuilder.AddQueryParameter("Action", Action);
+        reqBuilder.AddQueryParameter("Version", "2011-06-15");
+        if (!string.IsNullOrWhiteSpace(Policy)) reqBuilder.AddQueryParameter("Policy", Policy);
+        if (!string.IsNullOrWhiteSpace(RoleARN)) reqBuilder.AddQueryParameter("RoleArn", RoleARN);
+        if (!string.IsNullOrWhiteSpace(RoleSessionName)) reqBuilder.AddQueryParameter("RoleSessionName", RoleARN);
+
+        return reqBuilder;
+    }
+
+    public override async Task<AccessCredentials> GetCredentialsAsync()
+    {
+        if (Credentials != null && !Credentials.AreExpired()) return Credentials;
+
+        var requestBuilder = await BuildRequest();
+        if (Client != null)
         {
-            if (string.IsNullOrWhiteSpace(externalId))
+            ResponseResult responseMessage = null;
+            try
             {
-                throw new ArgumentNullException("The External ID cannot be null or empty.");
+                responseMessage = await Client.ExecuteTaskAsync(NoErrorHandlers, requestBuilder);
             }
-            if (externalId.Length < 2 || externalId.Length > 1224)
+            finally
             {
-                throw new ArgumentOutOfRangeException("The External Id needs to be between 2 to 1224 characters in length");
-            }
-            this.ExternalID = externalId;
-            return (T)this;
-        }
-
-        public T WithRoleAction(string action)
-        {
-            this.Action = action;
-            return (T)this;
-        }
-
-        internal async virtual Task<HttpRequestMessageBuilder> BuildRequest()
-        {
-            HttpRequestMessageBuilder reqBuilder = null;
-            if (Client == null)
-            {
-                throw new InvalidOperationException("MinioClient is not set in AssumeRoleBaseProvider");
-            }
-            reqBuilder = await Client.CreateRequest(HttpMethod.Post);
-            reqBuilder.AddQueryParameter("Action", this.Action);
-            reqBuilder.AddQueryParameter("Version", "2011-06-15");
-            if (!string.IsNullOrWhiteSpace(this.Policy))
-            {
-                reqBuilder.AddQueryParameter("Policy", this.Policy);
-            }
-            if (!string.IsNullOrWhiteSpace(this.RoleARN))
-            {
-                reqBuilder.AddQueryParameter("RoleArn", this.RoleARN);
-            }
-            if (!string.IsNullOrWhiteSpace(this.RoleSessionName))
-            {
-                reqBuilder.AddQueryParameter("RoleSessionName", this.RoleARN);
-            }
-
-            return reqBuilder;
-        }
-
-        public async override Task<AccessCredentials> GetCredentialsAsync()
-        {
-            if (this.Credentials != null && !this.Credentials.AreExpired())
-            {
-                return this.Credentials;
-            }
-
-            var requestBuilder = await this.BuildRequest();
-            if (this.Client != null)
-            {
-                ResponseResult responseMessage = null;
-                try
-                {
-                    responseMessage = await Client.ExecuteTaskAsync(this.NoErrorHandlers, requestBuilder);
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
-                finally
-                {
-                    responseMessage?.Dispose();
-                }
-            }
-            return null;
-        }
-
-        internal virtual AccessCredentials ParseResponse(HttpResponseMessage response)
-        {
-            if (string.IsNullOrEmpty(Convert.ToString(response.Content)) || !HttpStatusCode.OK.Equals(response.StatusCode))
-            {
-                throw new ArgumentNullException("Unable to generate credentials. Response error.");
-            }
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(Convert.ToString(response.Content))))
-            {
-                return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(stream);
+                responseMessage?.Dispose();
             }
         }
 
-        public override AccessCredentials GetCredentials()
+        return null;
+    }
+
+    internal virtual AccessCredentials ParseResponse(HttpResponseMessage response)
+    {
+        if (string.IsNullOrEmpty(Convert.ToString(response.Content)) || !HttpStatusCode.OK.Equals(response.StatusCode))
+            throw new ArgumentNullException("Unable to generate credentials. Response error.");
+        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(Convert.ToString(response.Content))))
         {
-            throw new InvalidOperationException("Please use the GetCredentialsAsync method.");
+            return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(stream);
         }
+    }
+
+    public override AccessCredentials GetCredentials()
+    {
+        throw new InvalidOperationException("Please use the GetCredentialsAsync method.");
     }
 }

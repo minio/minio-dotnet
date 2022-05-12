@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+public class InvalidObjectPrefixException : MinioException
 {
-    public class InvalidObjectPrefixException : MinioException
+    private readonly string objectPrefix;
+
+    public InvalidObjectPrefixException(string objectPrefix, string message) : base(message)
     {
-        private readonly string objectPrefix;
+        this.objectPrefix = objectPrefix;
+    }
 
-        public InvalidObjectPrefixException(string objectPrefix, string message) : base(message)
-        {
-            this.objectPrefix = objectPrefix;
-        }
-
-        public override string ToString() => $"{this.objectPrefix}: {base.ToString()}";
+    public override string ToString()
+    {
+        return $"{objectPrefix}: {base.ToString()}";
     }
 }

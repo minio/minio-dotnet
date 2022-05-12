@@ -17,11 +17,10 @@
 
 using System;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using System.Net.Http;
-
 using Minio.DataModel;
 
 /*
@@ -29,72 +28,63 @@ using Minio.DataModel;
  * https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html
  */
 
-namespace Minio.Credentials
+namespace Minio.Credentials;
+
+[Serializable]
+[XmlRoot(ElementName = "AssumeRoleWithWebIdentityResponse")]
+public class WebIdentityResponse
 {
-    [Serializable]
-    [XmlRoot(ElementName = "AssumeRoleWithWebIdentityResponse")]
-    public class WebIdentityResponse
+    [XmlElement("Credentials")] public AccessCredentials Credentials { get; set; }
+
+    public AccessCredentials GetAccessCredentials()
     {
-        [XmlElement("Credentials")]
-        public AccessCredentials Credentials { get; set; }
-        public AccessCredentials GetAccessCredentials()
-        {
-            return this.Credentials;
-        }
+        return Credentials;
+    }
+}
+
+public class WebIdentityProvider : WebIdentityClientGrantsProvider<WebIdentityProvider>
+{
+    internal int ExpiryInSeconds { get; set; }
+    internal JsonWebToken CurrentJsonWebToken { get; set; }
+
+    public override AccessCredentials GetCredentials()
+    {
+        Validate();
+        return base.GetCredentials();
     }
 
-    public class WebIdentityProvider : WebIdentityClientGrantsProvider<WebIdentityProvider>
+    public override Task<AccessCredentials> GetCredentialsAsync()
     {
-        internal int ExpiryInSeconds { get; set; }
-        internal JsonWebToken CurrentJsonWebToken { get; set; }
+        Validate();
+        return base.GetCredentialsAsync();
+    }
 
+    internal WebIdentityProvider WithJWTSupplier(Func<JsonWebToken> f)
+    {
+        Validate();
+        JWTSupplier = (Func<JsonWebToken>)f.Clone();
+        return this;
+    }
 
-        public WebIdentityProvider()
+    internal override async Task<HttpRequestMessageBuilder> BuildRequest()
+    {
+        Validate();
+        CurrentJsonWebToken = JWTSupplier();
+        // RoleArn to be set already.
+        WithRoleAction("AssumeRoleWithWebIdentity");
+        WithDurationInSeconds(GetDurationInSeconds(CurrentJsonWebToken.Expiry));
+        if (RoleSessionName == null) RoleSessionName = utils.To8601String(DateTime.Now);
+        var requestMessageBuilder = await base.BuildRequest();
+        return requestMessageBuilder;
+    }
+
+    internal override AccessCredentials ParseResponse(HttpResponseMessage response)
+    {
+        Validate();
+        var credentials = base.ParseResponse(response);
+        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(Convert.ToString(response.Content))))
         {
-        }
-
-        public override AccessCredentials GetCredentials()
-        {
-            this.Validate();
-            return base.GetCredentials();
-        }
-
-        public override Task<AccessCredentials> GetCredentialsAsync()
-        {
-            this.Validate();
-            return base.GetCredentialsAsync();
-        }
-
-        internal WebIdentityProvider WithJWTSupplier(Func<JsonWebToken> f)
-        {
-            this.Validate();
-            this.JWTSupplier = (Func<JsonWebToken>)f.Clone();
-            return this;
-        }
-
-        internal async override Task<HttpRequestMessageBuilder> BuildRequest()
-        {
-            this.Validate();
-            this.CurrentJsonWebToken = this.JWTSupplier();
-            // RoleArn to be set already.
-            this.WithRoleAction("AssumeRoleWithWebIdentity");
-            this.WithDurationInSeconds(GetDurationInSeconds(this.CurrentJsonWebToken.Expiry));
-            if (this.RoleSessionName == null)
-            {
-                this.RoleSessionName = utils.To8601String(DateTime.Now);
-            }
-            HttpRequestMessageBuilder requestMessageBuilder = await base.BuildRequest();
-            return requestMessageBuilder;
-        }
-
-        internal override AccessCredentials ParseResponse(HttpResponseMessage response)
-        {
-            this.Validate();
-            AccessCredentials credentials = base.ParseResponse(response);
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(Convert.ToString(response.Content))))
-            {
-                return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(stream);
-            }
+            return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(stream);
         }
     }
 }

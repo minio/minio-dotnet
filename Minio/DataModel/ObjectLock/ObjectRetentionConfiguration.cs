@@ -15,35 +15,32 @@
  */
 
 using System;
-using System.Xml;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.ObjectLock
+namespace Minio.DataModel.ObjectLock;
+
+public enum RetentionMode
 {
-    public enum RetentionMode
+    GOVERNANCE,
+    COMPLIANCE
+}
+
+[Serializable]
+[XmlRoot(ElementName = "Retention", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+public class ObjectRetentionConfiguration
+{
+    public ObjectRetentionConfiguration()
     {
-        GOVERNANCE,
-        COMPLIANCE
+        RetainUntilDate = null;
     }
-    [Serializable]
-    [XmlRoot(ElementName = "Retention", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-    public class ObjectRetentionConfiguration
+
+    public ObjectRetentionConfiguration(DateTime date, RetentionMode mode = RetentionMode.GOVERNANCE)
     {
-        [XmlElement("Mode")]
-        public RetentionMode Mode { get; set; }
-
-        [XmlElement("RetainUntilDate")]
-        public string RetainUntilDate { get; set; }
-
-        public ObjectRetentionConfiguration()
-        {
-            this.RetainUntilDate = null;
-        }
-
-        public ObjectRetentionConfiguration(DateTime date, RetentionMode mode = RetentionMode.GOVERNANCE)
-        {
-            this.RetainUntilDate = utils.To8601String(date);
-            this.Mode = mode;
-        }
+        RetainUntilDate = utils.To8601String(date);
+        Mode = mode;
     }
+
+    [XmlElement("Mode")] public RetentionMode Mode { get; set; }
+
+    [XmlElement("RetainUntilDate")] public string RetainUntilDate { get; set; }
 }

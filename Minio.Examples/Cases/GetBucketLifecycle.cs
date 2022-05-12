@@ -17,38 +17,35 @@
 using System;
 using System.Threading.Tasks;
 
-using Minio;
+namespace Minio.Examples.Cases;
 
-namespace Minio.Examples.Cases
+public class GetBucketLifecycle
 {
-    public class GetBucketLifecycle
+    // Get Lifecycle configuration assigned to the bucket
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name")
     {
-        // Get Lifecycle configuration assigned to the bucket
-        public async static Task Run(MinioClient minio,
-                                    string bucketName = "my-bucket-name")
+        try
         {
-            try
+            Console.WriteLine("Running example for API: GetBucketLifecycle");
+            var lfc = await minio.GetBucketLifecycleAsync(
+                new GetBucketLifecycleArgs()
+                    .WithBucket(bucketName)
+            );
+            if (lfc != null && lfc.Rules != null && lfc.Rules.Count > 0)
             {
-                Console.WriteLine("Running example for API: GetBucketLifecycle");
-                var lfc = await minio.GetBucketLifecycleAsync(
-                    new GetBucketLifecycleArgs()
-                        .WithBucket(bucketName)
-                );
-                if (lfc != null && lfc.Rules != null && lfc.Rules.Count > 0)
-                {
-                    Console.WriteLine($"Got Bucket Lifecycle set for bucket {bucketName}.");
-                    Console.WriteLine(lfc.MarshalXML());
-                    Console.WriteLine();
-                    return;
-                }
-                Console.WriteLine($"Bucket Lifecycle not set for bucket {bucketName}.");
+                Console.WriteLine($"Got Bucket Lifecycle set for bucket {bucketName}.");
+                Console.WriteLine(lfc.MarshalXML());
                 Console.WriteLine();
+                return;
             }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+
+            Console.WriteLine($"Bucket Lifecycle not set for bucket {bucketName}.");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
-
 }

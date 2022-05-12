@@ -13,38 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Minio.DataModel.Tags;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public class SetObjectTags
 {
-    public class SetObjectTags
+    // Set Tags for the object
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name",
+        string objectName = "my-object-name",
+        Dictionary<string, string> tags = null,
+        string versionId = null)
     {
-        // Set Tags for the object
-        public async static Task Run(MinioClient minio,
-                                    string bucketName = "my-bucket-name",
-                                    string objectName = "my-object-name",
-                                    Dictionary<string, string> tags = null,
-                                    string versionId = null)
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: SetObjectTags");
-                var args = new SetObjectTagsArgs()
-                                    .WithBucket(bucketName)
-                                    .WithObject(objectName)
-                                    .WithVersionId(versionId)
-                                    .WithTagging(Tagging.GetObjectTags(tags));
-                await minio.SetObjectTagsAsync(args);
-                Console.WriteLine($"Tags set for object {bucketName}/{objectName}.");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Object]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: SetObjectTags");
+            var args = new SetObjectTagsArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithVersionId(versionId)
+                .WithTagging(Tagging.GetObjectTags(tags));
+            await minio.SetObjectTagsAsync(args);
+            Console.WriteLine($"Tags set for object {bucketName}/{objectName}.");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Object]  Exception: {e}");
         }
     }
 }

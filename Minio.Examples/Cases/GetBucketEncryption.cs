@@ -13,35 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
 using System.Threading.Tasks;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public class GetBucketEncryption
 {
-    public class GetBucketEncryption
+    // Get Encryption Configuration for the bucket
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name")
     {
-        // Get Encryption Configuration for the bucket
-        public async static Task Run(MinioClient minio,
-                                    string bucketName = "my-bucket-name")
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: GetBucketEncryptionAsync");
-                ServerSideEncryptionConfiguration config = await minio.GetBucketEncryptionAsync(
-                    new GetBucketEncryptionArgs()
-                        .WithBucket(bucketName)
-                );
-                Console.WriteLine($"Got encryption configuration for bucket {bucketName}.");
-                if (config != null && config.Rule != null && config.Rule.Apply != null)
-                {
-                    Console.WriteLine("Server Side Encryption Algorithm: " + config.Rule.Apply.SSEAlgorithm);
-                }
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: GetBucketEncryptionAsync");
+            var config = await minio.GetBucketEncryptionAsync(
+                new GetBucketEncryptionArgs()
+                    .WithBucket(bucketName)
+            );
+            Console.WriteLine($"Got encryption configuration for bucket {bucketName}.");
+            if (config != null && config.Rule != null && config.Rule.Apply != null)
+                Console.WriteLine("Server Side Encryption Algorithm: " + config.Rule.Apply.SSEAlgorithm);
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

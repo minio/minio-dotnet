@@ -17,127 +17,109 @@
 using System;
 using System.Net;
 
-namespace Minio
+namespace Minio;
+
+public class BuilderUtil
 {
-    public class BuilderUtil
+    public static bool IsAwsDualStackEndpoint(string endpoint)
     {
-        public static bool IsAwsDualStackEndpoint(string endpoint)
-        {
-            return endpoint.ToLower().Contains(".dualstack.");
-        }
-        public static bool IsAwsAccelerateEndpoint(string endpoint)
-        {
-            return endpoint.ToLower().StartsWith("s3-accelerate.");
-        }
-        public static bool IsAwsEndpoint(string endpoint)
-        {
-            return (endpoint.ToLower().StartsWith("s3.") ||
-                            IsAwsAccelerateEndpoint(endpoint)) &&
-                   (endpoint.ToLower().EndsWith(".amazonaws.com") ||
-                    endpoint.ToLower().EndsWith(".amazonaws.com.cn"));
-        }
+        return endpoint.ToLower().Contains(".dualstack.");
+    }
 
-        public static bool IsChineseDomain(string host)
+    public static bool IsAwsAccelerateEndpoint(string endpoint)
+    {
+        return endpoint.ToLower().StartsWith("s3-accelerate.");
+    }
+
+    public static bool IsAwsEndpoint(string endpoint)
+    {
+        return (endpoint.ToLower().StartsWith("s3.") ||
+                IsAwsAccelerateEndpoint(endpoint)) &&
+               (endpoint.ToLower().EndsWith(".amazonaws.com") ||
+                endpoint.ToLower().EndsWith(".amazonaws.com.cn"));
+    }
+
+    public static bool IsChineseDomain(string host)
+    {
+        return host.ToLower().EndsWith(".cn");
+    }
+
+    public static string ExtractRegion(string endpoint)
+    {
+        var tokens = endpoint.Split('.');
+        if (tokens.Length < 2)
+            return null;
+        var token = tokens[1];
+
+        // If token is "dualstack", then region might be in next token.
+        if (token.Equals("dualstack") && tokens.Length >= 3)
+            token = tokens[2];
+
+        // If token is equal to "amazonaws", region is not passed in the endpoint.
+        if (token.Equals("amazonaws"))
+            return null;
+
+        // Return token as region.
+        return token;
+    }
+
+    private static bool IsValidSmallInt(string val)
+    {
+        byte tempByte = 0;
+        return byte.TryParse(val, out tempByte);
+    }
+
+    private static bool isValidOctetVal(string val)
+    {
+        const byte uLimit = 255;
+        return byte.Parse(val) <= uLimit;
+    }
+
+    private static bool IsValidIPv4(string ip)
+    {
+        var posColon = ip.LastIndexOf(':');
+        if (posColon != -1) ip = ip.Substring(0, posColon);
+        var octetsStr = ip.Split('.');
+        if (octetsStr.Length != 4) return false;
+        var isValidSmallInt = Array.TrueForAll(octetsStr, IsValidSmallInt);
+        if (!isValidSmallInt) return false;
+        var isValidOctet = Array.TrueForAll(octetsStr, isValidOctetVal);
+        return isValidOctet;
+    }
+
+    private static bool IsValidIP(string host)
+    {
+        IPAddress temp;
+        return IPAddress.TryParse(host, out temp);
+    }
+
+    public static bool IsValidHostnameOrIPAddress(string host)
+    {
+        // Let's do IP address check first.
+        if (string.IsNullOrWhiteSpace(host)) return false;
+        // IPv4 first
+        if (IsValidIPv4(host)) return true;
+        // IPv6 or other IP address format
+        if (IsValidIP(host)) return true;
+        // Remove any port in endpoint, in such a case.
+        var posColon = host.LastIndexOf(':');
+        var port = -1;
+        if (posColon != -1)
         {
-            return host.ToLower().EndsWith(".cn");
-        }
-
-        public static string ExtractRegion(string endpoint)
-        {
-            string[] tokens = endpoint.Split('.');
-            if (tokens.Length < 2)
-                return null;
-            string token = tokens[1];
-
-            // If token is "dualstack", then region might be in next token.
-            if (token.Equals("dualstack") && tokens.Length >= 3)
-                token = tokens[2];
-
-            // If token is equal to "amazonaws", region is not passed in the endpoint.
-            if (token.Equals("amazonaws"))
-                return null;
-
-            // Return token as region.
-            return token;
-        }
-
-        private static bool IsValidSmallInt(string val)
-        {
-            byte tempByte = 0;
-            return Byte.TryParse(val, out tempByte);
-        }
-
-        private static bool isValidOctetVal(string val)
-        {
-            const byte uLimit = (byte)255;
-            return (Byte.Parse(val) <= uLimit);
-        }
-        private static bool IsValidIPv4(string ip)
-        {
-            int posColon = ip.LastIndexOf(':');
-            if (posColon != -1)
+            try
             {
-                ip = ip.Substring(0, posColon);
+                port = int.Parse(host.Substring(posColon + 1, host.Length - posColon - 1));
             }
-            string[] octetsStr = ip.Split('.');
-            if (octetsStr.Length != 4)
+            catch (FormatException)
             {
                 return false;
             }
-            bool isValidSmallInt = Array.TrueForAll(octetsStr, IsValidSmallInt);
-            if (!isValidSmallInt)
-            {
-                return false;
-            }
-            bool isValidOctet = Array.TrueForAll(octetsStr, isValidOctetVal);
-            return isValidOctet;
+
+            host = host.Substring(0, posColon);
         }
 
-        private static bool IsValidIP(string host)
-        {
-            IPAddress temp;
-            return IPAddress.TryParse(host, out temp);
-        }
-
-        public static bool IsValidHostnameOrIPAddress(string host)
-        {
-            // Let's do IP address check first.
-            if (String.IsNullOrWhiteSpace(host))
-            {
-                return false;
-            }
-            // IPv4 first
-            if (IsValidIPv4(host))
-            {
-                return true;
-            }
-            // IPv6 or other IP address format
-            if (IsValidIP(host))
-            {
-                return true;
-            }
-            // Remove any port in endpoint, in such a case.
-            int posColon = host.LastIndexOf(':');
-            int port = -1;
-            if (posColon != -1)
-            {
-                try
-                {
-                    port = Int32.Parse(host.Substring(posColon + 1, (host.Length - posColon - 1)));
-                }
-                catch (System.FormatException)
-                {
-                    return false;
-                }
-                host = host.Substring(0, posColon);
-            }
-
-            // Check host if it is a hostname.
-            if (Uri.CheckHostName(host).ToString().ToLower().Equals("dns"))
-            {
-                return true;
-            }
-            return false;
-        }
+        // Check host if it is a hostname.
+        if (Uri.CheckHostName(host).ToString().ToLower().Equals("dns")) return true;
+        return false;
     }
 }

@@ -16,54 +16,47 @@
 //
 
 using System;
-using System.Threading.Tasks;
 using System.Security.Cryptography.X509Certificates;
-
+using System.Threading.Tasks;
 using Minio.Credentials;
-using Minio.DataModel;
-using Minio.DataModel.Tracing;
-using Newtonsoft.Json;
 
+namespace Minio.Examples.Cases;
 
-namespace Minio.Examples.Cases
+public class CertificateIdentityProviderExample
 {
-
-    public class CertificateIdentityProviderExample
+    // Establish Authentication on both ways with client and server certificates
+    public static async Task Run()
     {
-        // Establish Authentication on both ways with client and server certificates
-        public async static Task Run()
+        // STS endpoint
+        var stsEndpoint = "https://alias:port/";
+
+        // Generatng pfx cert for this call.
+        // openssl pkcs12 -export -out client.pfx -inkey client.key -in client.crt -certfile server.crt
+        using (var cert = new X509Certificate2("C:\\dev\\client.pfx", "optional-password"))
         {
-            // STS endpoint
-            var stsEndpoint = "https://alias:port/";
-
-            // Generatng pfx cert for this call.
-            // openssl pkcs12 -export -out client.pfx -inkey client.key -in client.crt -certfile server.crt
-            using (var cert = new X509Certificate2("C:\\dev\\client.pfx", "optional-password"))
+            try
             {
-                try
-                {
-                    var provider = new CertificateIdentityProvider()
-                        .WithStsEndpoint(stsEndpoint)
-                        .WithCertificate(cert)
-                        .Build();
+                var provider = new CertificateIdentityProvider()
+                    .WithStsEndpoint(stsEndpoint)
+                    .WithCertificate(cert)
+                    .Build();
 
-                    MinioClient minioClient = new MinioClient()
-                        .WithEndpoint("alias:port")
-                        .WithSSL()
-                        .WithCredentialsProvider(provider)
-                        .Build();
+                var minioClient = new MinioClient()
+                    .WithEndpoint("alias:port")
+                    .WithSSL()
+                    .WithCredentialsProvider(provider)
+                    .Build();
 
-                    StatObjectArgs statObjectArgs = new StatObjectArgs()
+                var statObjectArgs = new StatObjectArgs()
                     .WithBucket("bucket-name")
                     .WithObject("object-name");
-                    ObjectStat result = await minioClient.StatObjectAsync(statObjectArgs);
-                    // Console.WriteLine("\nObject Stat: \n" + result.ToString());
-                    Console.WriteLine("\nCertificateIdentityProvider test PASSed\n");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"\nCertificateIdentityProvider test exception: {e}\n");
-                }
+                var result = await minioClient.StatObjectAsync(statObjectArgs);
+                // Console.WriteLine("\nObject Stat: \n" + result.ToString());
+                Console.WriteLine("\nCertificateIdentityProvider test PASSed\n");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"\nCertificateIdentityProvider test exception: {e}\n");
             }
         }
     }

@@ -15,24 +15,24 @@
  */
 
 using System;
-using System.Net;
-using System.Text;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Minio.DataModel
 {
-
     public class PostPolicy
     {
-        public DateTime expiration { get; set; } = new DateTime();
-        public List<List<(string, string, string)>> conditions =
-                new List<List<(string, string, string)>>();
         public readonly Dictionary<string, string> formData = new Dictionary<string, string>();
+
+        public List<List<(string, string, string)>> conditions =
+            new List<List<(string, string, string)>>();
+
+        public DateTime expiration { get; set; } = new DateTime();
         public string Key { get; private set; }
         public string Bucket { get; private set; }
 
         /// <summary>
-        /// Set expiration policy.
+        ///     Set expiration policy.
         /// </summary>
         /// <param name="expiration">Expiration time for the policy</param>
         public void SetExpires(DateTime expiration)
@@ -42,7 +42,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        /// Set key policy.
+        ///     Set key policy.
         /// </summary>
         /// <param name="key">Object name for the policy</param>
         public void SetKey(string key)
@@ -58,7 +58,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        /// Set key prefix policy.
+        ///     Set key prefix policy.
         /// </summary>
         /// <param name="keyStartsWith">Object name prefix for the policy</param>
         public void SetKeyStartsWith(string keyStartsWith)
@@ -73,7 +73,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        /// Set bucket policy.
+        ///     Set bucket policy.
         /// </summary>
         /// <param name="bucket">Bucket name for the policy</param>
         public void SetBucket(string bucket)
@@ -89,7 +89,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        /// Set cache control
+        ///     Set cache control
         /// </summary>
         /// <param name="cacheControl">CacheControl for the policy</param>
         public void SetCacheControl(string cacheControl)
@@ -104,7 +104,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        /// Set content type policy.
+        ///     Set content type policy.
         /// </summary>
         /// <param name="contentType">ContentType for the policy</param>
         public void SetContentType(string contentType)
@@ -119,14 +119,15 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        /// Set content encoding
+        ///     Set content encoding
         /// </summary>
         /// <param name="contentEncoding">ContentEncoding for the policy</param>
         public void SetContentEncoding(string contentEncoding)
         {
             if (string.IsNullOrEmpty(contentEncoding))
             {
-                throw new ArgumentException("Content-Encoding argument cannot be null or empty", nameof(contentEncoding));
+                throw new ArgumentException("Content-Encoding argument cannot be null or empty",
+                    nameof(contentEncoding));
             }
 
             this.conditions.Add(new List<(string, string, string)> { ("eq", "$Content-Encoding", contentEncoding) });
@@ -134,7 +135,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        /// Set content length
+        ///     Set content length
         /// </summary>
         /// <param name="contentLength">ContentLength for the policy</param>
         public void SetContentLength(long contentLength)
@@ -144,11 +145,12 @@ namespace Minio.DataModel
                 throw new ArgumentException("Negative Content length", nameof(contentLength));
             }
 
-            this.conditions.Add(new List<(string, string, string)> { ("content-length-range", contentLength.ToString(), contentLength.ToString()) });
+            this.conditions.Add(new List<(string, string, string)>
+                { ("content-length-range", contentLength.ToString(), contentLength.ToString()) });
         }
 
         /// <summary>
-        /// Set content range
+        ///     Set content range
         /// </summary>
         /// <param name="startRange">ContentRange for the policy</param>
         /// <param name="endRange"></param>
@@ -164,24 +166,26 @@ namespace Minio.DataModel
                 throw new ArgumentException("Start range is greater than end range", nameof(startRange));
             }
 
-            this.conditions.Add(new List<(string, string, string)> { ("content-length-range", startRange.ToString(), endRange.ToString()) });
+            this.conditions.Add(new List<(string, string, string)>
+                { ("content-length-range", startRange.ToString(), endRange.ToString()) });
         }
 
         /// <summary>
-        /// Set session token
+        ///     Set session token
         /// </summary>
         /// <param name="sessionToken">set session token</param>
         public void SetSessionToken(string sessionToken)
         {
             if (!string.IsNullOrEmpty(sessionToken))
             {
-                this.conditions.Add(new List<(string, string, string)> { ("eq", "$x-amz-security-token", sessionToken) });
+                this.conditions.Add(
+                    new List<(string, string, string)> { ("eq", "$x-amz-security-token", sessionToken) });
                 // this.formData.Add("x-amz-security-token", sessionToken);
             }
         }
 
         /// <summary>
-        /// Set the success action status of the object for this policy based upload.
+        ///     Set the success action status of the object for this policy based upload.
         /// </summary>
         /// <param name="status">Success action status</param>
         public void SetSuccessStatusAction(string status)
@@ -196,7 +200,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        /// Set user specified metadata as a key/value couple.
+        ///     Set user specified metadata as a key/value couple.
         /// </summary>
         /// <param name="key">Key and Value to insert in the metadata</param>
         /// <param name="value"></param>
@@ -218,7 +222,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        /// Set signature algorithm policy.
+        ///     Set signature algorithm policy.
         /// </summary>
         /// <param name="algorithm">Set signature algorithm used for the policy</param>
         public void SetAlgorithm(string algorithm)
@@ -233,7 +237,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        /// Set credential policy.
+        ///     Set credential policy.
         /// </summary>
         /// <param name="credential">Set credential string for the policy</param>
         public void SetCredential(string credential)
@@ -248,7 +252,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        /// Set date policy.
+        ///     Set date policy.
         /// </summary>
         /// <param name="date">Set date for the policy</param>
         public void SetDate(DateTime date)
@@ -259,7 +263,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        /// Set base64 encoded policy to form dictionary.
+        ///     Set base64 encoded policy to form dictionary.
         /// </summary>
         /// <param name="policyBase64">Base64 encoded policy</param>
         public void SetPolicy(string policyBase64)
@@ -268,7 +272,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        /// Set computed signature for the policy to form dictionary.
+        ///     Set computed signature for the policy to form dictionary.
         /// </summary>
         /// <param name="signature">Computed signature</param>
         public void SetSignature(string signature)
@@ -277,7 +281,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        /// Serialize policy into JSON string.
+        ///     Serialize policy into JSON string.
         /// </summary>
         /// <returns>Serialized JSON policy</returns>
         private byte[] MarshalJSON()
@@ -285,20 +289,22 @@ namespace Minio.DataModel
             List<string> policyList = new List<string>();
             foreach (var condition in this.conditions)
             {
-                policyList.Add("[\"" + condition[0].Item1 + "\",\"" + condition[0].Item2 + "\",\"" + condition[0].Item3 + "\"]");
+                policyList.Add("[\"" + condition[0].Item1 + "\",\"" + condition[0].Item2 + "\",\"" +
+                               condition[0].Item3 + "\"]");
             }
 
             // expiration and policies will never be empty because of checks at PresignedPostPolicy()
             StringBuilder sb = new StringBuilder();
             sb.Append("{");
-            sb.Append("\"expiration\":\"").Append(this.expiration.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")).Append("\"").Append(",");
+            sb.Append("\"expiration\":\"").Append(this.expiration.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")).Append("\"")
+                .Append(",");
             sb.Append("\"conditions\":[").Append(string.Join(",", policyList)).Append("]");
             sb.Append("}");
             return Encoding.UTF8.GetBytes(sb.ToString());
         }
 
         /// <summary>
-        /// Compute base64 encoded form of JSON policy.
+        ///     Compute base64 encoded form of JSON policy.
         /// </summary>
         /// <returns>Base64 encoded string of JSON policy</returns>
         public string Base64()
@@ -308,7 +314,7 @@ namespace Minio.DataModel
         }
 
         /// <summary>
-        /// Verify if bucket is set in policy.
+        ///     Verify if bucket is set in policy.
         /// </summary>
         /// <returns>true if bucket is set</returns>
         public bool IsBucketSet()
@@ -320,11 +326,12 @@ namespace Minio.DataModel
                     return true;
                 }
             }
+
             return false;
         }
 
         /// <summary>
-        /// Verify if key is set in policy.
+        ///     Verify if key is set in policy.
         /// </summary>
         /// <returns>true if key is set</returns>
         public bool IsKeySet()
@@ -336,11 +343,12 @@ namespace Minio.DataModel
                     return true;
                 }
             }
+
             return false;
         }
 
         /// <summary>
-        /// Verify if expiration is set in policy.
+        ///     Verify if expiration is set in policy.
         /// </summary>
         /// <returns>true if expiration is set</returns>
         public bool IsExpirationSet()
@@ -349,11 +357,12 @@ namespace Minio.DataModel
             {
                 return true;
             }
+
             return false;
         }
 
         /// <summary>
-        /// Get the populated dictionary of policy data.
+        ///     Get the populated dictionary of policy data.
         /// </summary>
         /// <returns>Dictionary of policy data</returns>
         public Dictionary<string, string> GetFormData() => this.formData;

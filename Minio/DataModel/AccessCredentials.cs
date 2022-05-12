@@ -18,46 +18,45 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+[Serializable]
+[XmlRoot(ElementName = "Credentials")]
+public class AccessCredentials
 {
-    [Serializable]
-    [XmlRoot(ElementName = "Credentials")]
-    public class AccessCredentials
+    public AccessCredentials(string accessKey, string secretKey,
+        string sessionToken, DateTime expiration)
     {
-        [XmlElement(ElementName = "AccessKeyId", IsNullable = true)]
-        public string AccessKey { get; set; }
-        [XmlElement(ElementName = "SecretAccessKey", IsNullable = true)]
-        public string SecretKey { get; set; }
-        [XmlElement(ElementName = "SessionToken", IsNullable = true)]
-        public string SessionToken { get; set; }
-        // Needs to be stored in ISO8601 format from Datetime
-        [XmlElement(ElementName = "Expiration", IsNullable = true)]
-        public string Expiration { get; set; }
-        public AccessCredentials(string accessKey, string secretKey,
-                            string sessionToken, DateTime expiration)
-        {
-            if (string.IsNullOrWhiteSpace(accessKey) || string.IsNullOrWhiteSpace(secretKey))
-            {
-                throw new ArgumentNullException(nameof(this.AccessKey) + " and " + nameof(this.SecretKey) + " cannot be null or empty.");
-            }
-            this.AccessKey = accessKey;
-            this.SecretKey = secretKey;
-            this.SessionToken = sessionToken;
-            this.Expiration = (expiration.Equals(default(DateTime))) ? null : utils.To8601String(expiration);
-        }
+        if (string.IsNullOrWhiteSpace(accessKey) || string.IsNullOrWhiteSpace(secretKey))
+            throw new ArgumentNullException(nameof(AccessKey) + " and " + nameof(SecretKey) +
+                                            " cannot be null or empty.");
+        AccessKey = accessKey;
+        SecretKey = secretKey;
+        SessionToken = sessionToken;
+        Expiration = expiration.Equals(default) ? null : utils.To8601String(expiration);
+    }
 
-        public AccessCredentials()
-        {
-        }
+    public AccessCredentials()
+    {
+    }
 
-        public bool AreExpired()
-        {
-            if (string.IsNullOrWhiteSpace(this.Expiration))
-            {
-                return false;
-            }
-            DateTime expiry = utils.From8601String(this.Expiration);
-            return DateTime.Now.CompareTo(expiry) > 0;
-        }
+    [XmlElement(ElementName = "AccessKeyId", IsNullable = true)]
+    public string AccessKey { get; set; }
+
+    [XmlElement(ElementName = "SecretAccessKey", IsNullable = true)]
+    public string SecretKey { get; set; }
+
+    [XmlElement(ElementName = "SessionToken", IsNullable = true)]
+    public string SessionToken { get; set; }
+
+    // Needs to be stored in ISO8601 format from Datetime
+    [XmlElement(ElementName = "Expiration", IsNullable = true)]
+    public string Expiration { get; set; }
+
+    public bool AreExpired()
+    {
+        if (string.IsNullOrWhiteSpace(Expiration)) return false;
+        var expiry = utils.From8601String(Expiration);
+        return DateTime.Now.CompareTo(expiry) > 0;
     }
 }

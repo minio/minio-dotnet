@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+public class DeleteObjectException : MinioException
 {
-    public class DeleteObjectException : MinioException
+    public DeleteObjectException(string message) : base(message)
     {
-        public DeleteObjectException(string message) : base(message)
-        {
-        }
     }
 }

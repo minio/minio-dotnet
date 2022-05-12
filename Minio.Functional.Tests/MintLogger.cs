@@ -14,95 +14,95 @@
 * limitations under the License.
 */
 
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
-namespace Minio.Functional.Tests
+namespace Minio.Functional.Tests;
+
+internal enum TestStatus
 {
-    enum TestStatus
-    {
-        PASS,
-        FAIL,
-        NA
-    }
+    PASS,
+    FAIL,
+    NA
+}
 
-    static class TestStatusExtender
+internal static class TestStatusExtender
+{
+    public static string AsText(this TestStatus status)
     {
-        public static string AsText(this TestStatus status)
+        switch (status)
         {
-            switch (status)
-            {
-                case TestStatus.PASS: return "PASS";
-                case TestStatus.FAIL: return "FAIL";
-                default: return "NA";
-            }
+            case TestStatus.PASS: return "PASS";
+            case TestStatus.FAIL: return "FAIL";
+            default: return "NA";
         }
     }
+}
 
-    internal class MintLogger
+internal class MintLogger
+{
+    public MintLogger(string testName, string function, string description, TestStatus status, TimeSpan duration,
+        string alert = null, string message = null, string error = null, Dictionary<string, string> args = null)
     {
-        /// <summary>
-        /// SDK Name
-        /// </summary>
-        public string name { get; private set; } = "minio-dotnet";
+        this.function = function;
+        this.duration = (int)duration.TotalMilliseconds;
+        name = $"{name} : {testName}";
+        this.alert = alert;
+        this.message = message;
+        this.error = error;
+        this.args = args;
+        this.status = status.AsText();
+    }
 
-        /// <summary>
-        /// Test function name  
-        /// </summary>
-        public string function { get; private set; }
+    /// <summary>
+    ///     SDK Name
+    /// </summary>
+    public string name { get; } = "minio-dotnet";
 
-        /// <summary>
-        /// Test function description
-        /// </summary>
-        public string description { get; private set; }
+    /// <summary>
+    ///     Test function name
+    /// </summary>
+    public string function { get; }
 
-        /// <summary>
-        /// Key-value pair of args relevant to test
-        /// </summary>
-        public Dictionary<string, string> args { get; private set; }
+    /// <summary>
+    ///     Test function description
+    /// </summary>
+    public string description { get; private set; }
 
-        /// <summary>
-        /// duration of the whole test
-        /// </summary>
-        public int duration { get; private set; }
+    /// <summary>
+    ///     Key-value pair of args relevant to test
+    /// </summary>
+    public Dictionary<string, string> args { get; }
 
-        /// <summary>
-        /// test status : can be PASS, FAIL, NA
-        /// </summary>
-        public string status { get; private set; }
+    /// <summary>
+    ///     duration of the whole test
+    /// </summary>
+    public int duration { get; }
 
-        /// <summary>
-        /// alert message Information like whether this is a Blocker/ Gateway, Server etc can go here
-        /// </summary>
-        public string alert { get; private set; }
+    /// <summary>
+    ///     test status : can be PASS, FAIL, NA
+    /// </summary>
+    public string status { get; }
 
-        /// <summary>
-        /// descriptive error message
-        /// </summary>
-        public string message { get; private set; }
+    /// <summary>
+    ///     alert message Information like whether this is a Blocker/ Gateway, Server etc can go here
+    /// </summary>
+    public string alert { get; }
 
-        /// <summary>
-        /// actual low level exception/error thrown by the program
-        /// </summary>
-        public string error { get; private set; }
+    /// <summary>
+    ///     descriptive error message
+    /// </summary>
+    public string message { get; }
 
-        public MintLogger(string testName, string function, string description, TestStatus status, TimeSpan duration, string alert = null, string message = null, string error = null, Dictionary<string, string> args = null)
-        {
-            this.function = function;
-            this.duration = (int)duration.TotalMilliseconds;
-            this.name = $"{this.name} : {testName}";
-            this.alert = alert;
-            this.message = message;
-            this.error = error;
-            this.args = args;
-            this.status = status.AsText();
-        }
+    /// <summary>
+    ///     actual low level exception/error thrown by the program
+    /// </summary>
+    public string error { get; }
 
-        public void Log()
-        {
-            Console.WriteLine(JsonConvert.SerializeObject(this, Formatting.None,
-                new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
-        }
+    public void Log()
+    {
+        Console.WriteLine(JsonConvert.SerializeObject(this, Formatting.None,
+            new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
     }
 }

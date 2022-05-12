@@ -17,13 +17,12 @@
 
 using System;
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+[Serializable]
+public class UnexpectedMinioException : MinioException
 {
-    [Serializable]
-    public class UnexpectedMinioException : MinioException
+    public UnexpectedMinioException(string message) : base(message)
     {
-        public UnexpectedMinioException(string message) : base(message)
-        {
-        }
     }
 }

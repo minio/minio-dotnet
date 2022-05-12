@@ -14,76 +14,73 @@
  * limitations under the License.
  */
 
+using System.Net.Http;
+using System.Text;
 using Minio.DataModel;
 using Minio.Exceptions;
-using System;
-using System.Text;
-using System.Net.Http;
-using System.Xml.Serialization;
-using System.Reflection;
 
-namespace Minio
+namespace Minio;
+
+public class GetVersioningArgs : BucketArgs<GetVersioningArgs>
 {
-    public class GetVersioningArgs : BucketArgs<GetVersioningArgs>
+    public GetVersioningArgs()
     {
-        public GetVersioningArgs()
-        {
-            this.RequestMethod = HttpMethod.Get;
-        }
-
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("versioning", "");
-            return requestMessageBuilder;
-        }
+        RequestMethod = HttpMethod.Get;
     }
 
-    public class SetVersioningArgs : BucketArgs<SetVersioningArgs>
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        internal VersioningStatus CurrentVersioningStatus;
-        internal enum VersioningStatus : ushort
-        {
-            Off = 0,
-            Enabled = 1,
-            Suspended = 2,
-        }
-        public SetVersioningArgs()
-        {
-            this.RequestMethod = HttpMethod.Put;
-            this.CurrentVersioningStatus = VersioningStatus.Off;
-        }
-        internal override void Validate()
-        {
-            utils.ValidateBucketName(this.BucketName);
-            if (this.CurrentVersioningStatus > VersioningStatus.Suspended)
-            {
-                throw new UnexpectedMinioException("CurrentVersioningStatus invalid value .");
-            }
-        }
+        requestMessageBuilder.AddQueryParameter("versioning", "");
+        return requestMessageBuilder;
+    }
+}
 
-        public SetVersioningArgs WithVersioningEnabled()
-        {
-            this.CurrentVersioningStatus = VersioningStatus.Enabled;
-            return this;
-        }
+public class SetVersioningArgs : BucketArgs<SetVersioningArgs>
+{
+    internal VersioningStatus CurrentVersioningStatus;
 
-        public SetVersioningArgs WithVersioningSuspended()
-        {
-            this.CurrentVersioningStatus = VersioningStatus.Suspended;
-            return this;
-        }
+    public SetVersioningArgs()
+    {
+        RequestMethod = HttpMethod.Put;
+        CurrentVersioningStatus = VersioningStatus.Off;
+    }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            VersioningConfiguration config = new VersioningConfiguration((this.CurrentVersioningStatus == VersioningStatus.Enabled));
+    internal override void Validate()
+    {
+        utils.ValidateBucketName(BucketName);
+        if (CurrentVersioningStatus > VersioningStatus.Suspended)
+            throw new UnexpectedMinioException("CurrentVersioningStatus invalid value .");
+    }
 
-            string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
-            requestMessageBuilder.AddXmlBody(body);
-            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-                            utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+    public SetVersioningArgs WithVersioningEnabled()
+    {
+        CurrentVersioningStatus = VersioningStatus.Enabled;
+        return this;
+    }
 
-            requestMessageBuilder.AddQueryParameter("versioning", "");
-            return requestMessageBuilder;
-        }
+    public SetVersioningArgs WithVersioningSuspended()
+    {
+        CurrentVersioningStatus = VersioningStatus.Suspended;
+        return this;
+    }
+
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        var config = new VersioningConfiguration(CurrentVersioningStatus == VersioningStatus.Enabled);
+
+        var body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+        requestMessageBuilder.AddXmlBody(body);
+        requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+            utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+
+        requestMessageBuilder.AddQueryParameter("versioning", "");
+        return requestMessageBuilder;
+    }
+
+    internal enum VersioningStatus : ushort
+    {
+        Off = 0,
+        Enabled = 1,
+        Suspended = 2
     }
 }

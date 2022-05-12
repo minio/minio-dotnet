@@ -21,113 +21,110 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Minio
+namespace Minio;
+
+/// <summary>
+///     A singleton bucket/region cache map.
+/// </summary>
+public sealed class BucketRegionCache
 {
-    /// <summary>
-    /// A singleton bucket/region cache map.
-    /// </summary>
-    public sealed class BucketRegionCache
+    private static readonly Lazy<BucketRegionCache> lazy = new(() => new BucketRegionCache());
+
+    private readonly ConcurrentDictionary<string, string> regionMap;
+
+    private BucketRegionCache()
     {
-        private static readonly Lazy<BucketRegionCache> lazy =
-            new Lazy<BucketRegionCache>(() => new BucketRegionCache());
+        regionMap = new ConcurrentDictionary<string, string>();
+    }
 
-        private readonly ConcurrentDictionary<string, string> regionMap;
+    public static BucketRegionCache Instance => lazy.Value;
 
-        public static BucketRegionCache Instance => lazy.Value;
-        private BucketRegionCache()
+    /// <summary>
+    ///     Returns AWS region for given bucket name.
+    /// </summary>
+    /// <param name="bucketName"></param>
+    /// <returns></returns>
+    public string Region(string bucketName)
+    {
+        regionMap.TryGetValue(bucketName, out var value);
+        return value ?? "us-east-1";
+    }
+
+    /// <summary>
+    ///     Adds bucket name and its region to BucketRegionCache.
+    /// </summary>
+    /// <param name="bucketName"></param>
+    /// <param name="region"></param>
+    public void Add(string bucketName, string region)
+    {
+        regionMap.TryAdd(bucketName, region);
+    }
+
+    /// <summary>
+    ///     Removes region cache of the bucket if any.
+    /// </summary>
+    /// <param name="bucketName"></param>
+    public void Remove(string bucketName)
+    {
+        regionMap.TryRemove(bucketName, out var value);
+    }
+
+    /// <summary>
+    ///     Returns true if given bucket name is in the map else false.
+    /// </summary>
+    /// <param name="bucketName"></param>
+    /// <returns></returns>
+    public bool Exists(string bucketName)
+    {
+        regionMap.TryGetValue(bucketName, out var value);
+        return value != null;
+    }
+
+    /// <summary>
+    ///     Updates Region cache for given bucket.
+    /// </summary>
+    /// <param name="client"></param>
+    /// <param name="bucketName"></param>
+    internal async Task<string> Update(MinioClient client, string bucketName)
+    {
+        string region = null;
+
+        if (bucketName != null && client.AccessKey != null
+                               && client.SecretKey != null && !Instance.Exists(bucketName))
         {
-            this.regionMap = new ConcurrentDictionary<string, string>();
-        }
+            string location = null;
+            var path = utils.UrlEncode(bucketName);
+            // Initialize client
+            var requestUrl = RequestUtil.MakeTargetURL(client.BaseUrl, client.Secure);
 
-        /// <summary>
-        /// Returns AWS region for given bucket name.
-        /// </summary>
-        /// <param name="bucketName"></param>
-        /// <returns></returns>
-        public string Region(string bucketName)
-        {
-            this.regionMap.TryGetValue(bucketName, out string value);
-            return value ?? "us-east-1";
-        }
+            var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, requestUrl, path);
+            requestBuilder.AddQueryParameter("location", "");
+            using var response =
+                await client.ExecuteTaskAsync(client.NoErrorHandlers, requestBuilder).ConfigureAwait(false);
 
-        /// <summary>
-        /// Adds bucket name and its region to BucketRegionCache.
-        /// </summary>
-        /// <param name="bucketName"></param>
-        /// <param name="region"></param>
-        public void Add(string bucketName, string region)
-        {
-            this.regionMap.TryAdd(bucketName, region);
-        }
-
-        /// <summary>
-        /// Removes region cache of the bucket if any.
-        /// </summary>
-        /// <param name="bucketName"></param>
-        public void Remove(string bucketName)
-        {
-            this.regionMap.TryRemove(bucketName, out string value);
-        }
-
-        /// <summary>
-        /// Returns true if given bucket name is in the map else false.
-        /// </summary>
-        /// <param name="bucketName"></param>
-        /// <returns></returns>
-        public bool Exists(string bucketName)
-        {
-            this.regionMap.TryGetValue(bucketName, out string value);
-            return value != null;
-        }
-
-        /// <summary>
-        /// Updates Region cache for given bucket.
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="bucketName"></param>
-        internal async Task<string> Update(MinioClient client, string bucketName)
-        {
-            string region = null;
-
-            if (bucketName != null && client.AccessKey != null
-                && client.SecretKey != null && !Instance.Exists(bucketName))
+            if (response != null && HttpStatusCode.OK.Equals(response.StatusCode))
             {
-                string location = null;
-                var path = utils.UrlEncode(bucketName);
-                // Initialize client
-                Uri requestUrl = RequestUtil.MakeTargetURL(client.BaseUrl, client.Secure);
-
-                var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, requestUrl, path);
-                requestBuilder.AddQueryParameter("location", "");
-                using var response = await client.ExecuteTaskAsync(client.NoErrorHandlers, requestBuilder).ConfigureAwait(false);
-
-                if (response != null && HttpStatusCode.OK.Equals(response.StatusCode))
-                {
-                    XDocument root = XDocument.Parse(response.Content);
-                    location = root.Root.Value;
-                }
-
-                if (string.IsNullOrEmpty(location))
-                {
-                    region = "us-east-1";
-                }
-                else
-                {
-                    // eu-west-1 can be sometimes 'EU'.
-                    if (location == "EU")
-                    {
-                        region = "eu-west-1";
-                    }
-                    else
-                    {
-                        region = location;
-                    }
-                }
-
-                // Add the new location.
-                Instance.Add(bucketName, region);
+                var root = XDocument.Parse(response.Content);
+                location = root.Root.Value;
             }
-            return region;
+
+            if (string.IsNullOrEmpty(location))
+            {
+                region = "us-east-1";
+            }
+            else
+            {
+                // eu-west-1 can be sometimes 'EU'.
+                if (location == "EU")
+                    region = "eu-west-1";
+                else
+                    region = location;
+            }
+
+            // Add the new location.
+            Instance.Add(bucketName, region);
         }
+
+        return region;
     }
 }

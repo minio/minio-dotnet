@@ -14,43 +14,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
 using System.Threading.Tasks;
-
 using Minio.Credentials;
-using Minio.DataModel;
 using Minio.Exceptions;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public class ChainedCredentialProvider
 {
-    public class ChainedCredentialProvider
+    // Establish Credentials with AWS Session token
+    public static async Task Run()
     {
-        // Establish Credentials with AWS Session token
-        public async static Task Run()
+        var provider = new ChainedProvider()
+            .AddProviders(new ClientProvider[] { new AWSEnvironmentProvider(), new MinioEnvironmentProvider() });
+        //Chained provider definition here.
+        var minioClient = new MinioClient()
+            .WithEndpoint("s3.amazonaws.com")
+            .WithSSL()
+            .WithCredentialsProvider(provider)
+            .Build();
+        try
         {
-            ChainedProvider provider = new ChainedProvider()
-                                                .AddProviders(new ClientProvider[]{new AWSEnvironmentProvider(), new MinioEnvironmentProvider()});
-            //Chained provider definition here.
-            MinioClient minioClient = new MinioClient()
-                                                .WithEndpoint("s3.amazonaws.com")
-                                                .WithSSL()
-                                                .WithCredentialsProvider(provider)
-                                                .Build();
-            try
-            {
-                StatObjectArgs statObjectArgs = new StatObjectArgs()
-                                                            .WithBucket("my-bucket-name")
-                                                            .WithObject("my-object-name");
-                ObjectStat result = await minioClient.StatObjectAsync(statObjectArgs);
-            }
-            catch (MinioException me)
-            {
-                Console.WriteLine($"[Bucket] ChainedCredentialProvider example case encountered Exception: {me}");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket] ChainedCredentialProvider example case encountered Exception: {e}");
-            }
+            var statObjectArgs = new StatObjectArgs()
+                .WithBucket("my-bucket-name")
+                .WithObject("my-object-name");
+            var result = await minioClient.StatObjectAsync(statObjectArgs);
+        }
+        catch (MinioException me)
+        {
+            Console.WriteLine($"[Bucket] ChainedCredentialProvider example case encountered Exception: {me}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket] ChainedCredentialProvider example case encountered Exception: {e}");
         }
     }
 }

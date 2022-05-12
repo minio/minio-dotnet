@@ -14,26 +14,24 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+public sealed class MessageType
 {
-    public sealed class MessageType
+    // Constants for JSONTypes.
+    public static readonly MessageType Error = new("error");
+    public static readonly MessageType Event = new("event");
+
+    [XmlText] public string Type;
+
+    public MessageType()
     {
-        // Constants for JSONTypes.
-        public static readonly MessageType Error = new MessageType("error");
-        public static readonly MessageType Event = new MessageType("event");
-        [XmlText]
-        public String Type;
-        
-        public MessageType()
-        {
-        }
-        
-        public MessageType(string value)
-        {
-            this.Type = value;
-        }
+    }
+
+    public MessageType(string value)
+    {
+        Type = value;
     }
 }

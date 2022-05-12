@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+public class UnexpectedShortReadException : MinioException
 {
-    public class UnexpectedShortReadException : MinioException
+    public UnexpectedShortReadException(string message) : base(message)
     {
-        public UnexpectedShortReadException(string message) : base(message)
-        {
-        }
     }
 }

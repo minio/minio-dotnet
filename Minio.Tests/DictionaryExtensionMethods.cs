@@ -16,45 +16,30 @@
 
 using System.Collections.Generic;
 
-namespace Minio.Tests
+namespace Minio.Tests;
+
+/// <summary>
+///     Deep compares two dictionaries for equality
+/// </summary>
+public static class DictionaryExtensionMethods
 {
-    /// <summary>
-    /// Deep compares two dictionaries for equality
-    /// </summary>
-    public static class DictionaryExtensionMethods
+    public static bool PoliciesEqual<String, PolicyType>(this IDictionary<String, PolicyType> first,
+        IDictionary<String, PolicyType> second)
     {
-        public static bool PoliciesEqual<String, PolicyType>(this IDictionary<String, PolicyType> first,
-            IDictionary<String, PolicyType> second)
+        if (first == second) return true;
+
+        if (first == null || second == null) return false;
+
+        if (first.Count != second.Count) return false;
+
+        foreach (var kvp in first)
         {
-            if (first == second)
-            {
-                return true;
-            }
+            var firstValue = kvp.Value;
+            if (!second.TryGetValue(kvp.Key, out var secondValue)) return false;
 
-            if ((first == null) || (second == null))
-            {
-                return false;
-            }
-
-            if (first.Count != second.Count)
-            {
-                return false;
-            }
-
-            foreach (var kvp in first)
-            {
-                PolicyType firstValue = kvp.Value;
-                if (!second.TryGetValue(kvp.Key, out PolicyType secondValue))
-                {
-                    return false;
-                }
-
-                if (!firstValue.Equals(secondValue))
-                {
-                    return false;
-                }
-            }
-            return true;
+            if (!firstValue.Equals(secondValue)) return false;
         }
+
+        return true;
     }
 }

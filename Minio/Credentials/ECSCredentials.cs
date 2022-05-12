@@ -17,32 +17,30 @@
 
 using Minio.DataModel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
-namespace Minio.Credentials
+namespace Minio.Credentials;
+
+public class ECSCredentials
 {
-    public class ECSCredentials
+    [JsonProperty("AccessKeyId")] public string AccessKeyId { get; set; }
+
+    [JsonProperty("SecretAccessKey")] public string SecretAccessKey { get; set; }
+
+    [JsonProperty("Token")] public string SessionToken { get; set; }
+
+    [JsonProperty("Expiration")] public string ExpirationDate { get; set; }
+
+    [JsonProperty("Code")] public string Code { get; set; }
+
+    [JsonProperty("Message")] public string Message { get; set; }
+
+    [JsonProperty("Type")] public string Type { get; set; }
+
+    [JsonProperty("LastUpdated")] public string LastUpdated { get; set; }
+
+    public AccessCredentials GetAccessCredentials()
     {
-        [JsonProperty("AccessKeyId")]
-        public string AccessKeyId { get; set; }
-        [JsonProperty("SecretAccessKey")]
-        public string SecretAccessKey { get; set; }
-        [JsonProperty("Token")]
-        public string SessionToken { get; set; }
-        [JsonProperty("Expiration")]
-        public string ExpirationDate { get; set; }
-        [JsonProperty("Code")]
-        public string Code { get; set; }
-        [JsonProperty("Message")]
-        public string Message { get; set; }
-        [JsonProperty("Type")]
-        public string Type { get; set; }
-        [JsonProperty("LastUpdated")]
-        public string LastUpdated { get; set; }
-        public AccessCredentials GetAccessCredentials()
-        {
-            return new AccessCredentials(this.AccessKeyId, this.SecretAccessKey, this.SessionToken,
-                                            utils.From8601String(this.ExpirationDate));
-        }
+        return new AccessCredentials(AccessKeyId, SecretAccessKey, SessionToken,
+            utils.From8601String(ExpirationDate));
     }
 }

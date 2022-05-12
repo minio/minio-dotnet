@@ -17,38 +17,33 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+[Serializable]
+[XmlRoot(ElementName = "VersioningConfiguration", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+public class VersioningConfiguration
 {
-    [Serializable]
-    [XmlRoot(ElementName = "VersioningConfiguration", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-    public class VersioningConfiguration
+    public VersioningConfiguration()
     {
-        public VersioningConfiguration()
-        {
-            this.Status = "Off";
-            this.MfaDelete = "Disabled";
-        }
-
-        public VersioningConfiguration(bool enableVersioning = true)
-        {
-            if (enableVersioning)
-            {
-                this.Status = "Enabled";
-            }
-            else
-            {
-                this.Status = "Suspended";
-            }
-        }
-
-        public VersioningConfiguration(VersioningConfiguration vc)
-        {
-            this.Status = vc.Status;
-            this.MfaDelete = vc.MfaDelete;
-        }
-
-        [XmlElement]
-        public string Status { get; set; }
-        public string MfaDelete { get; set; }
+        Status = "Off";
+        MfaDelete = "Disabled";
     }
+
+    public VersioningConfiguration(bool enableVersioning = true)
+    {
+        if (enableVersioning)
+            Status = "Enabled";
+        else
+            Status = "Suspended";
+    }
+
+    public VersioningConfiguration(VersioningConfiguration vc)
+    {
+        Status = vc.Status;
+        MfaDelete = vc.MfaDelete;
+    }
+
+    [XmlElement] public string Status { get; set; }
+
+    public string MfaDelete { get; set; }
 }

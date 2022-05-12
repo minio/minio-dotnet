@@ -16,21 +16,18 @@
  */
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
-namespace Minio.Credentials
+namespace Minio.Credentials;
+
+public class JsonWebToken
 {
-    public class JsonWebToken
+    public JsonWebToken(string token, uint expiry)
     {
-        [JsonProperty("access_token")]
-        public string AccessToken { get; set; }
-        [JsonProperty("expires_in")]
-        public uint Expiry { get; set; }
-
-        public JsonWebToken(string token, uint expiry)
-        {
-            this.AccessToken = token;
-            this.Expiry = expiry;
-        }
+        AccessToken = token;
+        Expiry = expiry;
     }
+
+    [JsonProperty("access_token")] public string AccessToken { get; set; }
+
+    [JsonProperty("expires_in")] public uint Expiry { get; set; }
 }

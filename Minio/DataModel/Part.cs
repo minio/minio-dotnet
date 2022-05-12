@@ -16,36 +16,31 @@
 
 using System;
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+[Serializable]
+public class Part
 {
-    [Serializable]
-    public class Part
+    private string etag;
+
+    public int PartNumber { get; set; }
+    public long Size { get; set; }
+    public DateTime LastModified { get; set; }
+
+    public string ETag
     {
-        private string etag;
-
-        public int PartNumber { get; set; }
-        public long Size { get; set; }
-        public DateTime LastModified { get; set; }
-
-        public string ETag
+        get => etag;
+        set
         {
-            get
-            {
-                return etag;
-            }
-            set
-            {
-                if (value != null)
-                {
-                    etag = value.Replace("\"", string.Empty);
-                }
-                else
-                {
-                    etag = null;
-                }
-            }
+            if (value != null)
+                etag = value.Replace("\"", string.Empty);
+            else
+                etag = null;
         }
+    }
 
-        public long PartSize() => Size;
+    public long PartSize()
+    {
+        return Size;
     }
 }

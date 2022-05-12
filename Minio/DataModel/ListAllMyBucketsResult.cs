@@ -18,18 +18,16 @@ using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
-{
-    [Serializable]
-    [XmlRoot(ElementName = "ListAllMyBucketsResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-    [XmlInclude(typeof(Bucket))]
-    public class ListAllMyBucketsResult
-    {
-        [XmlAttribute]
-        public string Owner { get; set; }
+namespace Minio.DataModel;
 
-        [XmlArray("Buckets")]
-        [XmlArrayItem(typeof(Bucket))]
-        public List<Bucket> Buckets { get; set; }
-    }
+[Serializable]
+[XmlRoot(ElementName = "ListAllMyBucketsResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+[XmlInclude(typeof(Bucket))]
+public class ListAllMyBucketsResult
+{
+    [XmlAttribute] public string Owner { get; set; }
+
+    [XmlArray("Buckets")]
+    [XmlArrayItem(typeof(Bucket))]
+    public List<Bucket> Buckets { get; set; }
 }

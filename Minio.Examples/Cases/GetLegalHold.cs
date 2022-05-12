@@ -17,32 +17,31 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal class GetLegalHold
 {
-    class GetLegalHold
+    // Get Legal Hold status a object
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name",
+        string objectName = "my-object-name",
+        string versionId = null)
     {
-        // Get Legal Hold status a object
-        public async static Task Run(MinioClient minio,
-                                     string bucketName = "my-bucket-name",
-                                     string objectName = "my-object-name",
-                                     string versionId = null)
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: GetLegalHold, ");
-                var args = new GetObjectLegalHoldArgs()
-                                        .WithBucket(bucketName)
-                                        .WithObject(objectName)
-                                        .WithVersionId(versionId);
-                bool enabled = await minio.GetObjectLegalHoldAsync(args);
-                Console.WriteLine("LegalHold Configuration STATUS for " + bucketName + "/" + objectName +
-                                        (!string.IsNullOrEmpty(versionId)?" with Version ID " + versionId: " ") +
-                                        " : " + (enabled?"ON":"OFF"));
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Object]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: GetLegalHold, ");
+            var args = new GetObjectLegalHoldArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithVersionId(versionId);
+            var enabled = await minio.GetObjectLegalHoldAsync(args);
+            Console.WriteLine("LegalHold Configuration STATUS for " + bucketName + "/" + objectName +
+                              (!string.IsNullOrEmpty(versionId) ? " with Version ID " + versionId : " ") +
+                              " : " + (enabled ? "ON" : "OFF"));
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Object]  Exception: {e}");
         }
     }
 }

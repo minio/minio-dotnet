@@ -17,26 +17,25 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal class RemoveBucket
 {
-    class RemoveBucket
+    // Remove a bucket
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name")
     {
-        // Remove a bucket
-        public async static Task Run(MinioClient minio, 
-                                     string bucketName = "my-bucket-name")
+        try
         {
-            try
-            {
-                await minio.RemoveBucketAsync(
-                                new RemoveBucketArgs()
-                                            .WithBucket(bucketName)
-                );
-                Console.WriteLine($"Removed the bucket {bucketName} successfully");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            await minio.RemoveBucketAsync(
+                new RemoveBucketArgs()
+                    .WithBucket(bucketName)
+            );
+            Console.WriteLine($"Removed the bucket {bucketName} successfully");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

@@ -14,55 +14,55 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Minio.DataModel;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal class CopyObjectMetadata
 {
-    class CopyObjectMetadata
+    // Copy object from one bucket to another
+    public static async Task Run(MinioClient minio,
+        string fromBucketName = "from-bucket-name",
+        string fromObjectName = "from-object-name",
+        string destBucketName = "dest-bucket",
+        string destObjectName = "to-object-name")
     {
-        // Copy object from one bucket to another
-        public async static Task Run(MinioClient minio,
-                                     string fromBucketName = "from-bucket-name",
-                                     string fromObjectName = "from-object-name",
-                                     string destBucketName = "dest-bucket",
-                                     string destObjectName = "to-object-name")
+        try
         {
-            try
+            Console.WriteLine("Running example for API: CopyObjectAsync");
+
+            // Optionally pass copy conditions to replace metadata on destination object with custom metadata
+            var copyCond = new CopyConditions();
+            copyCond.SetReplaceMetadataDirective();
+
+            // set custom metadata
+            var metadata = new Dictionary<string, string>
             {
-                Console.WriteLine("Running example for API: CopyObjectAsync");
+                { "Content-Type", "application/css" },
+                { "Mynewkey", "my-new-value" }
+            };
 
-                // Optionally pass copy conditions to replace metadata on destination object with custom metadata
-                var copyCond = new CopyConditions();
-                copyCond.SetReplaceMetadataDirective();
+            var copySourceObjectArgs = new CopySourceObjectArgs()
+                .WithBucket(fromBucketName)
+                .WithObject(fromObjectName)
+                .WithCopyConditions(copyCond);
+            var copyObjectArgs = new CopyObjectArgs()
+                .WithBucket(destBucketName)
+                .WithObject(destObjectName)
+                .WithHeaders(metadata)
+                .WithCopyObjectSource(copySourceObjectArgs);
+            await minio.CopyObjectAsync(copyObjectArgs);
 
-                // set custom metadata
-                var metadata = new Dictionary<string, string>
-                {
-                    { "Content-Type", "application/css" },
-                    { "Mynewkey", "my-new-value" }
-                };
-
-                CopySourceObjectArgs copySourceObjectArgs = new CopySourceObjectArgs()
-                                                                        .WithBucket(fromBucketName)
-                                                                        .WithObject(fromObjectName)
-                                                                        .WithCopyConditions(copyCond);
-                CopyObjectArgs copyObjectArgs = new CopyObjectArgs()
-                                                            .WithBucket(destBucketName)
-                                                            .WithObject(destObjectName)
-                                                            .WithHeaders(metadata)
-                                                            .WithCopyObjectSource(copySourceObjectArgs);
-                await minio.CopyObjectAsync(copyObjectArgs);
-
-                Console.WriteLine($"Copied object {fromObjectName} from bucket {fromBucketName} to bucket {destBucketName}");
-                Console.WriteLine();    
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine(
+                $"Copied object {fromObjectName} from bucket {fromBucketName} to bucket {destBucketName}");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

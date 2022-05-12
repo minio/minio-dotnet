@@ -17,27 +17,26 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public class PresignedPutObject
 {
-    public class PresignedPutObject
+    public static async Task Run(MinioClient client,
+        string bucketName = "my-bucket-name",
+        string objectName = "my-object-name")
     {
-        public async static Task Run(MinioClient client,
-                                     string bucketName = "my-bucket-name",
-                                     string objectName = "my-object-name")
+        try
         {
-            try
-            {
-                PresignedPutObjectArgs args = new PresignedPutObjectArgs()
-                                                            .WithBucket(bucketName)
-                                                            .WithObject(objectName)
-                                                            .WithExpiry(1000);
-                string presignedUrl = await client.PresignedPutObjectAsync(args);
-                Console.WriteLine(presignedUrl);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Exception {e.Message}");
-            }
+            var args = new PresignedPutObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithExpiry(1000);
+            var presignedUrl = await client.PresignedPutObjectAsync(args);
+            Console.WriteLine(presignedUrl);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Exception {e.Message}");
         }
     }
 }

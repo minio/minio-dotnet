@@ -14,37 +14,35 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
 using System;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal class ListObjects
 {
-    class ListObjects
+    // List objects matching optional prefix in a specified bucket.
+    public static void Run(MinioClient minio,
+        string bucketName = "my-bucket-name",
+        string prefix = null,
+        bool recursive = true,
+        bool versions = false)
     {
-        // List objects matching optional prefix in a specified bucket.
-        public static void Run(MinioClient minio,
-                                     string bucketName = "my-bucket-name",
-                                     string prefix = null,
-                                     bool recursive = true,
-                                     bool versions=false)
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: ListObjectsAsync");
-                ListObjectsArgs listArgs = new ListObjectsArgs()
-                                                    .WithBucket(bucketName)
-                                                    .WithPrefix(prefix)
-                                                    .WithRecursive(recursive);
-                IObservable<Item> observable = minio.ListObjectsAsync(listArgs);
-                IDisposable subscription = observable.Subscribe(
-                    item => Console.WriteLine($"Object: {item.Key}"),
-                    ex => Console.WriteLine($"OnError: {ex}"),
-                    () => Console.WriteLine($"Listed all objects in bucket {bucketName}\n"));
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: ListObjectsAsync");
+            var listArgs = new ListObjectsArgs()
+                .WithBucket(bucketName)
+                .WithPrefix(prefix)
+                .WithRecursive(recursive);
+            var observable = minio.ListObjectsAsync(listArgs);
+            var subscription = observable.Subscribe(
+                item => Console.WriteLine($"Object: {item.Key}"),
+                ex => Console.WriteLine($"OnError: {ex}"),
+                () => Console.WriteLine($"Listed all objects in bucket {bucketName}\n"));
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

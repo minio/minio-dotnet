@@ -17,13 +17,12 @@
 
 using System;
 
-namespace Minio.Credentials
+namespace Minio.Credentials;
+
+public abstract class EnvironmentProvider : ClientProvider
 {
-    public abstract class EnvironmentProvider : ClientProvider
+    internal string GetEnvironmentVariable(string env)
     {
-        internal string GetEnvironmentVariable(string env)
-        {
-            return Environment.GetEnvironmentVariable(env);
-        }
+        return Environment.GetEnvironmentVariable(env);
     }
 }

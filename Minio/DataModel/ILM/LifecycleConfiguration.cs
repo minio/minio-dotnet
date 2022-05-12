@@ -28,67 +28,62 @@ using System.Xml.Serialization;
  *
  */
 
-namespace Minio.DataModel.ILM
+namespace Minio.DataModel.ILM;
+
+[Serializable]
+[XmlRoot(ElementName = "LifecycleConfiguration")]
+public class LifecycleConfiguration
 {
-    [Serializable]
-    [XmlRoot(ElementName = "LifecycleConfiguration")]
-    public class LifecycleConfiguration
+    public LifecycleConfiguration()
     {
-        [XmlElement("Rule")]
-        public List<LifecycleRule> Rules { get; set; }
+    }
 
-        public LifecycleConfiguration()
+    public LifecycleConfiguration(List<LifecycleRule> rules)
+    {
+        if (rules == null || rules.Count <= 0)
+            throw new ArgumentNullException(nameof(Rules),
+                "Rules object cannot be empty. A finite set of Lifecycle Rules are needed for LifecycleConfiguration.");
+        Rules = new List<LifecycleRule>(rules);
+    }
+
+    [XmlElement("Rule")] public List<LifecycleRule> Rules { get; set; }
+
+    public string MarshalXML()
+    {
+        XmlSerializer xs = null;
+        XmlWriterSettings settings = null;
+        XmlSerializerNamespaces ns = null;
+
+        XmlWriter xw = null;
+
+        var str = string.Empty;
+
+        try
         {
+            settings = new XmlWriterSettings();
+            settings.OmitXmlDeclaration = true;
+
+            ns = new XmlSerializerNamespaces();
+            ns.Add(string.Empty, string.Empty);
+
+            var sw = new StringWriter(CultureInfo.InvariantCulture);
+
+            xs = new XmlSerializer(typeof(LifecycleConfiguration), "");
+            xw = XmlWriter.Create(sw, settings);
+            xs.Serialize(xw, this, ns);
+            xw.Flush();
+            str = utils.RemoveNamespaceInXML(sw.ToString());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            // throw ex;
+        }
+        finally
+        {
+            if (xw != null) xw.Close();
         }
 
-        public LifecycleConfiguration(List<LifecycleRule> rules)
-        {
-            if (rules == null || rules.Count <= 0)
-            {
-                throw new ArgumentNullException(nameof(Rules), "Rules object cannot be empty. A finite set of Lifecycle Rules are needed for LifecycleConfiguration.");
-            }
-            this.Rules = new List<LifecycleRule>(rules);
-        }
-
-        public string MarshalXML()
-        {
-            XmlSerializer xs = null;
-            XmlWriterSettings settings = null;
-            XmlSerializerNamespaces ns = null;
-
-            XmlWriter xw = null;
-
-            String str = String.Empty;
-
-            try
-            {
-                settings = new XmlWriterSettings();
-                settings.OmitXmlDeclaration = true;
-
-                ns = new XmlSerializerNamespaces();
-                ns.Add(string.Empty, string.Empty);
-
-                StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
-
-                xs = new XmlSerializer(typeof(LifecycleConfiguration), "");
-                xw = XmlWriter.Create(sw, settings);
-                xs.Serialize(xw, this, ns);
-                xw.Flush();
-                str = utils.RemoveNamespaceInXML(sw.ToString());
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-                // throw ex;
-            }
-            finally
-            {
-                if (xw != null)
-                {
-                    xw.Close();
-                }
-            }
-            return str;
-        }
+        return str;
     }
 }

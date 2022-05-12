@@ -17,22 +17,22 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
-{
-    [Serializable]
-    public sealed class QueryExpressionType
-    {
-        // Constants for compression types under select API.
-        public static readonly QueryExpressionType SQL = new QueryExpressionType("SQL");
-        [XmlText]
-        public String ExpressionType;
-        public QueryExpressionType()
-        {
+namespace Minio.DataModel;
 
-        }
-        public QueryExpressionType(string value)
-        {
-            this.ExpressionType = value;
-        }
+[Serializable]
+public sealed class QueryExpressionType
+{
+    // Constants for compression types under select API.
+    public static readonly QueryExpressionType SQL = new("SQL");
+
+    [XmlText] public string ExpressionType;
+
+    public QueryExpressionType()
+    {
+    }
+
+    public QueryExpressionType(string value)
+    {
+        ExpressionType = value;
     }
 }

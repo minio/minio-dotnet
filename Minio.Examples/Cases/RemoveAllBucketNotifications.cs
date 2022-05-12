@@ -17,29 +17,28 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Minio.Examples.Cases
-{
-    class RemoveAllBucketNotifications
-    {
-        // Removes all bucket notifications
-        public async static Task Run(MinioClient minio, 
-                                     string bucketName = "my-bucket-name")
-        {
-            try
-            {
-                Console.WriteLine("Running example for API: RemoveAllBucketNotificationAsync");
-                
-                RemoveAllBucketNotificationsArgs args = new RemoveAllBucketNotificationsArgs()
-                                                                        .WithBucket(bucketName);
-                await minio.RemoveAllBucketNotificationsAsync(args);
+namespace Minio.Examples.Cases;
 
-                Console.WriteLine($"Notifications successfully removed from the bucket {bucketName}");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+internal class RemoveAllBucketNotifications
+{
+    // Removes all bucket notifications
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name")
+    {
+        try
+        {
+            Console.WriteLine("Running example for API: RemoveAllBucketNotificationAsync");
+
+            var args = new RemoveAllBucketNotificationsArgs()
+                .WithBucket(bucketName);
+            await minio.RemoveAllBucketNotificationsAsync(args);
+
+            Console.WriteLine($"Notifications successfully removed from the bucket {bucketName}");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }
