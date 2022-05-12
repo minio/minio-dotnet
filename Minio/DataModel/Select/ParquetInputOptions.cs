@@ -16,14 +16,9 @@
 
 using System;
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+[Serializable]
+public class ParquetInputOptions
 {
-    [Serializable]
-    public class ParquetInputOptions
-    {
-        public ParquetInputOptions()
-        {
-            
-        }
-    }
 }

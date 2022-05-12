@@ -14,31 +14,25 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+public class InvalidEndpointException : MinioException
 {
-    public class InvalidEndpointException : MinioException
+    private readonly string endpoint;
+
+    public InvalidEndpointException(string endpoint, string message) : base(message)
     {
-        private readonly string endpoint;
+        this.endpoint = endpoint;
+    }
 
-        public InvalidEndpointException(string endpoint, string message) : base(message)
-        {
-            this.endpoint = endpoint;
-        }
+    public InvalidEndpointException(string message) : base(message)
+    {
+    }
 
-        public InvalidEndpointException(string message) : base(message)
-        {
-        }
-
-        public override string ToString()
-        {
-            if (string.IsNullOrEmpty(this.endpoint))
-            {
-                return base.ToString();
-            }
-            else
-            {
-                return $"{this.endpoint}: {base.ToString()}";
-            }
-        }
+    public override string ToString()
+    {
+        if (string.IsNullOrEmpty(endpoint))
+            return base.ToString();
+        return $"{endpoint}: {base.ToString()}";
     }
 }

@@ -15,102 +15,110 @@
  */
 
 using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Minio.Exceptions;
-
 using Polly;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal static class RetryPolicyHelper
 {
-    static class RetryPolicyHelper
+    private const int defaultRetryCount = 3;
+    private static readonly TimeSpan defaultRetryInterval = TimeSpan.FromMilliseconds(200);
+
+    private static readonly TimeSpan defaultMaxRetryInterval = TimeSpan.FromSeconds(10);
+
+    // exponential backoff with jitter, truncated by max retry interval
+    public static TimeSpan CalcBackoff(int retryAttempt, TimeSpan retryInterval, TimeSpan maxRetryInterval)
     {
-        private const int defaultRetryCount = 3;
-        private static readonly TimeSpan defaultRetryInterval = TimeSpan.FromMilliseconds(200);
-        private static readonly TimeSpan defaultMaxRetryInterval = TimeSpan.FromSeconds(10);
-        // exponential backoff with jitter, truncated by max retry interval
-        public static TimeSpan CalcBackoff(int retryAttempt, TimeSpan retryInterval, TimeSpan maxRetryInterval)
-        {
-            // 0.8..1.2
-            var jitter = 0.8 + new Random(Environment.TickCount).NextDouble() * 0.4;
-            // (2^retryCount - 1) * jitter
-            var scaleCoeff = (Math.Pow(2.0, retryAttempt) - 1.0) * jitter;
-            // Apply scale coefficient
-            var result = TimeSpan.FromMilliseconds(retryInterval.TotalMilliseconds * scaleCoeff);
-            // Truncate by max retry interval
-            return result < maxRetryInterval ? result : maxRetryInterval;
-        }
-
-        public static PolicyBuilder<ResponseResult> CreatePolicyBuilder()
-        {
-            return Policy<ResponseResult>
-                .Handle<ConnectionException>()
-                .Or<InternalClientException>(ex => ex.Message.StartsWith("Unsuccessful response from server"));
-        }
-
-        public static AsyncPolicy<ResponseResult> GetDefaultRetryPolicy() =>
-            GetDefaultRetryPolicy(defaultRetryCount, defaultRetryInterval, defaultMaxRetryInterval);
-
-        public static AsyncPolicy<ResponseResult> GetDefaultRetryPolicy(
-            int retryCount,
-            TimeSpan retryInterval,
-            TimeSpan maxRetryInterval) =>
-            CreatePolicyBuilder()
-                .WaitAndRetryAsync(
-                    retryCount,
-                    i => CalcBackoff(i, retryInterval, maxRetryInterval));
-
-        public static RetryPolicyHandlingDelegate AsRetryDelegate(this AsyncPolicy<ResponseResult> policy) =>
-            policy == null
-                ? (RetryPolicyHandlingDelegate)null
-                : async executeCallback => await policy.ExecuteAsync(executeCallback);
-
-        public static MinioClient WithRetryPolicy(this MinioClient client, AsyncPolicy<ResponseResult> policy) =>
-            client.WithRetryPolicy(policy.AsRetryDelegate());
+        // 0.8..1.2
+        var jitter = 0.8 + new Random(Environment.TickCount).NextDouble() * 0.4;
+        // (2^retryCount - 1) * jitter
+        var scaleCoeff = (Math.Pow(2.0, retryAttempt) - 1.0) * jitter;
+        // Apply scale coefficient
+        var result = TimeSpan.FromMilliseconds(retryInterval.TotalMilliseconds * scaleCoeff);
+        // Truncate by max retry interval
+        return result < maxRetryInterval ? result : maxRetryInterval;
     }
 
-    class RetryPolicyObject
+    public static PolicyBuilder<ResponseResult> CreatePolicyBuilder()
     {
-        // Polly retry policy sample
-        public async static Task Run(MinioClient minio,
-            string bucketName = "my-bucket-name",
-            string bucketObject = "my-object-name")
+        return Policy<ResponseResult>
+            .Handle<ConnectionException>()
+            .Or<InternalClientException>(ex => ex.Message.StartsWith("Unsuccessful response from server"));
+    }
+
+    public static AsyncPolicy<ResponseResult> GetDefaultRetryPolicy()
+    {
+        return GetDefaultRetryPolicy(defaultRetryCount, defaultRetryInterval, defaultMaxRetryInterval);
+    }
+
+    public static AsyncPolicy<ResponseResult> GetDefaultRetryPolicy(
+        int retryCount,
+        TimeSpan retryInterval,
+        TimeSpan maxRetryInterval)
+    {
+        return CreatePolicyBuilder()
+            .WaitAndRetryAsync(
+                retryCount,
+                i => CalcBackoff(i, retryInterval, maxRetryInterval));
+    }
+
+    public static RetryPolicyHandlingDelegate AsRetryDelegate(this AsyncPolicy<ResponseResult> policy)
+    {
+        return policy == null
+            ? null
+            : async executeCallback => await policy.ExecuteAsync(executeCallback);
+    }
+
+    public static MinioClient WithRetryPolicy(this MinioClient client, AsyncPolicy<ResponseResult> policy)
+    {
+        return client.WithRetryPolicy(policy.AsRetryDelegate());
+    }
+}
+
+internal class RetryPolicyObject
+{
+    // Polly retry policy sample
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name",
+        string bucketObject = "my-object-name")
+    {
+        try
         {
+            var customPolicy = RetryPolicyHelper
+                .CreatePolicyBuilder()
+                .Or<BucketNotFoundException>()
+                .RetryAsync(
+                    2,
+                    (r, i) => Console.WriteLine($"On retry #{i}. Result: {r.Exception?.Message}"));
+
+            minio.WithRetryPolicy(customPolicy);
+
+            Console.WriteLine("Running example for API: RetryPolicyObject");
+
             try
             {
-                var customPolicy = RetryPolicyHelper
-                    .CreatePolicyBuilder()
-                    .Or<BucketNotFoundException>()
-                    .RetryAsync(
-                        2,
-                        (r, i) => Console.WriteLine($"On retry #{i}. Result: {r.Exception?.Message}"));
-
-                minio.WithRetryPolicy(customPolicy);
-
-                Console.WriteLine("Running example for API: RetryPolicyObject");
-
-                try
-                {
-                    GetObjectArgs getObjectArgs = new GetObjectArgs()
-                                                            .WithBucket("bad-bucket")
-                                                            .WithObject("bad-file")
-                                                            .WithCallbackStream(s => { });
-                    await minio.GetObjectAsync(getObjectArgs);
-                }
-                catch (BucketNotFoundException ex)
-                {
-                    Console.WriteLine("Request failed: " + ex.Message);
-                }
-                Console.WriteLine();
+                var getObjectArgs = new GetObjectArgs()
+                    .WithBucket("bad-bucket")
+                    .WithObject("bad-file")
+                    .WithCallbackStream(s => { });
+                await minio.GetObjectAsync(getObjectArgs);
             }
-            catch (Exception e)
+            catch (BucketNotFoundException ex)
             {
-                Console.WriteLine($"[StatObject] {bucketName}-{bucketObject} Exception: {e}");
+                Console.WriteLine("Request failed: " + ex.Message);
             }
-            finally
-            {
-                minio.WithRetryPolicy(null);
-            }
+
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[StatObject] {bucketName}-{bucketObject} Exception: {e}");
+        }
+        finally
+        {
+            minio.WithRetryPolicy(null);
         }
     }
 }

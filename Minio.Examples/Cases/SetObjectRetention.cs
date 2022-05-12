@@ -13,45 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
 using System.Threading.Tasks;
 using Minio.DataModel.ObjectLock;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public class SetObjectRetention
 {
-    public class SetObjectRetention
+    // Put Object Retention Configuration for the bucket
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name",
+        string objectName = "my-object-name",
+        string versionId = null,
+        RetentionMode mode = RetentionMode.GOVERNANCE,
+        DateTime retentionValidDate = default)
     {
-        // Put Object Retention Configuration for the bucket
-        public async static Task Run(MinioClient minio,
-                                    string bucketName = "my-bucket-name",
-                                    string objectName = "my-object-name",
-                                    string versionId = null,
-                                    RetentionMode mode = RetentionMode.GOVERNANCE,
-                                    DateTime retentionValidDate = default(DateTime))
+        try
         {
-            try
-            {
-                if(retentionValidDate.Equals(default(DateTime)))
-                    retentionValidDate = DateTime.Now.AddDays(1);
-                Console.WriteLine("Running example for API: SetObjectRetention");
-                await minio.SetObjectRetentionAsync(
-                    new SetObjectRetentionArgs()
-                        .WithBucket(bucketName)
-                        .WithObject(objectName)
-                        .WithVersionId(versionId)
-                        .WithRetentionMode(mode)
-                        .WithRetentionUntilDate(retentionValidDate)
-                );
-                string versionInfo = (string.IsNullOrEmpty(versionId))?"":(" Version ID: " + versionId);
-                Console.WriteLine($"Assigned retention configuration to object {bucketName}/{objectName} "  +
-                        versionInfo +
-                        " till date: " + retentionValidDate.ToShortDateString());
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Object]  Exception: {e}");
-            }
+            if (retentionValidDate.Equals(default))
+                retentionValidDate = DateTime.Now.AddDays(1);
+            Console.WriteLine("Running example for API: SetObjectRetention");
+            await minio.SetObjectRetentionAsync(
+                new SetObjectRetentionArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    .WithVersionId(versionId)
+                    .WithRetentionMode(mode)
+                    .WithRetentionUntilDate(retentionValidDate)
+            );
+            var versionInfo = string.IsNullOrEmpty(versionId) ? "" : " Version ID: " + versionId;
+            Console.WriteLine($"Assigned retention configuration to object {bucketName}/{objectName} " +
+                              versionInfo +
+                              " till date: " + retentionValidDate.ToShortDateString());
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Object]  Exception: {e}");
         }
     }
 }

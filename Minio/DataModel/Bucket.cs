@@ -17,20 +17,13 @@
 using System;
 using System.Globalization;
 
-namespace Minio.DataModel
-{
-    [Serializable]
-    public class Bucket
-    {
-        public string Name { get; set; }
-        public string CreationDate { get; set; }
+namespace Minio.DataModel;
 
-        public DateTime CreationDateDateTime
-        {
-            get
-            {
-                return DateTime.Parse(this.CreationDate, CultureInfo.InvariantCulture);
-            }
-        }
-    }
+[Serializable]
+public class Bucket
+{
+    public string Name { get; set; }
+    public string CreationDate { get; set; }
+
+    public DateTime CreationDateDateTime => DateTime.Parse(CreationDate, CultureInfo.InvariantCulture);
 }

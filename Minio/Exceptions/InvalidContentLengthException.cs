@@ -14,22 +14,21 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+public class InvalidContentLengthException : MinioException
 {
-    public class InvalidContentLengthException : MinioException
+    private readonly string bucketName;
+    private readonly string objectName;
+
+    public InvalidContentLengthException(string bucketName, string objectName, string message) : base(message)
     {
-        private readonly string bucketName;
-        private readonly string objectName;
+        this.bucketName = bucketName;
+        this.objectName = objectName;
+    }
 
-        public InvalidContentLengthException(string bucketName, string objectName, string message) : base(message)
-        {
-            this.bucketName = bucketName;
-            this.objectName = objectName;
-        }
-
-        public override string ToString()
-        {
-            return $"{this.bucketName} :{this.objectName}: {base.ToString()}";
-        }
+    public override string ToString()
+    {
+        return $"{bucketName} :{objectName}: {base.ToString()}";
     }
 }

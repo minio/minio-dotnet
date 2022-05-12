@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
+using System;
 using Minio.DataModel.Tracing;
 using Newtonsoft.Json;
-using System;
 
-namespace Minio.Functional.Tests
+namespace Minio.Functional.Tests;
+
+internal class JsonNetLogger : IRequestLogger
 {
-    internal class JsonNetLogger : IRequestLogger
+    public void LogRequest(RequestToLog requestToLog, ResponseToLog responseToLog, double durationMs)
     {
-        public void LogRequest(RequestToLog requestToLog, ResponseToLog responseToLog, double durationMs)
-        {
-            Console.WriteLine(string.Format("Request completed in {0} ms\nRequest:\n{1}\nResponse:\n{2}",
-                durationMs,
-                JsonConvert.SerializeObject(requestToLog, Formatting.Indented),
-                JsonConvert.SerializeObject(responseToLog, Formatting.Indented)));
-        }
+        Console.WriteLine("Request completed in {0} ms\nRequest:\n{1}\nResponse:\n{2}", durationMs,
+            JsonConvert.SerializeObject(requestToLog, Formatting.Indented),
+            JsonConvert.SerializeObject(responseToLog, Formatting.Indented));
     }
 }

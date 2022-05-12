@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+public class InvalidBucketNameException : MinioException
 {
-    public class InvalidBucketNameException : MinioException
+    private readonly string bucketName;
+
+    public InvalidBucketNameException(string bucketName, string message) : base(message)
     {
-        private readonly string bucketName;
+        this.bucketName = bucketName;
+    }
 
-        public InvalidBucketNameException(string bucketName, string message) : base(message)
-        {
-            this.bucketName = bucketName;
-        }
-
-        public override string ToString() => $"{this.bucketName}: {base.ToString()}";
+    public override string ToString()
+    {
+        return $"{bucketName}: {base.ToString()}";
     }
 }

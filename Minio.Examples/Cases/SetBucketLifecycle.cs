@@ -16,33 +16,31 @@
 
 using System;
 using System.Threading.Tasks;
-
 using Minio.DataModel.ILM;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public class SetBucketLifecycle
 {
-    public class SetBucketLifecycle
+    // Set Lifecycle configuration to the bucket
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name",
+        LifecycleConfiguration lfc = null)
     {
-        // Set Lifecycle configuration to the bucket
-        public async static Task Run(MinioClient minio,
-                                    string bucketName = "my-bucket-name",
-                                    LifecycleConfiguration lfc = null)
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: SetBucketLifecycle");
-                await minio.SetBucketLifecycleAsync(
-                    new SetBucketLifecycleArgs()
-                        .WithBucket(bucketName)
-                        .WithLifecycleConfiguration(lfc)
-                );
-                Console.WriteLine($"Bucket Lifecycle set for bucket {bucketName}.");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: SetBucketLifecycle");
+            await minio.SetBucketLifecycleAsync(
+                new SetBucketLifecycleArgs()
+                    .WithBucket(bucketName)
+                    .WithLifecycleConfiguration(lfc)
+            );
+            Console.WriteLine($"Bucket Lifecycle set for bucket {bucketName}.");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

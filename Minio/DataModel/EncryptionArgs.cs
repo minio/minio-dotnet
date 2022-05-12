@@ -14,24 +14,18 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
 using Minio.DataModel;
 
-namespace Minio
+namespace Minio;
+
+public abstract class EncryptionArgs<T> : ObjectArgs<T>
+    where T : EncryptionArgs<T>
 {
-    public abstract class EncryptionArgs<T> : ObjectArgs<T>
-                        where T : EncryptionArgs<T>
+    internal ServerSideEncryption SSE { get; set; }
+
+    public T WithServerSideEncryption(ServerSideEncryption sse)
     {
-        internal ServerSideEncryption SSE { get; set; }
-
-        public EncryptionArgs()
-        {
-        }
-
-        public T WithServerSideEncryption(ServerSideEncryption sse)
-        {
-            this.SSE = sse;
-            return (T)this;
-        }
+        SSE = sse;
+        return (T)this;
     }
 }

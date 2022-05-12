@@ -13,34 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
 using System.Threading.Tasks;
 using Minio.DataModel.ObjectLock;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public class SetObjectLockConfiguration
 {
-    public class SetObjectLockConfiguration
+    // Set Object Lock Configuration on the bucket
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name",
+        ObjectLockConfiguration config = null)
     {
-        // Set Object Lock Configuration on the bucket
-        public async static Task Run(MinioClient minio,
-                                    string bucketName = "my-bucket-name",
-                                    ObjectLockConfiguration config = null)
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: SetObjectLockConfiguration");
-                    await minio.SetObjectLockConfigurationAsync(
-                        new SetObjectLockConfigurationArgs()
-                            .WithBucket(bucketName)
-                            .WithLockConfiguration(config)
-                );
-                Console.WriteLine($"Set object lock configuration on bucket {bucketName}");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: SetObjectLockConfiguration");
+            await minio.SetObjectLockConfigurationAsync(
+                new SetObjectLockConfigurationArgs()
+                    .WithBucket(bucketName)
+                    .WithLockConfiguration(config)
+            );
+            Console.WriteLine($"Set object lock configuration on bucket {bucketName}");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

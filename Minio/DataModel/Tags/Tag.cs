@@ -17,26 +17,23 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Tags
+namespace Minio.DataModel.Tags;
+
+[Serializable]
+[XmlRoot(ElementName = "Tag")]
+public class Tag
 {
-    [Serializable]
-    [XmlRoot(ElementName = "Tag")]
-
-    public class Tag
+    public Tag()
     {
-        [XmlElement("Key")]
-        public string Key { get; set; }
-        [XmlElement("Value")]
-        public string Value { get; set; }
-        public Tag()
-        {
-        }
-
-        public Tag(string key, string value) 
-        {
-            this.Key = key;
-            this.Value = value;
-               
-        }
     }
+
+    public Tag(string key, string value)
+    {
+        Key = key;
+        Value = value;
+    }
+
+    [XmlElement("Key")] public string Key { get; set; }
+
+    [XmlElement("Value")] public string Value { get; set; }
 }

@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+public class RedirectionException : MinioException
 {
-    public class RedirectionException : MinioException
+    public RedirectionException(string message) : base(message)
     {
-        public RedirectionException(string message) : base(message)
-        {
-        }
     }
 }

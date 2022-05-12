@@ -13,35 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Minio.DataModel.Tags;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public class SetBucketTags
 {
-    public class SetBucketTags
+    // Set Tags to the bucket
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name",
+        Dictionary<string, string> tags = null)
     {
-        // Set Tags to the bucket
-        public async static Task Run(MinioClient minio,
-                                    string bucketName = "my-bucket-name",
-                                    Dictionary<string, string> tags = null)
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: SetBucketTags");
-                await minio.SetBucketTagsAsync(
-                    new SetBucketTagsArgs()
-                        .WithBucket(bucketName)
-                        .WithTagging(Tagging.GetBucketTags(tags))
-                );
-                Console.WriteLine($"Bucket Tags set for bucket {bucketName}.");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: SetBucketTags");
+            await minio.SetBucketTagsAsync(
+                new SetBucketTagsArgs()
+                    .WithBucket(bucketName)
+                    .WithTagging(Tagging.GetBucketTags(tags))
+            );
+            Console.WriteLine($"Bucket Tags set for bucket {bucketName}.");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

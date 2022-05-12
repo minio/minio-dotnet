@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+public class EntityTooLargeException : MinioException
 {
-    public class EntityTooLargeException : MinioException
+    public EntityTooLargeException(string message) : base(message)
     {
-        public EntityTooLargeException(string message) : base(message)
-        {
-        }
     }
 }

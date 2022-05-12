@@ -16,14 +16,13 @@
  */
 
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+public class ErrorResponseException : MinioException
 {
-    public class ErrorResponseException : MinioException
+    public ErrorResponseException(ErrorResponse errorResponse, ResponseResult serverResponse) :
+        base(serverResponse)
     {
-        public ErrorResponseException(ErrorResponse errorResponse, ResponseResult serverResponse) :
-            base(serverResponse)
-        {
-            Response = errorResponse;
-        }
+        Response = errorResponse;
     }
 }

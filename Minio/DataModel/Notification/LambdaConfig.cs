@@ -17,42 +17,41 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+/// <summary>
+///     LambdaConfig carries one single cloudfunction notification configuration
+/// </summary>
+[Serializable]
+public class LambdaConfig : NotificationConfiguration
 {
-    /// <summary>
-    /// LambdaConfig carries one single cloudfunction notification configuration
-    /// </summary>
-    [Serializable]
-    public class LambdaConfig : NotificationConfiguration
+    public LambdaConfig()
     {
-        [XmlElement("CloudFunction")]
-        public string Lambda { get; set; }
-        public LambdaConfig() : base()
-        {
-        }
+    }
 
-        public LambdaConfig(string arn) : base(arn)
-        {
-            this.Lambda = arn;
-        }
+    public LambdaConfig(string arn) : base(arn)
+    {
+        Lambda = arn;
+    }
 
-        public LambdaConfig(Arn arn) : base(arn)
-        {
-            this.Lambda = arn.ToString();
-        }
+    public LambdaConfig(Arn arn) : base(arn)
+    {
+        Lambda = arn.ToString();
+    }
 
-        // Implement equality for this object
-        public override bool Equals(object obj)
-        {
-            LambdaConfig other = (LambdaConfig)obj;
-            // If parameter is null return false.
-            if ((obj == null) || ((LambdaConfig)obj == null))
-            {
-                return false;
-            }
-            return other.Lambda.Equals(this.Lambda);
-        }
+    [XmlElement("CloudFunction")] public string Lambda { get; set; }
 
-        public override int GetHashCode() => this.Lambda.GetHashCode();
+    // Implement equality for this object
+    public override bool Equals(object obj)
+    {
+        var other = (LambdaConfig)obj;
+        // If parameter is null return false.
+        if (obj == null || (LambdaConfig)obj == null) return false;
+        return other.Lambda.Equals(Lambda);
+    }
+
+    public override int GetHashCode()
+    {
+        return Lambda.GetHashCode();
     }
 }

@@ -17,13 +17,12 @@
 
 using System;
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+[Serializable]
+public class SelectObjectContentException : MinioException
 {
-    [Serializable]
-    public class SelectObjectContentException : MinioException
+    public SelectObjectContentException(string message) : base(message)
     {
-        public SelectObjectContentException(string message) : base(message)
-        {
-        }
     }
 }

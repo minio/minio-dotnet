@@ -14,39 +14,38 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Minio.DataModel;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal class FGetObject
 {
-    class FGetObject
+    // Download object from bucket into local file
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name",
+        string objectName = "my-object-name",
+        string fileName = "local-filename",
+        ServerSideEncryption sse = null)
     {
-        // Download object from bucket into local file
-        public async static Task Run(MinioClient minio, 
-                                     string bucketName = "my-bucket-name",
-                                     string objectName = "my-object-name",
-                                     string fileName = "local-filename",
-                                     ServerSideEncryption sse = null)
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: GetObjectAsync");
-                File.Delete(fileName);
-                GetObjectArgs args = new GetObjectArgs()
-                                                .WithBucket(bucketName)
-                                                .WithObject(objectName)
-                                                .WithFile(fileName)
-                                                .WithServerSideEncryption(sse);
-                await minio.GetObjectAsync(args).ConfigureAwait(false);
-                Console.WriteLine($"Downloaded the file {fileName} from bucket {bucketName}");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: GetObjectAsync");
+            File.Delete(fileName);
+            var args = new GetObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithFile(fileName)
+                .WithServerSideEncryption(sse);
+            await minio.GetObjectAsync(args).ConfigureAwait(false);
+            Console.WriteLine($"Downloaded the file {fileName} from bucket {bucketName}");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

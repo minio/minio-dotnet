@@ -16,10 +16,9 @@
 
 using Minio.DataModel.Tracing;
 
-namespace Minio
+namespace Minio;
+
+public interface IRequestLogger
 {
-    public interface IRequestLogger
-    {
-        void LogRequest(RequestToLog requestToLog, ResponseToLog responseToLog, double durationMs);
-    }
+    void LogRequest(RequestToLog requestToLog, ResponseToLog responseToLog, double durationMs);
 }

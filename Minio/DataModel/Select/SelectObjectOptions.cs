@@ -15,71 +15,63 @@
  */
 
 using System;
-using System.Xml;
 using System.Globalization;
-
-using System.Xml.Serialization;
 using System.IO;
+using System.Xml;
+using System.Xml.Serialization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+[Serializable]
+[XmlRoot(ElementName = "SelectObjectContentRequest")]
+public class SelectObjectOptions
 {
-    [Serializable]
-    [XmlRoot(ElementName = "SelectObjectContentRequest")]
-    public class SelectObjectOptions
+    [XmlIgnore] public ServerSideEncryption SSE { get; set; }
+
+    public string Expression { get; set; }
+
+    [XmlElement("ExpressionType")] public QueryExpressionType ExpressionType { get; set; }
+
+    public SelectObjectInputSerialization InputSerialization { get; set; }
+    public SelectObjectOutputSerialization OutputSerialization { get; set; }
+    public RequestProgress RequestProgress { get; set; }
+
+    public string MarshalXML()
     {
-        [XmlIgnore]
-        public ServerSideEncryption SSE { get; set; }
+        XmlSerializer xs = null;
+        XmlWriterSettings settings = null;
+        XmlSerializerNamespaces ns = null;
 
-        public String Expression { get; set; }
+        XmlWriter xw = null;
 
-        [XmlElement("ExpressionType")]
-        public QueryExpressionType ExpressionType { get; set; }
-        public SelectObjectInputSerialization InputSerialization { get; set; }
-        public SelectObjectOutputSerialization OutputSerialization { get; set; }
-        public RequestProgress RequestProgress { get; set; }
+        var str = string.Empty;
 
-        public SelectObjectOptions()
+        try
         {
+            settings = new XmlWriterSettings();
+            settings.OmitXmlDeclaration = true;
+
+            ns = new XmlSerializerNamespaces();
+            ns.Add("", "");
+
+            var sw = new StringWriter(CultureInfo.InvariantCulture);
+
+            xs = new XmlSerializer(typeof(SelectObjectOptions));
+            xw = XmlWriter.Create(sw, settings);
+            xs.Serialize(xw, this, ns);
+            xw.Flush();
+
+            str = sw.ToString();
         }
-        public string MarshalXML()
+        catch (Exception ex)
         {
-            XmlSerializer xs = null;
-            XmlWriterSettings settings = null;
-            XmlSerializerNamespaces ns = null;
-
-            XmlWriter xw = null;
-
-            String str = String.Empty;
-
-            try
-            {
-                settings = new XmlWriterSettings();
-                settings.OmitXmlDeclaration = true;
-
-                ns = new XmlSerializerNamespaces();
-                ns.Add("", "");
-
-                StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
-
-                xs = new XmlSerializer(typeof(SelectObjectOptions));
-                xw = XmlWriter.Create(sw, settings);
-                xs.Serialize(xw, this, ns);
-                xw.Flush();
-
-                str = sw.ToString();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-            finally
-            {
-                if (xw != null)
-                {
-                    xw.Close();
-                }
-            }
-            return str;
+            Console.WriteLine(ex.ToString());
         }
+        finally
+        {
+            if (xw != null) xw.Close();
+        }
+
+        return str;
     }
 }

@@ -14,25 +14,23 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public class PresignedGetObject
 {
-    public class PresignedGetObject
+    public static async Task Run(MinioClient client,
+        string bucketName = "my-bucket-name",
+        string objectName = "my-object-name")
     {
-        public async static Task Run(MinioClient client,
-                                     string bucketName = "my-bucket-name",
-                                     string objectName = "my-object-name")
-        {
-            var reqParams = new Dictionary<string, string> { { "response-content-type", "application/json" } };
-            PresignedGetObjectArgs args = new PresignedGetObjectArgs()
-                                                        .WithBucket(bucketName)
-                                                        .WithObject(objectName)
-                                                        .WithExpiry(1000)
-                                                        .WithHeaders(reqParams);
-            var presignedUrl = await client.PresignedGetObjectAsync(args);
-        }
+        var reqParams = new Dictionary<string, string> { { "response-content-type", "application/json" } };
+        var args = new PresignedGetObjectArgs()
+            .WithBucket(bucketName)
+            .WithObject(objectName)
+            .WithExpiry(1000)
+            .WithHeaders(reqParams);
+        var presignedUrl = await client.PresignedGetObjectAsync(args);
     }
 }

@@ -17,51 +17,42 @@
 using System;
 using System.Globalization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+[Serializable]
+public class Item
 {
-    [Serializable]
-    public class Item
+    private string etag;
+
+    public string Key { get; set; }
+    public string LastModified { get; set; }
+
+    public string ETag
     {
-        private string etag;
-
-        public string Key { get; set; }
-        public string LastModified { get; set; }
-        public string ETag
+        get => etag;
+        set
         {
-            get
-            {
-                return etag;
-            }
-            set
-            {
-                if (value != null)
-                {
-                    etag = value.Replace("\"", string.Empty);
-                }
-                else
-                {
-                    etag = null;
-                }
-            }
+            if (value != null)
+                etag = value.Replace("\"", string.Empty);
+            else
+                etag = null;
         }
-        public ulong Size { get; set; }
+    }
 
-        public bool IsDir { get; set; }
+    public ulong Size { get; set; }
 
-        public string VersionId { get; set; }
-        public bool IsLatest { get; set; }
+    public bool IsDir { get; set; }
 
-        public DateTime? LastModifiedDateTime
+    public string VersionId { get; set; }
+    public bool IsLatest { get; set; }
+
+    public DateTime? LastModifiedDateTime
+    {
+        get
         {
-            get
-            {
-                DateTime? dt = null;
-                if (!string.IsNullOrEmpty(this.LastModified))
-                {
-                    dt = DateTime.Parse(this.LastModified, CultureInfo.InvariantCulture);
-                }
-                return dt;
-            }
+            DateTime? dt = null;
+            if (!string.IsNullOrEmpty(LastModified)) dt = DateTime.Parse(LastModified, CultureInfo.InvariantCulture);
+            return dt;
         }
     }
 }

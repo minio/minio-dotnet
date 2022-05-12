@@ -15,22 +15,18 @@
  */
 
 using System;
-using System.Xml;
 using System.Xml.Serialization;
 
 // StatsMessage is a struct for stat xml message.
-namespace Minio.DataModel
-{
-    [Serializable]
-    [XmlRoot(ElementName = "Stats")]
-    public class StatsMessage
-    {
-        [XmlElement]
-        public long BytesScanned { get; set; }
-        [XmlElement]
-        public long BytesProcessed { get; set; }
-        [XmlElement]
-        public long BytesReturned { get; set; }
+namespace Minio.DataModel;
 
-    }
+[Serializable]
+[XmlRoot(ElementName = "Stats")]
+public class StatsMessage
+{
+    [XmlElement] public long BytesScanned { get; set; }
+
+    [XmlElement] public long BytesProcessed { get; set; }
+
+    [XmlElement] public long BytesReturned { get; set; }
 }

@@ -17,49 +17,47 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Minio
+namespace Minio;
+
+[Serializable]
+[XmlRoot(ElementName = "Rule", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+public class ServerSideEncryptionConfigurationRule
 {
-    [Serializable]
-    [XmlRoot(ElementName = "Rule", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-    public class ServerSideEncryptionConfigurationRule
+    internal const string SSE_AES256 = "AES256";
+    internal const string SSE_AWSKMS = "aws:kms";
+
+    public ServerSideEncryptionConfigurationRule()
     {
-        internal const string SSE_AES256 = "AES256";
-        internal const string SSE_AWSKMS = "aws:kms";
-        [XmlElement("ApplyServerSideEncryptionByDefault")]
-        public ServerSideEncryptionConfigurationApply Apply { get; set; }
+        Apply = new ServerSideEncryptionConfigurationApply();
+    }
 
-        public ServerSideEncryptionConfigurationRule()
+    public ServerSideEncryptionConfigurationRule(string algorithm = SSE_AES256, string keyId = null)
+    {
+        Apply = new ServerSideEncryptionConfigurationApply(algorithm, keyId);
+    }
+
+    [XmlElement("ApplyServerSideEncryptionByDefault")]
+    public ServerSideEncryptionConfigurationApply Apply { get; set; }
+
+    public class ServerSideEncryptionConfigurationApply
+    {
+        public ServerSideEncryptionConfigurationApply()
         {
-            this.Apply = new ServerSideEncryptionConfigurationApply();
+            SSEAlgorithm = SSE_AES256;
+            KMSMasterKeyId = null;
         }
 
-        public ServerSideEncryptionConfigurationRule(string algorithm = SSE_AES256, string keyId = null)
+        public ServerSideEncryptionConfigurationApply(string algorithm = SSE_AES256, string keyId = null)
         {
-            this.Apply = new ServerSideEncryptionConfigurationApply(algorithm, keyId);
+            if (string.IsNullOrEmpty(algorithm))
+                throw new ArgumentNullException(
+                    "The SSE Algorithm " + nameof(SSEAlgorithm) + " cannot be null or empty");
+            SSEAlgorithm = algorithm;
+            KMSMasterKeyId = keyId;
         }
 
-        public class ServerSideEncryptionConfigurationApply
-        {
-            [XmlElement("KMSMasterKeyID")]
-            public string KMSMasterKeyId { get; set; }
-            [XmlElement("SSEAlgorithm")]
-            public string SSEAlgorithm { get; set; }
+        [XmlElement("KMSMasterKeyID")] public string KMSMasterKeyId { get; set; }
 
-            public ServerSideEncryptionConfigurationApply()
-            {
-                this.SSEAlgorithm = SSE_AES256;
-                this.KMSMasterKeyId = null;
-            }
-            public ServerSideEncryptionConfigurationApply(string algorithm = SSE_AES256, string keyId = null)
-            {
-                if (string.IsNullOrEmpty(algorithm))
-                {
-                    throw new ArgumentNullException("The SSE Algorithm " + nameof(SSEAlgorithm) + " cannot be null or empty");
-                }
-                this.SSEAlgorithm = algorithm;
-                this.KMSMasterKeyId = keyId;
-            }
-
-        }
+        [XmlElement("SSEAlgorithm")] public string SSEAlgorithm { get; set; }
     }
 }

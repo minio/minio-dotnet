@@ -17,47 +17,45 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+/// <summary>
+///     TopicConfig carries one single topic notification configuration
+/// </summary>
+[Serializable]
+public class TopicConfig : NotificationConfiguration
 {
-    /// <summary>
-    /// TopicConfig carries one single topic notification configuration
-    /// </summary>
-    [Serializable]
-    public class TopicConfig : NotificationConfiguration
+    public TopicConfig()
     {
-        [XmlElement]
-        public string Topic { get; set; }
+    }
 
-        public TopicConfig() : base()
-        {
-        }
+    public TopicConfig(string arn) : base(arn)
+    {
+        Topic = arn;
+    }
 
-        public TopicConfig(string arn) : base(arn)
-        {
-            this.Topic = arn;
-        }
+    public TopicConfig(Arn arn) : base(arn)
+    {
+        Topic = arn.ToString();
+    }
 
-        public TopicConfig(Arn arn) : base(arn)
-        {
-            this.Topic = arn.ToString();
-        }
+    [XmlElement] public string Topic { get; set; }
 
-        /// <summary>
-        /// Implement equality for this object
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public override bool Equals(object obj)
-        {
-            TopicConfig other = (TopicConfig)obj;
-            // If parameter is null return false.
-            if (other == null)
-            {
-                return false;
-            }
-            return other.Topic.Equals(this.Topic);
-        }
+    /// <summary>
+    ///     Implement equality for this object
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    public override bool Equals(object obj)
+    {
+        var other = (TopicConfig)obj;
+        // If parameter is null return false.
+        if (other == null) return false;
+        return other.Topic.Equals(Topic);
+    }
 
-        public override int GetHashCode() => this.Topic.GetHashCode();
+    public override int GetHashCode()
+    {
+        return Topic.GetHashCode();
     }
 }

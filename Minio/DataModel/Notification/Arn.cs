@@ -16,63 +16,64 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+/// <summary>
+///     Arn holds ARN information that will be sent to the web service,
+///     ARN desciption can be found in http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
+/// </summary>
+public class Arn
 {
-    /// <summary>
-    /// Arn holds ARN information that will be sent to the web service,
-    /// ARN desciption can be found in http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
-    /// </summary>
-    public class Arn
+    [XmlText] private readonly string arnString;
+
+    public Arn()
     {
-        private string Partition { get; }
-        private string Service { get; }
-        private string Region { get; }
-        private string AccountID { get; }
-        private string Resource { get; }
+    }
 
-        [XmlText]
-        private readonly string arnString;
-
-        public Arn()
+    /// <summary>
+    ///     Pass valid Arn string on aws to constructor
+    /// </summary>
+    /// <param name="arnString"></param>
+    public Arn(string arnString)
+    {
+        var parts = arnString.Split(':');
+        if (parts.Length == 6)
         {
+            Partition = parts[1];
+            Service = parts[2];
+            Region = parts[3];
+            AccountID = parts[4];
+            Resource = parts[5];
+            this.arnString = arnString;
         }
+    }
 
-        /// <summary>
-        /// Pass valid Arn string on aws to constructor
-        /// </summary>
-        /// <param name="arnString"></param>
-        public Arn(string arnString)
-        {
-            string[] parts = arnString.Split(':');
-            if (parts.Length == 6)
-            {
-                this.Partition = parts[1];
-                this.Service = parts[2];
-                this.Region = parts[3];
-                this.AccountID = parts[4];
-                this.Resource = parts[5];
-                this.arnString = arnString;
-            }
-        }
+    /// <summary>
+    ///     Constructs new ARN based on the given partition, service, region, account id and resource
+    /// </summary>
+    /// <param name="partition"></param>
+    /// <param name="service"></param>
+    /// <param name="region"></param>
+    /// <param name="accountId"></param>
+    /// <param name="resource"></param>
+    public Arn(string partition, string service, string region, string accountId, string resource)
+    {
+        Partition = partition;
+        Service = service;
+        Region = region;
+        AccountID = accountId;
+        Resource = resource;
+        arnString = $"arn:{Partition}:{Service}:{Region}:{AccountID}:{Resource}";
+    }
 
-        /// <summary>
-        /// Constructs new ARN based on the given partition, service, region, account id and resource
-        /// </summary>
-        /// <param name="partition"></param>
-        /// <param name="service"></param>
-        /// <param name="region"></param>
-        /// <param name="accountId"></param>
-        /// <param name="resource"></param>
-        public Arn(string partition, string service, string region, string accountId, string resource)
-        {
-            this.Partition = partition;
-            this.Service = service;
-            this.Region = region;
-            this.AccountID = accountId;
-            this.Resource = resource;
-            this.arnString = $"arn:{this.Partition}:{this.Service}:{this.Region}:{this.AccountID}:{this.Resource}";
-        }
+    private string Partition { get; }
+    private string Service { get; }
+    private string Region { get; }
+    private string AccountID { get; }
+    private string Resource { get; }
 
-        public override string ToString() => arnString;
+    public override string ToString()
+    {
+        return arnString;
     }
 }

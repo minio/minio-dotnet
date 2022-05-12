@@ -17,18 +17,20 @@
 
 using System;
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+[Serializable]
+public class BucketNotFoundException : MinioException
 {
-    [Serializable]
-    public class BucketNotFoundException : MinioException
+    private readonly string bucketName;
+
+    public BucketNotFoundException(string bucketName, string message) : base(message)
     {
-        private readonly string bucketName;
+        this.bucketName = bucketName;
+    }
 
-        public BucketNotFoundException(string bucketName, string message) : base(message)
-        {
-            this.bucketName = bucketName;
-        }
-
-        public override string ToString() => $"{this.bucketName}: {base.ToString()}";
+    public override string ToString()
+    {
+        return $"{bucketName}: {base.ToString()}";
     }
 }

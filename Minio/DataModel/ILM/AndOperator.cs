@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
-
 using Minio.DataModel.Tags;
 
 /*
@@ -28,40 +27,32 @@ using Minio.DataModel.Tags;
  */
 
 
-namespace Minio.DataModel.ILM
+namespace Minio.DataModel.ILM;
+
+[Serializable]
+[XmlRoot(ElementName = "And")]
+public class AndOperator
 {
-    [Serializable]
-    [XmlRoot(ElementName = "And")]
-    public class AndOperator
+    public AndOperator()
     {
-        [XmlElement("Prefix")]
-        internal string Prefix { get; set; }
-        [XmlElement(ElementName = "Tag", IsNullable = false)]
-        public List<Tag> Tags { get; set; }
-
-        public AndOperator()
-        {
-        }
-
-        public AndOperator(string prefix, List<Tag> tag)
-        {
-            Prefix = prefix;
-            if (tag != null && tag.Count > 0)
-            {
-                Tags = new List<Tag>(tag);
-            }
-        }
-
-        public AndOperator(string prefix, Dictionary<string, string> tags)
-        {
-            Prefix = prefix;
-            if (tags == null || tags.Count == 0)
-                return;
-            foreach (var item in tags)
-            {
-                this.Tags.Add(new Tag(item.Key, item.Value));
-            }
-        }
-
     }
+
+    public AndOperator(string prefix, List<Tag> tag)
+    {
+        Prefix = prefix;
+        if (tag != null && tag.Count > 0) Tags = new List<Tag>(tag);
+    }
+
+    public AndOperator(string prefix, Dictionary<string, string> tags)
+    {
+        Prefix = prefix;
+        if (tags == null || tags.Count == 0)
+            return;
+        foreach (var item in tags) Tags.Add(new Tag(item.Key, item.Value));
+    }
+
+    [XmlElement("Prefix")] internal string Prefix { get; set; }
+
+    [XmlElement(ElementName = "Tag", IsNullable = false)]
+    public List<Tag> Tags { get; set; }
 }

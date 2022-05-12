@@ -13,33 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
 using System.Threading.Tasks;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public class SetBucketEncryption
 {
-    public class SetBucketEncryption
+    // Put Encryption Configuration for the bucket
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name",
+        ServerSideEncryptionConfiguration config = null)
     {
-        // Put Encryption Configuration for the bucket
-        public async static Task Run(MinioClient minio,
-                                    string bucketName = "my-bucket-name",
-                                    ServerSideEncryptionConfiguration config = null)
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: SetBucketEncryptionAsync");
-                await minio.SetBucketEncryptionAsync(
-                    new SetBucketEncryptionArgs()
-                        .WithBucket(bucketName)
-                        .WithEncryptionConfig(config)
-                );
-                Console.WriteLine($"Assigned encryption configuration to bucket {bucketName}");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: SetBucketEncryptionAsync");
+            await minio.SetBucketEncryptionAsync(
+                new SetBucketEncryptionArgs()
+                    .WithBucket(bucketName)
+                    .WithEncryptionConfig(config)
+            );
+            Console.WriteLine($"Assigned encryption configuration to bucket {bucketName}");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

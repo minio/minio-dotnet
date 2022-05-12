@@ -16,17 +16,16 @@
 
 using System.Net;
 
-namespace Minio
-{
-    public class GenericResponse
-    {
+namespace Minio;
 
-        internal string ResponseContent { get; private set; }
-        internal HttpStatusCode ResponseStatusCode { get; private set; }
-        internal GenericResponse(HttpStatusCode statusCode, string responseContent)
-        {
-            this.ResponseContent = responseContent;
-            this.ResponseStatusCode = ResponseStatusCode;
-        }
+public class GenericResponse
+{
+    internal GenericResponse(HttpStatusCode statusCode, string responseContent)
+    {
+        ResponseContent = responseContent;
+        ResponseStatusCode = ResponseStatusCode;
     }
+
+    internal string ResponseContent { get; }
+    internal HttpStatusCode ResponseStatusCode { get; }
 }

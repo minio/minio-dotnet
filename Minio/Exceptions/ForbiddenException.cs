@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+public class ForbiddenException : MinioException
 {
-    public class ForbiddenException : MinioException
+    public ForbiddenException(string message) : base(message)
     {
-        public ForbiddenException(string message) : base(message)
-        {
-        }
     }
 }

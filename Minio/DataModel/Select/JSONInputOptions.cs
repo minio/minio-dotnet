@@ -16,16 +16,11 @@
 
 using System;
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+// JSONInputOptions json input specific options
+[Serializable]
+public class JSONInputOptions
 {
-    // JSONInputOptions json input specific options
-    [Serializable]
-    public class JSONInputOptions
-    {
-        public JSONType Type { get; set; }
-        public JSONInputOptions()
-        {
-            
-        }
-    }
+    public JSONType Type { get; set; }
 }

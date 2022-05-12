@@ -17,23 +17,19 @@
 using System;
 using System.Text;
 
-namespace Minio.Tests
+namespace Minio.Tests;
+
+internal class TestHelper
 {
-    class TestHelper
+    private static readonly Random rnd = new();
+
+    // Generate a random string
+    public static string GetRandomName(int length = 5)
     {
-        private static Random rnd = new Random();
+        var characters = "0123456789abcdefghijklmnopqrstuvwxyz";
+        var result = new StringBuilder(length);
 
-        // Generate a random string
-        public static string GetRandomName(int length = 5)
-        {
-            string characters = "0123456789abcdefghijklmnopqrstuvwxyz";
-            StringBuilder result = new StringBuilder(length);
-
-            for (int i = 0; i < length; i++)
-            {
-                result.Append(characters[rnd.Next(characters.Length)]);
-            }
-            return result.ToString();
-        }
+        for (var i = 0; i < length; i++) result.Append(characters[rnd.Next(characters.Length)]);
+        return result.ToString();
     }
 }

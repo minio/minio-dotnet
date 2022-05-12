@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+public class InvalidObjectNameException : MinioException
 {
-    public class InvalidObjectNameException : MinioException
+    private readonly string objectName;
+
+    public InvalidObjectNameException(string objectName, string message) : base(message)
     {
-        private readonly string objectName;
+        this.objectName = objectName;
+    }
 
-        public InvalidObjectNameException(string objectName, string message) : base(message)
-        {
-            this.objectName = objectName;
-        }
-
-        public override string ToString() => $"{this.objectName}: {base.ToString()}";
+    public override string ToString()
+    {
+        return $"{objectName}: {base.ToString()}";
     }
 }

@@ -17,28 +17,28 @@
 
 using System;
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+[Serializable]
+public class AuthorizationException : Exception
 {
-    [Serializable]
-    public class AuthorizationException : Exception
+    internal readonly string accessKey;
+    internal readonly string bucketName;
+    internal readonly string resource;
+
+    public AuthorizationException()
     {
-        internal readonly string resource;
-        internal readonly string bucketName;
-        internal readonly string accessKey;
+    }
 
-        public AuthorizationException()
-        {
-        }
+    public AuthorizationException(string message) : base(message)
+    {
+    }
 
-        public AuthorizationException(string message) : base(message)
-        {
-        }
-
-        public AuthorizationException(string resource, string bucketName, string message, string accesskey=null) : base(message)
-        {
-            this.resource = resource;
-            this.bucketName = bucketName;
-            this.accessKey = accesskey;
-        }
+    public AuthorizationException(string resource, string bucketName, string message, string accesskey = null) :
+        base(message)
+    {
+        this.resource = resource;
+        this.bucketName = bucketName;
+        accessKey = accesskey;
     }
 }

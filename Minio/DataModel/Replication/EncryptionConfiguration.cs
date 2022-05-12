@@ -25,24 +25,21 @@ using System.Xml.Serialization;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
  */
 
-namespace Minio.DataModel.Replication
+namespace Minio.DataModel.Replication;
+
+public class EncryptionConfiguration
 {
-    public class EncryptionConfiguration
+    public EncryptionConfiguration(string replicaKmsKeyID)
     {
-        [XmlElement(ElementName = "ReplicaKmsKeyID", IsNullable = true)]
-        public string ReplicaKmsKeyID { get; set; }
-
-        public EncryptionConfiguration(string replicaKmsKeyID) 
-        {
-            if (string.IsNullOrEmpty(replicaKmsKeyID) || string.IsNullOrWhiteSpace(replicaKmsKeyID))
-            {
-                throw new ArgumentNullException(nameof(ReplicaKmsKeyID) + " cannot be null or empty.");
-            }
-            this.ReplicaKmsKeyID = replicaKmsKeyID;               
-        }
-
-        public EncryptionConfiguration()
-        {
-        }
+        if (string.IsNullOrEmpty(replicaKmsKeyID) || string.IsNullOrWhiteSpace(replicaKmsKeyID))
+            throw new ArgumentNullException(nameof(ReplicaKmsKeyID) + " cannot be null or empty.");
+        ReplicaKmsKeyID = replicaKmsKeyID;
     }
+
+    public EncryptionConfiguration()
+    {
+    }
+
+    [XmlElement(ElementName = "ReplicaKmsKeyID", IsNullable = true)]
+    public string ReplicaKmsKeyID { get; set; }
 }

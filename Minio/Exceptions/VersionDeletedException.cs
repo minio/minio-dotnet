@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+public class VersionDeletedException : MinioException
 {
-    public class VersionDeletedException : MinioException
+    private readonly string versionId;
+
+    public VersionDeletedException(string vid, string message) : base(message)
     {
-        private readonly string versionId;
+        versionId = vid;
+    }
 
-        public VersionDeletedException(string vid, string message) : base(message)
-        {
-            this.versionId = vid;
-        }
-
-        public override string ToString() => $"{this.versionId}: {base.ToString()}";
+    public override string ToString()
+    {
+        return $"{versionId}: {base.ToString()}";
     }
 }

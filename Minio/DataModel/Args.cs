@@ -16,19 +16,17 @@
 
 using System.Net.Http;
 
-namespace Minio
+namespace Minio;
+
+public abstract class Args
 {
-    public abstract class Args
+    // RequestMethod will be the HTTP Method for request variable,
+    // which is of type HttpRequestMessage.
+    // Will be one of the types: - HEAD, GET, PUT, DELETE. etc.
+    internal HttpMethod RequestMethod { get; set; }
+
+    internal virtual HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-
-        // RequestMethod will be the HTTP Method for request variable,
-        // which is of type HttpRequestMessage.
-        // Will be one of the types: - HEAD, GET, PUT, DELETE. etc.
-        internal HttpMethod RequestMethod { get; set; }
-
-        internal virtual HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            return requestMessageBuilder;
-        }
+        return requestMessageBuilder;
     }
 }

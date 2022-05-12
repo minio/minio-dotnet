@@ -17,27 +17,23 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal class ListBuckets
 {
-    class ListBuckets
+    // List all buckets on host
+    public static async Task Run(MinioClient minio)
     {
-        // List all buckets on host
-        public async static Task Run(MinioClient minio)
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: ListBucketsAsync");
-                var list = await minio.ListBucketsAsync();
-                foreach (var bucket in list.Buckets)
-                {
-                    Console.WriteLine($"{bucket.Name} {bucket.CreationDateDateTime}");
-                }
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: ListBucketsAsync");
+            var list = await minio.ListBucketsAsync();
+            foreach (var bucket in list.Buckets) Console.WriteLine($"{bucket.Name} {bucket.CreationDateDateTime}");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

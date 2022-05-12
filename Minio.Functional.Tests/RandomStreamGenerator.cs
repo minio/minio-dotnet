@@ -18,29 +18,28 @@
 using System;
 using System.IO;
 
-namespace Minio.Functional.Tests
+namespace Minio.Functional.Tests;
+
+internal class RandomStreamGenerator
 {
-    internal class RandomStreamGenerator
+    private readonly Random _random = new();
+    private readonly byte[] _seedBuffer;
+
+    public RandomStreamGenerator(int maxBufferSize)
     {
-        private readonly Random _random = new Random();
-        private readonly byte[] _seedBuffer;
+        _seedBuffer = new byte[maxBufferSize];
+        _random.NextBytes(_seedBuffer);
+    }
 
-        public RandomStreamGenerator(int maxBufferSize)
-        {
-            this._seedBuffer = new byte[maxBufferSize];
-            this._random.NextBytes(this._seedBuffer);
-        }
+    public MemoryStream GenerateStreamFromSeed(int size)
+    {
+        var randomWindow = _random.Next(0, size);
 
-        public MemoryStream GenerateStreamFromSeed(int size)
-        {
-            int randomWindow = this._random.Next(0, size);
+        var buffer = new byte[size];
 
-            byte[] buffer = new byte[size];
+        Buffer.BlockCopy(_seedBuffer, randomWindow, buffer, 0, size - randomWindow);
+        Buffer.BlockCopy(_seedBuffer, 0, buffer, size - randomWindow, randomWindow);
 
-            Buffer.BlockCopy(this._seedBuffer, randomWindow, buffer, 0, size - randomWindow);
-            Buffer.BlockCopy(this._seedBuffer, 0, buffer, size - randomWindow, randomWindow);
-
-            return new MemoryStream(buffer);
-        }
+        return new MemoryStream(buffer);
     }
 }

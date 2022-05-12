@@ -23,134 +23,106 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 
-namespace Minio
+namespace Minio;
+
+public class ResponseResult : IDisposable
 {
-    public class ResponseResult : IDisposable
+    private readonly Dictionary<string, string> _headers = new();
+    private string _content;
+    private byte[] _contentBytes;
+
+    private Stream _stream;
+
+    public ResponseResult(HttpRequestMessage request, HttpResponseMessage response)
     {
-        private Exception Exception { get; }
-        public HttpRequestMessage Request { get; }
-        public HttpResponseMessage Response { get; }
+        Request = request;
+        Response = response;
+    }
 
-        public HttpStatusCode StatusCode
+    public ResponseResult(HttpRequestMessage request, Exception exception)
+        : this(request, response: null)
+    {
+        Exception = exception;
+    }
+
+    private Exception Exception { get; }
+    public HttpRequestMessage Request { get; }
+    public HttpResponseMessage Response { get; }
+
+    public HttpStatusCode StatusCode
+    {
+        get
         {
-            get
-            {
-                if (this.Response == null)
-                {
-                    return 0;
-                }
+            if (Response == null) return 0;
 
-                return this.Response.StatusCode;
-            }
+            return Response.StatusCode;
         }
+    }
 
-        private Stream _stream;
-        private byte[] _contentBytes;
-        private string _content;
-
-        public Stream ContentStream
+    public Stream ContentStream
+    {
+        get
         {
-            get
-            {
-                if (this.Response == null)
-                {
-                    return null;
-                }
+            if (Response == null) return null;
 
-                return _stream ?? (_stream = this.Response.Content.ReadAsStreamAsync().Result);
-            }
+            return _stream ?? (_stream = Response.Content.ReadAsStreamAsync().Result);
         }
+    }
 
-        public byte[] ContentBytes
+    public byte[] ContentBytes
+    {
+        get
         {
-            get
-            {
-                if (this.ContentStream == null)
+            if (ContentStream == null) return new byte[0];
+
+            if (_contentBytes == null)
+                using (var memoryStream = new MemoryStream())
                 {
-                    return new byte[0];
+                    ContentStream.CopyTo(memoryStream);
+                    _contentBytes = memoryStream.ToArray();
                 }
 
-                if (_contentBytes == null)
-                {
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        this.ContentStream.CopyTo(memoryStream);
-                        _contentBytes = memoryStream.ToArray();
-                    }
-                }
-
-                return _contentBytes;
-            }
+            return _contentBytes;
         }
+    }
 
-        public string Content
+    public string Content
+    {
+        get
         {
-            get
-            {
-                if (this.ContentBytes.Length == 0)
-                {
-                    return "";
-                }
+            if (ContentBytes.Length == 0) return "";
 
-                if (this._content == null)
-                {
-                    _content = Encoding.UTF8.GetString(this.ContentBytes);
-                }
+            if (_content == null) _content = Encoding.UTF8.GetString(ContentBytes);
 
-                return _content;
-            }
+            return _content;
         }
+    }
 
-        private readonly Dictionary<string, string> _headers = new Dictionary<string, string>();
-
-        public Dictionary<string, string> Headers
+    public Dictionary<string, string> Headers
+    {
+        get
         {
-            get
+            if (Response == null) return new Dictionary<string, string>();
+
+            if (!_headers.Any())
             {
-                if (this.Response == null)
-                {
-                    return new Dictionary<string, string>();
-                }
-
-                if (!_headers.Any())
-                {
-                    if (this.Response.Content != null)
-                    {
-                        foreach (var item in this.Response.Content.Headers)
-                        {
-                            _headers.Add(item.Key, item.Value.FirstOrDefault());
-                        }
-                    }
-
-                    foreach (var item in this.Response.Headers)
-                    {
+                if (Response.Content != null)
+                    foreach (var item in Response.Content.Headers)
                         _headers.Add(item.Key, item.Value.FirstOrDefault());
-                    }
-                }
 
-                return _headers;
+                foreach (var item in Response.Headers) _headers.Add(item.Key, item.Value.FirstOrDefault());
             }
-        }
 
-        public string ErrorMessage => this.Exception?.Message;
-
-        public ResponseResult(HttpRequestMessage request, HttpResponseMessage response)
-        {
-            this.Request = request;
-            this.Response = response;
+            return _headers;
         }
+    }
 
-        public ResponseResult(HttpRequestMessage request, Exception exception)
-            : this(request, response: null)
-        {
-            this.Exception = exception;
-        }
+    public string ErrorMessage => Exception?.Message;
 
-        public void Dispose()
-        {
-            _stream?.Dispose();
-            Request?.Dispose();
-            Response?.Dispose();
-        }
+    public void Dispose()
+    {
+        _stream?.Dispose();
+        Request?.Dispose();
+        Response?.Dispose();
     }
 }

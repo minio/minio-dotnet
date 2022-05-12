@@ -19,52 +19,50 @@ using System;
 using System.Threading.Tasks;
 using Minio.Credentials;
 
+namespace Minio.Examples.Cases;
 
-namespace Minio.Examples.Cases
+public class AssumeRoleProviderExample
 {
-    public class AssumeRoleProviderExample
+    // Establish Authentication by assuming the role of an existing user
+    public static async Task Run()
     {
-        // Establish Authentication by assuming the role of an existing user
-        public async static Task Run()
+        // endpoint usually point to MinIO server.
+        var endpoint = "alias:port";
+
+        // Access key to fetch credentials from STS endpoint.
+        var accessKey = "access-key";
+
+        // Secret key to fetch credentials from STS endpoint.
+        var secretKey = "secret-key";
+
+        var minio = new MinioClient()
+            .WithEndpoint(endpoint)
+            .WithCredentials(accessKey, secretKey)
+            .WithSSL()
+            .Build();
+        try
         {
-            // endpoint usually point to MinIO server.
-            var endpoint = "alias:port";
+            var provider = new AssumeRoleProvider(minio);
 
-            // Access key to fetch credentials from STS endpoint.
-            var accessKey = "access-key";
-
-            // Secret key to fetch credentials from STS endpoint.
-            var secretKey = "secret-key";
-
-            MinioClient minio = new MinioClient()
-                                        .WithEndpoint(endpoint)
-                                        .WithCredentials(accessKey, secretKey)
-                                        .WithSSL()
-                                        .Build();
-            try
-            {
-                var provider = new AssumeRoleProvider(minio);
-
-                var token = await provider.GetCredentialsAsync();
-                // Console.WriteLine("\nToken = "); utils.Print(token);
-                MinioClient minioClient = new MinioClient()
-                                            .WithEndpoint(endpoint)
-                                            .WithCredentials(token.AccessKey, token.SecretKey)
-                                            .WithSessionToken(token.SessionToken)
-                                            .WithSSL()
-                                            .Build()
-                                            ;
-                StatObjectArgs statObjectArgs = new StatObjectArgs()
-                                            .WithBucket("bucket-name")
-                                            .WithObject("object-name");
-                var result = await minio.StatObjectAsync(statObjectArgs);
-                // Console.WriteLine("Object Stat: \n"); utils.Print(result);
-                Console.WriteLine("AssumeRoleProvider test PASSed\n");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"AssumeRoleProvider test exception: {e}\n");
-            }
+            var token = await provider.GetCredentialsAsync();
+            // Console.WriteLine("\nToken = "); utils.Print(token);
+            var minioClient = new MinioClient()
+                    .WithEndpoint(endpoint)
+                    .WithCredentials(token.AccessKey, token.SecretKey)
+                    .WithSessionToken(token.SessionToken)
+                    .WithSSL()
+                    .Build()
+                ;
+            var statObjectArgs = new StatObjectArgs()
+                .WithBucket("bucket-name")
+                .WithObject("object-name");
+            var result = await minio.StatObjectAsync(statObjectArgs);
+            // Console.WriteLine("Object Stat: \n"); utils.Print(result);
+            Console.WriteLine("AssumeRoleProvider test PASSed\n");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"AssumeRoleProvider test exception: {e}\n");
         }
     }
 }

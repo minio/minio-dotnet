@@ -29,6 +29,11 @@ jobs:
           dotnet clean --configuration Release
           dotnet restore
 
+      - name: Install tool dependencies and lint
+        run: |
+          dotnet tool restore
+          dotnet regitlint -f staged --fail-on-diff
+
       # Build and Execute build tests
       - name: Build & Unit Test
         run: |

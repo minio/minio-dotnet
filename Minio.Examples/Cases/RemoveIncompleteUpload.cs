@@ -17,29 +17,28 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal class RemoveIncompleteUpload
 {
-    class RemoveIncompleteUpload
+    // Remove incomplete upload object from a bucket
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name",
+        string objectName = "my-object-name")
     {
-        // Remove incomplete upload object from a bucket
-        public async static Task Run(MinioClient minio, 
-                                     string bucketName = "my-bucket-name",
-                                     string objectName = "my-object-name")
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: RemoveIncompleteUploadAsync");
-                RemoveIncompleteUploadArgs args = new RemoveIncompleteUploadArgs()
-                                                                .WithBucket(bucketName)
-                                                                .WithObject(objectName);
-                await minio.RemoveIncompleteUploadAsync(args);
-                Console.WriteLine($"Removed object {objectName} from bucket {bucketName} successfully");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket-Object]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: RemoveIncompleteUploadAsync");
+            var args = new RemoveIncompleteUploadArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName);
+            await minio.RemoveIncompleteUploadAsync(args);
+            Console.WriteLine($"Removed object {objectName} from bucket {bucketName} successfully");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket-Object]  Exception: {e}");
         }
     }
 }

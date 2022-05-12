@@ -17,14 +17,10 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+[Serializable]
+[XmlRoot(ElementName = "Progress")]
+public sealed class ProgressMessage : StatsMessage
 {
-    [Serializable]
-    [XmlRoot(ElementName = "Progress")]
-    public sealed class ProgressMessage : StatsMessage
-    {
-        public ProgressMessage()
-        {
-        }
-    }
 }

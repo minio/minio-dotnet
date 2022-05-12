@@ -13,31 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
 using System.Threading.Tasks;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public class RemoveObjectLockConfiguration
 {
-    public class RemoveObjectLockConfiguration
+    // Remove Object Lock Configuration on the bucket
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name")
     {
-        // Remove Object Lock Configuration on the bucket
-        public async static Task Run(MinioClient minio,
-                                    string bucketName = "my-bucket-name")
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: RemoveObjectLockConfiguration");
-                await minio.RemoveObjectLockConfigurationAsync(
-                    new RemoveObjectLockConfigurationArgs()
-                        .WithBucket(bucketName)
-                );
-                Console.WriteLine($"Removed Object lock configuration on the bucket {bucketName}.");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: RemoveObjectLockConfiguration");
+            await minio.RemoveObjectLockConfigurationAsync(
+                new RemoveObjectLockConfigurationArgs()
+                    .WithBucket(bucketName)
+            );
+            Console.WriteLine($"Removed Object lock configuration on the bucket {bucketName}.");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

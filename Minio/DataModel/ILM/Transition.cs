@@ -16,6 +16,7 @@
 
 using System;
 using System.Xml.Serialization;
+
 /*
  * Transition class used within LifecycleRule used to specify the transition rule for the lifecycle rule.
  * Please refer:
@@ -24,31 +25,28 @@ using System.Xml.Serialization;
  */
 
 
-namespace Minio.DataModel.ILM
+namespace Minio.DataModel.ILM;
+
+[Serializable]
+[XmlRoot(ElementName = "Transition")]
+public class Transition : Duration
 {
-    [Serializable]
-    [XmlRoot(ElementName = "Transition")]
-    public class Transition : Duration
+    public Transition()
     {
-        [XmlElement(ElementName = "StorageClass", IsNullable = true)]
-        public string StorageClass { get; set; }
+    }
 
-        public Transition()
-        {
-        }
+    public Transition(DateTime date, string storageClass) : base(date)
+    {
+        CheckStorageClass(storageClass);
+        StorageClass = storageClass.ToUpper();
+    }
 
-        public Transition(DateTime date, string storageClass) : base(date)
-        {
-            CheckStorageClass(storageClass);
-            this.StorageClass = storageClass.ToUpper();
-        }
+    [XmlElement(ElementName = "StorageClass", IsNullable = true)]
+    public string StorageClass { get; set; }
 
-        internal static void CheckStorageClass(string storageClass)
-        {
-            if (string.IsNullOrEmpty(storageClass) || string.IsNullOrWhiteSpace(storageClass))
-            {
-                throw new ArgumentNullException(nameof(StorageClass) + " cannot be empty.");
-            }
-        }
+    internal static void CheckStorageClass(string storageClass)
+    {
+        if (string.IsNullOrEmpty(storageClass) || string.IsNullOrWhiteSpace(storageClass))
+            throw new ArgumentNullException(nameof(StorageClass) + " cannot be empty.");
     }
 }

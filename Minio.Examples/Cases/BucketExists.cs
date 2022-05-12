@@ -17,27 +17,26 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal class BucketExists
 {
-    class BucketExists
+    // Check if a bucket exists
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name")
     {
-        // Check if a bucket exists
-        public async static Task Run(MinioClient minio,
-                                     string bucketName = "my-bucket-name")
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: BucketExistsAsync");
-                BucketExistsArgs args = new BucketExistsArgs()
-                                                    .WithBucket(bucketName);
-                bool found = await minio.BucketExistsAsync(args);
-                Console.WriteLine((found ? "Found" : "Couldn't find ") + "bucket " + bucketName);
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: BucketExistsAsync");
+            var args = new BucketExistsArgs()
+                .WithBucket(bucketName);
+            var found = await minio.BucketExistsAsync(args);
+            Console.WriteLine((found ? "Found" : "Couldn't find ") + "bucket " + bucketName);
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

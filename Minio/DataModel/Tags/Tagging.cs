@@ -21,162 +21,141 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Tags
+namespace Minio.DataModel.Tags;
+
+[Serializable]
+[XmlRoot(ElementName = "Tagging")]
+/*
+* References for Tagging.
+* https://docs.aws.amazon.com/AmazonS3/latest/dev/object-tagging.html
+* https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html#tag-restrictions
+*/
+public class Tagging
 {
-    [Serializable]
-    [XmlRoot(ElementName = "Tagging")]
+    internal const uint MAX_TAG_COUNT_PER_RESOURCE = 50;
+    internal const uint MAX_TAG_COUNT_PER_OBJECT = 10;
+    internal const uint MAX_TAG_KEY_LENGTH = 128;
+    internal const uint MAX_TAG_VALUE_LENGTH = 256;
 
-    /*
-    * References for Tagging.
-    * https://docs.aws.amazon.com/AmazonS3/latest/dev/object-tagging.html
-    * https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html#tag-restrictions
-    */
-    public class Tagging
+    public Tagging()
     {
-        internal const uint MAX_TAG_COUNT_PER_RESOURCE = 50;
-        internal const uint MAX_TAG_COUNT_PER_OBJECT = 10;
-        internal const uint MAX_TAG_KEY_LENGTH = 128;
-        internal const uint MAX_TAG_VALUE_LENGTH = 256;
+        TaggingSet = null;
+    }
 
-        [XmlElement("TagSet")]
-        public TagSet TaggingSet { get; set; }
-
-        public Tagging()
+    public Tagging(Dictionary<string, string> tags, bool isObjects)
+    {
+        if (tags == null)
         {
-            this.TaggingSet = null;
+            TaggingSet = null;
+            return;
         }
 
-        public Tagging(Dictionary<String, String> tags, bool isObjects)
+        var tagging_upper_limit = isObjects ? MAX_TAG_COUNT_PER_OBJECT : MAX_TAG_COUNT_PER_RESOURCE;
+        if (tags.Count > tagging_upper_limit)
+            throw new ArgumentOutOfRangeException(nameof(tags) + ". Count of tags exceeds maximum limit allowed for " +
+                                                  (isObjects ? "objects." : "buckets."));
+        foreach (var tag in tags)
         {
-            if (tags == null)
-            {
-                this.TaggingSet = null;
-                return;
-            }
-            uint tagging_upper_limit = isObjects ? MAX_TAG_COUNT_PER_OBJECT : MAX_TAG_COUNT_PER_RESOURCE;
-            if (tags.Count > tagging_upper_limit)
-            {
-                throw new ArgumentOutOfRangeException(nameof(tags) + ". Count of tags exceeds maximum limit allowed for " + ((isObjects) ? "objects." : "buckets."));
-            }
-            foreach (var tag in tags)
-            {
-                if (!validateTagKey(tag.Key))
-                {
-                    throw new ArgumentException("Invalid Tagging key " + tag.Key);
-                }
-                if (!validateTagValue(tag.Value))
-                {
-                    throw new ArgumentException("Invalid Tagging value " + tag.Value);
-                }
-            }
-            this.TaggingSet = new TagSet(tags);
+            if (!validateTagKey(tag.Key)) throw new ArgumentException("Invalid Tagging key " + tag.Key);
+            if (!validateTagValue(tag.Value)) throw new ArgumentException("Invalid Tagging value " + tag.Value);
         }
 
-        internal bool validateTagKey(string key)
+        TaggingSet = new TagSet(tags);
+    }
+
+    [XmlElement("TagSet")] public TagSet TaggingSet { get; set; }
+
+    internal bool validateTagKey(string key)
+    {
+        if (string.IsNullOrEmpty(key) ||
+            string.IsNullOrWhiteSpace(key) ||
+            key.Length > MAX_TAG_KEY_LENGTH ||
+            key.Contains("&"))
+            return false;
+        return true;
+    }
+
+    internal bool validateTagValue(string value)
+    {
+        if (value == null || // Empty or whitespace is allowed
+            value.Length > MAX_TAG_VALUE_LENGTH ||
+            value.Contains("&"))
+            return false;
+        return true;
+    }
+
+    public Dictionary<string, string> GetTags()
+    {
+        if (TaggingSet == null || TaggingSet.Tag.Count == 0) return null;
+        var tagMap = new Dictionary<string, string>();
+        foreach (var tag in TaggingSet.Tag) tagMap[tag.Key] = tag.Value;
+        return tagMap;
+    }
+
+    public string MarshalXML()
+    {
+        XmlSerializer xs = null;
+        XmlWriterSettings settings = null;
+        XmlSerializerNamespaces ns = null;
+
+        XmlWriter xw = null;
+
+        var str = string.Empty;
+
+        try
         {
-            if (string.IsNullOrEmpty(key) ||
-                string.IsNullOrWhiteSpace(key) ||
-                key.Length > MAX_TAG_KEY_LENGTH ||
-                key.Contains("&"))
-            {
-                return false;
-            }
-            return true;
+            settings = new XmlWriterSettings();
+            settings.OmitXmlDeclaration = true;
+
+            ns = new XmlSerializerNamespaces();
+            ns.Add(string.Empty, string.Empty);
+
+            var sw = new StringWriter(CultureInfo.InvariantCulture);
+
+            xs = new XmlSerializer(typeof(Tagging), "");
+            xw = XmlWriter.Create(sw, settings);
+            xs.Serialize(xw, this, ns);
+            xw.Flush();
+            str = utils.RemoveNamespaceInXML(sw.ToString());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+        finally
+        {
+            if (xw != null) xw.Close();
         }
 
-        internal bool validateTagValue(string value)
+        return str;
+    }
+
+    public static Tagging GetBucketTags(Dictionary<string, string> tags)
+    {
+        return new Tagging(tags, false);
+    }
+
+    public static Tagging GetObjectTags(Dictionary<string, string> tags)
+    {
+        return new Tagging(tags, true);
+    }
+
+    internal string GetTagString()
+    {
+        if (TaggingSet == null || (TaggingSet.Tag == null && TaggingSet.Tag.Count == 0)) return null;
+        var tagStr = "";
+        var i = 0;
+        foreach (var tag in TaggingSet.Tag)
         {
-            if (value == null || // Empty or whitespace is allowed
-                value.Length > MAX_TAG_VALUE_LENGTH ||
-                value.Contains("&"))
-            {
-                return false;
-            }
-            return true;
+            var append = i++ < TaggingSet.Tag.Count - 1 ? "&" : "";
+            tagStr += tag.Key + "=" + tag.Value + append;
         }
 
-        public Dictionary<string, string> GetTags()
-        {
-            if (this.TaggingSet == null || this.TaggingSet.Tag.Count == 0)
-            {
-                return null;
-            }
-            Dictionary<string, string> tagMap = new Dictionary<string, string>();
-            foreach (var tag in this.TaggingSet.Tag)
-            {
-                tagMap[tag.Key] = tag.Value;
-            }
-            return tagMap;
-        }
+        return tagStr;
+    }
 
-        public string MarshalXML()
-        {
-            XmlSerializer xs = null;
-            XmlWriterSettings settings = null;
-            XmlSerializerNamespaces ns = null;
-
-            XmlWriter xw = null;
-
-            String str = String.Empty;
-
-            try
-            {
-                settings = new XmlWriterSettings();
-                settings.OmitXmlDeclaration = true;
-
-                ns = new XmlSerializerNamespaces();
-                ns.Add(string.Empty, string.Empty);
-
-                StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
-
-                xs = new XmlSerializer(typeof(Tagging), "");
-                xw = XmlWriter.Create(sw, settings);
-                xs.Serialize(xw, this, ns);
-                xw.Flush();
-                str = utils.RemoveNamespaceInXML(sw.ToString());
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-            finally
-            {
-                if (xw != null)
-                {
-                    xw.Close();
-                }
-            }
-            return str;
-        }
-        public static Tagging GetBucketTags(Dictionary<string, string> tags)
-        {
-            return new Tagging(tags, false);
-        }
-
-        public static Tagging GetObjectTags(Dictionary<string, string> tags)
-        {
-            return new Tagging(tags, true);
-        }
-
-        internal string GetTagString()
-        {
-            if (this.TaggingSet == null || this.TaggingSet.Tag == null && this.TaggingSet.Tag.Count == 0)
-            {
-                return null;
-            }
-            string tagStr = "";
-            int i = 0;
-            foreach (var tag in this.TaggingSet.Tag)
-            {
-                string append = (i++ < (this.TaggingSet.Tag.Count - 1)) ? "&" : "";
-                tagStr += tag.Key + "=" + tag.Value + append;
-            }
-            return tagStr;
-        }
-
-        public override string ToString()
-        {
-            return this.GetTagString();
-        }
+    public override string ToString()
+    {
+        return GetTagString();
     }
 }

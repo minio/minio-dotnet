@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+public class InternalServerException : MinioException
 {
-    public class InternalServerException : MinioException
+    public InternalServerException(string message) : base(message)
     {
-        public InternalServerException(string message) : base(message)
-        {
-        }
     }
 }

@@ -17,24 +17,21 @@
 
 using System;
 using Minio.Exceptions;
-using System.Net.Http;
 
-namespace Minio
+namespace Minio;
+
+[Serializable]
+internal class EmptyBucketOperation : MinioException
 {
-    [Serializable]
-    internal class EmptyBucketOperation : MinioException
+    public EmptyBucketOperation(string message) : base(message)
     {
-        public EmptyBucketOperation(string message) : base(message)
-        {
-        }
+    }
 
-        public EmptyBucketOperation(ResponseResult serverResponse) : base(serverResponse)
-        {
-        }
+    public EmptyBucketOperation(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
 
-        public EmptyBucketOperation(string message, ResponseResult serverResponse) : base(message, serverResponse)
-        {
-        }
-
+    public EmptyBucketOperation(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
     }
 }

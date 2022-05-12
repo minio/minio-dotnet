@@ -13,31 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
 using System.Threading.Tasks;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public class RemoveBucketLifecycle
 {
-    public class RemoveBucketLifecycle
+    // Remove Lifecycle configuration set for the bucket
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name")
     {
-        // Remove Lifecycle configuration set for the bucket
-        public async static Task Run(MinioClient minio,
-                                    string bucketName = "my-bucket-name")
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: RemoveBucketLifecycle");
-                await minio.RemoveBucketLifecycleAsync(
-                    new RemoveBucketLifecycleArgs()
-                        .WithBucket(bucketName)
-                );
-                Console.WriteLine($"Bucket Lifecycle removed for bucket {bucketName}.");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: RemoveBucketLifecycle");
+            await minio.RemoveBucketLifecycleAsync(
+                new RemoveBucketLifecycleArgs()
+                    .WithBucket(bucketName)
+            );
+            Console.WriteLine($"Bucket Lifecycle removed for bucket {bucketName}.");
+            Console.WriteLine();
         }
-    }    
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
+        }
+    }
 }

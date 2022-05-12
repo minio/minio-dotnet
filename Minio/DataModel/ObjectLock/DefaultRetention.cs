@@ -13,28 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.ObjectLock
+namespace Minio.DataModel.ObjectLock;
+
+[Serializable]
+[XmlRoot(ElementName = "DefaultRetention", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+public class DefaultRetention
 {
-    [Serializable]
-    [XmlRoot(ElementName = "DefaultRetention", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-    public class DefaultRetention
+    public DefaultRetention()
     {
-        public DefaultRetention()
-        {
-        }
-
-        public DefaultRetention(int days, RetentionMode mode)
-        {
-            this.Days = days;
-            this.Mode = mode;
-        }
-        [XmlElement("Days")]
-        public int Days { get; set; }
-        [XmlElement("Mode")]
-        public RetentionMode Mode { get; set; }
-
     }
+
+    public DefaultRetention(int days, RetentionMode mode)
+    {
+        Days = days;
+        Mode = mode;
+    }
+
+    [XmlElement("Days")] public int Days { get; set; }
+
+    [XmlElement("Mode")] public RetentionMode Mode { get; set; }
 }

@@ -16,79 +16,77 @@
 
 using System;
 using System.Threading.Tasks;
-
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 using Minio.Exceptions;
 
-namespace Minio.Tests
-{
-    [TestClass]
-    public class RetryHandlerTest
-    {
-        [TestMethod]
-        public async Task TestRetryPolicyOnSuccess()
-        {
-            var client = new MinioClient()
-                                    .WithEndpoint("play.min.io")
-                                    .WithCredentials("Q3AM3UQ867SPQQA43P2F",
-                                             "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
-                                    .WithSSL()
-                                    .Build();
+namespace Minio.Tests;
 
-            int invokeCount = 0;
-            client.WithRetryPolicy(
-                async (callback) =>
+[TestClass]
+public class RetryHandlerTest
+{
+    [TestMethod]
+    public async Task TestRetryPolicyOnSuccess()
+    {
+        var client = new MinioClient()
+            .WithEndpoint("play.min.io")
+            .WithCredentials("Q3AM3UQ867SPQQA43P2F",
+                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+            .WithSSL()
+            .Build();
+
+        var invokeCount = 0;
+        client.WithRetryPolicy(
+            async callback =>
+            {
+                invokeCount++;
+                return await callback();
+            });
+
+        var bktArgs = new BucketExistsArgs()
+            .WithBucket(Guid.NewGuid().ToString());
+        var result = await client.BucketExistsAsync(bktArgs);
+        Assert.IsFalse(result);
+        Assert.AreEqual(invokeCount, 1);
+    }
+
+    [TestMethod]
+    public async Task TestRetryPolicyOnFailure()
+    {
+        var client = new MinioClient()
+            .WithEndpoint("play.min.io")
+            .WithCredentials("Q3AM3UQ867SPQQA43P2F",
+                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+            .WithSSL()
+            .Build();
+
+        var invokeCount = 0;
+        var retryCount = 3;
+        client.WithRetryPolicy(
+            async callback =>
+            {
+                Exception exception = null;
+                for (var i = 0; i < retryCount; i++)
                 {
                     invokeCount++;
-                    return await callback();
-                });
-
-            BucketExistsArgs bktArgs = new BucketExistsArgs()
-                                                .WithBucket(Guid.NewGuid().ToString());
-            var result = await client.BucketExistsAsync(bktArgs);
-            Assert.IsFalse(result);
-            Assert.AreEqual(invokeCount, 1);
-        }
-
-        [TestMethod]
-        public async Task TestRetryPolicyOnFailure()
-        {
-            var client = new MinioClient()
-                                    .WithEndpoint("play.min.io")
-                                    .WithCredentials("Q3AM3UQ867SPQQA43P2F",
-                                             "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
-                                    .WithSSL()
-                                    .Build();
-
-            int invokeCount = 0;
-            var retryCount = 3;
-            client.WithRetryPolicy(
-                async (callback) =>
-                {
-                    Exception exception = null;
-                    for (int i = 0; i < retryCount; i++)
+                    try
                     {
-                        invokeCount++;
-                        try
-                        {
-                            return await callback();
-                        }
-                        catch (BucketNotFoundException ex)
-                        {
-                            exception = ex;
-                        }
+                        return await callback();
                     }
-                    throw exception;
-                });
+                    catch (BucketNotFoundException ex)
+                    {
+                        exception = ex;
+                    }
+                }
 
-            GetObjectArgs getObjectArgs = new GetObjectArgs()
-                                                    .WithBucket(Guid.NewGuid().ToString())
-                                                    .WithObject("aa")
-                                                    .WithCallbackStream(s => { });
-            await Assert.ThrowsExceptionAsync<BucketNotFoundException>(
-                () => client.GetObjectAsync(getObjectArgs));
-            Assert.AreEqual(invokeCount, retryCount);
-        }
+                throw exception;
+            });
+
+        var getObjectArgs = new GetObjectArgs()
+            .WithBucket(Guid.NewGuid().ToString())
+            .WithObject("aa")
+            .WithCallbackStream(s => { });
+        await Assert.ThrowsExceptionAsync<BucketNotFoundException>(
+            () => client.GetObjectAsync(getObjectArgs));
+        Assert.AreEqual(invokeCount, retryCount);
     }
 }

@@ -17,33 +17,32 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Minio.Examples.Cases
-{
-    class FPutObject
-    {
-        // Upload object to bucket from file
-        public async static Task Run(MinioClient minio, 
-                                      string bucketName = "my-bucket-name",
-                                      string objectName = "my-object-name",
-                                      string fileName = "from where")
-        {
-            try
-            {
-                Console.WriteLine("Running example for API: PutObjectAsync with FileName");
-                PutObjectArgs args = new PutObjectArgs()
-                                                .WithBucket(bucketName)
-                                                .WithObject(objectName)
-                                                .WithContentType("application/octet-stream")
-                                                .WithFileName(fileName);
-                await minio.PutObjectAsync(args).ConfigureAwait(false);
+namespace Minio.Examples.Cases;
 
-                Console.WriteLine($"Uploaded object {objectName} to bucket {bucketName}");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+internal class FPutObject
+{
+    // Upload object to bucket from file
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name",
+        string objectName = "my-object-name",
+        string fileName = "from where")
+    {
+        try
+        {
+            Console.WriteLine("Running example for API: PutObjectAsync with FileName");
+            var args = new PutObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithContentType("application/octet-stream")
+                .WithFileName(fileName);
+            await minio.PutObjectAsync(args).ConfigureAwait(false);
+
+            Console.WriteLine($"Uploaded object {objectName} to bucket {bucketName}");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

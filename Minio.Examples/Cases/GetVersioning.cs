@@ -16,37 +16,35 @@
 
 using System;
 using System.Threading.Tasks;
-using Minio.DataModel;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal class GetVersioning
 {
-    class GetVersioning
+    // Check if Versioning is Enabled on a bucket
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name")
     {
-        // Check if Versioning is Enabled on a bucket
-        public async static Task Run(MinioClient minio,
-                                     string bucketName = "my-bucket-name")
+        var args = new GetVersioningArgs()
+            .WithBucket(bucketName);
+
+        try
         {
-            var args = new GetVersioningArgs()
-                                    .WithBucket(bucketName);
-
-            try
+            Console.WriteLine("Running example for API: GetVersioning, ");
+            var config = await minio.GetVersioningAsync(args);
+            if (config == null)
             {
-                Console.WriteLine("Running example for API: GetVersioning, ");
-                VersioningConfiguration config = await minio.GetVersioningAsync(args);
-                if (config == null)
-                {
-                    Console.WriteLine("Versioning Configuration not available for bucket " + bucketName);
-                    Console.WriteLine();
-                    return;
-                }
-                Console.WriteLine("Versioning Configuration Status " + config.Status + " for bucket " + bucketName);
+                Console.WriteLine("Versioning Configuration not available for bucket " + bucketName);
                 Console.WriteLine();
+                return;
+            }
 
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine("Versioning Configuration Status " + config.Status + " for bucket " + bucketName);
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

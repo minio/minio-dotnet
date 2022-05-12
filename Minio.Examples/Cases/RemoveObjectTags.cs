@@ -13,35 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
 using System.Threading.Tasks;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public class RemoveObjectTags
 {
-    public class RemoveObjectTags
+    // Remove Tags set for the object
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name",
+        string objectName = "my-object-name",
+        string versionId = null)
     {
-        // Remove Tags set for the object
-        public async static Task Run(MinioClient minio,
-                                    string bucketName = "my-bucket-name",
-                                    string objectName = "my-object-name",
-                                    string versionId = null)
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: RemoveObjectTags");
-                await minio.RemoveObjectTagsAsync(
-                    new RemoveObjectTagsArgs()
-                        .WithBucket(bucketName)
-                        .WithObject(objectName)
-                        .WithVersionId(versionId)
-                );
-                Console.WriteLine($"Tags removed for object {bucketName}/{objectName}.");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Object]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: RemoveObjectTags");
+            await minio.RemoveObjectTagsAsync(
+                new RemoveObjectTagsArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    .WithVersionId(versionId)
+            );
+            Console.WriteLine($"Tags removed for object {bucketName}/{objectName}.");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Object]  Exception: {e}");
         }
     }
 }

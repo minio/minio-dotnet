@@ -14,75 +14,72 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
-using Minio.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Minio.DataModel;
+using Minio.Exceptions;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal class StatObject
 {
-    class StatObject
+    public static void PrintStat(string bucketObject, ObjectStat statObject)
     {
-        public static void PrintStat(string bucketObject, ObjectStat statObject)
-        {
-            ConsoleColor currentColor = Console.ForegroundColor;
-            Console.WriteLine($"Details of the object {bucketObject} are");
-            Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.WriteLine($"{statObject}");
-            Console.ForegroundColor = currentColor;
-            Console.WriteLine();
-        }
-        // Get stats on a object
-        public async static Task Run(MinioClient minio, 
-                                     string bucketName = "my-bucket-name",
-                                     string bucketObject = "my-object-name",
-                                     string versionID = null)
-        {
-            try
-            {
-                Console.WriteLine("Running example for API: StatObjectAsync");
-                if (string.IsNullOrEmpty(versionID))
-                {
-                    StatObjectArgs objectStatArgs = new StatObjectArgs()
-                                                    .WithBucket(bucketName)
-                                                    .WithObject(bucketObject);
-                    ObjectStat statObject = await minio.StatObjectAsync(objectStatArgs);
-                    PrintStat(bucketObject, statObject);
-                    PrintMetaData(statObject.MetaData);
-                    return;
-                }
-                StatObjectArgs args = new StatObjectArgs()
-                                                .WithBucket(bucketName)
-                                                .WithObject(bucketObject)
-                                                .WithVersionId(versionID);
-                ObjectStat statObjectVersion = await minio.StatObjectAsync(args);
-                PrintStat(bucketObject, statObjectVersion);
-                PrintMetaData(statObjectVersion.MetaData);
-            }
-            catch (MinioException me)
-            {
-                string objectNameInfo = $"{bucketName}-{bucketObject}";
-                if (!string.IsNullOrEmpty(versionID))
-                {
-                    objectNameInfo = objectNameInfo + $" (Version ID) {me.Response.VersionId} (Delete Marker) {me.Response.DeleteMarker}";
-                }
-                Console.WriteLine($"[StatObject] {objectNameInfo} Exception: {me}");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[StatObject] {bucketName}-{bucketObject} Exception: {e}");
-            }
-        }
+        var currentColor = Console.ForegroundColor;
+        Console.WriteLine($"Details of the object {bucketObject} are");
+        Console.ForegroundColor = ConsoleColor.DarkGreen;
+        Console.WriteLine($"{statObject}");
+        Console.ForegroundColor = currentColor;
+        Console.WriteLine();
+    }
 
-        private static void PrintMetaData(Dictionary<string, string> metaData)
+    // Get stats on a object
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name",
+        string bucketObject = "my-object-name",
+        string versionID = null)
+    {
+        try
         {
-            Console.WriteLine("Metadata:");
-            foreach(var metaPair in metaData)
+            Console.WriteLine("Running example for API: StatObjectAsync");
+            if (string.IsNullOrEmpty(versionID))
             {
-                Console.WriteLine("    " + metaPair.Key + ":\t" + metaPair.Value);
+                var objectStatArgs = new StatObjectArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(bucketObject);
+                var statObject = await minio.StatObjectAsync(objectStatArgs);
+                PrintStat(bucketObject, statObject);
+                PrintMetaData(statObject.MetaData);
+                return;
             }
-            Console.WriteLine();
+
+            var args = new StatObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(bucketObject)
+                .WithVersionId(versionID);
+            var statObjectVersion = await minio.StatObjectAsync(args);
+            PrintStat(bucketObject, statObjectVersion);
+            PrintMetaData(statObjectVersion.MetaData);
         }
+        catch (MinioException me)
+        {
+            var objectNameInfo = $"{bucketName}-{bucketObject}";
+            if (!string.IsNullOrEmpty(versionID))
+                objectNameInfo = objectNameInfo +
+                                 $" (Version ID) {me.Response.VersionId} (Delete Marker) {me.Response.DeleteMarker}";
+            Console.WriteLine($"[StatObject] {objectNameInfo} Exception: {me}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[StatObject] {bucketName}-{bucketObject} Exception: {e}");
+        }
+    }
+
+    private static void PrintMetaData(Dictionary<string, string> metaData)
+    {
+        Console.WriteLine("Metadata:");
+        foreach (var metaPair in metaData) Console.WriteLine("    " + metaPair.Key + ":\t" + metaPair.Value);
+        Console.WriteLine();
     }
 }

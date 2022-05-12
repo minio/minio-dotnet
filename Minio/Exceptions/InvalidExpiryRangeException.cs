@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+public class InvalidExpiryRangeException : MinioException
 {
-    public class InvalidExpiryRangeException : MinioException
+    public InvalidExpiryRangeException(string message) : base(message)
     {
-        public InvalidExpiryRangeException(string message) : base(message)
-        {
-        }
     }
 }

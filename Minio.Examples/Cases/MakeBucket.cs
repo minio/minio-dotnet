@@ -17,29 +17,28 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public class MakeBucket
 {
-    public class MakeBucket
+    // Make a bucket
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name", string loc = "us-east-1")
     {
-        // Make a bucket
-        public async static Task Run(MinioClient minio,
-                                     string bucketName = "my-bucket-name", string loc = "us-east-1")
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: MakeBucketAsync");
-                await minio.MakeBucketAsync(
-                    new MakeBucketArgs()
-                        .WithBucket(bucketName)
-                        .WithLocation(loc)
-                );
-                Console.WriteLine($"Created bucket {bucketName}");
-                Console.WriteLine();
-            } 
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: MakeBucketAsync");
+            await minio.MakeBucketAsync(
+                new MakeBucketArgs()
+                    .WithBucket(bucketName)
+                    .WithLocation(loc)
+            );
+            Console.WriteLine($"Created bucket {bucketName}");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

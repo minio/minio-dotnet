@@ -25,24 +25,24 @@ using System.Xml.Serialization;
  */
 
 
-namespace Minio.DataModel.ILM
-{
-    [Serializable]
-    [XmlRoot(ElementName = "NoncurrentVersionTransition")]
-    public class NoncurrentVersionTransition : NoncurrentVersionExpiration
-    {
-        [XmlElement(ElementName = "StorageClass", IsNullable = true)]
-        internal string StorageClass { get; set; }
-        public NoncurrentVersionTransition()
-        {
-            this.StorageClass = null;
-        }
+namespace Minio.DataModel.ILM;
 
-        public NoncurrentVersionTransition(uint nonCurrentDays, string storageClass) : base(nonCurrentDays)
-        {
-            Transition.CheckStorageClass(storageClass);
-            this.StorageClass = storageClass;
-            this.NoncurrentDays = nonCurrentDays;
-        }
+[Serializable]
+[XmlRoot(ElementName = "NoncurrentVersionTransition")]
+public class NoncurrentVersionTransition : NoncurrentVersionExpiration
+{
+    public NoncurrentVersionTransition()
+    {
+        StorageClass = null;
     }
+
+    public NoncurrentVersionTransition(uint nonCurrentDays, string storageClass) : base(nonCurrentDays)
+    {
+        Transition.CheckStorageClass(storageClass);
+        StorageClass = storageClass;
+        NoncurrentDays = nonCurrentDays;
+    }
+
+    [XmlElement(ElementName = "StorageClass", IsNullable = true)]
+    internal string StorageClass { get; set; }
 }

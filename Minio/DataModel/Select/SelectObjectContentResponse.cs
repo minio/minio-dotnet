@@ -17,13 +17,11 @@
 using System;
 using System.IO;
 
-namespace Minio.DataModel
-{
-    [Serializable]
-    public class SelectObjectContentResponse
-    {
-        /// Event Stream result of SelectObjectContent
-        public Action<Stream> StreamCallBack { get; set; }
+namespace Minio.DataModel;
 
-    }
+[Serializable]
+public class SelectObjectContentResponse
+{
+    /// Event Stream result of SelectObjectContent
+    public Action<Stream> StreamCallBack { get; set; }
 }

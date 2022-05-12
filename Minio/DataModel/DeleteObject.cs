@@ -17,27 +17,25 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+[Serializable]
+[XmlType(TypeName = "Object")]
+public class DeleteObject
 {
-    [Serializable]
-    [XmlType(TypeName = "Object")]
-    public class DeleteObject
+    public DeleteObject()
     {
-        [XmlElement("Key")]
-        public string Key { get; set; }
-
-        [XmlElement("VersionId")]
-        public string VersionId { get; set; }
-
-        public DeleteObject()
-        {
-            this.Key = null;
-            this.VersionId = null;
-        }
-        public DeleteObject(string key, string versionId = null)
-        {
-            this.Key = key;
-            this.VersionId = versionId;
-        }
+        Key = null;
+        VersionId = null;
     }
+
+    public DeleteObject(string key, string versionId = null)
+    {
+        Key = key;
+        VersionId = versionId;
+    }
+
+    [XmlElement("Key")] public string Key { get; set; }
+
+    [XmlElement("VersionId")] public string VersionId { get; set; }
 }

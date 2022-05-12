@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+public class CredentialsProviderException : MinioException
 {
-    public class CredentialsProviderException : MinioException
+    private readonly string CredentialProviderType;
+
+    public CredentialsProviderException(string credentialProviderType, string message) : base(message)
     {
-        private readonly string CredentialProviderType;
-        public CredentialsProviderException(string credentialProviderType, string message) : base(message)
-        {
-            this.CredentialProviderType = credentialProviderType;
-        }
+        CredentialProviderType = credentialProviderType;
+    }
 
-        public override string ToString() => $"{this.CredentialProviderType}: {base.ToString()}";
-
+    public override string ToString()
+    {
+        return $"{CredentialProviderType}: {base.ToString()}";
     }
 }
