@@ -3,7 +3,7 @@
     <LangVersion>latest</LangVersion>
     <AssemblyName>Minio</AssemblyName>
     <RootNamespace>Minio</RootNamespace>
-    <TargetFramework Condition=" '$(OS)' == 'Unix'">netstandard2.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <TargetFramework Condition=" '$(OS)' == 'Windows_NT'">netstandard2.0</TargetFramework>
     <DebugType>embedded</DebugType>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
