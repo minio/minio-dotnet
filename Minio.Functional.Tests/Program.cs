@@ -56,6 +56,7 @@ internal class Program
         {
             return true;
         };
+        clientHandler.UseProxy = false;
         var httpClient = new HttpClient(clientHandler);
 
         if (enableHttps == "1")
