@@ -23,6 +23,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
@@ -530,11 +531,7 @@ public class FunctionalTest
                 else
                     objectNames.Add(item.Key);
             },
-            ex =>
-            {
-                // Collect all exceptions but the one raised because the bucket is empty
-                if (ex.GetType().ToString() != "Minio.EmptyBucketOperation") exceptionList.Add(ex);
-            },
+            ex => { exceptionList.Add(ex); },
             () => { });
 
         Thread.Sleep(4500);
@@ -1188,23 +1185,38 @@ public class FunctionalTest
         }
     }
 
+    internal static async Task DownloadObjectAsync(string url, string filePath)
+    {
+        var clientHandler = new HttpClientHandler();
+        clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) =>
+        {
+            return true;
+        };
+        var client = new HttpClient(clientHandler);
+
+        var response = await client.GetAsync(url);
+        if (string.IsNullOrEmpty(Convert.ToString(response.Content)) || !HttpStatusCode.OK.Equals(response.StatusCode))
+            throw new ArgumentNullException("Unable to download via presigned URL");
+
+        using (var fs = new FileStream(filePath, FileMode.CreateNew))
+        {
+            await response.Content.CopyToAsync(fs);
+        }
+    }
+
     internal static async Task UploadObjectAsync(string url, string filePath)
     {
-        var httpRequest = WebRequest.Create(url) as HttpWebRequest;
-        httpRequest.Method = "PUT";
-        using (var dataStream =
-               await Task.Factory.FromAsync(httpRequest.BeginGetRequestStream, httpRequest.EndGetRequestStream, null))
+        var clientHandler = new HttpClientHandler();
+        clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) =>
         {
-            var buffer = new byte[8000];
-            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-            {
-                fileStream.CopyTo(dataStream);
-            }
-        }
+            return true;
+        };
+        var client = new HttpClient(clientHandler);
 
-        var response =
-            (HttpWebResponse)await Task<WebResponse>.Factory.FromAsync(httpRequest.BeginGetResponse,
-                httpRequest.EndGetResponse, null);
+        using (var strm = new StreamContent(new FileStream(filePath, FileMode.Open, FileAccess.Read)))
+        {
+            await client.PutAsync(url, strm);
+        }
     }
 
     internal static async Task PresignedPostPolicy_Test1(MinioClient minio)
@@ -4788,17 +4800,8 @@ public class FunctionalTest
                 .WithObject(objectName)
                 .WithExpiry(expiresInt);
             var presigned_url = await minio.PresignedGetObjectAsync(preArgs);
-            var httpRequest = WebRequest.Create(presigned_url);
-            // Execute http request to get the object 
-            var response = (HttpWebResponse)await Task<WebResponse>.Factory.FromAsync(httpRequest.BeginGetResponse,
-                httpRequest.EndGetResponse, null);
-            // Create the object from the captured stream response
-            var stream = response.GetResponseStream();
-            var fileStream = File.Create(downloadFile);
-            stream.CopyTo(fileStream);
 
-            stream.Dispose();
-            fileStream.Dispose();
+            await DownloadObjectAsync(presigned_url, downloadFile);
             var writtenInfo = new FileInfo(downloadFile);
             var file_read_size = writtenInfo.Length;
             // Compare the size of the file downloaded using the generated
@@ -4935,17 +4938,30 @@ public class FunctionalTest
                 .WithHeaders(reqParams)
                 .WithRequestDate(reqDate);
             var presigned_url = await minio.PresignedGetObjectAsync(preArgs);
-            var httpRequest = WebRequest.Create(presigned_url);
-            var response = (HttpWebResponse)await Task<WebResponse>.Factory.FromAsync(httpRequest.BeginGetResponse,
-                httpRequest.EndGetResponse, null);
-            Assert.IsTrue(response.ContentType.Contains(reqParams["response-content-type"]));
-            Assert.IsTrue(response.Headers["Content-Disposition"].Contains("attachment;filename=MyDocument.json;"));
-            Assert.IsTrue(response.Headers["Content-Type"].Contains("application/json"));
-            Assert.IsTrue(response.Headers["Content-Length"].Contains(stats.Size.ToString()));
-            var stream = response.GetResponseStream();
-            var fileStream = File.Create(downloadFile);
-            stream.CopyTo(fileStream);
-            fileStream.Dispose();
+
+            var clientHandler = new HttpClientHandler();
+            clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) =>
+            {
+                return true;
+            };
+            var client = new HttpClient(clientHandler);
+
+            var response = await client.GetAsync(presigned_url);
+            if (string.IsNullOrEmpty(Convert.ToString(response.Content)) ||
+                !HttpStatusCode.OK.Equals(response.StatusCode))
+                throw new ArgumentNullException("Unable to download via presigned URL");
+
+            Assert.IsTrue(response.Content.Headers.GetValues("Content-Type")
+                .Contains(reqParams["response-content-type"]));
+            Assert.IsTrue(response.Content.Headers.GetValues("Content-Disposition")
+                .Contains(reqParams["response-content-disposition"]));
+            Assert.IsTrue(response.Content.Headers.GetValues("Content-Length").Contains(stats.Size.ToString()));
+
+            using (var fs = new FileStream(downloadFile, FileMode.CreateNew))
+            {
+                await response.Content.CopyToAsync(fs);
+            }
+
             var writtenInfo = new FileInfo(downloadFile);
             var file_read_size = writtenInfo.Length;
 

@@ -1,13 +1,16 @@
 name: Minio-dotnet Windows Tests
 
 on:
-  push:
-    branches:
-      - master
   pull_request:
     branches:
       - master
 
+# This ensures that previous jobs for the PR are canceled when the PR is
+# updated.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+      
 jobs:
   build:
     strategy:
@@ -48,5 +51,5 @@ jobs:
       # Execute all functional tests in the solution
       - name: Execute Functional Tests
         run: |
-          dotnet build  Minio.Functional.Tests --configuration Release
+          dotnet build Minio.Functional.Tests --configuration Release
           dotnet Minio.Functional.Tests/bin/Release/net6.0/Minio.Functional.Tests.dll

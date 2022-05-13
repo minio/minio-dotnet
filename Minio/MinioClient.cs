@@ -818,7 +818,7 @@ public partial class MinioClient
 
     public void Dispose()
     {
-	HTTPClient?.Dispose();
+        HTTPClient?.Dispose();
     }
 }
 
