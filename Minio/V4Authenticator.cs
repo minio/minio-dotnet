@@ -403,10 +403,10 @@ internal class V4Authenticator
             switch (contentKind)
             {
                 case "application/x-www-form-urlencoded":
-                    {
-                        isFormData = true;
-                        cntntByteData = requestBuilder.Request.Content.ReadAsByteArrayAsync().Result;
-                    }
+                {
+                    isFormData = true;
+                    cntntByteData = requestBuilder.Request.Content.ReadAsByteArrayAsync().Result;
+                }
                     break;
             }
 
@@ -419,7 +419,7 @@ internal class V4Authenticator
         if (!string.IsNullOrEmpty(queryParams))
         {
             var queryParamsDict = new Dictionary<string, string>();
-            if (queryParams.EndsWith('=') && queryParams.Split(new Char[] { '=' }).Length == 2)
+            if (queryParams.EndsWith('=') && queryParams.Split(new[] { '=' }).Length == 2)
                 queryParamsDict.Add(queryParams.Trim('='), "");
             else if (queryParams.Split('=').Length == 2)
                 queryParamsDict.Add(queryParams.Split('=')[0], queryParams.Split('=')[1]);
