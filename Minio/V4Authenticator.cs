@@ -20,9 +20,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
-using Newtonsoft.Json;
-
 using Minio.Helper;
+using Newtonsoft.Json;
 
 namespace Minio;
 
@@ -388,13 +387,9 @@ internal class V4Authenticator
 
         var queryParamsDict = new Dictionary<string, string>();
         if (requestBuilder.QueryParameters != null)
-	{
-	    foreach (var kvp in requestBuilder.QueryParameters)
-	    {
-		queryParamsDict[kvp.Key] = Uri.EscapeDataString(kvp.Value);
-	    }
-	}
-	
+            foreach (var kvp in requestBuilder.QueryParameters)
+                queryParamsDict[kvp.Key] = Uri.EscapeDataString(kvp.Value);
+
         var queryParams = "";
         if (queryParamsDict.Count > 0)
         {
@@ -412,17 +407,17 @@ internal class V4Authenticator
         }
 
         var isFormData = false;
-        if (requestBuilder.Request.Content != null && requestBuilder.Request.Content.Headers != null && requestBuilder.Request.Content.Headers.ContentType != null)
-            isFormData = requestBuilder.Request.Content.Headers.ContentType.ToString() == "application/x-www-form-urlencoded";
+        if (requestBuilder.Request.Content != null && requestBuilder.Request.Content.Headers != null &&
+            requestBuilder.Request.Content.Headers.ContentType != null)
+            isFormData = requestBuilder.Request.Content.Headers.ContentType.ToString() ==
+                         "application/x-www-form-urlencoded";
 
         if (string.IsNullOrEmpty(queryParams) && isFormData)
         {
             // Convert stream content to byte[]
-	    var cntntByteData = new byte[] { };
-	    if (requestBuilder.Request.Content != null)
-	    {
-		cntntByteData = requestBuilder.Request.Content.ReadAsByteArrayAsync().Result;
-	    }
+            var cntntByteData = new byte[] { };
+            if (requestBuilder.Request.Content != null)
+                cntntByteData = requestBuilder.Request.Content.ReadAsByteArrayAsync().Result;
 
             // UTF conversion - String from bytes
             queryParams = Encoding.UTF8.GetString(cntntByteData, 0, cntntByteData.Length);
