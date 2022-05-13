@@ -3,8 +3,8 @@
     <LangVersion>latest</LangVersion>
     <AssemblyName>Minio</AssemblyName>
     <RootNamespace>Minio</RootNamespace>
-    <TargetFrameworks>netstandard2.1;net6.0;</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT'">netstandard2.1;net4.8;net6.0;</TargetFrameworks>
+    <TargetFramework Condition=" '$(OS)' == 'Windows_NT'">netstandard2.0</TargetFramework>
+    <TargetFramework Condition=" '$(OS)' != 'Windows_NT'">netstandard2.1</TargetFramework>
     <DebugType>embedded</DebugType>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <AssemblyOriginatorKeyFile>..\Minio.snk</AssemblyOriginatorKeyFile>

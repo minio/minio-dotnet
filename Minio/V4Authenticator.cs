@@ -385,49 +385,14 @@ internal class V4Authenticator
         // METHOD
         canonicalStringList.AddLast(requestBuilder.Method.ToString());
 
-        var queryParams = "";
+        var queryParamsDict = new Dictionary<string, string>();
         if (requestBuilder.QueryParameters != null)
-            queryParams = string.Join("&",
-                requestBuilder.QueryParameters.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
+            foreach (var kvp in requestBuilder.QueryParameters)
+                queryParamsDict[kvp.Key] = Uri.EscapeDataString(kvp.Value);
 
-        var isFormData = false;
-        var c = requestBuilder.Request.Content;
-
-        if (string.IsNullOrEmpty(queryParams) && c != null &&
-            c.Headers != null && c.Headers.ContentType != null &&
-            c.Headers.ContentType.ToString() == "application/x-www-form-urlencoded")
+        var queryParams = "";
+        if (queryParamsDict.Count > 0)
         {
-            // Convert stream content to byte[]
-            var cntntByteData = new byte[] { };
-            var contentKind = requestBuilder.Request.Content.Headers.ContentType.ToString();
-            switch (contentKind)
-            {
-                case "application/x-www-form-urlencoded":
-                {
-                    isFormData = true;
-                    cntntByteData = requestBuilder.Request.Content.ReadAsByteArrayAsync().Result;
-                }
-                    break;
-            }
-
-            // Convert byte[] to regular string
-            var cntntByteDataStr = new StringBuilder();
-            // UTF conversion - String from bytes
-            queryParams = Encoding.UTF8.GetString(cntntByteData, 0, cntntByteData.Length);
-        }
-
-        if (!string.IsNullOrEmpty(queryParams))
-        {
-            var queryParamsDict = new Dictionary<string, string>();
-            if (queryParams.EndsWith('=') && queryParams.Split('=').Length == 2)
-                queryParamsDict.Add(queryParams.Trim('='), "");
-            else if (queryParams.Split('=').Length == 2)
-                queryParamsDict.Add(queryParams.Split('=')[0], queryParams.Split('=')[1]);
-            else if (queryParams.Split('=').Length > 2)
-                queryParamsDict = queryParams.Split(new[] { '&' })
-                    .Select(part => part.Split('='))
-                    .ToDictionary(split => split[0], split => split[1]);
-
             var sb1 = new StringBuilder();
             var queryKeys = new List<string>(queryParamsDict.Keys);
             queryKeys.Sort(StringComparer.Ordinal);
@@ -439,6 +404,23 @@ internal class V4Authenticator
             }
 
             queryParams = sb1.ToString();
+        }
+
+        var isFormData = false;
+        if (requestBuilder.Request.Content != null && requestBuilder.Request.Content.Headers != null &&
+            requestBuilder.Request.Content.Headers.ContentType != null)
+            isFormData = requestBuilder.Request.Content.Headers.ContentType.ToString() ==
+                         "application/x-www-form-urlencoded";
+
+        if (string.IsNullOrEmpty(queryParams) && isFormData)
+        {
+            // Convert stream content to byte[]
+            var cntntByteData = new byte[] { };
+            if (requestBuilder.Request.Content != null)
+                cntntByteData = requestBuilder.Request.Content.ReadAsByteArrayAsync().Result;
+
+            // UTF conversion - String from bytes
+            queryParams = Encoding.UTF8.GetString(cntntByteData, 0, cntntByteData.Length);
         }
 
         if (!string.IsNullOrEmpty(queryParams) &&
