@@ -482,6 +482,14 @@ public partial class MinioClient
         CancellationToken cancellationToken = default,
         bool isSts = false)
     {
+        if (requestTimeout > 0)
+        {
+            var internalTokenSource = new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, requestTimeout));
+            var timeoutTokenSource =
+                CancellationTokenSource.CreateLinkedTokenSource(internalTokenSource.Token, cancellationToken);
+            cancellationToken = timeoutTokenSource.Token;
+        }
+
         return ExecuteWithRetry(
             () => ExecuteTaskCoreAsync(errorHandlers, requestMessageBuilder,
                 cancellationToken, isSts));
@@ -512,8 +520,6 @@ public partial class MinioClient
         ResponseResult responseResult;
         try
         {
-            if (requestTimeout > 0) HTTPClient.Timeout = new TimeSpan(0, 0, 0, 0, requestTimeout);
-
             var response = await HTTPClient.SendAsync(request,
                     HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
