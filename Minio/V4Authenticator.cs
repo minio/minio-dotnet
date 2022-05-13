@@ -419,7 +419,7 @@ internal class V4Authenticator
         if (!string.IsNullOrEmpty(queryParams))
         {
             var queryParamsDict = new Dictionary<string, string>();
-            if (queryParams.EndsWith('=') && queryParams.Split("=".ToCharArray()).Length == 2)
+            if (queryParams.EndsWith('=') && queryParams.Split(new char[] { '=' }).Length == 2)
                 queryParamsDict.Add(queryParams.Trim('='), "");
             else if (queryParams.Split('=').Length == 2)
                 queryParamsDict.Add(queryParams.Split('=')[0], queryParams.Split('=')[1]);
