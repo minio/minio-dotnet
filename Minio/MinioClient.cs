@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -156,7 +157,9 @@ public partial class MinioClient
     {
         get
         {
-            var release = "minio-dotnet/1.0.9";
+            var assembly = Assembly.GetExecutingAssembly();
+            var version = assembly.GetName().Version;
+            var release = $"minio-dotnet/{version}";
 #if NET46
 		string arch = Environment.Is64BitOperatingSystem ? "x86_64" : "x86";
 		return $"MinIO ({Environment.OSVersion};{arch}) {release}";
@@ -173,7 +176,7 @@ public partial class MinioClient
     private string FullUserAgent => $"{SystemUserAgent} {CustomUserAgent}";
 
     /// <summary>
-    ///     Resolve region bucket resides in.
+    ///     Resolve region of the bucket.
     /// </summary>
     /// <param name="bucketName"></param>
     /// <returns></returns>

@@ -97,6 +97,8 @@ public partial class MinioClient : IMinioClient
             Endpoint = string.Format("{0}://{1}", scheme, host);
         else
             Endpoint = host;
+
+        HTTPClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", FullUserAgent);
         return this;
     }
 
