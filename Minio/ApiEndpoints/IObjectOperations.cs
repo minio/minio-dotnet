@@ -389,6 +389,17 @@ public interface IObjectOperations
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    ///     Tests the object's existence and returns metadata about existing objects.
+    /// </summary>
+    /// <param name="args">
+    ///     StatObjectArgs Arguments Object encapsulates information like - bucket name, object name,
+    ///     server-side encryption object
+    /// </param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns>Facts about the object</returns>
+    Task<ObjectStat> StatObjectAsync(StatObjectArgs args, CancellationToken cancellationToken = default);
+
+    /// <summary>
     ///     Lists all incomplete uploads in a given bucket and prefix recursively
     /// </summary>
     /// <param name="bucketName">Bucket to list all incomplete uploads from</param>
