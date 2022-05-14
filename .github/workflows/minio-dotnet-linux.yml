@@ -44,6 +44,11 @@ jobs:
           dotnet pack ./Minio/Minio.csproj --no-build --configuration Release --output ./artifacts
           dotnet test ./Minio.Tests/Minio.Tests.csproj
 
+      # Build for all runtime identifiers
+      - name: Build for runtime identifiers
+        run: |
+          ./dotnet-build.sh
+          
       # Execute all functional tests in the solution
       - name: Execute Functional Tests
         env:
