@@ -3,8 +3,7 @@
     <LangVersion>latest</LangVersion>
     <AssemblyName>Minio</AssemblyName>
     <RootNamespace>Minio</RootNamespace>
-    <TargetFramework Condition=" '$(RuntimeIdentifier)' == 'win-x64' Or '$(RuntimeIdentifier)' == 'win-arm64'">netstandard2.0</TargetFramework>
-    <TargetFramework Condition=" '$(RuntimeIdentifier)' != 'win-x64' And '$(RuntimeIdentifier)' != 'win-arm64'">netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <DebugType>embedded</DebugType>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <AssemblyOriginatorKeyFile>..\Minio.snk</AssemblyOriginatorKeyFile>
@@ -29,7 +28,6 @@
     <PackageTags>minio;cloud;storage</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/minio/minio-dotnet</RepositoryUrl>
-    <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-arm64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>
