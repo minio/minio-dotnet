@@ -52,10 +52,8 @@ internal class Program
         MinioClient minioClient = null;
 
         var clientHandler = new HttpClientHandler();
-        clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) =>
-        {
-            return true;
-        };
+        clientHandler.ServerCertificateCustomValidationCallback =
+            (sender, cert, chain, sslPolicyErrors) => { return true; };
         clientHandler.UseProxy = false;
         var httpClient = new HttpClient(clientHandler);
 
