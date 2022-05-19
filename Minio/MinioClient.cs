@@ -87,13 +87,18 @@ public partial class MinioClient
         Region = "";
         SessionToken = "";
         Provider = null;
-        HTTPClient = new HttpClient();
+        var clientHandler = new HttpClientHandler();
+        clientHandler.ServerCertificateCustomValidationCallback =
+            (sender, cert, chain, sslPolicyErrors) => { return true; };
+        clientHandler.UseProxy = false;
+        HTTPClient = new HttpClient(clientHandler);
     }
 
     /// <summary>
     ///     Creates and returns an MinIO Client with custom HTTP Client
     /// </summary>
     /// <returns>Client with no arguments to be used with other builder methods</returns>
+    [Obsolete("Use MinioClient() and Builder method .WithHttpClient(httpClient)")]
     public MinioClient(HttpClient httpClient)
     {
         Region = "";
@@ -532,6 +537,7 @@ public partial class MinioClient
             if (requestMessageBuilder.FunctionResponseWriter != null)
                 requestMessageBuilder.ProcessFunctionResponseWriter(requestMessageBuilder.FunctionResponseWriter,
                     responseResult.ContentStream);
+
         }
         catch (OperationCanceledException)
         {

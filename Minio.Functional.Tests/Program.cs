@@ -68,7 +68,7 @@ internal class Program
                 .WithHttpClient(httpClient)
                 .Build();
         else
-            minioClient = new MinioClient()
+            minioClient = new MinioClient(httpClient)
                 .WithCredentials(accessKey, secretKey)
                 .WithEndpoint(endPoint)
                 .Build();

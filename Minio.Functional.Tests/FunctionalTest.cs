@@ -424,7 +424,7 @@ public class FunctionalTest
             bucketList = list.Buckets;
             bucketList = bucketList.Where(x => x.Name.StartsWith(bucketName)).ToList();
             Assert.AreEqual(noOfBuckets, bucketList.Count());
-            bucketList.Sort(delegate(Bucket x, Bucket y)
+            bucketList.Sort(delegate (Bucket x, Bucket y)
             {
                 if (x.Name == y.Name) return 0;
                 if (x.Name == null) return -1;
