@@ -44,7 +44,7 @@ public abstract class BucketArgs<T> : Args
         {
             if (Headers.ContainsKey(key))
                 Headers.Remove(key);
-            Headers[key] = headers[key];
+            Headers[key] = headers[key].Replace('"', '\"');
         }
 
         return (T)this;

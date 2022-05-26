@@ -4904,7 +4904,7 @@ public class FunctionalTest
             { "expiresInt", expiresInt.ToString() },
             {
                 "reqParams",
-                "response-content-type:application/json,response-content-disposition:attachment;filename=MyDocument.json;"
+                "response-content-type:application/json,response-content-disposition:attachment;filename=  MyDoc u m  e   nt.json ;"
             },
             { "reqDate", reqDate.ToString() }
         };
@@ -4929,7 +4929,7 @@ public class FunctionalTest
             var reqParams = new Dictionary<string, string>
             {
                 ["response-content-type"] = "application/json",
-                ["response-content-disposition"] = "attachment;filename=MyDocument.json;"
+                ["response-content-disposition"] = "attachment;filename=  MyDoc u m  e   nt.json ;"
             };
             var preArgs = new PresignedGetObjectArgs()
                 .WithBucket(bucketName)
