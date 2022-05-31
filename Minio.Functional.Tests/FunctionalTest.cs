@@ -459,9 +459,10 @@ public class FunctionalTest
 
     internal static async Task Setup_Test(MinioClient minio, string bucketName)
     {
-        var mbArgs = new MakeBucketArgs()
-            .WithBucket(bucketName);
         var beArgs = new BucketExistsArgs()
+            .WithBucket(bucketName);
+        if (await minio.BucketExistsAsync(beArgs)) return;
+        var mbArgs = new MakeBucketArgs()
             .WithBucket(bucketName);
         await minio.MakeBucketAsync(mbArgs);
         var found = await minio.BucketExistsAsync(beArgs);
@@ -4273,69 +4274,111 @@ public class FunctionalTest
         }
     }
 
-    internal static async Task GetObject_Test3(MinioClient minio)
+    internal static async Task GetObject_3_OffsetLength_Tests(MinioClient minio)
+        // 3 tests will run to check different values of offset and length parameters
+        // when GetObject api returns part of the object as defined by the offset
+        // and length parameters. Tests will be reported as GetObject_Test3,
+        // GetObject_Test4 and GetObject_Test5.
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         string contentType = null;
         var tempFileName = "tempFileName";
-        var args = new Dictionary<string, string>
+        var offsetLengthTests = new Dictionary<string, List<int>>
         {
-            { "bucketName", bucketName },
-            { "objectName", objectName },
-            { "contentType", contentType },
-            { "size", "1024L" },
-            { "length", "10L" }
+            // list is {offset, length} values
+            { "GetObject_Test3", new List<int> { 14, 20 } },
+            { "GetObject_Test4", new List<int> { 30, 0 } },
+            { "GetObject_Test5", new List<int> { 0, 25 } }
         };
-        try
+        foreach (var test in offsetLengthTests)
         {
-            await Setup_Test(minio, bucketName);
-            using (var filestream = rsg.GenerateStreamFromSeed(10 * KB))
+            var testName = test.Key;
+            var offsetToStartFrom = test.Value[0];
+            var lengthToBeRead = test.Value[1];
+            var args = new Dictionary<string, string>
             {
-                var file_write_size = 10L;
-                long file_read_size = 0;
-                var putObjectArgs = new PutObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(objectName)
-                    .WithStreamData(filestream)
-                    .WithObjectSize(filestream.Length)
-                    .WithContentType(contentType);
-                await minio.PutObjectAsync(putObjectArgs);
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
+                { "offset", offsetToStartFrom.ToString() },
+                { "length", lengthToBeRead.ToString() }
+            };
+            try
+            {
+                await Setup_Test(minio, bucketName);
 
-                var getObjectArgs = new GetObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(objectName)
-                    .WithOffsetAndLength(1024L, file_write_size)
-                    .WithCallbackStream(stream =>
+                // Create a file with distintc byte characters to test partial
+                // get object.
+                var tempSource = "tempSourceFile";
+                var line = new[] { "abcdefghijklmnopqrstuvwxyz0123456789" };
+                //   abcdefghijklmnopqrstuvwxyz0123456789
+                //   012345678911234567892123456789312345
+                //   ^1stChr, ^10thChr, ^20thChr, ^30th ^35thChr => characters' sequence
+                // Example: offset 10 and length 4, the expected size and content
+                // getObjectAsync will return are 4 and "klmn" respectively.
+                await File.WriteAllLinesAsync(tempSource, line);
+
+                using (var filestream = File.OpenRead(tempSource))
+                {
+                    var objectSize = (int)filestream.Length;
+                    var expectedFileSize = lengthToBeRead;
+                    var expectedContent = string.Join("", line).Substring(offsetToStartFrom, expectedFileSize);
+                    if (lengthToBeRead == 0)
                     {
-                        var fileStream = File.Create(tempFileName);
-                        stream.CopyTo(fileStream);
-                        fileStream.Dispose();
-                        var writtenInfo = new FileInfo(tempFileName);
-                        file_read_size = writtenInfo.Length;
+                        expectedFileSize = objectSize - offsetToStartFrom;
+                        expectedContent = string.Join("", line).Substring(offsetToStartFrom, expectedFileSize - 1);
+                    }
 
-                        Assert.AreEqual(file_write_size, file_read_size);
-                        File.Delete(tempFileName);
-                    });
+                    long actualFileSize;
+                    var putObjectArgs = new PutObjectArgs()
+                        .WithBucket(bucketName)
+                        .WithObject(objectName)
+                        .WithStreamData(filestream)
+                        .WithObjectSize(objectSize)
+                        .WithContentType(contentType);
+                    await minio.PutObjectAsync(putObjectArgs);
 
-                await minio.GetObjectAsync(getObjectArgs);
+                    var getObjectArgs = new GetObjectArgs()
+                        .WithBucket(bucketName)
+                        .WithObject(objectName)
+                        .WithOffsetAndLength(offsetToStartFrom, lengthToBeRead)
+                        .WithCallbackStream(stream =>
+                        {
+                            var fileStream = File.Create(tempFileName);
+                            stream.CopyTo(fileStream);
+                            fileStream.Dispose();
+                            var writtenInfo = new FileInfo(tempFileName);
+                            actualFileSize = writtenInfo.Length;
+
+                            Assert.AreEqual(expectedFileSize, actualFileSize);
+
+                            // Checking the content
+                            var actualContent = File.ReadAllText(tempFileName).Replace("\n", "").Replace("\r", "");
+                            Assert.AreEqual(actualContent, expectedContent);
+                            File.Delete(tempFileName);
+                            File.Delete(tempSource);
+                        });
+
+                    await minio.GetObjectAsync(getObjectArgs);
+                }
+
+                new MintLogger(testName, getObjectSignature, "Tests whether GetObject returns all the data",
+                    TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
             }
-
-            new MintLogger("GetObject_Test3", getObjectSignature, "Tests whether GetObject returns all the data",
-                TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
-        }
-        catch (Exception ex)
-        {
-            new MintLogger("GetObject_Test3", getObjectSignature, "Tests whether GetObject returns all the data",
-                TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
-            throw;
-        }
-        finally
-        {
-            if (File.Exists(tempFileName))
-                File.Delete(tempFileName);
-            await TearDown(minio, bucketName);
+            catch (Exception ex)
+            {
+                new MintLogger(testName, getObjectSignature, "Tests whether GetObject returns all the data",
+                    TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
+                throw;
+            }
+            finally
+            {
+                if (File.Exists(tempFileName))
+                    File.Delete(tempFileName);
+                await TearDown(minio, bucketName);
+            }
         }
     }
 

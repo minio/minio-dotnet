@@ -95,7 +95,7 @@ public partial class MinioClient : IObjectOperations
 
 
     /// <summary>
-    ///     private helper method to remove list of objects from bucket
+    ///     private helper method. It returns the specified portion or full object from the bucket
     /// </summary>
     /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name etc </param>
     /// <param name="objectStat">
