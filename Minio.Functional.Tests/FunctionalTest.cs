@@ -4284,7 +4284,7 @@ public class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         string contentType = null;
-        var tempFileName = "tempFileName";
+        var tempFileName = "tempFile-" + GetRandomName(5);
         var offsetLengthTests = new Dictionary<string, List<int>>
         {
             // list is {offset, length} values
@@ -4311,7 +4311,7 @@ public class FunctionalTest
 
                 // Create a file with distintc byte characters to test partial
                 // get object.
-                var tempSource = "tempSourceFile";
+                var tempSource = "tempSourceFile-" + GetRandomName(5);
                 var line = new[] { "abcdefghijklmnopqrstuvwxyz0123456789" };
                 //   abcdefghijklmnopqrstuvwxyz0123456789
                 //   012345678911234567892123456789312345
