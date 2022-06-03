@@ -32,6 +32,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
+using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
 using Minio.DataModel.ILM;
@@ -4285,6 +4286,7 @@ public class FunctionalTest
         var objectName = GetRandomObjectName(10);
         string contentType = null;
         var tempFileName = "tempFile-" + GetRandomName(5);
+        var tempSource = "tempSourceFile-" + GetRandomName(5);
         var offsetLengthTests = new Dictionary<string, List<int>>
         {
             // list is {offset, length} values
@@ -4311,7 +4313,6 @@ public class FunctionalTest
 
                 // Create a file with distintc byte characters to test partial
                 // get object.
-                var tempSource = "tempSourceFile-" + GetRandomName(5);
                 var line = new[] { "abcdefghijklmnopqrstuvwxyz0123456789" };
                 //   abcdefghijklmnopqrstuvwxyz0123456789
                 //   012345678911234567892123456789312345
@@ -4320,7 +4321,7 @@ public class FunctionalTest
                 // getObjectAsync will return are 4 and "klmn" respectively.
                 await File.WriteAllLinesAsync(tempSource, line);
 
-                using (var filestream = File.OpenRead(tempSource))
+                using (var filestream = File.Open(tempSource, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     var objectSize = (int)filestream.Length;
                     var expectedFileSize = lengthToBeRead;
@@ -4328,7 +4329,10 @@ public class FunctionalTest
                     if (lengthToBeRead == 0)
                     {
                         expectedFileSize = objectSize - offsetToStartFrom;
-                        expectedContent = string.Join("", line).Substring(offsetToStartFrom, expectedFileSize - 1);
+                        var noOfCtrlChars = 1;
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) noOfCtrlChars = 2;
+
+                        expectedContent = string.Join("", line).Substring(offsetToStartFrom, expectedFileSize - noOfCtrlChars);
                     }
 
                     long actualFileSize;
@@ -4357,8 +4361,6 @@ public class FunctionalTest
                             // Checking the content
                             var actualContent = File.ReadAllText(tempFileName).Replace("\n", "").Replace("\r", "");
                             Assert.AreEqual(actualContent, expectedContent);
-                            File.Delete(tempFileName);
-                            File.Delete(tempSource);
                         });
 
                     await minio.GetObjectAsync(getObjectArgs);
@@ -4375,8 +4377,8 @@ public class FunctionalTest
             }
             finally
             {
-                if (File.Exists(tempFileName))
-                    File.Delete(tempFileName);
+                if (File.Exists(tempFileName)) File.Delete(tempFileName);
+                if (File.Exists(tempSource)) File.Delete(tempSource);
                 await TearDown(minio, bucketName);
             }
         }
