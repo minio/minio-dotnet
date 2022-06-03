@@ -248,8 +248,8 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
                 throw new ArgumentException(nameof(ObjectOffset) + " and " + nameof(ObjectLength) +
                                             "cannot be less than 0.");
             if (ObjectOffset == 0 && ObjectLength == 0)
-                throw new ArgumentException("One of " + nameof(ObjectOffset) + " or " + nameof(ObjectLength) +
-                                            "must be greater than 0.");
+                throw new ArgumentException("Either " + nameof(ObjectOffset) + " or " + nameof(ObjectLength) +
+                                            " must be greater than 0.");
         }
 
         Populate();
@@ -259,7 +259,15 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
     {
         Headers = new Dictionary<string, string>();
         if (SSE != null && SSE.GetType().Equals(EncryptionType.SSE_C)) SSE.Marshal(Headers);
-        if (OffsetLengthSet) Headers["Range"] = "bytes=" + ObjectOffset + "-" + (ObjectOffset + ObjectLength - 1);
+        if (OffsetLengthSet)
+        {
+            // "Range" header accepts byte start index and end index
+            if (ObjectLength > 0 && ObjectOffset > 0)
+                Headers["Range"] = "bytes=" + ObjectOffset + "-" + (ObjectOffset + ObjectLength - 1);
+            else if (ObjectLength == 0 && ObjectOffset > 0)
+                Headers["Range"] = "bytes=" + ObjectOffset + "-";
+            else if (ObjectLength > 0 && ObjectOffset == 0) Headers["Range"] = "bytes=0-" + (ObjectLength - 1);
+        }
     }
 
     public StatObjectArgs WithOffsetAndLength(long offset, long length)
@@ -525,11 +533,15 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
         Headers = new Dictionary<string, string>();
         if (SSE != null && SSE.GetType().Equals(EncryptionType.SSE_C)) SSE.Marshal(Headers);
 
-        if (ObjectLength > 0 && ObjectOffset > 0)
-            Headers["Range"] = "bytes=" + ObjectOffset + "-" + (ObjectOffset + ObjectLength - 1);
-        else if (ObjectLength == 0 && ObjectOffset > 0)
-            Headers["Range"] = "bytes=" + ObjectOffset + "-";
-        else if (ObjectLength > 0 && ObjectOffset == 0) Headers["Range"] = "bytes=-" + (ObjectLength - 1);
+        if (OffsetLengthSet)
+        {
+            // "Range" header accepts byte start index and end index
+            if (ObjectLength > 0 && ObjectOffset > 0)
+                Headers["Range"] = "bytes=" + ObjectOffset + "-" + (ObjectOffset + ObjectLength - 1);
+            else if (ObjectLength == 0 && ObjectOffset > 0)
+                Headers["Range"] = "bytes=" + ObjectOffset + "-";
+            else if (ObjectLength > 0 && ObjectOffset == 0) Headers["Range"] = "bytes=0-" + (ObjectLength - 1);
+        }
     }
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)

@@ -134,7 +134,11 @@ internal class Program
         // Test GetObjectAsync function
         FunctionalTest.GetObject_Test1(minioClient).Wait();
         FunctionalTest.GetObject_Test2(minioClient).Wait();
-        FunctionalTest.GetObject_Test3(minioClient).Wait();
+        // 3 tests will run to check different values of offset and length parameters
+        // when GetObject api returns part of the object as defined by the offset
+        // and length parameters. Tests will be reported as GetObject_Test3,
+        // GetObject_Test4 and GetObject_Test5.
+        FunctionalTest.GetObject_3_OffsetLength_Tests(minioClient).Wait();
 
         // Test File GetObject and PutObject functions
         FunctionalTest.FGetObject_Test1(minioClient).Wait();
