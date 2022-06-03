@@ -347,7 +347,7 @@ internal class V4Authenticator
         canonicalStringList.AddLast(path);
         var queryParams = uri.Query.TrimStart('?').Split('&').ToList();
         queryParams.AddRange(headersToSign.Select(cv =>
-            $"{utils.UrlEncode(cv.Key)}={utils.UrlEncode(s3utils.TrimAll(cv.Value))}"));
+            $"{utils.UrlEncode(cv.Key)}={utils.UrlEncode(cv.Value.Trim())}"));
         queryParams.Sort(StringComparer.Ordinal);
         var query = string.Join("&", queryParams);
         canonicalStringList.AddLast(query);
