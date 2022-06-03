@@ -25,6 +25,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -32,7 +33,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
-using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
 using Minio.DataModel.ILM;
@@ -4285,8 +4285,8 @@ public class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         string contentType = null;
-        var tempFileName = "tempFile-" + GetRandomName(5);
-        var tempSource = "tempSourceFile-" + GetRandomName(5);
+        var tempFileName = "tempFile-" + GetRandomName();
+        var tempSource = "tempSourceFile-" + GetRandomName();
         var offsetLengthTests = new Dictionary<string, List<int>>
         {
             // list is {offset, length} values
@@ -4332,7 +4332,8 @@ public class FunctionalTest
                         var noOfCtrlChars = 1;
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) noOfCtrlChars = 2;
 
-                        expectedContent = string.Join("", line).Substring(offsetToStartFrom, expectedFileSize - noOfCtrlChars);
+                        expectedContent = string.Join("", line)
+                            .Substring(offsetToStartFrom, expectedFileSize - noOfCtrlChars);
                     }
 
                     long actualFileSize;
