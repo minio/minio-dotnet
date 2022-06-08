@@ -66,9 +66,10 @@ internal class Program
                 .WithHttpClient(httpClient)
                 .Build();
         else
-            minioClient = new MinioClient(httpClient)
+            minioClient = new MinioClient()
                 .WithCredentials(accessKey, secretKey)
                 .WithEndpoint(endPoint)
+                .WithHttpClient(httpClient)
                 .Build();
 
         // Assign parameters before starting the test
