@@ -124,13 +124,13 @@ namespace FileUploader
 * Run the Minio.Client.Examples project from Visual Studio
 #### On Linux
 
-##### Setting .NET SDK on Linux (Ubuntu 21.10)
-<blockquote> NOTE: minio-dotnet requires .NET 5.x SDK to build on Linux. </blockquote>
+##### Setting .NET SDK on Linux (Ubuntu 22.04)
+<blockquote> NOTE: minio-dotnet requires .NET 6.x SDK to build on Linux. </blockquote>
 
-* Install [.Net SDK](https://docs.microsoft.com/en-us/dotnet/core/install/linux?WT.mc_id=dotnet-35129-website)
+* Install [.Net SDK](https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu#2204)
 
 ```
-wget https://packages.microsoft.com/config/ubuntu/21.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
 sudo dpkg -i packages-microsoft-prod.deb
 rm packages-microsoft-prod.deb
 ```
@@ -139,7 +139,7 @@ rm packages-microsoft-prod.deb
 sudo apt-get update; \
   sudo apt-get install -y apt-transport-https && \
   sudo apt-get update && \
-  sudo apt-get install -y dotnet-sdk-5.0
+  sudo apt-get install -y dotnet-sdk-6.0
 ```
 
 ##### Running Minio.Examples
