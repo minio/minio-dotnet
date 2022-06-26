@@ -1777,9 +1777,6 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
             throw new ArgumentException("Only one of " + nameof(FileName) + " or " + nameof(ObjectStreamData) +
                                         " should be set.");
         if (!string.IsNullOrWhiteSpace(FileName)) utils.ValidateFile(FileName);
-        // Check object size when using stream data
-        if (ObjectStreamData != null && ObjectSize < 0)
-            throw new ArgumentException($"{nameof(ObjectSize)} cannot be less than 0.");
         Populate();
     }
 
