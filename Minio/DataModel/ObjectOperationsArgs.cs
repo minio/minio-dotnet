@@ -1891,8 +1891,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
 
     ~PutObjectArgs()
     {
-        if (!string.IsNullOrWhiteSpace(FileName))
-            if (ObjectStreamData != null)
-                ObjectStreamData.Close();
+        if (!string.IsNullOrWhiteSpace(FileName) && ObjectStreamData != null)
+            ObjectStreamData.Close();
     }
 }
