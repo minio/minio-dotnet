@@ -1198,15 +1198,15 @@ public partial class MinioClient : IObjectOperations
             var dataToCopy = await ReadFullAsync(args.ObjectStreamData, (int)partSize).ConfigureAwait(false);
             if (dataToCopy == null && numPartsUploaded > 0) break;
             if (partNumber == partCount) expectedReadSize = lastPartSize;
-            numPartsUploaded += 1;
             var putObjectArgs = new PutObjectArgs(args)
                 .WithRequestBody(dataToCopy)
                 .WithUploadId(args.UploadId)
                 .WithPartNumber(partNumber);
             var etag = await PutObjectSinglePartAsync(putObjectArgs, cancellationToken).ConfigureAwait(false);
+            numPartsUploaded += 1;
             totalParts[partNumber - 1] = new Part
                 { PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize };
-            etags[partNumber] = totalParts[partNumber - 1].ETag;
+            etags[partNumber] = etag;
         }
 
         // This shouldn't happen where stream size is known.
