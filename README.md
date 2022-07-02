@@ -2,25 +2,21 @@
 
 MinIO Client SDK provides higher level APIs for MinIO and Amazon S3 compatible cloud storage services.For a complete list of APIs and examples, please take a look at the [Dotnet Client API Reference](https://docs.min.io/docs/dotnet-client-api-reference).This document assumes that you have a working VisualStudio development environment.
 
-## Minimum Requirements
- * .NET 5.0
- * Visual Studio 2017
-
 ## Install from NuGet
-
 To install [MinIO .NET package](https://www.nuget.org/packages/Minio/), run the following command in Nuget Package Manager Console.
+
 ```powershell
 PM> Install-Package Minio
 ```
 ## MinIO Client Example
 To connect to an Amazon S3 compatible cloud storage service, you will need to specify the following parameters.
 
-| Parameter  | Description|
-| :---         |     :---     |
-| endpoint   | URL to object storage service.   |
+| Parameter | Description                                                      |
+|:----------|:-----------------------------------------------------------------|
+| endpoint  | URL to object storage service.                                   |
 | accessKey | Access key is the user ID that uniquely identifies your account. |
-| secretKey | Secret key is the password to your account. |
-| secure | Enable/Disable HTTPS support. |
+| secretKey | Secret key is the password to your account.                      |
+| secure    | Enable/Disable HTTPS support.                                    |
 
 The following examples uses a freely hosted public MinIO service 'play.min.io' for development purposes.
 
@@ -122,6 +118,7 @@ namespace FileUploader
   //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
 ```
 * Run the Minio.Client.Examples project from Visual Studio
+
 #### On Linux
 
 ##### Setting .NET SDK on Linux (Ubuntu 22.04)
@@ -176,9 +173,9 @@ dotnet test ./Minio.Tests/Minio.Tests.csproj
 * [SetPolicy.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/SetBucketPolicy.cs)
 
 #### Bucket notification Operations
-* [GetBucketNotification.cs](./Minio.Examples/Cases/GetBucketNotification.cs)
-* [SetBucketNotification.cs](./Minio.Examples/Cases/SetBucketNotification.cs)
-* [RemoveAllBucketNotifications.cs](./Minio.Examples/Cases/RemoveAllBucketNotifications.cs)
+* [GetBucketNotification.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/GetBucketNotification.cs)
+* [SetBucketNotification.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/SetBucketNotification.cs)
+* [RemoveAllBucketNotifications.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/RemoveAllBucketNotifications.cs)
 
 #### File Object Operations
 * [FGetObject.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/FGetObject.cs)
