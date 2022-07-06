@@ -172,6 +172,24 @@ public partial class MinioClient
     }
 
     /// <summary>
+    ///     Runs httpClient's GetAsync method
+    /// </summary>
+    public async Task<HttpResponseMessage> httpClientGetAsyncWrapper(string url)
+    {
+        var response = await HTTPClient.GetAsync(url).ConfigureAwait(false);
+        return response;
+    }
+
+    /// <summary>
+    ///     Runs httpClient's PutObjectAsync method
+    /// </summary>
+    public async Task httpClientPutAsyncWrapper(string url, StreamContent strm)
+    {
+        await HTTPClient.PutAsync(url, strm).ConfigureAwait(false);
+        return;
+    }
+
+    /// <summary>
     ///     Returns the User-Agent header for the request
     /// </summary>
     private string FullUserAgent => $"{SystemUserAgent} {CustomUserAgent}";
