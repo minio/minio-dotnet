@@ -529,6 +529,9 @@ public partial class MinioClient
             responseResult = new ResponseResult(request, response);
             if (requestMessageBuilder.ResponseWriter != null)
                 requestMessageBuilder.ResponseWriter(responseResult.ContentStream);
+            if (requestMessageBuilder.FunctionResponseWriter != null)
+                requestMessageBuilder.ProcessFunctionResponseWriter(requestMessageBuilder.FunctionResponseWriter,
+                    responseResult.ContentStream);
         }
         catch (OperationCanceledException)
         {

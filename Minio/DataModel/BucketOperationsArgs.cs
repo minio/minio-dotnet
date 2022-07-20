@@ -395,7 +395,7 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
         requestMessageBuilder.AddQueryParameter("prefix", Prefix);
         requestMessageBuilder.AddQueryParameter("suffix", Suffix);
 
-        requestMessageBuilder.ResponseWriter = async responseStream =>
+        requestMessageBuilder.FunctionResponseWriter = async responseStream =>
         {
             using (responseStream)
             {
@@ -404,6 +404,8 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
                     try
                     {
                         var line = await sr.ReadLineAsync();
+                        if (string.IsNullOrEmpty(line)) break;
+
                         if (EnableTrace)
                         {
                             Console.WriteLine("== ListenBucketNotificationsAsync read line ==");
