@@ -21,6 +21,7 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using Minio.Exceptions;
 
@@ -56,8 +57,13 @@ internal class HttpRequestMessageBuilder
 
     public Uri RequestUri { get; set; }
     public Action<Stream> ResponseWriter { get; set; }
+    public Func<Stream, Task> FunctionResponseWriter { get; set; }
     public HttpMethod Method { get; }
 
+    public void ProcessFunctionResponseWriter(Func<Stream, Task> func, Stream stream)
+    {
+        func(stream).Wait();
+    }
     public HttpRequestMessage Request
     {
         get
