@@ -530,7 +530,8 @@ public partial class MinioClient
             if (requestMessageBuilder.ResponseWriter != null)
                 requestMessageBuilder.ResponseWriter(responseResult.ContentStream);
             if (requestMessageBuilder.FunctionResponseWriter != null)
-                requestMessageBuilder.ProcessFunctionResponseWriter(requestMessageBuilder.FunctionResponseWriter, responseResult.ContentStream);
+                requestMessageBuilder.ProcessFunctionResponseWriter(requestMessageBuilder.FunctionResponseWriter,
+                    responseResult.ContentStream);
         }
         catch (OperationCanceledException)
         {

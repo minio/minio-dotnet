@@ -60,10 +60,6 @@ internal class HttpRequestMessageBuilder
     public Func<Stream, Task> FunctionResponseWriter { get; set; }
     public HttpMethod Method { get; }
 
-    public void ProcessFunctionResponseWriter(Func<Stream, Task> func, Stream stream)
-    {
-        func(stream).Wait();
-    }
     public HttpRequestMessage Request
     {
         get
@@ -147,6 +143,11 @@ internal class HttpRequestMessageBuilder
     public byte[] Content { get; private set; }
 
     public string ContentTypeKey => "Content-Type";
+
+    public void ProcessFunctionResponseWriter(Func<Stream, Task> func, Stream stream)
+    {
+        func(stream).Wait();
+    }
 
     public void AddHeaderParameter(string key, string value)
     {
