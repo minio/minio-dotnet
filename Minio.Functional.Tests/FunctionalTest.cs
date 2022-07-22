@@ -1187,7 +1187,7 @@ public class FunctionalTest
         }
     }
 
-    internal static async Task DownloadObjectAsync(MinioClient minio, string url, string filePath)
+    internal static async Task DownloadObjectAsync(string url, string filePath)
     {
         var response = await minio.WrapperGetAsync(url).ConfigureAwait(false);
         if (string.IsNullOrEmpty(Convert.ToString(response.Content)) || !HttpStatusCode.OK.Equals(response.StatusCode))
@@ -1199,8 +1199,15 @@ public class FunctionalTest
         }
     }
 
-    internal static async Task UploadObjectAsync(MinioClient minio, string url, string filePath)
+    internal static async Task UploadObjectAsync(string url, string filePath)
     {
+        var clientHandler = new HttpClientHandler();
+        clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) =>
+        {
+            return true;
+        };
+        var client = new HttpClient(clientHandler);
+
         using (var strm = new StreamContent(new FileStream(filePath, FileMode.Open, FileAccess.Read)))
         {
             await minio.WrapperPutAsync(url, strm).ConfigureAwait(false);
@@ -4833,7 +4840,7 @@ public class FunctionalTest
                 .WithExpiry(expiresInt);
             var presigned_url = await minio.PresignedGetObjectAsync(preArgs).ConfigureAwait(false);
 
-            await DownloadObjectAsync(minio, presigned_url, downloadFile).ConfigureAwait(false);
+            await DownloadObjectAsync(presigned_url, downloadFile).ConfigureAwait(false);
             var writtenInfo = new FileInfo(downloadFile);
             var file_read_size = writtenInfo.Length;
             // Compare the size of the file downloaded using the generated
@@ -5038,7 +5045,7 @@ public class FunctionalTest
                 .WithObject(objectName)
                 .WithExpiry(1000);
             var presigned_url = await minio.PresignedPutObjectAsync(presignedPutObjectArgs).ConfigureAwait(false);
-            await UploadObjectAsync(minio, presigned_url, fileName).ConfigureAwait(false);
+            await UploadObjectAsync(presigned_url, fileName).ConfigureAwait(false);
             // Get stats for object from server
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket(bucketName)
