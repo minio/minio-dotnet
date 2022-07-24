@@ -137,16 +137,14 @@ MinioClient minioClient = new MinioClient()
 ### AWS S3
 
 ```cs
-// 1. public MinioClient(String endpoint, String accessKey, String secretKey)
-MinioClient s3Client = new MinioClient("s3.amazonaws.com",
-									   accessKey:"YOUR-ACCESSKEYID",
-									   secretKey:"YOUR-SECRETACCESSKEY");
-// 2. Using Builder with public MinioClient(), Endpoint, Credentials & Secure connection
-MinioClient minioClient = new MinioClient()
-									.WithEndpoint("s3.amazonaws.com")
-									.WithCredentials("YOUR-ACCESSKEYID", "YOUR-SECRETACCESSKEY")
-									.WithSSL()
-									.Build()
+// 1. Using Builder with public MinioClient(), Endpoint, Credentials, Secure connection & proxy
+MinioClient s3Client = new MinioClient()
+									 .WithEndpoint("s3.amazonaws.com")
+									 .WithCredentials("YOUR-AWS-ACCESSKEYID", "YOUR-AWS-SECRETACCESSKEY")
+									 .WithSSL()
+									 .WithProxy(proxy)
+									 .Build();
+
 ```
 
 ## 2. Bucket operations

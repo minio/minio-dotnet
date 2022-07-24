@@ -94,6 +94,7 @@ public partial class MinioClient
     ///     Creates and returns an MinIO Client with custom HTTP Client
     /// </summary>
     /// <returns>Client with no arguments to be used with other builder methods</returns>
+    [Obsolete("Use MinioClient() and Builder method .WithHttpClient(httpClient)")]
     public MinioClient(HttpClient httpClient)
     {
         Region = "";
@@ -174,6 +175,23 @@ public partial class MinioClient
     ///     Returns the User-Agent header for the request
     /// </summary>
     private string FullUserAgent => $"{SystemUserAgent} {CustomUserAgent}";
+
+    /// <summary>
+    ///     Runs httpClient's GetAsync method
+    /// </summary>
+    public async Task<HttpResponseMessage> WrapperGetAsync(string url)
+    {
+        var response = await HTTPClient.GetAsync(url).ConfigureAwait(false);
+        return response;
+    }
+
+    /// <summary>
+    ///     Runs httpClient's PutObjectAsync method
+    /// </summary>
+    public async Task WrapperPutAsync(string url, StreamContent strm)
+    {
+        await Task.Run(async () => await HTTPClient.PutAsync(url, strm).ConfigureAwait(false)).ConfigureAwait(false);
+    }
 
     /// <summary>
     ///     Resolve region of the bucket.
