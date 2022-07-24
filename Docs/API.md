@@ -138,7 +138,7 @@ MinioClient minioClient = new MinioClient()
 
 ```cs
 // 1. Using Builder with public MinioClient(), Endpoint, Credentials, Secure connection & proxy
-MinioClient s3Client = new MinioClient("s3.amazonaws.com");
+MinioClient s3Client = new MinioClient()
 									 .WithEndpoint("s3.amazonaws.com")
 									 .WithCredentials("YOUR-AWS-ACCESSKEYID", "YOUR-AWS-SECRETACCESSKEY")
 									 .WithSSL()

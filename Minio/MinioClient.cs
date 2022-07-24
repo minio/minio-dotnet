@@ -181,6 +181,23 @@ public partial class MinioClient
     private string FullUserAgent => $"{SystemUserAgent} {CustomUserAgent}";
 
     /// <summary>
+    ///     Runs httpClient's GetAsync method
+    /// </summary>
+    public async Task<HttpResponseMessage> WrapperGetAsync(string url)
+    {
+        var response = await HTTPClient.GetAsync(url).ConfigureAwait(false);
+        return response;
+    }
+
+    /// <summary>
+    ///     Runs httpClient's PutObjectAsync method
+    /// </summary>
+    public async Task WrapperPutAsync(string url, StreamContent strm)
+    {
+        await Task.Run(async () => await HTTPClient.PutAsync(url, strm).ConfigureAwait(false)).ConfigureAwait(false);
+    }
+
+    /// <summary>
     ///     Resolve region of the bucket.
     /// </summary>
     /// <param name="bucketName"></param>
@@ -537,7 +554,6 @@ public partial class MinioClient
             if (requestMessageBuilder.FunctionResponseWriter != null)
                 requestMessageBuilder.ProcessFunctionResponseWriter(requestMessageBuilder.FunctionResponseWriter,
                     responseResult.ContentStream);
-
         }
         catch (OperationCanceledException)
         {

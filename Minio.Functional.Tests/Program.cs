@@ -17,7 +17,6 @@
 
 using System;
 using System.Net;
-using System.Net.Http;
 
 namespace Minio.Functional.Tests;
 
@@ -51,25 +50,17 @@ internal class Program
 
         MinioClient minioClient = null;
 
-        var clientHandler = new HttpClientHandler();
-        clientHandler.ServerCertificateCustomValidationCallback =
-            (sender, cert, chain, sslPolicyErrors) => { return true; };
-        clientHandler.UseProxy = false;
-        var httpClient = new HttpClient(clientHandler);
-
         if (enableHttps == "1")
             // WithSSL() enables SSL support in MinIO client
             minioClient = new MinioClient()
                 .WithSSL()
                 .WithCredentials(accessKey, secretKey)
                 .WithEndpoint(endPoint)
-                .WithHttpClient(httpClient)
                 .Build();
         else
             minioClient = new MinioClient()
                 .WithCredentials(accessKey, secretKey)
                 .WithEndpoint(endPoint)
-                .WithHttpClient(httpClient)
                 .Build();
 
         // Assign parameters before starting the test
