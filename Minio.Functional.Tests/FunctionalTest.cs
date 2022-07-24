@@ -332,8 +332,8 @@ public class FunctionalTest
 
         try
         {
-            await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
-            var found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
+            await minio.MakeBucketAsync(mbArgs);
+            var found = await minio.BucketExistsAsync(beArgs);
             Assert.IsTrue(found);
             new MintLogger(nameof(BucketExists_Test), bucketExistsSignature, "Tests whether BucketExists passes",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
@@ -351,7 +351,7 @@ public class FunctionalTest
         }
         finally
         {
-            await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
+            await minio.RemoveBucketAsync(rbArgs);
         }
     }
 
@@ -373,11 +373,11 @@ public class FunctionalTest
         var found = false;
         try
         {
-            await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
-            found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
+            await minio.MakeBucketAsync(mbArgs);
+            found = await minio.BucketExistsAsync(beArgs);
             Assert.IsTrue(found);
-            await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
-            found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
+            await minio.RemoveBucketAsync(rbArgs);
+            found = await minio.BucketExistsAsync(beArgs);
             Assert.IsFalse(found);
             new MintLogger(nameof(RemoveBucket_Test1), removeBucketSignature, "Tests whether RemoveBucket passes",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
@@ -391,7 +391,7 @@ public class FunctionalTest
         finally
         {
             if (found)
-                await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
+                await minio.RemoveBucketAsync(rbArgs);
         }
     }
 
@@ -420,7 +420,7 @@ public class FunctionalTest
 
         try
         {
-            var list = await minio.ListBucketsAsync().ConfigureAwait(false);
+            var list = await minio.ListBucketsAsync();
             bucketList = list.Buckets;
             bucketList = bucketList.Where(x => x.Name.StartsWith(bucketName)).ToList();
             Assert.AreEqual(noOfBuckets, bucketList.Count());
@@ -453,7 +453,7 @@ public class FunctionalTest
             {
                 var rbArgs = new RemoveBucketArgs()
                     .WithBucket(bucket.Name);
-                await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
+                await minio.RemoveBucketAsync(rbArgs);
             }
         }
     }
@@ -465,8 +465,8 @@ public class FunctionalTest
         if (await minio.BucketExistsAsync(beArgs)) return;
         var mbArgs = new MakeBucketArgs()
             .WithBucket(bucketName);
-        await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
-        var found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
+        await minio.MakeBucketAsync(mbArgs);
+        var found = await minio.BucketExistsAsync(beArgs);
         Assert.IsTrue(found);
     }
 
@@ -477,8 +477,8 @@ public class FunctionalTest
             .WithObjectLock();
         var beArgs = new BucketExistsArgs()
             .WithBucket(bucketName);
-        await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
-        var found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
+        await minio.MakeBucketAsync(mbArgs);
+        var found = await minio.BucketExistsAsync(beArgs);
         Assert.IsTrue(found);
     }
 
@@ -486,7 +486,7 @@ public class FunctionalTest
     {
         var beArgs = new BucketExistsArgs()
             .WithBucket(bucketName);
-        var bktExists = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
+        var bktExists = await minio.BucketExistsAsync(beArgs);
         if (!bktExists)
             return;
         var taskList = new List<Task>();
@@ -503,7 +503,7 @@ public class FunctionalTest
                 .WithBucket(bucketName));
             if (versioningConfig != null && (versioningConfig.Status.Contains("Enabled") ||
                                              versioningConfig.Status.Contains("Suspended"))) getVersions = true;
-            lockConfig = await minio.GetObjectLockConfigurationAsync(lockConfigurationArgs).ConfigureAwait(false);
+            lockConfig = await minio.GetObjectLockConfigurationAsync(lockConfigurationArgs);
         }
         catch (MissingObjectLockConfigurationException)
         {
@@ -545,7 +545,7 @@ public class FunctionalTest
                     .WithBucket(bucketName)
                     .WithObject(item.Item1)
                     .WithVersionId(item.Item2);
-                var retentionConfig = await minio.GetObjectRetentionAsync(objectRetentionArgs).ConfigureAwait(false);
+                var retentionConfig = await minio.GetObjectRetentionAsync(objectRetentionArgs);
                 var bypassGovMode = retentionConfig.Mode == RetentionMode.GOVERNANCE ? true : false;
                 var removeObjectArgs = new RemoveObjectArgs()
                     .WithBucket(bucketName)
@@ -582,7 +582,7 @@ public class FunctionalTest
         await Task.WhenAll(tasks);
         var rbArgs = new RemoveBucketArgs()
             .WithBucket(bucketName);
-        await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
+        await minio.RemoveBucketAsync(rbArgs);
     }
 
     internal static string XmlStrToJsonStr(string xml)
@@ -629,7 +629,7 @@ public class FunctionalTest
                     .WithObjectSize(filestream.Length)
                     .WithServerSideEncryption(ssec)
                     .WithContentType(contentType);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
 
                 var getObjectArgs = new GetObjectArgs()
                     .WithBucket(bucketName)
@@ -650,8 +650,8 @@ public class FunctionalTest
                     .WithBucket(bucketName)
                     .WithObject(objectName)
                     .WithServerSideEncryption(ssec);
-                await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
-                await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+                await minio.StatObjectAsync(statObjectArgs);
+                await minio.GetObjectAsync(getObjectArgs);
             }
 
             new MintLogger("PutGetStatEncryptedObject_Test1", putObjectSignature,
@@ -713,7 +713,7 @@ public class FunctionalTest
                     .WithObjectSize(filestream.Length)
                     .WithContentType(contentType)
                     .WithServerSideEncryption(ssec);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
 
                 var getObjectArgs = new GetObjectArgs()
                     .WithBucket(bucketName)
@@ -734,8 +734,8 @@ public class FunctionalTest
                     .WithBucket(bucketName)
                     .WithObject(objectName)
                     .WithServerSideEncryption(ssec);
-                await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
-                await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+                await minio.StatObjectAsync(statObjectArgs);
+                await minio.GetObjectAsync(getObjectArgs);
             }
 
             new MintLogger("PutGetStatEncryptedObject_Test2", putObjectSignature,
@@ -795,7 +795,7 @@ public class FunctionalTest
                     .WithObjectSize(filestream.Length)
                     .WithServerSideEncryption(sses3)
                     .WithContentType(contentType);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
 
                 var getObjectArgs = new GetObjectArgs()
                     .WithBucket(bucketName)
@@ -814,8 +814,8 @@ public class FunctionalTest
                 var statObjectArgs = new StatObjectArgs()
                     .WithBucket(bucketName)
                     .WithObject(objectName);
-                await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
-                await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+                await minio.StatObjectAsync(statObjectArgs);
+                await minio.GetObjectAsync(getObjectArgs);
             }
 
             new MintLogger("PutGetStatEncryptedObject_Test3", putObjectSignature,
@@ -862,7 +862,7 @@ public class FunctionalTest
                 .WithObjectSize(size)
                 .WithContentType(contentType)
                 .WithHeaders(metaData);
-            await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+            await minio.PutObjectAsync(putObjectArgs);
             File.Delete(tempFileName);
         }
     }
@@ -914,7 +914,7 @@ public class FunctionalTest
             var rmArgs = new RemoveObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            await minio.RemoveObjectAsync(rmArgs).ConfigureAwait(false);
+            await minio.RemoveObjectAsync(rmArgs);
         }
 
         return statObject;
@@ -975,7 +975,7 @@ public class FunctionalTest
                 .WithBucket(bucketName)
                 .WithObject(objectName)
                 .WithFileName(fileName);
-            await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+            await minio.PutObjectAsync(putObjectArgs);
             new MintLogger("FPutObject_Test1", putObjectSignature,
                 "Tests whether FPutObject for multipart upload passes", TestStatus.PASS, DateTime.Now - startTime,
                 args: args).Log();
@@ -1013,7 +1013,7 @@ public class FunctionalTest
                 .WithBucket(bucketName)
                 .WithObject(objectName)
                 .WithFileName(fileName);
-            await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+            await minio.PutObjectAsync(putObjectArgs);
             new MintLogger("FPutObject_Test2", putObjectSignature, "Tests whether FPutObject for small upload passes",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
         }
@@ -1056,7 +1056,7 @@ public class FunctionalTest
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length);
 
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             new MintLogger("RemoveObject_Test1", removeObjectSignature1,
@@ -1159,7 +1159,7 @@ public class FunctionalTest
                     var removeObjectsArgs = new RemoveObjectsArgs()
                         .WithBucket(bucketName)
                         .WithObjectsVersions(objVersions);
-                    var rmObservable = await minio.RemoveObjectsAsync(removeObjectsArgs).ConfigureAwait(false);
+                    var rmObservable = await minio.RemoveObjectsAsync(removeObjectsArgs);
                     var deList = new List<DeleteError>();
                     var rmSub = rmObservable.Subscribe(
                         err => { deList.Add(err); },
@@ -1195,7 +1195,7 @@ public class FunctionalTest
 
         using (var fs = new FileStream(filePath, FileMode.CreateNew))
         {
-            await response.Content.CopyToAsync(fs).ConfigureAwait(false);
+            await response.Content.CopyToAsync(fs);
         }
     }
 
@@ -1245,7 +1245,7 @@ public class FunctionalTest
                 .WithObject(objectName)
                 .WithPolicy(formPolicy);
 
-            var policyTuple = await minio.PresignedPostPolicyAsync(polArgs).ConfigureAwait(false);
+            var policyTuple = await minio.PresignedPostPolicyAsync(polArgs);
             var uri = policyTuple.Item1.AbsoluteUri;
 
             var curlCommand = "curl --insecure";
@@ -1323,7 +1323,7 @@ public class FunctionalTest
                     .WithBucket(bucketName)
                     .WithObject(objectName);
 
-                await minio.RemoveIncompleteUploadAsync(rmArgs).ConfigureAwait(false);
+                await minio.RemoveIncompleteUploadAsync(rmArgs);
 
                 var listArgs = new ListIncompleteUploadsArgs()
                     .WithBucket(bucketName);
@@ -1531,7 +1531,7 @@ public class FunctionalTest
                     .WithObject(objectName)
                     .WithStreamData(stream)
                     .WithObjectSize(stream.Length);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var inputSerialization = new SelectObjectInputSerialization
@@ -1560,7 +1560,7 @@ public class FunctionalTest
                 .WithInputSerialization(inputSerialization)
                 .WithOutputSerialization(outputSerialization);
             var resp = await minio.SelectObjectContentAsync(selArgs).ConfigureAwait(false);
-            var output = await new StreamReader(resp.Payload).ReadToEndAsync().ConfigureAwait(false);
+            var output = await new StreamReader(resp.Payload).ReadToEndAsync();
             var csvStringNoWS = Regex.Replace(csvString.ToString(), @"\s+", "");
             var outputNoWS = Regex.Replace(output, @"\s+", "");
             // Compute MD5 for a better result.
@@ -1622,7 +1622,7 @@ public class FunctionalTest
         {
             var encryptionArgs = new SetBucketEncryptionArgs()
                 .WithBucket(bucketName);
-            await minio.SetBucketEncryptionAsync(encryptionArgs).ConfigureAwait(false);
+            await minio.SetBucketEncryptionAsync(encryptionArgs);
             new MintLogger(nameof(BucketEncryptionsAsync_Test1), setBucketEncryptionSignature,
                     "Tests whether SetBucketEncryptionAsync passes", TestStatus.PASS, DateTime.Now - startTime,
                     args: args)
@@ -1761,7 +1761,7 @@ public class FunctionalTest
                 .WithBucket(bucketName)
                 .WithObject(objectName)
                 .WithLegalHold(true);
-            await minio.SetObjectLegalHoldAsync(legalHoldArgs).ConfigureAwait(false);
+            await minio.SetObjectLegalHoldAsync(legalHoldArgs);
             new MintLogger(nameof(LegalHoldStatusAsync_Test1), setObjectLegalHoldSignature,
                     "Tests whether SetObjectLegalHoldAsync passes", TestStatus.PASS, DateTime.Now - startTime,
                     args: args)
@@ -1787,13 +1787,13 @@ public class FunctionalTest
             var getLegalHoldArgs = new GetObjectLegalHoldArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            var enabled = await minio.GetObjectLegalHoldAsync(getLegalHoldArgs).ConfigureAwait(false);
+            var enabled = await minio.GetObjectLegalHoldAsync(getLegalHoldArgs);
             Assert.IsTrue(enabled);
             var rmArgs = new RemoveObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
 
-            await minio.RemoveObjectAsync(rmArgs).ConfigureAwait(false);
+            await minio.RemoveObjectAsync(rmArgs);
             new MintLogger(nameof(LegalHoldStatusAsync_Test1), getObjectLegalHoldSignature,
                     "Tests whether GetObjectLegalHoldAsync passes", TestStatus.PASS, DateTime.Now - startTime,
                     args: args)
@@ -1853,7 +1853,7 @@ public class FunctionalTest
             var tagsArgs = new SetBucketTagsArgs()
                 .WithBucket(bucketName)
                 .WithTagging(Tagging.GetBucketTags(tags));
-            await minio.SetBucketTagsAsync(tagsArgs).ConfigureAwait(false);
+            await minio.SetBucketTagsAsync(tagsArgs);
             new MintLogger(nameof(BucketTagsAsync_Test1), setBucketTagsSignature,
                 "Tests whether SetBucketTagsAsync passes", TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
         }
@@ -1876,7 +1876,7 @@ public class FunctionalTest
         {
             var tagsArgs = new GetBucketTagsArgs()
                 .WithBucket(bucketName);
-            var tagObj = await minio.GetBucketTagsAsync(tagsArgs).ConfigureAwait(false);
+            var tagObj = await minio.GetBucketTagsAsync(tagsArgs);
             Assert.IsNotNull(tagObj);
             Assert.IsNotNull(tagObj.GetTags());
             var tagsRes = tagObj.GetTags();
@@ -1904,10 +1904,10 @@ public class FunctionalTest
         {
             var tagsArgs = new RemoveBucketTagsArgs()
                 .WithBucket(bucketName);
-            await minio.RemoveBucketTagsAsync(tagsArgs).ConfigureAwait(false);
+            await minio.RemoveBucketTagsAsync(tagsArgs);
             var getTagsArgs = new GetBucketTagsArgs()
                 .WithBucket(bucketName);
-            var tagObj = await minio.GetBucketTagsAsync(getTagsArgs).ConfigureAwait(false);
+            var tagObj = await minio.GetBucketTagsAsync(getTagsArgs);
         }
         catch (NotImplementedException ex)
         {
@@ -1988,7 +1988,7 @@ public class FunctionalTest
                 .WithBucket(bucketName)
                 .WithObject(objectName)
                 .WithTagging(Tagging.GetObjectTags(tags));
-            await minio.SetObjectTagsAsync(tagsArgs).ConfigureAwait(false);
+            await minio.SetObjectTagsAsync(tagsArgs);
             new MintLogger(nameof(ObjectTagsAsync_Test1), setObjectTagsSignature,
                 "Tests whether SetObjectTagsAsync passes", TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
         }
@@ -2014,7 +2014,7 @@ public class FunctionalTest
             var tagsArgs = new GetObjectTagsArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            var tagObj = await minio.GetObjectTagsAsync(tagsArgs).ConfigureAwait(false);
+            var tagObj = await minio.GetObjectTagsAsync(tagsArgs);
             Assert.IsNotNull(tagObj);
             Assert.IsNotNull(tagObj.GetTags());
             var tagsRes = tagObj.GetTags();
@@ -2049,11 +2049,11 @@ public class FunctionalTest
             var tagsArgs = new RemoveObjectTagsArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            await minio.RemoveObjectTagsAsync(tagsArgs).ConfigureAwait(false);
+            await minio.RemoveObjectTagsAsync(tagsArgs);
             var getTagsArgs = new GetObjectTagsArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            var tagObj = await minio.GetObjectTagsAsync(getTagsArgs).ConfigureAwait(false);
+            var tagObj = await minio.GetObjectTagsAsync(getTagsArgs);
             Assert.IsNotNull(tagObj);
             var tagsRes = tagObj.GetTags();
             Assert.IsNull(tagsRes);
@@ -2102,7 +2102,7 @@ public class FunctionalTest
                 var setVersioningArgs = new SetVersioningArgs()
                     .WithBucket(bucketName)
                     .WithVersioningEnabled();
-                await minio.SetVersioningAsync(setVersioningArgs).ConfigureAwait(false);
+                await minio.SetVersioningAsync(setVersioningArgs);
 
                 // Twice, for 2 versions.
                 using (var filestream = rsg.GenerateStreamFromSeed(1 * KB))
@@ -2152,7 +2152,7 @@ public class FunctionalTest
                 // Get Versioning Test
                 var getVersioningArgs = new GetVersioningArgs()
                     .WithBucket(bucketName);
-                var versioningConfig = await minio.GetVersioningAsync(getVersioningArgs).ConfigureAwait(false);
+                var versioningConfig = await minio.GetVersioningAsync(getVersioningArgs);
                 Assert.IsNotNull(versioningConfig);
                 Assert.IsNotNull(versioningConfig.Status);
                 Assert.IsTrue(versioningConfig.Status.ToLower().Equals("enabled"));
@@ -2166,7 +2166,7 @@ public class FunctionalTest
                 var setVersioningArgs = new SetVersioningArgs()
                     .WithBucket(bucketName)
                     .WithVersioningSuspended();
-                await minio.SetVersioningAsync(setVersioningArgs).ConfigureAwait(false);
+                await minio.SetVersioningAsync(setVersioningArgs);
 
                 var objectCount = 1;
                 var objectIndex = 0;
@@ -2280,7 +2280,7 @@ public class FunctionalTest
                 .WithLockConfiguration(
                     new ObjectLockConfiguration(RetentionMode.GOVERNANCE, 33)
                 );
-            await minio.SetObjectLockConfigurationAsync(objectLockArgs).ConfigureAwait(false);
+            await minio.SetObjectLockConfigurationAsync(objectLockArgs);
             new MintLogger(nameof(ObjectLockConfigurationAsync_Test1), setObjectLockConfigurationSignature,
                 "Tests whether SetObjectLockConfigurationAsync passes", TestStatus.PASS, DateTime.Now - startTime,
                 args: args).Log();
@@ -2305,7 +2305,7 @@ public class FunctionalTest
         {
             var objectLockArgs = new GetObjectLockConfigurationArgs()
                 .WithBucket(bucketName);
-            var config = await minio.GetObjectLockConfigurationAsync(objectLockArgs).ConfigureAwait(false);
+            var config = await minio.GetObjectLockConfigurationAsync(objectLockArgs);
             Assert.IsNotNull(config);
             Assert.IsTrue(config.ObjectLockEnabled.Contains(ObjectLockConfiguration.LockEnabled));
             Assert.IsNotNull(config.Rule);
@@ -2345,10 +2345,10 @@ public class FunctionalTest
 
             var objectLockArgs = new RemoveObjectLockConfigurationArgs()
                 .WithBucket(bucketName);
-            await minio.RemoveObjectLockConfigurationAsync(objectLockArgs).ConfigureAwait(false);
+            await minio.RemoveObjectLockConfigurationAsync(objectLockArgs);
             var getObjectLockArgs = new GetObjectLockConfigurationArgs()
                 .WithBucket(bucketName);
-            var config = await minio.GetObjectLockConfigurationAsync(getObjectLockArgs).ConfigureAwait(false);
+            var config = await minio.GetObjectLockConfigurationAsync(getObjectLockArgs);
             Assert.IsNotNull(config);
             Assert.IsNull(config.Rule);
             new MintLogger(nameof(ObjectLockConfigurationAsync_Test1), deleteObjectLockConfigurationSignature,
@@ -2432,7 +2432,7 @@ public class FunctionalTest
                 .WithObject(objectName)
                 .WithRetentionMode(RetentionMode.GOVERNANCE)
                 .WithRetentionUntilDate(untilDate);
-            await minio.SetObjectRetentionAsync(setRetentionArgs).ConfigureAwait(false);
+            await minio.SetObjectRetentionAsync(setRetentionArgs);
             new MintLogger(nameof(ObjectRetentionAsync_Test1), setObjectRetentionSignature,
                     "Tests whether SetObjectRetentionAsync passes", TestStatus.PASS, DateTime.Now - startTime,
                     args: args)
@@ -2458,7 +2458,7 @@ public class FunctionalTest
             var getRetentionArgs = new GetObjectRetentionArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            var config = await minio.GetObjectRetentionAsync(getRetentionArgs).ConfigureAwait(false);
+            var config = await minio.GetObjectRetentionAsync(getRetentionArgs);
             var plusDays = 10.0;
             Assert.IsNotNull(config);
             Assert.AreEqual(config.Mode, RetentionMode.GOVERNANCE);
@@ -2489,11 +2489,11 @@ public class FunctionalTest
             var clearRetentionArgs = new ClearObjectRetentionArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            await minio.ClearObjectRetentionAsync(clearRetentionArgs).ConfigureAwait(false);
+            await minio.ClearObjectRetentionAsync(clearRetentionArgs);
             var getRetentionArgs = new GetObjectRetentionArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            var config = await minio.GetObjectRetentionAsync(getRetentionArgs).ConfigureAwait(false);
+            var config = await minio.GetObjectRetentionAsync(getRetentionArgs);
         }
         catch (NotImplementedException ex)
         {
@@ -2526,7 +2526,7 @@ public class FunctionalTest
                 .WithBucket(bucketName)
                 .WithObject(objectName);
 
-            await minio.RemoveObjectAsync(rmArgs).ConfigureAwait(false);
+            await minio.RemoveObjectAsync(rmArgs);
             await TearDown(minio, bucketName);
         }
         catch (Exception ex)
@@ -2560,8 +2560,8 @@ public class FunctionalTest
 
         try
         {
-            await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
-            var found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
+            await minio.MakeBucketAsync(mbArgs);
+            var found = await minio.BucketExistsAsync(beArgs);
             Assert.IsTrue(found);
             new MintLogger(nameof(MakeBucket_Test1), makeBucketSignature, "Tests whether MakeBucket passes",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
@@ -2574,7 +2574,7 @@ public class FunctionalTest
         }
         finally
         {
-            await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
+            await minio.RemoveBucketAsync(rbArgs);
         }
     }
 
@@ -2599,8 +2599,8 @@ public class FunctionalTest
 
         try
         {
-            await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
-            var found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
+            await minio.MakeBucketAsync(mbArgs);
+            var found = await minio.BucketExistsAsync(beArgs);
             Assert.IsTrue(found);
             new MintLogger(nameof(MakeBucket_Test2), makeBucketSignature, testType, TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
@@ -2613,7 +2613,7 @@ public class FunctionalTest
         }
         finally
         {
-            await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
+            await minio.RemoveBucketAsync(rbArgs);
         }
     }
 
@@ -2637,8 +2637,8 @@ public class FunctionalTest
         };
         try
         {
-            await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
-            var found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
+            await minio.MakeBucketAsync(mbArgs);
+            var found = await minio.BucketExistsAsync(beArgs);
             Assert.IsTrue(found);
             new MintLogger(nameof(MakeBucket_Test3), makeBucketSignature, "Tests whether MakeBucket with region passes",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
@@ -2651,7 +2651,7 @@ public class FunctionalTest
         }
         finally
         {
-            await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
+            await minio.RemoveBucketAsync(rbArgs);
         }
     }
 
@@ -2675,8 +2675,8 @@ public class FunctionalTest
         };
         try
         {
-            await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
-            var found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
+            await minio.MakeBucketAsync(mbArgs);
+            var found = await minio.BucketExistsAsync(beArgs);
             Assert.IsTrue(found);
             new MintLogger(nameof(MakeBucket_Test4), makeBucketSignature,
                 "Tests whether MakeBucket with region and bucketname with . passes", TestStatus.PASS,
@@ -2691,7 +2691,7 @@ public class FunctionalTest
         }
         finally
         {
-            await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
+            await minio.RemoveBucketAsync(rbArgs);
         }
     }
 
@@ -2742,8 +2742,8 @@ public class FunctionalTest
 
         try
         {
-            await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
-            var found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
+            await minio.MakeBucketAsync(mbArgs);
+            var found = await minio.BucketExistsAsync(beArgs);
             Assert.IsTrue(found);
             new MintLogger(nameof(MakeBucket_Test1), makeBucketSignature, "Tests whether MakeBucket with Lock passes",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
@@ -2756,7 +2756,7 @@ public class FunctionalTest
         }
         finally
         {
-            await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
+            await minio.RemoveBucketAsync(rbArgs);
         }
     }
 
@@ -2979,11 +2979,11 @@ public class FunctionalTest
                     .WithStreamData(filestream)
                     .WithObjectSize(size)
                     .WithContentType(contentType);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
                 var rmArgs = new RemoveObjectArgs()
                     .WithBucket(bucketName)
                     .WithObject(objectName);
-                await minio.RemoveObjectAsync(rmArgs).ConfigureAwait(false);
+                await minio.RemoveObjectAsync(rmArgs);
             }
 
             new MintLogger(nameof(PutObject_Test7), putObjectSignature,
@@ -3032,11 +3032,11 @@ public class FunctionalTest
                     .WithStreamData(filestream)
                     .WithObjectSize(size)
                     .WithContentType(contentType);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
                 var rmArgs = new RemoveObjectArgs()
                     .WithBucket(bucketName)
                     .WithObject(objectName);
-                await minio.RemoveObjectAsync(rmArgs).ConfigureAwait(false);
+                await minio.RemoveObjectAsync(rmArgs);
             }
 
             new MintLogger(nameof(PutObject_Test8), putObjectSignature,
@@ -3090,7 +3090,7 @@ public class FunctionalTest
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length);
                 // .WithHeaders(null);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var copySourceObjectArgs = new CopySourceObjectArgs()
@@ -3101,13 +3101,13 @@ public class FunctionalTest
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName);
 
-            await minio.CopyObjectAsync(copyObjectArgs).ConfigureAwait(false);
+            await minio.CopyObjectAsync(copyObjectArgs);
 
             var getObjectArgs = new GetObjectArgs()
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName)
                 .WithFile(outFileName);
-            await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+            await minio.GetObjectAsync(getObjectArgs);
             File.Delete(outFileName);
             var rmArgs1 = new RemoveObjectArgs()
                 .WithBucket(bucketName)
@@ -3161,7 +3161,7 @@ public class FunctionalTest
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length)
                     .WithHeaders(null);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
         }
         catch (Exception ex)
@@ -3187,7 +3187,7 @@ public class FunctionalTest
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName);
 
-            await minio.CopyObjectAsync(copyObjectArgs).ConfigureAwait(false);
+            await minio.CopyObjectAsync(copyObjectArgs);
         }
         catch (MinioException ex)
         {
@@ -3249,13 +3249,13 @@ public class FunctionalTest
                     .WithObject(objectName)
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            var stats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+            var stats = await minio.StatObjectAsync(statObjectArgs);
 
             var conditions = new CopyConditions();
             conditions.SetMatchETag(stats.ETag);
@@ -3268,16 +3268,16 @@ public class FunctionalTest
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName);
 
-            await minio.CopyObjectAsync(copyObjectArgs).ConfigureAwait(false);
+            await minio.CopyObjectAsync(copyObjectArgs);
             var getObjectArgs = new GetObjectArgs()
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName)
                 .WithFile(outFileName);
-            await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+            await minio.GetObjectAsync(getObjectArgs);
             statObjectArgs = new StatObjectArgs()
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName);
-            var dstats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+            var dstats = await minio.StatObjectAsync(statObjectArgs);
             Assert.IsNotNull(dstats);
             Assert.IsTrue(dstats.ObjectName.Contains(destObjectName));
             new MintLogger("CopyObject_Test3", copyObjectSignature, "Tests whether CopyObject with Etag match passes",
@@ -3326,7 +3326,7 @@ public class FunctionalTest
                     .WithObject(objectName)
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var conditions = new CopyConditions();
@@ -3339,17 +3339,17 @@ public class FunctionalTest
                 .WithCopyObjectSource(copySourceObjectArgs)
                 .WithBucket(destBucketName);
 
-            await minio.CopyObjectAsync(copyObjectArgs).ConfigureAwait(false);
+            await minio.CopyObjectAsync(copyObjectArgs);
 
             var getObjectArgs = new GetObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName)
                 .WithFile(outFileName);
-            await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+            await minio.GetObjectAsync(getObjectArgs);
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket(destBucketName)
                 .WithObject(objectName);
-            var stats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+            var stats = await minio.StatObjectAsync(statObjectArgs);
             Assert.IsNotNull(stats);
             Assert.IsTrue(stats.ObjectName.Contains(objectName));
             new MintLogger("CopyObject_Test4", copyObjectSignature,
@@ -3400,7 +3400,7 @@ public class FunctionalTest
                     .WithObject(objectName)
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var conditions = new CopyConditions();
@@ -3415,11 +3415,11 @@ public class FunctionalTest
                 .WithCopyObjectSource(copySourceObjectArgs)
                 .WithBucket(destBucketName);
 
-            await minio.CopyObjectAsync(copyObjectArgs).ConfigureAwait(false);
+            await minio.CopyObjectAsync(copyObjectArgs);
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket(destBucketName)
                 .WithObject(objectName);
-            var stats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+            var stats = await minio.StatObjectAsync(statObjectArgs);
             Assert.IsNotNull(stats);
             Assert.IsTrue(stats.ObjectName.Contains(objectName));
             Assert.AreEqual(6291455 - 1024 + 1, stats.Size);
@@ -3477,13 +3477,13 @@ public class FunctionalTest
                     .WithObject(objectName)
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            var stats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+            var stats = await minio.StatObjectAsync(statObjectArgs);
 
             var conditions = new CopyConditions();
             conditions.SetModified(new DateTime(2017, 8, 18));
@@ -3497,16 +3497,16 @@ public class FunctionalTest
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName);
 
-            await minio.CopyObjectAsync(copyObjectArgs).ConfigureAwait(false);
+            await minio.CopyObjectAsync(copyObjectArgs);
             var getObjectArgs = new GetObjectArgs()
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName)
                 .WithFile(outFileName);
-            await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+            await minio.GetObjectAsync(getObjectArgs);
             statObjectArgs = new StatObjectArgs()
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName);
-            var dstats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+            var dstats = await minio.StatObjectAsync(statObjectArgs);
             Assert.IsNotNull(dstats);
             Assert.IsTrue(dstats.ObjectName.Contains(destObjectName));
             new MintLogger("CopyObject_Test6", copyObjectSignature,
@@ -3556,13 +3556,13 @@ public class FunctionalTest
                     .WithObject(objectName)
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            var stats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+            var stats = await minio.StatObjectAsync(statObjectArgs);
 
             var conditions = new CopyConditions();
             var modifiedDate = DateTime.Now;
@@ -3579,7 +3579,7 @@ public class FunctionalTest
                     .WithCopyObjectSource(copySourceObjectArgs)
                     .WithBucket(destBucketName)
                     .WithObject(destObjectName);
-                await minio.CopyObjectAsync(copyObjectArgs).ConfigureAwait(false);
+                await minio.CopyObjectAsync(copyObjectArgs);
             }
             catch (Exception ex)
             {
@@ -3665,13 +3665,13 @@ public class FunctionalTest
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length)
                     .WithHeaders(new Dictionary<string, string> { { "Orig", "orig-val with  spaces" } });
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            var stats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+            var stats = await minio.StatObjectAsync(statObjectArgs);
 
             Assert.IsTrue(stats.MetaData["Orig"] != null);
 
@@ -3696,12 +3696,12 @@ public class FunctionalTest
                 .WithObject(destObjectName)
                 .WithHeaders(customMetadata);
 
-            await minio.CopyObjectAsync(copyObjectArgs).ConfigureAwait(false);
+            await minio.CopyObjectAsync(copyObjectArgs);
 
             statObjectArgs = new StatObjectArgs()
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName);
-            var dstats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+            var dstats = await minio.StatObjectAsync(statObjectArgs);
             Assert.IsTrue(dstats.MetaData["Content-Type"] != null);
             Assert.IsTrue(dstats.MetaData["Mynewkey"] != null);
             Assert.IsTrue(dstats.MetaData["Content-Type"].Contains("application/css"));
@@ -3752,7 +3752,7 @@ public class FunctionalTest
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length);
 
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
                 var putTags = new Dictionary<string, string>
                 {
                     { "key1", "PutObjectTags" }
@@ -3761,7 +3761,7 @@ public class FunctionalTest
                     .WithBucket(bucketName)
                     .WithObject(objectName)
                     .WithTagging(Tagging.GetObjectTags(putTags));
-                await minio.SetObjectTagsAsync(setObjectTagsArgs).ConfigureAwait(false);
+                await minio.SetObjectTagsAsync(setObjectTagsArgs);
             }
 
             var copyTags = new Dictionary<string, string>
@@ -3778,12 +3778,12 @@ public class FunctionalTest
                 .WithObject(destObjectName)
                 .WithTagging(Tagging.GetObjectTags(copyTags))
                 .WithReplaceTagsDirective(true);
-            await minio.CopyObjectAsync(copyObjectArgs).ConfigureAwait(false);
+            await minio.CopyObjectAsync(copyObjectArgs);
 
             var getObjectTagsArgs = new GetObjectTagsArgs()
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName);
-            var tags = await minio.GetObjectTagsAsync(getObjectTagsArgs).ConfigureAwait(false);
+            var tags = await minio.GetObjectTagsAsync(getObjectTagsArgs);
             Assert.IsNotNull(tags);
             var copiedTags = tags.GetTags();
             Assert.IsNotNull(tags);
@@ -3851,7 +3851,7 @@ public class FunctionalTest
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length)
                     .WithServerSideEncryption(ssec);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var copySourceObjectArgs = new CopySourceObjectArgs()
@@ -3863,13 +3863,13 @@ public class FunctionalTest
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName)
                 .WithServerSideEncryption(ssecDst);
-            await minio.CopyObjectAsync(copyObjectArgs).ConfigureAwait(false);
+            await minio.CopyObjectAsync(copyObjectArgs);
             var getObjectArgs = new GetObjectArgs()
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName)
                 .WithServerSideEncryption(ssecDst)
                 .WithFile(outFileName);
-            await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+            await minio.GetObjectAsync(getObjectArgs);
             new MintLogger("EncryptedCopyObject_Test1", copyObjectSignature,
                     "Tests whether encrypted CopyObject passes", TestStatus.PASS, DateTime.Now - startTime, args: args)
                 .Log();
@@ -3932,7 +3932,7 @@ public class FunctionalTest
                     .WithObjectSize(filestream.Length)
                     .WithServerSideEncryption(ssec);
 
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var copySourceObjectArgs = new CopySourceObjectArgs()
@@ -3944,13 +3944,13 @@ public class FunctionalTest
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName)
                 .WithServerSideEncryption(null);
-            await minio.CopyObjectAsync(copyObjectArgs).ConfigureAwait(false);
+            await minio.CopyObjectAsync(copyObjectArgs);
 
             var getObjectArgs = new GetObjectArgs()
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName)
                 .WithFile(outFileName);
-            await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+            await minio.GetObjectAsync(getObjectArgs);
             new MintLogger("EncryptedCopyObject_Test2", copyObjectSignature,
                     "Tests whether encrypted CopyObject passes", TestStatus.PASS, DateTime.Now - startTime, args: args)
                 .Log();
@@ -4013,7 +4013,7 @@ public class FunctionalTest
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length)
                     .WithServerSideEncryption(ssec);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var copySourceObjectArgs = new CopySourceObjectArgs()
@@ -4025,12 +4025,12 @@ public class FunctionalTest
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName)
                 .WithServerSideEncryption(sses3);
-            await minio.CopyObjectAsync(copyObjectArgs).ConfigureAwait(false);
+            await minio.CopyObjectAsync(copyObjectArgs);
             var getObjectArgs = new GetObjectArgs()
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName)
                 .WithFile(outFileName);
-            await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+            await minio.GetObjectAsync(getObjectArgs);
             new MintLogger("EncryptedCopyObject_Test3", copyObjectSignature,
                     "Tests whether encrypted CopyObject passes", TestStatus.PASS, DateTime.Now - startTime, args: args)
                 .Log();
@@ -4083,7 +4083,7 @@ public class FunctionalTest
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length)
                     .WithServerSideEncryption(sses3);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var copySourceObjectArgs = new CopySourceObjectArgs()
@@ -4095,13 +4095,13 @@ public class FunctionalTest
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName)
                 .WithServerSideEncryption(sses3);
-            await minio.CopyObjectAsync(copyObjectArgs).ConfigureAwait(false);
+            await minio.CopyObjectAsync(copyObjectArgs);
 
             var getObjectArgs = new GetObjectArgs()
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName)
                 .WithFile(outFileName);
-            await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+            await minio.GetObjectAsync(getObjectArgs);
             new MintLogger("EncryptedCopyObject_Test4", copyObjectSignature,
                     "Tests whether encrypted CopyObject passes", TestStatus.PASS, DateTime.Now - startTime, args: args)
                 .Log();
@@ -4152,7 +4152,7 @@ public class FunctionalTest
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length)
                     .WithContentType(contentType);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
 
                 var getObjectArgs = new GetObjectArgs()
                     .WithBucket(bucketName)
@@ -4168,7 +4168,7 @@ public class FunctionalTest
                         Assert.AreEqual(file_write_size, file_read_size);
                         File.Delete(tempFileName);
                     });
-                await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+                await minio.GetObjectAsync(getObjectArgs);
             }
 
             Thread.Sleep(1000);
@@ -4213,7 +4213,7 @@ public class FunctionalTest
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length);
 
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
         }
         catch (Exception ex)
@@ -4231,7 +4231,7 @@ public class FunctionalTest
                 .WithObject(objectName)
                 .WithFile(fileName);
 
-            await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+            await minio.GetObjectAsync(getObjectArgs);
             Assert.IsTrue(File.Exists(fileName));
             new MintLogger("GetObject_Test2", getObjectSignature, "Tests whether GetObject with a file name works",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
@@ -4329,7 +4329,7 @@ public class FunctionalTest
                         .WithStreamData(filestream)
                         .WithObjectSize(objectSize)
                         .WithContentType(contentType);
-                    await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                    await minio.PutObjectAsync(putObjectArgs);
 
                     var getObjectArgs = new GetObjectArgs()
                         .WithBucket(bucketName)
@@ -4350,7 +4350,7 @@ public class FunctionalTest
                             Assert.AreEqual(actualContent, expectedContent);
                         });
 
-                    await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+                    await minio.GetObjectAsync(getObjectArgs);
                 }
 
                 new MintLogger(testName, getObjectSignature, "Tests whether GetObject returns all the data",
@@ -4393,14 +4393,14 @@ public class FunctionalTest
                     .WithObject(objectName)
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var getObjectArgs = new GetObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName)
                 .WithFile(outFileName);
-            await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+            await minio.GetObjectAsync(getObjectArgs);
             new MintLogger("FGetObject_Test1", getObjectSignature, "Tests whether FGetObject passes for small upload",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
         }
@@ -4819,19 +4819,19 @@ public class FunctionalTest
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length);
 
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            var stats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+            var stats = await minio.StatObjectAsync(statObjectArgs);
 
             var preArgs = new PresignedGetObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName)
                 .WithExpiry(expiresInt);
-            var presigned_url = await minio.PresignedGetObjectAsync(preArgs).ConfigureAwait(false);
+            var presigned_url = await minio.PresignedGetObjectAsync(preArgs);
 
             await DownloadObjectAsync(minio, presigned_url, downloadFile).ConfigureAwait(false);
             var writtenInfo = new FileInfo(downloadFile);
@@ -4880,18 +4880,18 @@ public class FunctionalTest
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length);
 
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            var stats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+            var stats = await minio.StatObjectAsync(statObjectArgs);
             var preArgs = new PresignedGetObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName)
                 .WithExpiry(0);
-            var presigned_url = await minio.PresignedGetObjectAsync(preArgs).ConfigureAwait(false);
+            var presigned_url = await minio.PresignedGetObjectAsync(preArgs);
             throw new InvalidOperationException(
                 "PresignedGetObjectAsync expected to throw an InvalidExpiryRangeException.");
         }
@@ -4951,13 +4951,13 @@ public class FunctionalTest
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length);
 
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            var stats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+            var stats = await minio.StatObjectAsync(statObjectArgs);
             var reqParams = new Dictionary<string, string>
             {
                 ["response-content-type"] = "application/json",
@@ -4969,7 +4969,7 @@ public class FunctionalTest
                 .WithExpiry(1000)
                 .WithHeaders(reqParams)
                 .WithRequestDate(reqDate);
-            var presigned_url = await minio.PresignedGetObjectAsync(preArgs).ConfigureAwait(false);
+            var presigned_url = await minio.PresignedGetObjectAsync(preArgs);
 
             var response = await minio.WrapperGetAsync(presigned_url).ConfigureAwait(false);
             if (string.IsNullOrEmpty(Convert.ToString(response.Content)) ||
@@ -4984,7 +4984,7 @@ public class FunctionalTest
 
             using (var fs = new FileStream(downloadFile, FileMode.CreateNew))
             {
-                await response.Content.CopyToAsync(fs).ConfigureAwait(false);
+                await response.Content.CopyToAsync(fs);
             }
 
             var writtenInfo = new FileInfo(downloadFile);
@@ -5037,13 +5037,13 @@ public class FunctionalTest
                 .WithBucket(bucketName)
                 .WithObject(objectName)
                 .WithExpiry(1000);
-            var presigned_url = await minio.PresignedPutObjectAsync(presignedPutObjectArgs).ConfigureAwait(false);
+            var presigned_url = await minio.PresignedPutObjectAsync(presignedPutObjectArgs);
             await UploadObjectAsync(minio, presigned_url, fileName);
             // Get stats for object from server
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            var stats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+            var stats = await minio.StatObjectAsync(statObjectArgs);
             // Compare with file used for upload
             var writtenInfo = new FileInfo(fileName);
             var file_written_size = writtenInfo.Length;
@@ -5090,18 +5090,18 @@ public class FunctionalTest
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length);
 
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            var stats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+            var stats = await minio.StatObjectAsync(statObjectArgs);
             var presignedPutObjectArgs = new PresignedPutObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName)
                 .WithExpiry(0);
-            var presigned_url = await minio.PresignedPutObjectAsync(presignedPutObjectArgs).ConfigureAwait(false);
+            var presigned_url = await minio.PresignedPutObjectAsync(presignedPutObjectArgs);
             new MintLogger("PresignedPutObject_Test2", presignedPutObjectSignature,
                 "Tests whether PresignedPutObject url retrieves object from bucket when invalid expiry is set.",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
@@ -5350,7 +5350,7 @@ public class FunctionalTest
                     .WithObject(objectName)
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var policyJson =
@@ -5359,7 +5359,7 @@ public class FunctionalTest
                 .WithBucket(bucketName)
                 .WithPolicy(policyJson);
 
-            await minio.SetPolicyAsync(setPolicyArgs).ConfigureAwait(false);
+            await minio.SetPolicyAsync(setPolicyArgs);
             new MintLogger("SetBucketPolicy_Test1", setBucketPolicySignature, "Tests whether SetBucketPolicy passes",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
         }
@@ -5406,7 +5406,7 @@ public class FunctionalTest
                     .WithObject(objectName)
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                await minio.PutObjectAsync(putObjectArgs);
             }
 
             var setPolicyArgs = new SetPolicyArgs()
@@ -5416,9 +5416,9 @@ public class FunctionalTest
                 .WithBucket(bucketName);
             var rmPolicyArgs = new RemovePolicyArgs()
                 .WithBucket(bucketName);
-            await minio.SetPolicyAsync(setPolicyArgs).ConfigureAwait(false);
-            var policy = await minio.GetPolicyAsync(getPolicyArgs).ConfigureAwait(false);
-            await minio.RemovePolicyAsync(rmPolicyArgs).ConfigureAwait(false);
+            await minio.SetPolicyAsync(setPolicyArgs);
+            var policy = await minio.GetPolicyAsync(getPolicyArgs);
+            await minio.RemovePolicyAsync(rmPolicyArgs);
             new MintLogger("GetBucketPolicy_Test1", getBucketPolicySignature, "Tests whether GetBucketPolicy passes",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
         }
@@ -5481,7 +5481,7 @@ public class FunctionalTest
             var lfcArgs = new SetBucketLifecycleArgs()
                 .WithBucket(bucketName)
                 .WithLifecycleConfiguration(lfc);
-            await minio.SetBucketLifecycleAsync(lfcArgs).ConfigureAwait(false);
+            await minio.SetBucketLifecycleAsync(lfcArgs);
             new MintLogger(nameof(BucketLifecycleAsync_Test1) + ".1", setBucketLifecycleSignature,
                     "Tests whether SetBucketLifecycleAsync passes", TestStatus.PASS, DateTime.Now - startTime,
                     args: args)
@@ -5506,7 +5506,7 @@ public class FunctionalTest
         {
             var lfcArgs = new GetBucketLifecycleArgs()
                 .WithBucket(bucketName);
-            var lfcObj = await minio.GetBucketLifecycleAsync(lfcArgs).ConfigureAwait(false);
+            var lfcObj = await minio.GetBucketLifecycleAsync(lfcArgs);
             Assert.IsNotNull(lfcObj);
             Assert.IsNotNull(lfcObj.Rules);
             Assert.IsTrue(lfcObj.Rules.Count > 0);
@@ -5537,10 +5537,10 @@ public class FunctionalTest
         {
             var lfcArgs = new RemoveBucketLifecycleArgs()
                 .WithBucket(bucketName);
-            await minio.RemoveBucketLifecycleAsync(lfcArgs).ConfigureAwait(false);
+            await minio.RemoveBucketLifecycleAsync(lfcArgs);
             var getLifecycleArgs = new GetBucketLifecycleArgs()
                 .WithBucket(bucketName);
-            var lfcObj = await minio.GetBucketLifecycleAsync(getLifecycleArgs).ConfigureAwait(false);
+            var lfcObj = await minio.GetBucketLifecycleAsync(getLifecycleArgs);
         }
         catch (NotImplementedException ex)
         {
@@ -5606,7 +5606,7 @@ public class FunctionalTest
             var lfcArgs = new SetBucketLifecycleArgs()
                 .WithBucket(bucketName)
                 .WithLifecycleConfiguration(lfc);
-            await minio.SetBucketLifecycleAsync(lfcArgs).ConfigureAwait(false);
+            await minio.SetBucketLifecycleAsync(lfcArgs);
             new MintLogger(nameof(BucketLifecycleAsync_Test2) + ".1", setBucketLifecycleSignature,
                     "Tests whether SetBucketLifecycleAsync passes", TestStatus.PASS, DateTime.Now - startTime,
                     args: args)
@@ -5631,7 +5631,7 @@ public class FunctionalTest
         {
             var lfcArgs = new GetBucketLifecycleArgs()
                 .WithBucket(bucketName);
-            var lfcObj = await minio.GetBucketLifecycleAsync(lfcArgs).ConfigureAwait(false);
+            var lfcObj = await minio.GetBucketLifecycleAsync(lfcArgs);
             Assert.IsNotNull(lfcObj);
             Assert.IsNotNull(lfcObj.Rules);
             Assert.IsTrue(lfcObj.Rules.Count > 0);
@@ -5660,10 +5660,10 @@ public class FunctionalTest
         {
             var lfcArgs = new RemoveBucketLifecycleArgs()
                 .WithBucket(bucketName);
-            await minio.RemoveBucketLifecycleAsync(lfcArgs).ConfigureAwait(false);
+            await minio.RemoveBucketLifecycleAsync(lfcArgs);
             var getLifecycleArgs = new GetBucketLifecycleArgs()
                 .WithBucket(bucketName);
-            var lfcObj = await minio.GetBucketLifecycleAsync(getLifecycleArgs).ConfigureAwait(false);
+            var lfcObj = await minio.GetBucketLifecycleAsync(getLifecycleArgs);
         }
         catch (NotImplementedException ex)
         {
