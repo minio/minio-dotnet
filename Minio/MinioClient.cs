@@ -87,11 +87,7 @@ public partial class MinioClient
         Region = "";
         SessionToken = "";
         Provider = null;
-        var clientHandler = new HttpClientHandler();
-        clientHandler.ServerCertificateCustomValidationCallback =
-            (sender, cert, chain, sslPolicyErrors) => { return true; };
-        clientHandler.UseProxy = false;
-        HTTPClient = new HttpClient(clientHandler);
+        HTTPClient = new HttpClient();
     }
 
     /// <summary>
