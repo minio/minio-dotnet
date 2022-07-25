@@ -1201,13 +1201,6 @@ public class FunctionalTest
 
     internal static async Task UploadObjectAsync(MinioClient minio, string url, string filePath)
     {
-        var clientHandler = new HttpClientHandler();
-        clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) =>
-        {
-            return true;
-        };
-        var client = new HttpClient(clientHandler);
-
         using (var strm = new StreamContent(new FileStream(filePath, FileMode.Open, FileAccess.Read)))
         {
             await minio.WrapperPutAsync(url, strm).ConfigureAwait(false);
