@@ -2568,8 +2568,6 @@ public class FunctionalTest
                 return stream;
             }
 
-            ;
-
             var bucketExistsArgs = new BucketExistsArgs()
                 .WithBucket(bucketName);
             var found = await minio.BucketExistsAsync(bucketExistsArgs).ConfigureAwait(false);
@@ -2672,11 +2670,8 @@ public class FunctionalTest
             {
                 var makeBucketArgs = new MakeBucketArgs()
                     .WithBucket(bucketName);
-                // await minio.MakeBucketAsync(makeBucketArgs);
                 minio.MakeBucketAsync(makeBucketArgs).Wait();
             }
-
-            // Console.WriteLine($"Bucket created");
 
             var notificationsArgs = new ListenBucketNotificationsArgs()
                 .WithBucket(bucketName)
