@@ -21,6 +21,7 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Minio.Exceptions;
@@ -57,7 +58,7 @@ internal class HttpRequestMessageBuilder
 
     public Uri RequestUri { get; set; }
     public Action<Stream> ResponseWriter { get; set; }
-    public Func<Stream, Task> FunctionResponseWriter { get; set; }
+    public Func<Stream, CancellationToken, Task> FunctionResponseWriter { get; set; }
     public HttpMethod Method { get; }
 
     public HttpRequestMessage Request
@@ -144,9 +145,11 @@ internal class HttpRequestMessageBuilder
 
     public string ContentTypeKey => "Content-Type";
 
-    public void ProcessFunctionResponseWriter(Func<Stream, Task> func, Stream stream)
+    public void ProcessFunctionResponseWriter(Func<Stream, CancellationToken, Task> func,
+        Stream stream,
+        CancellationToken cancellationToken)
     {
-        func(stream).Wait();
+        func(stream, cancellationToken).Wait();
     }
 
     public void AddHeaderParameter(string key, string value)
