@@ -145,13 +145,6 @@ internal class HttpRequestMessageBuilder
 
     public string ContentTypeKey => "Content-Type";
 
-    public void ProcessFunctionResponseWriter(Func<Stream, CancellationToken, Task> func,
-        Stream stream,
-        CancellationToken cancellationToken)
-    {
-        func(stream, cancellationToken).Wait();
-    }
-
     public void AddHeaderParameter(string key, string value)
     {
         var comparison = StringComparison.InvariantCultureIgnoreCase;
