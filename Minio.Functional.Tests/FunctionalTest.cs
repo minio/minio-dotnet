@@ -1594,6 +1594,7 @@ public class FunctionalTest
 
     #endregion
 
+
     #region Bucket Encryption
 
     internal static async Task BucketEncryptionsAsync_Test1(MinioClient minio)
