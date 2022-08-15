@@ -296,7 +296,7 @@ public partial class MinioClient
         {
             utils.ValidateBucketName(bucketName);
             // Fetch correct region for bucket if this is not a bucket creation
-            if (!string.IsNullOrEmpty(objectName) && method != HttpMethod.Put)
+            if (method != HttpMethod.Put)
                 region = await GetRegion(bucketName).ConfigureAwait(false);
         }
 
