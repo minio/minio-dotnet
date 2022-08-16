@@ -159,7 +159,7 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
         });
         var byteArrContent = await formContent.ReadAsByteArrayAsync();
         requestMessageBuilder.SetBody(byteArrContent);
-        requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Type", "application/x-www-form-urlencoded");
+        requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
         requestMessageBuilder.AddOrUpdateHeaderParameter("Accept-Encoding", "identity");
         await Task.Yield();
 
