@@ -88,6 +88,8 @@ public partial class MinioClient : IMinioClient
             throw new MinioException("User Access Credentials Provider not initialized correctly.");
         if (Provider == null && (string.IsNullOrEmpty(AccessKey) || string.IsNullOrEmpty(SecretKey)))
             throw new MinioException("User Access Credentials not initialized.");
+        if (isHTTPClientSet && Proxy != null)
+            throw new MinioException("Either WithProxy() or WithHttpClient() can be provided.");
 
         var host = BaseUrl;
 

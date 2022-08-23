@@ -153,6 +153,7 @@ public partial class MinioClient
     internal bool Secure { get; private set; }
 
     internal HttpClient HTTPClient { get; private set; }
+    internal bool isHTTPClientSet { get; private set; }
 
     private static string SystemUserAgent
     {
@@ -423,6 +424,8 @@ public partial class MinioClient
     public MinioClient WithProxy(IWebProxy proxy)
     {
         Proxy = proxy;
+        HTTPClient.Dispose();
+        HTTPClient = new HttpClient(new HttpClientHandler { Proxy = Proxy });
         return this;
     }
 
@@ -455,7 +458,13 @@ public partial class MinioClient
     /// <returns></returns>
     public MinioClient WithHttpClient(HttpClient httpClient)
     {
-        if (httpClient != null) HTTPClient = httpClient;
+        if (httpClient != null)
+        {
+            HTTPClient.Dispose();
+            isHTTPClientSet = true;
+            HTTPClient = httpClient;
+        }
+
         return this;
     }
 
