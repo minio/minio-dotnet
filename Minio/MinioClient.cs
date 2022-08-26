@@ -87,7 +87,6 @@ public partial class MinioClient
         Region = "";
         SessionToken = "";
         Provider = null;
-        HTTPClient = new HttpClient();
     }
 
     /// <summary>
@@ -417,8 +416,11 @@ public partial class MinioClient
     }
 
     /// <summary>
-    ///     Uses webproxy for all requests if this method is invoked on client object
+    ///     Uses webproxy for all requests if this method is invoked on client object.
     /// </summary>
+    /// <remarks>
+    ///     This setting will be ignored when injecting an external <see cref="HttpClient"/> instance with <see cref="MinioClient(HttpClient)"/> <see cref="WithHttpClient(HttpClient)"/>.
+    /// </remarks>
     /// <returns></returns>
     public MinioClient WithProxy(IWebProxy proxy)
     {
