@@ -153,6 +153,8 @@ public partial class MinioClient
 
     internal HttpClient HTTPClient { get; private set; }
 
+    private bool disposeHttpClient = true;
+
     private static string SystemUserAgent
     {
         get
@@ -419,7 +421,7 @@ public partial class MinioClient
     ///     Uses webproxy for all requests if this method is invoked on client object.
     /// </summary>
     /// <remarks>
-    ///     This setting will be ignored when injecting an external <see cref="HttpClient"/> instance with <see cref="MinioClient(HttpClient)"/> <see cref="WithHttpClient(HttpClient)"/>.
+    ///     This setting will be ignored when injecting an external <see cref="HttpClient"/> instance with <see cref="MinioClient(HttpClient)"/> <see cref="WithHttpClient(HttpClient, bool)"/>.
     /// </remarks>
     /// <returns></returns>
     public MinioClient WithProxy(IWebProxy proxy)
@@ -454,10 +456,12 @@ public partial class MinioClient
     ///     Allows end user to define the Http server and pass it as a parameter
     /// </summary>
     /// <param name="httpClient"> Instance of HttpClient</param>
+    /// <param name="disposeHttpClient"> Dispose the HttpClient when leaving</param>
     /// <returns></returns>
-    public MinioClient WithHttpClient(HttpClient httpClient)
+    public MinioClient WithHttpClient(HttpClient httpClient, bool disposeHttpClient = false)
     {
         if (httpClient != null) HTTPClient = httpClient;
+        this.disposeHttpClient = disposeHttpClient;
         return this;
     }
 
@@ -850,7 +854,7 @@ public partial class MinioClient
 
     public void Dispose()
     {
-        HTTPClient?.Dispose();
+        if (disposeHttpClient) HTTPClient?.Dispose();
     }
 }
 
