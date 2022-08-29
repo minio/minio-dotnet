@@ -47,7 +47,8 @@ public class OperationsTest
         var client = new MinioClient()
             .WithEndpoint("play.min.io")
             .WithCredentials("Q3AM3UQ867SPQQA43P2F",
-                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG");
+                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+            .Build();
 
         var bucket = "bucket";
         var objectName = "object-name";
@@ -95,7 +96,8 @@ public class OperationsTest
         var client = new MinioClient()
             .WithEndpoint("play.min.io")
             .WithCredentials("Q3AM3UQ867SPQQA43P2F",
-                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG");
+                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+            .Build();
 
         var bucket = "bucket";
         var objectName = "object-name";
