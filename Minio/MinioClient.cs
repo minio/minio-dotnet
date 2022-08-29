@@ -59,6 +59,8 @@ public partial class MinioClient
 
     private string CustomUserAgent = string.Empty;
 
+    private bool disposeHttpClient = true;
+
     private IRequestLogger logger;
 
     internal ClientProvider Provider;
@@ -152,8 +154,6 @@ public partial class MinioClient
     internal bool Secure { get; private set; }
 
     internal HttpClient HTTPClient { get; private set; }
-
-    private bool disposeHttpClient = true;
 
     private static string SystemUserAgent
     {
@@ -421,7 +421,8 @@ public partial class MinioClient
     ///     Uses webproxy for all requests if this method is invoked on client object.
     /// </summary>
     /// <remarks>
-    ///     This setting will be ignored when injecting an external <see cref="HttpClient"/> instance with <see cref="MinioClient(HttpClient)"/> <see cref="WithHttpClient(HttpClient, bool)"/>.
+    ///     This setting will be ignored when injecting an external <see cref="HttpClient" /> instance with
+    ///     <see cref="MinioClient(HttpClient)" /> <see cref="WithHttpClient(HttpClient, bool)" />.
     /// </remarks>
     /// <returns></returns>
     public MinioClient WithProxy(IWebProxy proxy)
