@@ -17,6 +17,7 @@
 
 using System;
 using System.Net;
+using System.Net.Http;
 using Minio.Credentials;
 using Minio.Exceptions;
 
@@ -98,6 +99,7 @@ public partial class MinioClient : IMinioClient
         else
             Endpoint = host;
 
+        HTTPClient ??= Proxy is null ? new HttpClient() : new HttpClient(new HttpClientHandler { Proxy = Proxy });
         HTTPClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", FullUserAgent);
         return this;
     }
