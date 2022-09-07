@@ -218,6 +218,7 @@ public partial class MinioClient : IBucketOperations
                             .WithContinuationToken(nextContinuationToken)
                             .WithMarker(marker)
                             .WithListObjectsV1(!args.UseV2)
+                            .WithHeaders(args.Headers)
                             .WithVersionIdMarker(versionIdMarker);
                         if (args.Versions)
                         {

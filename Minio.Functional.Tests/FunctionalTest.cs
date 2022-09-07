@@ -33,6 +33,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
+using ICSharpCode.SharpZipLib.Core;
+using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
 using Minio.DataModel.ILM;
@@ -2393,6 +2395,136 @@ public class FunctionalTest
 
     #endregion
 
+    internal static MemoryStream CreateZipFile(string prefix, int nFiles)
+    {
+        var outputMemStream = new MemoryStream();
+        var zipStream = new ZipOutputStream(outputMemStream);
+
+        zipStream.SetLevel(3); //0-9, 9 being the highest level of compression
+        byte[] bytes = null;
+
+        for (var i = 0; i <= nFiles; i++)
+        {
+            // Make one large, compressible file.
+            if (i == nFiles) i = 1000000;
+
+            var fileName = prefix + "file-" + i + ".bin";
+            Directory.CreateDirectory(prefix);
+            var newEntry = new ZipEntry(fileName);
+            newEntry.DateTime = DateTime.Now;
+
+            zipStream.PutNextEntry(newEntry);
+
+            bytes = rsg.GenerateStreamFromSeed(i).ToArray();
+
+            var inStream = new MemoryStream(bytes);
+            if (i == 0) StreamUtils.Copy(inStream, zipStream, new byte[128]);
+            else StreamUtils.Copy(inStream, zipStream, new byte[i * 128]);
+
+            inStream.Close();
+            zipStream.CloseEntry();
+        }
+
+        zipStream.IsStreamOwner = false; // False stops the Close also Closing the underlying stream.
+        zipStream.Close(); // Must finish the ZipOutputStream before using outputMemStream.
+
+        outputMemStream.Position = 0;
+
+        outputMemStream.Seek(0, SeekOrigin.Begin);
+
+        return outputMemStream;
+    }
+
+    internal static async Task GetObjectS3Zip_Test1(MinioClient minio)
+    {
+        var path = "test/small/";
+        var startTime = DateTime.Now;
+        // var bucketName = GetRandomName(15);
+        var bucketName = "ers";
+        // var randomFileName = GetRandomName(15) + ".bin";
+        var randomFileName = "rand.zip";
+        // var objectName = GetRandomObjectName(15) + ".zip";
+        var objectName = "boz.zip";
+
+        var args = new Dictionary<string, string>
+        {
+            { "bucketName", bucketName },
+            { "objectName", objectName }
+        };
+        try
+        {
+            await Setup_Test(minio, bucketName);
+            const int nFiles = 500;
+            var memStream = CreateZipFile(path, nFiles);
+
+            var putObjectArgs = new PutObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithStreamData(memStream)
+                .WithObjectSize(memStream.Length);
+            await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+
+            var getObjectArgs = new GetObjectArgs()
+                .WithBucket(bucketName)
+                .WithFile(randomFileName)
+                .WithObject(objectName);
+
+            var resp = await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+
+            var statArgs = new StatObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName);
+            var stat = await minio.StatObjectAsync(statArgs).ConfigureAwait(false);
+
+            var lOpts = new Dictionary<string, string>();
+            lOpts.Add("x-minio-extract", "true");
+
+            // Test with different prefix values
+            // prefix value="", expected number of files listed=1
+            var prefix = "";
+            ListObjects_Test(minio, bucketName, prefix, 1, true, headers: lOpts);
+
+            // prefix value="/", expected number of files listed=nFiles+1
+            prefix = objectName + "/";
+            ListObjects_Test(minio, bucketName, prefix, nFiles + 1, true, headers: lOpts);
+
+            // prefix value="/test", expected number of files listed=nFiles
+            prefix = objectName + "/test";
+            ListObjects_Test(minio, bucketName, prefix, nFiles + 1, true, headers: lOpts);
+
+            // prefix value="/test/", expected number of files listed=nFiles+1
+            prefix = objectName + "/test/";
+            ListObjects_Test(minio, bucketName, prefix, nFiles + 1, true, headers: lOpts);
+
+            // prefix value="/test", expected number of files listed=nFiles+1
+            prefix = objectName + "/test/small";
+            ListObjects_Test(minio, bucketName, prefix, nFiles + 1, true, headers: lOpts);
+
+            // prefix value="/test", expected number of files listed=nFiles+1
+            prefix = objectName + "/test/small/";
+            ListObjects_Test(minio, bucketName, prefix, nFiles + 1, true, headers: lOpts);
+
+            // prefix value="/test", expected number of files listed=1
+            prefix = objectName + "/test/small/" + "file-1.bin";
+            ListObjects_Test(minio, bucketName, prefix, 1, true, headers: lOpts);
+
+            new MintLogger("GetObjectS3Zip_Test1", getObjectSignature, "Tests s3Zip files", TestStatus.PASS,
+                DateTime.Now - startTime, args: args).Log();
+        }
+        catch (Exception ex)
+        {
+            new MintLogger("GetObjectS3Zip_Test1", getObjectSignature, "Tests s3Zip files", TestStatus.FAIL,
+                DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
+            throw;
+        }
+        finally
+        {
+            File.Delete(randomFileName);
+            Directory.Delete(path.Split("/")[0], true);
+            // await TearDown(minio, bucketName);
+        }
+    }
+
 
     #region Bucket Notifications
 
@@ -4031,6 +4163,7 @@ public class FunctionalTest
 
     #endregion
 
+
     #region Encrypted Copy Object
 
     internal static async Task EncryptedCopyObject_Test1(MinioClient minio)
@@ -4976,13 +5109,14 @@ public class FunctionalTest
 
 
     internal static void ListObjects_Test(MinioClient minio, string bucketName, string prefix, int numObjects,
-        bool recursive = true, bool versions = false)
+        bool recursive = true, bool versions = false, Dictionary<string, string> headers = null)
     {
         var startTime = DateTime.Now;
         var count = 0;
         var args = new ListObjectsArgs()
             .WithBucket(bucketName)
             .WithPrefix(prefix)
+            .WithHeaders(headers)
             .WithRecursive(recursive)
             .WithVersions(versions);
         if (!versions)
@@ -4991,11 +5125,11 @@ public class FunctionalTest
             var subscription = observable.Subscribe(
                 item =>
                 {
-                    Assert.IsTrue(item.Key.StartsWith(prefix));
-                    count += 1;
+                    if (!string.IsNullOrEmpty(prefix)) Assert.IsTrue(item.Key.StartsWith(prefix));
+                    count++;
                 },
                 ex => throw ex,
-                () => { Assert.AreEqual(count, numObjects); });
+                () => { ; });
         }
         else
         {
@@ -5007,8 +5141,11 @@ public class FunctionalTest
                     count += 1;
                 },
                 ex => throw ex,
-                () => { Assert.AreEqual(count, numObjects); });
+                () => { ; });
         }
+
+        Thread.Sleep(1000);
+        Assert.AreEqual(numObjects, count);
     }
 
     #endregion
