@@ -187,12 +187,8 @@ internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        var splitPrefixList = Prefix.Split('/');
-        if (Headers.ContainsKey("x-minio-extract"))
-            if ((splitPrefixList.Length == 1 && Prefix.EndsWith(".zip/")) ||
-                (splitPrefixList.Length > 1 && splitPrefixList[0].EndsWith(".zip")))
-                foreach (var h in Headers)
-                    requestMessageBuilder.AddOrUpdateHeaderParameter(h.Key, h.Value);
+        foreach (var h in Headers)
+            requestMessageBuilder.AddOrUpdateHeaderParameter(h.Key, h.Value);
 
         requestMessageBuilder.AddQueryParameter("delimiter", Delimiter);
         requestMessageBuilder.AddQueryParameter("max-keys", "1000");

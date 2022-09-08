@@ -2439,12 +2439,9 @@ public class FunctionalTest
     {
         var path = "test/small/";
         var startTime = DateTime.Now;
-        // var bucketName = GetRandomName(15);
-        var bucketName = "ers";
-        // var randomFileName = GetRandomName(15) + ".bin";
-        var randomFileName = "rand.zip";
-        // var objectName = GetRandomObjectName(15) + ".zip";
-        var objectName = "boz.zip";
+        var bucketName = GetRandomName(15);
+        var randomFileName = GetRandomName(15) + ".zip";
+        var objectName = GetRandomObjectName(15) + ".zip";
 
         var args = new Dictionary<string, string>
         {
@@ -2521,7 +2518,7 @@ public class FunctionalTest
         {
             File.Delete(randomFileName);
             Directory.Delete(path.Split("/")[0], true);
-            // await TearDown(minio, bucketName);
+            await TearDown(minio, bucketName);
         }
     }
 
@@ -2779,8 +2776,8 @@ public class FunctionalTest
         finally
         {
             await TearDown(minio, bucketName);
-            if (subscription != null)
-                subscription.Dispose();
+            if (subsc != null)
+                subsc.Dispose();
         }
     }
 
