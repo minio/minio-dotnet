@@ -2776,8 +2776,8 @@ public class FunctionalTest
         finally
         {
             await TearDown(minio, bucketName);
-            if (subsc != null)
-                subsc.Dispose();
+            if (subscription != null)
+                subscription.Dispose();
         }
     }
 
