@@ -23,7 +23,7 @@ namespace Minio.Examples.Cases;
 internal class RemoveObjects
 {
     // Remove a list of objects from a bucket
-    public static async Task Run(MinioClient minio,
+    public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name",
         List<string> objectsList = null,
         List<Tuple<string, string>> objectsVersionsList = null)

@@ -22,7 +22,7 @@ public class OperationsTest
     }
 
 
-    private async Task<bool> ObjectExistsAsync(MinioClient client, string bucket, string objectName)
+    private async Task<bool> ObjectExistsAsync(IMinioClient client, string bucket, string objectName)
     {
         try
         {

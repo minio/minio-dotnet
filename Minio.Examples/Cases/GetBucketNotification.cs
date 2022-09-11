@@ -22,7 +22,7 @@ namespace Minio.Examples.Cases;
 internal class GetBucketNotification
 {
     // Get bucket notifications - this works only with AWS endpoint
-    public static async Task Run(MinioClient minio,
+    public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name")
     {
         try

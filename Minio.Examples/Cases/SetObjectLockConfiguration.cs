@@ -23,7 +23,7 @@ namespace Minio.Examples.Cases;
 public class SetObjectLockConfiguration
 {
     // Set Object Lock Configuration on the bucket
-    public static async Task Run(MinioClient minio,
+    public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name",
         ObjectLockConfiguration config = null)
     {

@@ -22,7 +22,7 @@ namespace Minio.Examples.Cases;
 internal class GetVersioning
 {
     // Check if Versioning is Enabled on a bucket
-    public static async Task Run(MinioClient minio,
+    public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name")
     {
         var args = new GetVersioningArgs()
