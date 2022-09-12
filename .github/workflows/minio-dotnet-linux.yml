@@ -53,8 +53,8 @@ jobs:
           SECRET_KEY: minio123
           ENABLE_HTTPS: 1
           ENABLE_KMS: 1
-          MINIO_ACCESS_KEY: minio
-          MINIO_SECRET_KEY: minio123
+          MINIO_ROOT_USER: minio
+          MINIO_ROOT_PASSWORD: minio123
           MINIO_KMS_SECRET_KEY: my-minio-key:OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
         run: |
           wget --quiet -O /tmp/minio https://dl.min.io/server/minio/release/linux-amd64/minio

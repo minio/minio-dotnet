@@ -2720,6 +2720,7 @@ public class FunctionalTest
                 .WithEvents(events);
             var observable = minio.ListenBucketNotificationsAsync(listenArgs);
 
+            var eventData = new MinioNotificationRaw("");
             subscription = observable.Subscribe(
                 ev =>
                 {
