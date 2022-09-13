@@ -648,7 +648,7 @@ public partial class MinioClient : IObjectOperations
             var bytesRead = bytes == null ? 0 : bytes.Length;
             if (bytesRead != (int)args.ObjectSize)
                 throw new UnexpectedShortReadException(
-                    $"Data read {bytes.Length} is shorter than the size {args.ObjectSize} of input buffer.");
+                    $"Data read {bytesRead} is shorter than the size {args.ObjectSize} of input buffer.");
             args = args.WithRequestBody(bytes)
                 .WithStreamData(null)
                 .WithObjectSize(bytesRead);
