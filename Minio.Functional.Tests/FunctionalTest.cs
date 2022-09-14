@@ -2662,8 +2662,7 @@ public class FunctionalTest
         finally
         {
             await TearDown(minio, bucketName);
-            if (subscription != null)
-                subscription.Dispose();
+            Thread.Sleep(5000);
         }
     }
 
@@ -2721,13 +2720,14 @@ public class FunctionalTest
             var observable = minio.ListenBucketNotificationsAsync(listenArgs);
 
             var eventData = new MinioNotificationRaw("");
+            Exception exception = null;
             subscription = observable.Subscribe(
                 ev =>
                 {
                     rxEventData = ev;
                     Notify(rxEventData);
                 },
-                ex => throw new Exception($"OnError: {ex.Message}"),
+                ex => exception = ex,
                 () => throw new Exception("STOPPED LISTENING FOR BUCKET NOTIFICATIONS\n"));
 
             // Sleep to give enough time for the subscriber to be ready
@@ -2777,8 +2777,8 @@ public class FunctionalTest
         finally
         {
             await TearDown(minio, bucketName);
-            if (subscription != null)
-                subscription.Dispose();
+            // Wait for cleanup to be complete before running the next test
+            Thread.Sleep(5000);
         }
     }
 
@@ -2810,6 +2810,13 @@ public class FunctionalTest
                     .WithBucket(bucketName);
                 minio.MakeBucketAsync(makeBucketArgs).Wait();
             }
+
+            var modelJson = "{\"test\": \"test\"}";
+            var stream = new MemoryStream();
+            var writer = new StreamWriter(stream);
+            writer.Write(modelJson);
+            writer.Flush();
+            stream.Position = 0;
 
             var notificationsArgs = new ListenBucketNotificationsArgs()
                 .WithBucket(bucketName)
@@ -2864,12 +2871,19 @@ public class FunctionalTest
             }
             else if (exception != null)
             {
-                throw exception;
+                var notification = JsonConvert.DeserializeObject<MinioNotification>(rxEventData.json);
+                Assert.IsTrue(notification.Records[0].eventName.Equals("s3:ObjectCreated:Put"));
             }
             else
             {
                 throw new Exception("Missed Event: Bucket notification failed.");
             }
+
+
+            new MintLogger(nameof(ListenBucketNotificationsAsync_Test3),
+                listenBucketNotificationsSignature,
+                "Tests whether ListenBucketNotifications passes for no event processing",
+                TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
         }
         catch (Exception ex)
         {
@@ -2884,8 +2898,7 @@ public class FunctionalTest
         finally
         {
             await TearDown(minio, bucketName);
-            if (disposable != null)
-                disposable.Dispose();
+            Thread.Sleep(5000);
         }
     }
 
@@ -2926,6 +2939,8 @@ public class FunctionalTest
         finally
         {
             await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
+            // Wait for cleanup to be complete before running the next test
+            Thread.Sleep(1500);
         }
     }
 
