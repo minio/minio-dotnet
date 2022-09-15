@@ -2662,7 +2662,6 @@ public class FunctionalTest
         finally
         {
             await TearDown(minio, bucketName);
-            Thread.Sleep(5000);
         }
     }
 
@@ -2777,8 +2776,6 @@ public class FunctionalTest
         finally
         {
             await TearDown(minio, bucketName);
-            // Wait for cleanup to be complete before running the next test
-            Thread.Sleep(5000);
         }
     }
 
@@ -2898,7 +2895,6 @@ public class FunctionalTest
         finally
         {
             await TearDown(minio, bucketName);
-            Thread.Sleep(5000);
         }
     }
 
