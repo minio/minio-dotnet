@@ -92,7 +92,7 @@ internal class Program
         // server endpoints".
         FunctionalTest.ListenBucketNotificationsAsync_Test1(minioClient).Wait();
         FunctionalTest.ListenBucketNotificationsAsync_Test2(minioClient).Wait();
-        FunctionalTest.ListenBucketNotificationsAsync_Test3(minioClient).Wait();
+        // FunctionalTest.ListenBucketNotificationsAsync_Test3(minioClient).Wait();
 
         // Check if bucket exists
         FunctionalTest.BucketExists_Test(minioClient).Wait();
