@@ -35,7 +35,7 @@ jobs:
       - name: Install tool dependencies and lint
         run: |
           dotnet tool restore
-          # dotnet regitlint --fail-on-diff
+          dotnet regitlint --fail-on-diff
 
       # Build and Execute build tests
       - name: Build & Unit Test
