@@ -2662,6 +2662,8 @@ public class FunctionalTest
         finally
         {
             await TearDown(minio, bucketName);
+            if (subscription != null)
+                subscription.Dispose();
         }
     }
 
@@ -2718,8 +2720,6 @@ public class FunctionalTest
                 .WithEvents(events);
             var observable = minio.ListenBucketNotificationsAsync(listenArgs);
 
-            var eventData = new MinioNotificationRaw("");
-            Exception exception = null;
             subscription = observable.Subscribe(
                 ev =>
                 {
@@ -2776,6 +2776,8 @@ public class FunctionalTest
         finally
         {
             await TearDown(minio, bucketName);
+            if (subscription != null)
+                subscription.Dispose();
         }
     }
 
@@ -2784,7 +2786,7 @@ public class FunctionalTest
         var startTime = DateTime.Now;
         var events = new List<EventType>();
         events.Add(EventType.ObjectCreatedAll);
-        var rxEventData = new MinioNotificationRaw("");
+        var rxEventsData = new MinioNotificationRaw("");
         IDisposable disposable = null;
         var bucketName = GetRandomName(15);
         var suffix = ".json";
@@ -2807,6 +2809,28 @@ public class FunctionalTest
                     .WithBucket(bucketName);
                 minio.MakeBucketAsync(makeBucketArgs).Wait();
             }
+
+            var notificationsArgs = new ListenBucketNotificationsArgs()
+                .WithBucket(bucketName)
+                .WithSuffix(suffix)
+                .WithEvents(events);
+
+            var notifications = minio.ListenBucketNotificationsAsync(notificationsArgs);
+
+            var testState = "fail";
+            Exception exception = null;
+            disposable = notifications.Subscribe(
+                x =>
+                {
+                    rxEventsData = x;
+                    testState = "pass";
+                },
+                ex =>
+                {
+                    exception = ex;
+                    testState = "fail";
+                },
+                () => { testState = "completed"; });
 
             var modelJson = "{\"test\": \"test\"}";
             var stream = new MemoryStream();
@@ -2846,6 +2870,7 @@ public class FunctionalTest
             Thread.Sleep(sleepTime);
 
             await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+            Thread.Sleep(1000);
 
             var stTime = DateTime.UtcNow;
             var waitTime = 25; // Milliseconds
@@ -2856,8 +2881,7 @@ public class FunctionalTest
                 if ((DateTime.UtcNow - stTime).TotalMilliseconds >= timeout)
                     throw new Exception("Timeout: while waiting for events");
             }
-
-            if (!string.IsNullOrEmpty(rxEventData.json))
+            else if (testState == "fail")
             {
                 var notification = JsonConvert.DeserializeObject<MinioNotification>(rxEventData.json);
                 Assert.IsTrue(notification.Records[0].eventName.Equals("s3:ObjectCreated:Put"));
@@ -2871,16 +2895,10 @@ public class FunctionalTest
                 var notification = JsonConvert.DeserializeObject<MinioNotification>(rxEventData.json);
                 Assert.IsTrue(notification.Records[0].eventName.Equals("s3:ObjectCreated:Put"));
             }
-            else
+            else if (testState == "completed")
             {
                 throw new Exception("Missed Event: Bucket notification failed.");
             }
-
-
-            new MintLogger(nameof(ListenBucketNotificationsAsync_Test3),
-                listenBucketNotificationsSignature,
-                "Tests whether ListenBucketNotifications passes for no event processing",
-                TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
         }
         catch (Exception ex)
         {
@@ -2895,6 +2913,8 @@ public class FunctionalTest
         finally
         {
             await TearDown(minio, bucketName);
+            if (disposable != null)
+                disposable.Dispose();
         }
     }
 
@@ -2935,8 +2955,6 @@ public class FunctionalTest
         finally
         {
             await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
-            // Wait for cleanup to be complete before running the next test
-            Thread.Sleep(1500);
         }
     }
 

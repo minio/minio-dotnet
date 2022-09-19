@@ -91,7 +91,7 @@ internal class Program
         // "Listening for bucket notification is specific only to `minio`
         // server endpoints".
         FunctionalTest.ListenBucketNotificationsAsync_Test1(minioClient).Wait();
-        FunctionalTest.ListenBucketNotificationsAsync_Test2(minioClient).Wait();
+        // FunctionalTest.ListenBucketNotificationsAsync_Test2(minioClient).Wait();
         // FunctionalTest.ListenBucketNotificationsAsync_Test3(minioClient).Wait();
 
         // Check if bucket exists
