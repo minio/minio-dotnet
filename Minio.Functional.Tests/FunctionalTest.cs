@@ -2412,11 +2412,9 @@ public class FunctionalTest
             Directory.CreateDirectory(prefix);
             var newEntry = new ZipEntry(fileName);
             newEntry.DateTime = DateTime.Now;
-
             zipStream.PutNextEntry(newEntry);
 
             bytes = rsg.GenerateStreamFromSeed(i).ToArray();
-
             var inStream = new MemoryStream(bytes);
             if (i == 0) StreamUtils.Copy(inStream, zipStream, new byte[128]);
             else StreamUtils.Copy(inStream, zipStream, new byte[i * 128]);
@@ -2429,7 +2427,6 @@ public class FunctionalTest
         zipStream.Close(); // Must finish the ZipOutputStream before using outputMemStream.
 
         outputMemStream.Position = 0;
-
         outputMemStream.Seek(0, SeekOrigin.Begin);
 
         return outputMemStream;
@@ -2485,7 +2482,7 @@ public class FunctionalTest
             prefix = objectName + "/";
             ListObjects_Test(minio, bucketName, prefix, nFiles + 1, true, headers: lOpts);
 
-            // prefix value="/test", expected number of files listed=nFiles
+            // prefix value="/test", expected number of files listed=nFiles + 1
             prefix = objectName + "/test";
             ListObjects_Test(minio, bucketName, prefix, nFiles + 1, true, headers: lOpts);
 
@@ -2521,7 +2518,6 @@ public class FunctionalTest
             await TearDown(minio, bucketName);
         }
     }
-
 
     #region Bucket Notifications
 
@@ -4189,7 +4185,6 @@ public class FunctionalTest
     }
 
     #endregion
-
 
     #region Encrypted Copy Object
 
