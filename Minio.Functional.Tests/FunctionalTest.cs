@@ -2620,7 +2620,7 @@ public class FunctionalTest
             var timeout = 3000; // Milliseconds
             var waitTime = 25; // Milliseconds
             var stTime = DateTime.UtcNow;
-            while (string.IsNullOrEmpty(rxEventsData.json))
+            while (string.IsNullOrEmpty(rxEventData.json))
             {
                 await Task.Delay(waitTime);
                 if ((DateTime.UtcNow - stTime).TotalMilliseconds >= timeout)
