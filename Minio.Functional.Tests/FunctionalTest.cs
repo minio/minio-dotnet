@@ -2601,7 +2601,7 @@ public class FunctionalTest
                 () => throw new Exception("STOPPED LISTENING FOR BUCKET NOTIFICATIONS\n"));
 
             // Sleep to give enough time for the subscriber to be ready
-            var sleepTime = 25; // Milliseconds
+            var sleepTime = 1000; // Milliseconds
             Thread.Sleep(sleepTime);
 
             var modelJson = "{\"test\": \"test\"}";
@@ -2708,7 +2708,7 @@ public class FunctionalTest
                 () => { });
 
             // Sleep to give enough time for the subscriber to be ready
-            var sleepTime = 25; // Milliseconds
+            var sleepTime = 1000; // Milliseconds
             Thread.Sleep(sleepTime);
 
             await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
