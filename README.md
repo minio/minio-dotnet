@@ -35,7 +35,7 @@ private static MinioClient minio = new MinioClient()
 var getListBucketsTask = minio.ListBucketsAsync();
 
 // Iterate over the list of buckets.
-foreach (Bucket bucket in getListBucketsTask.Result.Buckets)
+foreach (var bucket in getListBucketsTask.Result.Buckets)
 {
     Console.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
 }
