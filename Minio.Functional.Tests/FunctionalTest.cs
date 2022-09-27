@@ -2859,8 +2859,7 @@ public class FunctionalTest
             }
             else if (exception != null)
             {
-                var notification = JsonConvert.DeserializeObject<MinioNotification>(rxEventData.json);
-                Assert.IsTrue(notification.Records[0].eventName.Equals("s3:ObjectCreated:Put"));
+                throw exception;
             }
             else
             {
