@@ -2722,7 +2722,7 @@ public class FunctionalTest
                     rxEventData = ev;
                     Notify(rxEventData);
                 },
-                ex => exception = ex,
+                ex => throw new Exception($"OnError: {ex.Message}"),
                 () => throw new Exception("STOPPED LISTENING FOR BUCKET NOTIFICATIONS\n"));
 
             // Sleep to give enough time for the subscriber to be ready
@@ -2782,7 +2782,7 @@ public class FunctionalTest
         var startTime = DateTime.Now;
         var events = new List<EventType>();
         events.Add(EventType.ObjectCreatedAll);
-        var rxEventsData = new MinioNotificationRaw("");
+        var rxEventData = new MinioNotificationRaw("");
         IDisposable disposable = null;
         var bucketName = GetRandomName(15);
         var suffix = ".json";
@@ -2805,35 +2805,6 @@ public class FunctionalTest
                     .WithBucket(bucketName);
                 minio.MakeBucketAsync(makeBucketArgs).Wait();
             }
-
-            var notificationsArgs = new ListenBucketNotificationsArgs()
-                .WithBucket(bucketName)
-                .WithSuffix(suffix)
-                .WithEvents(events);
-
-            var notifications = minio.ListenBucketNotificationsAsync(notificationsArgs);
-
-            var testState = "fail";
-            Exception exception = null;
-            disposable = notifications.Subscribe(
-                x =>
-                {
-                    rxEventsData = x;
-                    testState = "pass";
-                },
-                ex =>
-                {
-                    exception = ex;
-                    testState = "fail";
-                },
-                () => { testState = "completed"; });
-
-            var modelJson = "{\"test\": \"test\"}";
-            var stream = new MemoryStream();
-            var writer = new StreamWriter(stream);
-            writer.Write(modelJson);
-            writer.Flush();
-            stream.Position = 0;
 
             var notificationsArgs = new ListenBucketNotificationsArgs()
                 .WithBucket(bucketName)
@@ -2866,7 +2837,6 @@ public class FunctionalTest
             Thread.Sleep(sleepTime);
 
             await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
-            Thread.Sleep(1000);
 
             var stTime = DateTime.UtcNow;
             var waitTime = 25; // Milliseconds
@@ -2877,7 +2847,8 @@ public class FunctionalTest
                 if ((DateTime.UtcNow - stTime).TotalMilliseconds >= timeout)
                     throw new Exception("Timeout: while waiting for events");
             }
-            else if (testState == "fail")
+
+            if (!string.IsNullOrEmpty(rxEventData.json))
             {
                 var notification = JsonConvert.DeserializeObject<MinioNotification>(rxEventData.json);
                 Assert.IsTrue(notification.Records[0].eventName.Equals("s3:ObjectCreated:Put"));
@@ -2891,7 +2862,7 @@ public class FunctionalTest
                 var notification = JsonConvert.DeserializeObject<MinioNotification>(rxEventData.json);
                 Assert.IsTrue(notification.Records[0].eventName.Equals("s3:ObjectCreated:Put"));
             }
-            else if (testState == "completed")
+            else
             {
                 throw new Exception("Missed Event: Bucket notification failed.");
             }
