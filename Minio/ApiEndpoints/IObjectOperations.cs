@@ -137,7 +137,6 @@ public interface IObjectOperations
     /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
     /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     Task RemoveObjectAsync(RemoveObjectArgs args, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -154,7 +153,6 @@ public interface IObjectOperations
     /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     Task<IObservable<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args,
         CancellationToken cancellationToken = default);
 
