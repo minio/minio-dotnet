@@ -16,7 +16,7 @@ To connect to an Amazon S3 compatible cloud storage service, you will need to sp
 | endpoint  | URL to object storage service.                                   |
 | accessKey | Access key is the user ID that uniquely identifies your account. |
 | secretKey | Secret key is the password to your account.                      |
-| secure    | Enable/Disable HTTPS support.                                    |
+| secure    | bool value to enable/disable HTTPS support. (Optional)     |
 
 The following examples uses a freely hosted public MinIO service 'play.min.io' for development purposes.
 

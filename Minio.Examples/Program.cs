@@ -58,7 +58,7 @@ public class Program
         string endPoint = null;
         string accessKey = null;
         string secretKey = null;
-        var enableHTTPS = false;
+        var isSecure = false;
         var port = 80;
 
         if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
@@ -75,8 +75,8 @@ public class Program
             secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
             if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") != null)
             {
-                enableHTTPS = Environment.GetEnvironmentVariable("ENABLE_HTTPS").Equals("1");
-                if (enableHTTPS && port == 80) port = 443;
+                isSecure = Environment.GetEnvironmentVariable("ENABLE_HTTPS").Equals("1");
+                if (isSecure && port == 80) port = 443;
             }
         }
         else
@@ -84,26 +84,20 @@ public class Program
             endPoint = "play.min.io";
             accessKey = "Q3AM3UQ867SPQQA43P2F";
             secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
-            enableHTTPS = true;
+            isSecure = true;
             port = 443;
         }
 
         ServicePointManager.ServerCertificateValidationCallback +=
             (sender, certificate, chain, sslPolicyErrors) => true;
 
-        // WithSSL() enables SSL support in MinIO client
         MinioClient minioClient = null;
-        if (enableHTTPS)
-            minioClient = new MinioClient()
-                .WithEndpoint(endPoint, port)
-                .WithCredentials(accessKey, secretKey)
-                .WithSSL()
-                .Build();
-        else
-            minioClient = new MinioClient()
-                .WithEndpoint(endPoint, port)
-                .WithCredentials(accessKey, secretKey)
-                .Build();
+        minioClient = new MinioClient()
+            .WithEndpoint(endPoint, port)
+            .WithCredentials(accessKey, secretKey)
+            .WithSSL(isSecure)
+            .Build();
+
         // Assign parameters before starting the test 
         var bucketName = GetRandomName();
         var smallFileName = CreateFile(1 * UNIT_MB);

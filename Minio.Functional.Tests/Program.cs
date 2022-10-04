@@ -27,16 +27,29 @@ internal class Program
         string endPoint = null;
         string accessKey = null;
         string secretKey = null;
-        var enableHttps = "0";
+        var isSecure = false;
         var kmsEnabled = "0";
+        var port = 80;
 
         var useAWS = Environment.GetEnvironmentVariable("AWS_ENDPOINT") != null;
         if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
         {
             endPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");
+            var posColon = endPoint.LastIndexOf(':');
+            if (posColon != -1)
+            {
+                port = int.Parse(endPoint.Substring(posColon + 1, endPoint.Length - posColon - 1));
+                endPoint = endPoint.Substring(0, posColon);
+            }
+
             accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
             secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
-            enableHttps = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
+            if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") != null)
+            {
+                isSecure = Environment.GetEnvironmentVariable("ENABLE_HTTPS").Equals("1");
+                if (isSecure && port == 80) port = 443;
+            }
+
             kmsEnabled = Environment.GetEnvironmentVariable("ENABLE_KMS");
         }
         else
@@ -44,24 +57,20 @@ internal class Program
             endPoint = "play.min.io";
             accessKey = "Q3AM3UQ867SPQQA43P2F";
             secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
-            enableHttps = "1";
+            isSecure = true;
+            port = 443;
             kmsEnabled = "1";
         }
 
-        MinioClient minioClient = null;
+        ServicePointManager.ServerCertificateValidationCallback +=
+            (sender, certificate, chain, sslPolicyErrors) => true;
 
-        if (enableHttps == "1")
-            // WithSSL() enables SSL support in MinIO client
-            minioClient = new MinioClient()
-                .WithSSL()
-                .WithCredentials(accessKey, secretKey)
-                .WithEndpoint(endPoint)
-                .Build();
-        else
-            minioClient = new MinioClient()
-                .WithCredentials(accessKey, secretKey)
-                .WithEndpoint(endPoint)
-                .Build();
+        MinioClient minioClient = null;
+        minioClient = new MinioClient()
+            .WithEndpoint(endPoint, port)
+            .WithCredentials(accessKey, secretKey)
+            .WithSSL(isSecure)
+            .Build();
 
         // Assign parameters before starting the test
         var bucketName = FunctionalTest.GetRandomName();
@@ -194,7 +203,7 @@ internal class Program
         FunctionalTest.BucketLifecycleAsync_Test2(minioClient).Wait();
 
         // Test encryption
-        if (enableHttps == "1")
+        if (isSecure)
         {
             ServicePointManager.ServerCertificateValidationCallback +=
                 (sender, certificate, chain, sslPolicyErrors) => true;
