@@ -165,6 +165,9 @@ internal class Program
         // Test SetPolicyAsync function
         FunctionalTest.SetBucketPolicy_Test1(minioClient).Wait();
 
+        // Test S3Zip function
+        FunctionalTest.GetObjectS3Zip_Test1(minioClient).Wait();
+
         // Test Presigned Get/Put operations
         FunctionalTest.PresignedGetObject_Test1(minioClient).Wait();
         FunctionalTest.PresignedGetObject_Test2(minioClient).Wait();

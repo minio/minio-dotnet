@@ -187,12 +187,8 @@ internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        // using System.Web; Not sure if we need to add query parameters like this vs. requestMessageBuilder.AddQueryParameter()
-        // var query = HttpUtility.ParseQueryString(string.Empty);
-        // query["foo"] = "bar<>&-baz";
-        // query["bar"] = "bazinga";
-        // string queryString = query.ToString();        {
-
+        foreach (var h in Headers)
+            requestMessageBuilder.AddOrUpdateHeaderParameter(h.Key, h.Value);
 
         requestMessageBuilder.AddQueryParameter("delimiter", Delimiter);
         requestMessageBuilder.AddQueryParameter("max-keys", "1000");
