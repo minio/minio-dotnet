@@ -9,26 +9,29 @@ To install [MinIO .NET package](https://www.nuget.org/packages/Minio/), run the 
 PM> Install-Package Minio
 ```
 ## MinIO Client Example
-To connect to an Amazon S3 compatible cloud storage service, you will need to specify the following parameters.
+To connect to an Amazon S3 compatible cloud storage service, you need the following information
 
-| Parameter | Description                                                      |
-|:----------|:-----------------------------------------------------------------|
-| endpoint  | URL to object storage service.                                   |
-| accessKey | Access key is the user ID that uniquely identifies your account. |
-| secretKey | Secret key is the password to your account.                      |
-| secure    | Enable/Disable HTTPS support.                                    |
+| Variable name | Description                                                  |
+|:--------------|:-------------------------------------------------------------|
+| endpoint      | \<Domain-name\> or \<ip:port\> of your object storage        |
+| accessKey     | User ID that uniquely identifies your account                |
+| secretKey     | Password to your account                                     |
+| secure        | boolean value to enable/disable HTTPS support (default=true) |
 
-The following examples uses a freely hosted public MinIO service 'play.min.io' for development purposes.
+The following examples uses a freely hosted public MinIO service "play.min.io" for development purposes.
 
 ```cs
 using Minio;
 
+var endpoint = "play.min.io";
+var accessKey = "Q3AM3UQ867trueSPQQA43P2F";
+var secretKey = "zuf+tfteSlswRu7BJ86wtrueekitnifILbZam1KYY3TG";
+var secure = true;
 // Initialize the client with access credentials.
 private static MinioClient minio = new MinioClient()
-                                    .WithEndpoint("play.min.io")
-                                    .WithCredentials("Q3AM3UQ867SPQQA43P2F",
-                                             "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
-                                    .WithSSL()
+                                    .WithEndpoint(endpoint)
+                                    .WithCredentials(accessKey, secretKey)
+                                    .WithSSL(secure)
                                     .Build();
 
 // Create an async task for listing buckets.
@@ -65,8 +68,7 @@ namespace FileUploader
             {
                 var minio = new MinioClient()
                                     .WithEndpoint(endpoint)
-                                    .WithCredentials(accessKey,
-                                             secretKey)
+                                    .WithCredentials(accessKey, secretKey)
                                     .WithSSL()
                                     .Build();
                 FileUpload.Run(minio).Wait();
@@ -109,19 +111,18 @@ namespace FileUploader
 ```
 
 ## Running MinIO Client Examples
-#### On Windows
+### On Windows
 * Clone this repository and open the Minio.Sln in Visual Studio 2017.
 
-* Enter your credentials and bucket name, object name etc.in Minio.Examples/Program.cs
-  Uncomment the example test cases such as below in Program.cs to run an example.
+* Enter your credentials and bucket name, object name etc. in Minio.Examples/Program.cs
+* Uncomment the example test cases such as below in Program.cs to run an example.
 ```cs
   //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
 ```
 * Run the Minio.Client.Examples project from Visual Studio
 
-#### On Linux
-
-##### Setting .NET SDK on Linux (Ubuntu 22.04)
+### On Linux
+#### Setting .NET SDK on Linux (Ubuntu 22.04)
 <blockquote> NOTE: minio-dotnet requires .NET 6.x SDK to build on Linux. </blockquote>
 
 * Install [.Net SDK](https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu#2204)
@@ -139,7 +140,7 @@ sudo apt-get update; \
   sudo apt-get install -y dotnet-sdk-6.0
 ```
 
-##### Running Minio.Examples
+#### Running Minio.Examples
 * Clone this project.
 
 ```
@@ -169,8 +170,8 @@ dotnet test ./Minio.Tests/Minio.Tests.csproj
 * [ListenBucketNotifications.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/ListenBucketNotifications.cs)
 
 #### Bucket policy Operations
-* [GetPolicy.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/GetBucketPolicy.cs)
-* [SetPolicy.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/SetBucketPolicy.cs)
+* [GetBucketPolicy.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/GetBucketPolicy.cs)
+* [SetBucketPolicy.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/SetBucketPolicy.cs)
 
 #### Bucket notification Operations
 * [GetBucketNotification.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/GetBucketNotification.cs)
@@ -191,7 +192,7 @@ dotnet test ./Minio.Tests/Minio.Tests.csproj
 * [RemoveObject.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/RemoveObject.cs)
 * [RemoveObjects.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/RemoveObjects.cs)
 * [CopyObject.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/CopyObject.cs)
-* [CopyObject.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/CopyObjectMetadata.cs)
+* [CopyObjectMetadata.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/CopyObjectMetadata.cs)
 * [RemoveIncompleteUpload.cs](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Cases/RemoveIncompleteUpload.cs)
 
 #### Presigned Operations
