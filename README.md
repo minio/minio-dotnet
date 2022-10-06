@@ -35,7 +35,7 @@ private static MinioClient minio = new MinioClient()
                                     .Build();
 
 // Create an async task for listing buckets.
-var getListBucketsTask = minio.ListBucketsAsync();
+var getListBucketsTask = await minio.ListBucketsAsync().ConfigureAwait(false);
 
 // Iterate over the list of buckets.
 foreach (var bucket in getListBucketsTask.Result.Buckets)
@@ -92,13 +92,22 @@ namespace FileUploader
             try
             {
                 // Make a bucket on the server, if not already present.
-                bool found = await minio.BucketExistsAsync(bucketName);
+                var beArgs = new BucketExistsArgs()
+                    .WithBucket(bucketName);
+                bool found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
                 if (!found)
                 {
-                    await minio.MakeBucketAsync(bucketName, location);
+                    var mbArgs = new MakeBucketArgs()
+                        .WithBucket(bucketName);
+                    await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
                 }
                 // Upload a file to bucket.
-                await minio.PutObjectAsync(bucketName, objectName, filePath, contentType);
+                var putObjectArgs = new PutObjectArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    .WithFileName(filePath)
+                    .WithContentType(contentType);
+                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
                 Console.WriteLine("Successfully uploaded " + objectName );
             }
             catch (MinioException e)
