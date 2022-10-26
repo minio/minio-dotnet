@@ -19,6 +19,8 @@ namespace Minio;
 public abstract class ObjectArgs<T> : BucketArgs<T>
     where T : ObjectArgs<T>
 {
+    protected const string S3ZipExtractKey = "X-Minio-Extract";
+
     internal string ObjectName { get; set; }
     internal byte[] RequestBody { get; set; }
 

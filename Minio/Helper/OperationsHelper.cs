@@ -37,6 +37,7 @@ public partial class MinioClient : IObjectOperations
     {
         // StatObject is called to both verify the existence of the object and return it with GetObject.
         // NOTE: This avoids writing the error body to the action stream passed (Do not remove).
+
         var statArgs = new StatObjectArgs()
             .WithBucket(args.BucketName)
             .WithObject(args.ObjectName)
@@ -45,7 +46,8 @@ public partial class MinioClient : IObjectOperations
             .WithNotMatchETag(args.NotMatchETag)
             .WithModifiedSince(args.ModifiedSince)
             .WithUnModifiedSince(args.UnModifiedSince)
-            .WithServerSideEncryption(args.SSE);
+            .WithServerSideEncryption(args.SSE)
+            .WithHeaders(args.Headers);
         if (args.OffsetLengthSet) statArgs.WithOffsetAndLength(args.ObjectOffset, args.ObjectLength);
         var objStat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
         args.Validate();
@@ -294,7 +296,7 @@ public class OperationsUtil
     private static readonly List<string> SupportedHeaders = new()
     {
         "cache-control", "content-encoding", "content-type",
-        "x-amz-acl", "content-disposition"
+        "x-amz-acl", "content-disposition", "x-minio-extract"
     };
 
     private static readonly List<string> SSEHeaders = new()
