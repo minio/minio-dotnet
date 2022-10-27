@@ -409,11 +409,15 @@ public partial class MinioClient
     ///     Connects to Cloud Storage with HTTPS if this method is invoked on client object
     /// </summary>
     /// <returns></returns>
-    public MinioClient WithSSL()
+    public MinioClient WithSSL(bool secure = true)
     {
-        Secure = true;
-        if (string.IsNullOrEmpty(BaseUrl)) return this;
-        var secureUrl = RequestUtil.MakeTargetURL(BaseUrl, Secure);
+        if (secure)
+        {
+            Secure = true;
+            if (string.IsNullOrEmpty(BaseUrl)) return this;
+            var secureUrl = RequestUtil.MakeTargetURL(BaseUrl, Secure);
+        }
+
         return this;
     }
 
