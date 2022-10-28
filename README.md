@@ -1,6 +1,6 @@
 # MinIO Client SDK for .NET  [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io)
 
-MinIO Client SDK provides higher level APIs for MinIO and Amazon S3 compatible cloud storage services.For a complete list of APIs and examples, please take a look at the [Dotnet Client API Reference](https://docs.min.io/docs/dotnet-client-api-reference).This document assumes that you have a working VisualStudio development environment.
+MinIO Client SDK provides higher level APIs for MinIO and Amazon S3 compatible cloud storage services.For a complete list of APIs and examples, please take a look at the [Dotnet Client API Reference](https://min.io/docs/minio/linux/developers/dotnet/API.html).This document assumes that you have a working VisualStudio development environment.
 
 ## Install from NuGet
 To install [MinIO .NET package](https://www.nuget.org/packages/Minio/), run the following command in Nuget Package Manager Console.
@@ -215,5 +215,5 @@ dotnet test ./Minio.Tests/Minio.Tests.csproj
 * [SetTraceOff](https://github.com/minio/minio-dotnet/blob/master/Minio.Examples/Program.cs)
 
 ## Explore Further
-* [Complete Documentation](https://docs.min.io)
-* [MinIO .NET SDK API Reference](https://docs.min.io/docs/dotnet-client-api-reference)
+* [Complete Documentation](https://min.io/docs/minio/kubernetes/upstream/index.html)
+* [MinIO .NET SDK API Reference](https://min.io/docs/minio/linux/developers/dotnet/API.html)
