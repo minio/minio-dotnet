@@ -228,7 +228,11 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
+        if (!string.IsNullOrEmpty(VersionId))
+            requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
+        if (Headers.ContainsKey(S3ZipExtractKey))
+            requestMessageBuilder.AddQueryParameter(S3ZipExtractKey, Headers[S3ZipExtractKey]);
+
         return requestMessageBuilder;
     }
 
@@ -257,7 +261,7 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
 
     private void Populate()
     {
-        Headers = new Dictionary<string, string>();
+        Headers = Headers ?? new Dictionary<string, string>();
         if (SSE != null && SSE.GetType().Equals(EncryptionType.SSE_C)) SSE.Marshal(Headers);
         if (OffsetLengthSet)
         {
@@ -530,7 +534,7 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
 
     private void Populate()
     {
-        Headers = new Dictionary<string, string>();
+        Headers = Headers ?? new Dictionary<string, string>();
         if (SSE != null && SSE.GetType().Equals(EncryptionType.SSE_C)) SSE.Marshal(Headers);
 
         if (OffsetLengthSet)
@@ -548,6 +552,8 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
     {
         if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
         requestMessageBuilder.ResponseWriter = CallBack;
+        if (Headers.ContainsKey(S3ZipExtractKey))
+            requestMessageBuilder.AddQueryParameter(S3ZipExtractKey, Headers[S3ZipExtractKey]);
 
         return requestMessageBuilder;
     }

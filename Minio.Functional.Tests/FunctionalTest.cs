@@ -2395,36 +2395,43 @@ public class FunctionalTest
 
     #endregion
 
+
     internal static MemoryStream CreateZipFile(string prefix, int nFiles)
     {
+        // CreateZipFile creates a zip file, populates it with <nFiles> many
+        // small files, each prefixed with <prefix> and in bytes size plus a single
+        // 1MB file. It generates and returns a memory stream of the zip file.
+        // The names of these files are arranged in "<file-size>.bin" format,
+        // like "127.bin" is created as a small binary file in 127 bytes size.
         var outputMemStream = new MemoryStream();
         var zipStream = new ZipOutputStream(outputMemStream);
 
         zipStream.SetLevel(3); //0-9, 9 being the highest level of compression
         byte[] bytes = null;
 
-        for (var i = 0; i <= nFiles; i++)
+        Directory.CreateDirectory(prefix);
+        for (var i = 1; i <= nFiles; i++)
         {
-            // Make one large, compressible file.
+            // Make a single 1Mb file
             if (i == nFiles) i = 1000000;
 
-            var fileName = prefix + "file-" + i + ".bin";
-            Directory.CreateDirectory(prefix);
+            var fileName = prefix + i + ".bin";
             var newEntry = new ZipEntry(fileName);
             newEntry.DateTime = DateTime.Now;
             zipStream.PutNextEntry(newEntry);
 
             bytes = rsg.GenerateStreamFromSeed(i).ToArray();
             var inStream = new MemoryStream(bytes);
-            if (i == 0) StreamUtils.Copy(inStream, zipStream, new byte[128]);
-            else StreamUtils.Copy(inStream, zipStream, new byte[i * 128]);
+            StreamUtils.Copy(inStream, zipStream, new byte[i * 128]);
 
             inStream.Close();
             zipStream.CloseEntry();
         }
 
-        zipStream.IsStreamOwner = false; // False stops the Close also Closing the underlying stream.
-        zipStream.Close(); // Must finish the ZipOutputStream before using outputMemStream.
+        // Setting ownership to False keeps the underlying stream open
+        zipStream.IsStreamOwner = false;
+        // Must finish the ZipOutputStream before using outputMemStream
+        zipStream.Close();
 
         outputMemStream.Position = 0;
         outputMemStream.Seek(0, SeekOrigin.Begin);
@@ -2458,49 +2465,62 @@ public class FunctionalTest
                 .WithObjectSize(memStream.Length);
             await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
 
+            var extractHeader = new Dictionary<string, string>();
+            extractHeader.Add("x-minio-extract", "true");
+
+            // GeObject api test
+            var r = new Random();
+            var singleFileName = r.Next(1, nFiles - 1) + ".bin";
+            var singleObjectName = objectName + "/" + path + singleFileName;
+            // File names in the zip file also show the sizes of the files
+            // For example file "35.bin" has a size of 35Bytes
+            var expectedFileSize = Path.GetFileNameWithoutExtension(singleFileName);
             var getObjectArgs = new GetObjectArgs()
                 .WithBucket(bucketName)
                 .WithFile(randomFileName)
-                .WithObject(objectName);
+                .WithObject(singleObjectName)
+                .WithHeaders(extractHeader);
 
             var resp = await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+            // Verify the size of the file from the returned info
+            Assert.AreEqual(expectedFileSize, resp.Size.ToString());
 
+            // HeadObject api test
             var statArgs = new StatObjectArgs()
                 .WithBucket(bucketName)
-                .WithObject(objectName);
+                .WithObject(singleObjectName)
+                .WithHeaders(extractHeader);
             var stat = await minio.StatObjectAsync(statArgs).ConfigureAwait(false);
+            // Verify the size of the file from the returned info
+            Assert.AreEqual(expectedFileSize, resp.Size.ToString());
 
-            var lOpts = new Dictionary<string, string>();
-            lOpts.Add("x-minio-extract", "true");
-
-            // Test with different prefix values
+            // ListObject api test with different prefix values
             // prefix value="", expected number of files listed=1
             var prefix = "";
-            ListObjects_Test(minio, bucketName, prefix, 1, true, headers: lOpts);
+            ListObjects_Test(minio, bucketName, prefix, 1, true, headers: extractHeader);
 
-            // prefix value="/", expected number of files listed=nFiles+1
+            // prefix value="/", expected number of files listed=nFiles
             prefix = objectName + "/";
-            ListObjects_Test(minio, bucketName, prefix, nFiles + 1, true, headers: lOpts);
+            ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader);
 
-            // prefix value="/test", expected number of files listed=nFiles + 1
+            // prefix value="/test", expected number of files listed=nFiles
             prefix = objectName + "/test";
-            ListObjects_Test(minio, bucketName, prefix, nFiles + 1, true, headers: lOpts);
+            ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader);
 
-            // prefix value="/test/", expected number of files listed=nFiles+1
+            // prefix value="/test/", expected number of files listed=nFiles
             prefix = objectName + "/test/";
-            ListObjects_Test(minio, bucketName, prefix, nFiles + 1, true, headers: lOpts);
+            ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader);
 
-            // prefix value="/test", expected number of files listed=nFiles+1
+            // prefix value="/test", expected number of files listed=nFiles
             prefix = objectName + "/test/small";
-            ListObjects_Test(minio, bucketName, prefix, nFiles + 1, true, headers: lOpts);
+            ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader);
 
-            // prefix value="/test", expected number of files listed=nFiles+1
+            // prefix value="/test", expected number of files listed=nFiles
             prefix = objectName + "/test/small/";
-            ListObjects_Test(minio, bucketName, prefix, nFiles + 1, true, headers: lOpts);
+            ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader);
 
             // prefix value="/test", expected number of files listed=1
-            prefix = objectName + "/test/small/" + "file-1.bin";
-            ListObjects_Test(minio, bucketName, prefix, 1, true, headers: lOpts);
+            ListObjects_Test(minio, bucketName, singleObjectName, 1, true, headers: extractHeader);
 
             new MintLogger("GetObjectS3Zip_Test1", getObjectSignature, "Tests s3Zip files", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
