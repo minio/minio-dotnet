@@ -194,6 +194,9 @@ internal class Program
         // Test GetBucket policy
         FunctionalTest.GetBucketPolicy_Test1(minioClient).Wait();
 
+        // Test object versioning
+        FunctionalTest.ObjectVersioningAsync_Test1(minioClient).Wait();
+
         // Test Object Lock Configuration
         FunctionalTest.ObjectLockConfigurationAsync_Test1(minioClient).Wait();
 

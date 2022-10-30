@@ -1799,139 +1799,151 @@ public class FunctionalTest
 
     internal static async Task ObjectTagsAsync_Test1(MinioClient minio)
     {
-        var startTime = DateTime.Now;
-        var bucketName = GetRandomName(15);
-        var objectName = GetRandomName(10);
-        var args = new Dictionary<string, string>
+        // Test will run twice once for file size 1KB amd once
+        // for 6MB to cover single and multipart upload
+        var sizesList = new List<int> { 1 * KB, 6 * MB };
+        foreach (var size in sizesList)
         {
-            { "bucketName", bucketName },
-            { "objectName", objectName }
-        };
-        var tags = new Dictionary<string, string>
-        {
-            { "key1", "value1" },
-            { "key2", "value2" },
-            { "key3", "value3" }
-        };
-        try
-        {
-            await Setup_Test(minio, bucketName);
-        }
-        catch (Exception ex)
-        {
-            new MintLogger(nameof(ObjectTagsAsync_Test1), setObjectTagsSignature,
-                "Tests whether SetObjectTagsAsync passes", TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
-                ex.ToString(), args: args).Log();
-            throw;
-        }
-
-        var exceptionThrown = false;
-        try
-        {
-            using (var filestream = rsg.GenerateStreamFromSeed(1 * KB))
+            var startTime = DateTime.Now;
+            var bucketName = GetRandomName(15);
+            var objectName = GetRandomName(10);
+            var args = new Dictionary<string, string>
             {
-                var putObjectArgs = new PutObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(objectName)
-                    .WithStreamData(filestream)
-                    .WithObjectSize(filestream.Length)
-                    .WithContentType(null);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "fileSize", size.ToString() }
+            };
+            var tags = new Dictionary<string, string>
+            {
+                { "key1", "value1" },
+                { "key2", "value2" },
+                { "key3", "value3" }
+            };
+            try
+            {
+                await Setup_Test(minio, bucketName);
+            }
+            catch (Exception ex)
+            {
+                new MintLogger(nameof(ObjectTagsAsync_Test1), setObjectTagsSignature,
+                    "Tests whether SetObjectTagsAsync passes", TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
+                    ex.ToString(), args: args).Log();
+                throw;
             }
 
-            var tagsArgs = new SetObjectTagsArgs()
-                .WithBucket(bucketName)
-                .WithObject(objectName)
-                .WithTagging(Tagging.GetObjectTags(tags));
-            await minio.SetObjectTagsAsync(tagsArgs).ConfigureAwait(false);
-            new MintLogger(nameof(ObjectTagsAsync_Test1), setObjectTagsSignature,
-                "Tests whether SetObjectTagsAsync passes", TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
-        }
-        catch (NotImplementedException ex)
-        {
-            exceptionThrown = true;
-            new MintLogger(nameof(ObjectTagsAsync_Test1), setObjectTagsSignature,
-                "Tests whether SetObjectTagsAsync passes", TestStatus.NA, DateTime.Now - startTime, ex.Message,
-                ex.ToString(), args: args).Log();
-        }
-        catch (Exception ex)
-        {
-            exceptionThrown = true;
-            new MintLogger(nameof(ObjectTagsAsync_Test1), setObjectTagsSignature,
-                "Tests whether SetObjectTagsAsync passes", TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
-                ex.ToString(), args: args).Log();
-            throw;
-        }
+            var exceptionThrown = false;
+            try
+            {
+                using (var filestream = rsg.GenerateStreamFromSeed(size))
+                {
+                    var putObjectArgs = new PutObjectArgs()
+                        .WithBucket(bucketName)
+                        .WithObject(objectName)
+                        .WithStreamData(filestream)
+                        .WithObjectSize(filestream.Length)
+                        .WithContentType(null);
+                    await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                }
 
-        try
-        {
-            exceptionThrown = false;
-            var tagsArgs = new GetObjectTagsArgs()
-                .WithBucket(bucketName)
-                .WithObject(objectName);
-            var tagObj = await minio.GetObjectTagsAsync(tagsArgs).ConfigureAwait(false);
-            Assert.IsNotNull(tagObj);
-            Assert.IsNotNull(tagObj.GetTags());
-            var tagsRes = tagObj.GetTags();
-            Assert.AreEqual(tagsRes.Count, tags.Count);
-            new MintLogger(nameof(ObjectTagsAsync_Test1), getObjectTagsSignature,
-                "Tests whether GetObjectTagsAsync passes", TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
-        }
-        catch (NotImplementedException ex)
-        {
-            exceptionThrown = true;
-            new MintLogger(nameof(ObjectTagsAsync_Test1), getObjectTagsSignature,
-                "Tests whether GetObjectTagsAsync passes", TestStatus.NA, DateTime.Now - startTime, ex.Message,
-                ex.ToString(), args: args).Log();
-        }
-        catch (Exception ex)
-        {
-            exceptionThrown = true;
-            new MintLogger(nameof(ObjectTagsAsync_Test1), getObjectTagsSignature,
-                "Tests whether GetObjectTagsAsync passes", TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
-                ex.ToString(), args: args).Log();
-            throw;
-        }
+                var tagsArgs = new SetObjectTagsArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    .WithTagging(Tagging.GetObjectTags(tags));
+                await minio.SetObjectTagsAsync(tagsArgs).ConfigureAwait(false);
+                new MintLogger(nameof(ObjectTagsAsync_Test1), setObjectTagsSignature,
+                        "Tests whether SetObjectTagsAsync passes", TestStatus.PASS, DateTime.Now - startTime,
+                        args: args)
+                    .Log();
+            }
+            catch (NotImplementedException ex)
+            {
+                exceptionThrown = true;
+                new MintLogger(nameof(ObjectTagsAsync_Test1), setObjectTagsSignature,
+                    "Tests whether SetObjectTagsAsync passes", TestStatus.NA, DateTime.Now - startTime, ex.Message,
+                    ex.ToString(), args: args).Log();
+            }
+            catch (Exception ex)
+            {
+                exceptionThrown = true;
+                new MintLogger(nameof(ObjectTagsAsync_Test1), setObjectTagsSignature,
+                    "Tests whether SetObjectTagsAsync passes", TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
+                    ex.ToString(), args: args).Log();
+                throw;
+            }
 
-        if (exceptionThrown)
-        {
-            await TearDown(minio, bucketName);
-            return;
-        }
+            try
+            {
+                exceptionThrown = false;
+                var tagsArgs = new GetObjectTagsArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName);
+                var tagObj = await minio.GetObjectTagsAsync(tagsArgs).ConfigureAwait(false);
+                Assert.IsNotNull(tagObj);
+                Assert.IsNotNull(tagObj.GetTags());
+                var tagsRes = tagObj.GetTags();
+                Assert.AreEqual(tagsRes.Count, tags.Count);
+                new MintLogger(nameof(ObjectTagsAsync_Test1), getObjectTagsSignature,
+                        "Tests whether GetObjectTagsAsync passes", TestStatus.PASS, DateTime.Now - startTime,
+                        args: args)
+                    .Log();
+            }
+            catch (NotImplementedException ex)
+            {
+                exceptionThrown = true;
+                new MintLogger(nameof(ObjectTagsAsync_Test1), getObjectTagsSignature,
+                    "Tests whether GetObjectTagsAsync passes", TestStatus.NA, DateTime.Now - startTime, ex.Message,
+                    ex.ToString(), args: args).Log();
+            }
+            catch (Exception ex)
+            {
+                exceptionThrown = true;
+                new MintLogger(nameof(ObjectTagsAsync_Test1), getObjectTagsSignature,
+                    "Tests whether GetObjectTagsAsync passes", TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
+                    ex.ToString(), args: args).Log();
+                throw;
+            }
 
-        try
-        {
-            var tagsArgs = new RemoveObjectTagsArgs()
-                .WithBucket(bucketName)
-                .WithObject(objectName);
-            await minio.RemoveObjectTagsAsync(tagsArgs).ConfigureAwait(false);
-            var getTagsArgs = new GetObjectTagsArgs()
-                .WithBucket(bucketName)
-                .WithObject(objectName);
-            var tagObj = await minio.GetObjectTagsAsync(getTagsArgs).ConfigureAwait(false);
-            Assert.IsNotNull(tagObj);
-            var tagsRes = tagObj.GetTags();
-            Assert.IsNull(tagsRes);
-            new MintLogger(nameof(ObjectTagsAsync_Test1), deleteObjectTagsSignature,
-                    "Tests whether RemoveObjectTagsAsync passes", TestStatus.PASS, DateTime.Now - startTime, args: args)
-                .Log();
-        }
-        catch (NotImplementedException ex)
-        {
-            new MintLogger(nameof(ObjectTagsAsync_Test1), deleteObjectTagsSignature,
-                "Tests whether RemoveObjectTagsAsync passes", TestStatus.NA, DateTime.Now - startTime, ex.Message,
-                ex.ToString(), args: args).Log();
-        }
-        catch (Exception ex)
-        {
-            new MintLogger(nameof(ObjectTagsAsync_Test1), deleteObjectTagsSignature,
-                "Tests whether RemoveObjectTagsAsync passes", TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
-                ex.ToString(), args: args).Log();
-            throw;
-        }
-        finally
-        {
-            await TearDown(minio, bucketName);
+            if (exceptionThrown)
+            {
+                await TearDown(minio, bucketName);
+                return;
+            }
+
+            try
+            {
+                var tagsArgs = new RemoveObjectTagsArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName);
+                await minio.RemoveObjectTagsAsync(tagsArgs).ConfigureAwait(false);
+                var getTagsArgs = new GetObjectTagsArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName);
+                var tagObj = await minio.GetObjectTagsAsync(getTagsArgs).ConfigureAwait(false);
+                Assert.IsNotNull(tagObj);
+                var tagsRes = tagObj.GetTags();
+                Assert.IsNull(tagsRes);
+                new MintLogger(nameof(ObjectTagsAsync_Test1), deleteObjectTagsSignature,
+                        "Tests whether RemoveObjectTagsAsync passes", TestStatus.PASS, DateTime.Now - startTime,
+                        args: args)
+                    .Log();
+            }
+            catch (NotImplementedException ex)
+            {
+                new MintLogger(nameof(ObjectTagsAsync_Test1), deleteObjectTagsSignature,
+                    "Tests whether RemoveObjectTagsAsync passes", TestStatus.NA, DateTime.Now - startTime, ex.Message,
+                    ex.ToString(), args: args).Log();
+            }
+            catch (Exception ex)
+            {
+                new MintLogger(nameof(ObjectTagsAsync_Test1), deleteObjectTagsSignature,
+                    "Tests whether RemoveObjectTagsAsync passes", TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
+                    ex.ToString(), args: args).Log();
+                throw;
+            }
+            finally
+            {
+                await TearDown(minio, bucketName);
+            }
         }
     }
 
@@ -1941,124 +1953,134 @@ public class FunctionalTest
 
     internal static async Task ObjectVersioningAsync_Test1(MinioClient minio)
     {
-        var startTime = DateTime.Now;
-        var bucketName = GetRandomName(15);
-        var objectName = GetRandomName(10);
-        var args = new Dictionary<string, string>
+        // Test will run twice once for file size 1KB amd once
+        // for 6MB to cover single and multipart upload
+        var sizesList = new List<int> { 1 * KB, 6 * MB };
+        foreach (var size in sizesList)
         {
-            { "bucketName", bucketName },
-            { "objectName", objectName }
-        };
-        try
-        {
-            await Setup_Test(minio, bucketName);
+            var startTime = DateTime.Now;
+            var bucketName = GetRandomName(15);
+            var objectName = GetRandomName(10);
+            var args = new Dictionary<string, string>
             {
-                // Set versioning enabled test
-                var setVersioningArgs = new SetVersioningArgs()
-                    .WithBucket(bucketName)
-                    .WithVersioningEnabled();
-                await minio.SetVersioningAsync(setVersioningArgs).ConfigureAwait(false);
-
-                // Twice, for 2 versions.
-                using (var filestream = rsg.GenerateStreamFromSeed(1 * KB))
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "fileSize", size.ToString() }
+            };
+            try
+            {
+                await Setup_Test(minio, bucketName);
                 {
-                    var putObjectArgs = new PutObjectArgs()
+                    // Set versioning enabled test
+                    var setVersioningArgs = new SetVersioningArgs()
                         .WithBucket(bucketName)
-                        .WithObject(objectName)
-                        .WithStreamData(filestream)
-                        .WithObjectSize(filestream.Length)
-                        .WithContentType(null);
-                    await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                        .WithVersioningEnabled();
+                    await minio.SetVersioningAsync(setVersioningArgs).ConfigureAwait(false);
+
+                    // Twice, for 2 versions.
+                    using (var filestream = rsg.GenerateStreamFromSeed(size))
+                    {
+                        var putObjectArgs = new PutObjectArgs()
+                            .WithBucket(bucketName)
+                            .WithObject(objectName)
+                            .WithStreamData(filestream)
+                            .WithObjectSize(filestream.Length)
+                            .WithContentType(null);
+                        await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                    }
+
+                    using (var filestream = rsg.GenerateStreamFromSeed(size))
+                    {
+                        var putObjectArgs = new PutObjectArgs()
+                            .WithBucket(bucketName)
+                            .WithObject(objectName)
+                            .WithStreamData(filestream)
+                            .WithObjectSize(filestream.Length)
+                            .WithContentType(null);
+                        await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                    }
+
+                    new MintLogger(nameof(ObjectVersioningAsync_Test1), setVersioningSignature,
+                        "Tests whether SetVersioningAsync/GetVersioningAsync/RemoveVersioningAsync passes",
+                        TestStatus.PASS,
+                        DateTime.Now - startTime, args: args).Log();
+
+                    var objectVersionCount = 2;
+                    var objectVersionIndex = 0;
+                    var listArgs = new ListObjectsArgs()
+                        .WithBucket(bucketName);
+                    var observable = minio.ListObjectsAsync(listArgs);
+                    var objVersions = new List<Tuple<string, string>>();
+                    var subscription = observable.Subscribe(
+                        item =>
+                        {
+                            objVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
+                            objectVersionIndex++;
+                        },
+                        ex => throw ex,
+                        () => { Assert.IsTrue(objectVersionIndex == objectVersionCount); });
+                    Thread.Sleep(1500);
                 }
 
-                using (var filestream = rsg.GenerateStreamFromSeed(1 * KB))
                 {
-                    var putObjectArgs = new PutObjectArgs()
-                        .WithBucket(bucketName)
-                        .WithObject(objectName)
-                        .WithStreamData(filestream)
-                        .WithObjectSize(filestream.Length)
-                        .WithContentType(null);
-                    await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
-                }
+                    // Get Versioning Test
+                    var getVersioningArgs = new GetVersioningArgs()
+                        .WithBucket(bucketName);
+                    var versioningConfig = await minio.GetVersioningAsync(getVersioningArgs).ConfigureAwait(false);
+                    Assert.IsNotNull(versioningConfig);
+                    Assert.IsNotNull(versioningConfig.Status);
+                    Assert.IsTrue(versioningConfig.Status.ToLower().Equals("enabled"));
 
+                    new MintLogger(nameof(ObjectVersioningAsync_Test1), getVersioningSignature,
+                        "Tests whether SetVersioningAsync/GetVersioningAsync/RemoveVersioningAsync passes",
+                        TestStatus.PASS,
+                        DateTime.Now - startTime, args: args).Log();
+                }
+                {
+                    // Suspend Versioning test.
+                    var setVersioningArgs = new SetVersioningArgs()
+                        .WithBucket(bucketName)
+                        .WithVersioningSuspended();
+                    await minio.SetVersioningAsync(setVersioningArgs).ConfigureAwait(false);
+
+                    var objectCount = 1;
+                    var objectIndex = 0;
+                    var listArgs = new ListObjectsArgs()
+                        .WithBucket(bucketName);
+                    var observable = minio.ListObjectsAsync(listArgs);
+                    var objects = new List<Tuple<string>>();
+                    var subscription = observable.Subscribe(
+                        item =>
+                        {
+                            objects.Add(new Tuple<string>(item.Key));
+                            objectIndex++;
+                        },
+                        ex => throw ex,
+                        () => { Assert.IsTrue(objectIndex == objectCount); });
+                    Thread.Sleep(1500);
+                    new MintLogger(nameof(ObjectVersioningAsync_Test1), removeVersioningSignature,
+                        "Tests whether SetVersioningAsync/GetVersioningAsync/RemoveVersioningAsync passes",
+                        TestStatus.PASS,
+                        DateTime.Now - startTime, args: args).Log();
+                }
+            }
+            catch (NotImplementedException ex)
+            {
                 new MintLogger(nameof(ObjectVersioningAsync_Test1), setVersioningSignature,
-                    "Tests whether SetVersioningAsync/GetVersioningAsync/RemoveVersioningAsync passes", TestStatus.PASS,
-                    DateTime.Now - startTime, args: args).Log();
-
-                var objectVersionCount = 2;
-                var objectVersionIndex = 0;
-                var listArgs = new ListObjectsArgs()
-                    .WithBucket(bucketName);
-                var observable = minio.ListObjectsAsync(listArgs);
-                var objVersions = new List<Tuple<string, string>>();
-                var subscription = observable.Subscribe(
-                    item =>
-                    {
-                        objVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
-                        objectVersionIndex++;
-                    },
-                    ex => throw ex,
-                    () => { Assert.IsTrue(objectVersionIndex == objectVersionCount); });
-                Thread.Sleep(1500);
+                    "Tests whether SetVersioningAsync/GetVersioningAsync/RemoveVersioningAsync passes", TestStatus.NA,
+                    DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
             }
-
+            catch (Exception ex)
             {
-                // Get Versioning Test
-                var getVersioningArgs = new GetVersioningArgs()
-                    .WithBucket(bucketName);
-                var versioningConfig = await minio.GetVersioningAsync(getVersioningArgs).ConfigureAwait(false);
-                Assert.IsNotNull(versioningConfig);
-                Assert.IsNotNull(versioningConfig.Status);
-                Assert.IsTrue(versioningConfig.Status.ToLower().Equals("enabled"));
-
-                new MintLogger(nameof(ObjectVersioningAsync_Test1), getVersioningSignature,
-                    "Tests whether SetVersioningAsync/GetVersioningAsync/RemoveVersioningAsync passes", TestStatus.PASS,
-                    DateTime.Now - startTime, args: args).Log();
+                new MintLogger(nameof(ObjectVersioningAsync_Test1), setVersioningSignature,
+                    "Tests whether SetVersioningAsync/GetVersioningAsync/RemoveVersioningAsync passes", TestStatus.FAIL,
+                    DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
+                throw;
             }
+            finally
             {
-                // Suspend Versioning test.
-                var setVersioningArgs = new SetVersioningArgs()
-                    .WithBucket(bucketName)
-                    .WithVersioningSuspended();
-                await minio.SetVersioningAsync(setVersioningArgs).ConfigureAwait(false);
-
-                var objectCount = 1;
-                var objectIndex = 0;
-                var listArgs = new ListObjectsArgs()
-                    .WithBucket(bucketName);
-                var observable = minio.ListObjectsAsync(listArgs);
-                var objects = new List<Tuple<string>>();
-                var subscription = observable.Subscribe(
-                    item =>
-                    {
-                        objects.Add(new Tuple<string>(item.Key));
-                        objectIndex++;
-                    },
-                    ex => throw ex,
-                    () => { Assert.IsTrue(objectIndex == objectCount); });
-                Thread.Sleep(1500);
-                new MintLogger(nameof(ObjectVersioningAsync_Test1), removeVersioningSignature,
-                    "Tests whether SetVersioningAsync/GetVersioningAsync/RemoveVersioningAsync passes", TestStatus.PASS,
-                    DateTime.Now - startTime, args: args).Log();
+                await TearDown(minio, bucketName);
             }
-        }
-        catch (NotImplementedException ex)
-        {
-            new MintLogger(nameof(ObjectVersioningAsync_Test1), setVersioningSignature,
-                "Tests whether SetVersioningAsync/GetVersioningAsync/RemoveVersioningAsync passes", TestStatus.NA,
-                DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
-        }
-        catch (Exception ex)
-        {
-            new MintLogger(nameof(ObjectVersioningAsync_Test1), setVersioningSignature,
-                "Tests whether SetVersioningAsync/GetVersioningAsync/RemoveVersioningAsync passes", TestStatus.FAIL,
-                DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
-            throw;
-        }
-        finally
-        {
-            await TearDown(minio, bucketName);
         }
     }
 

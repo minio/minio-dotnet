@@ -1344,6 +1344,18 @@ internal class NewMultipartUploadArgs<T> : ObjectWriteArgs<T>
 
 internal class NewMultipartUploadPutArgs : NewMultipartUploadArgs<NewMultipartUploadPutArgs>
 {
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("uploads", "");
+
+        if (ObjectTags != null && ObjectTags.TaggingSet != null
+                               && ObjectTags.TaggingSet.Tag.Count > 0)
+            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
+
+        requestMessageBuilder.AddOrUpdateHeaderParameter("content-type", ContentType);
+
+        return requestMessageBuilder;
+    }
 }
 
 internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs>
