@@ -1800,7 +1800,7 @@ public class FunctionalTest
     internal static async Task ObjectTagsAsync_Test1(MinioClient minio)
     {
         // Test will run twice once for file size 1KB amd once
-        // for 6MB to cover single and multipart upload
+        // for 6MB to cover single and multipart upload functions
         var sizesList = new List<int> { 1 * KB, 6 * MB };
         foreach (var size in sizesList)
         {
@@ -1954,10 +1954,11 @@ public class FunctionalTest
     internal static async Task ObjectVersioningAsync_Test1(MinioClient minio)
     {
         // Test will run twice once for file size 1KB amd once
-        // for 6MB to cover single and multipart upload
+        // for 6MB to cover single and multipart upload functions
         var sizesList = new List<int> { 1 * KB, 6 * MB };
         foreach (var size in sizesList)
         {
+            var loopIndex = 1;
             var startTime = DateTime.Now;
             var bucketName = GetRandomName(15);
             var objectName = GetRandomName(10);
@@ -1977,7 +1978,7 @@ public class FunctionalTest
                         .WithVersioningEnabled();
                     await minio.SetVersioningAsync(setVersioningArgs).ConfigureAwait(false);
 
-                    // Twice, for 2 versions.
+                    // Put the same object twice to have 2 versions of it
                     using (var filestream = rsg.GenerateStreamFromSeed(size))
                     {
                         var putObjectArgs = new PutObjectArgs()
@@ -2000,29 +2001,15 @@ public class FunctionalTest
                         await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
                     }
 
+                    // In each run, there will be 2 more versions of the object
+                    var objectVersionCount = loopIndex * 2;
+                    ListObjects_Test(minio, bucketName, "", objectVersionCount, true, true);
                     new MintLogger(nameof(ObjectVersioningAsync_Test1), setVersioningSignature,
                         "Tests whether SetVersioningAsync/GetVersioningAsync/RemoveVersioningAsync passes",
                         TestStatus.PASS,
                         DateTime.Now - startTime, args: args).Log();
 
-                    var objectVersionCount = 2;
-                    var objectVersionIndex = 0;
-                    var listArgs = new ListObjectsArgs()
-                        .WithBucket(bucketName);
-                    var observable = minio.ListObjectsAsync(listArgs);
-                    var objVersions = new List<Tuple<string, string>>();
-                    var subscription = observable.Subscribe(
-                        item =>
-                        {
-                            objVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
-                            objectVersionIndex++;
-                        },
-                        ex => throw ex,
-                        () => { Assert.IsTrue(objectVersionIndex == objectVersionCount); });
-                    Thread.Sleep(1500);
-                }
 
-                {
                     // Get Versioning Test
                     var getVersioningArgs = new GetVersioningArgs()
                         .WithBucket(bucketName);
@@ -2035,29 +2022,16 @@ public class FunctionalTest
                         "Tests whether SetVersioningAsync/GetVersioningAsync/RemoveVersioningAsync passes",
                         TestStatus.PASS,
                         DateTime.Now - startTime, args: args).Log();
-                }
-                {
-                    // Suspend Versioning test.
-                    var setVersioningArgs = new SetVersioningArgs()
+
+
+                    // Suspend Versioning test
+                    setVersioningArgs = new SetVersioningArgs()
                         .WithBucket(bucketName)
                         .WithVersioningSuspended();
                     await minio.SetVersioningAsync(setVersioningArgs).ConfigureAwait(false);
 
                     var objectCount = 1;
-                    var objectIndex = 0;
-                    var listArgs = new ListObjectsArgs()
-                        .WithBucket(bucketName);
-                    var observable = minio.ListObjectsAsync(listArgs);
-                    var objects = new List<Tuple<string>>();
-                    var subscription = observable.Subscribe(
-                        item =>
-                        {
-                            objects.Add(new Tuple<string>(item.Key));
-                            objectIndex++;
-                        },
-                        ex => throw ex,
-                        () => { Assert.IsTrue(objectIndex == objectCount); });
-                    Thread.Sleep(1500);
+                    ListObjects_Test(minio, bucketName, "", objectCount, false);
                     new MintLogger(nameof(ObjectVersioningAsync_Test1), removeVersioningSignature,
                         "Tests whether SetVersioningAsync/GetVersioningAsync/RemoveVersioningAsync passes",
                         TestStatus.PASS,
