@@ -43,74 +43,6 @@ public partial class MinioClient : IObjectOperations
     /// <summary>
     ///     Get an object. The object will be streamed to the callback given by the user.
     /// </summary>
-    /// <param name="bucketName">Bucket to retrieve object from</param>
-    /// <param name="objectName">Name of object to retrieve</param>
-    /// <param name="cb">A stream will be passed to the callback</param>
-    /// <param name="sse">Server-side encryption option. Defaults to null.</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    [Obsolete(
-        "Use GetObjectAsync method with GetObjectArgs object. Refer GetObject, GetObjectVersion & GetObjectQuery example code.")]
-    public Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb,
-        ServerSideEncryption sse = null, CancellationToken cancellationToken = default)
-    {
-        var args = new GetObjectArgs()
-            .WithBucket(bucketName)
-            .WithObject(objectName)
-            .WithCallbackStream(cb)
-            .WithServerSideEncryption(sse);
-        return GetObjectAsync(args, cancellationToken);
-    }
-
-
-    /// <summary>
-    ///     Get an object. The object will be streamed to the callback given by the user.
-    /// </summary>
-    /// <param name="bucketName">Bucket to retrieve object from</param>
-    /// <param name="objectName">Name of object to retrieve</param>
-    /// <param name="offset"> Offset of the object from where stream will start</param>
-    /// <param name="length">length of the object that will be read in the stream </param>
-    /// <param name="cb">A stream will be passed to the callback</param>
-    /// <param name="sse">Server-side encryption option. Defaults to null.</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    [Obsolete(
-        "Use GetObjectAsync method with GetObjectArgs object. Refer GetObject, GetObjectVersion & GetObjectQuery example code.")]
-    public Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb,
-        ServerSideEncryption sse = null, CancellationToken cancellationToken = default)
-    {
-        var args = new GetObjectArgs()
-            .WithBucket(bucketName)
-            .WithObject(objectName)
-            .WithCallbackStream(cb)
-            .WithOffsetAndLength(offset, length)
-            .WithServerSideEncryption(sse);
-        return GetObjectAsync(args);
-    }
-
-    /// <summary>
-    ///     Get an object. The object will be streamed to the callback given by the user.
-    /// </summary>
-    /// <param name="bucketName">Bucket to retrieve object from</param>
-    /// <param name="objectName">Name of object to retrieve</param>
-    /// <param name="fileName">string with file path</param>
-    /// <param name="sse">Server-side encryption option. Defaults to null.</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns></returns>
-    [Obsolete(
-        "Use GetObjectAsync method with GetObjectArgs object. Refer GetObject, GetObjectVersion & GetObjectQuery example code.")]
-    public Task GetObjectAsync(string bucketName, string objectName, string fileName, ServerSideEncryption sse = null,
-        CancellationToken cancellationToken = default)
-    {
-        var args = new GetObjectArgs()
-            .WithBucket(bucketName)
-            .WithObject(objectName)
-            .WithFile(fileName)
-            .WithServerSideEncryption(sse);
-        return GetObjectAsync(args, cancellationToken);
-    }
-
-    /// <summary>
-    ///     Get an object. The object will be streamed to the callback given by the user.
-    /// </summary>
     /// <param name="args">
     ///     GetObjectArgs Arguments Object encapsulates information like - bucket name, object name, server-side
     ///     encryption object, action stream, length, offset
@@ -804,6 +736,111 @@ public partial class MinioClient : IObjectOperations
         }
     }
 
+    /// <summary>
+    ///     Presigned post policy
+    /// </summary>
+    /// <param name="policy"></param>
+    /// <returns></returns>
+    public Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PostPolicy policy)
+    {
+        var args = new PresignedPostPolicyArgs()
+            .WithBucket(policy.Bucket)
+            .WithObject(policy.Key)
+            .WithPolicy(policy);
+        return PresignedPostPolicyAsync(args);
+    }
+
+
+    /// <summary>
+    ///     Tests the object's existence and returns metadata about existing objects.
+    /// </summary>
+    /// <param name="args">
+    ///     StatObjectArgs Arguments Object encapsulates information like - bucket name, object name,
+    ///     server-side encryption object
+    /// </param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns>Facts about the object</returns>
+    public async Task<ObjectStat> StatObjectAsync(StatObjectArgs args, CancellationToken cancellationToken = default)
+    {
+        args.Validate();
+        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            .ConfigureAwait(false);
+        var responseHeaders = new Dictionary<string, string>();
+        foreach (var param in response.Headers.ToList()) responseHeaders.Add(param.Key, param.Value);
+        var statResponse = new StatObjectResponse(response.StatusCode, response.Content, response.Headers, args);
+
+        return statResponse.ObjectInfo;
+    }
+
+    /// <summary>
+    ///     Get an object. The object will be streamed to the callback given by the user.
+    /// </summary>
+    /// <param name="bucketName">Bucket to retrieve object from</param>
+    /// <param name="objectName">Name of object to retrieve</param>
+    /// <param name="cb">A stream will be passed to the callback</param>
+    /// <param name="sse">Server-side encryption option. Defaults to null.</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    [Obsolete(
+        "Use GetObjectAsync method with GetObjectArgs object. Refer GetObject, GetObjectVersion & GetObjectQuery example code.")]
+    public Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb,
+        ServerSideEncryption sse = null, CancellationToken cancellationToken = default)
+    {
+        var args = new GetObjectArgs()
+            .WithBucket(bucketName)
+            .WithObject(objectName)
+            .WithCallbackStream(cb)
+            .WithServerSideEncryption(sse);
+        return GetObjectAsync(args, cancellationToken);
+    }
+
+
+    /// <summary>
+    ///     Get an object. The object will be streamed to the callback given by the user.
+    /// </summary>
+    /// <param name="bucketName">Bucket to retrieve object from</param>
+    /// <param name="objectName">Name of object to retrieve</param>
+    /// <param name="offset"> Offset of the object from where stream will start</param>
+    /// <param name="length">length of the object that will be read in the stream </param>
+    /// <param name="cb">A stream will be passed to the callback</param>
+    /// <param name="sse">Server-side encryption option. Defaults to null.</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    [Obsolete(
+        "Use GetObjectAsync method with GetObjectArgs object. Refer GetObject, GetObjectVersion & GetObjectQuery example code.")]
+    public Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb,
+        ServerSideEncryption sse = null, CancellationToken cancellationToken = default)
+    {
+        var args = new GetObjectArgs()
+            .WithBucket(bucketName)
+            .WithObject(objectName)
+            .WithCallbackStream(cb)
+            .WithOffsetAndLength(offset, length)
+            .WithServerSideEncryption(sse);
+        return GetObjectAsync(args);
+    }
+
+    /// <summary>
+    ///     Get an object. The object will be streamed to the callback given by the user.
+    /// </summary>
+    /// <param name="bucketName">Bucket to retrieve object from</param>
+    /// <param name="objectName">Name of object to retrieve</param>
+    /// <param name="fileName">string with file path</param>
+    /// <param name="sse">Server-side encryption option. Defaults to null.</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns></returns>
+    [Obsolete(
+        "Use GetObjectAsync method with GetObjectArgs object. Refer GetObject, GetObjectVersion & GetObjectQuery example code.")]
+    public Task GetObjectAsync(string bucketName, string objectName, string fileName, ServerSideEncryption sse = null,
+        CancellationToken cancellationToken = default)
+    {
+        var args = new GetObjectArgs()
+            .WithBucket(bucketName)
+            .WithObject(objectName)
+            .WithFile(fileName)
+            .WithServerSideEncryption(sse);
+        return GetObjectAsync(args, cancellationToken);
+    }
+
 
     /// <summary>
     ///     Select an object's content. The object will be streamed to the callback given by the user.
@@ -1060,43 +1097,6 @@ public partial class MinioClient : IObjectOperations
             .WithObject(objectName)
             .WithExpiry(expiresInt);
         return PresignedPutObjectAsync(args);
-    }
-
-    /// <summary>
-    ///     Presigned post policy
-    /// </summary>
-    /// <param name="policy"></param>
-    /// <returns></returns>
-    public Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PostPolicy policy)
-    {
-        var args = new PresignedPostPolicyArgs()
-            .WithBucket(policy.Bucket)
-            .WithObject(policy.Key)
-            .WithPolicy(policy);
-        return PresignedPostPolicyAsync(args);
-    }
-
-
-    /// <summary>
-    ///     Tests the object's existence and returns metadata about existing objects.
-    /// </summary>
-    /// <param name="args">
-    ///     StatObjectArgs Arguments Object encapsulates information like - bucket name, object name,
-    ///     server-side encryption object
-    /// </param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>Facts about the object</returns>
-    public async Task<ObjectStat> StatObjectAsync(StatObjectArgs args, CancellationToken cancellationToken = default)
-    {
-        args.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
-            .ConfigureAwait(false);
-        var responseHeaders = new Dictionary<string, string>();
-        foreach (var param in response.Headers.ToList()) responseHeaders.Add(param.Key, param.Value);
-        var statResponse = new StatObjectResponse(response.StatusCode, response.Content, response.Headers, args);
-
-        return statResponse.ObjectInfo;
     }
 
 
