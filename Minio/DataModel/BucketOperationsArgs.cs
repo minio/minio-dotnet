@@ -532,7 +532,7 @@ public class SetBucketTagsArgs : BucketArgs<SetBucketTagsArgs>
 
     public SetBucketTagsArgs WithTagging(Tagging tags)
     {
-        BucketTags = Tagging.GetObjectTags(tags.GetTags());
+        BucketTags = Tagging.GetBucketTags(tags.GetTags());
         return this;
     }
 
