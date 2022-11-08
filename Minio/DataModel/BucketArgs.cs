@@ -26,6 +26,8 @@ public abstract class BucketArgs<T> : Args
         Headers = new Dictionary<string, string>();
     }
 
+    public bool IsBucketCreationRequest { get; set; } = false;
+
     internal string BucketName { get; set; }
 
     internal Dictionary<string, string> Headers { get; set; }

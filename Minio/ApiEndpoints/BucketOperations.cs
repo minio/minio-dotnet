@@ -125,6 +125,7 @@ public partial class MinioClient : IBucketOperations
         if (args.Location == "us-east-1")
             if (Region != string.Empty)
                 args.Location = Region;
+        args.IsBucketCreationRequest = true;
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
