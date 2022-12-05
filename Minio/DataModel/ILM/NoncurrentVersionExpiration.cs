@@ -25,6 +25,8 @@ using System.Xml.Serialization;
 
 namespace Minio.DataModel.ILM;
 
+[Serializable]
+[XmlRoot(ElementName = "NoncurrentVersionExpiration")]
 public class NoncurrentVersionExpiration
 {
     public NoncurrentVersionExpiration()
@@ -38,5 +40,5 @@ public class NoncurrentVersionExpiration
     }
 
     [XmlElement(ElementName = "NoncurrentDays", IsNullable = true)]
-    internal uint? NoncurrentDays { get; set; }
+    public uint? NoncurrentDays { get; set; }
 }
