@@ -44,5 +44,5 @@ public class NoncurrentVersionTransition : NoncurrentVersionExpiration
     }
 
     [XmlElement(ElementName = "StorageClass", IsNullable = true)]
-    internal string StorageClass { get; set; }
+    public string StorageClass { get; set; }
 }
