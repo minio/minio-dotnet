@@ -281,7 +281,9 @@ public partial class MinioClient : IMinioClient
     internal async Task<HttpRequestMessageBuilder> CreateRequest<T>(BucketArgs<T> args) where T : BucketArgs<T>
     {
         ArgsCheck(args);
-        var requestMessageBuilder = await CreateRequest(args.RequestMethod, args.BucketName).ConfigureAwait(false);
+        var requestMessageBuilder =
+            await CreateRequest(args.RequestMethod, args.BucketName, headerMap: args.Headers,
+                isBucketCreationRequest: args.IsBucketCreationRequest).ConfigureAwait(false);
         return args.BuildRequest(requestMessageBuilder);
     }
 
@@ -319,6 +321,7 @@ public partial class MinioClient : IMinioClient
     /// <param name="contentType">Content Type</param>
     /// <param name="body">request body</param>
     /// <param name="resourcePath">query string</param>
+    /// <param name="isBucketCreationRequest">boolean to define bucket creation</param>
     /// <returns>A HttpRequestMessage builder</returns>
     /// <exception cref="BucketNotFoundException">When bucketName is invalid</exception>
     internal async Task<HttpRequestMessageBuilder> CreateRequest(
@@ -328,14 +331,15 @@ public partial class MinioClient : IMinioClient
         Dictionary<string, string> headerMap = null,
         string contentType = "application/octet-stream",
         byte[] body = null,
-        string resourcePath = null)
+        string resourcePath = null,
+        bool isBucketCreationRequest = false)
     {
         var region = string.Empty;
         if (bucketName != null)
         {
             utils.ValidateBucketName(bucketName);
             // Fetch correct region for bucket if this is not a bucket creation
-            if (method != HttpMethod.Put)
+            if (!isBucketCreationRequest)
                 region = await GetRegion(bucketName).ConfigureAwait(false);
         }
 

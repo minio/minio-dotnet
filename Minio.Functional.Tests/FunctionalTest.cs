@@ -397,6 +397,61 @@ public class FunctionalTest
         }
     }
 
+    internal static async Task RemoveBucket_Test2(MinioClient minio)
+    {
+        var startTime = DateTime.Now;
+        var bucketName = GetRandomName(20);
+        var objectName = GetRandomName(20);
+        var forceFlagHeader = new Dictionary<string, string>();
+        forceFlagHeader.Add("x-minio-force-delete", "true");
+
+        var beArgs = new BucketExistsArgs()
+            .WithBucket(bucketName);
+        var rbArgs = new RemoveBucketArgs()
+            .WithBucket(bucketName)
+            .WithHeaders(forceFlagHeader);
+
+        // Create and populate a bucket
+        var count = 50;
+        var tasks = new Task[count];
+        await Setup_Test(minio, bucketName);
+        for (var i = 0; i < count; i++)
+            tasks[i] = PutObject_Task(minio, bucketName, objectName + i, null, null, 0, null,
+                rsg.GenerateStreamFromSeed(5));
+        Task.WhenAll(tasks).Wait();
+        Thread.Sleep(1000);
+
+        var args = new Dictionary<string, string>
+        {
+            { "bucketName", bucketName },
+            { "x-minio-force-delete", "true" }
+        };
+
+        var found = false;
+
+        try
+        {
+            found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
+            Assert.IsTrue(found);
+            await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
+            found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
+            Assert.IsFalse(found);
+            new MintLogger(nameof(RemoveBucket_Test2), removeBucketSignature, "Tests whether RemoveBucket passes",
+                TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
+        }
+        catch (Exception ex)
+        {
+            new MintLogger(nameof(RemoveBucket_Test2), removeBucketSignature, "Tests whether RemoveBucket passes",
+                TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
+            throw;
+        }
+        finally
+        {
+            if (found)
+                await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
+        }
+    }
+
     internal static async Task ListBuckets_Test(MinioClient minio)
     {
         var startTime = DateTime.Now;

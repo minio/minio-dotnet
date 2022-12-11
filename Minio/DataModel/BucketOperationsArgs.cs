@@ -43,6 +43,13 @@ public class RemoveBucketArgs : BucketArgs<RemoveBucketArgs>
     {
         RequestMethod = HttpMethod.Delete;
     }
+
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        if (Headers.ContainsKey(BucketForceDeleteKey))
+            requestMessageBuilder.AddHeaderParameter(BucketForceDeleteKey, Headers[BucketForceDeleteKey]);
+        return requestMessageBuilder;
+    }
 }
 
 public class MakeBucketArgs : BucketArgs<MakeBucketArgs>
