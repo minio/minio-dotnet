@@ -21,6 +21,8 @@ namespace Minio;
 public abstract class BucketArgs<T> : Args
     where T : BucketArgs<T>
 {
+    protected const string BucketForceDeleteKey = "X-Minio-Force-Delete";
+
     public BucketArgs()
     {
         Headers = new Dictionary<string, string>();

@@ -244,7 +244,7 @@ public partial class MinioClient
     {
         ArgsCheck(args);
         var requestMessageBuilder =
-            await CreateRequest(args.RequestMethod, args.BucketName,
+            await CreateRequest(args.RequestMethod, args.BucketName, headerMap: args.Headers,
                 isBucketCreationRequest: args.IsBucketCreationRequest).ConfigureAwait(false);
         return args.BuildRequest(requestMessageBuilder);
     }

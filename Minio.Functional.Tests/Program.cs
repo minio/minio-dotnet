@@ -116,6 +116,7 @@ internal class Program
 
         // Test removal of bucket
         FunctionalTest.RemoveBucket_Test1(minioClient).Wait();
+        FunctionalTest.RemoveBucket_Test2(minioClient).Wait();
 
         // Test ListBuckets function
         FunctionalTest.ListBuckets_Test(minioClient).Wait();
