@@ -22,7 +22,7 @@ namespace Minio.Examples.Cases;
 internal class ListBuckets
 {
     // List all buckets on host
-    public static async Task Run(MinioClient minio)
+    public static async Task Run(IMinioClient minio)
     {
         try
         {

@@ -16,22 +16,117 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Minio.Credentials;
+using Minio.DataModel;
+using Minio.DataModel.ILM;
+using Minio.DataModel.ObjectLock;
+using Minio.DataModel.Replication;
+using Minio.DataModel.Tags;
 using Minio.Exceptions;
 
 namespace Minio;
 
-public interface IMinioClient
+public interface IMinioClient : IDisposable
 {
-    MinioClient Build();
-    MinioClient WithCredentials(string accessKey, string secretKey);
-    MinioClient WithRegion(string region);
-    MinioClient WithEndpoint(Uri url);
-    MinioClient WithEndpoint(string endpoint, int port);
-    MinioClient WithEndpoint(string endpoint);
-    MinioClient WithSessionToken(string sessiontoken);
+    Task<bool> BucketExistsAsync(BucketExistsArgs args, CancellationToken cancellationToken = default);
+    Task ClearObjectRetentionAsync(ClearObjectRetentionArgs args, CancellationToken cancellationToken = default);
+    Task CopyObjectAsync(CopyObjectArgs args, CancellationToken cancellationToken = default);
+
+    Task<ServerSideEncryptionConfiguration> GetBucketEncryptionAsync(GetBucketEncryptionArgs args,
+        CancellationToken cancellationToken = default);
+
+    Task<LifecycleConfiguration> GetBucketLifecycleAsync(GetBucketLifecycleArgs args,
+        CancellationToken cancellationToken = default);
+
+    Task<BucketNotification> GetBucketNotificationsAsync(GetBucketNotificationsArgs args,
+        CancellationToken cancellationToken = default);
+
+    Task<ReplicationConfiguration> GetBucketReplicationAsync(GetBucketReplicationArgs args,
+        CancellationToken cancellationToken = default);
+
+    Task<Tagging> GetBucketTagsAsync(GetBucketTagsArgs args, CancellationToken cancellationToken = default);
+    Task<ObjectStat> GetObjectAsync(GetObjectArgs args, CancellationToken cancellationToken = default);
+    Task<bool> GetObjectLegalHoldAsync(GetObjectLegalHoldArgs args, CancellationToken cancellationToken = default);
+
+    Task<ObjectLockConfiguration> GetObjectLockConfigurationAsync(GetObjectLockConfigurationArgs args,
+        CancellationToken cancellationToken = default);
+
+    Task<ObjectRetentionConfiguration> GetObjectRetentionAsync(GetObjectRetentionArgs args,
+        CancellationToken cancellationToken = default);
+
+    Task<Tagging> GetObjectTagsAsync(GetObjectTagsArgs args, CancellationToken cancellationToken = default);
+    Task<string> GetPolicyAsync(GetPolicyArgs args, CancellationToken cancellationToken = default);
+
+    Task<VersioningConfiguration> GetVersioningAsync(GetVersioningArgs args,
+        CancellationToken cancellationToken = default);
+
+    Task<ListAllMyBucketsResult> ListBucketsAsync(CancellationToken cancellationToken = default);
+
+    IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(ListenBucketNotificationsArgs args,
+        CancellationToken cancellationToken = default);
+
+    IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events,
+        string prefix = "", string suffix = "", CancellationToken cancellationToken = default);
+
+    IObservable<Upload> ListIncompleteUploads(ListIncompleteUploadsArgs args,
+        CancellationToken cancellationToken = default);
+
+    IObservable<Item> ListObjectsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default);
+    Task MakeBucketAsync(MakeBucketArgs args, CancellationToken cancellationToken = default);
+    Task<string> PresignedGetObjectAsync(PresignedGetObjectArgs args);
+    Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PostPolicy policy);
+    Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PresignedPostPolicyArgs args);
+    Task<string> PresignedPutObjectAsync(PresignedPutObjectArgs args);
+    Task PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default);
+
+    Task RemoveAllBucketNotificationsAsync(RemoveAllBucketNotificationsArgs args,
+        CancellationToken cancellationToken = default);
+
+    Task RemoveBucketAsync(RemoveBucketArgs args, CancellationToken cancellationToken = default);
+    Task RemoveBucketEncryptionAsync(RemoveBucketEncryptionArgs args, CancellationToken cancellationToken = default);
+    Task RemoveBucketLifecycleAsync(RemoveBucketLifecycleArgs args, CancellationToken cancellationToken = default);
+    Task RemoveBucketReplicationAsync(RemoveBucketReplicationArgs args, CancellationToken cancellationToken = default);
+    Task RemoveBucketTagsAsync(RemoveBucketTagsArgs args, CancellationToken cancellationToken = default);
+    Task RemoveIncompleteUploadAsync(RemoveIncompleteUploadArgs args, CancellationToken cancellationToken = default);
+    Task RemoveObjectAsync(RemoveObjectArgs args, CancellationToken cancellationToken = default);
+
+    Task RemoveObjectLockConfigurationAsync(RemoveObjectLockConfigurationArgs args,
+        CancellationToken cancellationToken = default);
+
+    Task<IObservable<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args,
+        CancellationToken cancellationToken = default);
+
+    Task RemoveObjectTagsAsync(RemoveObjectTagsArgs args, CancellationToken cancellationToken = default);
+    Task RemovePolicyAsync(RemovePolicyArgs args, CancellationToken cancellationToken = default);
+
+    Task<SelectResponseStream> SelectObjectContentAsync(SelectObjectContentArgs args,
+        CancellationToken cancellationToken = default);
+
+    void SetAppInfo(string appName, string appVersion);
+    Task SetBucketEncryptionAsync(SetBucketEncryptionArgs args, CancellationToken cancellationToken = default);
+    Task SetBucketLifecycleAsync(SetBucketLifecycleArgs args, CancellationToken cancellationToken = default);
+    Task SetBucketNotificationsAsync(SetBucketNotificationsArgs args, CancellationToken cancellationToken = default);
+    Task SetBucketReplicationAsync(SetBucketReplicationArgs args, CancellationToken cancellationToken = default);
+    Task SetBucketTagsAsync(SetBucketTagsArgs args, CancellationToken cancellationToken = default);
+    Task SetObjectLegalHoldAsync(SetObjectLegalHoldArgs args, CancellationToken cancellationToken = default);
+
+    Task SetObjectLockConfigurationAsync(SetObjectLockConfigurationArgs args,
+        CancellationToken cancellationToken = default);
+
+    Task SetObjectRetentionAsync(SetObjectRetentionArgs args, CancellationToken cancellationToken = default);
+    Task SetObjectTagsAsync(SetObjectTagsArgs args, CancellationToken cancellationToken = default);
+    Task SetPolicyAsync(SetPolicyArgs args, CancellationToken cancellationToken = default);
+    void SetTraceOff();
+    void SetTraceOn(IRequestLogger logger = null);
+    Task SetVersioningAsync(SetVersioningArgs args, CancellationToken cancellationToken = default);
+    Task<ObjectStat> StatObjectAsync(StatObjectArgs args, CancellationToken cancellationToken = default);
+    Task<HttpResponseMessage> WrapperGetAsync(string url);
+    Task WrapperPutAsync(string url, StreamContent strm);
 }
 
 public partial class MinioClient : IMinioClient

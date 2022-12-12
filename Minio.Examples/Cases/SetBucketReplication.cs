@@ -50,7 +50,7 @@ public class SetBucketReplication
     }
 
     // Set Replication configuration for the bucket
-    public static async Task Run(MinioClient minio,
+    public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name",
         string destBucketName = "dest-bucket-name",
         string replicationRuleID = "my-replication-ID")

@@ -26,7 +26,7 @@ public delegate PostPolicy DefaultPolicy(string bucketName,
 
 public class PresignedPostPolicy
 {
-    public static async Task Run(MinioClient client,
+    public static async Task Run(IMinioClient client,
         string bucketName = "my-bucketname",
         string objectName = "my-objectname")
     {

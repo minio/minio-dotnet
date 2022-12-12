@@ -22,7 +22,7 @@ namespace Minio.Examples.Cases;
 internal class GetObjectVersion
 {
     // Get object in a bucket
-    public static async Task Run(MinioClient minio,
+    public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name",
         string objectName = "my-object-name",
         string versionId = "my-version-id",

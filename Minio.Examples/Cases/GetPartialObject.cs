@@ -24,7 +24,7 @@ internal class GetPartialObject
 {
     // Get object in a bucket for a particular offset range. Dotnet SDK currently
     // requires both start offset and end 
-    public static async Task Run(MinioClient minio,
+    public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name",
         string objectName = "my-object-name",
         string fileName = "my-file-name")

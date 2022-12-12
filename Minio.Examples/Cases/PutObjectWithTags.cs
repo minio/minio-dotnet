@@ -26,7 +26,7 @@ internal class PutObjectWithTags
     private const int MB = 1024 * 1024;
 
     // Put an object from a local stream into bucket
-    public static async Task Run(MinioClient minio,
+    public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name",
         string objectName = "my-object-name",
         string fileName = "location-of-file")
