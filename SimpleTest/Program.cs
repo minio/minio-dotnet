@@ -70,7 +70,7 @@ public class Program
         Console.ReadLine();
     }
 
-    private static bool isBucketExists(MinioClient minio,
+    private static bool isBucketExists(IMinioClient minio,
         string bucketName)
     {
         var bktExistsArgs = new BucketExistsArgs()

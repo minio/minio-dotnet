@@ -23,7 +23,7 @@ namespace Minio.Examples.Cases;
 public class GetBucketReplication
 {
     // Get Replication configuration assigned to the bucket
-    public static async Task Run(MinioClient minio,
+    public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name",
         string replicationRuleID = "my-replication-rule-ID")
     {

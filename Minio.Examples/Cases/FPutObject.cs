@@ -22,7 +22,7 @@ namespace Minio.Examples.Cases;
 internal class FPutObject
 {
     // Upload object to bucket from file
-    public static async Task Run(MinioClient minio,
+    public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name",
         string objectName = "my-object-name",
         string fileName = "from where")

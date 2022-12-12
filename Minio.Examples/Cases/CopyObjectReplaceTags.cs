@@ -24,7 +24,7 @@ namespace Minio.Examples.Cases;
 internal class CopyObjectReplaceTags
 {
     // Copy object from one bucket to another, replace tags in the copied object
-    public static async Task Run(MinioClient minio,
+    public static async Task Run(IMinioClient minio,
         string fromBucketName = "from-bucket-name",
         string fromObjectName = "from-object-name",
         string destBucketName = "dest-bucket",

@@ -21,7 +21,7 @@ namespace Minio.Examples.Cases;
 
 public class PresignedPutObject
 {
-    public static async Task Run(MinioClient client,
+    public static async Task Run(IMinioClient client,
         string bucketName = "my-bucket-name",
         string objectName = "my-object-name")
     {

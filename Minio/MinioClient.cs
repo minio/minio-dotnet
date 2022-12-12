@@ -41,7 +41,7 @@ public class InnerItemType
     public string value { get; set; }
 }
 
-public partial class MinioClient
+public partial class MinioClient : IMinioClient
 {
     private const string RegistryAuthHeaderKey = "X-Registry-Auth";
 
@@ -192,6 +192,44 @@ public partial class MinioClient
     public async Task WrapperPutAsync(string url, StreamContent strm)
     {
         await Task.Run(async () => await HTTPClient.PutAsync(url, strm).ConfigureAwait(false)).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    ///     Sets app version and name. Used for constructing User-Agent header in all HTTP requests
+    /// </summary>
+    /// <param name="appName"></param>
+    /// <param name="appVersion"></param>
+    public void SetAppInfo(string appName, string appVersion)
+    {
+        if (string.IsNullOrEmpty(appName))
+            throw new ArgumentException("Appname cannot be null or empty", nameof(appName));
+
+        if (string.IsNullOrEmpty(appVersion))
+            throw new ArgumentException("Appversion cannot be null or empty", nameof(appVersion));
+
+        CustomUserAgent = $"{appName}/{appVersion}";
+    }
+
+    /// <summary>
+    ///     Sets HTTP tracing On.Writes output to Console
+    /// </summary>
+    public void SetTraceOn(IRequestLogger logger = null)
+    {
+        this.logger = logger ?? new DefaultRequestLogger();
+        trace = true;
+    }
+
+    /// <summary>
+    ///     Sets HTTP tracing Off.
+    /// </summary>
+    public void SetTraceOff()
+    {
+        trace = false;
+    }
+
+    public void Dispose()
+    {
+        if (disposeHttpClient) HTTPClient?.Dispose();
     }
 
     /// <summary>
@@ -391,22 +429,6 @@ public partial class MinioClient
         }
 
         return messageBuilder;
-    }
-
-    /// <summary>
-    ///     Sets app version and name. Used for constructing User-Agent header in all HTTP requests
-    /// </summary>
-    /// <param name="appName"></param>
-    /// <param name="appVersion"></param>
-    public void SetAppInfo(string appName, string appVersion)
-    {
-        if (string.IsNullOrEmpty(appName))
-            throw new ArgumentException("Appname cannot be null or empty", nameof(appName));
-
-        if (string.IsNullOrEmpty(appVersion))
-            throw new ArgumentException("Appversion cannot be null or empty", nameof(appVersion));
-
-        CustomUserAgent = $"{appName}/{appVersion}";
     }
 
     /// <summary>
@@ -798,23 +820,6 @@ public partial class MinioClient
     }
 
     /// <summary>
-    ///     Sets HTTP tracing On.Writes output to Console
-    /// </summary>
-    public void SetTraceOn(IRequestLogger logger = null)
-    {
-        this.logger = logger ?? new DefaultRequestLogger();
-        trace = true;
-    }
-
-    /// <summary>
-    ///     Sets HTTP tracing Off.
-    /// </summary>
-    public void SetTraceOff()
-    {
-        trace = false;
-    }
-
-    /// <summary>
     ///     Logs the request sent to server and corresponding response
     /// </summary>
     /// <param name="request"></param>
@@ -859,11 +864,6 @@ public partial class MinioClient
         return retryPolicyHandler == null
             ? executeRequestCallback()
             : retryPolicyHandler(executeRequestCallback);
-    }
-
-    public void Dispose()
-    {
-        if (disposeHttpClient) HTTPClient?.Dispose();
     }
 }
 

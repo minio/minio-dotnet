@@ -37,6 +37,152 @@ namespace Minio;
 public partial class MinioClient : IBucketOperations
 {
     /// <summary>
+    ///     Create a private bucket with the given name.
+    /// </summary>
+    /// <param name="bucketName">Name of the new bucket</param>
+    /// <param name="location">Region</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns> Task </returns>
+    /// <exception cref="InvalidBucketNameException">When bucketName is null</exception>
+    [Obsolete("Use MakeBucketAsync method with MakeBucketArgs object. Refer MakeBucket example code.")]
+    public Task MakeBucketAsync(string bucketName, string location = "us-east-1",
+        CancellationToken cancellationToken = default)
+    {
+        var args = new MakeBucketArgs()
+            .WithBucket(bucketName)
+            .WithLocation(location);
+        return MakeBucketAsync(args, cancellationToken);
+    }
+
+    /// <summary>
+    ///     Returns true if the specified bucketName exists, otherwise returns false.
+    /// </summary>
+    /// <param name="bucketName">Bucket to test existence of</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns>Task that returns true if exists and user has access</returns>
+    [Obsolete("Use BucketExistsAsync method with BucketExistsArgs object. Refer BucketExists example code.")]
+    public Task<bool> BucketExistsAsync(string bucketName, CancellationToken cancellationToken = default)
+    {
+        var args = new BucketExistsArgs()
+            .WithBucket(bucketName);
+        return BucketExistsAsync(args, cancellationToken);
+    }
+
+    /// <summary>
+    ///     Remove a bucket
+    /// </summary>
+    /// <param name="bucketName">Name of bucket to remove</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns>Task</returns>
+    [Obsolete("Use RemoveBucketAsync method with RemoveBucketArgs object. Refer RemoveBucket example code.")]
+    public Task RemoveBucketAsync(string bucketName, CancellationToken cancellationToken = default)
+    {
+        var args = new RemoveBucketArgs()
+            .WithBucket(bucketName);
+        return RemoveBucketAsync(args, cancellationToken);
+    }
+
+    /// <summary>
+    ///     List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
+    /// </summary>
+    /// <param name="bucketName">Bucket to list objects from</param>
+    /// <param name="prefix">Filters all objects beginning with a given prefix</param>
+    /// <param name="recursive">Set to true to recursively list all objects</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns>An observable of items that client can subscribe to</returns>
+    [Obsolete("Use ListObjectsAsync method with ListObjectsArgs object. Refer ListObjects example code.")]
+    public IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = false,
+        CancellationToken cancellationToken = default)
+    {
+        var args = new ListObjectsArgs()
+            .WithBucket(bucketName)
+            .WithPrefix(prefix)
+            .WithRecursive(recursive);
+        return ListObjectsAsync(args, cancellationToken);
+    }
+
+
+    /// <summary>
+    ///     Returns current policy stored on the server for this bucket
+    /// </summary>
+    /// <param name="bucketName">Bucket name.</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns>Task that returns the Bucket policy as a json string</returns>
+    [Obsolete("Use GetPolicyAsync method with GetPolicyArgs object. Refer GetBucketPolicy example code.")]
+    public Task<string> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default)
+    {
+        var args = new GetPolicyArgs()
+            .WithBucket(bucketName);
+        return GetPolicyAsync(args, cancellationToken);
+    }
+
+
+    /// <summary>
+    ///     Sets the current bucket policy
+    /// </summary>
+    /// <param name="bucketName">Bucket Name</param>
+    /// <param name="policyJson">Policy json as string </param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns>Task to set a policy</returns>
+    [Obsolete("Use SetPolicyAsync method with SetPolicyArgs object. Refer SetBucketPolicy example code.")]
+    public Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default)
+    {
+        var args = new SetPolicyArgs()
+            .WithBucket(bucketName)
+            .WithPolicy(policyJson);
+        return SetPolicyAsync(args, cancellationToken);
+    }
+
+    /// <summary>
+    ///     Gets notification configuration for this bucket
+    /// </summary>
+    /// <param name="bucketName">Bucket name</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns></returns>
+    [Obsolete(
+        "Use GetBucketNotificationsAsync method with GetBucketNotificationsArgs object. Refer GetBucketNotification example code.")]
+    public Task<BucketNotification> GetBucketNotificationsAsync(string bucketName,
+        CancellationToken cancellationToken = default)
+    {
+        var args = new GetBucketNotificationsArgs()
+            .WithBucket(bucketName);
+        return GetBucketNotificationsAsync(args, cancellationToken);
+    }
+
+    /// <summary>
+    ///     Sets the notification configuration for this bucket
+    /// </summary>
+    /// <param name="bucketName">Bucket name</param>
+    /// <param name="notification">Notification object with configuration to be set on the server</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns></returns>
+    [Obsolete(
+        "Use SetBucketNotificationsAsync method with SetBucketNotificationsArgs object. Refer SetBucketNotification example code.")]
+    public Task SetBucketNotificationsAsync(string bucketName, BucketNotification notification,
+        CancellationToken cancellationToken = default)
+    {
+        var args = new SetBucketNotificationsArgs()
+            .WithBucket(bucketName)
+            .WithBucketNotificationConfiguration(notification);
+        return SetBucketNotificationsAsync(args, cancellationToken);
+    }
+
+    /// <summary>
+    ///     Removes all bucket notification configurations stored on the server.
+    /// </summary>
+    /// <param name="bucketName">Bucket name</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns></returns>
+    [Obsolete(
+        "Use RemoveAllBucketNotificationsAsync method with RemoveAllBucketNotificationsArgs object. Refer RemoveAllBucketNotification example code.")]
+    public Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default)
+    {
+        var args = new RemoveAllBucketNotificationsArgs()
+            .WithBucket(bucketName);
+        return RemoveAllBucketNotificationsAsync(args, cancellationToken);
+    }
+
+    /// <summary>
     ///     List all the buckets for the current Endpoint URL
     /// </summary>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -682,153 +828,6 @@ public partial class MinioClient : IBucketOperations
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-    }
-
-
-    /// <summary>
-    ///     Create a private bucket with the given name.
-    /// </summary>
-    /// <param name="bucketName">Name of the new bucket</param>
-    /// <param name="location">Region</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns> Task </returns>
-    /// <exception cref="InvalidBucketNameException">When bucketName is null</exception>
-    [Obsolete("Use MakeBucketAsync method with MakeBucketArgs object. Refer MakeBucket example code.")]
-    public Task MakeBucketAsync(string bucketName, string location = "us-east-1",
-        CancellationToken cancellationToken = default)
-    {
-        var args = new MakeBucketArgs()
-            .WithBucket(bucketName)
-            .WithLocation(location);
-        return MakeBucketAsync(args, cancellationToken);
-    }
-
-    /// <summary>
-    ///     Returns true if the specified bucketName exists, otherwise returns false.
-    /// </summary>
-    /// <param name="bucketName">Bucket to test existence of</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>Task that returns true if exists and user has access</returns>
-    [Obsolete("Use BucketExistsAsync method with BucketExistsArgs object. Refer BucketExists example code.")]
-    public Task<bool> BucketExistsAsync(string bucketName, CancellationToken cancellationToken = default)
-    {
-        var args = new BucketExistsArgs()
-            .WithBucket(bucketName);
-        return BucketExistsAsync(args, cancellationToken);
-    }
-
-    /// <summary>
-    ///     Remove a bucket
-    /// </summary>
-    /// <param name="bucketName">Name of bucket to remove</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>Task</returns>
-    [Obsolete("Use RemoveBucketAsync method with RemoveBucketArgs object. Refer RemoveBucket example code.")]
-    public Task RemoveBucketAsync(string bucketName, CancellationToken cancellationToken = default)
-    {
-        var args = new RemoveBucketArgs()
-            .WithBucket(bucketName);
-        return RemoveBucketAsync(args, cancellationToken);
-    }
-
-    /// <summary>
-    ///     List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
-    /// </summary>
-    /// <param name="bucketName">Bucket to list objects from</param>
-    /// <param name="prefix">Filters all objects beginning with a given prefix</param>
-    /// <param name="recursive">Set to true to recursively list all objects</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>An observable of items that client can subscribe to</returns>
-    [Obsolete("Use ListObjectsAsync method with ListObjectsArgs object. Refer ListObjects example code.")]
-    public IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = false,
-        CancellationToken cancellationToken = default)
-    {
-        var args = new ListObjectsArgs()
-            .WithBucket(bucketName)
-            .WithPrefix(prefix)
-            .WithRecursive(recursive);
-        return ListObjectsAsync(args, cancellationToken);
-    }
-
-
-    /// <summary>
-    ///     Returns current policy stored on the server for this bucket
-    /// </summary>
-    /// <param name="bucketName">Bucket name.</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>Task that returns the Bucket policy as a json string</returns>
-    [Obsolete("Use GetPolicyAsync method with GetPolicyArgs object. Refer GetBucketPolicy example code.")]
-    public Task<string> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default)
-    {
-        var args = new GetPolicyArgs()
-            .WithBucket(bucketName);
-        return GetPolicyAsync(args, cancellationToken);
-    }
-
-
-    /// <summary>
-    ///     Sets the current bucket policy
-    /// </summary>
-    /// <param name="bucketName">Bucket Name</param>
-    /// <param name="policyJson">Policy json as string </param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>Task to set a policy</returns>
-    [Obsolete("Use SetPolicyAsync method with SetPolicyArgs object. Refer SetBucketPolicy example code.")]
-    public Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default)
-    {
-        var args = new SetPolicyArgs()
-            .WithBucket(bucketName)
-            .WithPolicy(policyJson);
-        return SetPolicyAsync(args, cancellationToken);
-    }
-
-    /// <summary>
-    ///     Gets notification configuration for this bucket
-    /// </summary>
-    /// <param name="bucketName">Bucket name</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns></returns>
-    [Obsolete(
-        "Use GetBucketNotificationsAsync method with GetBucketNotificationsArgs object. Refer GetBucketNotification example code.")]
-    public Task<BucketNotification> GetBucketNotificationsAsync(string bucketName,
-        CancellationToken cancellationToken = default)
-    {
-        var args = new GetBucketNotificationsArgs()
-            .WithBucket(bucketName);
-        return GetBucketNotificationsAsync(args, cancellationToken);
-    }
-
-    /// <summary>
-    ///     Sets the notification configuration for this bucket
-    /// </summary>
-    /// <param name="bucketName">Bucket name</param>
-    /// <param name="notification">Notification object with configuration to be set on the server</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns></returns>
-    [Obsolete(
-        "Use SetBucketNotificationsAsync method with SetBucketNotificationsArgs object. Refer SetBucketNotification example code.")]
-    public Task SetBucketNotificationsAsync(string bucketName, BucketNotification notification,
-        CancellationToken cancellationToken = default)
-    {
-        var args = new SetBucketNotificationsArgs()
-            .WithBucket(bucketName)
-            .WithBucketNotificationConfiguration(notification);
-        return SetBucketNotificationsAsync(args, cancellationToken);
-    }
-
-    /// <summary>
-    ///     Removes all bucket notification configurations stored on the server.
-    /// </summary>
-    /// <param name="bucketName">Bucket name</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns></returns>
-    [Obsolete(
-        "Use RemoveAllBucketNotificationsAsync method with RemoveAllBucketNotificationsArgs object. Refer RemoveAllBucketNotification example code.")]
-    public Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default)
-    {
-        var args = new RemoveAllBucketNotificationsArgs()
-            .WithBucket(bucketName);
-        return RemoveAllBucketNotificationsAsync(args, cancellationToken);
     }
 
     /// <summary>

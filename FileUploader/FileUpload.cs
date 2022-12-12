@@ -67,7 +67,7 @@ public class FileUpload
     /// </summary>
     /// <param name="minio"></param>
     /// <returns></returns>
-    private static async Task Run(MinioClient minio)
+    private static async Task Run(IMinioClient minio)
     {
         // Make a new bucket called mymusic.
         var bucketName = "mymusic-folder"; //<==== change this

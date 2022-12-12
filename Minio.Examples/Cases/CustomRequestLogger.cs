@@ -24,7 +24,7 @@ namespace Minio.Examples.Cases;
 public class CustomRequestLogger
 {
     // Check if a bucket exists
-    public static async Task Run(MinioClient minio)
+    public static async Task Run(IMinioClient minio)
     {
         try
         {

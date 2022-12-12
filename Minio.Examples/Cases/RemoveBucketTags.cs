@@ -22,7 +22,7 @@ namespace Minio.Examples.Cases;
 public class RemoveBucketTags
 {
     // Remove Tags set for the bucket
-    public static async Task Run(MinioClient minio,
+    public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name")
     {
         try

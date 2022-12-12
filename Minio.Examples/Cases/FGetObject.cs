@@ -24,7 +24,7 @@ namespace Minio.Examples.Cases;
 internal class FGetObject
 {
     // Download object from bucket into local file
-    public static async Task Run(MinioClient minio,
+    public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name",
         string objectName = "my-object-name",
         string fileName = "local-filename",

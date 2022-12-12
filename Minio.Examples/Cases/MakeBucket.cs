@@ -22,7 +22,7 @@ namespace Minio.Examples.Cases;
 public class MakeBucket
 {
     // Make a bucket
-    public static async Task Run(MinioClient minio,
+    public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name", string loc = "us-east-1")
     {
         try
