@@ -19,8 +19,12 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+<<<<<<< Updated upstream
 using System.Threading;
 using System.Threading.Tasks;
+=======
+using Microsoft.Extensions.DependencyInjection;
+>>>>>>> Stashed changes
 using Minio.Credentials;
 using Minio.DataModel;
 using Minio.DataModel.ILM;
@@ -194,7 +198,33 @@ public partial class MinioClient : IMinioClient
         else
             Endpoint = host;
 
-        HTTPClient ??= Proxy is null ? new HttpClient() : new HttpClient(new HttpClientHandler { Proxy = Proxy });
+        var serviceCollection = new ServiceCollection();
+        var clientAlias = "";
+        HttpClientHandler handler;
+        if (Proxy is null)
+        {
+            clientAlias = "plainClient";
+            serviceCollection.AddHttpClient(clientAlias)
+                .ConfigurePrimaryHttpMessageHandler(() =>
+                    handler = new HttpClientHandler());
+        }
+        else
+        {
+            clientAlias = "proxiedClient";
+            serviceCollection.AddHttpClient(clientAlias)
+                .ConfigurePrimaryHttpMessageHandler(() =>
+                    handler = new HttpClientHandler { Proxy = Proxy }
+                );
+        }
+
+
+        var services = serviceCollection.BuildServiceProvider();
+        var httpClientFactory = services.GetRequiredService<IHttpClientFactory>();
+
+        HTTPClient ??= Proxy is null
+            ? httpClientFactory.CreateClient("plainClient")
+            : httpClientFactory.CreateClient("proxiedClient");
+        HTTPClient.Timeout = TimeSpan.FromMinutes(10);
         HTTPClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", FullUserAgent);
         return this;
     }

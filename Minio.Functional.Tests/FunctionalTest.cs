@@ -4542,6 +4542,313 @@ public class FunctionalTest
 
     #region Get Object
 
+    internal static async Task GetObject_LargeFile_Test1(MinioClient minio)
+    {
+        var startTime = DateTime.Now;
+        var bucketName = GetRandomName(15);
+        var objectName = GetRandomObjectName(10);
+        string contentType = null;
+        var fileName = GetRandomName(10);
+        var tempFileName = GetRandomName(10);
+        var timeoutInMilliseconds = 120000; // 2 minutes
+        var args = new Dictionary<string, string>
+        {
+            { "bucketName", bucketName },
+            { "objectName", objectName },
+            { "contentType", contentType }
+        };
+
+        try
+        {
+            // Create a large local file
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) generateRandomFile(fileName);
+            else Bash("truncate -s 2G " + fileName);
+
+            // Create the bucket
+            await Setup_Test(minio, bucketName);
+
+            using (var filestream = new FileStream(File.OpenHandle(fileName), FileAccess.Read))
+            {
+                // Upload the large file, "fileName", into the bucket
+                var size = filestream.Length;
+                long file_read_size = 0;
+                var putObjectArgs = new PutObjectArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    .WithStreamData(filestream)
+                    .WithObjectSize(filestream.Length)
+                    .WithContentType(contentType);
+                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+
+                var getObjectArgs = new GetObjectArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    .WithCallbackStream(stream =>
+                        {
+                            using (var dest = new FileStream(tempFileName, FileMode.Create, FileAccess.Write,
+                                       FileShare.None, 8192, true))
+                            {
+                                var sleepTime = 50;
+                                Task.Run(async () => await stream.CopyToAsync(dest, 8192));
+
+                                var stopwatch = new Stopwatch();
+                                long sizeNow = 1;
+                                var leftToCopy = size;
+                                stopwatch.Start();
+                                while (true)
+                                {
+                                    if (size == sizeNow) break; // success
+                                    if (size - sizeNow > leftToCopy)
+                                        throw new Exception("InternalError: Copy is not happening");
+                                    leftToCopy = size - sizeNow;
+                                    Thread.Sleep(sleepTime);
+
+                                    if (stopwatch.ElapsedMilliseconds > timeoutInMilliseconds)
+                                        throw new Exception($"Timeout: while downloading {objectName}");
+                                    sizeNow = dest.Length;
+                                }
+
+                                stopwatch.Stop();
+                            }
+                        }
+                    );
+                await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+                var writtenInfo = new FileInfo(tempFileName);
+                file_read_size = writtenInfo.Length;
+                Assert.AreEqual(size, file_read_size);
+
+                new MintLogger("GetObject_LargeFile_Test1", getObjectSignature,
+                    "Tests whether GetObject as stream works",
+                    TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
+            }
+        }
+        catch (Exception ex)
+        {
+            new MintLogger("GetObject_LargeFile_Test1", getObjectSignature, "Tests whether GetObject as stream works",
+                TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
+            throw;
+        }
+        finally
+        {
+            if (File.Exists(fileName))
+                File.Delete(fileName);
+            if (File.Exists(tempFileName))
+                File.Delete(tempFileName);
+            await TearDown(minio, bucketName);
+        }
+    }
+
+    internal static async Task GetObjectGetObject_LargeFile_Test2(MinioClient minio)
+    {
+        var startTime = DateTime.Now;
+        var bucketName = GetRandomName(15);
+        var objectName = GetRandomObjectName(10);
+        string contentType = null;
+        var fileName = GetRandomName(10);
+        var tempFileName = GetRandomName(10);
+        var timeoutInMilliseconds = 240000; // 2 minutes
+        var args = new Dictionary<string, string>
+        {
+            { "bucketName", bucketName },
+            { "objectName", objectName },
+            { "contentType", contentType }
+        };
+
+        try
+        {
+            // Create a large local file
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) generateRandomFile(fileName);
+            else Bash("truncate -s 3G " + fileName);
+
+            // Create a bucket
+            await Setup_Test(minio, bucketName);
+
+            using (var filestream = new FileStream(File.OpenHandle(fileName), FileAccess.Read))
+            {
+                // Upload the large file, "fileName", into the bucket
+                var size = filestream.Length;
+                long file_read_size = 0;
+                var putObjectArgs = new PutObjectArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    .WithStreamData(filestream)
+                    .WithObjectSize(filestream.Length)
+                    .WithContentType(contentType);
+                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+
+
+                var getObjectArgs = new GetObjectArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    .WithCallbackStream(contentStream =>
+                    {
+                        using (var stream = new FileStream(tempFileName, FileMode.Create, FileAccess.Write,
+                                   FileShare.None, 4096, true))
+                        {
+                            // var totalWritten = stream.Length;
+                            var totalWritten = 0L;
+                            var read = -1;
+                            var stopwatch = new Stopwatch();
+                            var now = DateTime.Now;
+                            var buffer = new byte[4096];
+                            stopwatch.Start();
+
+                            do
+                            {
+                                if (totalWritten < size)
+                                {
+                                    read = contentStream.Read(buffer, 0, buffer.Length);
+                                    stream.Write(buffer, 0, read);
+
+                                    totalWritten += read;
+                                }
+                                else if (totalWritten == size)
+                                {
+                                    break;
+                                }
+                                else
+                                {
+                                    throw new Exception(
+                                        "InternalError: Destinatinon copy is bigger than the source object");
+                                }
+
+                                if (stopwatch.ElapsedMilliseconds > timeoutInMilliseconds)
+                                    throw new Exception(
+                                        $"InternalError: Timeout: Download '{objectName}' failed to complete in {timeoutInMilliseconds / 1000} seconds");
+                            } while (true);
+                        }
+                    });
+
+                await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+                var writtenInfo = new FileInfo(tempFileName);
+                file_read_size = writtenInfo.Length;
+                Assert.AreEqual(size, file_read_size);
+
+                new MintLogger("GetObject_LargeFile_Test2", getObjectSignature,
+                    "Tests whether GetObject as stream works",
+                    TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
+            }
+        }
+        catch (Exception ex)
+        {
+            new MintLogger("GetObject_LargeFile_Test2", getObjectSignature, "Tests whether GetObject as stream works",
+                TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
+            throw;
+        }
+        finally
+        {
+            if (File.Exists(fileName))
+                File.Delete(fileName);
+            if (File.Exists(tempFileName))
+                File.Delete(tempFileName);
+            await TearDown(minio, bucketName);
+        }
+    }
+
+    internal static void generateRandomFile(string fileName)
+    {
+        using (var fs = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
+        {
+            var fileSize = 3L * 1024 * 1024 * 1024;
+            var segments = fileSize / 10000;
+            var last_seg = fileSize % 10000;
+            var br = new BinaryWriter(fs);
+
+            for (long i = 0; i < segments; i++)
+                br.Write(new byte[10000]);
+
+            br.Write(new byte[last_seg]);
+            br.Close();
+        }
+    }
+
+    internal static async Task GetObjectGetObject_LargeFile_Test3(MinioClient minio)
+    {
+        var startTime = DateTime.Now;
+        var bucketName = GetRandomName(15);
+        var objectName = GetRandomObjectName(10);
+        string contentType = null;
+        var fileName = GetRandomName(10);
+        var tempFileName = GetRandomName(10);
+        // var timeoutInMilliseconds = 120000; // 2 minutes
+        var args = new Dictionary<string, string>
+        {
+            { "bucketName", bucketName },
+            { "objectName", objectName },
+            { "contentType", contentType }
+        };
+
+        try
+        {
+            // Create a large local file
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) generateRandomFile(fileName);
+            else Bash("truncate -s 1G " + fileName);
+
+            // Create a bucket
+            await Setup_Test(minio, bucketName);
+
+            long size = 0;
+            long file_read_size = 0;
+            using (var filestream = new FileStream(File.OpenHandle(fileName), FileAccess.Read))
+            {
+                size = filestream.Length;
+                // Upload the large file, "fileName", into the bucket
+                var putObjectArgs = new PutObjectArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    .WithStreamData(filestream)
+                    .WithObjectSize(filestream.Length)
+                    .WithContentType(contentType);
+                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+
+                var getObjectArgs = new GetObjectArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    .WithCallbackStream(stream =>
+                        {
+                            using (var destinStream = new FileStream(tempFileName, FileMode.Create,
+                                       FileAccess.ReadWrite, FileShare.Read, 4096, true))
+                            {
+                                var fileData = new byte[4096]; // buffer
+                                var IBytes = 0;
+
+
+                                var tot = 0;
+                                while (tot != size)
+                                {
+                                    IBytes = stream.Read(fileData, 0, fileData.Length);
+                                    Task.Run(async Task() => {await destinStream.WriteAsync(fileData, 0, IBytes);}).Wait();
+
+                                    tot = tot + IBytes;
+                                }
+                            }
+                        }
+                    );
+                await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+                var writtenInfo = new FileInfo(tempFileName);
+                file_read_size = writtenInfo.Length;
+                Assert.AreEqual(size, file_read_size);
+                new MintLogger("GetObject_LargeFile_Test3", getObjectSignature,
+                    "Tests whether GetObject as stream works",
+                    TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
+            }
+        }
+        catch (Exception ex)
+        {
+            new MintLogger("GetObject_LargeFile_Test3", getObjectSignature, "Tests whether GetObject as stream works",
+                TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
+            throw;
+        }
+        finally
+        {
+            if (File.Exists(fileName))
+                File.Delete(fileName);
+            if (File.Exists(tempFileName))
+                File.Delete(tempFileName);
+            await TearDown(minio, bucketName);
+        }
+    }
+
     internal static async Task GetObject_Test1(MinioClient minio)
     {
         var startTime = DateTime.Now;

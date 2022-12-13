@@ -24,6 +24,9 @@ internal class Program
 {
     public static void Main(string[] args)
     {
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+                                               | SecurityProtocolType.Tls13
+                                               | SecurityProtocolType.Tls11;
         string endPoint = null;
         string accessKey = null;
         string secretKey = null;
@@ -141,6 +144,10 @@ internal class Program
         // and length parameters. Tests will be reported as GetObject_Test3,
         // GetObject_Test4 and GetObject_Test5.
         FunctionalTest.GetObject_3_OffsetLength_Tests(minioClient).Wait();
+        // 3 tests to download large files (3 GB) with using and minimal memory usage
+        FunctionalTest.GetObject_LargeFile_Test1(minioClient).Wait();
+        FunctionalTest.GetObjectGetObject_LargeFile_Test2(minioClient).Wait();
+        FunctionalTest.GetObjectGetObject_LargeFile_Test3(minioClient).Wait();
 
         // Test File GetObject and PutObject functions
         FunctionalTest.FGetObject_Test1(minioClient).Wait();
