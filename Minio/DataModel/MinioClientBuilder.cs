@@ -1,4 +1,4 @@
-/*
+               /*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2020 MinIO, Inc.
  *
@@ -19,12 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-<<<<<<< Updated upstream
 using System.Threading;
 using System.Threading.Tasks;
-=======
 using Microsoft.Extensions.DependencyInjection;
->>>>>>> Stashed changes
 using Minio.Credentials;
 using Minio.DataModel;
 using Minio.DataModel.ILM;

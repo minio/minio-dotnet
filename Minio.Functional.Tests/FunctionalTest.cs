@@ -4817,7 +4817,8 @@ public class FunctionalTest
                                 while (tot != size)
                                 {
                                     IBytes = stream.Read(fileData, 0, fileData.Length);
-                                    Task.Run(async Task() => {await destinStream.WriteAsync(fileData, 0, IBytes);}).Wait();
+                                    Task.Run(async Task() => { await destinStream.WriteAsync(fileData, 0, IBytes); })
+                                        .Wait();
 
                                     tot = tot + IBytes;
                                 }
