@@ -29,7 +29,7 @@ public class TagSet
         Tag = null;
     }
 
-    public TagSet(Dictionary<string, string> tags)
+    public TagSet(IReadOnlyDictionary<string, string> tags)
     {
         if (tags == null || tags.Count == 0) return;
         Tag = new List<Tag>();

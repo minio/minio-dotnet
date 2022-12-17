@@ -42,7 +42,7 @@ public class Tagging
         TaggingSet = null;
     }
 
-    public Tagging(Dictionary<string, string> tags, bool isObjects)
+    public Tagging(IReadOnlyDictionary<string, string> tags, bool isObjects)
     {
         if (tags == null)
         {
