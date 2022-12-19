@@ -72,18 +72,14 @@ public class LifecycleRule
     [XmlElement("Filter", IsNullable = true)]
     public RuleFilter Filter
     {
-        get { return _ruleFilter; }
+        get => _ruleFilter;
         set
         {
             // The filter must not be missing, even if it is empty.
             if (value == null)
-            {
                 _ruleFilter = new RuleFilter();
-            }
             else
-            {
                 _ruleFilter = value;
-            }
         }
     }
 
@@ -93,6 +89,5 @@ public class LifecycleRule
     [XmlElement("NoncurrentVersionTransition", IsNullable = true)]
     public NoncurrentVersionTransition NoncurrentVersionTransitionObject { get; set; }
 
-    [XmlElement("Status")]
-    public string Status { get; set; }
+    [XmlElement("Status")] public string Status { get; set; }
 }
