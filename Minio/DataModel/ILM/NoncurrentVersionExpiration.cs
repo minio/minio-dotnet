@@ -33,13 +33,18 @@ public class NoncurrentVersionExpiration
     public NoncurrentVersionExpiration()
     {
         NoncurrentDays = null;
+        NewerNoncurrentVersions = null;
     }
 
-    public NoncurrentVersionExpiration(uint nonCurrentDays)
+    public NoncurrentVersionExpiration(uint nonCurrentDays, uint? newerNoncurrentVersions = null)
     {
         NoncurrentDays = nonCurrentDays;
+        NewerNoncurrentVersions = newerNoncurrentVersions;
     }
 
     [XmlElement(ElementName = "NoncurrentDays", IsNullable = true)]
     public uint? NoncurrentDays { get; set; }
+
+    [XmlElement(ElementName = "NewerNoncurrentVersions", IsNullable = true)]
+    public uint? NewerNoncurrentVersions { get; set; }
 }
