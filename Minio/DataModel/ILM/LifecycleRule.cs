@@ -33,8 +33,11 @@ public class LifecycleRule
     public static readonly string LIFECYCLE_RULE_STATUS_ENABLED = "Enabled";
     public static readonly string LIFECYCLE_RULE_STATUS_DISABLED = "Disabled";
 
+    private RuleFilter _ruleFilter;
+
     public LifecycleRule()
     {
+        _ruleFilter = new RuleFilter();
     }
 
     public LifecycleRule(AbortIncompleteMultipartUpload abortIncompleteMultipartUpload, string id,
@@ -67,7 +70,22 @@ public class LifecycleRule
     public Transition TransitionObject { get; set; }
 
     [XmlElement("Filter", IsNullable = true)]
-    public RuleFilter Filter { get; set; }
+    public RuleFilter Filter
+    {
+        get { return _ruleFilter; }
+        set
+        {
+            // The filter must not be missing, even if it is empty.
+            if (value == null)
+            {
+                _ruleFilter = new RuleFilter();
+            }
+            else
+            {
+                _ruleFilter = value;
+            }
+        }
+    }
 
     [XmlElement("NoncurrentVersionExpiration", IsNullable = true)]
     public NoncurrentVersionExpiration NoncurrentVersionExpirationObject { get; set; }
@@ -75,5 +93,6 @@ public class LifecycleRule
     [XmlElement("NoncurrentVersionTransition", IsNullable = true)]
     public NoncurrentVersionTransition NoncurrentVersionTransitionObject { get; set; }
 
-    [XmlElement("Status")] public string Status { get; set; }
+    [XmlElement("Status")]
+    public string Status { get; set; }
 }
