@@ -22,6 +22,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using Minio.DataModel;
@@ -509,6 +511,7 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
     }
 
     internal Action<Stream> CallBack { get; private set; }
+    internal Func<Stream, CancellationToken, Task> FuncCallBack { get; private set; }
     internal long ObjectOffset { get; private set; }
     internal long ObjectLength { get; private set; }
     internal string FileName { get; private set; }
@@ -517,7 +520,7 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
     internal override void Validate()
     {
         base.Validate();
-        if (CallBack == null && string.IsNullOrEmpty(FileName))
+        if (CallBack == null && FuncCallBack == null && string.IsNullOrEmpty(FileName))
             throw new MinioException("Atleast one of " + nameof(CallBack) + ", CallBack method or " + nameof(FileName) +
                                      " file path to save need to be set for GetObject operation.");
         if (OffsetLengthSet)
@@ -551,7 +554,10 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
         if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
-        requestMessageBuilder.ResponseWriter = CallBack;
+
+        if (CallBack is not null) requestMessageBuilder.ResponseWriter = CallBack;
+        else requestMessageBuilder.FunctionResponseWriter = FuncCallBack;
+
         if (Headers.ContainsKey(S3ZipExtractKey))
             requestMessageBuilder.AddQueryParameter(S3ZipExtractKey, Headers[S3ZipExtractKey]);
 
@@ -562,6 +568,12 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
     public GetObjectArgs WithCallbackStream(Action<Stream> cb)
     {
         CallBack = cb;
+        return this;
+    }
+
+    public GetObjectArgs WithCallbackStream(Func<Stream, CancellationToken, Task> cb)
+    {
+        FuncCallBack = cb;
         return this;
     }
 
