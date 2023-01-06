@@ -4834,11 +4834,6 @@ public class FunctionalTest
                     TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
             }
         }
-        catch (OperationCanceledException cex)
-        {
-            new MintLogger("GetObject_LargeFile_Test0", getObjectSignature, "Tests whether GetObject as stream works",
-                TestStatus.NA, DateTime.Now - startTime, cex.Message, cex.ToString(), args: args).Log();
-        }
         catch (Exception ex)
         {
             new MintLogger("GetObject_LargeFile_Test0", getObjectSignature, "Tests whether GetObject as stream works",
