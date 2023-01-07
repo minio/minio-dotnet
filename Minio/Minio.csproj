@@ -14,7 +14,7 @@
   <PropertyGroup Label="Package">
     <LangVersion>latest</LangVersion>
     <Product>Minio</Product>
-    <Version>4.0.7</Version>
+    <Version>4.0.8</Version>
     <Description>MinIO .NET SDK for Amazon S3 Compatible Cloud Storage.</Description>
     <Copyright>Copyright (c) 2022. All rights reserved.</Copyright>
     <Authors>MinIO, Inc.</Authors>
