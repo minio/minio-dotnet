@@ -53,8 +53,9 @@ public partial class MinioClient : IObjectOperations
         args.Validate();
         if (args.FileName != null)
             await getObjectFileAsync(args, objStat, cancellationToken);
-        else
+        else if (args.CallBack is not null)
             await getObjectStreamAsync(args, objStat, args.CallBack, cancellationToken);
+        else await getObjectStreamAsync(args, objStat, args.FuncCallBack, cancellationToken);
         return objStat;
     }
 
@@ -70,7 +71,6 @@ public partial class MinioClient : IObjectOperations
         var length = objectStat.Size;
         var etag = objectStat.ETag;
 
-        long tempFileSize = 0;
         var tempFileName = $"{args.FileName}.{etag}.part.minio";
         if (!string.IsNullOrEmpty(args.VersionId)) tempFileName = $"{args.FileName}.{etag}.{args.VersionId}.part.minio";
         if (File.Exists(args.FileName)) File.Delete(args.FileName);
@@ -78,18 +78,19 @@ public partial class MinioClient : IObjectOperations
         utils.ValidateFile(tempFileName);
         if (File.Exists(tempFileName)) File.Delete(tempFileName);
 
-        args = args.WithCallbackStream(stream =>
+        var callbackAsync = async delegate(Stream stream, CancellationToken cancellationToken)
         {
-            var fileStream = File.Create(tempFileName);
-            stream.CopyTo(fileStream);
-            fileStream.Dispose();
-            var writtenInfo = new FileInfo(tempFileName);
-            var writtenSize = writtenInfo.Length;
-            if (writtenSize != length - tempFileSize)
-                throw new IOException(tempFileName +
-                                      ": Unexpected data written. Expected = "
-                                      + (length - tempFileSize)
-                                      + ", written = " + writtenSize);
+            using (var dest = new FileStream(tempFileName, FileMode.Create, FileAccess.Write))
+            {
+                await stream.CopyToAsync(dest);
+            }
+        };
+
+        var cts = new CancellationTokenSource();
+        cts.CancelAfter(TimeSpan.FromMilliseconds(15));
+        args.WithCallbackStream(async (stream, cancellationToken) =>
+        {
+            await callbackAsync(stream, cts.Token);
             utils.MoveWithReplace(tempFileName, args.FileName);
         });
         return getObjectStreamAsync(args, objectStat, null, cancellationToken);
@@ -107,6 +108,29 @@ public partial class MinioClient : IObjectOperations
     /// <param name="cb"> Action object of type Stream, callback to send Object contents, if assigned </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     private async Task getObjectStreamAsync(GetObjectArgs args, ObjectStat objectStat, Action<Stream> cb,
+        CancellationToken cancellationToken = default)
+    {
+        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    ///     private helper method. It returns the specified portion or full object from the bucket
+    /// </summary>
+    /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name etc </param>
+    /// <param name="objectStat">
+    ///     ObjectStat object encapsulates information like - object name, size, etag etc, represents
+    ///     Object Information
+    /// </param>
+    /// <param name="cb">
+    ///     Callback function to send/process Object contents using
+    ///     async Func object which takes Stream and CancellationToken as input
+    ///     and Task as output, if assigned
+    /// </param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    private async Task getObjectStreamAsync(GetObjectArgs args, ObjectStat objectStat,
+        Func<Stream, CancellationToken, Task> cb,
         CancellationToken cancellationToken = default)
     {
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);

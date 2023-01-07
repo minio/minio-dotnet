@@ -17,14 +17,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -271,6 +269,23 @@ public class FunctionalTest
         for (var i = 0; i < length; i++) result.Append(characters[rnd.Next(characters.Length)]);
 
         return "minio-dotnet-example-" + result;
+    }
+
+    internal static void generateRandomFile(string fileName)
+    {
+        using (var fs = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
+        {
+            var fileSize = 3L * 1024 * 1024 * 1024;
+            var segments = fileSize / 10000;
+            var last_seg = fileSize % 10000;
+            var br = new BinaryWriter(fs);
+
+            for (long i = 0; i < segments; i++)
+                br.Write(new byte[10000]);
+
+            br.Write(new byte[last_seg]);
+            br.Close();
+        }
     }
 
     // Return true if running in Mint mode
@@ -4023,36 +4038,6 @@ public class FunctionalTest
         }
     }
 
-    public static void objPrint(object obj)
-    {
-        foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(obj))
-        {
-            var name = descriptor.Name;
-            var value = descriptor.GetValue(obj);
-            Console.WriteLine("{0}={1}", name, value);
-        }
-    }
-
-    public static void Print(object obj)
-    {
-        foreach (var prop in obj.GetType()
-                     .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-        {
-            var value = prop.GetValue(obj, new object[] { });
-            Console.WriteLine("{0} = {1}", prop.Name, value);
-        }
-
-        Console.WriteLine("DONE!\n\n");
-    }
-
-    public static void printDict(Dictionary<string, string> d)
-    {
-        if (d != null)
-            foreach (var kv in d)
-                Console.WriteLine("     {0} = {1}", kv.Key, kv.Value);
-        Console.WriteLine("DONE!\n\n");
-    }
-
     internal static async Task CopyObject_Test8(MinioClient minio)
     {
         var startTime = DateTime.Now;
@@ -4785,6 +4770,83 @@ public class FunctionalTest
                 if (File.Exists(tempSource)) File.Delete(tempSource);
                 await TearDown(minio, bucketName);
             }
+        }
+    }
+
+    internal static async Task GetObject_AsyncCallback_Test1(MinioClient minio)
+    {
+        var startTime = DateTime.Now;
+        var bucketName = GetRandomName(15);
+        var objectName = GetRandomObjectName(10);
+        string contentType = null;
+        var fileName = GetRandomName(10);
+        var destFileName = GetRandomName(10);
+        var args = new Dictionary<string, string>
+        {
+            { "bucketName", bucketName },
+            { "objectName", objectName },
+            { "contentType", contentType }
+        };
+
+        try
+        {
+            // Create a large local file
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) generateRandomFile(fileName);
+            else Bash("truncate -s 2G " + fileName);
+
+            // Create the bucket
+            await Setup_Test(minio, bucketName);
+
+            using (var filestream = new FileStream(File.OpenHandle(fileName), FileAccess.Read))
+            {
+                // Upload the large file, "fileName", into the bucket
+                var size = filestream.Length;
+                long file_read_size = 0;
+                var putObjectArgs = new PutObjectArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    .WithStreamData(filestream)
+                    .WithObjectSize(filestream.Length)
+                    .WithContentType(contentType);
+
+                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+
+                var callbackAsync = async delegate(Stream stream, CancellationToken cancellationToken)
+                {
+                    using (var dest = new FileStream(destFileName, FileMode.Create, FileAccess.Write))
+                    {
+                        await stream.CopyToAsync(dest);
+                    }
+                };
+
+                var getObjectArgs = new GetObjectArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    .WithCallbackStream(async (stream, cancellationToken) => await callbackAsync(stream, default));
+
+                await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+                var writtenInfo = new FileInfo(destFileName);
+                file_read_size = writtenInfo.Length;
+                Assert.AreEqual(size, file_read_size);
+
+                new MintLogger("GetObject_LargeFile_Test0", getObjectSignature,
+                    "Tests whether GetObject as stream works",
+                    TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
+            }
+        }
+        catch (Exception ex)
+        {
+            new MintLogger("GetObject_LargeFile_Test0", getObjectSignature, "Tests whether GetObject as stream works",
+                TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
+            throw;
+        }
+        finally
+        {
+            if (File.Exists(fileName))
+                File.Delete(fileName);
+            if (File.Exists(destFileName))
+                File.Delete(destFileName);
+            await TearDown(minio, bucketName);
         }
     }
 

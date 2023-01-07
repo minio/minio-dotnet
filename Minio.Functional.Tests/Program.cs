@@ -141,6 +141,8 @@ internal class Program
         // and length parameters. Tests will be reported as GetObject_Test3,
         // GetObject_Test4 and GetObject_Test5.
         FunctionalTest.GetObject_3_OffsetLength_Tests(minioClient).Wait();
+        // Test async callback function to download an object
+        FunctionalTest.GetObject_AsyncCallback_Test1(minioClient).Wait();
 
         // Test File GetObject and PutObject functions
         FunctionalTest.FGetObject_Test1(minioClient).Wait();
