@@ -20,11 +20,10 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Minio.DataModel;
 using Minio.Exceptions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 /*
  * IAM roles for Amazon EC2
@@ -125,13 +124,15 @@ public class IAMAWSProvider : EnvironmentProvider
             !HttpStatusCode.OK.Equals(response.StatusCode))
             throw new CredentialsProviderException("IAMAWSProvider",
                 "Credential Get operation failed with HTTP Status code: " + response.StatusCode);
+        /*
         JsonConvert.DefaultSettings = () => new JsonSerializerSettings
         {
             MissingMemberHandling = MissingMemberHandling.Error,
             ContractResolver = new CamelCasePropertyNamesContractResolver(),
             Error = null
-        };
-        var credentials = JsonConvert.DeserializeObject<ECSCredentials>(response.Content);
+        };*/
+
+        var credentials = JsonSerializer.Deserialize<ECSCredentials>(response.Content);
         if (credentials.Code != null && !credentials.Code.ToLower().Equals("success"))
             throw new CredentialsProviderException("IAMAWSProvider",
                 "Credential Get operation failed with code: " + credentials.Code + " and message " +

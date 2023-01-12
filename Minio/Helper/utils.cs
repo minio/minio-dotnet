@@ -24,12 +24,12 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
 using Minio.Exceptions;
 using Minio.Helper;
-using Newtonsoft.Json;
 
 namespace Minio;
 
@@ -894,7 +894,7 @@ public class utils
 
     internal static HttpRequestMessageBuilder GetEmptyRestRequest(HttpRequestMessageBuilder requestBuilder)
     {
-        var serializedBody = JsonConvert.SerializeObject("");
+        var serializedBody = JsonSerializer.Serialize("");
         requestBuilder.AddOrUpdateHeaderParameter("application/json; charset=utf-8", serializedBody);
         return requestBuilder;
     }

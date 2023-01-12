@@ -20,8 +20,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Minio.Helper;
-using Newtonsoft.Json;
 
 namespace Minio;
 
@@ -445,8 +445,8 @@ internal class V4Authenticator
 
     public static Dictionary<string, TValue> ToDictionary<TValue>(object obj)
     {
-        var json = JsonConvert.SerializeObject(obj);
-        var dictionary = JsonConvert.DeserializeObject<Dictionary<string, TValue>>(json);
+        var json = JsonSerializer.Serialize(obj);
+        var dictionary = JsonSerializer.Deserialize<Dictionary<string, TValue>>(json);
         return dictionary;
     }
 

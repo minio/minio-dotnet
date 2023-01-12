@@ -15,8 +15,8 @@
  */
 
 using System;
+using System.Text.Json;
 using Minio.DataModel.Tracing;
-using Newtonsoft.Json;
 
 namespace Minio.Functional.Tests;
 
@@ -25,7 +25,7 @@ internal class JsonNetLogger : IRequestLogger
     public void LogRequest(RequestToLog requestToLog, ResponseToLog responseToLog, double durationMs)
     {
         Console.WriteLine("Request completed in {0} ms\nRequest:\n{1}\nResponse:\n{2}", durationMs,
-            JsonConvert.SerializeObject(requestToLog, Formatting.Indented),
-            JsonConvert.SerializeObject(responseToLog, Formatting.Indented));
+            JsonSerializer.Serialize(requestToLog, options: new JsonSerializerOptions() { WriteIndented = true }),
+            JsonSerializer.Serialize(responseToLog, options: new JsonSerializerOptions() { WriteIndented = true }));
     }
 }

@@ -16,7 +16,7 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Minio.Functional.Tests;
 
@@ -102,7 +102,6 @@ internal class MintLogger
 
     public void Log()
     {
-        Console.WriteLine(JsonConvert.SerializeObject(this, Formatting.None,
-            new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
+        Console.WriteLine(JsonSerializer.Serialize(this, options: new JsonSerializerOptions() { WriteIndented = false, DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Always }));
     }
 }

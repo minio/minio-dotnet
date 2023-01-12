@@ -26,6 +26,7 @@ using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,7 +40,6 @@ using Minio.DataModel.ILM;
 using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Tags;
 using Minio.Exceptions;
-using Newtonsoft.Json;
 
 namespace Minio.Functional.Tests;
 
@@ -2668,7 +2668,7 @@ public class FunctionalTest
                         var trimmedFront = receivedJson.Substring(len);
                         var trimmedFull = trimmedFront.Substring(0, trimmedFront.Length - 1);
 
-                        var err = JsonConvert.DeserializeObject<ErrorResponse>(trimmedFull);
+                        var err = JsonSerializer.Deserialize<ErrorResponse>(trimmedFull);
 
                         Exception ex = new UnexpectedMinioException(err.Message);
                         if (err.Code == "NotImplemented")
@@ -2677,7 +2677,7 @@ public class FunctionalTest
                         throw ex;
                     }
 
-                    var notification = JsonConvert.DeserializeObject<MinioNotification>(received[0].json);
+                    var notification = JsonSerializer.Deserialize<MinioNotification>(received[0].json);
 
                     if (notification.Records != null)
                     {
@@ -2791,7 +2791,7 @@ public class FunctionalTest
 
             void Notify(MinioNotificationRaw data)
             {
-                var notification = JsonConvert.DeserializeObject<MinioNotification>(data.json);
+                var notification = JsonSerializer.Deserialize<MinioNotification>(data.json);
                 if (notification is not { Records: { } }) return;
 
                 foreach (var @event in notification.Records) rxEventsList.Add(@event);
@@ -2936,7 +2936,7 @@ public class FunctionalTest
 
             if (!string.IsNullOrEmpty(rxEventData.json))
             {
-                var notification = JsonConvert.DeserializeObject<MinioNotification>(rxEventData.json);
+                var notification = JsonSerializer.Deserialize<MinioNotification>(rxEventData.json);
                 Assert.IsTrue(notification.Records[0].eventName.Equals("s3:ObjectCreated:Put"));
                 new MintLogger(nameof(ListenBucketNotificationsAsync_Test3),
                     listenBucketNotificationsSignature,
