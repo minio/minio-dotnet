@@ -192,26 +192,28 @@ internal class NewMultipartUploadResponse : GenericResponse
     internal string UploadId { get; }
 }
 
-internal class PutObjectResponse : GenericResponse
+public class PutObjectResponse : GenericResponse
 {
-    internal string Etag;
+    public string Etag;
+    public string ObjectName;
+    public long Size;
 
-    internal PutObjectResponse(HttpStatusCode statusCode, string responseContent,
-        IDictionary<string, string> responseHeaders)
+    public PutObjectResponse(HttpStatusCode statusCode, string responseContent,
+        IDictionary<string, string> responseHeaders, long size, string name)
         : base(statusCode, responseContent)
     {
         if (responseHeaders.ContainsKey("Etag"))
-        {
             if (!string.IsNullOrEmpty("Etag"))
                 Etag = responseHeaders["ETag"];
-            return;
-        }
 
         foreach (var parameter in responseHeaders)
             if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
             {
                 Etag = parameter.Value;
-                return;
+                break;
             }
+
+        Size = size;
+        ObjectName = name;
     }
 }

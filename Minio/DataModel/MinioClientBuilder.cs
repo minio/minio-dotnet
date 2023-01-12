@@ -77,7 +77,7 @@ public interface IMinioClient : IDisposable
     Task<(Uri, IDictionary<string, string>)> PresignedPostPolicyAsync(PostPolicy policy);
     Task<(Uri, IDictionary<string, string>)> PresignedPostPolicyAsync(PresignedPostPolicyArgs args);
     Task<string> PresignedPutObjectAsync(PresignedPutObjectArgs args);
-    Task PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default);
+    Task<PutObjectResponse> PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default);
 
     Task RemoveAllBucketNotificationsAsync(RemoveAllBucketNotificationsArgs args,
         CancellationToken cancellationToken = default);
