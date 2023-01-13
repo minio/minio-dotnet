@@ -32,6 +32,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
+using System.Xml.Serialization;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -661,8 +662,12 @@ public class FunctionalTest
     {
         var doc = new XmlDocument();
         doc.LoadXml(xml);
-        var json = JsonConvert.SerializeXmlNode(doc);
-        return json;
+
+        var xmlSerializer = new XmlSerializer(typeof(string));
+        using var stringReader = new StringReader(xml);
+
+        var obj = (string)xmlSerializer.Deserialize(stringReader)!;
+        return JsonSerializer.Serialize(obj);
     }
 
     internal static async Task PutGetStatEncryptedObject_Test1(MinioClient minio)
@@ -5254,7 +5259,7 @@ public class FunctionalTest
                     count++;
                 },
                 ex => throw ex,
-                () => { ; });
+                () => { });
         }
         else
         {
@@ -5266,7 +5271,7 @@ public class FunctionalTest
                     count += 1;
                 },
                 ex => throw ex,
-                () => { ; });
+                () => { });
         }
 
         Thread.Sleep(1000);

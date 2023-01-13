@@ -107,7 +107,6 @@ public class ObjectStat
                         objInfo.ObjectLockRetainUntilDate = DateTime.SpecifyKind(
                             DateTime.Parse(lockUntilDate),
                             DateTimeKind.Utc);
-                        ;
                     }
 
                     break;
