@@ -6,8 +6,8 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="MSTest.TestFramework" Version="1.3.2" />
-    <PackageReference Include="SharpZipLib" Version="1.3.3" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.0.2" />
+    <PackageReference Include="SharpZipLib" Version="1.4.1" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <ProjectReference Include="..\Minio\Minio.csproj" />
   </ItemGroup>

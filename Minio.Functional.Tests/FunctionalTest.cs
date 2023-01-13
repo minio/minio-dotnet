@@ -1524,7 +1524,6 @@ public class FunctionalTest
 
     #endregion
 
-
     #region Bucket Encryption
 
     internal static async Task BucketEncryptionsAsync_Test1(MinioClient minio)
@@ -2084,7 +2083,6 @@ public class FunctionalTest
                         TestStatus.PASS,
                         DateTime.Now - startTime, args: args).Log();
 
-
                     // Get Versioning Test
                     var getVersioningArgs = new GetVersioningArgs()
                         .WithBucket(bucketName);
@@ -2097,7 +2095,6 @@ public class FunctionalTest
                         "Tests whether SetVersioningAsync/GetVersioningAsync/RemoveVersioningAsync passes",
                         TestStatus.PASS,
                         DateTime.Now - startTime, args: args).Log();
-
 
                     // Suspend Versioning test
                     setVersioningArgs = new SetVersioningArgs()
@@ -2134,7 +2131,6 @@ public class FunctionalTest
     }
 
     #endregion
-
 
     #region Object Lock Configuration
 
@@ -2303,7 +2299,6 @@ public class FunctionalTest
 
     #endregion
 
-
     #region Object Retention
 
     internal static async Task ObjectRetentionAsync_Test1(MinioClient minio)
@@ -2465,7 +2460,6 @@ public class FunctionalTest
     }
 
     #endregion
-
 
     internal static MemoryStream CreateZipFile(string prefix, int nFiles)
     {

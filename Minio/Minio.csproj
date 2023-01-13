@@ -1,26 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <AssemblyName>Minio</AssemblyName>
-    <RootNamespace>Minio</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
-    <DebugType>embedded</DebugType>
-    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-    <AssemblyOriginatorKeyFile>..\Minio.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
-  </PropertyGroup>
+	<PropertyGroup>
+		<AssemblyName>Minio</AssemblyName>
+		<RootNamespace>Minio</RootNamespace>
+		<TargetFramework>net6.0</TargetFramework>
+		<DebugType>embedded</DebugType>
+		<AssemblyOriginatorKeyFile>..\Minio.snk</AssemblyOriginatorKeyFile>
+		<SignAssembly>true</SignAssembly>
+		<PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
+		<Description>MinIO .NET SDK for Amazon S3 Compatible Cloud Storage.</Description>
+		<Product>Minio</Product>
+	</PropertyGroup>
 
-  <PropertyGroup Label="Package">
-    <Product>Minio</Product>
-    <Version>4.0.8</Version>
-    <Description>MinIO .NET SDK for Amazon S3 Compatible Cloud Storage.</Description>
-  </PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Crc32.NET" Version="1.2.0"/>
+		<PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="All"/>
+		<PackageReference Include="System.Reactive.Linq" Version="5.0.0"/>
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Crc32.NET" Version="1.2.0"/>
-    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="All"/>
-    <PackageReference Include="AsyncFixer" Version="1.1.6" PrivateAssets="All"/>
-    <PackageReference Include="System.Reactive.Linq" Version="5.0.0"/>     
-  </ItemGroup>
-
-</Project>  
+</Project>
