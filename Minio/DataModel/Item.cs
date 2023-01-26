@@ -15,7 +15,9 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Xml.Serialization;
 
 namespace Minio.DataModel;
 
@@ -55,4 +57,7 @@ public class Item
             return dt;
         }
     }
+
+    [XmlIgnore]
+    public IEnumerable<MetadataItem> UserMetadata { get; set; }
 }

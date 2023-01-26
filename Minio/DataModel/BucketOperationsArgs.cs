@@ -97,12 +97,14 @@ public class ListObjectsArgs : BucketArgs<ListObjectsArgs>
     {
         UseV2 = true;
         Versions = false;
+        IncludeUserMetadata = false;
     }
 
     internal string Prefix { get; private set; }
     internal bool Recursive { get; private set; }
     internal bool Versions { get; private set; }
     internal bool UseV2 { get; private set; }
+    internal bool IncludeUserMetadata { get; private set; }
 
     public ListObjectsArgs WithPrefix(string prefix)
     {
@@ -127,6 +129,12 @@ public class ListObjectsArgs : BucketArgs<ListObjectsArgs>
         UseV2 = !useV1;
         return this;
     }
+
+    public ListObjectsArgs WithUserMetadata(bool includeUserMetadata)
+    {
+        IncludeUserMetadata = includeUserMetadata;
+        return this;
+    }
 }
 
 internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
@@ -140,6 +148,7 @@ internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
         UseV2 = true;
         Versions = false;
         Marker = string.Empty;
+        IncludeUserMetadata = false;
     }
 
     internal string Delimiter { get; private set; }
@@ -149,6 +158,7 @@ internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
     internal string VersionIdMarker { get; private set; }
     internal bool Versions { get; private set; }
     internal string ContinuationToken { get; set; }
+    internal bool IncludeUserMetadata { get; private set; }
 
     public GetObjectListArgs WithDelimiter(string delim)
     {
@@ -192,6 +202,12 @@ internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
         return this;
     }
 
+    public GetObjectListArgs WithUserMetadata(bool includeUserMetadata)
+    {
+        IncludeUserMetadata = includeUserMetadata;
+        return this;
+    }
+
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
         foreach (var h in Headers)
@@ -222,6 +238,11 @@ internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
         else
         {
             throw new InvalidOperationException("Wrong set of properties set.");
+        }
+
+        if (IncludeUserMetadata)
+        {
+            requestMessageBuilder.AddQueryParameter("metadata", "true");
         }
 
         return requestMessageBuilder;
