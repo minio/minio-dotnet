@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-using Minio.DataModel.Args;
+using System;
+using System.Linq;
 
 namespace Minio.Examples.Cases;
 
@@ -25,18 +26,23 @@ internal static class ListObjects
         string bucketName = "my-bucket-name",
         string prefix = null,
         bool recursive = true,
-        bool versions = false)
+        bool versions = false,
+        bool includeUserMetadata = true)
     {
         try
         {
             Console.WriteLine("Running example for API: ListObjectsAsync");
             var listArgs = new ListObjectsArgs()
                 .WithBucket(bucketName)
-                .WithPrefix(prefix)
-                .WithRecursive(recursive);
+                .WithPrefix("1111/")
+                .WithRecursive(recursive)
+                .WithUserMetadata(includeUserMetadata);
             var observable = minio.ListObjectsAsync(listArgs);
             var subscription = observable.Subscribe(
-                item => Console.WriteLine($"Object: {item.Key}"),
+                item =>
+                {
+                    Console.WriteLine($"Object: {item.Key}, content-type: {item.UserMetadata.ToList().First().Value}");
+                    },
                 ex => Console.WriteLine($"OnError: {ex}"),
                 () => Console.WriteLine($"Listed all objects in bucket {bucketName}\n"));
         }

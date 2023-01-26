@@ -228,9 +228,23 @@ public partial class MinioClient : IBucketOperations
                         .WithVersionIdMarker(versionIdMarker);
                     if (args.Versions)
                     {
-                        var objectList = await GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
-                        var listObjectsItemResponse = new ListObjectVersionResponse(args, objectList, obs);
-                        if (objectList.Item2.Count == 0 && count == 0) return;
+                        var goArgs = new GetObjectListArgs()
+                            .WithBucket(args.BucketName)
+                            .WithPrefix(args.Prefix)
+                            .WithDelimiter(delimiter)
+                            .WithVersions(args.Versions)
+                            .WithContinuationToken(nextContinuationToken)
+                            .WithMarker(marker)
+                            .WithListObjectsV1(!args.UseV2)
+                            .WithHeaders(args.Headers)
+                            .WithVersionIdMarker(versionIdMarker)
+                            .WithUserMetadata(args.IncludeUserMetadata);
+
+                        if (args.Versions)
+                        {
+                            var objectList = await GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
+                            var listObjectsItemResponse = new ListObjectVersionResponse(args, objectList, obs);
+                            if (objectList.Item2.Count == 0 && count == 0) return;
 
                         obs = listObjectsItemResponse.ItemObservable;
                         marker = listObjectsItemResponse.NextKeyMarker;

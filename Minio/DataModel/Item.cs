@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Xml.Serialization;
 
 namespace Minio.DataModel;
 
@@ -29,13 +32,7 @@ public class Item
     public string ETag
     {
         get => etag;
-        set
-        {
-            if (value is not null)
-                etag = value.Replace("\"", string.Empty, StringComparison.OrdinalIgnoreCase);
-            else
-                etag = null;
-        }
+        set => etag = value?.Replace("\"", string.Empty, StringComparison.OrdinalIgnoreCase);
     }
 
     public ulong Size { get; set; }
@@ -54,4 +51,7 @@ public class Item
             return dt;
         }
     }
+
+    [XmlIgnore]
+    public IEnumerable<MetadataItem> UserMetadata { get; set; }
 }
