@@ -181,7 +181,6 @@ internal class GetObjectsListResponse : GenericResponse
 
         var root = XDocument.Parse(responseContent);
         var items = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
-                    from s in c.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}UserMetadata")
                     select new Item
             {
                 Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
@@ -190,8 +189,7 @@ internal class GetObjectsListResponse : GenericResponse
                 Size = ulong.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value,
                     CultureInfo.CurrentCulture),
                 IsDir = false,
-                UserMetadata = s.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Items").Select(x => new MetadataItem(x.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value, x.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Value").Value)).ToList()
-
+                UserMetadata = c.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}UserMetadata").Any() ? c.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}UserMetadata").First().Elements().Select(x => new MetadataItem(x.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value, x.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Value").Value)).ToList() : null
                     };
         var prefixes = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}CommonPrefixes")
             select new Item

@@ -22,19 +22,23 @@ namespace Minio.Examples.Cases;
 internal static class ListObjects
 {
     // List objects matching optional prefix in a specified bucket.
+<<<<<<< HEAD
     public static void Run(IMinioClient minio,
+=======
+    public static void Run(MinioClient minio,
+>>>>>>> 5b3257d (return user metadata in case WithUserMetadata(true))
         string bucketName = "my-bucket-name",
         string prefix = null,
         bool recursive = true,
         bool versions = false,
-        bool includeUserMetadata = true)
+        bool includeUserMetadata = false)
     {
         try
         {
             Console.WriteLine("Running example for API: ListObjectsAsync");
             var listArgs = new ListObjectsArgs()
                 .WithBucket(bucketName)
-                .WithPrefix("1111/")
+                .WithPrefix(prefix)
                 .WithRecursive(recursive)
                 .WithUserMetadata(includeUserMetadata);
             var observable = minio.ListObjectsAsync(listArgs);
