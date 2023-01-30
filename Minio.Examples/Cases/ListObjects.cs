@@ -23,18 +23,18 @@ internal class ListObjects
 {
     // List objects matching optional prefix in a specified bucket.
     public static void Run(MinioClient minio,
-        string bucketName = "activities",
+        string bucketName = "my-bucket-name",
         string prefix = null,
         bool recursive = true,
         bool versions = false,
-        bool includeUserMetadata = true)
+        bool includeUserMetadata = false)
     {
         try
         {
             Console.WriteLine("Running example for API: ListObjectsAsync");
             var listArgs = new ListObjectsArgs()
                 .WithBucket(bucketName)
-                .WithPrefix("1111/")
+                .WithPrefix(prefix)
                 .WithRecursive(recursive)
                 .WithUserMetadata(includeUserMetadata);
             var observable = minio.ListObjectsAsync(listArgs);
