@@ -141,7 +141,9 @@ internal class HttpRequestMessageBuilder
 
     public Dictionary<string, string> BodyParameters { get; }
 
-    public byte[] Content { get; private set; }
+    public byte[] Content { get; set; }
+
+    public int ExactBodySize { get; private set; }
 
     public string ContentTypeKey => "Content-Type";
 
@@ -172,9 +174,11 @@ internal class HttpRequestMessageBuilder
         QueryParameters[key] = value;
     }
 
-    public void SetBody(byte[] body)
+    public void SetBody(byte[] body, int exactBodySize = 0)
     {
-        Content = body;
+        if (exactBodySize > 0 && exactBodySize != body.Length)
+            Buffer.BlockCopy(body, 0, Content, 0, exactBodySize);
+        else Content = body;
     }
 
     public void AddXmlBody(string body)

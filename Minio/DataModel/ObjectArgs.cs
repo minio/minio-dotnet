@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System;
+
 namespace Minio;
 
 public abstract class ObjectArgs<T> : BucketArgs<T>
@@ -23,6 +25,7 @@ public abstract class ObjectArgs<T> : BucketArgs<T>
 
     internal string ObjectName { get; set; }
     internal byte[] RequestBody { get; set; }
+    internal int ExactBodySize { get; set; }
 
     public T WithObject(string obj)
     {
@@ -30,9 +33,15 @@ public abstract class ObjectArgs<T> : BucketArgs<T>
         return (T)this;
     }
 
-    public T WithRequestBody(byte[] data)
+    public T WithRequestBody(byte[] data, int exactBodySize = 0)
     {
-        RequestBody = data;
+        if (data is null) return (T)this;
+
+        ExactBodySize = exactBodySize;
+        RequestBody = new byte[exactBodySize];
+        if (exactBodySize > 0 && exactBodySize != data.Length)
+            Buffer.BlockCopy(data, 0, RequestBody, 0, exactBodySize);
+        else RequestBody = data;
         return (T)this;
     }
 

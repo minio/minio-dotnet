@@ -110,7 +110,8 @@ internal class V4Authenticator
         var headersToSign = GetHeadersToSign(requestBuilder);
         var signedHeaders = GetSignedHeaders(headersToSign);
 
-        var canonicalRequest = GetCanonicalRequest(requestBuilder, headersToSign);
+        var canonicalRequest = GetCanonicalRequest(requestBuilder,
+            headersToSign, requestBuilder.ExactBodySize);
         var canonicalRequestBytes = Encoding.UTF8.GetBytes(canonicalRequest);
         var hash = ComputeSha256(canonicalRequestBytes);
         var canonicalRequestHash = BytesToHex(hash);
@@ -377,9 +378,10 @@ internal class V4Authenticator
     /// </summary>
     /// <param name="requestBuilder">Instantiated requestBuilder object</param>
     /// <param name="headersToSign">Dictionary of http headers to be signed</param>
+    /// <param name="exactBodySize">size of the Body when ArrayPool rents a bigger size byte[]</param>
     /// <returns>Canonical Request</returns>
     private string GetCanonicalRequest(HttpRequestMessageBuilder requestBuilder,
-        SortedDictionary<string, string> headersToSign)
+        SortedDictionary<string, string> headersToSign, int exactBodySize = 0)
     {
         var canonicalStringList = new LinkedList<string>();
         // METHOD
@@ -417,10 +419,15 @@ internal class V4Authenticator
             // Convert stream content to byte[]
             var cntntByteData = new byte[] { };
             if (requestBuilder.Request.Content != null)
+            {
                 cntntByteData = requestBuilder.Request.Content.ReadAsByteArrayAsync().Result;
 
-            // UTF conversion - String from bytes
-            queryParams = Encoding.UTF8.GetString(cntntByteData, 0, cntntByteData.Length);
+                // UTF conversion - String from bytes
+                if (exactBodySize > 0 && exactBodySize != cntntByteData.Length)
+                    queryParams = exactBodySize > 0 && exactBodySize != cntntByteData.Length
+                        ? Encoding.UTF8.GetString(cntntByteData, 0, exactBodySize)
+                        : Encoding.UTF8.GetString(cntntByteData, 0, cntntByteData.Length);
+            }
         }
 
         if (!string.IsNullOrEmpty(queryParams) &&

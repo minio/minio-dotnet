@@ -1735,9 +1735,9 @@ internal class PutObjectPartArgs : PutObjectArgs
         return (PutObjectPartArgs)base.WithHeaders(hdr);
     }
 
-    public PutObjectPartArgs WithRequestBody(object data)
+    public PutObjectPartArgs WithRequestBody(object data, int exactBodySize = 0)
     {
-        return (PutObjectPartArgs)base.WithRequestBody(utils.ObjectToByteArray(data));
+        return (PutObjectPartArgs)base.WithRequestBody(utils.ObjectToByteArray(data), exactBodySize);
     }
 
     public new PutObjectPartArgs WithStreamData(Stream data)
@@ -1845,7 +1845,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
                 Retention.RetainUntilDate);
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode", Retention.Mode.ToString());
             requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-                utils.getMD5SumStr(RequestBody));
+                utils.getMD5SumStr(RequestBody, ExactBodySize));
         }
 
         if (LegalHoldEnabled != null)

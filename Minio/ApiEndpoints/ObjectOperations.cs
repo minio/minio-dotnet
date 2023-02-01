@@ -16,6 +16,7 @@
  */
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -576,15 +577,18 @@ public partial class MinioClient : IObjectOperations
         // Upload object in single part if size falls under restricted part size.
         if (args.ObjectSize < Constants.MinimumPartSize && args.ObjectSize >= 0 && args.ObjectStreamData != null)
         {
-            var bytes = await ReadFullAsync(args.ObjectStreamData, (int)args.ObjectSize).ConfigureAwait(false);
-            var bytesRead = bytes == null ? 0 : bytes.Length;
-            if (bytesRead != (int)args.ObjectSize)
+            var shared = ArrayPool<byte>.Shared;
+            var bytes = shared.Rent((int)args.ObjectSize);
+            bytes = await ReadFullAsync(args.ObjectStreamData, (int)args.ObjectSize).ConfigureAwait(false);
+            var bytesRead = bytes == null ? 0 : bytes.Count();
+            if (bytesRead < (int)args.ObjectSize)
                 throw new UnexpectedShortReadException(
-                    $"Data read {bytesRead} is shorter than the size {args.ObjectSize} of input buffer.");
-            args = args.WithRequestBody(bytes)
+                    $"Data read {bytesRead} is less than the size {args.ObjectSize} of input buffer.");
+            args = args.WithRequestBody(bytes, (int)args.ObjectSize)
                 .WithStreamData(null)
-                .WithObjectSize(bytesRead);
+                .WithObjectSize(args.ObjectSize);
             await PutObjectSinglePartAsync(args, cancellationToken).ConfigureAwait(false);
+            shared.Return(bytes);
             return;
         }
 
@@ -610,7 +614,7 @@ public partial class MinioClient : IObjectOperations
             .WithContentType(args.ContentType)
             .WithUploadId(uploadId)
             .WithStreamData(args.ObjectStreamData)
-            .WithRequestBody(args.RequestBody)
+            .WithRequestBody(args.RequestBody, (int)args.ObjectSize)
             .WithHeaders(args.Headers);
         Dictionary<int, string> etags = null;
         // Upload file contents.
@@ -624,14 +628,11 @@ public partial class MinioClient : IObjectOperations
                     .WithStreamData(fileStream)
                     .WithObjectSize(fileStream.Length)
                     .WithRequestBody(null);
-                etags = await PutObjectPartAsync(putObjectPartArgs, cancellationToken).ConfigureAwait(false);
             }
         }
+
         // Upload stream contents
-        else
-        {
-            etags = await PutObjectPartAsync(putObjectPartArgs, cancellationToken).ConfigureAwait(false);
-        }
+        etags = await PutObjectPartAsync(putObjectPartArgs, cancellationToken).ConfigureAwait(false);
 
         var completeMultipartUploadArgs = new CompleteMultipartUploadArgs()
             .WithBucket(args.BucketName)
@@ -1184,6 +1185,7 @@ public partial class MinioClient : IObjectOperations
     {
         args.Validate();
         dynamic multiPartInfo = utils.CalculateMultiPartSize(args.ObjectSize);
+
         double partSize = multiPartInfo.partSize;
         double partCount = multiPartInfo.partCount;
         double lastPartSize = multiPartInfo.lastPartSize;
@@ -1195,11 +1197,13 @@ public partial class MinioClient : IObjectOperations
         var etags = new Dictionary<int, string>();
         for (partNumber = 1; partNumber <= partCount; partNumber++)
         {
-            var dataToCopy = await ReadFullAsync(args.ObjectStreamData, (int)partSize).ConfigureAwait(false);
-            if (dataToCopy == null && numPartsUploaded > 0) break;
+            var shared = ArrayPool<byte>.Shared;
+            var dataToCopy = shared.Rent((int)partSize);
             if (partNumber == partCount) expectedReadSize = lastPartSize;
+            dataToCopy = await ReadFullAsync(args.ObjectStreamData, (int)expectedReadSize).ConfigureAwait(false);
+            if (dataToCopy == null && numPartsUploaded > 0) break;
             var putObjectArgs = new PutObjectArgs(args)
-                .WithRequestBody(dataToCopy)
+                .WithRequestBody(dataToCopy, (int)expectedReadSize)
                 .WithUploadId(args.UploadId)
                 .WithPartNumber(partNumber);
             var etag = await PutObjectSinglePartAsync(putObjectArgs, cancellationToken).ConfigureAwait(false);
@@ -1207,6 +1211,7 @@ public partial class MinioClient : IObjectOperations
             totalParts[partNumber - 1] = new Part
                 { PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize };
             etags[partNumber] = etag;
+            if (dataToCopy is not null) shared.Return(dataToCopy);
         }
 
         // This shouldn't happen where stream size is known.
@@ -1609,25 +1614,31 @@ public partial class MinioClient : IObjectOperations
     /// <returns>bytes read in a byte array</returns>
     internal async Task<byte[]> ReadFullAsync(Stream data, int currentPartSize)
     {
-        var result = new byte[currentPartSize];
         var totalRead = 0;
-        while (totalRead < currentPartSize)
+        var shared = ArrayPool<byte>.Shared;
+        var curData = shared.Rent(currentPartSize - totalRead);
+
+        try
         {
-            var curData = new byte[currentPartSize - totalRead];
-            var curRead = await data.ReadAsync(curData, 0, currentPartSize - totalRead).ConfigureAwait(false);
-            if (curRead == 0) break;
-            for (var i = 0; i < curRead; i++) result[totalRead + i] = curData[i];
-            totalRead += curRead;
+            while (totalRead != currentPartSize &&
+                   totalRead < currentPartSize)
+            {
+                curData = shared.Rent(currentPartSize - totalRead);
+                var curRead = await data.ReadAsync(curData, 0, currentPartSize - totalRead).ConfigureAwait(false);
+                if (curRead == 0) break;
+                totalRead += curRead;
+            }
+
+            if (totalRead == 0) return null;
+
+            return curData;
         }
-
-        if (totalRead == 0) return null;
-
-        if (totalRead == currentPartSize) return result;
-
-        var truncatedResult = new byte[totalRead];
-        for (var i = 0; i < totalRead; i++) truncatedResult[i] = result[i];
-        return truncatedResult;
+        finally
+        {
+            shared.Return(curData);
+        }
     }
+
 
     /// <summary>
     ///     Create the copy request, execute it and

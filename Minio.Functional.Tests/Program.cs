@@ -65,8 +65,7 @@ internal class Program
         ServicePointManager.ServerCertificateValidationCallback +=
             (sender, certificate, chain, sslPolicyErrors) => true;
 
-        MinioClient minioClient = null;
-        minioClient = new MinioClient()
+        var minioClient = new MinioClient()
             .WithEndpoint(endPoint, port)
             .WithCredentials(accessKey, secretKey)
             .WithSSL(isSecure)

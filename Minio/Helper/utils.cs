@@ -235,12 +235,15 @@ public class utils
         return expiryInt > 0 && expiryInt <= Constants.DefaultExpiryTime;
     }
 
-    internal static string getMD5SumStr(byte[] key)
+    internal static string getMD5SumStr(byte[] key, int exactBodySize = 0)
     {
+        var keyCopy = new byte[exactBodySize];
+        if (exactBodySize > 0 && key is not null && exactBodySize != key.Length)
+            Buffer.BlockCopy(key, 0, keyCopy, 0, exactBodySize);
+        else keyCopy = key;
         var hashedBytes = MD5
             .Create()
-            .ComputeHash(key);
-
+            .ComputeHash(keyCopy);
         return Convert.ToBase64String(hashedBytes);
     }
 

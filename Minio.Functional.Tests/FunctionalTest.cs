@@ -4809,7 +4809,9 @@ public class FunctionalTest
                     .WithObjectSize(filestream.Length)
                     .WithContentType(contentType);
 
+                var proc = Process.GetCurrentProcess();
                 await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                Console.WriteLine($"\n MEM USAGE + {proc.PrivateMemorySize64}\n");
 
                 var callbackAsync = async delegate(Stream stream, CancellationToken cancellationToken)
                 {
@@ -5269,7 +5271,7 @@ public class FunctionalTest
                 () => { ; });
         }
 
-        Thread.Sleep(1000);
+        Thread.Sleep(2000);
         Assert.AreEqual(numObjects, count);
     }
 

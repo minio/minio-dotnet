@@ -305,7 +305,8 @@ public partial class MinioClient : IMinioClient
                 args.ObjectName,
                 args.Headers,
                 contentType,
-                args.RequestBody).ConfigureAwait(false);
+                args.RequestBody,
+                args.ExactBodySize).ConfigureAwait(false);
         return args.BuildRequest(requestMessageBuilder);
     }
 
@@ -317,6 +318,7 @@ public partial class MinioClient : IMinioClient
     /// <param name="method">HTTP method</param>
     /// <param name="bucketName">Bucket Name</param>
     /// <param name="objectName">Object Name</param>
+    /// <param name="exactBodySize">Object Size</param>
     /// <param name="headerMap">headerMap</param>
     /// <param name="contentType">Content Type</param>
     /// <param name="body">request body</param>
@@ -331,6 +333,7 @@ public partial class MinioClient : IMinioClient
         Dictionary<string, string> headerMap = null,
         string contentType = "application/octet-stream",
         byte[] body = null,
+        int exactBodySize = 0,
         string resourcePath = null,
         bool isBucketCreationRequest = false)
     {
@@ -416,7 +419,7 @@ public partial class MinioClient : IMinioClient
             messageBuilder = new HttpRequestMessageBuilder(method, requestUrl);
         if (body != null)
         {
-            messageBuilder.SetBody(body);
+            messageBuilder.SetBody(body, exactBodySize);
             messageBuilder.AddOrUpdateHeaderParameter("Content-Type", contentType);
         }
 
@@ -737,61 +740,63 @@ public partial class MinioClient : IMinioClient
         }
 
         var contentBytes = Encoding.UTF8.GetBytes(response.Content);
-        var stream = new MemoryStream(contentBytes);
-        var errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream);
+        using (var stream = new MemoryStream(contentBytes))
+        {
+            var errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream);
 
-        if (response.StatusCode.Equals(HttpStatusCode.Forbidden)
-            && (errResponse.Code.Equals("SignatureDoesNotMatch") || errResponse.Code.Equals("InvalidAccessKeyId")))
-            throw new AuthorizationException(errResponse.Resource, errResponse.BucketName, errResponse.Message);
+            if (response.StatusCode.Equals(HttpStatusCode.Forbidden)
+                && (errResponse.Code.Equals("SignatureDoesNotMatch") || errResponse.Code.Equals("InvalidAccessKeyId")))
+                throw new AuthorizationException(errResponse.Resource, errResponse.BucketName, errResponse.Message);
 
-        // Handle XML response for Bucket Policy not found case
-        if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-            && response.Request.RequestUri.PathAndQuery.EndsWith("?policy")
-            && response.Request.Method.Equals(HttpMethod.Get)
-            && errResponse.Code == "NoSuchBucketPolicy")
-            throw new ErrorResponseException(errResponse, response)
+            // Handle XML response for Bucket Policy not found case
+            if (response.StatusCode.Equals(HttpStatusCode.NotFound)
+                && response.Request.RequestUri.PathAndQuery.EndsWith("?policy")
+                && response.Request.Method.Equals(HttpMethod.Get)
+                && errResponse.Code == "NoSuchBucketPolicy")
+                throw new ErrorResponseException(errResponse, response)
+                {
+                    XmlError = response.Content
+                };
+
+            if (response.StatusCode.Equals(HttpStatusCode.NotFound)
+                && errResponse.Code == "NoSuchBucket")
+                throw new BucketNotFoundException(errResponse.BucketName, "Not found.");
+
+            if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
+                && errResponse.Code.Equals("MalformedXML"))
+                throw new MalFormedXMLException(errResponse.Resource, errResponse.BucketName, errResponse.Message,
+                    errResponse.Key);
+
+            if (response.StatusCode.Equals(HttpStatusCode.NotImplemented)
+                && errResponse.Code.Equals("NotImplemented"))
+                throw new NotImplementedException(errResponse.Message);
+
+            if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
+                && errResponse.Code.Equals("InvalidRequest"))
             {
+                var legalHold = new Dictionary<string, string> { { "legal-hold", "" } };
+                if (response.Request.RequestUri.Query.Contains("legalHold"))
+                    throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
+            }
+
+            if (response.StatusCode.Equals(HttpStatusCode.NotFound)
+                && errResponse.Code.Equals("ObjectLockConfigurationNotFoundError"))
+                throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
+
+            if (response.StatusCode.Equals(HttpStatusCode.NotFound)
+                && errResponse.Code.Equals("ReplicationConfigurationNotFoundError"))
+                throw new MissingBucketReplicationConfigurationException(errResponse.BucketName, errResponse.Message);
+
+            if (response.StatusCode.Equals(HttpStatusCode.Conflict)
+                && errResponse.Code.Equals("BucketAlreadyOwnedByYou"))
+                throw new Exception("Bucket already owned by you: " + errResponse.BucketName);
+
+            throw new UnexpectedMinioException(errResponse.Message)
+            {
+                Response = errResponse,
                 XmlError = response.Content
             };
-
-        if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-            && errResponse.Code == "NoSuchBucket")
-            throw new BucketNotFoundException(errResponse.BucketName, "Not found.");
-
-        if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
-            && errResponse.Code.Equals("MalformedXML"))
-            throw new MalFormedXMLException(errResponse.Resource, errResponse.BucketName, errResponse.Message,
-                errResponse.Key);
-
-        if (response.StatusCode.Equals(HttpStatusCode.NotImplemented)
-            && errResponse.Code.Equals("NotImplemented"))
-            throw new NotImplementedException(errResponse.Message);
-
-        if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
-            && errResponse.Code.Equals("InvalidRequest"))
-        {
-            var legalHold = new Dictionary<string, string> { { "legal-hold", "" } };
-            if (response.Request.RequestUri.Query.Contains("legalHold"))
-                throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
         }
-
-        if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-            && errResponse.Code.Equals("ObjectLockConfigurationNotFoundError"))
-            throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
-
-        if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-            && errResponse.Code.Equals("ReplicationConfigurationNotFoundError"))
-            throw new MissingBucketReplicationConfigurationException(errResponse.BucketName, errResponse.Message);
-
-        if (response.StatusCode.Equals(HttpStatusCode.Conflict)
-            && errResponse.Code.Equals("BucketAlreadyOwnedByYou"))
-            throw new Exception("Bucket already owned by you: " + errResponse.BucketName);
-
-        throw new UnexpectedMinioException(errResponse.Message)
-        {
-            Response = errResponse,
-            XmlError = response.Content
-        };
     }
 
     /// <summary>
