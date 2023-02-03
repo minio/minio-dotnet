@@ -766,8 +766,6 @@ public partial class MinioClient : IObjectOperations
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-        var responseHeaders = new Dictionary<string, string>();
-        foreach (var param in response.Headers) responseHeaders.Add(param.Key, param.Value);
         var statResponse = new StatObjectResponse(response.StatusCode, response.Content, response.Headers, args);
 
         return statResponse.ObjectInfo;
