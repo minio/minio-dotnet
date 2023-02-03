@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,9 +47,11 @@ public class ObjectStat
     public DateTime? ObjectLockRetainUntilDate { get; private set; }
     public bool? LegalHoldEnabled { get; private set; }
 
-    public static ObjectStat FromResponseHeaders(string objectName, Dictionary<string, string> responseHeaders)
+    public static ObjectStat FromResponseHeaders(string objectName, IReadOnlyDictionary<string, string> responseHeaders)
     {
-        if (string.IsNullOrEmpty(objectName)) throw new ArgumentNullException("Name of an object cannot be empty");
+        if (string.IsNullOrEmpty(objectName)) throw new ArgumentNullException(nameof(objectName), "Name of an object cannot be empty");
+        if (responseHeaders == null) throw new ArgumentNullException(nameof(responseHeaders));
+
         var objInfo = new ObjectStat();
         objInfo.ObjectName = objectName;
         foreach (var paramName in responseHeaders.Keys)

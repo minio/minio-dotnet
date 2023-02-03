@@ -21,13 +21,14 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 
 namespace Minio;
 
 public class ResponseResult : IDisposable
 {
-    private readonly Dictionary<string, string> _headers = new();
+    private IReadOnlyDictionary<string, string> _headers = null;
     private string _content;
     private byte[] _contentBytes;
 
@@ -98,23 +99,42 @@ public class ResponseResult : IDisposable
         }
     }
 
-    public Dictionary<string, string> Headers
+    /// <summary>
+    /// Returns the response headers. The returned dictionary uses case-insensitive comparer on
+    /// the keys based on rfc2616.
+    /// </summary>
+    public IReadOnlyDictionary<string, string> Headers
     {
         get
         {
-            if (Response == null) return new Dictionary<string, string>();
-
-            if (!_headers.Any())
+            if (_headers == null)
             {
-                if (Response.Content != null)
-                    foreach (var item in Response.Content.Headers)
-                        _headers.Add(item.Key, item.Value.FirstOrDefault());
-
-                foreach (var item in Response.Headers) _headers.Add(item.Key, item.Value.FirstOrDefault());
+                _headers = GetHeaders(Response);
             }
 
             return _headers;
         }
+    }
+
+    /// <summary>
+    /// Adds each header to the internal header dictionary.
+    /// </summary>
+    /// <param name="response"></param>
+    private static IReadOnlyDictionary<string, string> GetHeaders(HttpResponseMessage response)
+    {
+        // Headers keys are case-insensitive, see https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
+        var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        AddHeaders(headers, response?.Content?.Headers);
+        AddHeaders(headers, response?.Headers);
+
+        return headers;
+    }
+
+    private static void AddHeaders(Dictionary<string, string> target, HttpHeaders source)
+    {
+        if (source == null) return;
+        foreach (var header in source) target.Add(header.Key, header.Value.FirstOrDefault());
     }
 
     public string ErrorMessage => Exception?.Message;

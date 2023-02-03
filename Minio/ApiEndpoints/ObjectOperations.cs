@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2017-2021 MinIO, Inc.
  *
@@ -767,7 +767,7 @@ public partial class MinioClient : IObjectOperations
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
         var responseHeaders = new Dictionary<string, string>();
-        foreach (var param in response.Headers.ToList()) responseHeaders.Add(param.Key, param.Value);
+        foreach (var param in response.Headers) responseHeaders.Add(param.Key, param.Value);
         var statResponse = new StatObjectResponse(response.StatusCode, response.Content, response.Headers, args);
 
         return statResponse.ObjectInfo;
@@ -1575,10 +1575,7 @@ public partial class MinioClient : IObjectOperations
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
 
-        string etag = null;
-        foreach (var parameter in response.Headers)
-            if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
-                etag = parameter.Value;
+        response.Headers.TryGetValue("ETag", out string etag);
         return etag;
     }
 

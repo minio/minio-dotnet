@@ -646,17 +646,14 @@ public partial class MinioClient : IMinioClient
         MinioException error = null;
         var errorResponse = new ErrorResponse();
 
-        foreach (var parameter in response.Headers)
-        {
-            if (parameter.Key.Equals("x-amz-id-2", StringComparison.CurrentCultureIgnoreCase))
-                errorResponse.HostId = parameter.Value;
+        if (response.Headers.TryGetValue("x-amz-id-2", out string hostId))
+            errorResponse.HostId = hostId;
 
-            if (parameter.Key.Equals("x-amz-request-id", StringComparison.CurrentCultureIgnoreCase))
-                errorResponse.RequestId = parameter.Value;
+        if (response.Headers.TryGetValue("x-amz-request-id", out string requestId))
+            errorResponse.RequestId = requestId;
 
-            if (parameter.Key.Equals("x-amz-bucket-region", StringComparison.CurrentCultureIgnoreCase))
-                errorResponse.BucketRegion = parameter.Value;
-        }
+        if (response.Headers.TryGetValue("x-amz-bucket-region", out string bucketRegion))
+            errorResponse.BucketRegion = bucketRegion;
 
         var pathAndQuery = response.Request.RequestUri.PathAndQuery;
         var host = response.Request.RequestUri.Host;
