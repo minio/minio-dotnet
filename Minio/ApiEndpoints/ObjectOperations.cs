@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2017-2021 MinIO, Inc.
  *
@@ -766,8 +766,6 @@ public partial class MinioClient : IObjectOperations
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-        var responseHeaders = new Dictionary<string, string>();
-        foreach (var param in response.Headers.ToList()) responseHeaders.Add(param.Key, param.Value);
         var statResponse = new StatObjectResponse(response.StatusCode, response.Content, response.Headers, args);
 
         return statResponse.ObjectInfo;
@@ -1412,7 +1410,7 @@ public partial class MinioClient : IObjectOperations
         var requestMessageBuilder = await CreateRequest(HttpMethod.Post, bucketName,
                 objectName)
             .ConfigureAwait(false);
-        requestMessageBuilder.AddQueryParameter("uploadId", $"{uploadId}");
+        requestMessageBuilder.AddQueryParameter("uploadId", uploadId);
 
         var parts = new List<XElement>();
 
@@ -1475,9 +1473,9 @@ public partial class MinioClient : IObjectOperations
         var requestMessageBuilder = await CreateRequest(HttpMethod.Get, bucketName,
                 objectName)
             .ConfigureAwait(false);
-        requestMessageBuilder.AddQueryParameter("uploadId", $"{uploadId}");
-        if (partNumberMarker > 0) requestMessageBuilder.AddQueryParameter("part-number-marker", $"{partNumberMarker}");
-        requestMessageBuilder.AddQueryParameter("max-parts", "1000");
+        requestMessageBuilder.AddQueryParameter("uploadId", uploadId);
+        if (partNumberMarker > 0) requestMessageBuilder.AddQueryParameter("part-number-marker", partNumberMarker);
+        requestMessageBuilder.AddQueryParameter("max-parts", 1000);
 
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -1568,17 +1566,14 @@ public partial class MinioClient : IObjectOperations
             .ConfigureAwait(false);
         if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
         {
-            requestMessageBuilder.AddQueryParameter("uploadId", $"{uploadId}");
-            requestMessageBuilder.AddQueryParameter("partNumber", $"{partNumber}");
+            requestMessageBuilder.AddQueryParameter("uploadId", uploadId);
+            requestMessageBuilder.AddQueryParameter("partNumber", partNumber);
         }
 
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
 
-        string etag = null;
-        foreach (var parameter in response.Headers)
-            if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
-                etag = parameter.Value;
+        response.Headers.TryGetValue("ETag", out string etag);
         return etag;
     }
 
