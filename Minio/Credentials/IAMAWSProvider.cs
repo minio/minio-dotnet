@@ -121,6 +121,7 @@ public class IAMAWSProvider : EnvironmentProvider
 
         using var response =
             await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
+
         if (string.IsNullOrWhiteSpace(response.Content) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))
             throw new CredentialsProviderException("IAMAWSProvider",
@@ -187,7 +188,6 @@ public class IAMAWSProvider : EnvironmentProvider
 
         using var response =
             await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
-
 
         if (string.IsNullOrWhiteSpace(response.Content) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))

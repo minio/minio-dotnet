@@ -14,18 +14,37 @@
  * limitations under the License.
  */
 
+using Minio.DataModel;
+using System.Collections.Generic;
+using System.IO;
 using System.Net;
+using System.Text;
 
 namespace Minio;
 
-public class GenericResponse
+public abstract class GenericResponse
 {
-    internal GenericResponse(HttpStatusCode statusCode, string responseContent)
+    private readonly ResponseResult _responseResult;
+
+    protected GenericResponse(ResponseResult result)
     {
-        ResponseContent = responseContent;
-        ResponseStatusCode = ResponseStatusCode;
+        if (result == null) throw new System.ArgumentNullException(nameof(result));
+        _responseResult = result;
     }
 
-    internal string ResponseContent { get; }
-    internal HttpStatusCode ResponseStatusCode { get; }
+    internal string ResponseContent => _responseResult.Content;
+    internal HttpStatusCode ResponseStatusCode => _responseResult.StatusCode;
+
+    /// <summary>
+    /// The headers from the response.
+    /// </summary>
+    public IReadOnlyDictionary<string, string> Headers => _responseResult.Headers;
+
+    protected bool IsOkWithContent
+    {
+        get
+        {
+            return _responseResult.StatusCode == HttpStatusCode.OK && !string.IsNullOrEmpty(_responseResult.Content);
+        }
+    }
 }

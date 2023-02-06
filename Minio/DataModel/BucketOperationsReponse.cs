@@ -33,42 +33,23 @@ using Minio.DataModel.Tags;
 
 namespace Minio;
 
-internal class GetVersioningResponse : GenericResponse
+internal class GetVersioningResponse : GenericXmlResponse<VersioningConfiguration>
 {
-    internal GetVersioningResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
+    internal GetVersioningResponse(ResponseResult result)
+        : base(result)
     {
-        if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
-            return;
-
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            stream.Position = 0;
-
-            VersioningConfig =
-                (VersioningConfiguration)new XmlSerializer(typeof(VersioningConfiguration)).Deserialize(stream);
-        }
     }
 
-    internal VersioningConfiguration VersioningConfig { get; set; }
+    internal VersioningConfiguration VersioningConfig => _result;
 }
 
-internal class ListBucketsResponse : GenericResponse
+internal class ListBucketsResponse : GenericXmlResponse<ListAllMyBucketsResult>
 {
-    internal ListAllMyBucketsResult BucketsResult;
+    internal ListAllMyBucketsResult BucketsResult => _result;
 
-    internal ListBucketsResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
+    internal ListBucketsResponse(ResponseResult result)
+        : base(result)
     {
-        if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
-            return;
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            BucketsResult =
-                (ListAllMyBucketsResult)new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream);
-        }
     }
 }
 
@@ -77,8 +58,7 @@ internal class ListObjectsItemResponse
     internal Item BucketObjectsLastItem;
     internal IObserver<Item> ItemObservable;
 
-    internal ListObjectsItemResponse(ListObjectsArgs args, Tuple<ListBucketResult, List<Item>> objectList,
-        IObserver<Item> obs)
+    internal ListObjectsItemResponse(ListObjectsArgs args, Tuple<ListBucketResult, List<Item>> objectList, IObserver<Item> obs)
     {
         ItemObservable = obs;
         var marker = string.Empty;
@@ -163,23 +143,19 @@ internal class ListObjectVersionResponse
     internal string NextVerMarker { get; }
 }
 
-internal class GetObjectsListResponse : GenericResponse
+internal class GetObjectsListResponse : GenericXmlResponse<ListBucketResult>
 {
-    internal ListBucketResult BucketResult;
+    internal ListBucketResult BucketResult => _result;
+
     internal Tuple<ListBucketResult, List<Item>> ObjectsTuple;
 
-    internal GetObjectsListResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
+    internal GetObjectsListResponse(ResponseResult result)
+        : base(result)
     {
-        if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
+        if (IsOkWithContent)
             return;
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            BucketResult = (ListBucketResult)new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream);
-        }
 
-        var root = XDocument.Parse(responseContent);
+        var root = XDocument.Parse(result.Content);
         var items = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
             select new Item
             {
@@ -201,23 +177,18 @@ internal class GetObjectsListResponse : GenericResponse
     }
 }
 
-internal class GetObjectsVersionsListResponse : GenericResponse
+internal class GetObjectsVersionsListResponse : GenericXmlResponse<ListVersionsResult>
 {
-    internal ListVersionsResult BucketResult;
+    internal ListVersionsResult BucketResult => _result;
     internal Tuple<ListVersionsResult, List<Item>> ObjectsTuple;
 
-    internal GetObjectsVersionsListResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
+    internal GetObjectsVersionsListResponse(ResponseResult result)
+        : base(result)
     {
-        if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
+        if (IsOkWithContent)
             return;
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            BucketResult = (ListVersionsResult)new XmlSerializer(typeof(ListVersionsResult)).Deserialize(stream);
-        }
 
-        var root = XDocument.Parse(responseContent);
+        var root = XDocument.Parse(result.Content);
         var items = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Version")
             select new Item
             {
@@ -242,157 +213,82 @@ internal class GetObjectsVersionsListResponse : GenericResponse
 
 internal class GetPolicyResponse : GenericResponse
 {
-    internal GetPolicyResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
+    internal GetPolicyResponse(ResponseResult result)
+        : base(result)
     {
-        if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
-            return;
-        Initialize().Wait();
     }
 
-    internal string PolicyJsonString { get; private set; }
+    internal string PolicyJsonString => ResponseContent;
+}
 
-    private async Task Initialize()
+internal class GetBucketNotificationsResponse : GenericXmlResponse<BucketNotification>
+{
+    internal GetBucketNotificationsResponse(ResponseResult result)
+        : base(result)
     {
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ResponseContent)))
-        using (var streamReader = new StreamReader(stream))
-        {
-            PolicyJsonString = await streamReader.ReadToEndAsync()
-                .ConfigureAwait(false);
-        }
+    }
+
+    internal BucketNotification BucketNotificationConfiguration => _result;
+}
+
+internal class GetBucketEncryptionResponse : GenericXmlResponse<ServerSideEncryptionConfiguration>
+{
+    internal GetBucketEncryptionResponse(ResponseResult result)
+        : base(result)
+    {
+    }
+
+    internal ServerSideEncryptionConfiguration BucketEncryptionConfiguration => _result;
+}
+
+internal class GetBucketTagsResponse : GenericXmlResponse<Tagging>
+{
+    internal GetBucketTagsResponse(ResponseResult result)
+        : base(result)
+    {
+    }
+
+    internal Tagging BucketTags => _result;
+
+    protected override string ConvertContent(string content)
+    {
+        // Remove xmlns content for config serialization
+        return utils.RemoveNamespaceInXML(content);
     }
 }
 
-internal class GetBucketNotificationsResponse : GenericResponse
+internal class GetObjectLockConfigurationResponse : GenericXmlResponse<ObjectLockConfiguration>
 {
-    internal GetBucketNotificationsResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
+    internal GetObjectLockConfigurationResponse(ResponseResult result)
+        : base(result)
     {
-        if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
-        {
-            BucketNotificationConfiguration = new BucketNotification();
-            return;
-        }
-
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            BucketNotificationConfiguration =
-                (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(stream);
-        }
     }
 
-    internal BucketNotification BucketNotificationConfiguration { set; get; }
+    internal ObjectLockConfiguration LockConfiguration => _result;
 }
 
-internal class GetBucketEncryptionResponse : GenericResponse
+internal class GetBucketLifecycleResponse : GenericXmlResponse<LifecycleConfiguration>
 {
-    internal GetBucketEncryptionResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
+    internal GetBucketLifecycleResponse(ResponseResult result)
+        : base(result)
     {
-        if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
-        {
-            BucketEncryptionConfiguration = null;
-            return;
-        }
-
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            BucketEncryptionConfiguration =
-                (ServerSideEncryptionConfiguration)new XmlSerializer(typeof(ServerSideEncryptionConfiguration))
-                    .Deserialize(stream);
-        }
     }
 
-    internal ServerSideEncryptionConfiguration BucketEncryptionConfiguration { get; set; }
+    protected override string ConvertContent(string content)
+    {
+        // Remove xmlns content for config serialization
+        return utils.RemoveNamespaceInXML(content);
+    }
+
+    internal LifecycleConfiguration BucketLifecycle => _result;
 }
 
-internal class GetBucketTagsResponse : GenericResponse
+internal class GetBucketReplicationResponse : GenericXmlResponse<ReplicationConfiguration>
 {
-    internal GetBucketTagsResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
+    internal GetBucketReplicationResponse(ResponseResult result)
+        : base(result)
     {
-        if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
-        {
-            BucketTags = null;
-            return;
-        }
-
-        // Remove namespace from response content, if present.
-        responseContent = utils.RemoveNamespaceInXML(responseContent);
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            BucketTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(stream);
-        }
     }
 
-    internal Tagging BucketTags { set; get; }
-}
-
-internal class GetObjectLockConfigurationResponse : GenericResponse
-{
-    internal GetObjectLockConfigurationResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
-    {
-        if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
-        {
-            LockConfiguration = null;
-            return;
-        }
-
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            LockConfiguration =
-                (ObjectLockConfiguration)new XmlSerializer(typeof(ObjectLockConfiguration)).Deserialize(stream);
-        }
-    }
-
-    internal ObjectLockConfiguration LockConfiguration { get; set; }
-}
-
-internal class GetBucketLifecycleResponse : GenericResponse
-{
-    internal GetBucketLifecycleResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
-    {
-        if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
-        {
-            BucketLifecycle = null;
-            return;
-        }
-
-        //Remove xmlns content for config serialization
-        responseContent = utils.RemoveNamespaceInXML(responseContent);
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            BucketLifecycle =
-                (LifecycleConfiguration)new XmlSerializer(typeof(LifecycleConfiguration)).Deserialize(stream);
-        }
-    }
-
-    internal LifecycleConfiguration BucketLifecycle { set; get; }
-}
-
-internal class GetBucketReplicationResponse : GenericResponse
-{
-    internal GetBucketReplicationResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
-    {
-        if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
-        {
-            Config = null;
-            return;
-        }
-
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            Config = (ReplicationConfiguration)new XmlSerializer(typeof(ReplicationConfiguration)).Deserialize(stream);
-        }
-    }
-
-    internal ReplicationConfiguration Config { set; get; }
+    internal ReplicationConfiguration Config => _result;
 }

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2017-2021 MinIO, Inc.
  *
@@ -583,10 +583,9 @@ public partial class MinioClient : IMinioClient
                 .ConfigureAwait(false);
             responseResult = new ResponseResult(request, response);
             if (requestMessageBuilder.ResponseWriter != null)
-                requestMessageBuilder.ResponseWriter(responseResult.ContentStream);
+                requestMessageBuilder.ResponseWriter(new MemoryStream(responseResult.ContentBytes));
             if (requestMessageBuilder.FunctionResponseWriter != null)
-                await requestMessageBuilder.FunctionResponseWriter(responseResult.ContentStream,
-                    cancellationToken);
+                await requestMessageBuilder.FunctionResponseWriter(new MemoryStream(responseResult.ContentBytes), cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -646,17 +645,9 @@ public partial class MinioClient : IMinioClient
         MinioException error = null;
         var errorResponse = new ErrorResponse();
 
-        foreach (var parameter in response.Headers)
-        {
-            if (parameter.Key.Equals("x-amz-id-2", StringComparison.CurrentCultureIgnoreCase))
-                errorResponse.HostId = parameter.Value;
-
-            if (parameter.Key.Equals("x-amz-request-id", StringComparison.CurrentCultureIgnoreCase))
-                errorResponse.RequestId = parameter.Value;
-
-            if (parameter.Key.Equals("x-amz-bucket-region", StringComparison.CurrentCultureIgnoreCase))
-                errorResponse.BucketRegion = parameter.Value;
-        }
+        errorResponse.HostId = response.Headers.GetValueOrNull("x-amz-id-2");
+        errorResponse.RequestId = response.Headers.GetValueOrNull("x-amz-request-id");
+        errorResponse.BucketRegion = response.Headers.GetValueOrNull("x-amz-bucket-region");
 
         var pathAndQuery = response.Request.RequestUri.PathAndQuery;
         var host = response.Request.RequestUri.Host;
@@ -736,8 +727,7 @@ public partial class MinioClient : IMinioClient
             throw new BucketNotFoundException(bucketName, "Not found.");
         }
 
-        var contentBytes = Encoding.UTF8.GetBytes(response.Content);
-        var stream = new MemoryStream(contentBytes);
+        using var stream = new MemoryStream(response.ContentBytes);
         var errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream);
 
         if (response.StatusCode.Equals(HttpStatusCode.Forbidden)
