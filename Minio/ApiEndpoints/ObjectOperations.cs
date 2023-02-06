@@ -1412,7 +1412,7 @@ public partial class MinioClient : IObjectOperations
         var requestMessageBuilder = await CreateRequest(HttpMethod.Post, bucketName,
                 objectName)
             .ConfigureAwait(false);
-        requestMessageBuilder.AddQueryParameter("uploadId", $"{uploadId}");
+        requestMessageBuilder.AddQueryParameter("uploadId", uploadId);
 
         var parts = new List<XElement>();
 
@@ -1475,9 +1475,9 @@ public partial class MinioClient : IObjectOperations
         var requestMessageBuilder = await CreateRequest(HttpMethod.Get, bucketName,
                 objectName)
             .ConfigureAwait(false);
-        requestMessageBuilder.AddQueryParameter("uploadId", $"{uploadId}");
-        if (partNumberMarker > 0) requestMessageBuilder.AddQueryParameter("part-number-marker", $"{partNumberMarker}");
-        requestMessageBuilder.AddQueryParameter("max-parts", "1000");
+        requestMessageBuilder.AddQueryParameter("uploadId", uploadId);
+        if (partNumberMarker > 0) requestMessageBuilder.AddQueryParameter("part-number-marker", partNumberMarker);
+        requestMessageBuilder.AddQueryParameter("max-parts", 1000);
 
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -1568,8 +1568,8 @@ public partial class MinioClient : IObjectOperations
             .ConfigureAwait(false);
         if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
         {
-            requestMessageBuilder.AddQueryParameter("uploadId", $"{uploadId}");
-            requestMessageBuilder.AddQueryParameter("partNumber", $"{partNumber}");
+            requestMessageBuilder.AddQueryParameter("uploadId", uploadId);
+            requestMessageBuilder.AddQueryParameter("partNumber", partNumber);
         }
 
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
