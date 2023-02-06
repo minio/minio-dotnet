@@ -198,7 +198,7 @@ internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
             requestMessageBuilder.AddOrUpdateHeaderParameter(h.Key, h.Value);
 
         requestMessageBuilder.AddQueryParameter("delimiter", Delimiter);
-        requestMessageBuilder.AddQueryParameter("max-keys", "1000");
+        requestMessageBuilder.AddQueryParameter("max-keys", 1000);
         requestMessageBuilder.AddQueryParameter("encoding-type", "url");
         requestMessageBuilder.AddQueryParameter("prefix", Prefix);
         if (Versions)
@@ -210,7 +210,7 @@ internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
         }
         else if (!Versions && UseV2)
         {
-            requestMessageBuilder.AddQueryParameter("list-type", "2");
+            requestMessageBuilder.AddQueryParameter("list-type", 2);
             if (!string.IsNullOrWhiteSpace(Marker)) requestMessageBuilder.AddQueryParameter("start-after", Marker);
             if (!string.IsNullOrWhiteSpace(ContinuationToken))
                 requestMessageBuilder.AddQueryParameter("continuation-token", ContinuationToken);
