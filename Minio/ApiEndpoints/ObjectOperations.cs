@@ -80,8 +80,7 @@ public partial class MinioClient : IObjectOperations
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-        var selectObjectContentResponse =
-            new SelectObjectContentResponse(response.StatusCode, response.Content, response.ContentBytes);
+        var selectObjectContentResponse = new SelectObjectContentResponse(response);
         return selectObjectContentResponse.ResponseStream;
     }
 
@@ -306,7 +305,7 @@ public partial class MinioClient : IObjectOperations
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-        var legalHoldConfig = new GetLegalHoldResponse(response.StatusCode, response.Content);
+        var legalHoldConfig = new GetLegalHoldResponse(response);
         return legalHoldConfig.CurrentLegalHoldConfiguration == null
             ? false
             : legalHoldConfig.CurrentLegalHoldConfiguration.Status.ToLower().Equals("on");
@@ -358,7 +357,7 @@ public partial class MinioClient : IObjectOperations
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-        var getObjectTagsResponse = new GetObjectTagsResponse(response.StatusCode, response.Content);
+        var getObjectTagsResponse = new GetObjectTagsResponse(response);
         return getObjectTagsResponse.ObjectTags;
     }
 
@@ -382,7 +381,8 @@ public partial class MinioClient : IObjectOperations
     {
         args.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken);
+        using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            .ConfigureAwait(false);
     }
 
 
@@ -519,7 +519,7 @@ public partial class MinioClient : IObjectOperations
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-        var retentionResponse = new GetRetentionResponse(response.StatusCode, response.Content);
+        var retentionResponse = new GetRetentionResponse(response);
         return retentionResponse.CurrentRetentionConfiguration;
     }
 
@@ -766,10 +766,7 @@ public partial class MinioClient : IObjectOperations
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-        var responseHeaders = new Dictionary<string, string>();
-        foreach (var param in response.Headers.ToList()) responseHeaders.Add(param.Key, param.Value);
-        var statResponse = new StatObjectResponse(response.StatusCode, response.Content, response.Headers, args);
-
+        var statResponse = new StatObjectResponse(response, args);
         return statResponse.ObjectInfo;
     }
 
@@ -1111,11 +1108,10 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken)
     {
         args.Validate();
-        ResponseResult response = null;
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+        ResponseResult response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-        var getUploadResponse = new GetMultipartUploadsListResponse(response.StatusCode, response.Content);
+        var getUploadResponse = new GetMultipartUploadsListResponse(response);
         response.Dispose();
 
         return getUploadResponse.UploadResult;
@@ -1159,8 +1155,9 @@ public partial class MinioClient : IObjectOperations
     {
         //Skipping validate as we need the case where stream sends 0 bytes
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken);
-        var putObjectResponse = new PutObjectResponse(response.StatusCode, response.Content, response.Headers);
+        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            .ConfigureAwait(false);
+        var putObjectResponse = new PutObjectResponse(response);
         return putObjectResponse.Etag;
     }
 
@@ -1328,8 +1325,9 @@ public partial class MinioClient : IObjectOperations
     {
         args.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken);
-        var uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
+        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            .ConfigureAwait(false);
+        var uploadResponse = new NewMultipartUploadResponse(response);
         return uploadResponse.UploadId;
     }
 
@@ -1353,8 +1351,9 @@ public partial class MinioClient : IObjectOperations
     {
         args.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken);
-        var uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
+        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            .ConfigureAwait(false);
+        var uploadResponse = new NewMultipartUploadResponse(response);
         return uploadResponse.UploadId;
     }
 
@@ -1370,8 +1369,7 @@ public partial class MinioClient : IObjectOperations
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-        var copyObjectResponse =
-            new CopyObjectResponse(response.StatusCode, response.Content, args.CopyOperationObjectType);
+        var copyObjectResponse = new CopyObjectResponse(response, args.CopyOperationObjectType);
         return copyObjectResponse.CopyPartRequestResult;
     }
 
@@ -1482,9 +1480,9 @@ public partial class MinioClient : IObjectOperations
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
 
-        var contentBytes = Encoding.UTF8.GetBytes(response.Content);
+        // TODO: create a standard response type based on GenericXmlResponse
         ListPartsResult listPartsResult = null;
-        using (var stream = new MemoryStream(contentBytes))
+        using (var stream = new MemoryStream(response.ContentBytes))
         {
             listPartsResult = (ListPartsResult)new XmlSerializer(typeof(ListPartsResult)).Deserialize(stream);
         }
@@ -1523,10 +1521,10 @@ public partial class MinioClient : IObjectOperations
             objectName, metaData).ConfigureAwait(false);
         requestMessageBuilder.AddQueryParameter("uploads", "");
 
-        using var response = await ExecuteTaskAsync(NoErrorHandlers,
-            requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            .ConfigureAwait(false);
 
-        var contentBytes = Encoding.UTF8.GetBytes(response.Content);
+        // TODO: create a standard response type based on GenericXmlResponse
         InitiateMultipartUploadResult newUpload = null;
         using (var contentStream = new MemoryStream(response.ContentBytes))
         {
@@ -1575,11 +1573,7 @@ public partial class MinioClient : IObjectOperations
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
 
-        string etag = null;
-        foreach (var parameter in response.Headers)
-            if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
-                etag = parameter.Value;
-        return etag;
+        return response.Headers.GetValueOrNull("ETag");
     }
 
     /// <summary>
@@ -1677,8 +1671,6 @@ public partial class MinioClient : IObjectOperations
             .ConfigureAwait(false);
 
         // Just read the result and parse content.
-        var contentBytes = Encoding.UTF8.GetBytes(response.Content);
-
         object copyResult = null;
         using (var contentStream = new MemoryStream(response.ContentBytes))
         {
