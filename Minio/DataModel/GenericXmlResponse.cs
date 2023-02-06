@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+using Minio.DataModel;
 using System.IO;
+using System.Text;
 using System.Xml.Serialization;
 
 namespace Minio;
@@ -37,9 +39,12 @@ public abstract class GenericXmlResponse<TResult> : GenericResponse
             return;
         }
 
-        using var stream = new MemoryStream(result.ContentBytes);
+        // convert the content if required
+        var content = ConvertContent(Encoding.UTF8.GetString(result.ContentBytes));
+
+        using TextReader reader = new StringReader(content);
         var serializer = new XmlSerializer(typeof(TResult));
-        _result = (TResult)serializer.Deserialize(stream);
+        _result = (TResult)serializer.Deserialize(reader);
     }
 
     /// <summary>
