@@ -59,7 +59,7 @@ public class SelectObjectContentArgs : EncryptionArgs<SelectObjectContentArgs>
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
         requestMessageBuilder.AddQueryParameter("select", "");
-        requestMessageBuilder.AddQueryParameter("select-type", "2");
+        requestMessageBuilder.AddQueryParameter("select-type", 2);
 
         if (RequestBody == null)
         {
@@ -231,7 +231,7 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
         if (!string.IsNullOrEmpty(VersionId))
-            requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
+            requestMessageBuilder.AddQueryParameter("versionId", VersionId);
         if (Headers.ContainsKey(S3ZipExtractKey))
             requestMessageBuilder.AddQueryParameter(S3ZipExtractKey, Headers[S3ZipExtractKey]);
 
@@ -445,7 +445,7 @@ public class RemoveUploadArgs : EncryptionArgs<RemoveUploadArgs>
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        requestMessageBuilder.AddQueryParameter("uploadId", $"{UploadId}");
+        requestMessageBuilder.AddQueryParameter("uploadId", UploadId);
         return requestMessageBuilder;
     }
 }
@@ -553,7 +553,7 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
+        if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", VersionId);
 
         if (CallBack is not null) requestMessageBuilder.ResponseWriter = CallBack;
         else requestMessageBuilder.FunctionResponseWriter = FuncCallBack;
@@ -615,7 +615,7 @@ public class RemoveObjectArgs : ObjectArgs<RemoveObjectArgs>
     {
         if (!string.IsNullOrEmpty(VersionId))
         {
-            requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
+            requestMessageBuilder.AddQueryParameter("versionId", VersionId);
             if (BypassGovernanceMode != null && BypassGovernanceMode.Value)
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-bypass-governance-retention",
                     BypassGovernanceMode.Value.ToString());
@@ -1682,7 +1682,7 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        requestMessageBuilder.AddQueryParameter("uploadId", $"{UploadId}");
+        requestMessageBuilder.AddQueryParameter("uploadId", UploadId);
         var parts = new List<XElement>();
 
         for (var i = 1; i <= ETags.Count; i++)
@@ -1691,7 +1691,6 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
                 new XElement("ETag", ETags[i])));
         var completeMultipartUploadXml = new XElement("CompleteMultipartUpload", parts);
         var bodyString = completeMultipartUploadXml.ToString();
-        var body = Encoding.UTF8.GetBytes(bodyString);
         var bodyInBytes = Encoding.UTF8.GetBytes(bodyString);
         requestMessageBuilder.BodyParameters.Add("content-type", "application/xml");
         requestMessageBuilder.SetBody(bodyInBytes);
@@ -1712,7 +1711,7 @@ internal class PutObjectPartArgs : PutObjectArgs
     {
         base.Validate();
         if (string.IsNullOrWhiteSpace(UploadId))
-            throw new ArgumentNullException(nameof(UploadId) + " not assigned for PutObjectPart operation.");
+            throw new ArgumentNullException(nameof(UploadId), $"{nameof(UploadId)} not assigned for PutObjectPart operation.");
     }
 
     public new PutObjectPartArgs WithBucket(string bkt)
@@ -1832,8 +1831,8 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Type", Headers["Content-Type"]);
         if (!string.IsNullOrWhiteSpace(UploadId) && PartNumber > 0)
         {
-            requestMessageBuilder.AddQueryParameter("uploadId", $"{UploadId}");
-            requestMessageBuilder.AddQueryParameter("partNumber", $"{PartNumber}");
+            requestMessageBuilder.AddQueryParameter("uploadId", UploadId);
+            requestMessageBuilder.AddQueryParameter("partNumber", PartNumber);
         }
 
         if (ObjectTags != null && ObjectTags.TaggingSet != null

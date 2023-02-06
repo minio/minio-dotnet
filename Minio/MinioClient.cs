@@ -559,7 +559,7 @@ public partial class MinioClient : IMinioClient
         CancellationToken cancellationToken = default,
         bool isSts = false)
     {
-        var startTime = DateTime.Now;
+        var startTime = DateTime.UtcNow;
         // Logs full url when HTTPtracing is enabled.
         if (trace)
         {
@@ -806,7 +806,7 @@ public partial class MinioClient : IMinioClient
         // Logs Response if HTTP tracing is enabled
         if (trace)
         {
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             LogRequest(response.Request, response, (now - startTime).TotalMilliseconds);
         }
 
