@@ -172,6 +172,11 @@ internal class HttpRequestMessageBuilder
         QueryParameters[key] = value;
     }
 
+    public void AddQueryParameter(string key, int value)
+    {
+        QueryParameters[key] = value.ToString();
+    }
+
     public void SetBody(byte[] body)
     {
         Content = body;
