@@ -15,11 +15,7 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Xml.Serialization;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
 using Minio.Exceptions;
 using Minio.Helper;

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Minio.DataModel.ObjectLock;
@@ -103,11 +101,9 @@ public class ObjectStat
                 case "x-amz-object-lock-retain-until-date":
                     var lockUntilDate = paramValue;
                     if (!string.IsNullOrWhiteSpace(lockUntilDate))
-                    {
                         objInfo.ObjectLockRetainUntilDate = DateTime.SpecifyKind(
                             DateTime.Parse(lockUntilDate),
                             DateTimeKind.Utc);
-                    }
 
                     break;
                 case "x-amz-object-lock-legal-hold":

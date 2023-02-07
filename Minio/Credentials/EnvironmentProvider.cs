@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Minio.Credentials;
 
 public abstract class EnvironmentProvider : ClientProvider

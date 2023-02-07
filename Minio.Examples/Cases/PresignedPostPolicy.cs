@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
 using Minio.DataModel;
 
 namespace Minio.Examples.Cases;

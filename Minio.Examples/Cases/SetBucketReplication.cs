@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Minio.DataModel.Replication;
 
 namespace Minio.Examples.Cases;

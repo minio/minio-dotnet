@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
 using Minio.DataModel.ObjectLock;
 
 namespace Minio.Examples.Cases;

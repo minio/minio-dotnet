@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Exceptions;
 using Minio.Helper;
 

@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-
 namespace Minio.DataModel.Tracing;
 
 public sealed class RequestToLog

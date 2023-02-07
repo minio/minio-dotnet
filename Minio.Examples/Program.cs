@@ -14,9 +14,6 @@
 * limitations under the License.
 */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;

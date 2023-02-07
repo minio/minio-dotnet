@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-using System;
 using System.Collections.Concurrent;
 using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace Minio;

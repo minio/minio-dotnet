@@ -15,13 +15,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.IO;
-using System.Net.Http;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
 using System.Xml.Serialization;

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel;

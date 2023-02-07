@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-using System;
 using System.Net;
-using System.Threading.Tasks;
 using Minio;
 
 namespace SimpleTest;

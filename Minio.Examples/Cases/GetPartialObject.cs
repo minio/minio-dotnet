@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.IO;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
 internal class GetPartialObject

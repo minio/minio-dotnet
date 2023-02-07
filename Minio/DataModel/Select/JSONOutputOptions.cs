@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Minio.DataModel;
 
 // JSONOutputOptions - json output specific options

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-
 namespace Minio;
 
 public abstract class BucketArgs<T> : Args

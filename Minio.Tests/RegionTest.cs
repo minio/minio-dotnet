@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 namespace Minio.Tests;
 
 [TestClass]

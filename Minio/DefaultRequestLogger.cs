@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Linq;
 using System.Text;
 using Minio.DataModel.Tracing;
 

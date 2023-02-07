@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
 using Minio.Exceptions;
-using Polly;
 
 namespace Minio.Examples.Cases;
 

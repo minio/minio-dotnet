@@ -15,12 +15,7 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Minio.Credentials;
 using Minio.DataModel;
 using Minio.DataModel.ILM;

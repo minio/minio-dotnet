@@ -14,9 +14,8 @@
 * limitations under the License.
 */
 
-using System;
-using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Minio.Functional.Tests;
 
@@ -102,6 +101,7 @@ internal class MintLogger
 
     public void Log()
     {
-        Console.WriteLine(JsonSerializer.Serialize(this, options: new JsonSerializerOptions() { WriteIndented = false, DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Always }));
+        Console.WriteLine(JsonSerializer.Serialize(this,
+            new JsonSerializerOptions { WriteIndented = false, DefaultIgnoreCondition = JsonIgnoreCondition.Always }));
     }
 }

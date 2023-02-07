@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Minio;
 
 public abstract class ObjectConditionalQueryArgs<T> : ObjectVersionArgs<T>

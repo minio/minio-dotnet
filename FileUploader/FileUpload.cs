@@ -14,10 +14,8 @@
 * limitations under the License.
 */
 
-using System;
 using System.Net;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Minio;
 
 namespace FileUploader;

@@ -15,9 +15,7 @@
 // limitations under the License.
 //
 
-using System;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 using Minio.Credentials;
 
 namespace Minio.Examples.Cases;

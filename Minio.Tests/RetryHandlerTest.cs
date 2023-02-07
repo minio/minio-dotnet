@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Exceptions;
 
 namespace Minio.Tests;
