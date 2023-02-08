@@ -16,6 +16,7 @@
  */
 
 using System.Net;
+using System.Reactive.Linq;
 using System.Xml.Serialization;
 using Minio.DataModel;
 using Minio.DataModel.ILM;

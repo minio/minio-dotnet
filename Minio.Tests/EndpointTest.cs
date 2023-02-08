@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Exceptions;
 using Minio.Helper;
 

@@ -16,6 +16,7 @@
 
 using System.Text;
 using System.Xml.Serialization;
+using Force.Crc32;
 using Minio.Exceptions;
 
 namespace Minio.DataModel;

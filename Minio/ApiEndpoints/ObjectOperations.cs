@@ -16,6 +16,7 @@
  */
 
 using System.Globalization;
+using System.Reactive.Linq;
 using System.Text;
 using System.Xml.Linq;
 using System.Xml.Serialization;

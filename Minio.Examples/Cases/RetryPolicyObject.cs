@@ -15,6 +15,7 @@
  */
 
 using Minio.Exceptions;
+using Polly;
 
 namespace Minio.Examples.Cases;
 

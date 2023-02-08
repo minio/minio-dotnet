@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Exceptions;
 
 namespace Minio.Tests;

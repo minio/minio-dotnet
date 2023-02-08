@@ -16,6 +16,7 @@
  */
 
 using System.Xml.Serialization;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
 using Minio.Exceptions;
 using Minio.Helper;
