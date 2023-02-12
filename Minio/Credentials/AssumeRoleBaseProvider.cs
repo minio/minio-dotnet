@@ -125,7 +125,8 @@ public abstract class AssumeRoleBaseProvider<T> : ClientProvider
             ResponseResult responseMessage = null;
             try
             {
-                responseMessage = await Client.ExecuteTaskAsync(NoErrorHandlers, requestBuilder);
+                responseMessage = await Client.ExecuteTaskAsync(NoErrorHandlers, requestBuilder)
+                    .ConfigureAwait(false);
             }
             finally
             {

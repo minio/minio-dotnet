@@ -159,7 +159,7 @@ public partial class MinioClient : IObjectOperations
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-        var removeObjectsResponse = new RemoveObjectsResponse(response.StatusCode, response.Content);
+        var removeObjectsResponse = new RemoveObjectsResponse(response);
         return removeObjectsResponse.DeletedObjectsResult.errorList;
     }
 

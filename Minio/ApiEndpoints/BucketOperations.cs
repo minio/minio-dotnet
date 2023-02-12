@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2017-2021 MinIO, Inc.
  *
@@ -194,15 +194,8 @@ public partial class MinioClient : IBucketOperations
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
 
-        var bucketList = new ListAllMyBucketsResult();
-        if (HttpStatusCode.OK.Equals(response.StatusCode))
-            using (var stream = new MemoryStream(response.ContentBytes))
-            {
-                bucketList =
-                    (ListAllMyBucketsResult)new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream);
-            }
-
-        return bucketList;
+        var operationResonse = new ListBucketsResponse(response);
+        return operationResonse.BucketsResult ?? new ListAllMyBucketsResult();
     }
 
 
@@ -220,6 +213,7 @@ public partial class MinioClient : IBucketOperations
             var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
             using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
                 .ConfigureAwait(false);
+
         }
         catch (InternalClientException ice)
         {
@@ -227,10 +221,9 @@ public partial class MinioClient : IBucketOperations
                 || ice.ServerResponse == null)
                 return false;
         }
-        catch (Exception ex)
+        catch (BucketNotFoundException)
         {
-            if (ex.GetType() == typeof(BucketNotFoundException)) return false;
-            throw;
+            return false;
         }
 
         return true;
@@ -250,8 +243,8 @@ public partial class MinioClient : IBucketOperations
     {
         args.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers,
-            requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -298,7 +291,7 @@ public partial class MinioClient : IBucketOperations
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
 
-        var versioningResponse = new GetVersioningResponse(responseResult.StatusCode, responseResult.Content);
+        var versioningResponse = new GetVersioningResponse(responseResult);
         return versioningResponse.VersioningConfig;
     }
 
@@ -318,8 +311,8 @@ public partial class MinioClient : IBucketOperations
     {
         args.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers,
-            requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            .ConfigureAwait(false);
     }
 
 
@@ -416,9 +409,8 @@ public partial class MinioClient : IBucketOperations
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-        var getBucketNotificationsResponse =
-            new GetBucketNotificationsResponse(responseResult.StatusCode, responseResult.Content);
-        return getBucketNotificationsResponse.BucketNotificationConfiguration;
+        var getBucketNotificationsResponse = new GetBucketNotificationsResponse(responseResult);
+        return getBucketNotificationsResponse.BucketNotificationConfiguration ?? new BucketNotification();
     }
 
     /// <summary>
@@ -515,8 +507,7 @@ public partial class MinioClient : IBucketOperations
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-        var getBucketNotificationsResponse =
-            new GetBucketTagsResponse(responseResult.StatusCode, responseResult.Content);
+        var getBucketNotificationsResponse = new GetBucketTagsResponse(responseResult);
         return getBucketNotificationsResponse.BucketTags;
     }
 
@@ -559,8 +550,7 @@ public partial class MinioClient : IBucketOperations
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-        var getBucketEncryptionResponse =
-            new GetBucketEncryptionResponse(responseResult.StatusCode, responseResult.Content);
+        var getBucketEncryptionResponse = new GetBucketEncryptionResponse(responseResult);
         return getBucketEncryptionResponse.BucketEncryptionConfiguration;
     }
 
@@ -669,7 +659,7 @@ public partial class MinioClient : IBucketOperations
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-        var resp = new GetObjectLockConfigurationResponse(responseResult.StatusCode, responseResult.Content);
+        var resp = new GetObjectLockConfigurationResponse(responseResult);
         return resp.LockConfiguration;
     }
 
@@ -737,7 +727,7 @@ public partial class MinioClient : IBucketOperations
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-        var response = new GetBucketLifecycleResponse(responseResult.StatusCode, responseResult.Content);
+        var response = new GetBucketLifecycleResponse(responseResult);
         return response.BucketLifecycle;
     }
 
@@ -781,7 +771,7 @@ public partial class MinioClient : IBucketOperations
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-        var response = new GetBucketReplicationResponse(responseResult.StatusCode, responseResult.Content);
+        var response = new GetBucketReplicationResponse(responseResult);
         return response.Config;
     }
 
@@ -870,7 +860,7 @@ public partial class MinioClient : IBucketOperations
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-        var getPolicyResponse = new GetPolicyResponse(responseResult.StatusCode, responseResult.Content);
+        var getPolicyResponse = new GetPolicyResponse(responseResult);
         return getPolicyResponse.PolicyJsonString;
     }
 
@@ -924,7 +914,7 @@ public partial class MinioClient : IBucketOperations
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
-        var getObjectsListResponse = new GetObjectsListResponse(responseResult.StatusCode, responseResult.Content);
+        var getObjectsListResponse = new GetObjectsListResponse(responseResult);
         return getObjectsListResponse.ObjectsTuple;
     }
 
@@ -945,7 +935,7 @@ public partial class MinioClient : IBucketOperations
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
         var getObjectsVersionsListResponse =
-            new GetObjectsVersionsListResponse(responseResult.StatusCode, responseResult.Content);
+            new GetObjectsVersionsListResponse(responseResult);
         return getObjectsVersionsListResponse.ObjectsTuple;
     }
 

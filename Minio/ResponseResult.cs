@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -27,60 +26,53 @@ namespace Minio;
 
 public class ResponseResult : IDisposable
 {
-    private readonly Dictionary<string, string> _headers = new();
+    private ResponseHeaderCollection _headers;
     private string _content;
     private byte[] _contentBytes;
 
-    private Stream _stream;
-
     public ResponseResult(HttpRequestMessage request, HttpResponseMessage response)
     {
-        Request = request;
-        Response = response;
+        Request = request ?? throw new ArgumentNullException(nameof(request));
+        Response = response ?? throw new ArgumentNullException(nameof(response));
+
+        _headers = new ResponseHeaderCollection(response);
     }
 
     public ResponseResult(HttpRequestMessage request, Exception exception)
-        : this(request, response: null)
     {
-        Exception = exception;
+        Request = request ?? throw new ArgumentNullException(nameof(request));
+        Exception = exception ?? throw new ArgumentNullException(nameof(exception));
+        _headers = ResponseHeaderCollection.Empty;
     }
 
     private Exception Exception { get; }
     public HttpRequestMessage Request { get; }
+
+    /// <summary>
+    /// The response or null of there was an exception.
+    /// </summary>
     public HttpResponseMessage Response { get; }
 
-    public HttpStatusCode StatusCode
-    {
-        get
-        {
-            if (Response == null) return 0;
+    public HttpStatusCode StatusCode => Response?.StatusCode ?? 0;
 
-            return Response.StatusCode;
-        }
-    }
-
-    public Stream ContentStream
-    {
-        get
-        {
-            if (Response == null) return null;
-
-            return _stream ?? (_stream = Response.Content.ReadAsStreamAsync().Result);
-        }
-    }
-
+    /// <summary>
+    /// Gets the response content as a byte array. If there is no response or content, returns empty array.
+    /// </summary>
     public byte[] ContentBytes
     {
         get
         {
-            if (ContentStream == null) return new byte[0];
-
             if (_contentBytes == null)
+            {
+                if (Response?.Content == null) return Array.Empty<byte>();
+
+                using (var stream = Response.Content.ReadAsStreamAsync().ConfigureAwait(false).GetAwaiter().GetResult())
                 using (var memoryStream = new MemoryStream())
                 {
-                    ContentStream.CopyTo(memoryStream);
+                    stream.CopyTo(memoryStream);
                     _contentBytes = memoryStream.ToArray();
                 }
+            }
 
             return _contentBytes;
         }
@@ -92,36 +84,18 @@ public class ResponseResult : IDisposable
         {
             if (ContentBytes.Length == 0) return "";
 
-            if (_content == null) _content = Encoding.UTF8.GetString(ContentBytes);
+            _content ??= Encoding.UTF8.GetString(ContentBytes);
 
             return _content;
         }
     }
 
-    public Dictionary<string, string> Headers
-    {
-        get
-        {
-            if (Response == null) return new Dictionary<string, string>();
-
-            if (!_headers.Any())
-            {
-                if (Response.Content != null)
-                    foreach (var item in Response.Content.Headers)
-                        _headers.Add(item.Key, item.Value.FirstOrDefault());
-
-                foreach (var item in Response.Headers) _headers.Add(item.Key, item.Value.FirstOrDefault());
-            }
-
-            return _headers;
-        }
-    }
+    public IReadOnlyDictionary<string, string> Headers => _headers;
 
     public string ErrorMessage => Exception?.Message;
 
     public void Dispose()
     {
-        _stream?.Dispose();
         Request?.Dispose();
         Response?.Dispose();
     }

@@ -47,7 +47,7 @@ public class ObjectStat
     public DateTime? ObjectLockRetainUntilDate { get; private set; }
     public bool? LegalHoldEnabled { get; private set; }
 
-    public static ObjectStat FromResponseHeaders(string objectName, Dictionary<string, string> responseHeaders)
+    public static ObjectStat FromResponseHeaders(string objectName, IReadOnlyDictionary<string, string> responseHeaders)
     {
         if (string.IsNullOrEmpty(objectName)) throw new ArgumentNullException("Name of an object cannot be empty");
         var objInfo = new ObjectStat();

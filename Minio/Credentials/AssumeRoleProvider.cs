@@ -114,14 +114,13 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
             ResponseResult responseResult = null;
             try
             {
-                responseResult = await Client.ExecuteTaskAsync(NoErrorHandlers, requestBuilder, isSts: true);
+                responseResult = await Client.ExecuteTaskAsync(NoErrorHandlers, requestBuilder, isSts: true)
+                    .ConfigureAwait(false);
 
                 AssumeRoleResponse assumeRoleResp = null;
                 if (responseResult.Response.IsSuccessStatusCode)
                 {
-                    var contentBytes = Encoding.UTF8.GetBytes(responseResult.Content);
-
-                    using (var stream = new MemoryStream(contentBytes))
+                    using (var stream = new MemoryStream(responseResult.ContentBytes))
                     {
                         assumeRoleResp =
                             (AssumeRoleResponse)new XmlSerializer(typeof(AssumeRoleResponse)).Deserialize(stream);

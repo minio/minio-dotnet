@@ -119,8 +119,9 @@ public class IAMAWSProvider : EnvironmentProvider
         var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, url);
         requestBuilder.AddQueryParameter("location", "");
 
-        using var response =
-            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
+        using var response = await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder)
+            .ConfigureAwait(false);
+
         if (string.IsNullOrWhiteSpace(response.Content) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))
             throw new CredentialsProviderException("IAMAWSProvider",
@@ -185,9 +186,8 @@ public class IAMAWSProvider : EnvironmentProvider
         var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, url);
         requestBuilder.AddQueryParameter("location", "");
 
-        using var response =
-            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
-
+        using var response = await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder)
+            .ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(response.Content) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))
