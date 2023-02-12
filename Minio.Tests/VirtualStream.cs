@@ -30,7 +30,7 @@ namespace Minio.Tests;
 /// Virtural stream will create a random data stream up to the user's specific size.
 /// It will not allocate any data. This stream can only be read forward.
 /// </summary>
-public class VirutalStream : Stream
+public class VirtualStream : Stream
 {
     /// <summary>
     /// The current position in the stream
@@ -47,11 +47,11 @@ public class VirutalStream : Stream
     /// </summary>
     private readonly Random _random;
 
-    public VirutalStream(long size) : this(size, Random.Shared)
+    public VirtualStream(long size) : this(size, Random.Shared)
     {
     }
 
-    public VirutalStream(long size, Random random)
+    public VirtualStream(long size, Random random)
     {
         if (size < 0) throw new ArgumentOutOfRangeException(nameof(size), "Size must be greater or equal to zero");
 

@@ -21,19 +21,19 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Minio.Tests;
 
 /// <summary>
-/// Tests to ensure the VirutalStream is working correct.
-/// Other tests will use the VirutalStream to test uploading
+/// Tests to ensure the VirtualStream is working correct.
+/// Other tests will use the VirtualStream to test uploading
 /// huge documents to minio/S3.
 /// </summary>
 [TestClass]
-public class VirutalStreamTest
+public class VirtualStreamTest
 {
     [TestMethod]
-    public void zero_size_stream_reads_no_data()
+    public void Zero_size_stream_reads_no_data()
     {
         byte[] buffer = new byte[1024];
 
-        VirutalStream sut = new VirutalStream(0);
+        VirtualStream sut = new VirtualStream(0);
 
         var actual = sut.Read(buffer, 0, buffer.Length);
 
@@ -46,7 +46,7 @@ public class VirutalStreamTest
     {
         byte[] buffer = new byte[1024];
 
-        VirutalStream sut = new VirutalStream(buffer.LongLength);
+        VirtualStream sut = new VirtualStream(buffer.LongLength);
 
         var actual = sut.Read(buffer, 0, buffer.Length);
         Assert.AreEqual(buffer.Length, actual);
@@ -63,7 +63,7 @@ public class VirutalStreamTest
         // this test want to ensure the buffer size and stream size are not multiples of each other
         byte[] buffer = new byte[128];
 
-        VirutalStream sut = new VirutalStream(135);
+        VirtualStream sut = new VirtualStream(135);
 
         // should read the complete buffer
         var actual = sut.Read(buffer, 0, buffer.Length);
@@ -84,7 +84,7 @@ public class VirutalStreamTest
         // this test want to ensure the buffer size and stream size are not multiples of each other
         byte[] buffer = new byte[128];
 
-        VirutalStream sut = new VirutalStream(1024);
+        VirtualStream sut = new VirtualStream(1024);
 
         // should read the complete buffer
         var actual = sut.Read(buffer, buffer.Length / 2, buffer.Length  / 2);
