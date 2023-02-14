@@ -19,7 +19,7 @@ using System.Xml.Serialization;
 namespace Minio.DataModel;
 
 [Serializable]
-[XmlRoot(ElementName = "VersioningConfiguration", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+[XmlRoot(ElementName = "VersioningConfiguration")]
 public class VersioningConfiguration
 {
     public VersioningConfiguration()
