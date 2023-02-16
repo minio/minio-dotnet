@@ -46,8 +46,10 @@ public class RemoveBucketArgs : BucketArgs<RemoveBucketArgs>
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        if (Headers.ContainsKey(BucketForceDeleteKey))
-            requestMessageBuilder.AddHeaderParameter(BucketForceDeleteKey, Headers[BucketForceDeleteKey]);
+        foreach (var header in Headers)
+        {
+            requestMessageBuilder.AddHeaderParameter(header.Key, Headers[header.Key]);
+        }
         return requestMessageBuilder;
     }
 }
