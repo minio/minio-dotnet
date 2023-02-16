@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <OutputType>Exe</OutputType>
@@ -7,7 +7,6 @@
   <ItemGroup>
     <PackageReference Include="MSTest.TestFramework" Version="3.0.2" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <ProjectReference Include="..\Minio\Minio.csproj" />
   </ItemGroup>
 </Project>

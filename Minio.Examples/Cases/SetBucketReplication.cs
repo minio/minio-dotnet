@@ -30,7 +30,9 @@ public class SetBucketReplication
                      "[", "]", "@", "#", "$",
                      "%", "&", "+"
                  })
+        {
             escapedArgs = cmd.Replace("str", "\\str");
+        }
 
         var fileName = "/bin/bash";
         var arguments = $"-c \"{escapedArgs}\"" +
@@ -73,7 +75,9 @@ public class SetBucketReplication
             secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
             if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") != null)
                 if (Environment.GetEnvironmentVariable("ENABLE_HTTPS").Equals("1"))
+                {
                     schema = "https://";
+                }
         }
         else
         {
@@ -112,8 +116,10 @@ public class SetBucketReplication
                     SseKmsEncryptedObjects.StatusEnabled)),
                 ReplicationRule.StatusEnabled
             );
-        var rules = new List<ReplicationRule>();
-        rules.Add(rule);
+        var rules = new List<ReplicationRule>
+        {
+            rule
+        };
         var repl = new ReplicationConfiguration(arn, rules);
 
         await minio.SetBucketReplicationAsync(

@@ -35,7 +35,7 @@ public class AuthenticatorTest
         Assert.IsFalse(authenticatorInsecure.isAnonymous);
 
         authenticatorInsecure.Authenticate(request);
-        Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
+        Assert.IsTrue(HasPayloadHeader(request, "x-amz-content-sha256"));
     }
 
     [TestMethod]
@@ -52,7 +52,7 @@ public class AuthenticatorTest
         Assert.IsFalse(authenticatorSecure.isAnonymous);
 
         authenticatorSecure.Authenticate(request);
-        Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
+        Assert.IsTrue(HasPayloadHeader(request, "x-amz-content-sha256"));
     }
 
     [TestMethod]
@@ -66,7 +66,7 @@ public class AuthenticatorTest
         var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
         request.AddJsonBody("[]");
         authenticator.Authenticate(request);
-        Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
+        Assert.IsTrue(HasPayloadHeader(request, "x-amz-content-sha256"));
         var match = GetHeaderKV(request, "x-amz-content-sha256");
         Assert.IsTrue(match != null && match.Item2.Equals("UNSIGNED-PAYLOAD"));
     }
@@ -81,8 +81,8 @@ public class AuthenticatorTest
         var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
         request.AddJsonBody("[]");
         authenticator.Authenticate(request);
-        Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
-        Assert.IsFalse(hasPayloadHeader(request, "Content-Md5"));
+        Assert.IsTrue(HasPayloadHeader(request, "x-amz-content-sha256"));
+        Assert.IsFalse(HasPayloadHeader(request, "Content-Md5"));
     }
 
     // [TestMethod]
@@ -169,7 +169,7 @@ public class AuthenticatorTest
         return null;
     }
 
-    private bool hasPayloadHeader(HttpRequestMessageBuilder request, string headerName)
+    private bool HasPayloadHeader(HttpRequestMessageBuilder request, string headerName)
     {
         var match = GetHeaderKV(request, headerName);
         return match != null;

@@ -13,10 +13,9 @@ public class OperationsTest
     {
         // todo how to test this with mock client.
         var resource = httpRequest.RequestUri.LocalPath;
-        return resource.Contains("?") == false &&
+        return !resource.Contains("?") &&
                httpRequest.QueryParameters.ContainsKey("location");
     }
-
 
     private async Task<bool> ObjectExistsAsync(IMinioClient client, string bucket, string objectName)
     {
@@ -41,9 +40,8 @@ public class OperationsTest
     {
         // todo how to test this with mock client.
         var client = new MinioClient()
-            .WithEndpoint("play.min.io")
-            .WithCredentials("Q3AM3UQ867SPQQA43P2F",
-                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+            .WithEndpoint(TestHelper.Endpoint)
+            .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
             .WithSSL()
             .Build();
 
@@ -91,9 +89,8 @@ public class OperationsTest
     {
         // todo how to test this with mock client.
         var client = new MinioClient()
-            .WithEndpoint("play.min.io")
-            .WithCredentials("Q3AM3UQ867SPQQA43P2F",
-                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+            .WithEndpoint(TestHelper.Endpoint)
+            .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
             .WithSSL()
             .Build();
 

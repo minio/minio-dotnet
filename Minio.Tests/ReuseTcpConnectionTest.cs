@@ -10,9 +10,8 @@ public class ReuseTcpConnectionTest
     public ReuseTcpConnectionTest()
     {
         MinioClient = new MinioClient()
-            .WithEndpoint("play.min.io")
-            .WithCredentials("Q3AM3UQ867SPQQA43P2F",
-                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+            .WithEndpoint(TestHelper.Endpoint)
+            .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
             .WithSSL()
             .Build();
     }
@@ -91,7 +90,7 @@ public class ReuseTcpConnectionTest
         var getObjectArgs = new GetObjectArgs()
             .WithBucket(bucket)
             .WithObject(objectName)
-            .WithCallbackStream(stream => { stream.Dispose(); });
+            .WithCallbackStream(stream => stream.Dispose());
         await MinioClient.GetObjectAsync(getObjectArgs);
 
         return objectLength;
