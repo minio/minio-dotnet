@@ -39,4 +39,8 @@ public class AuthorizationException : Exception
         this.bucketName = bucketName;
         accessKey = accesskey;
     }
+
+    public AuthorizationException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }

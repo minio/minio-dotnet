@@ -27,6 +27,18 @@ public class BucketNotFoundException : MinioException
         this.bucketName = bucketName;
     }
 
+    public BucketNotFoundException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public BucketNotFoundException(string message) : base(message)
+    {
+    }
+
+    public BucketNotFoundException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
+
     public override string ToString()
     {
         return $"{bucketName}: {base.ToString()}";

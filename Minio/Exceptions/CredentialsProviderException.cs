@@ -25,6 +25,18 @@ public class CredentialsProviderException : MinioException
         CredentialProviderType = credentialProviderType;
     }
 
+    public CredentialsProviderException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public CredentialsProviderException(string message) : base(message)
+    {
+    }
+
+    public CredentialsProviderException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
+
     public override string ToString()
     {
         return $"{CredentialProviderType}: {base.ToString()}";

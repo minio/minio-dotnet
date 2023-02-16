@@ -66,7 +66,7 @@ internal class V4Authenticator
         isSecure = secure;
         this.accessKey = accessKey;
         this.secretKey = secretKey;
-        isAnonymous = utils.IsAnonymousClient(accessKey, secretKey);
+        isAnonymous = Utils.IsAnonymousClient(accessKey, secretKey);
         this.region = region;
         this.sessionToken = sessionToken;
     }
@@ -201,7 +201,7 @@ internal class V4Authenticator
     /// <returns>Computed hmac of input content</returns>
     private byte[] SignHmac(byte[] key, byte[] content)
     {
-        var hmac = new HMACSHA256(key);
+        using var hmac = new HMACSHA256(key);
         hmac.Initialize();
         return hmac.ComputeHash(content);
     }
@@ -240,7 +240,7 @@ internal class V4Authenticator
     /// <returns>Bytes of sha256 checksum</returns>
     private byte[] ComputeSha256(byte[] body)
     {
-        var sha256 = SHA256.Create();
+        using var sha256 = SHA256.Create();
         return sha256.ComputeHash(body);
     }
 
@@ -307,7 +307,7 @@ internal class V4Authenticator
 
         var presignUri = new UriBuilder(requestUri) { Query = requestQuery }.Uri;
         var canonicalRequest = GetPresignCanonicalRequest(requestBuilder.Method, presignUri, headersToSign);
-        var headers = string.Concat(headersToSign.Select(p => $"&{p.Key}={utils.UrlEncode(p.Value)}"));
+        var headers = string.Concat(headersToSign.Select(p => $"&{p.Key}={Utils.UrlEncode(p.Value)}"));
         var canonicalRequestBytes = Encoding.UTF8.GetBytes(canonicalRequest);
         var canonicalRequestHash = BytesToHex(ComputeSha256(canonicalRequestBytes));
         var stringToSign = GetStringToSign(region, signingDate, canonicalRequestHash);
@@ -343,7 +343,7 @@ internal class V4Authenticator
         canonicalStringList.AddLast(path);
         var queryParams = uri.Query.TrimStart('?').Split('&').ToList();
         queryParams.AddRange(headersToSign.Select(cv =>
-            $"{utils.UrlEncode(cv.Key)}={utils.UrlEncode(cv.Value.Trim())}"));
+            $"{Utils.UrlEncode(cv.Key)}={Utils.UrlEncode(cv.Value.Trim())}"));
         queryParams.Sort(StringComparer.Ordinal);
         var query = string.Join("&", queryParams);
         canonicalStringList.AddLast(query);
@@ -383,8 +383,10 @@ internal class V4Authenticator
 
         var queryParamsDict = new Dictionary<string, string>();
         if (requestBuilder.QueryParameters != null)
+        {
             foreach (var kvp in requestBuilder.QueryParameters)
                 queryParamsDict[kvp.Key] = Uri.EscapeDataString(kvp.Value);
+        }
 
         var queryParams = "";
         if (queryParamsDict.Count > 0)
@@ -405,13 +407,15 @@ internal class V4Authenticator
         var isFormData = false;
         if (requestBuilder.Request.Content != null && requestBuilder.Request.Content.Headers != null &&
             requestBuilder.Request.Content.Headers.ContentType != null)
+        {
             isFormData = requestBuilder.Request.Content.Headers.ContentType.ToString() ==
                          "application/x-www-form-urlencoded";
+        }
 
         if (string.IsNullOrEmpty(queryParams) && isFormData)
         {
             // Convert stream content to byte[]
-            var cntntByteData = new byte[] { };
+            var cntntByteData = Array.Empty<byte>();
             if (requestBuilder.Request.Content != null)
                 cntntByteData = requestBuilder.Request.Content.ReadAsByteArrayAsync().Result;
 
@@ -422,7 +426,9 @@ internal class V4Authenticator
         if (!string.IsNullOrEmpty(queryParams) &&
             !isFormData &&
             requestBuilder.RequestUri.Query != "?location=")
+        {
             requestBuilder.RequestUri = new Uri(requestBuilder.RequestUri + "?" + queryParams);
+        }
 
         canonicalStringList.AddLast(requestBuilder.RequestUri.AbsolutePath);
         canonicalStringList.AddLast(queryParams);
@@ -511,8 +517,11 @@ internal class V4Authenticator
         // or the command method is not a Post to delete multiple files
         var isMultiDeleteRequest = false;
         if (requestBuilder.Method == HttpMethod.Post)
+        {
             isMultiDeleteRequest =
                 requestBuilder.QueryParameters.Any(p => p.Key.Equals("delete", StringComparison.OrdinalIgnoreCase));
+        }
+
         if ((isSecure && !isSts) || isMultiDeleteRequest)
         {
             requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", "UNSIGNED-PAYLOAD");
@@ -530,14 +539,14 @@ internal class V4Authenticator
                 return;
             }
 
-            var sha256 = SHA256.Create();
+            using var sha256 = SHA256.Create();
             var hash = sha256.ComputeHash(body);
             var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
             requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
         }
         else if (!isSecure && requestBuilder.Content != null)
         {
-            var md5 = MD5.Create();
+            using var md5 = MD5.Create();
             var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(requestBuilder.Content.ToString()));
 
             var base64 = Convert.ToBase64String(hash);

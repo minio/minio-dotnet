@@ -46,20 +46,24 @@ public class SelectObjectOptions
 
         try
         {
-            settings = new XmlWriterSettings();
-            settings.OmitXmlDeclaration = true;
+            settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true
+            };
 
             ns = new XmlSerializerNamespaces();
             ns.Add("", "");
 
-            var sw = new StringWriter(CultureInfo.InvariantCulture);
+            using var sw = new StringWriter(CultureInfo.InvariantCulture);
 
             xs = new XmlSerializer(typeof(SelectObjectOptions));
-            xw = XmlWriter.Create(sw, settings);
-            xs.Serialize(xw, this, ns);
-            xw.Flush();
+            using (xw = XmlWriter.Create(sw, settings))
+            {
+                xs.Serialize(xw, this, ns);
+                xw.Flush();
 
-            str = sw.ToString();
+                str = sw.ToString();
+            }
         }
         catch (Exception ex)
         {

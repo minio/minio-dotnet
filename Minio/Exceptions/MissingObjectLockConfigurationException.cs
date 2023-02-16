@@ -25,6 +25,18 @@ public class MissingObjectLockConfigurationException : MinioException
         this.bucketName = bucketName;
     }
 
+    public MissingObjectLockConfigurationException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public MissingObjectLockConfigurationException(string message) : base(message)
+    {
+    }
+
+    public MissingObjectLockConfigurationException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
+
     public override string ToString()
     {
         return $"{bucketName}: {base.ToString()}";

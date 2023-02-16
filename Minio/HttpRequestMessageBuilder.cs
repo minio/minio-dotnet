@@ -77,7 +77,6 @@ internal class HttpRequestMessageBuilder
                 var key = parameter.Key.ToLower();
                 var val = parameter.Value;
 
-
                 var addSuccess = request.Headers.TryAddWithoutValidation(key, val);
                 if (!addSuccess)
                 {
@@ -145,7 +144,10 @@ internal class HttpRequestMessageBuilder
         if (key.StartsWith("content-", comparison) &&
             !string.IsNullOrEmpty(value) &&
             !BodyParameters.ContainsKey(key))
+        {
             BodyParameters.Add(key, value);
+        }
+
         HeaderParameters[key] = value;
     }
 

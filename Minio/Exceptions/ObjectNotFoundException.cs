@@ -25,6 +25,18 @@ public class ObjectNotFoundException : MinioException
         this.objectName = objectName;
     }
 
+    public ObjectNotFoundException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public ObjectNotFoundException(string message) : base(message)
+    {
+    }
+
+    public ObjectNotFoundException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
+
     public override string ToString()
     {
         return $"{objectName}: {base.ToString()}";

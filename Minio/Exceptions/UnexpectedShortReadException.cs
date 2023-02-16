@@ -21,4 +21,12 @@ public class UnexpectedShortReadException : MinioException
     public UnexpectedShortReadException(string message) : base(message)
     {
     }
+
+    public UnexpectedShortReadException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public UnexpectedShortReadException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
 }

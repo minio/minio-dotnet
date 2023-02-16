@@ -48,8 +48,10 @@ public class ObjectStat
     public static ObjectStat FromResponseHeaders(string objectName, Dictionary<string, string> responseHeaders)
     {
         if (string.IsNullOrEmpty(objectName)) throw new ArgumentNullException("Name of an object cannot be empty");
-        var objInfo = new ObjectStat();
-        objInfo.ObjectName = objectName;
+        var objInfo = new ObjectStat
+        {
+            ObjectName = objectName
+        };
         foreach (var paramName in responseHeaders.Keys)
         {
             var paramValue = responseHeaders[paramName];
@@ -88,22 +90,30 @@ public class ObjectStat
                         @"(Sun|Mon|Tue|Wed|Thu|Fri|Sat), \d{2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} [A-Z]+";
                     var expiryMatch = Regex.Match(expirationResponse, expiryDatePattern);
                     if (expiryMatch.Success)
+                    {
                         objInfo.Expires = DateTime.SpecifyKind(
                             DateTime.Parse(expiryMatch.Value),
                             DateTimeKind.Utc);
+                    }
+
                     break;
                 case "x-amz-object-lock-mode":
                     if (!string.IsNullOrWhiteSpace(paramValue))
+                    {
                         objInfo.ObjectLockMode = paramValue.ToLower().Equals("governance")
                             ? RetentionMode.GOVERNANCE
                             : RetentionMode.COMPLIANCE;
+                    }
+
                     break;
                 case "x-amz-object-lock-retain-until-date":
                     var lockUntilDate = paramValue;
                     if (!string.IsNullOrWhiteSpace(lockUntilDate))
+                    {
                         objInfo.ObjectLockRetainUntilDate = DateTime.SpecifyKind(
                             DateTime.Parse(lockUntilDate),
                             DateTimeKind.Utc);
+                    }
 
                     break;
                 case "x-amz-object-lock-legal-hold":
@@ -140,12 +150,12 @@ public class ObjectStat
             if (DeleteMarker) versionInfo = $"Version ID({VersionId}, deleted)";
         }
 
-        if (Expires != null) expires = "Expiry(" + utils.To8601String(Expires.Value) + ")";
+        if (Expires != null) expires = "Expiry(" + Utils.To8601String(Expires.Value) + ")";
         if (ObjectLockMode != null)
         {
             objectLockInfo = "ObjectLock Mode(" +
                              (ObjectLockMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE") + ")";
-            objectLockInfo += " Retain Until Date(" + utils.To8601String(ObjectLockRetainUntilDate.Value) + ")";
+            objectLockInfo += " Retain Until Date(" + Utils.To8601String(ObjectLockRetainUntilDate.Value) + ")";
         }
 
         if (TaggingCount != null) taggingCount = "Tagging-Count(" + TaggingCount.Value + ")";

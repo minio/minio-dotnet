@@ -18,7 +18,7 @@ using System.Net;
 
 namespace Minio;
 
-public class BuilderUtil
+public static class BuilderUtil
 {
     public static bool IsAwsDualStackEndpoint(string endpoint)
     {

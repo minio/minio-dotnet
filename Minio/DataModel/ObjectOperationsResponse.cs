@@ -29,7 +29,8 @@ internal class SelectObjectContentResponse : GenericResponse
     internal SelectObjectContentResponse(HttpStatusCode statusCode, string responseContent, byte[] responseRawBytes)
         : base(statusCode, responseContent)
     {
-        ResponseStream = new SelectResponseStream(new MemoryStream(responseRawBytes));
+        using var stream = new MemoryStream(responseRawBytes);
+        ResponseStream = new SelectResponseStream(stream);
     }
 
     internal SelectResponseStream ResponseStream { get; }
@@ -53,11 +54,9 @@ internal class RemoveObjectsResponse : GenericResponse
     internal RemoveObjectsResponse(HttpStatusCode statusCode, string responseContent)
         : base(statusCode, responseContent)
     {
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            DeletedObjectsResult =
-                (DeleteObjectsResult)new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(stream);
-        }
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
+        DeletedObjectsResult =
+            (DeleteObjectsResult)new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(stream);
     }
 
     internal DeleteObjectsResult DeletedObjectsResult { get; }
@@ -142,11 +141,9 @@ internal class GetObjectTagsResponse : GenericResponse
             return;
         }
 
-        responseContent = utils.RemoveNamespaceInXML(responseContent);
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            ObjectTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(stream);
-        }
+        responseContent = Utils.RemoveNamespaceInXML(responseContent);
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
+        ObjectTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(stream);
     }
 
     public Tagging ObjectTags { get; set; }
@@ -163,12 +160,10 @@ internal class GetRetentionResponse : GenericResponse
             return;
         }
 
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            CurrentRetentionConfiguration =
-                (ObjectRetentionConfiguration)new XmlSerializer(typeof(ObjectRetentionConfiguration)).Deserialize(
-                    stream);
-        }
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
+        CurrentRetentionConfiguration =
+            (ObjectRetentionConfiguration)new XmlSerializer(typeof(ObjectRetentionConfiguration)).Deserialize(
+                stream);
     }
 
     internal ObjectRetentionConfiguration CurrentRetentionConfiguration { get; }
@@ -179,14 +174,12 @@ internal class CopyObjectResponse : GenericResponse
     public CopyObjectResponse(HttpStatusCode statusCode, string content, Type reqType)
         : base(statusCode, content)
     {
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
-        {
-            if (reqType == typeof(CopyObjectResult))
-                CopyObjectRequestResult =
-                    (CopyObjectResult)new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream);
-            else
-                CopyPartRequestResult = (CopyPartResult)new XmlSerializer(typeof(CopyPartResult)).Deserialize(stream);
-        }
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+        if (reqType == typeof(CopyObjectResult))
+            CopyObjectRequestResult =
+                (CopyObjectResult)new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream);
+        else
+            CopyPartRequestResult = (CopyPartResult)new XmlSerializer(typeof(CopyPartResult)).Deserialize(stream);
     }
 
     internal CopyObjectResult CopyObjectRequestResult { get; set; }
@@ -227,10 +220,12 @@ internal class PutObjectResponse : GenericResponse
         }
 
         foreach (var parameter in responseHeaders)
+        {
             if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
             {
                 Etag = parameter.Value;
                 return;
             }
+        }
     }
 }

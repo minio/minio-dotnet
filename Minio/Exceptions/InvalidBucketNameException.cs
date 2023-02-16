@@ -25,6 +25,18 @@ public class InvalidBucketNameException : MinioException
         this.bucketName = bucketName;
     }
 
+    public InvalidBucketNameException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public InvalidBucketNameException(string message) : base(message)
+    {
+    }
+
+    public InvalidBucketNameException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
+
     public override string ToString()
     {
         return $"{bucketName}: {base.ToString()}";

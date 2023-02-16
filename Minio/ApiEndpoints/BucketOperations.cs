@@ -95,7 +95,6 @@ public partial class MinioClient : IBucketOperations
         return ListObjectsAsync(args, cancellationToken);
     }
 
-
     /// <summary>
     ///     Returns current policy stored on the server for this bucket
     /// </summary>
@@ -109,7 +108,6 @@ public partial class MinioClient : IBucketOperations
             .WithBucket(bucketName);
         return GetPolicyAsync(args, cancellationToken);
     }
-
 
     /// <summary>
     ///     Sets the current bucket policy
@@ -190,15 +188,14 @@ public partial class MinioClient : IBucketOperations
 
         var bucketList = new ListAllMyBucketsResult();
         if (HttpStatusCode.OK.Equals(response.StatusCode))
-            using (var stream = new MemoryStream(response.ContentBytes))
-            {
-                bucketList =
-                    (ListAllMyBucketsResult)new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream);
-            }
+        {
+            using var stream = new MemoryStream(response.ContentBytes);
+            bucketList =
+                (ListAllMyBucketsResult)new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream);
+        }
 
         return bucketList;
     }
-
 
     /// <summary>
     ///     Check if a private bucket with the given name exists.
@@ -219,7 +216,9 @@ public partial class MinioClient : IBucketOperations
         {
             if ((ice.ServerResponse != null && HttpStatusCode.NotFound.Equals(ice.ServerResponse.StatusCode))
                 || ice.ServerResponse == null)
+            {
                 return false;
+            }
         }
         catch (Exception ex)
         {
@@ -229,7 +228,6 @@ public partial class MinioClient : IBucketOperations
 
         return true;
     }
-
 
     /// <summary>
     ///     Remove the bucket with the given name.
@@ -263,14 +261,16 @@ public partial class MinioClient : IBucketOperations
         if (string.IsNullOrEmpty(args.Location)) args.Location = Region;
 
         if (args.Location == "us-east-1")
+        {
             if (Region != string.Empty)
                 args.Location = Region;
+        }
+
         args.IsBucketCreationRequest = true;
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
     }
-
 
     /// <summary>
     ///     Get Versioning information on the bucket with given bucket name
@@ -296,7 +296,6 @@ public partial class MinioClient : IBucketOperations
         return versioningResponse.VersioningConfig;
     }
 
-
     /// <summary>
     ///     Set Versioning as specified on the bucket with given bucket name
     /// </summary>
@@ -315,7 +314,6 @@ public partial class MinioClient : IBucketOperations
         using var response = await ExecuteTaskAsync(NoErrorHandlers,
             requestMessageBuilder, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <summary>
     ///     List all objects along with versions non-recursively in a bucket with a given prefix, optionally emulating a
@@ -347,53 +345,50 @@ public partial class MinioClient : IBucketOperations
                 uint count = 0;
                 var versionIdMarker = string.Empty;
                 var nextContinuationToken = string.Empty;
-                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct);
+                while (isRunning)
                 {
-                    while (isRunning)
+                    var goArgs = new GetObjectListArgs()
+                        .WithBucket(args.BucketName)
+                        .WithPrefix(args.Prefix)
+                        .WithDelimiter(delimiter)
+                        .WithVersions(args.Versions)
+                        .WithContinuationToken(nextContinuationToken)
+                        .WithMarker(marker)
+                        .WithListObjectsV1(!args.UseV2)
+                        .WithHeaders(args.Headers)
+                        .WithVersionIdMarker(versionIdMarker);
+                    if (args.Versions)
                     {
-                        var goArgs = new GetObjectListArgs()
-                            .WithBucket(args.BucketName)
-                            .WithPrefix(args.Prefix)
-                            .WithDelimiter(delimiter)
-                            .WithVersions(args.Versions)
-                            .WithContinuationToken(nextContinuationToken)
-                            .WithMarker(marker)
-                            .WithListObjectsV1(!args.UseV2)
-                            .WithHeaders(args.Headers)
-                            .WithVersionIdMarker(versionIdMarker);
-                        if (args.Versions)
-                        {
-                            var objectList = await GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
-                            var listObjectsItemResponse = new ListObjectVersionResponse(args, objectList, obs);
-                            if (objectList.Item2.Count == 0 && count == 0) return;
+                        var objectList = await GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
+                        var listObjectsItemResponse = new ListObjectVersionResponse(args, objectList, obs);
+                        if (objectList.Item2.Count == 0 && count == 0) return;
 
-                            obs = listObjectsItemResponse.ItemObservable;
-                            marker = listObjectsItemResponse.NextKeyMarker;
-                            versionIdMarker = listObjectsItemResponse.NextVerMarker;
-                            isRunning = objectList.Item1.IsTruncated;
-                        }
-                        else
-                        {
-                            var objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
-                            if (objectList.Item2.Count == 0 && objectList.Item1.KeyCount.Equals("0") && count == 0)
-                                return;
-
-                            var listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);
-                            marker = listObjectsItemResponse.NextMarker;
-                            isRunning = objectList.Item1.IsTruncated;
-                            nextContinuationToken = objectList.Item1.IsTruncated
-                                ? objectList.Item1.NextContinuationToken
-                                : string.Empty;
-                        }
-
-                        cts.Token.ThrowIfCancellationRequested();
-                        count++;
+                        obs = listObjectsItemResponse.ItemObservable;
+                        marker = listObjectsItemResponse.NextKeyMarker;
+                        versionIdMarker = listObjectsItemResponse.NextVerMarker;
+                        isRunning = objectList.Item1.IsTruncated;
                     }
+                    else
+                    {
+                        var objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
+                        if (objectList.Item2.Count == 0 && objectList.Item1.KeyCount.Equals("0") && count == 0)
+                            return;
+
+                        var listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);
+                        marker = listObjectsItemResponse.NextMarker;
+                        isRunning = objectList.Item1.IsTruncated;
+                        nextContinuationToken = objectList.Item1.IsTruncated
+                            ? objectList.Item1.NextContinuationToken
+                            : string.Empty;
+                    }
+
+                    cts.Token.ThrowIfCancellationRequested();
+                    count++;
                 }
             }
         );
     }
-
 
     /// <summary>
     ///     Gets notification configuration for this bucket
@@ -436,7 +431,6 @@ public partial class MinioClient : IBucketOperations
             .ConfigureAwait(false);
     }
 
-
     /// <summary>
     ///     Removes all bucket notification configurations stored on the server.
     /// </summary>
@@ -455,7 +449,6 @@ public partial class MinioClient : IBucketOperations
             .ConfigureAwait(false);
     }
 
-
     /// <summary>
     ///     Subscribes to bucket change notifications (a Minio-only extension)
     /// </summary>
@@ -473,23 +466,23 @@ public partial class MinioClient : IBucketOperations
         CancellationToken cancellationToken = default)
     {
         if (s3utils.IsAmazonEndPoint(BaseUrl))
+        {
             // Amazon AWS does not support bucket notifications
             throw new Exception("Listening for bucket notification is specific only to `minio` server endpoints");
+        }
 
         return Observable.Create<MinioNotificationRaw>(
             async (obs, ct) =>
             {
-                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct))
-                {
-                    var requestMessageBuilder =
-                        await CreateRequest(args).ConfigureAwait(false);
-                    args = args.WithNotificationObserver(obs)
-                        .WithEnableTrace(trace);
-                    using var response =
-                        await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
-                            .ConfigureAwait(false);
-                    cts.Token.ThrowIfCancellationRequested();
-                }
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct);
+                var requestMessageBuilder =
+                    await CreateRequest(args).ConfigureAwait(false);
+                args = args.WithNotificationObserver(obs)
+                    .WithEnableTrace(trace);
+                using var response =
+                    await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+                        .ConfigureAwait(false);
+                cts.Token.ThrowIfCancellationRequested();
             });
     }
 
@@ -514,7 +507,6 @@ public partial class MinioClient : IBucketOperations
         return getBucketNotificationsResponse.BucketTags;
     }
 
-
     /// <summary>
     ///     Sets the Encryption Configuration for the mentioned bucket.
     /// </summary>
@@ -534,7 +526,6 @@ public partial class MinioClient : IBucketOperations
         using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
     }
-
 
     /// <summary>
     ///     Returns the Encryption Configuration for the mentioned bucket.
@@ -558,7 +549,6 @@ public partial class MinioClient : IBucketOperations
         return getBucketEncryptionResponse.BucketEncryptionConfiguration;
     }
 
-
     /// <summary>
     ///     Removes the Encryption Configuration for the mentioned bucket.
     /// </summary>
@@ -579,7 +569,6 @@ public partial class MinioClient : IBucketOperations
             .ConfigureAwait(false);
     }
 
-
     /// <summary>
     ///     Sets the Tagging values for this bucket
     /// </summary>
@@ -599,7 +588,6 @@ public partial class MinioClient : IBucketOperations
             .ConfigureAwait(false);
     }
 
-
     /// <summary>
     ///     Removes Tagging values stored for the bucket.
     /// </summary>
@@ -618,7 +606,6 @@ public partial class MinioClient : IBucketOperations
         using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
     }
-
 
     /// <summary>
     ///     Sets the Object Lock Configuration on this bucket
@@ -644,7 +631,6 @@ public partial class MinioClient : IBucketOperations
             .ConfigureAwait(false);
     }
 
-
     /// <summary>
     ///     Gets the Object Lock Configuration on this bucket
     /// </summary>
@@ -667,7 +653,6 @@ public partial class MinioClient : IBucketOperations
         return resp.LockConfiguration;
     }
 
-
     /// <summary>
     ///     Removes the Object Lock Configuration on this bucket
     /// </summary>
@@ -688,7 +673,6 @@ public partial class MinioClient : IBucketOperations
         using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
     }
-
 
     /// <summary>
     ///     Sets the Lifecycle configuration for this bucket
@@ -713,7 +697,6 @@ public partial class MinioClient : IBucketOperations
             .ConfigureAwait(false);
     }
 
-
     /// <summary>
     ///     Gets Lifecycle configuration set for this bucket returned in an object
     /// </summary>
@@ -735,7 +718,6 @@ public partial class MinioClient : IBucketOperations
         return response.BucketLifecycle;
     }
 
-
     /// <summary>
     ///     Removes Lifecycle configuration stored for the bucket.
     /// </summary>
@@ -755,7 +737,6 @@ public partial class MinioClient : IBucketOperations
         using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
     }
-
 
     /// <summary>
     ///     Get Replication configuration for the bucket
@@ -779,7 +760,6 @@ public partial class MinioClient : IBucketOperations
         return response.Config;
     }
 
-
     /// <summary>
     ///     Set the Replication configuration for the bucket
     /// </summary>
@@ -802,7 +782,6 @@ public partial class MinioClient : IBucketOperations
         using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
     }
-
 
     /// <summary>
     ///     Remove Replication configuration for the bucket.
@@ -849,7 +828,6 @@ public partial class MinioClient : IBucketOperations
         return ListenBucketNotificationsAsync(args, cancellationToken);
     }
 
-
     /// <summary>
     ///     Returns current policy stored on the server for this bucket
     /// </summary>
@@ -868,7 +846,6 @@ public partial class MinioClient : IBucketOperations
         return getPolicyResponse.PolicyJsonString;
     }
 
-
     /// <summary>
     ///     Sets the current bucket policy
     /// </summary>
@@ -885,7 +862,6 @@ public partial class MinioClient : IBucketOperations
             .ConfigureAwait(false);
     }
 
-
     /// <summary>
     ///     Removes the current bucket policy
     /// </summary>
@@ -901,7 +877,6 @@ public partial class MinioClient : IBucketOperations
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
     }
-
 
     /// <summary>
     ///     Gets the list of objects in the bucket filtered by prefix
@@ -921,7 +896,6 @@ public partial class MinioClient : IBucketOperations
         var getObjectsListResponse = new GetObjectsListResponse(responseResult.StatusCode, responseResult.Content);
         return getObjectsListResponse.ObjectsTuple;
     }
-
 
     /// <summary>
     ///     Gets the list of objects along with version IDs in the bucket filtered by prefix

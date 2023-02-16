@@ -35,21 +35,18 @@ public class AssumeRoleResponse
         {
             OmitXmlDeclaration = true
         };
-        using (var ms = new MemoryStream())
-        {
-            var xmlWriter = XmlWriter.Create(ms, settings);
-            var names = new XmlSerializerNamespaces();
-            names.Add(string.Empty, "https://sts.amazonaws.com/doc/2011-06-15/");
+        using var ms = new MemoryStream();
+        using var xmlWriter = XmlWriter.Create(ms, settings);
+        var names = new XmlSerializerNamespaces();
+        names.Add(string.Empty, "https://sts.amazonaws.com/doc/2011-06-15/");
 
-            var cs = new XmlSerializer(typeof(CertificateResponse));
-            cs.Serialize(xmlWriter, this, names);
+        var cs = new XmlSerializer(typeof(CertificateResponse));
+        cs.Serialize(xmlWriter, this, names);
 
-            ms.Flush();
-            ms.Seek(0, SeekOrigin.Begin);
-            var streamReader = new StreamReader(ms);
-            var xml = streamReader.ReadToEnd();
-            return xml;
-        }
+        ms.Flush();
+        ms.Seek(0, SeekOrigin.Begin);
+        using var streamReader = new StreamReader(ms);
+        return streamReader.ReadToEnd();
     }
 
     [Serializable]
@@ -88,12 +85,18 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
         if (string.IsNullOrWhiteSpace(endpoint))
             throw new ArgumentNullException("The STS endpoint cannot be null or empty.");
         STSEndPoint = endpoint;
-        var stsUri = utils.GetBaseUrl(endpoint);
+        var stsUri = Utils.GetBaseUrl(endpoint);
         if ((stsUri.Scheme == "http" && stsUri.Port == 80) ||
             (stsUri.Scheme == "https" && stsUri.Port == 443) ||
             stsUri.Port <= 0)
+        {
             Url = stsUri.Scheme + "://" + stsUri.Authority;
-        else if (stsUri.Port > 0) Url = stsUri.Scheme + "://" + stsUri.Host + ":" + stsUri.Port;
+        }
+        else if (stsUri.Port > 0)
+        {
+            Url = stsUri.Scheme + "://" + stsUri.Host + ":" + stsUri.Port;
+        }
+
         Url = stsUri.Authority;
 
         return this;
@@ -116,17 +119,18 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
                 {
                     var contentBytes = Encoding.UTF8.GetBytes(responseResult.Content);
 
-                    using (var stream = new MemoryStream(contentBytes))
-                    {
-                        assumeRoleResp =
-                            (AssumeRoleResponse)new XmlSerializer(typeof(AssumeRoleResponse)).Deserialize(stream);
-                    }
+                    using var stream = new MemoryStream(contentBytes);
+                    assumeRoleResp =
+                        (AssumeRoleResponse)new XmlSerializer(typeof(AssumeRoleResponse)).Deserialize(stream);
                 }
 
                 if (credentials == null &&
                     assumeRoleResp != null &&
                     assumeRoleResp.arr != null)
+                {
                     credentials = assumeRoleResp.arr.Credentials;
+                }
+
                 return credentials;
             }
             finally
@@ -146,7 +150,7 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
 
         var requestMessageBuilder = await Client.CreateRequest(HttpMethod.Post);
 
-        var formContent = new FormUrlEncodedContent(new[]
+        using var formContent = new FormUrlEncodedContent(new[]
         {
             new KeyValuePair<string, string>("Action", "AssumeRole"),
             new KeyValuePair<string, string>("DurationSeconds", DurationInSeconds.ToString()),

@@ -108,7 +108,7 @@ public class IAMAWSProvider : EnvironmentProvider
     public async Task<AccessCredentials> GetAccessCredentials(Uri url)
     {
         Validate();
-        var request = new HttpRequestMessage(HttpMethod.Get, url.ToString());
+        using var request = new HttpRequestMessage(HttpMethod.Get, url.ToString());
 
         var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, url);
         requestBuilder.AddQueryParameter("location", "");
@@ -117,21 +117,26 @@ public class IAMAWSProvider : EnvironmentProvider
             await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
         if (string.IsNullOrWhiteSpace(response.Content) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))
+        {
             throw new CredentialsProviderException("IAMAWSProvider",
                 "Credential Get operation failed with HTTP Status code: " + response.StatusCode);
+        }
         /*
-        JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-        {
-            MissingMemberHandling = MissingMemberHandling.Error,
-            ContractResolver = new CamelCasePropertyNamesContractResolver(),
-            Error = null
-        };*/
+JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+{
+   MissingMemberHandling = MissingMemberHandling.Error,
+   ContractResolver = new CamelCasePropertyNamesContractResolver(),
+   Error = null
+};*/
 
         var credentials = JsonSerializer.Deserialize<ECSCredentials>(response.Content);
         if (credentials.Code != null && !credentials.Code.ToLower().Equals("success"))
+        {
             throw new CredentialsProviderException("IAMAWSProvider",
                 "Credential Get operation failed with code: " + credentials.Code + " and message " +
                 credentials.Message);
+        }
+
         Credentials = credentials.GetAccessCredentials();
         return Credentials;
     }
@@ -184,15 +189,20 @@ public class IAMAWSProvider : EnvironmentProvider
         using var response =
             await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
 
-
         if (string.IsNullOrWhiteSpace(response.Content) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))
+        {
             throw new CredentialsProviderException("IAMAWSProvider",
                 "Credential Get operation failed with HTTP Status code: " + response.StatusCode);
+        }
+
         roleNames = response.Content.Split('\n');
         if (roleNames.Length <= 0)
+        {
             throw new CredentialsProviderException("IAMAWSProvider",
                 "No IAM roles are attached to AWS service at " + url);
+        }
+
         var index = 0;
         foreach (var item in roleNames) roleNames[index++] = item.Trim();
         return roleNames[0];
@@ -225,7 +235,10 @@ public class IAMAWSProvider : EnvironmentProvider
         Minio_Client = minio;
         if (Credentials == null ||
             string.IsNullOrWhiteSpace(Credentials.AccessKey) || string.IsNullOrWhiteSpace(Credentials.SecretKey))
+        {
             Credentials = GetCredentialsAsync().GetAwaiter().GetResult();
+        }
+
         return this;
     }
 
@@ -241,7 +254,9 @@ public class IAMAWSProvider : EnvironmentProvider
     public void Validate()
     {
         if (Minio_Client == null)
+        {
             throw new ArgumentNullException(nameof(Minio_Client) +
                                             " should be assigned for the operation to continue.");
+        }
     }
 }

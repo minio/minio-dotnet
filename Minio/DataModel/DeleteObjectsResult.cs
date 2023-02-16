@@ -26,7 +26,6 @@ public class DeleteObjectsResult
     [XmlElement("Deleted")] public List<DeletedObject> objectsList;
     [XmlElement("Error")] public List<DeleteError> errorList;
 
-
     public List<DeletedObject> ObjectsList()
     {
         return objectsList;

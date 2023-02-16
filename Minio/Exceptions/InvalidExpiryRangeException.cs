@@ -21,4 +21,12 @@ public class InvalidExpiryRangeException : MinioException
     public InvalidExpiryRangeException(string message) : base(message)
     {
     }
+
+    public InvalidExpiryRangeException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public InvalidExpiryRangeException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
 }

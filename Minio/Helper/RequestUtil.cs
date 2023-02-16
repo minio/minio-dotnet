@@ -21,7 +21,7 @@ using Minio.Helper;
 
 namespace Minio;
 
-internal class RequestUtil
+internal static class RequestUtil
 {
     internal static Uri GetEndpointURL(string endPoint, bool secure)
     {
@@ -31,14 +31,18 @@ internal class RequestUtil
             var host = parts[0];
             var port = parts[1];
             if (!s3utils.IsValidIP(host) && !IsValidEndpoint(host))
+            {
                 throw new InvalidEndpointException("Endpoint: " + endPoint +
                                                    " does not follow ip address or domain name standards.");
+            }
         }
         else
         {
             if (!s3utils.IsValidIP(endPoint) && !IsValidEndpoint(endPoint))
+            {
                 throw new InvalidEndpointException("Endpoint: " + endPoint +
                                                    " does not follow ip address or domain name standards.");
+            }
         }
 
         var uri = TryCreateUri(endPoint, secure);
@@ -52,8 +56,11 @@ internal class RequestUtil
         // For Amazon S3 endpoint, try to fetch location based endpoint.
         var host = endPoint;
         if (s3utils.IsAmazonEndPoint(endPoint))
+        {
             // Fetch new host based on the bucket location.
             host = AWSS3Endpoints.Instance.Endpoint(region);
+        }
+
         if (!usePathStyle)
         {
             var suffix = bucketName != null ? bucketName + "/" : "";

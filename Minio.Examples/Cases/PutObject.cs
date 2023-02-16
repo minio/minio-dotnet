@@ -31,7 +31,7 @@ internal class PutObject
     {
         try
         {
-            var bs = File.ReadAllBytes(fileName);
+            var bs = await File.ReadAllBytesAsync(fileName);
             Console.WriteLine("Running example for API: PutObjectAsync");
             using (var filestream = new MemoryStream(bs))
             {

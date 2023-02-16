@@ -41,6 +41,6 @@ public class ECSCredentials
     public AccessCredentials GetAccessCredentials()
     {
         return new AccessCredentials(AccessKeyId, SecretAccessKey, SessionToken,
-            utils.From8601String(ExpirationDate));
+            Utils.From8601String(ExpirationDate));
     }
 }

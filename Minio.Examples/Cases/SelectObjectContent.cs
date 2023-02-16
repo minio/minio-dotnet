@@ -78,7 +78,7 @@ internal class SelectObjectContent
                 .WithInputSerialization(inputSerialization)
                 .WithOutputSerialization(outputSerialization);
             var resp = await minio.SelectObjectContentAsync(args);
-            resp.Payload.CopyTo(Console.OpenStandardOutput());
+            await resp.Payload.CopyToAsync(Console.OpenStandardOutput());
             Console.WriteLine("Bytes scanned:" + resp.Stats.BytesScanned);
             Console.WriteLine("Bytes returned:" + resp.Stats.BytesReturned);
             Console.WriteLine("Bytes processed:" + resp.Stats.BytesProcessed);

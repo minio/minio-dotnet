@@ -32,7 +32,6 @@ public class BucketNotification
     [XmlElement("TopicConfiguration")] public List<TopicConfig> TopicConfigs;
     [XmlElement("QueueConfiguration")] public List<QueueConfig> QueueConfigs;
 
-
     public BucketNotification()
     {
         LambdaConfigs = new List<LambdaConfig>();
@@ -133,20 +132,18 @@ public class BucketNotification
         {
             OmitXmlDeclaration = true
         };
-        using (var ms = new MemoryStream())
-        {
-            var xmlWriter = XmlWriter.Create(ms, settings);
-            var names = new XmlSerializerNamespaces();
-            names.Add(string.Empty, "http://s3.amazonaws.com/doc/2006-03-01/");
+        using var ms = new MemoryStream();
+        using var xmlWriter = XmlWriter.Create(ms, settings);
+        var names = new XmlSerializerNamespaces();
+        names.Add(string.Empty, "http://s3.amazonaws.com/doc/2006-03-01/");
 
-            var cs = new XmlSerializer(typeof(BucketNotification));
-            cs.Serialize(xmlWriter, this, names);
+        var cs = new XmlSerializer(typeof(BucketNotification));
+        cs.Serialize(xmlWriter, this, names);
 
-            ms.Flush();
-            ms.Seek(0, SeekOrigin.Begin);
-            var streamReader = new StreamReader(ms);
-            var xml = streamReader.ReadToEnd();
-            return xml;
-        }
+        ms.Flush();
+        ms.Seek(0, SeekOrigin.Begin);
+        using var streamReader = new StreamReader(ms);
+        var xml = streamReader.ReadToEnd();
+        return xml;
     }
 }

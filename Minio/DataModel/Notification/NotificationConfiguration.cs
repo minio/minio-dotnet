@@ -44,9 +44,7 @@ public class NotificationConfiguration
         Arn = arn;
     }
 
-
     private Arn Arn { get; }
-
 
     public void AddEvents(List<EventType> evnt)
     {
@@ -66,11 +64,13 @@ public class NotificationConfiguration
         var newFilterRule = new FilterRule("suffix", suffix);
         // Replace any suffix rule if existing and add to the list otherwise
         for (var i = 0; i < Filter.S3Key.FilterRules.Count; i++)
+        {
             if (Filter.S3Key.FilterRules[i].Equals("suffix"))
             {
                 Filter.S3Key.FilterRules[i] = newFilterRule;
                 return;
             }
+        }
 
         Filter.S3Key.FilterRules.Add(newFilterRule);
     }
@@ -86,11 +86,13 @@ public class NotificationConfiguration
         var newFilterRule = new FilterRule("prefix", prefix);
         // Replace any prefix rule if existing and add to the list otherwise
         for (var i = 0; i < Filter.S3Key.FilterRules.Count; i++)
+        {
             if (Filter.S3Key.FilterRules[i].Equals("prefix"))
             {
                 Filter.S3Key.FilterRules[i] = newFilterRule;
                 return;
             }
+        }
 
         Filter.S3Key.FilterRules.Add(newFilterRule);
     }

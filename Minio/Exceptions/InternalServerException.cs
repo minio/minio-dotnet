@@ -21,4 +21,12 @@ public class InternalServerException : MinioException
     public InternalServerException(string message) : base(message)
     {
     }
+
+    public InternalServerException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public InternalServerException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
 }

@@ -23,4 +23,12 @@ public class UnexpectedMinioException : MinioException
     public UnexpectedMinioException(string message) : base(message)
     {
     }
+
+    public UnexpectedMinioException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public UnexpectedMinioException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
 }

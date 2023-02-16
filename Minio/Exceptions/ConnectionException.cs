@@ -15,12 +15,19 @@
  * limitations under the License.
  */
 
-
 namespace Minio.Exceptions;
 
 public class ConnectionException : MinioException
 {
     public ConnectionException(string message, ResponseResult response) : base(message, response)
+    {
+    }
+
+    public ConnectionException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public ConnectionException(string message) : base(message)
     {
     }
 }

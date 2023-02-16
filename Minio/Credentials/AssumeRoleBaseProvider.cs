@@ -134,10 +134,8 @@ public abstract class AssumeRoleBaseProvider<T> : ClientProvider
     {
         if (string.IsNullOrEmpty(Convert.ToString(response.Content)) || !HttpStatusCode.OK.Equals(response.StatusCode))
             throw new ArgumentNullException("Unable to generate credentials. Response error.");
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(Convert.ToString(response.Content))))
-        {
-            return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(stream);
-        }
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(Convert.ToString(response.Content)));
+        return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(stream);
     }
 
     public override AccessCredentials GetCredentials()

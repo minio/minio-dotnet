@@ -29,7 +29,7 @@ using Minio.Helper;
 
 namespace Minio;
 
-public class utils
+public static class Utils
 {
     // We support '.' with bucket names but we fallback to using path
     // style requests instead for such buckets.
@@ -78,8 +78,10 @@ public class utils
     internal static void validateObjectPrefix(string objectPrefix)
     {
         if (objectPrefix.Length > 512)
+        {
             throw new InvalidObjectPrefixException(objectPrefix,
                 "Object prefix cannot be greater than 1024 characters.");
+        }
     }
 
     // Return url encoded string where reserved characters have been percent-encoded
@@ -121,11 +123,13 @@ public class utils
     {
         var encodedPathBuf = new StringBuilder();
         foreach (var pathSegment in path.Split('/'))
+        {
             if (pathSegment.Length != 0)
             {
                 if (encodedPathBuf.Length > 0) encodedPathBuf.Append("/");
                 encodedPathBuf.Append(UrlEncode(pathSegment));
             }
+        }
 
         if (path.StartsWith("/")) encodedPathBuf.Insert(0, "/");
         if (path.EndsWith("/")) encodedPathBuf.Append("/");
@@ -206,8 +210,10 @@ public class utils
         if (size == -1) size = Constants.MaximumStreamObjectSize;
 
         if (size > Constants.MaxMultipartPutObjectSize)
+        {
             throw new EntityTooLargeException(
                 $"Your proposed upload size {size} exceeds the maximum allowed object size {Constants.MaxMultipartPutObjectSize}");
+        }
 
         var partSize = (double)Math.Ceiling((decimal)size / Constants.MaxParts);
         var minPartSize = copy ? Constants.MinimumCOPYPartSize : Constants.MinimumPUTPartSize;
@@ -233,9 +239,7 @@ public class utils
 
     internal static string getMD5SumStr(byte[] key)
     {
-        var hashedBytes = MD5
-            .Create()
-            .ComputeHash(key);
+        var hashedBytes = MD5.HashData(key);
 
         return Convert.ToBase64String(hashedBytes);
     }
@@ -808,20 +812,24 @@ public class utils
 
         try
         {
-            settings = new XmlWriterSettings();
-            settings.OmitXmlDeclaration = true;
+            settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true
+            };
 
             ns = new XmlSerializerNamespaces();
             ns.Add("", nmspc);
 
-            var sw = new StringWriter(CultureInfo.InvariantCulture);
+            using var sw = new StringWriter(CultureInfo.InvariantCulture);
 
             xs = new XmlSerializer(obj.GetType());
-            xw = XmlWriter.Create(sw, settings);
-            xs.Serialize(xw, obj, ns);
-            xw.Flush();
+            using (xw = XmlWriter.Create(sw, settings))
+            {
+                xs.Serialize(xw, obj, ns);
+                xw.Flush();
 
-            str = sw.ToString();
+                str = sw.ToString();
+            }
         }
         finally
         {
@@ -864,16 +872,22 @@ public class utils
     public static Uri GetBaseUrl(string endpoint)
     {
         if (string.IsNullOrEmpty(endpoint))
+        {
             throw new ArgumentException(
                 string.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint), "endpoint");
+        }
+
         if (endpoint.EndsWith("/")) endpoint = endpoint.Substring(0, endpoint.Length - 1);
         if (!endpoint.StartsWith("http") && !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
             throw new InvalidEndpointException(string.Format("{0} is invalid hostname.", endpoint), "endpoint");
         string conn_url;
         if (endpoint.StartsWith("http"))
+        {
             throw new InvalidEndpointException(
                 string.Format("{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),
                 "endpoint");
+        }
+
         var enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
         var scheme = enable_https != null && enable_https.Equals("1") ? "https://" : "http://";
         conn_url = scheme + endpoint;
@@ -882,8 +896,10 @@ public class utils
         url = new Uri(conn_url);
         hostnameOfUri = url.Authority;
         if (!string.IsNullOrWhiteSpace(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
+        {
             throw new InvalidEndpointException(string.Format("{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),
                 "endpoint");
+        }
 
         return url;
     }
@@ -901,11 +917,9 @@ public class utils
         if (obj == null)
             return null;
         var serializer = new XmlSerializer(typeof(object));
-        using (var ms = new MemoryStream())
-        {
-            serializer.Serialize(ms, obj);
-            return ms.ToArray();
-        }
+        using var ms = new MemoryStream();
+        serializer.Serialize(ms, obj);
+        return ms.ToArray();
     }
 
     // Print object key properties and their values
@@ -926,7 +940,7 @@ public class utils
         foreach (var prop in obj.GetType()
                      .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
         {
-            var value = prop.GetValue(obj, new object[] { });
+            var value = prop.GetValue(obj, Array.Empty<object>());
             Console.WriteLine("DEBUG >>   {0} = {1}", prop.Name, value);
         }
 
@@ -936,8 +950,11 @@ public class utils
     public static void printDict(Dictionary<string, string> d)
     {
         if (d != null)
+        {
             foreach (var kv in d)
                 Console.WriteLine("DEBUG >>        {0} = {1}", kv.Key, kv.Value);
+        }
+
         Console.WriteLine("DEBUG >>   Done printing\n");
     }
 }

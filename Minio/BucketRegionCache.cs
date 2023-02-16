@@ -90,7 +90,7 @@ public sealed class BucketRegionCache
                                && client.SecretKey != null && !Instance.Exists(bucketName))
         {
             string location = null;
-            var path = utils.UrlEncode(bucketName);
+            var path = Utils.UrlEncode(bucketName);
             // Initialize client
             var requestUrl = RequestUtil.MakeTargetURL(client.BaseUrl, client.Secure);
 

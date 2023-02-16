@@ -49,8 +49,11 @@ public class Tagging
 
         var tagging_upper_limit = isObjects ? MAX_TAG_COUNT_PER_OBJECT : MAX_TAG_COUNT_PER_RESOURCE;
         if (tags.Count > tagging_upper_limit)
+        {
             throw new ArgumentOutOfRangeException(nameof(tags) + ". Count of tags exceeds maximum limit allowed for " +
                                                   (isObjects ? "objects." : "buckets."));
+        }
+
         foreach (var tag in tags)
         {
             if (!validateTagKey(tag.Key)) throw new ArgumentException("Invalid Tagging key " + tag.Key);
@@ -68,7 +71,10 @@ public class Tagging
             string.IsNullOrWhiteSpace(key) ||
             key.Length > MAX_TAG_KEY_LENGTH ||
             key.Contains("&"))
+        {
             return false;
+        }
+
         return true;
     }
 
@@ -77,7 +83,10 @@ public class Tagging
         if (value == null || // Empty or whitespace is allowed
             value.Length > MAX_TAG_VALUE_LENGTH ||
             value.Contains("&"))
+        {
             return false;
+        }
+
         return true;
     }
 
@@ -101,19 +110,23 @@ public class Tagging
 
         try
         {
-            settings = new XmlWriterSettings();
-            settings.OmitXmlDeclaration = true;
+            settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true
+            };
 
             ns = new XmlSerializerNamespaces();
             ns.Add(string.Empty, string.Empty);
 
-            var sw = new StringWriter(CultureInfo.InvariantCulture);
+            using var sw = new StringWriter(CultureInfo.InvariantCulture);
 
             xs = new XmlSerializer(typeof(Tagging), "");
-            xw = XmlWriter.Create(sw, settings);
-            xs.Serialize(xw, this, ns);
-            xw.Flush();
-            str = utils.RemoveNamespaceInXML(sw.ToString());
+            using (xw = XmlWriter.Create(sw, settings))
+            {
+                xs.Serialize(xw, this, ns);
+                xw.Flush();
+                str = Utils.RemoveNamespaceInXML(sw.ToString());
+            }
         }
         catch (Exception ex)
         {

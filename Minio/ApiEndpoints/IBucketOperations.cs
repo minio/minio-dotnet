@@ -170,7 +170,6 @@ public interface IBucketOperations
     IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(ListenBucketNotificationsArgs args,
         CancellationToken cancellationToken = default);
 
-
     /// <summary>
     ///     Gets Tagging values set for this bucket
     /// </summary>
@@ -240,7 +239,6 @@ public interface IBucketOperations
     /// <exception cref="MissingObjectLockConfigurationException">When object lock configuration on bucket is not set</exception>
     Task<ObjectLockConfiguration> GetObjectLockConfigurationAsync(GetObjectLockConfigurationArgs args,
         CancellationToken cancellationToken = default);
-
 
     /// <summary>
     ///     Removes the Object Lock Configuration on this bucket

@@ -124,7 +124,7 @@ public partial class MinioClient : IMinioClient
         if (string.IsNullOrEmpty(BaseUrl)) throw new InvalidEndpointException("Endpoint cannot be empty.");
 
         var host = BaseUrl;
-        var scheme = Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
+        var scheme = Secure ? Utils.UrlEncode("https") : Utils.UrlEncode("http");
         // This is the actual url pointed to for all HTTP requests
         Endpoint = string.Format("{0}://{1}", scheme, host);
         uri = RequestUtil.GetEndpointURL(BaseUrl, Secure);
@@ -261,8 +261,10 @@ public partial class MinioClient : IMinioClient
     private void ArgsCheck(Args args)
     {
         if (args is null)
+        {
             throw new ArgumentNullException(nameof(args),
                 "Args object cannot be null. It needs to be assigned to an instantiated child object of Args.");
+        }
     }
 
     /// <summary>
@@ -330,13 +332,13 @@ public partial class MinioClient : IMinioClient
         var region = string.Empty;
         if (bucketName != null)
         {
-            utils.ValidateBucketName(bucketName);
+            Utils.ValidateBucketName(bucketName);
             // Fetch correct region for bucket if this is not a bucket creation
             if (!isBucketCreationRequest)
                 region = await GetRegion(bucketName).ConfigureAwait(false);
         }
 
-        if (objectName != null) utils.ValidateObjectName(objectName);
+        if (objectName != null) Utils.ValidateObjectName(objectName);
 
         if (Provider != null)
         {
@@ -378,6 +380,7 @@ public partial class MinioClient : IMinioClient
         var usePathStyle = false;
 
         if (bucketName != null)
+        {
             if (s3utils.IsAmazonEndPoint(BaseUrl))
             {
                 if (method == HttpMethod.Put && objectName == null && resourcePath == null)
@@ -390,17 +393,17 @@ public partial class MinioClient : IMinioClient
                     // use path style where '.' in bucketName causes SSL certificate validation error
                     usePathStyle = true;
 
-                if (usePathStyle) resource += utils.UrlEncode(bucketName) + "/";
+                if (usePathStyle) resource += Utils.UrlEncode(bucketName) + "/";
             }
+        }
 
         // Set Target URL
         var requestUrl = RequestUtil.MakeTargetURL(BaseUrl, Secure, bucketName, region, usePathStyle);
 
-        if (objectName != null) resource += utils.EncodePath(objectName);
+        if (objectName != null) resource += Utils.EncodePath(objectName);
 
         // Append query string passed in
         if (resourcePath != null) resource += resourcePath;
-
 
         HttpRequestMessageBuilder messageBuilder;
         if (!string.IsNullOrEmpty(resource))
@@ -417,7 +420,10 @@ public partial class MinioClient : IMinioClient
         {
             if (headerMap.ContainsKey(messageBuilder.ContentTypeKey) &&
                 !string.IsNullOrEmpty(headerMap[messageBuilder.ContentTypeKey]))
+            {
                 headerMap[messageBuilder.ContentTypeKey] = contentType;
+            }
+
             foreach (var entry in headerMap) messageBuilder.AddOrUpdateHeaderParameter(entry.Key, entry.Value);
         }
 
@@ -504,8 +510,10 @@ public partial class MinioClient : IMinioClient
             credentials = Provider.GetCredentials();
 
         if (credentials == null)
+        {
             // Unable to fetch credentials.
             return this;
+        }
 
         AccessKey = credentials.AccessKey;
         SecretKey = credentials.SecretKey;
@@ -515,7 +523,10 @@ public partial class MinioClient : IMinioClient
              Provider is CertificateIdentityProvider ||
              (Provider is ChainedProvider chainedProvider && chainedProvider.CurrentProvider is AWSEnvironmentProvider))
             && isSessionTokenAvailable)
+        {
             SessionToken = credentials.SessionToken;
+        }
+
         return this;
     }
 
@@ -535,8 +546,8 @@ public partial class MinioClient : IMinioClient
     {
         if (requestTimeout > 0)
         {
-            var internalTokenSource = new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, requestTimeout));
-            var timeoutTokenSource =
+            using var internalTokenSource = new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, requestTimeout));
+            using var timeoutTokenSource =
                 CancellationTokenSource.CreateLinkedTokenSource(internalTokenSource.Token, cancellationToken);
             cancellationToken = timeoutTokenSource.Token;
         }
@@ -578,8 +589,10 @@ public partial class MinioClient : IMinioClient
             if (requestMessageBuilder.ResponseWriter != null)
                 requestMessageBuilder.ResponseWriter(responseResult.ContentStream);
             if (requestMessageBuilder.FunctionResponseWriter != null)
+            {
                 await requestMessageBuilder.FunctionResponseWriter(responseResult.ContentStream,
                     cancellationToken);
+            }
         }
         catch (OperationCanceledException)
         {
@@ -601,14 +614,18 @@ public partial class MinioClient : IMinioClient
     internal static void ParseError(ResponseResult response)
     {
         if (response == null)
+        {
             throw new ConnectionException(
                 "Response is nil. Please report this issue https://github.com/minio/minio-dotnet/issues", response);
+        }
 
         if (HttpStatusCode.Redirect.Equals(response.StatusCode) ||
             HttpStatusCode.TemporaryRedirect.Equals(response.StatusCode) ||
             HttpStatusCode.MovedPermanently.Equals(response.StatusCode))
+        {
             throw new RedirectionException(
                 "Redirection detected. Please report this issue https://github.com/minio/minio-dotnet/issues");
+        }
 
         if (string.IsNullOrWhiteSpace(response.Content))
         {
@@ -626,7 +643,9 @@ public partial class MinioClient : IMinioClient
             || HttpStatusCode.NotFound.Equals(response.StatusCode)
             || HttpStatusCode.MethodNotAllowed.Equals(response.StatusCode)
             || HttpStatusCode.NotImplemented.Equals(response.StatusCode))
+        {
             ParseWellKnownErrorNoContent(response);
+        }
 
         if (response.StatusCode == 0)
             throw new ConnectionException("Connection error:" + response.ErrorMessage, response);
@@ -730,35 +749,45 @@ public partial class MinioClient : IMinioClient
         }
 
         var contentBytes = Encoding.UTF8.GetBytes(response.Content);
-        var stream = new MemoryStream(contentBytes);
+        using var stream = new MemoryStream(contentBytes);
         var errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream);
 
         if (response.StatusCode.Equals(HttpStatusCode.Forbidden)
             && (errResponse.Code.Equals("SignatureDoesNotMatch") || errResponse.Code.Equals("InvalidAccessKeyId")))
+        {
             throw new AuthorizationException(errResponse.Resource, errResponse.BucketName, errResponse.Message);
+        }
 
         // Handle XML response for Bucket Policy not found case
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
             && response.Request.RequestUri.PathAndQuery.EndsWith("?policy")
             && response.Request.Method.Equals(HttpMethod.Get)
             && errResponse.Code == "NoSuchBucketPolicy")
+        {
             throw new ErrorResponseException(errResponse, response)
             {
                 XmlError = response.Content
             };
+        }
 
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
             && errResponse.Code == "NoSuchBucket")
+        {
             throw new BucketNotFoundException(errResponse.BucketName, "Not found.");
+        }
 
         if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
             && errResponse.Code.Equals("MalformedXML"))
+        {
             throw new MalFormedXMLException(errResponse.Resource, errResponse.BucketName, errResponse.Message,
                 errResponse.Key);
+        }
 
         if (response.StatusCode.Equals(HttpStatusCode.NotImplemented)
             && errResponse.Code.Equals("NotImplemented"))
+        {
             throw new NotImplementedException(errResponse.Message);
+        }
 
         if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
             && errResponse.Code.Equals("InvalidRequest"))
@@ -770,15 +799,21 @@ public partial class MinioClient : IMinioClient
 
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
             && errResponse.Code.Equals("ObjectLockConfigurationNotFoundError"))
+        {
             throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
+        }
 
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
             && errResponse.Code.Equals("ReplicationConfigurationNotFoundError"))
+        {
             throw new MissingBucketReplicationConfigurationException(errResponse.BucketName, errResponse.Message);
+        }
 
         if (response.StatusCode.Equals(HttpStatusCode.Conflict)
             && errResponse.Code.Equals("BucketAlreadyOwnedByYou"))
+        {
             throw new Exception("Bucket already owned by you: " + errResponse.BucketName);
+        }
 
         throw new UnexpectedMinioException(errResponse.Message)
         {

@@ -49,8 +49,11 @@ public class ServerSideEncryptionConfigurationRule
         public ServerSideEncryptionConfigurationApply(string algorithm = SSE_AES256, string keyId = null)
         {
             if (string.IsNullOrEmpty(algorithm))
+            {
                 throw new ArgumentNullException(
                     "The SSE Algorithm " + nameof(SSEAlgorithm) + " cannot be null or empty");
+            }
+
             SSEAlgorithm = algorithm;
             KMSMasterKeyId = keyId;
         }

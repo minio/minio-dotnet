@@ -25,6 +25,18 @@ public class InvalidObjectPrefixException : MinioException
         this.objectPrefix = objectPrefix;
     }
 
+    public InvalidObjectPrefixException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public InvalidObjectPrefixException(string message) : base(message)
+    {
+    }
+
+    public InvalidObjectPrefixException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
+
     public override string ToString()
     {
         return $"{objectPrefix}: {base.ToString()}";

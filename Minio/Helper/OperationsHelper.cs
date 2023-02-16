@@ -69,27 +69,24 @@ public partial class MinioClient : IObjectOperations
         if (!string.IsNullOrEmpty(args.VersionId)) tempFileName = $"{args.FileName}.{etag}.{args.VersionId}.part.minio";
         if (File.Exists(args.FileName)) File.Delete(args.FileName);
 
-        utils.ValidateFile(tempFileName);
+        Utils.ValidateFile(tempFileName);
         if (File.Exists(tempFileName)) File.Delete(tempFileName);
 
         var callbackAsync = async delegate(Stream stream, CancellationToken cancellationToken)
         {
-            using (var dest = new FileStream(tempFileName, FileMode.Create, FileAccess.Write))
-            {
-                await stream.CopyToAsync(dest);
-            }
+            using var dest = new FileStream(tempFileName, FileMode.Create, FileAccess.Write);
+            await stream.CopyToAsync(dest);
         };
 
-        var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
         cts.CancelAfter(TimeSpan.FromMilliseconds(15));
         args.WithCallbackStream(async (stream, cancellationToken) =>
         {
             await callbackAsync(stream, cts.Token);
-            utils.MoveWithReplace(tempFileName, args.FileName);
+            Utils.MoveWithReplace(tempFileName, args.FileName);
         });
         return getObjectStreamAsync(args, objectStat, null, cancellationToken);
     }
-
 
     /// <summary>
     ///     private helper method. It returns the specified portion or full object from the bucket
@@ -182,7 +179,6 @@ public partial class MinioClient : IObjectOperations
         return fullErrorsList;
     }
 
-
     /// <summary>
     ///     private helper method to call function to remove objects/version items in iterations of 1000 each from bucket
     /// </summary>
@@ -208,7 +204,6 @@ public partial class MinioClient : IObjectOperations
         fullErrorsList.AddRange(errorsList);
         return fullErrorsList;
     }
-
 
     /// <summary>
     ///     private helper method to remove objects/version items in iterations of 1000 each from bucket
@@ -293,7 +288,7 @@ public partial class MinioClient : IObjectOperations
         var i = 0;
         foreach (var objName in args.ObjectNames)
         {
-            utils.ValidateObjectName(objName);
+            Utils.ValidateObjectName(objName);
             iterObjects.Insert(i, objName);
             if (++i == 1000)
             {
@@ -309,7 +304,7 @@ public partial class MinioClient : IObjectOperations
     }
 }
 
-public class OperationsUtil
+public static class OperationsUtil
 {
     private static readonly List<string> SupportedHeaders = new()
     {

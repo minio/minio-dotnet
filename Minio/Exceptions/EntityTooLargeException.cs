@@ -21,4 +21,12 @@ public class EntityTooLargeException : MinioException
     public EntityTooLargeException(string message) : base(message)
     {
     }
+
+    public EntityTooLargeException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public EntityTooLargeException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
 }

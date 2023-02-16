@@ -68,14 +68,15 @@ public class ResponseResult : IDisposable
     {
         get
         {
-            if (ContentStream == null) return new byte[0];
+            if (ContentStream == null)
+                return Array.Empty<byte>();
 
             if (_contentBytes == null)
-                using (var memoryStream = new MemoryStream())
-                {
-                    ContentStream.CopyTo(memoryStream);
-                    _contentBytes = memoryStream.ToArray();
-                }
+            {
+                using var memoryStream = new MemoryStream();
+                ContentStream.CopyTo(memoryStream);
+                _contentBytes = memoryStream.ToArray();
+            }
 
             return _contentBytes;
         }
@@ -102,8 +103,10 @@ public class ResponseResult : IDisposable
             if (!_headers.Any())
             {
                 if (Response.Content != null)
+                {
                     foreach (var item in Response.Content.Headers)
                         _headers.Add(item.Key, item.Value.FirstOrDefault());
+                }
 
                 foreach (var item in Response.Headers) _headers.Add(item.Key, item.Value.FirstOrDefault());
             }

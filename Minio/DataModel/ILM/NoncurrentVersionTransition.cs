@@ -23,7 +23,6 @@ using System.Xml.Serialization;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html
  */
 
-
 namespace Minio.DataModel.ILM;
 
 [Serializable]

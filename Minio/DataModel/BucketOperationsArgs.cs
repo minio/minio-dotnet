@@ -75,10 +75,10 @@ public class MakeBucketArgs : BucketArgs<MakeBucketArgs>
         if (!string.IsNullOrEmpty(Location) && Location != "us-east-1")
         {
             var config = new CreateBucketConfiguration(Location);
-            var body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+            var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
             requestMessageBuilder.AddXmlBody(body);
             requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-                utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+                Utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
         }
 
         if (ObjectLock) requestMessageBuilder.AddOrUpdateHeaderParameter("X-Amz-Bucket-Object-Lock-Enabled", "true");
@@ -303,10 +303,13 @@ public class SetBucketNotificationsArgs : BucketArgs<SetBucketNotificationsArgs>
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
         if (BucketNotificationConfiguration == null)
+        {
             throw new UnexpectedMinioException(
                 "Cannot BuildRequest for SetBucketNotificationsArgs. BucketNotification configuration not assigned");
+        }
+
         requestMessageBuilder.AddQueryParameter("notification", "");
-        var body = utils.MarshalXML(BucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
+        var body = Utils.MarshalXML(BucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
         // Convert string to a byte array
         var bodyInBytes = Encoding.ASCII.GetBytes(body);
         requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
@@ -333,7 +336,7 @@ public class RemoveAllBucketNotificationsArgs : BucketArgs<RemoveAllBucketNotifi
     {
         requestMessageBuilder.AddQueryParameter("notification", "");
         var bucketNotificationConfiguration = new BucketNotification();
-        var body = utils.MarshalXML(bucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
+        var body = Utils.MarshalXML(bucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
         // Convert string to a byte array
         var bodyInBytes = Encoding.ASCII.GetBytes(body);
         requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
@@ -397,12 +400,14 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
         {
             using (responseStream)
             {
-                var sr = new StreamReader(responseStream);
+                using var sr = new StreamReader(responseStream);
                 while (!sr.EndOfStream)
+                {
                     try
                     {
-                        var line = await sr.ReadLineAsync();
-                        if (string.IsNullOrEmpty(line)) break;
+                        var line = await sr.ReadLineAsync().ConfigureAwait(false);
+                        if (string.IsNullOrEmpty(line))
+                            break;
 
                         if (EnableTrace)
                         {
@@ -418,6 +423,7 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
                     {
                         break;
                     }
+                }
             }
         };
         return requestMessageBuilder;
@@ -485,7 +491,7 @@ public class SetBucketEncryptionArgs : BucketArgs<SetBucketEncryptionArgs>
             EncryptionConfig = ServerSideEncryptionConfiguration.GetSSEConfigurationWithS3Rule();
 
         requestMessageBuilder.AddQueryParameter("encryption", "");
-        var body = utils.MarshalXML(EncryptionConfig, "http://s3.amazonaws.com/doc/2006-03-01/");
+        var body = Utils.MarshalXML(EncryptionConfig, "http://s3.amazonaws.com/doc/2006-03-01/");
         // Convert string to a byte array
         var bodyInBytes = Encoding.ASCII.GetBytes(body);
         requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
@@ -545,7 +551,7 @@ public class SetBucketTagsArgs : BucketArgs<SetBucketTagsArgs>
 
         requestMessageBuilder.AddXmlBody(body);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            Utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
 
         //
         return requestMessageBuilder;
@@ -606,15 +612,17 @@ public class SetObjectLockConfigurationArgs : BucketArgs<SetObjectLockConfigurat
     {
         base.Validate();
         if (LockConfiguration == null)
+        {
             throw new InvalidOperationException("The lock configuration object " + nameof(LockConfiguration) +
                                                 " is not set. Please use " + nameof(WithLockConfiguration) +
                                                 " to set.");
+        }
     }
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
         requestMessageBuilder.AddQueryParameter("object-lock", "");
-        var body = utils.MarshalXML(LockConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
+        var body = Utils.MarshalXML(LockConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
         // Convert string to a byte array
         // byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
 
@@ -624,7 +632,7 @@ public class SetObjectLockConfigurationArgs : BucketArgs<SetObjectLockConfigurat
         // string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
         requestMessageBuilder.AddXmlBody(body);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            Utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
         //
         return requestMessageBuilder;
     }
@@ -654,10 +662,10 @@ public class RemoveObjectLockConfigurationArgs : BucketArgs<RemoveObjectLockConf
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
         requestMessageBuilder.AddQueryParameter("object-lock", "");
-        var body = utils.MarshalXML(new ObjectLockConfiguration(), "http://s3.amazonaws.com/doc/2006-03-01/");
+        var body = Utils.MarshalXML(new ObjectLockConfiguration(), "http://s3.amazonaws.com/doc/2006-03-01/");
         requestMessageBuilder.AddXmlBody(body);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            Utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
         return requestMessageBuilder;
     }
 }
@@ -686,7 +694,7 @@ public class SetBucketLifecycleArgs : BucketArgs<SetBucketLifecycleArgs>
         requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
         requestMessageBuilder.SetBody(bodyInBytes);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            utils.getMD5SumStr(bodyInBytes));
+            Utils.getMD5SumStr(bodyInBytes));
 
         return requestMessageBuilder;
     }

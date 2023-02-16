@@ -54,6 +54,6 @@ public abstract class BucketArgs<T> : Args
 
     internal virtual void Validate()
     {
-        utils.ValidateBucketName(BucketName);
+        Utils.ValidateBucketName(BucketName);
     }
 }

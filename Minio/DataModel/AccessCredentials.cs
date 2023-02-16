@@ -27,12 +27,15 @@ public class AccessCredentials
         string sessionToken, DateTime expiration)
     {
         if (string.IsNullOrWhiteSpace(accessKey) || string.IsNullOrWhiteSpace(secretKey))
+        {
             throw new ArgumentNullException(nameof(AccessKey) + " and " + nameof(SecretKey) +
                                             " cannot be null or empty.");
+        }
+
         AccessKey = accessKey;
         SecretKey = secretKey;
         SessionToken = sessionToken;
-        Expiration = expiration.Equals(default) ? null : utils.To8601String(expiration);
+        Expiration = expiration.Equals(default) ? null : Utils.To8601String(expiration);
     }
 
     public AccessCredentials()
@@ -55,7 +58,7 @@ public class AccessCredentials
     public bool AreExpired()
     {
         if (string.IsNullOrWhiteSpace(Expiration)) return false;
-        var expiry = utils.From8601String(Expiration);
+        var expiry = Utils.From8601String(Expiration);
         return DateTime.Now.CompareTo(expiry) > 0;
     }
 }

@@ -25,6 +25,18 @@ public class VersionDeletedException : MinioException
         versionId = vid;
     }
 
+    public VersionDeletedException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public VersionDeletedException(string message) : base(message)
+    {
+    }
+
+    public VersionDeletedException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
+
     public override string ToString()
     {
         return $"{versionId}: {base.ToString()}";

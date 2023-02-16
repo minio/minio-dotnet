@@ -56,8 +56,10 @@ public class MinioException : Exception
         var contentString = serverResponse.Content;
 
         if (message == null)
+        {
             return
                 $"MinIO API responded with status code={serverResponse.StatusCode}, response={serverResponse.ErrorMessage}, content={contentString}";
+        }
 
         return
             $"MinIO API responded with message={message}. Status code={serverResponse.StatusCode}, response={serverResponse.ErrorMessage}, content={contentString}";

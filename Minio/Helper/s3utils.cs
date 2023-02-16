@@ -18,7 +18,7 @@ using System.Text.RegularExpressions;
 
 namespace Minio.Helper;
 
-internal class s3utils
+internal static class s3utils
 {
     internal static readonly Regex TrimWhitespaceRegex = new("\\s+");
 
@@ -60,7 +60,7 @@ internal class s3utils
         {
             var combination = Path.Combine(p1, p2);
             // combination = Uri.EscapeUriString(combination);
-            combination = utils.EncodePath(combination);
+            combination = Utils.EncodePath(combination);
             return combination;
         }
         catch (Exception ex)

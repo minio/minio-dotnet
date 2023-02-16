@@ -344,7 +344,7 @@ public interface IObjectOperations
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     [Obsolete("Use PutObjectAsync method with PutObjectArgs object. Refer PutObject example code.")]
     Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null,
-        Dictionary<string, string> metaData = null, ServerSideEncryption sse = null,
+        IDictionary<string, string> metaData = null, ServerSideEncryption sse = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -453,7 +453,7 @@ public interface IObjectOperations
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     [Obsolete("Use PutObjectAsync method with PutObjectArgs object. Refer PutObject example code.")]
     Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType = null,
-        Dictionary<string, string> metaData = null, ServerSideEncryption sse = null,
+        IDictionary<string, string> metaData = null, ServerSideEncryption sse = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

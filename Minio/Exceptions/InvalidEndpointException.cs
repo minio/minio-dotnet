@@ -29,6 +29,14 @@ public class InvalidEndpointException : MinioException
     {
     }
 
+    public InvalidEndpointException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public InvalidEndpointException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
+
     public override string ToString()
     {
         if (string.IsNullOrEmpty(endpoint))

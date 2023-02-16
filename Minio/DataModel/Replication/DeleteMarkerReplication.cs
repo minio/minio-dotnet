@@ -33,7 +33,6 @@ public class DeleteMarkerReplication
     public const string StatusEnabled = "Enabled";
     public const string StatusDisabled = "Disabled";
 
-
     public DeleteMarkerReplication(string status)
     {
         if (string.IsNullOrEmpty(status) || string.IsNullOrWhiteSpace(status))

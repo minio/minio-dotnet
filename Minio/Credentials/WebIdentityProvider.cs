@@ -62,25 +62,22 @@ public class WebIdentityProvider : WebIdentityClientGrantsProvider<WebIdentityPr
         return this;
     }
 
-    internal override async Task<HttpRequestMessageBuilder> BuildRequest()
+    internal override Task<HttpRequestMessageBuilder> BuildRequest()
     {
         Validate();
         CurrentJsonWebToken = JWTSupplier();
         // RoleArn to be set already.
         WithRoleAction("AssumeRoleWithWebIdentity");
         WithDurationInSeconds(GetDurationInSeconds(CurrentJsonWebToken.Expiry));
-        if (RoleSessionName == null) RoleSessionName = utils.To8601String(DateTime.Now);
-        var requestMessageBuilder = await base.BuildRequest();
-        return requestMessageBuilder;
+        if (RoleSessionName == null) RoleSessionName = Utils.To8601String(DateTime.Now);
+        return base.BuildRequest();
     }
 
     internal override AccessCredentials ParseResponse(HttpResponseMessage response)
     {
         Validate();
         var credentials = base.ParseResponse(response);
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(Convert.ToString(response.Content))))
-        {
-            return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(stream);
-        }
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(Convert.ToString(response.Content)));
+        return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(stream);
     }
 }

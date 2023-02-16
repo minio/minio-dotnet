@@ -27,6 +27,18 @@ public class InvalidContentLengthException : MinioException
         this.objectName = objectName;
     }
 
+    public InvalidContentLengthException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public InvalidContentLengthException(string message) : base(message)
+    {
+    }
+
+    public InvalidContentLengthException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
+
     public override string ToString()
     {
         return $"{bucketName} :{objectName}: {base.ToString()}";

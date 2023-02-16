@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 namespace Minio.Exceptions;
 
 public class ErrorResponseException : MinioException
@@ -24,5 +23,17 @@ public class ErrorResponseException : MinioException
         base(serverResponse)
     {
         Response = errorResponse;
+    }
+
+    public ErrorResponseException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public ErrorResponseException(string message) : base(message)
+    {
+    }
+
+    public ErrorResponseException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
     }
 }

@@ -25,6 +25,18 @@ public class InvalidObjectNameException : MinioException
         this.objectName = objectName;
     }
 
+    public InvalidObjectNameException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public InvalidObjectNameException(string message) : base(message)
+    {
+    }
+
+    public InvalidObjectNameException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
+
     public override string ToString()
     {
         return $"{objectName}: {base.ToString()}";
