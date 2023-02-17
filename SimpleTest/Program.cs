@@ -19,9 +19,9 @@ using Minio;
 
 namespace SimpleTest;
 
-public class Program
+public static class Program
 {
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                                | SecurityProtocolType.Tls11
@@ -36,62 +36,30 @@ public class Program
             .WithSSL()
             .Build();
 
-        var getListBucketsTask = minio.ListBucketsAsync();
+        var listBuckets = await minio.ListBucketsAsync();
 
-        try
-        {
-            Task.WaitAll(getListBucketsTask); // block while the task completes
-        }
-        catch (AggregateException aggEx)
-        {
-            aggEx.Handle(HandleBatchExceptions);
-        }
-
-        var list = getListBucketsTask.Result;
-        foreach (var bucket in list.Buckets) Console.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
+        foreach (var bucket in listBuckets.Buckets) 
+            Console.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
 
         //Supply a new bucket name
         var bucketName = "mynewbucket";
-        if (IsBucketExists(minio, bucketName))
+        if (await IsBucketExists(minio, bucketName))
         {
-            var remBuckArgs = new RemoveBucketArgs()
-                .WithBucket(bucketName);
-            var removeBucketTask = minio.RemoveBucketAsync(remBuckArgs);
-            Task.WaitAll(removeBucketTask);
+            var remBuckArgs = new RemoveBucketArgs().WithBucket(bucketName);
+            await minio.RemoveBucketAsync(remBuckArgs);
         }
 
-        var mkBktArgs = new MakeBucketArgs()
-            .WithBucket(bucketName);
-        Task.WaitAll(minio.MakeBucketAsync(mkBktArgs));
+        var mkBktArgs = new MakeBucketArgs().WithBucket(bucketName);
+        await minio.MakeBucketAsync(mkBktArgs);
 
-        var found = IsBucketExists(minio, bucketName);
+        var found = await IsBucketExists(minio, bucketName);
         Console.WriteLine("Bucket exists? = " + found);
         Console.ReadLine();
     }
 
-    private static bool IsBucketExists(IMinioClient minio,
-        string bucketName)
+    private static Task<bool> IsBucketExists(IMinioClient minio, string bucketName)
     {
-        var bktExistsArgs = new BucketExistsArgs()
-            .WithBucket(bucketName);
-        var bucketExistTask = minio.BucketExistsAsync(bktExistsArgs);
-        Task.WaitAll(bucketExistTask);
-        return bucketExistTask.Result;
-    }
-
-    private static bool HandleBatchExceptions(Exception exceptionToHandle)
-    {
-        if (exceptionToHandle is ArgumentNullException)
-        {
-            //I'm handling the ArgumentNullException.
-            Console.WriteLine("Handling the ArgumentNullException.");
-            //I handled this Exception, return true.
-            return true;
-        }
-
-        //I'm only handling ArgumentNullExceptions.
-        Console.WriteLine("I'm not handling the {0}.", exceptionToHandle.GetType());
-        //I didn't handle this Exception, return false.
-        return false;
+        var bktExistsArgs = new BucketExistsArgs().WithBucket(bucketName);
+        return minio.BucketExistsAsync(bktExistsArgs);
     }
 }
