@@ -226,7 +226,7 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
     {
         if (!string.IsNullOrEmpty(VersionId))
             requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
-        if (Headers.TryGetValue(S3ZipExtractKey, out string value))
+        if (Headers.TryGetValue(S3ZipExtractKey, out var value))
             requestMessageBuilder.AddQueryParameter(S3ZipExtractKey, value);
 
         return requestMessageBuilder;
@@ -557,7 +557,7 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
         if (CallBack is not null) requestMessageBuilder.ResponseWriter = CallBack;
         else requestMessageBuilder.FunctionResponseWriter = FuncCallBack;
 
-        if (Headers.TryGetValue(S3ZipExtractKey, out string value))
+        if (Headers.TryGetValue(S3ZipExtractKey, out var value))
             requestMessageBuilder.AddQueryParameter(S3ZipExtractKey, value);
 
         return requestMessageBuilder;
@@ -1880,7 +1880,6 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         var sseHeaders = new Dictionary<string, string>();
         Headers ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         if (metaData != null)
-        {
             foreach (var p in metaData)
             {
                 var key = p.Key;
@@ -1896,7 +1895,6 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
                 if (key == "Content-Type")
                     ContentType = p.Value;
             }
-        }
 
         if (string.IsNullOrWhiteSpace(ContentType)) ContentType = "application/octet-stream";
         if (!Headers.ContainsKey("Content-Type")) Headers["Content-Type"] = ContentType;

@@ -100,16 +100,16 @@ public class Tagging
 
         try
         {
-            XmlWriterSettings settings = new XmlWriterSettings
+            var settings = new XmlWriterSettings
             {
                 OmitXmlDeclaration = true
             };
-            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+            var ns = new XmlSerializerNamespaces();
             ns.Add(string.Empty, string.Empty);
 
             using var sw = new StringWriter(CultureInfo.InvariantCulture);
 
-            XmlSerializer xs = new XmlSerializer(typeof(Tagging), "");
+            var xs = new XmlSerializer(typeof(Tagging), "");
             using (xw = XmlWriter.Create(sw, settings))
             {
                 xs.Serialize(xw, this, ns);

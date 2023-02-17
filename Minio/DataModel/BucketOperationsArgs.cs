@@ -41,7 +41,7 @@ public class RemoveBucketArgs : BucketArgs<RemoveBucketArgs>
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        if (Headers.TryGetValue(BucketForceDeleteKey, out string value))
+        if (Headers.TryGetValue(BucketForceDeleteKey, out var value))
             requestMessageBuilder.AddHeaderParameter(BucketForceDeleteKey, value);
         return requestMessageBuilder;
     }
@@ -400,7 +400,6 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
             {
                 using var sr = new StreamReader(responseStream);
                 while (!sr.EndOfStream)
-                {
                     try
                     {
                         var line = await sr.ReadLineAsync().ConfigureAwait(false);
@@ -421,7 +420,6 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
                     {
                         break;
                     }
-                }
             }
         };
         return requestMessageBuilder;

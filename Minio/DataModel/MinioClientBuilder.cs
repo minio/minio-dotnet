@@ -221,8 +221,8 @@ public partial class MinioClient : IMinioClient
         var enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
         var scheme = enable_https?.Equals("1") == true ? "https://" : "http://";
         conn_url = scheme + endpoint;
-        Uri url = new Uri(conn_url);
-        string hostnameOfUri = url.Authority;
+        var url = new Uri(conn_url);
+        var hostnameOfUri = url.Authority;
         if (!string.IsNullOrEmpty(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
             throw new InvalidEndpointException(string.Format("{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),
                 "endpoint");

@@ -25,7 +25,6 @@ using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Tags;
 using Minio.Exceptions;
 using Minio.Helper;
-using System;
 
 namespace Minio;
 
@@ -108,7 +107,7 @@ public partial class MinioClient : IObjectOperations
                         .WithPrefix(args.Prefix)
                         .WithKeyMarker(nextKeyMarker)
                         .WithUploadIdMarker(nextUploadIdMarker);
-                    Tuple<ListMultipartUploadsResult, List<Upload>> uploads = await GetMultipartUploadsListAsync(getArgs, cancellationToken).ConfigureAwait(false);
+                    var uploads = await GetMultipartUploadsListAsync(getArgs, cancellationToken).ConfigureAwait(false);
                     if (uploads == null)
                     {
                         isRunning = false;
@@ -155,7 +154,6 @@ public partial class MinioClient : IObjectOperations
 
         if (uploads == null) return;
         foreach (var upload in uploads)
-        {
             if (upload.Key.Equals(args.ObjectName, StringComparison.OrdinalIgnoreCase))
             {
                 var rmArgs = new RemoveUploadArgs()
@@ -164,7 +162,6 @@ public partial class MinioClient : IObjectOperations
                     .WithUploadId(upload.UploadId);
                 await RemoveUploadAsync(rmArgs, cancellationToken).ConfigureAwait(false);
             }
-        }
     }
 
     /// <summary>
@@ -261,9 +258,9 @@ public partial class MinioClient : IObjectOperations
         args.Validate();
         var requestMessageBuilder = await CreateRequest(HttpMethod.Put, args.BucketName,
             args.ObjectName,
-            headerMap: args.Headers, // contentType
-            contentType: Convert.ToString(args.GetType()), // metaData
-            body: Utils.ObjectToByteArray(args.RequestBody));
+            args.Headers, // contentType
+            Convert.ToString(args.GetType()), // metaData
+            Utils.ObjectToByteArray(args.RequestBody));
         var authenticator = new V4Authenticator(Secure, AccessKey, SecretKey, Region,
             SessionToken);
         return authenticator.PresignURL(requestMessageBuilder, args.Expiry, Region, SessionToken);
@@ -294,7 +291,8 @@ public partial class MinioClient : IObjectOperations
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
         var legalHoldConfig = new GetLegalHoldResponse(response.StatusCode, response.Content);
-        return legalHoldConfig.CurrentLegalHoldConfiguration?.Status.Equals("on", StringComparison.OrdinalIgnoreCase) == true;
+        return legalHoldConfig.CurrentLegalHoldConfiguration?.Status.Equals("on", StringComparison.OrdinalIgnoreCase) ==
+               true;
     }
 
     /// <summary>
@@ -552,9 +550,10 @@ public partial class MinioClient : IObjectOperations
         if (args.ObjectSize < Constants.MinimumPartSize && args.ObjectSize >= 0 && args.ObjectStreamData != null)
         {
             var bytes = await ReadFullAsync(args.ObjectStreamData, (int)args.ObjectSize).ConfigureAwait(false);
-            var bytesRead = (bytes?.Length) ?? 0;
+            var bytesRead = bytes?.Length ?? 0;
             if (bytesRead != (int)args.ObjectSize)
-                throw new UnexpectedShortReadException($"Data read {bytesRead} is shorter than the size {args.ObjectSize} of input buffer.");
+                throw new UnexpectedShortReadException(
+                    $"Data read {bytesRead} is shorter than the size {args.ObjectSize} of input buffer.");
 
             args = args.WithRequestBody(bytes)
                 .WithStreamData(null)
@@ -652,7 +651,7 @@ public partial class MinioClient : IObjectOperations
         }
 
         args.Validate();
-        var srcByteRangeSize = (args.SourceObject.CopyOperationConditions?.GetByteRange()) ?? 0L;
+        var srcByteRangeSize = args.SourceObject.CopyOperationConditions?.GetByteRange() ?? 0L;
         var copySize = srcByteRangeSize == 0 ? args.SourceObjectInfo.Size : srcByteRangeSize;
 
         if (srcByteRangeSize > args.SourceObjectInfo.Size ||
@@ -1075,8 +1074,8 @@ public partial class MinioClient : IObjectOperations
     {
         args.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        ResponseResult response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
-    .ConfigureAwait(false);
+        var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            .ConfigureAwait(false);
         var getUploadResponse = new GetMultipartUploadsListResponse(response.StatusCode, response.Content);
         response.Dispose();
 
@@ -1221,7 +1220,7 @@ public partial class MinioClient : IObjectOperations
         for (partNumber = 1; partNumber <= partCount; partNumber++)
         {
             var partCondition = args.SourceObject.CopyOperationConditions.Clone();
-            partCondition.byteRangeStart = ((long)partSize * (partNumber - 1)) + partCondition.byteRangeStart;
+            partCondition.byteRangeStart = (long)partSize * (partNumber - 1) + partCondition.byteRangeStart;
             if (partNumber < partCount)
                 partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)partSize - 1;
             else
@@ -1516,9 +1515,9 @@ public partial class MinioClient : IObjectOperations
 
         var requestMessageBuilder = await CreateRequest(HttpMethod.Put, bucketName,
                 objectName,
-                headerMap: metaData,
-                contentType: contentType,
-                body: data)
+                metaData,
+                contentType,
+                data)
             .ConfigureAwait(false);
         if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
         {
@@ -1531,12 +1530,8 @@ public partial class MinioClient : IObjectOperations
 
         string etag = null;
         foreach (var parameter in response.Headers)
-        {
             if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
-            {
                 etag = parameter.Value;
-            }
-        }
 
         return etag;
     }
@@ -1693,7 +1688,7 @@ public partial class MinioClient : IObjectOperations
         for (partNumber = 1; partNumber <= partCount; partNumber++)
         {
             var partCondition = copyConditions.Clone();
-            partCondition.byteRangeStart = ((long)partSize * (partNumber - 1)) + partCondition.byteRangeStart;
+            partCondition.byteRangeStart = (long)partSize * (partNumber - 1) + partCondition.byteRangeStart;
             if (partNumber < partCount)
                 partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)partSize - 1;
             else

@@ -50,7 +50,8 @@ public class ReplicationRule
         ExistingObjectReplication = existingObjectReplication;
         Filter = filter;
         Priority = priority;
-        DeleteReplication = deleteReplication ?? throw new ArgumentNullException(nameof(DeleteReplication) + " cannot be null or empty.");
+        DeleteReplication = deleteReplication ??
+                            throw new ArgumentNullException(nameof(DeleteReplication) + " cannot be null or empty.");
         ID = id;
         Prefix = prefix;
         SourceSelectionCriteria = sourceSelectionCriteria;

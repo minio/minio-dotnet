@@ -104,7 +104,7 @@ public static class BuilderUtil
         {
             try
             {
-                int port = int.Parse(host.Substring(posColon + 1, host.Length - posColon - 1));
+                var port = int.Parse(host.Substring(posColon + 1, host.Length - posColon - 1));
             }
             catch (FormatException)
             {

@@ -213,7 +213,7 @@ public static class Utils
         var minPartSize = copy ? Constants.MinimumCOPYPartSize : Constants.MinimumPUTPartSize;
         partSize = (double)Math.Ceiling((decimal)partSize / minPartSize) * minPartSize;
         var partCount = Math.Ceiling(size / partSize);
-        var lastPartSize = size - ((partCount - 1) * partSize);
+        var lastPartSize = size - (partCount - 1) * partSize;
         dynamic obj = new ExpandoObject();
         obj.partSize = partSize;
         obj.partCount = partCount;
@@ -802,16 +802,16 @@ public static class Utils
 
         try
         {
-            XmlWriterSettings settings = new XmlWriterSettings
+            var settings = new XmlWriterSettings
             {
                 OmitXmlDeclaration = true
             };
-            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+            var ns = new XmlSerializerNamespaces();
             ns.Add("", nmspc);
 
             using var sw = new StringWriter(CultureInfo.InvariantCulture);
 
-            XmlSerializer xs = new XmlSerializer(obj.GetType());
+            var xs = new XmlSerializer(obj.GetType());
             using (xw = XmlWriter.Create(sw, settings))
             {
                 xs.Serialize(xw, obj, ns);
@@ -876,8 +876,8 @@ public static class Utils
         var enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
         var scheme = enable_https?.Equals("1") == true ? "https://" : "http://";
         conn_url = scheme + endpoint;
-        Uri url = new Uri(conn_url);
-        string hostnameOfUri = url.Authority;
+        var url = new Uri(conn_url);
+        var hostnameOfUri = url.Authority;
         if (!string.IsNullOrWhiteSpace(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
             throw new InvalidEndpointException(string.Format("{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),
                 "endpoint");

@@ -42,16 +42,16 @@ public class SelectObjectOptions
 
         try
         {
-            XmlWriterSettings settings = new XmlWriterSettings
+            var settings = new XmlWriterSettings
             {
                 OmitXmlDeclaration = true
             };
-            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+            var ns = new XmlSerializerNamespaces();
             ns.Add("", "");
 
             using var sw = new StringWriter(CultureInfo.InvariantCulture);
 
-            XmlSerializer xs = new XmlSerializer(typeof(SelectObjectOptions));
+            var xs = new XmlSerializer(typeof(SelectObjectOptions));
             using (xw = XmlWriter.Create(sw, settings))
             {
                 xs.Serialize(xw, this, ns);

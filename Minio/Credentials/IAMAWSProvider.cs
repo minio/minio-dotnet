@@ -44,7 +44,9 @@ public class IAMAWSProvider : EnvironmentProvider
                 throw new ArgumentNullException("Endpoint field " + nameof(CustomEndPoint) + " is invalid.");
         }
 
-        Minio_Client = client ?? throw new ArgumentException("MinioClient reference field " + nameof(Minio_Client) + " cannot be null.");
+        Minio_Client = client ??
+                       throw new ArgumentException("MinioClient reference field " + nameof(Minio_Client) +
+                                                   " cannot be null.");
         CustomEndPoint = new Uri(endpoint);
     }
 
@@ -137,10 +139,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
 
     public override async Task<AccessCredentials> GetCredentialsAsync()
     {
-        if (Credentials?.AreExpired() == false)
-        {
-            return Credentials;
-        }
+        if (Credentials?.AreExpired() == false) return Credentials;
 
         var url = CustomEndPoint;
         var awsTokenFile = Environment.GetEnvironmentVariable("AWS_WEB_IDENTITY_TOKEN_FILE");
@@ -185,7 +184,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             throw new CredentialsProviderException("IAMAWSProvider",
                 "Credential Get operation failed with HTTP Status code: " + response.StatusCode);
 
-        string[] roleNames = response.Content.Split('\n');
+        var roleNames = response.Content.Split('\n');
         if (roleNames.Length <= 0)
             throw new CredentialsProviderException("IAMAWSProvider",
                 "No IAM roles are attached to AWS service at " + url);

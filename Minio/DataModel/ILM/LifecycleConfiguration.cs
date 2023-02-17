@@ -54,16 +54,16 @@ public class LifecycleConfiguration
 
         try
         {
-            XmlWriterSettings settings = new XmlWriterSettings
+            var settings = new XmlWriterSettings
             {
                 OmitXmlDeclaration = true
             };
-            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+            var ns = new XmlSerializerNamespaces();
             ns.Add(string.Empty, string.Empty);
 
             using var sw = new StringWriter(CultureInfo.InvariantCulture);
 
-            XmlSerializer xs = new XmlSerializer(typeof(LifecycleConfiguration), "");
+            var xs = new XmlSerializer(typeof(LifecycleConfiguration), "");
             using (xw = XmlWriter.Create(sw, settings))
             {
                 xs.Serialize(xw, this, ns);

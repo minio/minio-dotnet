@@ -413,7 +413,7 @@ public partial class MinioClient : IMinioClient
 
         if (headerMap != null)
         {
-            if (headerMap.TryGetValue(messageBuilder.ContentTypeKey, out string value) && !string.IsNullOrEmpty(value))
+            if (headerMap.TryGetValue(messageBuilder.ContentTypeKey, out var value) && !string.IsNullOrEmpty(value))
                 headerMap[messageBuilder.ContentTypeKey] = contentType;
 
             foreach (var entry in headerMap) messageBuilder.AddOrUpdateHeaderParameter(entry.Key, entry.Value);
@@ -431,7 +431,7 @@ public partial class MinioClient : IMinioClient
         if (secure)
         {
             Secure = true;
-            if (string.IsNullOrEmpty(BaseUrl)) 
+            if (string.IsNullOrEmpty(BaseUrl))
                 return this;
             var secureUrl = RequestUtil.MakeTargetURL(BaseUrl, Secure);
         }

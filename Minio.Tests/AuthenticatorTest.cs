@@ -164,7 +164,8 @@ public class AuthenticatorTest
 
     private Tuple<string, string> GetHeaderKV(HttpRequestMessageBuilder request, string headername)
     {
-        var key = request.HeaderParameters.Keys.FirstOrDefault(o => string.Equals(o, headername, StringComparison.OrdinalIgnoreCase));
+        var key = request.HeaderParameters.Keys.FirstOrDefault(o =>
+            string.Equals(o, headername, StringComparison.OrdinalIgnoreCase));
         if (key != null) return Tuple.Create(key, request.HeaderParameters[key]);
         return null;
     }

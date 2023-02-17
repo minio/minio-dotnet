@@ -30,7 +30,7 @@ internal static class RetryPolicyHelper
     public static TimeSpan CalcBackoff(int retryAttempt, TimeSpan retryInterval, TimeSpan maxRetryInterval)
     {
         // 0.8..1.2
-        var jitter = 0.8 + (new Random(Environment.TickCount).NextDouble() * 0.4);
+        var jitter = 0.8 + new Random(Environment.TickCount).NextDouble() * 0.4;
         // (2^retryCount - 1) * jitter
         var scaleCoeff = (Math.Pow(2.0, retryAttempt) - 1.0) * jitter;
         // Apply scale coefficient

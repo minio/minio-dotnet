@@ -98,7 +98,7 @@ public abstract class AssumeRoleBaseProvider<T> : ClientProvider
     internal virtual async Task<HttpRequestMessageBuilder> BuildRequest()
     {
         if (Client == null) throw new InvalidOperationException("MinioClient is not set in AssumeRoleBaseProvider");
-        HttpRequestMessageBuilder reqBuilder = await Client.CreateRequest(HttpMethod.Post);
+        var reqBuilder = await Client.CreateRequest(HttpMethod.Post);
         reqBuilder.AddQueryParameter("Action", Action);
         reqBuilder.AddQueryParameter("Version", "2011-06-15");
         if (!string.IsNullOrWhiteSpace(Policy)) reqBuilder.AddQueryParameter("Policy", Policy);

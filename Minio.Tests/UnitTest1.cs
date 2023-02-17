@@ -110,7 +110,7 @@ public class UnitTest1
     [ExpectedException(typeof(ArgumentException))]
     public void TestSetAppInfoFailsNullVersion()
     {
-         using var client = new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint("localhost", 9000)
             .Build();
         client.SetAppInfo("Hello-App", null);
@@ -232,7 +232,8 @@ public class UnitTest2
     [ExpectedException(typeof(InvalidEndpointException))]
     public void TestUrlFailsWithPath()
     {
-        using var client = new MinioClient().WithEndpoint("localhost:9000/foo").WithCredentials("minio", "minio").Build();
+        using var client = new MinioClient().WithEndpoint("localhost:9000/foo").WithCredentials("minio", "minio")
+            .Build();
     }
 
     [TestMethod]
