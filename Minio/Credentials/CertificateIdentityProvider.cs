@@ -115,7 +115,7 @@ public class CertificateIdentityProvider : ClientProvider
 
     public override AccessCredentials GetCredentials()
     {
-        var t = Task.Run(async () => await GetCredentialsAsync());
+        var t = Task.Run(async () => await GetCredentialsAsync().ConfigureAwait(false));
         t.Wait();
         return t.Result;
     }

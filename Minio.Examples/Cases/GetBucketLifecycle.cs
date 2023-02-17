@@ -28,7 +28,7 @@ public class GetBucketLifecycle
             var lfc = await minio.GetBucketLifecycleAsync(
                 new GetBucketLifecycleArgs()
                     .WithBucket(bucketName)
-            );
+            ).ConfigureAwait(false);
             if (lfc != null && lfc.Rules?.Count > 0)
             {
                 Console.WriteLine($"Got Bucket Lifecycle set for bucket {bucketName}.");

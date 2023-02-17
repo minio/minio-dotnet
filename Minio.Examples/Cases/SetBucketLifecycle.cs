@@ -32,7 +32,7 @@ public class SetBucketLifecycle
                 new SetBucketLifecycleArgs()
                     .WithBucket(bucketName)
                     .WithLifecycleConfiguration(lfc)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Bucket Lifecycle set for bucket {bucketName}.");
             Console.WriteLine();
         }

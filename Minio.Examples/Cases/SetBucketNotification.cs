@@ -53,7 +53,7 @@ internal class SetBucketNotification
             queueConfiguration.AddEvents(new List<EventType>() { EventType.ObjectCreatedCompleteMultipartUpload });
             notification.AddQueue(queueConfiguration);
             */
-            await minio.SetBucketNotificationsAsync(args);
+            await minio.SetBucketNotificationsAsync(args).ConfigureAwait(false);
 
             Console.WriteLine("Notifications set for the bucket {bucketName} were set successfully");
             Console.WriteLine();

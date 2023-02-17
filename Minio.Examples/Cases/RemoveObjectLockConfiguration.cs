@@ -28,7 +28,7 @@ public class RemoveObjectLockConfiguration
             await minio.RemoveObjectLockConfigurationAsync(
                 new RemoveObjectLockConfigurationArgs()
                     .WithBucket(bucketName)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Removed Object lock configuration on the bucket {bucketName}.");
             Console.WriteLine();
         }

@@ -202,7 +202,7 @@ public partial class MinioClient : IObjectOperations
     public async Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PresignedPostPolicyArgs args)
     {
         // string region = string.Empty;
-        var region = await GetRegion(args.BucketName);
+        var region = await GetRegion(args.BucketName).ConfigureAwait(false);
         args.Validate();
         // Presigned operations are not allowed for anonymous users
         if (string.IsNullOrEmpty(AccessKey) && string.IsNullOrEmpty(SecretKey))
@@ -260,7 +260,7 @@ public partial class MinioClient : IObjectOperations
             args.ObjectName,
             args.Headers, // contentType
             Convert.ToString(args.GetType()), // metaData
-            Utils.ObjectToByteArray(args.RequestBody));
+            Utils.ObjectToByteArray(args.RequestBody)).ConfigureAwait(false);
         var authenticator = new V4Authenticator(Secure, AccessKey, SecretKey, Region,
             SessionToken);
         return authenticator.PresignURL(requestMessageBuilder, args.Expiry, Region, SessionToken);
@@ -362,7 +362,7 @@ public partial class MinioClient : IObjectOperations
     {
         args.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken);
+        using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -387,9 +387,9 @@ public partial class MinioClient : IObjectOperations
         args.Validate();
         var errs = new List<DeleteError>();
         if (args.ObjectNamesVersions.Count > 0)
-            errs = await removeObjectVersionsHelper(args, errs, cancellationToken);
+            errs = await removeObjectVersionsHelper(args, errs, cancellationToken).ConfigureAwait(false);
         else
-            errs = await removeObjectsHelper(args, errs, cancellationToken);
+            errs = await removeObjectsHelper(args, errs, cancellationToken).ConfigureAwait(false);
 
         return Observable.Create<DeleteError>( // From Current change
             async obs =>
@@ -1117,7 +1117,7 @@ public partial class MinioClient : IObjectOperations
     {
         //Skipping validate as we need the case where stream sends 0 bytes
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken);
+        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         var putObjectResponse = new PutObjectResponse(response.StatusCode, response.Content, response.Headers);
         return putObjectResponse.Etag;
     }
@@ -1283,7 +1283,7 @@ public partial class MinioClient : IObjectOperations
     {
         args.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken);
+        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         var uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
         return uploadResponse.UploadId;
     }
@@ -1308,7 +1308,7 @@ public partial class MinioClient : IObjectOperations
     {
         args.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken);
+        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
         var uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
         return uploadResponse.UploadId;
     }

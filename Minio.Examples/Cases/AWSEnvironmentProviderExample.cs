@@ -36,7 +36,7 @@ public class AWSEnvironmentProviderExample
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket("my-bucket-name")
                 .WithObject("my-object-name");
-            var result = await minioClient.StatObjectAsync(statObjectArgs);
+            var result = await minioClient.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
             Console.WriteLine("Object Stat: \n" + result);
         }
         catch (MinioException me)

@@ -36,23 +36,23 @@ public static class Program
             .WithSSL()
             .Build();
 
-        var listBuckets = await minio.ListBucketsAsync();
+        var listBuckets = await minio.ListBucketsAsync().ConfigureAwait(false);
 
         foreach (var bucket in listBuckets.Buckets) 
             Console.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
 
         //Supply a new bucket name
         var bucketName = "mynewbucket";
-        if (await IsBucketExists(minio, bucketName))
+        if (await IsBucketExists(minio, bucketName).ConfigureAwait(false))
         {
             var remBuckArgs = new RemoveBucketArgs().WithBucket(bucketName);
-            await minio.RemoveBucketAsync(remBuckArgs);
+            await minio.RemoveBucketAsync(remBuckArgs).ConfigureAwait(false);
         }
 
         var mkBktArgs = new MakeBucketArgs().WithBucket(bucketName);
-        await minio.MakeBucketAsync(mkBktArgs);
+        await minio.MakeBucketAsync(mkBktArgs).ConfigureAwait(false);
 
-        var found = await IsBucketExists(minio, bucketName);
+        var found = await IsBucketExists(minio, bucketName).ConfigureAwait(false);
         Console.WriteLine("Bucket exists? = " + found);
         Console.ReadLine();
     }

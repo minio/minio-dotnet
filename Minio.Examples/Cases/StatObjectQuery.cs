@@ -49,7 +49,7 @@ internal class StatObjectQuery
                 .WithVersionId(versionID)
                 .WithMatchETag(matchEtag)
                 .WithModifiedSince(modifiedSince);
-            var statObjectVersion = await minio.StatObjectAsync(args);
+            var statObjectVersion = await minio.StatObjectAsync(args).ConfigureAwait(false);
             PrintStat(bucketObject, statObjectVersion);
         }
         catch (MinioException me)

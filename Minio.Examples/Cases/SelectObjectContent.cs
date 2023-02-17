@@ -47,7 +47,7 @@ internal class SelectObjectContent
                     .WithObject(newObjectName)
                     .WithStreamData(stream)
                     .WithObjectSize(stream.Length);
-                await minio.PutObjectAsync(putObjectArgs);
+                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
             }
 
             var queryType = QueryExpressionType.SQL;
@@ -77,8 +77,8 @@ internal class SelectObjectContent
                 .WithQueryExpression(queryExpr)
                 .WithInputSerialization(inputSerialization)
                 .WithOutputSerialization(outputSerialization);
-            var resp = await minio.SelectObjectContentAsync(args);
-            await resp.Payload.CopyToAsync(Console.OpenStandardOutput());
+            var resp = await minio.SelectObjectContentAsync(args).ConfigureAwait(false);
+            await resp.Payload.CopyToAsync(Console.OpenStandardOutput()).ConfigureAwait(false);
             Console.WriteLine("Bytes scanned:" + resp.Stats.BytesScanned);
             Console.WriteLine("Bytes returned:" + resp.Stats.BytesReturned);
             Console.WriteLine("Bytes processed:" + resp.Stats.BytesProcessed);

@@ -28,7 +28,7 @@ public class RemoveBucketTags
             await minio.RemoveBucketTagsAsync(
                 new RemoveBucketTagsArgs()
                     .WithBucket(bucketName)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Bucket Tags removed for bucket {bucketName}.");
             Console.WriteLine();
         }

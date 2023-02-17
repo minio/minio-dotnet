@@ -37,7 +37,7 @@ internal class RemoveObject
             }
 
             Console.WriteLine("Running example for API: RemoveObjectAsync");
-            await minio.RemoveObjectAsync(args);
+            await minio.RemoveObjectAsync(args).ConfigureAwait(false);
             Console.WriteLine($"Removed object {objectName} from bucket {bucketName}{versions} successfully");
             Console.WriteLine();
         }

@@ -32,7 +32,7 @@ public class SetObjectLockConfiguration
                 new SetObjectLockConfigurationArgs()
                     .WithBucket(bucketName)
                     .WithLockConfiguration(config)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Set object lock configuration on bucket {bucketName}");
             Console.WriteLine();
         }

@@ -28,7 +28,7 @@ internal class GetVersioning
         try
         {
             Console.WriteLine("Running example for API: GetVersioning, ");
-            var config = await minio.GetVersioningAsync(args);
+            var config = await minio.GetVersioningAsync(args).ConfigureAwait(false);
             if (config == null)
             {
                 Console.WriteLine("Versioning Configuration not available for bucket " + bucketName);

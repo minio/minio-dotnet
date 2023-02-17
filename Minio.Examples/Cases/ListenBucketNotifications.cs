@@ -32,7 +32,7 @@ internal class ListenBucketNotifications
         {
             Console.WriteLine("Running example for API: ListenBucketNotifications");
             Console.WriteLine();
-            events = events ?? new List<EventType> { EventType.ObjectCreatedAll };
+            events ??= new List<EventType> { EventType.ObjectCreatedAll };
             var args = new ListenBucketNotificationsArgs()
                 .WithBucket(bucketName)
                 .WithPrefix(prefix)
@@ -40,7 +40,7 @@ internal class ListenBucketNotifications
                 .WithSuffix(suffix);
             var observable = minio.ListenBucketNotificationsAsync(bucketName, events, prefix, suffix);
 
-            var subscription = observable.Subscribe(
+            using var subscription = observable.Subscribe(
                 notification => Console.WriteLine($"Notification: {notification.json}"),
                 ex => Console.WriteLine($"OnError: {ex}"),
                 () => Console.WriteLine("Stopped listening for bucket notifications\n"));

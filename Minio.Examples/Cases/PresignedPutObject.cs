@@ -28,7 +28,7 @@ public class PresignedPutObject
                 .WithBucket(bucketName)
                 .WithObject(objectName)
                 .WithExpiry(1000);
-            var presignedUrl = await client.PresignedPutObjectAsync(args);
+            var presignedUrl = await client.PresignedPutObjectAsync(args).ConfigureAwait(false);
             Console.WriteLine(presignedUrl);
         }
         catch (Exception e)

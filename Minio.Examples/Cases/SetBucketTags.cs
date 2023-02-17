@@ -32,7 +32,7 @@ public class SetBucketTags
                 new SetBucketTagsArgs()
                     .WithBucket(bucketName)
                     .WithTagging(Tagging.GetBucketTags(tags))
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Bucket Tags set for bucket {bucketName}.");
             Console.WriteLine();
         }

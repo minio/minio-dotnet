@@ -51,7 +51,7 @@ internal class CopyObjectMetadata
                 .WithObject(destObjectName)
                 .WithHeaders(metadata)
                 .WithCopyObjectSource(copySourceObjectArgs);
-            await minio.CopyObjectAsync(copyObjectArgs);
+            await minio.CopyObjectAsync(copyObjectArgs).ConfigureAwait(false);
 
             Console.WriteLine(
                 $"Copied object {fromObjectName} from bucket {fromBucketName} to bucket {destBucketName}");

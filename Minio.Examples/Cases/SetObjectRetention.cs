@@ -40,7 +40,7 @@ public class SetObjectRetention
                     .WithVersionId(versionId)
                     .WithRetentionMode(mode)
                     .WithRetentionUntilDate(retentionValidDate)
-            );
+            ).ConfigureAwait(false);
             var versionInfo = string.IsNullOrEmpty(versionId) ? "" : " Version ID: " + versionId;
             Console.WriteLine($"Assigned retention configuration to object {bucketName}/{objectName} " +
                               versionInfo +

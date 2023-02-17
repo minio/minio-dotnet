@@ -256,11 +256,11 @@ public partial class MinioClient : IBucketOperations
     public async Task MakeBucketAsync(MakeBucketArgs args, CancellationToken cancellationToken = default)
     {
         args.Validate();
-        if (string.IsNullOrEmpty(args.Location)) args.Location = Region;
+        if (string.IsNullOrEmpty(args.Location))
+            args.Location = Region;
 
-        if (args.Location == "us-east-1")
-            if (Region != string.Empty)
-                args.Location = Region;
+        if (args.Location == "us-east-1" && Region != string.Empty)
+            args.Location = Region;
 
         args.IsBucketCreationRequest = true;
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);

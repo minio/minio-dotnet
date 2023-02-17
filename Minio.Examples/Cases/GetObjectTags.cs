@@ -32,7 +32,7 @@ public class GetObjectTags
                     .WithBucket(bucketName)
                     .WithObject(objectName)
                     .WithVersionId(versionId)
-            );
+            ).ConfigureAwait(false);
             if (tags != null && tags.GetTags()?.Count > 0)
             {
                 Console.WriteLine($"Got tags set for object {bucketName}/{objectName}.");

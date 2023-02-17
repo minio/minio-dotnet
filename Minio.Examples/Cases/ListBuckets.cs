@@ -24,7 +24,7 @@ internal class ListBuckets
         try
         {
             Console.WriteLine("Running example for API: ListBucketsAsync");
-            var list = await minio.ListBucketsAsync();
+            var list = await minio.ListBucketsAsync().ConfigureAwait(false);
             foreach (var bucket in list.Buckets) Console.WriteLine($"{bucket.Name} {bucket.CreationDateDateTime}");
             Console.WriteLine();
         }

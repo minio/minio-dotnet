@@ -58,7 +58,7 @@ public class OperationsTest
             await client.MakeBucketAsync(mkBktArgs).ConfigureAwait(false);
         }
 
-        if (!await ObjectExistsAsync(client, bucket, objectName))
+        if (!await ObjectExistsAsync(client, bucket, objectName).ConfigureAwait(false))
         {
             var helloData = Encoding.UTF8.GetBytes("hello world");
             using var helloStream = new MemoryStream();
@@ -112,7 +112,7 @@ public class OperationsTest
             await client.MakeBucketAsync(mkBktArgs).ConfigureAwait(false);
         }
 
-        if (!await ObjectExistsAsync(client, bucket, objectName))
+        if (!await ObjectExistsAsync(client, bucket, objectName).ConfigureAwait(false))
         {
             var helloData = Encoding.UTF8.GetBytes("hello world");
             using var helloStream = new MemoryStream();

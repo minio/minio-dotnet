@@ -42,7 +42,7 @@ public class AssumeRoleProviderExample
         {
             var provider = new AssumeRoleProvider(minio);
 
-            var token = await provider.GetCredentialsAsync();
+            var token = await provider.GetCredentialsAsync().ConfigureAwait(false);
             // Console.WriteLine("\nToken = "); utils.Print(token);
             var minioClient = new MinioClient()
                     .WithEndpoint(endpoint)
@@ -54,7 +54,7 @@ public class AssumeRoleProviderExample
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket("bucket-name")
                 .WithObject("object-name");
-            var result = await minio.StatObjectAsync(statObjectArgs);
+            var result = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
             // Console.WriteLine("Object Stat: \n"); utils.Print(result);
             Console.WriteLine("AssumeRoleProvider test PASSed\n");
         }

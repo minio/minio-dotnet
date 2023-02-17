@@ -48,7 +48,7 @@ public abstract class WebIdentityClientGrantsProvider<T> : AssumeRoleBaseProvide
     {
         Validate();
         var jwt = JWTSupplier();
-        var requestMessageBuilder = await base.BuildRequest();
+        var requestMessageBuilder = await base.BuildRequest().ConfigureAwait(false);
         requestMessageBuilder = Utils.GetEmptyRestRequest(requestMessageBuilder);
         requestMessageBuilder.AddQueryParameter("WebIdentityToken", jwt.AccessToken);
         await Task.Yield();

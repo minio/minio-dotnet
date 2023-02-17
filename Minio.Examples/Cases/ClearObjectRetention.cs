@@ -32,7 +32,7 @@ public class ClearObjectRetention
                     .WithBucket(bucketName)
                     .WithObject(objectName)
                     .WithVersionId(versionId)
-            );
+            ).ConfigureAwait(false);
             var versionInfo = string.IsNullOrEmpty(versionId) ? "" : " Version ID: " + versionId;
             Console.WriteLine($"Cleared retention configuration to object {bucketName}/{objectName} " +
                               versionInfo);

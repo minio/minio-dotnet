@@ -44,15 +44,15 @@ public class ReuseTcpConnectionTest
 
         var bktExistArgs = new BucketExistsArgs()
             .WithBucket(bucket);
-        var found = await MinioClient.BucketExistsAsync(bktExistArgs);
+        var found = await MinioClient.BucketExistsAsync(bktExistArgs).ConfigureAwait(false);
         if (!found)
         {
             var mkBktArgs = new MakeBucketArgs()
                 .WithBucket(bucket);
-            await MinioClient.MakeBucketAsync(mkBktArgs);
+            await MinioClient.MakeBucketAsync(mkBktArgs).ConfigureAwait(false);
         }
 
-        if (!await ObjectExistsAsync(MinioClient, bucket, objectName))
+        if (!await ObjectExistsAsync(MinioClient, bucket, objectName).ConfigureAwait(false))
         {
             var helloData = Encoding.UTF8.GetBytes("hello world");
             using var helloStream = new MemoryStream();
@@ -63,14 +63,14 @@ public class ReuseTcpConnectionTest
                 .WithObject(objectName)
                 .WithStreamData(helloStream)
                 .WithObjectSize(helloData.Length);
-            await MinioClient.PutObjectAsync(putObjectArgs);
+            await MinioClient.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
         }
 
-        await GetObjectLength(bucket, objectName);
+        await GetObjectLength(bucket, objectName).ConfigureAwait(false);
 
         for (var i = 0; i < 100; i++)
             // sequential execution, produce one tcp connection, check by netstat -an | grep 9000
-            await GetObjectLength(bucket, objectName);
+            await GetObjectLength(bucket, objectName).ConfigureAwait(false);
 
         Parallel.ForEach(Enumerable.Range(0, 500),
             new ParallelOptions
@@ -80,7 +80,7 @@ public class ReuseTcpConnectionTest
             async i =>
             {
                 // concurrent execution, produce eight tcp connections.
-                await GetObjectLength(bucket, objectName);
+                await GetObjectLength(bucket, objectName).ConfigureAwait(false);
             });
     }
 
@@ -91,7 +91,7 @@ public class ReuseTcpConnectionTest
             .WithBucket(bucket)
             .WithObject(objectName)
             .WithCallbackStream(stream => stream.Dispose());
-        await MinioClient.GetObjectAsync(getObjectArgs);
+        await MinioClient.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
 
         return objectLength;
     }

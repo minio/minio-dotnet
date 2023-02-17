@@ -46,7 +46,7 @@ internal class CopyObject
                 .WithObject(destObjectName)
                 .WithCopyObjectSource(cpSrcArgs)
                 .WithServerSideEncryption(sseDest);
-            await minio.CopyObjectAsync(args);
+            await minio.CopyObjectAsync(args).ConfigureAwait(false);
             Console.WriteLine("Copied object {0} from bucket {1} to bucket {2}", fromObjectName, fromBucketName,
                 destBucketName);
             Console.WriteLine();

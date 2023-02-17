@@ -28,7 +28,7 @@ public class RemoveBucketReplication
             await minio.RemoveBucketReplicationAsync(
                 new RemoveBucketReplicationArgs()
                     .WithBucket(bucketName)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Bucket Replication removed for bucket {bucketName}.");
             Console.WriteLine();
         }

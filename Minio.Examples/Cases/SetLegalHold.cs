@@ -34,7 +34,7 @@ internal class SetLegalHold
                 .WithObject(objectName)
                 .WithVersionId(versionId)
                 .WithLegalHold(true);
-            await minio.SetObjectLegalHoldAsync(args);
+            await minio.SetObjectLegalHoldAsync(args).ConfigureAwait(false);
             Console.WriteLine("Legal Hold status for " + bucketName + "/" + objectName +
                               (string.IsNullOrEmpty(versionId) ? " " : " with version id " + versionId + " ") +
                               " set to ON.");

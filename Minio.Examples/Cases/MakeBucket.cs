@@ -29,7 +29,7 @@ public class MakeBucket
                 new MakeBucketArgs()
                     .WithBucket(bucketName)
                     .WithLocation(loc)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Created bucket {bucketName}");
             Console.WriteLine();
         }

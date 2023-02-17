@@ -28,7 +28,7 @@ public class RemoveBucketLifecycle
             await minio.RemoveBucketLifecycleAsync(
                 new RemoveBucketLifecycleArgs()
                     .WithBucket(bucketName)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Bucket Lifecycle removed for bucket {bucketName}.");
             Console.WriteLine();
         }

@@ -38,7 +38,7 @@ public class ChainedCredentialProvider
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket("my-bucket-name")
                 .WithObject("my-object-name");
-            var result = await minioClient.StatObjectAsync(statObjectArgs);
+            var result = await minioClient.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
         }
         catch (MinioException me)
         {

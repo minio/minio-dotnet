@@ -29,7 +29,7 @@ internal class RemoveIncompleteUpload
             var args = new RemoveIncompleteUploadArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            await minio.RemoveIncompleteUploadAsync(args);
+            await minio.RemoveIncompleteUploadAsync(args).ConfigureAwait(false);
             Console.WriteLine($"Removed object {objectName} from bucket {bucketName} successfully");
             Console.WriteLine();
         }

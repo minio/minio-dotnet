@@ -35,7 +35,7 @@ public class SetObjectTags
                 .WithObject(objectName)
                 .WithVersionId(versionId)
                 .WithTagging(Tagging.GetObjectTags(tags));
-            await minio.SetObjectTagsAsync(args);
+            await minio.SetObjectTagsAsync(args).ConfigureAwait(false);
             Console.WriteLine($"Tags set for object {bucketName}/{objectName}.");
             Console.WriteLine();
         }

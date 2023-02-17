@@ -28,7 +28,7 @@ public class GetBucketTags
             var tags = await minio.GetBucketTagsAsync(
                 new GetBucketTagsArgs()
                     .WithBucket(bucketName)
-            );
+            ).ConfigureAwait(false);
             if (tags != null && tags.GetTags()?.Count > 0)
             {
                 Console.WriteLine($"Got Bucket Tags set for bucket {bucketName}.");

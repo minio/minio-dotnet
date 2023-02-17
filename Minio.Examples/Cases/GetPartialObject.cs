@@ -33,7 +33,7 @@ internal class GetPartialObject
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            await minio.StatObjectAsync(statObjectArgs);
+            await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
 
             // Get object content starting at byte position 1024 and length of 4096
             var getObjectArgs = new GetObjectArgs()

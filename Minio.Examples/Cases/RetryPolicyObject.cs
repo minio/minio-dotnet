@@ -66,7 +66,7 @@ internal static class RetryPolicyHelper
     {
         return policy == null
             ? null
-            : async executeCallback => await policy.ExecuteAsync(executeCallback);
+            : async executeCallback => await policy.ExecuteAsync(executeCallback).ConfigureAwait(false);
     }
 
     public static MinioClient WithRetryPolicy(this MinioClient client, AsyncPolicy<ResponseResult> policy)
@@ -101,7 +101,7 @@ internal class RetryPolicyObject
                     .WithBucket("bad-bucket")
                     .WithObject("bad-file")
                     .WithCallbackStream(s => { });
-                await minio.GetObjectAsync(getObjectArgs);
+                await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
             }
             catch (BucketNotFoundException ex)
             {

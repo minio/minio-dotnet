@@ -28,7 +28,7 @@ internal class RemoveAllBucketNotifications
 
             var args = new RemoveAllBucketNotificationsArgs()
                 .WithBucket(bucketName);
-            await minio.RemoveAllBucketNotificationsAsync(args);
+            await minio.RemoveAllBucketNotificationsAsync(args).ConfigureAwait(false);
 
             Console.WriteLine($"Notifications successfully removed from the bucket {bucketName}");
             Console.WriteLine();

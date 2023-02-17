@@ -27,7 +27,7 @@ internal class GetBucketNotification
             Console.WriteLine("Running example for API: GetBucketNotificationsAsync");
             var args = new GetBucketNotificationsArgs()
                 .WithBucket(bucketName);
-            var notifications = await minio.GetBucketNotificationsAsync(args);
+            var notifications = await minio.GetBucketNotificationsAsync(args).ConfigureAwait(false);
             Console.WriteLine($"Notifications is {notifications.ToXML()} for bucket {bucketName}");
             Console.WriteLine();
         }

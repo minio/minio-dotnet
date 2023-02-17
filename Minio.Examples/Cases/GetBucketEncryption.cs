@@ -28,7 +28,7 @@ public class GetBucketEncryption
             var config = await minio.GetBucketEncryptionAsync(
                 new GetBucketEncryptionArgs()
                     .WithBucket(bucketName)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Got encryption configuration for bucket {bucketName}.");
             if (config != null && config.Rule?.Apply != null)
                 Console.WriteLine("Server Side Encryption Algorithm: " + config.Rule.Apply.SSEAlgorithm);

@@ -28,7 +28,7 @@ public class RemoveBucketEncryption
             await minio.RemoveBucketEncryptionAsync(
                 new RemoveBucketEncryptionArgs()
                     .WithBucket(bucketName)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Removed encryption configuration for bucket {bucketName}.");
             Console.WriteLine();
         }

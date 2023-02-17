@@ -114,7 +114,7 @@ public class IAMAWSProvider : EnvironmentProvider
         requestBuilder.AddQueryParameter("location", "");
 
         using var response =
-            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
+            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(response.Content) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))
             throw new CredentialsProviderException("IAMAWSProvider",
@@ -163,10 +163,10 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
         }
         else
         {
-            url = await GetIamRoleNamedURL();
+            url = await GetIamRoleNamedURL().ConfigureAwait(false);
         }
 
-        Credentials = await GetAccessCredentials(url);
+        Credentials = await GetAccessCredentials(url).ConfigureAwait(false);
         return Credentials;
     }
 
@@ -177,7 +177,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
         requestBuilder.AddQueryParameter("location", "");
 
         using var response =
-            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
+            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder).ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(response.Content) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))
@@ -211,7 +211,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             newUrlStr = urlStr;
         }
 
-        var roleName = await GetIamRoleNameAsync(url);
+        var roleName = await GetIamRoleNameAsync(url).ConfigureAwait(false);
         newUrlStr += roleName;
         return new Uri(newUrlStr);
     }

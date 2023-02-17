@@ -45,7 +45,7 @@ internal class StatObject
                 var objectStatArgs = new StatObjectArgs()
                     .WithBucket(bucketName)
                     .WithObject(bucketObject);
-                var statObject = await minio.StatObjectAsync(objectStatArgs);
+                var statObject = await minio.StatObjectAsync(objectStatArgs).ConfigureAwait(false);
                 PrintStat(bucketObject, statObject);
                 PrintMetaData(statObject.MetaData);
                 return;
@@ -55,7 +55,7 @@ internal class StatObject
                 .WithBucket(bucketName)
                 .WithObject(bucketObject)
                 .WithVersionId(versionID);
-            var statObjectVersion = await minio.StatObjectAsync(args);
+            var statObjectVersion = await minio.StatObjectAsync(args).ConfigureAwait(false);
             PrintStat(bucketObject, statObjectVersion);
             PrintMetaData(statObjectVersion.MetaData);
         }

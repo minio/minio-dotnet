@@ -46,10 +46,10 @@ public partial class MinioClient : IObjectOperations
         var objStat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
         args.Validate();
         if (args.FileName != null)
-            await getObjectFileAsync(args, objStat, cancellationToken);
+            await getObjectFileAsync(args, objStat, cancellationToken).ConfigureAwait(false);
         else if (args.CallBack is not null)
-            await getObjectStreamAsync(args, objStat, args.CallBack, cancellationToken);
-        else await getObjectStreamAsync(args, objStat, args.FuncCallBack, cancellationToken);
+            await getObjectStreamAsync(args, objStat, args.CallBack, cancellationToken).ConfigureAwait(false);
+        else await getObjectStreamAsync(args, objStat, args.FuncCallBack, cancellationToken).ConfigureAwait(false);
         return objStat;
     }
 
@@ -72,17 +72,17 @@ public partial class MinioClient : IObjectOperations
         Utils.ValidateFile(tempFileName);
         if (File.Exists(tempFileName)) File.Delete(tempFileName);
 
-        var callbackAsync = async delegate(Stream stream, CancellationToken cancellationToken)
+        var callbackAsync = async (Stream stream, CancellationToken cancellationToken) =>
         {
             using var dest = new FileStream(tempFileName, FileMode.Create, FileAccess.Write);
-            await stream.CopyToAsync(dest);
+            await stream.CopyToAsync(dest, cancellationToken).ConfigureAwait(false);
         };
 
         using var cts = new CancellationTokenSource();
         cts.CancelAfter(TimeSpan.FromMilliseconds(15));
         args.WithCallbackStream(async (stream, cancellationToken) =>
         {
-            await callbackAsync(stream, cts.Token);
+            await callbackAsync(stream, cts.Token).ConfigureAwait(false);
             Utils.MoveWithReplace(tempFileName, args.FileName);
         });
         return getObjectStreamAsync(args, objectStat, null, cancellationToken);
@@ -230,7 +230,7 @@ public partial class MinioClient : IObjectOperations
         if (args.ObjectNamesVersions.Count <= 1000)
         {
             fullErrorsList.AddRange(await callRemoveObjectVersions(args, args.ObjectNamesVersions, fullErrorsList,
-                cancellationToken));
+                cancellationToken).ConfigureAwait(false));
             return fullErrorsList;
         }
 
@@ -292,14 +292,14 @@ public partial class MinioClient : IObjectOperations
             iterObjects.Insert(i, objName);
             if (++i == 1000)
             {
-                fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList, cancellationToken);
+                fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList, cancellationToken).ConfigureAwait(false);
                 iterObjects.Clear();
                 i = 0;
             }
         }
 
         if (iterObjects.Count > 0)
-            fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList, cancellationToken);
+            fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList, cancellationToken).ConfigureAwait(false);
         return fullErrorsList;
     }
 }

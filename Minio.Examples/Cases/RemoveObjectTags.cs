@@ -32,7 +32,7 @@ public class RemoveObjectTags
                     .WithBucket(bucketName)
                     .WithObject(objectName)
                     .WithVersionId(versionId)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Tags removed for object {bucketName}/{objectName}.");
             Console.WriteLine();
         }

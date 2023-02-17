@@ -27,7 +27,7 @@ internal class RemoveBucket
             await minio.RemoveBucketAsync(
                 new RemoveBucketArgs()
                     .WithBucket(bucketName)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Removed the bucket {bucketName} successfully");
         }
         catch (Exception e)

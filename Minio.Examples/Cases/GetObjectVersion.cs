@@ -39,7 +39,7 @@ internal class GetObjectVersion
                 .WithObject(objectName)
                 .WithVersionId(versionId)
                 .WithFile(fileName);
-            await minio.GetObjectAsync(args);
+            await minio.GetObjectAsync(args).ConfigureAwait(false);
             Console.WriteLine(
                 $"Downloaded the file {fileName} for object {objectName} with version {versionId} in bucket {bucketName}");
             Console.WriteLine();

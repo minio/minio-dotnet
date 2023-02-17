@@ -30,7 +30,7 @@ public class GetObjectLockConfiguration
             var config = await minio.GetObjectLockConfigurationAsync(
                 new GetObjectLockConfigurationArgs()
                     .WithBucket(bucketName)
-            );
+            ).ConfigureAwait(false);
             if (config != null)
             {
                 Console.WriteLine($"Object lock configuration on bucket {bucketName} is : " + config.ObjectLockEnabled);

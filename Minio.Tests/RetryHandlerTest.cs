@@ -36,7 +36,7 @@ public class RetryHandlerTest
             async callback =>
             {
                 invokeCount++;
-                return await callback();
+                return await callback().ConfigureAwait(false);
             });
 
         var bktArgs = new BucketExistsArgs()
@@ -66,7 +66,7 @@ public class RetryHandlerTest
                     invokeCount++;
                     try
                     {
-                        return await callback();
+                        return await callback().ConfigureAwait(false);
                     }
                     catch (BucketNotFoundException ex)
                     {

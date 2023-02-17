@@ -31,7 +31,7 @@ internal class PutObject
     {
         try
         {
-            var bs = await File.ReadAllBytesAsync(fileName);
+            var bs = await File.ReadAllBytesAsync(fileName).ConfigureAwait(false);
             Console.WriteLine("Running example for API: PutObjectAsync");
             using (var filestream = new MemoryStream(bs))
             {
@@ -48,7 +48,7 @@ internal class PutObject
                     .WithContentType("application/octet-stream")
                     .WithHeaders(metaData)
                     .WithServerSideEncryption(sse);
-                await minio.PutObjectAsync(args);
+                await minio.PutObjectAsync(args).ConfigureAwait(false);
             }
 
             Console.WriteLine($"Uploaded object {objectName} to bucket {bucketName}");

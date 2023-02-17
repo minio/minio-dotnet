@@ -30,7 +30,7 @@ public class SetBucketEncryption
                 new SetBucketEncryptionArgs()
                     .WithBucket(bucketName)
                     .WithEncryptionConfig(config)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Assigned encryption configuration to bucket {bucketName}");
             Console.WriteLine();
         }

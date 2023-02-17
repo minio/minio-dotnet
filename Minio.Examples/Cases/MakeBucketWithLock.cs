@@ -30,7 +30,7 @@ public class MakeBucketWithLock
                     .WithBucket(bucketName)
                     .WithLocation(loc)
                     .WithObjectLock()
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Created bucket {bucketName} with lock.");
             Console.WriteLine();
         }

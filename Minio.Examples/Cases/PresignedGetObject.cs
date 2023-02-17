@@ -28,6 +28,6 @@ public class PresignedGetObject
             .WithObject(objectName)
             .WithExpiry(1000)
             .WithHeaders(reqParams);
-        var presignedUrl = await client.PresignedGetObjectAsync(args);
+        var presignedUrl = await client.PresignedGetObjectAsync(args).ConfigureAwait(false);
     }
 }

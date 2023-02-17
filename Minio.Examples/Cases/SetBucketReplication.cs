@@ -55,11 +55,11 @@ public class SetBucketReplication
         var setArgs = new SetVersioningArgs()
             .WithBucket(bucketName)
             .WithVersioningEnabled();
-        await minio.SetVersioningAsync(setArgs);
+        await minio.SetVersioningAsync(setArgs).ConfigureAwait(false);
         setArgs = new SetVersioningArgs()
             .WithBucket(destBucketName)
             .WithVersioningEnabled();
-        await minio.SetVersioningAsync(setArgs);
+        await minio.SetVersioningAsync(setArgs).ConfigureAwait(false);
         var schema = "http://";
         string serverEndPoint;
         string accessKey;
@@ -120,6 +120,6 @@ public class SetBucketReplication
             new SetBucketReplicationArgs()
                 .WithBucket(bucketName)
                 .WithConfiguration(repl)
-        );
+        ).ConfigureAwait(false);
     }
 }

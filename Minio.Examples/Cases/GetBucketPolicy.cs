@@ -28,7 +28,7 @@ internal class GetBucketPolicy
             var args = new GetPolicyArgs()
                 .WithBucket(bucketName);
             Console.WriteLine("Running example for API: GetPolicyAsync");
-            var policyJson = await minio.GetPolicyAsync(args);
+            var policyJson = await minio.GetPolicyAsync(args).ConfigureAwait(false);
             Console.WriteLine($"Current Policy is {policyJson} for bucket {bucketName}");
             Console.WriteLine();
         }

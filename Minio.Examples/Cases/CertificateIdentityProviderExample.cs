@@ -47,7 +47,7 @@ public static class CertificateIdentityProviderExample
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket("bucket-name")
                 .WithObject("object-name");
-            var result = await minioClient.StatObjectAsync(statObjectArgs);
+            var result = await minioClient.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
             // Console.WriteLine("\nObject Stat: \n" + result.ToString());
             Console.WriteLine("\nCertificateIdentityProvider test PASSed\n");
         }

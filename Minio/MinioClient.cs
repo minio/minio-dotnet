@@ -222,7 +222,8 @@ public partial class MinioClient : IMinioClient
 
     public void Dispose()
     {
-        if (disposeHttpClient) httpClient?.Dispose();
+        if (disposeHttpClient) 
+            httpClient?.Dispose();
     }
 
     /// <summary>
@@ -352,7 +353,7 @@ public partial class MinioClient : IMinioClient
             if (isAWSEnvProvider)
             {
                 var aWSEnvProvider = (AWSEnvironmentProvider)Provider;
-                creds = await aWSEnvProvider.GetCredentialsAsync();
+                creds = await aWSEnvProvider.GetCredentialsAsync().ConfigureAwait(false);
             }
             else if (isIAMAWSProvider)
             {
@@ -361,7 +362,7 @@ public partial class MinioClient : IMinioClient
             }
             else
             {
-                creds = await Provider.GetCredentialsAsync();
+                creds = await Provider.GetCredentialsAsync().ConfigureAwait(false);
             }
 
             if (creds != null)
@@ -578,7 +579,7 @@ public partial class MinioClient : IMinioClient
             if (requestMessageBuilder.ResponseWriter != null)
                 requestMessageBuilder.ResponseWriter(responseResult.ContentStream);
             if (requestMessageBuilder.FunctionResponseWriter != null)
-                await requestMessageBuilder.FunctionResponseWriter(responseResult.ContentStream, cancellationToken);
+                await requestMessageBuilder.FunctionResponseWriter(responseResult.ContentStream, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {

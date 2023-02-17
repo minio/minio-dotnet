@@ -31,7 +31,7 @@ public class GetBucketReplication
             var repl = await minio.GetBucketReplicationAsync(
                 new GetBucketReplicationArgs()
                     .WithBucket(bucketName)
-            );
+            ).ConfigureAwait(false);
             if (repl != null && repl.Rules?.Count > 0)
             {
                 Console.WriteLine($"Got Bucket Replication Configuration set for bucket {bucketName}.");
