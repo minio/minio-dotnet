@@ -174,10 +174,16 @@ public static class Utils
 
     public static void MoveWithReplace(string sourceFileName, string destFileName)
     {
-        // first, delete target file if exists, as File.Move() does not support overwrite
-        if (File.Exists(destFileName)) File.Delete(destFileName);
+        try
+        {
+            // first, delete target file if exists, as File.Move() does not support overwrite
+            if (File.Exists(destFileName)) File.Delete(destFileName);
 
-        File.Move(sourceFileName, destFileName);
+            File.Move(sourceFileName, destFileName);
+        }
+        catch
+        {
+        }
     }
 
     internal static bool IsSupersetOf(IList<string> l1, IList<string> l2)

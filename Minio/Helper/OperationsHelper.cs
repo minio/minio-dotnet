@@ -81,7 +81,7 @@ public partial class MinioClient : IObjectOperations
 #pragma warning disable IDISP001 // Dispose created
         var cts = new CancellationTokenSource();
 #pragma warning restore IDISP001 // Dispose created
-        cts.CancelAfter(TimeSpan.FromMilliseconds(15));
+        cts.CancelAfter(TimeSpan.FromSeconds(15));
         args.WithCallbackStream(async (stream, cancellationToken) =>
         {
             await callbackAsync(stream, cts.Token).ConfigureAwait(false);
