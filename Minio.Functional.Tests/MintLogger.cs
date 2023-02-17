@@ -102,6 +102,6 @@ internal class MintLogger
     public void Log()
     {
         Console.WriteLine(JsonSerializer.Serialize(this,
-            new JsonSerializerOptions { WriteIndented = false, DefaultIgnoreCondition = JsonIgnoreCondition.Always }));
+            new JsonSerializerOptions { WriteIndented = false, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault }));
     }
 }

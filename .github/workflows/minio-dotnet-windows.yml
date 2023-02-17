@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         configuration: [Release]
-        dotnet-version: ["6.0.x"]
+        dotnet-version: ["7.0.x"]
 
     runs-on: windows-latest
     env:

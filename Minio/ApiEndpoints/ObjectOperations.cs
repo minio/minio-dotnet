@@ -1074,10 +1074,9 @@ public partial class MinioClient : IObjectOperations
     {
         args.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
         var getUploadResponse = new GetMultipartUploadsListResponse(response.StatusCode, response.Content);
-        response.Dispose();
 
         return getUploadResponse.UploadResult;
     }

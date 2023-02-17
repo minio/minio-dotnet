@@ -37,7 +37,7 @@ using Minio.Exceptions;
 
 namespace Minio.Functional.Tests;
 
-public class FunctionalTest
+public static class FunctionalTest
 {
     private const int KB = 1024;
     private const int MB = 1024 * 1024;

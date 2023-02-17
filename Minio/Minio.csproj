@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<AssemblyName>Minio</AssemblyName>
 		<RootNamespace>Minio</RootNamespace>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
 		<DebugType>embedded</DebugType>
 		<AssemblyOriginatorKeyFile>..\Minio.snk</AssemblyOriginatorKeyFile>
 		<SignAssembly>true</SignAssembly>
@@ -12,9 +12,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Crc32.NET" Version="1.2.0"/>
-		<PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="All"/>
-		<PackageReference Include="System.Reactive.Linq" Version="5.0.0"/>
+		<PackageReference Include="Crc32.NET" Version="1.2.0" />
+		<PackageReference Include="System.IO.Hashing" Version="7.0.0" />
+		<PackageReference Include="System.Reactive.Linq" Version="5.0.0" />
 	</ItemGroup>
 
 </Project>
