@@ -5246,7 +5246,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static void ListObjects_Test(MinioClient minio, string bucketName, string prefix, int numObjects,
+    internal static async Task ListObjects_Test(MinioClient minio, string bucketName, string prefix, int numObjects,
         bool recursive = true, bool versions = false, Dictionary<string, string> headers = null)
     {
         var startTime = DateTime.Now;
@@ -5281,8 +5281,7 @@ public static class FunctionalTest
                 ex => throw ex,
                 () => { });
         }
-
-        Thread.Sleep(1000);
+        await Task.Delay(1000);
         Assert.AreEqual(numObjects, count);
     }
 
