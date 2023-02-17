@@ -3,13 +3,13 @@
   "isRoot": true,
   "tools": {
     "jetbrains.resharper.globaltools": {
-      "version": "2022.1.1",
+      "version": "2022.3.2",
       "commands": [
         "jb"
       ]
     },
     "regitlint": {
-      "version": "6.0.8",
+      "version": "6.3.10",
       "commands": [
         "regitlint"
       ]
