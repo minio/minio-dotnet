@@ -69,10 +69,8 @@ public class ReuseTcpConnectionTest
         await GetObjectLength(bucket, objectName);
 
         for (var i = 0; i < 100; i++)
-        {
             // sequential execution, produce one tcp connection, check by netstat -an | grep 9000
             await GetObjectLength(bucket, objectName);
-        }
 
         Parallel.ForEach(Enumerable.Range(0, 500),
             new ParallelOptions

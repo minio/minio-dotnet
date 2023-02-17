@@ -220,12 +220,10 @@ internal class PutObjectResponse : GenericResponse
         }
 
         foreach (var parameter in responseHeaders)
-        {
             if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
             {
                 Etag = parameter.Value;
                 return;
             }
-        }
     }
 }

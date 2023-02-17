@@ -33,7 +33,8 @@ public class MissingBucketReplicationConfigurationException : MinioException
     {
     }
 
-    public MissingBucketReplicationConfigurationException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    public MissingBucketReplicationConfigurationException(string message, ResponseResult serverResponse) : base(message,
+        serverResponse)
     {
     }
 

@@ -303,10 +303,8 @@ public class SetBucketNotificationsArgs : BucketArgs<SetBucketNotificationsArgs>
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
         if (BucketNotificationConfiguration == null)
-        {
             throw new UnexpectedMinioException(
                 "Cannot BuildRequest for SetBucketNotificationsArgs. BucketNotification configuration not assigned");
-        }
 
         requestMessageBuilder.AddQueryParameter("notification", "");
         var body = Utils.MarshalXML(BucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
@@ -402,7 +400,6 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
             {
                 using var sr = new StreamReader(responseStream);
                 while (!sr.EndOfStream)
-                {
                     try
                     {
                         var line = await sr.ReadLineAsync().ConfigureAwait(false);
@@ -423,7 +420,6 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
                     {
                         break;
                     }
-                }
             }
         };
         return requestMessageBuilder;
@@ -612,11 +608,9 @@ public class SetObjectLockConfigurationArgs : BucketArgs<SetObjectLockConfigurat
     {
         base.Validate();
         if (LockConfiguration == null)
-        {
             throw new InvalidOperationException("The lock configuration object " + nameof(LockConfiguration) +
                                                 " is not set. Please use " + nameof(WithLockConfiguration) +
                                                 " to set.");
-        }
     }
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)

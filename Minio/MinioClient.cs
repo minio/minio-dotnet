@@ -261,10 +261,8 @@ public partial class MinioClient : IMinioClient
     private void ArgsCheck(Args args)
     {
         if (args is null)
-        {
             throw new ArgumentNullException(nameof(args),
                 "Args object cannot be null. It needs to be assigned to an instantiated child object of Args.");
-        }
     }
 
     /// <summary>
@@ -380,7 +378,6 @@ public partial class MinioClient : IMinioClient
         var usePathStyle = false;
 
         if (bucketName != null)
-        {
             if (s3utils.IsAmazonEndPoint(BaseUrl))
             {
                 if (method == HttpMethod.Put && objectName == null && resourcePath == null)
@@ -395,7 +392,6 @@ public partial class MinioClient : IMinioClient
 
                 if (usePathStyle) resource += Utils.UrlEncode(bucketName) + "/";
             }
-        }
 
         // Set Target URL
         var requestUrl = RequestUtil.MakeTargetURL(BaseUrl, Secure, bucketName, region, usePathStyle);
@@ -420,9 +416,7 @@ public partial class MinioClient : IMinioClient
         {
             if (headerMap.ContainsKey(messageBuilder.ContentTypeKey) &&
                 !string.IsNullOrEmpty(headerMap[messageBuilder.ContentTypeKey]))
-            {
                 headerMap[messageBuilder.ContentTypeKey] = contentType;
-            }
 
             foreach (var entry in headerMap) messageBuilder.AddOrUpdateHeaderParameter(entry.Key, entry.Value);
         }
@@ -510,10 +504,8 @@ public partial class MinioClient : IMinioClient
             credentials = Provider.GetCredentials();
 
         if (credentials == null)
-        {
             // Unable to fetch credentials.
             return this;
-        }
 
         AccessKey = credentials.AccessKey;
         SecretKey = credentials.SecretKey;
@@ -523,9 +515,7 @@ public partial class MinioClient : IMinioClient
              Provider is CertificateIdentityProvider ||
              (Provider is ChainedProvider chainedProvider && chainedProvider.CurrentProvider is AWSEnvironmentProvider))
             && isSessionTokenAvailable)
-        {
             SessionToken = credentials.SessionToken;
-        }
 
         return this;
     }
@@ -589,10 +579,8 @@ public partial class MinioClient : IMinioClient
             if (requestMessageBuilder.ResponseWriter != null)
                 requestMessageBuilder.ResponseWriter(responseResult.ContentStream);
             if (requestMessageBuilder.FunctionResponseWriter != null)
-            {
                 await requestMessageBuilder.FunctionResponseWriter(responseResult.ContentStream,
                     cancellationToken);
-            }
         }
         catch (OperationCanceledException)
         {
@@ -614,18 +602,14 @@ public partial class MinioClient : IMinioClient
     internal static void ParseError(ResponseResult response)
     {
         if (response == null)
-        {
             throw new ConnectionException(
                 "Response is nil. Please report this issue https://github.com/minio/minio-dotnet/issues", response);
-        }
 
         if (HttpStatusCode.Redirect.Equals(response.StatusCode) ||
             HttpStatusCode.TemporaryRedirect.Equals(response.StatusCode) ||
             HttpStatusCode.MovedPermanently.Equals(response.StatusCode))
-        {
             throw new RedirectionException(
                 "Redirection detected. Please report this issue https://github.com/minio/minio-dotnet/issues");
-        }
 
         if (string.IsNullOrWhiteSpace(response.Content))
         {
@@ -643,9 +627,7 @@ public partial class MinioClient : IMinioClient
             || HttpStatusCode.NotFound.Equals(response.StatusCode)
             || HttpStatusCode.MethodNotAllowed.Equals(response.StatusCode)
             || HttpStatusCode.NotImplemented.Equals(response.StatusCode))
-        {
             ParseWellKnownErrorNoContent(response);
-        }
 
         if (response.StatusCode == 0)
             throw new ConnectionException("Connection error:" + response.ErrorMessage, response);
@@ -754,40 +736,30 @@ public partial class MinioClient : IMinioClient
 
         if (response.StatusCode.Equals(HttpStatusCode.Forbidden)
             && (errResponse.Code.Equals("SignatureDoesNotMatch") || errResponse.Code.Equals("InvalidAccessKeyId")))
-        {
             throw new AuthorizationException(errResponse.Resource, errResponse.BucketName, errResponse.Message);
-        }
 
         // Handle XML response for Bucket Policy not found case
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
             && response.Request.RequestUri.PathAndQuery.EndsWith("?policy")
             && response.Request.Method.Equals(HttpMethod.Get)
             && errResponse.Code == "NoSuchBucketPolicy")
-        {
             throw new ErrorResponseException(errResponse, response)
             {
                 XmlError = response.Content
             };
-        }
 
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
             && errResponse.Code == "NoSuchBucket")
-        {
             throw new BucketNotFoundException(errResponse.BucketName, "Not found.");
-        }
 
         if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
             && errResponse.Code.Equals("MalformedXML"))
-        {
             throw new MalFormedXMLException(errResponse.Resource, errResponse.BucketName, errResponse.Message,
                 errResponse.Key);
-        }
 
         if (response.StatusCode.Equals(HttpStatusCode.NotImplemented)
             && errResponse.Code.Equals("NotImplemented"))
-        {
             throw new NotImplementedException(errResponse.Message);
-        }
 
         if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
             && errResponse.Code.Equals("InvalidRequest"))
@@ -799,21 +771,15 @@ public partial class MinioClient : IMinioClient
 
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
             && errResponse.Code.Equals("ObjectLockConfigurationNotFoundError"))
-        {
             throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
-        }
 
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
             && errResponse.Code.Equals("ReplicationConfigurationNotFoundError"))
-        {
             throw new MissingBucketReplicationConfigurationException(errResponse.BucketName, errResponse.Message);
-        }
 
         if (response.StatusCode.Equals(HttpStatusCode.Conflict)
             && errResponse.Code.Equals("BucketAlreadyOwnedByYou"))
-        {
             throw new Exception("Bucket already owned by you: " + errResponse.BucketName);
-        }
 
         throw new UnexpectedMinioException(errResponse.Message)
         {

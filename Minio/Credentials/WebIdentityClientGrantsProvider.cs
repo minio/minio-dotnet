@@ -63,9 +63,7 @@ public abstract class WebIdentityClientGrantsProvider<T> : AssumeRoleBaseProvide
         // txtBlock.Text = readStream.ReadToEnd();
         if (string.IsNullOrWhiteSpace(Convert.ToString(response.Content)) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))
-        {
             throw new ArgumentNullException("Unable to get credentials. Response error.");
-        }
 
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(Convert.ToString(response.Content)));
         return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(stream);

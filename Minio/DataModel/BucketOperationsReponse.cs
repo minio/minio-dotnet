@@ -35,9 +35,7 @@ internal class GetVersioningResponse : GenericResponse
     {
         if (string.IsNullOrEmpty(responseContent) ||
             !HttpStatusCode.OK.Equals(statusCode))
-        {
             return;
-        }
 
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
         stream.Position = 0;
@@ -165,9 +163,7 @@ internal class GetObjectsListResponse : GenericResponse
     {
         if (string.IsNullOrEmpty(responseContent) ||
             !HttpStatusCode.OK.Equals(statusCode))
-        {
             return;
-        }
 
         using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
         {
@@ -206,9 +202,7 @@ internal class GetObjectsVersionsListResponse : GenericResponse
     {
         if (string.IsNullOrEmpty(responseContent) ||
             !HttpStatusCode.OK.Equals(statusCode))
-        {
             return;
-        }
 
         using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
         {
@@ -245,9 +239,7 @@ internal class GetPolicyResponse : GenericResponse
     {
         if (string.IsNullOrEmpty(responseContent) ||
             !HttpStatusCode.OK.Equals(statusCode))
-        {
             return;
-        }
 
         Initialize().Wait();
     }

@@ -38,10 +38,8 @@ public class LifecycleConfiguration
     public LifecycleConfiguration(List<LifecycleRule> rules)
     {
         if (rules == null || rules.Count <= 0)
-        {
             throw new ArgumentNullException(nameof(Rules),
                 "Rules object cannot be empty. A finite set of Lifecycle Rules are needed for LifecycleConfiguration.");
-        }
 
         Rules = new List<LifecycleRule>(rules);
     }

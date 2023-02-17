@@ -127,8 +127,7 @@ public class SelectResponseStream
                 throw new ArgumentException("message CRC Mismatch");
             var headerMap = extractHeaders(headers);
 
-            if (headerMap.TryGetValue(":message-type", out string value))
-            {
+            if (headerMap.TryGetValue(":message-type", out var value))
                 if (value.Equals(":error"))
                 {
                     string errorCode = null;
@@ -137,7 +136,6 @@ public class SelectResponseStream
                     headerMap.TryGetValue(":error-message", out errorMessage);
                     throw new SelectObjectContentException(errorCode + ":" + errorMessage);
                 }
-            }
 
             if (headerMap.TryGetValue(":event-type", out value))
             {

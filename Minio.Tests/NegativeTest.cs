@@ -80,10 +80,8 @@ public class NegativeTest
                  i < tryCount && ex.ServerResponse != null &&
                  ex.ServerResponse.StatusCode.Equals(HttpStatusCode.ServiceUnavailable);
                  ++i)
-            {
                 ex = await Assert.ThrowsExceptionAsync<InvalidObjectNameException>(
                     () => minio.StatObjectAsync(statObjArgs));
-            }
 
             Assert.AreEqual(ex.Response.Code, "InvalidObjectName");
 

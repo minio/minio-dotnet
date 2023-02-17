@@ -156,7 +156,6 @@ public partial class MinioClient : IObjectOperations
 
         if (uploads == null) return;
         foreach (var upload in uploads)
-        {
             if (upload.Key.ToLower().Equals(args.ObjectName.ToLower()))
             {
                 var rmArgs = new RemoveUploadArgs()
@@ -165,7 +164,6 @@ public partial class MinioClient : IObjectOperations
                     .WithUploadId(upload.UploadId);
                 await RemoveUploadAsync(rmArgs, cancellationToken).ConfigureAwait(false);
             }
-        }
     }
 
     /// <summary>
@@ -557,10 +555,8 @@ public partial class MinioClient : IObjectOperations
             var bytes = await ReadFullAsync(args.ObjectStreamData, (int)args.ObjectSize).ConfigureAwait(false);
             var bytesRead = bytes == null ? 0 : bytes.Length;
             if (bytesRead != (int)args.ObjectSize)
-            {
                 throw new UnexpectedShortReadException(
                     $"Data read {bytesRead} is shorter than the size {args.ObjectSize} of input buffer.");
-            }
 
             args = args.WithRequestBody(bytes)
                 .WithStreamData(null)
@@ -667,13 +663,11 @@ public partial class MinioClient : IObjectOperations
         if (srcByteRangeSize > args.SourceObjectInfo.Size ||
             (srcByteRangeSize > 0 &&
              args.SourceObject.CopyOperationConditions.byteRangeEnd >= args.SourceObjectInfo.Size))
-        {
             throw new ArgumentException("Specified byte range (" +
                                         args.SourceObject.CopyOperationConditions.byteRangeStart +
                                         "-" + args.SourceObject.CopyOperationConditions.byteRangeEnd +
                                         ") does not fit within source object (size=" +
                                         args.SourceObjectInfo.Size + ")");
-        }
 
         if (copySize > Constants.MaxSingleCopyObjectSize ||
             (srcByteRangeSize > 0 &&
@@ -1384,11 +1378,9 @@ public partial class MinioClient : IObjectOperations
         var parts = new List<XElement>();
 
         for (var i = 1; i <= etags.Count; i++)
-        {
             parts.Add(new XElement("Part",
                 new XElement("PartNumber", i),
                 new XElement("ETag", etags[i])));
-        }
 
         var completeMultipartUploadXml = new XElement("CompleteMultipartUpload", parts);
         var bodyString = completeMultipartUploadXml.ToString();
@@ -1546,10 +1538,8 @@ public partial class MinioClient : IObjectOperations
 
         string etag = null;
         foreach (var parameter in response.Headers)
-        {
             if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
                 etag = parameter.Value;
-        }
 
         return etag;
     }
@@ -1635,19 +1625,15 @@ public partial class MinioClient : IObjectOperations
                 customHeaders)
             .ConfigureAwait(false);
         if (queryMap != null)
-        {
             foreach (var query in queryMap)
                 requestMessageBuilder.AddQueryParameter(query.Key, query.Value);
-        }
         // Set the object source
         requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source", sourceObjectPath);
 
         // If no conditions available, skip addition else add the conditions to the header
         if (copyConditions != null)
-        {
             foreach (var item in copyConditions.GetConditions())
                 requestMessageBuilder.AddOrUpdateHeaderParameter(item.Key, item.Value);
-        }
 
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -1659,10 +1645,8 @@ public partial class MinioClient : IObjectOperations
         using (var contentStream = new MemoryStream(response.ContentBytes))
         {
             if (type == typeof(CopyObjectResult))
-            {
                 copyResult =
                     (CopyObjectResult)new XmlSerializer(typeof(CopyObjectResult)).Deserialize(contentStream);
-            }
 
             if (type == typeof(CopyPartResult))
                 copyResult = (CopyPartResult)new XmlSerializer(typeof(CopyPartResult)).Deserialize(contentStream);

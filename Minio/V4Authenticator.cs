@@ -383,10 +383,8 @@ internal class V4Authenticator
 
         var queryParamsDict = new Dictionary<string, string>();
         if (requestBuilder.QueryParameters != null)
-        {
             foreach (var kvp in requestBuilder.QueryParameters)
                 queryParamsDict[kvp.Key] = Uri.EscapeDataString(kvp.Value);
-        }
 
         var queryParams = "";
         if (queryParamsDict.Count > 0)
@@ -407,10 +405,8 @@ internal class V4Authenticator
         var isFormData = false;
         if (requestBuilder.Request.Content != null && requestBuilder.Request.Content.Headers != null &&
             requestBuilder.Request.Content.Headers.ContentType != null)
-        {
             isFormData = requestBuilder.Request.Content.Headers.ContentType.ToString() ==
                          "application/x-www-form-urlencoded";
-        }
 
         if (string.IsNullOrEmpty(queryParams) && isFormData)
         {
@@ -426,9 +422,7 @@ internal class V4Authenticator
         if (!string.IsNullOrEmpty(queryParams) &&
             !isFormData &&
             requestBuilder.RequestUri.Query != "?location=")
-        {
             requestBuilder.RequestUri = new Uri(requestBuilder.RequestUri + "?" + queryParams);
-        }
 
         canonicalStringList.AddLast(requestBuilder.RequestUri.AbsolutePath);
         canonicalStringList.AddLast(queryParams);
@@ -517,10 +511,8 @@ internal class V4Authenticator
         // or the command method is not a Post to delete multiple files
         var isMultiDeleteRequest = false;
         if (requestBuilder.Method == HttpMethod.Post)
-        {
             isMultiDeleteRequest =
                 requestBuilder.QueryParameters.Any(p => p.Key.Equals("delete", StringComparison.OrdinalIgnoreCase));
-        }
 
         if ((isSecure && !isSts) || isMultiDeleteRequest)
         {

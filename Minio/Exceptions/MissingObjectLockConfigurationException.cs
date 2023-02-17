@@ -33,7 +33,8 @@ public class MissingObjectLockConfigurationException : MinioException
     {
     }
 
-    public MissingObjectLockConfigurationException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    public MissingObjectLockConfigurationException(string message, ResponseResult serverResponse) : base(message,
+        serverResponse)
     {
     }
 

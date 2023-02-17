@@ -78,10 +78,8 @@ public static class Utils
     internal static void validateObjectPrefix(string objectPrefix)
     {
         if (objectPrefix.Length > 512)
-        {
             throw new InvalidObjectPrefixException(objectPrefix,
                 "Object prefix cannot be greater than 1024 characters.");
-        }
     }
 
     // Return url encoded string where reserved characters have been percent-encoded
@@ -123,13 +121,11 @@ public static class Utils
     {
         var encodedPathBuf = new StringBuilder();
         foreach (var pathSegment in path.Split('/'))
-        {
             if (pathSegment.Length != 0)
             {
                 if (encodedPathBuf.Length > 0) encodedPathBuf.Append("/");
                 encodedPathBuf.Append(UrlEncode(pathSegment));
             }
-        }
 
         if (path.StartsWith("/")) encodedPathBuf.Insert(0, "/");
         if (path.EndsWith("/")) encodedPathBuf.Append("/");
@@ -210,10 +206,8 @@ public static class Utils
         if (size == -1) size = Constants.MaximumStreamObjectSize;
 
         if (size > Constants.MaxMultipartPutObjectSize)
-        {
             throw new EntityTooLargeException(
                 $"Your proposed upload size {size} exceeds the maximum allowed object size {Constants.MaxMultipartPutObjectSize}");
-        }
 
         var partSize = (double)Math.Ceiling((decimal)size / Constants.MaxParts);
         var minPartSize = copy ? Constants.MinimumCOPYPartSize : Constants.MinimumPUTPartSize;
@@ -872,21 +866,17 @@ public static class Utils
     public static Uri GetBaseUrl(string endpoint)
     {
         if (string.IsNullOrEmpty(endpoint))
-        {
             throw new ArgumentException(
                 string.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint), "endpoint");
-        }
 
         if (endpoint.EndsWith("/")) endpoint = endpoint.Substring(0, endpoint.Length - 1);
         if (!endpoint.StartsWith("http") && !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
             throw new InvalidEndpointException(string.Format("{0} is invalid hostname.", endpoint), "endpoint");
         string conn_url;
         if (endpoint.StartsWith("http"))
-        {
             throw new InvalidEndpointException(
                 string.Format("{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),
                 "endpoint");
-        }
 
         var enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
         var scheme = enable_https != null && enable_https.Equals("1") ? "https://" : "http://";
@@ -896,10 +886,8 @@ public static class Utils
         url = new Uri(conn_url);
         hostnameOfUri = url.Authority;
         if (!string.IsNullOrWhiteSpace(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
-        {
             throw new InvalidEndpointException(string.Format("{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),
                 "endpoint");
-        }
 
         return url;
     }
@@ -950,10 +938,8 @@ public static class Utils
     public static void printDict(Dictionary<string, string> d)
     {
         if (d != null)
-        {
             foreach (var kv in d)
                 Console.WriteLine("DEBUG >>        {0} = {1}", kv.Key, kv.Value);
-        }
 
         Console.WriteLine("DEBUG >>   Done printing\n");
     }

@@ -27,10 +27,8 @@ public class AccessCredentials
         string sessionToken, DateTime expiration)
     {
         if (string.IsNullOrWhiteSpace(accessKey) || string.IsNullOrWhiteSpace(secretKey))
-        {
             throw new ArgumentNullException(nameof(AccessKey) + " and " + nameof(SecretKey) +
                                             " cannot be null or empty.");
-        }
 
         AccessKey = accessKey;
         SecretKey = secretKey;

@@ -117,10 +117,8 @@ public class IAMAWSProvider : EnvironmentProvider
             await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
         if (string.IsNullOrWhiteSpace(response.Content) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))
-        {
             throw new CredentialsProviderException("IAMAWSProvider",
                 "Credential Get operation failed with HTTP Status code: " + response.StatusCode);
-        }
         /*
 JsonConvert.DefaultSettings = () => new JsonSerializerSettings
 {
@@ -131,11 +129,9 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
 
         var credentials = JsonSerializer.Deserialize<ECSCredentials>(response.Content);
         if (credentials.Code != null && !credentials.Code.ToLower().Equals("success"))
-        {
             throw new CredentialsProviderException("IAMAWSProvider",
                 "Credential Get operation failed with code: " + credentials.Code + " and message " +
                 credentials.Message);
-        }
 
         Credentials = credentials.GetAccessCredentials();
         return Credentials;
@@ -191,17 +187,13 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
 
         if (string.IsNullOrWhiteSpace(response.Content) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))
-        {
             throw new CredentialsProviderException("IAMAWSProvider",
                 "Credential Get operation failed with HTTP Status code: " + response.StatusCode);
-        }
 
         roleNames = response.Content.Split('\n');
         if (roleNames.Length <= 0)
-        {
             throw new CredentialsProviderException("IAMAWSProvider",
                 "No IAM roles are attached to AWS service at " + url);
-        }
 
         var index = 0;
         foreach (var item in roleNames) roleNames[index++] = item.Trim();
@@ -235,9 +227,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
         Minio_Client = minio;
         if (Credentials == null ||
             string.IsNullOrWhiteSpace(Credentials.AccessKey) || string.IsNullOrWhiteSpace(Credentials.SecretKey))
-        {
             Credentials = GetCredentialsAsync().GetAwaiter().GetResult();
-        }
 
         return this;
     }
@@ -254,9 +244,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
     public void Validate()
     {
         if (Minio_Client == null)
-        {
             throw new ArgumentNullException(nameof(Minio_Client) +
                                             " should be assigned for the operation to continue.");
-        }
     }
 }

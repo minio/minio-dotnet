@@ -43,10 +43,8 @@ public class ReplicationConfiguration
         if (rules == null || rules.Count == 0)
             throw new ArgumentNullException(nameof(Rules) + " member cannot be an empty list.");
         if (rules.Count >= 1000)
-        {
             throw new ArgumentOutOfRangeException(
                 nameof(Rules) + " Count of rules cannot exceed maximum limit of 1000.");
-        }
 
         Role = role;
         Rules = rules;

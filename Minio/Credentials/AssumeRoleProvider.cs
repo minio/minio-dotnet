@@ -89,13 +89,8 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
         if ((stsUri.Scheme == "http" && stsUri.Port == 80) ||
             (stsUri.Scheme == "https" && stsUri.Port == 443) ||
             stsUri.Port <= 0)
-        {
             Url = stsUri.Scheme + "://" + stsUri.Authority;
-        }
-        else if (stsUri.Port > 0)
-        {
-            Url = stsUri.Scheme + "://" + stsUri.Host + ":" + stsUri.Port;
-        }
+        else if (stsUri.Port > 0) Url = stsUri.Scheme + "://" + stsUri.Host + ":" + stsUri.Port;
 
         Url = stsUri.Authority;
 
@@ -127,9 +122,7 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
                 if (credentials == null &&
                     assumeRoleResp != null &&
                     assumeRoleResp.arr != null)
-                {
                     credentials = assumeRoleResp.arr.Credentials;
-                }
 
                 return credentials;
             }

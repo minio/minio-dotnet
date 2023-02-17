@@ -144,9 +144,7 @@ internal class HttpRequestMessageBuilder
         if (key.StartsWith("content-", comparison) &&
             !string.IsNullOrEmpty(value) &&
             !BodyParameters.ContainsKey(key))
-        {
             BodyParameters.Add(key, value);
-        }
 
         HeaderParameters[key] = value;
     }

@@ -216,9 +216,7 @@ public partial class MinioClient : IBucketOperations
         {
             if ((ice.ServerResponse != null && HttpStatusCode.NotFound.Equals(ice.ServerResponse.StatusCode))
                 || ice.ServerResponse == null)
-            {
                 return false;
-            }
         }
         catch (Exception ex)
         {
@@ -261,10 +259,8 @@ public partial class MinioClient : IBucketOperations
         if (string.IsNullOrEmpty(args.Location)) args.Location = Region;
 
         if (args.Location == "us-east-1")
-        {
             if (Region != string.Empty)
                 args.Location = Region;
-        }
 
         args.IsBucketCreationRequest = true;
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
@@ -466,10 +462,8 @@ public partial class MinioClient : IBucketOperations
         CancellationToken cancellationToken = default)
     {
         if (s3utils.IsAmazonEndPoint(BaseUrl))
-        {
             // Amazon AWS does not support bucket notifications
             throw new Exception("Listening for bucket notification is specific only to `minio` server endpoints");
-        }
 
         return Observable.Create<MinioNotificationRaw>(
             async (obs, ct) =>

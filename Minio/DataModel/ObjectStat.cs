@@ -90,30 +90,24 @@ public class ObjectStat
                         @"(Sun|Mon|Tue|Wed|Thu|Fri|Sat), \d{2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} [A-Z]+";
                     var expiryMatch = Regex.Match(expirationResponse, expiryDatePattern);
                     if (expiryMatch.Success)
-                    {
                         objInfo.Expires = DateTime.SpecifyKind(
                             DateTime.Parse(expiryMatch.Value),
                             DateTimeKind.Utc);
-                    }
 
                     break;
                 case "x-amz-object-lock-mode":
                     if (!string.IsNullOrWhiteSpace(paramValue))
-                    {
                         objInfo.ObjectLockMode = paramValue.ToLower().Equals("governance")
                             ? RetentionMode.GOVERNANCE
                             : RetentionMode.COMPLIANCE;
-                    }
 
                     break;
                 case "x-amz-object-lock-retain-until-date":
                     var lockUntilDate = paramValue;
                     if (!string.IsNullOrWhiteSpace(lockUntilDate))
-                    {
                         objInfo.ObjectLockRetainUntilDate = DateTime.SpecifyKind(
                             DateTime.Parse(lockUntilDate),
                             DateTimeKind.Utc);
-                    }
 
                     break;
                 case "x-amz-object-lock-legal-hold":

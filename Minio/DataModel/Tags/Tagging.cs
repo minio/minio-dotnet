@@ -49,10 +49,8 @@ public class Tagging
 
         var tagging_upper_limit = isObjects ? MAX_TAG_COUNT_PER_OBJECT : MAX_TAG_COUNT_PER_RESOURCE;
         if (tags.Count > tagging_upper_limit)
-        {
             throw new ArgumentOutOfRangeException(nameof(tags) + ". Count of tags exceeds maximum limit allowed for " +
                                                   (isObjects ? "objects." : "buckets."));
-        }
 
         foreach (var tag in tags)
         {
@@ -71,9 +69,7 @@ public class Tagging
             string.IsNullOrWhiteSpace(key) ||
             key.Length > MAX_TAG_KEY_LENGTH ||
             key.Contains("&"))
-        {
             return false;
-        }
 
         return true;
     }
@@ -83,9 +79,7 @@ public class Tagging
         if (value == null || // Empty or whitespace is allowed
             value.Length > MAX_TAG_VALUE_LENGTH ||
             value.Contains("&"))
-        {
             return false;
-        }
 
         return true;
     }

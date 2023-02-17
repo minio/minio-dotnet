@@ -41,17 +41,13 @@ public class SelectObjectContentArgs : EncryptionArgs<SelectObjectContentArgs>
     {
         base.Validate();
         if (string.IsNullOrEmpty(SelectOptions.Expression))
-        {
             throw new InvalidOperationException("The Expression " + nameof(SelectOptions.Expression) +
                                                 " for Select Object Content cannot be empty.");
-        }
 
         if (SelectOptions.InputSerialization == null || SelectOptions.OutputSerialization == null)
-        {
             throw new InvalidOperationException(
                 "The Input/Output serialization members for SelectObjectContentArgs should be initialized " +
                 nameof(SelectOptions.InputSerialization) + " " + nameof(SelectOptions.OutputSerialization));
-        }
     }
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
@@ -198,10 +194,8 @@ public class PresignedGetObjectArgs : ObjectArgs<PresignedGetObjectArgs>
     {
         base.Validate();
         if (!Utils.IsValidExpiry(Expiry))
-        {
             throw new InvalidExpiryRangeException("expiry range should be between 1 and " +
                                                   Constants.DefaultExpiryTime);
-        }
     }
 
     public PresignedGetObjectArgs WithExpiry(int expiry)
@@ -242,31 +236,23 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
     {
         base.Validate();
         if (!string.IsNullOrEmpty(NotMatchETag) && !string.IsNullOrEmpty(MatchETag))
-        {
             throw new InvalidOperationException("Invalid to set both Etag match conditions " + nameof(NotMatchETag) +
                                                 " and " + nameof(MatchETag));
-        }
 
         if (!ModifiedSince.Equals(default) &&
             !UnModifiedSince.Equals(default))
-        {
             throw new InvalidOperationException("Invalid to set both modified date match conditions " +
                                                 nameof(ModifiedSince) + " and " + nameof(UnModifiedSince));
-        }
 
         if (OffsetLengthSet)
         {
             if (ObjectOffset < 0 || ObjectLength < 0)
-            {
                 throw new ArgumentException(nameof(ObjectOffset) + " and " + nameof(ObjectLength) +
                                             "cannot be less than 0.");
-            }
 
             if (ObjectOffset == 0 && ObjectLength == 0)
-            {
                 throw new ArgumentException("Either " + nameof(ObjectOffset) + " or " + nameof(ObjectLength) +
                                             " must be greater than 0.");
-            }
         }
 
         Populate();
@@ -396,10 +382,8 @@ public class PresignedPostPolicyArgs : ObjectArgs<PresignedPostPolicyArgs>
     {
         Policy = policy;
         if (policy.expiration != DateTime.MinValue)
-        {
             // policy.expiration has an assigned value
             Expiration = policy.expiration;
-        }
 
         return this;
     }
@@ -418,10 +402,8 @@ public class PresignedPutObjectArgs : ObjectArgs<PresignedPutObjectArgs>
     {
         base.Validate();
         if (!Utils.IsValidExpiry(Expiry))
-        {
             throw new InvalidExpiryRangeException("Expiry range should be between 1 seconds and " +
                                                   Constants.DefaultExpiryTime + " seconds");
-        }
     }
 
     public PresignedPutObjectArgs WithExpiry(int ex)
@@ -455,10 +437,8 @@ public class RemoveUploadArgs : EncryptionArgs<RemoveUploadArgs>
     {
         base.Validate();
         if (string.IsNullOrEmpty(UploadId))
-        {
             throw new InvalidOperationException(nameof(UploadId) +
                                                 " cannot be empty. Please assign a valid upload ID to remove.");
-        }
     }
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
@@ -539,10 +519,8 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
     {
         base.Validate();
         if (CallBack == null && FuncCallBack == null && string.IsNullOrEmpty(FileName))
-        {
             throw new MinioException("Atleast one of " + nameof(CallBack) + ", CallBack method or " + nameof(FileName) +
                                      " file path to save need to be set for GetObject operation.");
-        }
 
         if (OffsetLengthSet)
         {
@@ -637,10 +615,8 @@ public class RemoveObjectArgs : ObjectArgs<RemoveObjectArgs>
         {
             requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
             if (BypassGovernanceMode != null && BypassGovernanceMode.Value)
-            {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-bypass-governance-retention",
                     BypassGovernanceMode.Value.ToString());
-            }
         }
 
         return requestMessageBuilder;
@@ -684,10 +660,8 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
     public RemoveObjectsArgs WithObjectsVersions(List<Tuple<string, List<string>>> objectsVersionsList)
     {
         foreach (var objVersions in objectsVersionsList)
-        {
-            foreach (var vid in objVersions.Item2)
+        foreach (var vid in objVersions.Item2)
             ObjectNamesVersions.Add(new Tuple<string, string>(objVersions.Item1, vid));
-        }
 
         return this;
     }
@@ -709,19 +683,15 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
         // Skip object name validation.
         Utils.ValidateBucketName(BucketName);
         if (!string.IsNullOrEmpty(ObjectName))
-        {
             throw new InvalidOperationException(nameof(ObjectName) + " is set. Please use " + nameof(WithObjects) +
                                                 "or " +
                                                 nameof(WithObjectsVersions) + " method to set objects to be deleted.");
-        }
 
         if ((ObjectNames == null && ObjectNamesVersions == null) ||
             (ObjectNames.Count == 0 && ObjectNamesVersions.Count == 0))
-        {
             throw new InvalidOperationException(
                 "Please assign list of object names or object names and version IDs to remove using method(s) " +
                 nameof(WithObjects) + " " + nameof(WithObjectsVersions));
-        }
     }
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
@@ -733,11 +703,9 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
         {
             // Object(s) & multiple versions
             foreach (var objTuple in ObjectNamesVersions)
-            {
                 objects.Add(new XElement("Object",
                     new XElement("Key", objTuple.Item1),
                     new XElement("VersionId", objTuple.Item2)));
-            }
 
             deleteObjectsRequest = new XElement("Delete", objects,
                 new XElement("Quiet", true));
@@ -747,10 +715,8 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
         {
             // Multiple Objects
             foreach (var obj in ObjectNames)
-            {
                 objects.Add(new XElement("Object",
                     new XElement("Key", obj)));
-            }
 
             deleteObjectsRequest = new XElement("Delete", objects,
                 new XElement("Quiet", true));
@@ -844,16 +810,12 @@ public class SetObjectRetentionArgs : ObjectVersionArgs<SetObjectRetentionArgs>
     {
         base.Validate();
         if (RetentionUntilDate.Equals(default))
-        {
             throw new InvalidOperationException("Retention Period is not set. Please set using " +
                                                 nameof(WithRetentionUntilDate) + ".");
-        }
 
         if (DateTime.Compare(RetentionUntilDate, DateTime.Now) <= 0)
-        {
             throw new InvalidOperationException("Retention until date set using " + nameof(WithRetentionUntilDate) +
                                                 " needs to be in the future.");
-        }
     }
 
     public SetObjectRetentionArgs WithBypassGovernanceMode(bool bypass = true)
@@ -1053,32 +1015,24 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
         requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source", sourceObjectPath);
 
         if (QueryMap != null)
-        {
             foreach (var query in QueryMap)
                 requestMessageBuilder.AddQueryParameter(query.Key, query.Value);
-        }
 
         if (SourceObject.CopyOperationConditions != null)
-        {
             foreach (var item in SourceObject.CopyOperationConditions.GetConditions())
                 requestMessageBuilder.AddOrUpdateHeaderParameter(item.Key, item.Value);
-        }
 
         if (!string.IsNullOrEmpty(MatchETag))
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-match", MatchETag);
         if (!string.IsNullOrEmpty(NotMatchETag))
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-none-match", NotMatchETag);
         if (ModifiedSince != default)
-        {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-unmodified-since",
                 Utils.To8601String(ModifiedSince));
-        }
 
         if (UnModifiedSince != default)
-        {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-modified-since",
                 Utils.To8601String(UnModifiedSince));
-        }
 
         if (ObjectTags != null && ObjectTags.TaggingSet != null
                                && ObjectTags.TaggingSet.Tag.Count > 0)
@@ -1097,10 +1051,8 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
         if (ObjectLockSet)
         {
             if (!RetentionUntilDate.Equals(default))
-            {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
                     Utils.To8601String(RetentionUntilDate));
-            }
 
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
                 ObjectLockRetentionMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
@@ -1174,30 +1126,22 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
     {
         Utils.ValidateBucketName(BucketName);
         if (SourceObject == null)
-        {
             throw new InvalidOperationException(nameof(SourceObject) + " has not been assigned. Please use " +
                                                 nameof(WithCopyObjectSource));
-        }
 
         if (SourceObjectInfo == null)
-        {
             throw new InvalidOperationException(
                 "StatObject result for the copy source object needed to continue copy operation. Use " +
                 nameof(WithCopyObjectSourceStats) + " to initialize StatObject result.");
-        }
 
         if (!string.IsNullOrEmpty(NotMatchETag) && !string.IsNullOrEmpty(MatchETag))
-        {
             throw new InvalidOperationException("Invalid to set both Etag match conditions " + nameof(NotMatchETag) +
                                                 " and " + nameof(MatchETag));
-        }
 
         if (!ModifiedSince.Equals(default) &&
             !UnModifiedSince.Equals(default))
-        {
             throw new InvalidOperationException("Invalid to set both modified date match conditions " +
                                                 nameof(ModifiedSince) + " and " + nameof(UnModifiedSince));
-        }
 
         Populate();
     }
@@ -1224,7 +1168,6 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         if (ReplaceMetadataDirective)
         {
             if (Headers != null)
-            {
                 foreach (var pair in SourceObjectInfo.MetaData)
                 {
                     var comparer = StringComparer.OrdinalIgnoreCase;
@@ -1232,7 +1175,6 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
 
                     if (newDictionary.ContainsKey(pair.Key)) SourceObjectInfo.MetaData.Remove(pair.Key);
                 }
-            }
 
             Headers = Headers
                 .Concat(SourceObjectInfo.MetaData)
@@ -1345,16 +1287,12 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         if (!string.IsNullOrEmpty(NotMatchETag))
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-none-match", NotMatchETag);
         if (ModifiedSince != default)
-        {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-unmodified-since",
                 Utils.To8601String(ModifiedSince));
-        }
 
         if (UnModifiedSince != default)
-        {
             requestMessageBuilder.Request.Headers.Add("x-amz-copy-source-if-modified-since",
                 Utils.To8601String(UnModifiedSince));
-        }
 
         if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", VersionId);
         if (ObjectTags != null && ObjectTags.TaggingSet != null
@@ -1374,10 +1312,8 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         if (ObjectLockSet)
         {
             if (!RetentionUntilDate.Equals(default))
-            {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
                     Utils.To8601String(RetentionUntilDate));
-            }
 
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
                 ObjectLockRetentionMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
@@ -1420,10 +1356,8 @@ internal class NewMultipartUploadArgs<T> : ObjectWriteArgs<T>
         if (ObjectLockSet)
         {
             if (!RetentionUntilDate.Equals(default))
-            {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
                     Utils.To8601String(RetentionUntilDate));
-            }
 
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
                 ObjectLockRetentionMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
@@ -1443,9 +1377,7 @@ internal class NewMultipartUploadPutArgs : NewMultipartUploadArgs<NewMultipartUp
 
         if (ObjectTags != null && ObjectTags.TaggingSet != null
                                && ObjectTags.TaggingSet.Tag.Count > 0)
-        {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
-        }
 
         requestMessageBuilder.AddOrUpdateHeaderParameter("content-type", ContentType);
 
@@ -1502,9 +1434,7 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
                 if (!OperationsUtil.IsSupportedHeader(item.Key) &&
                     !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase) &&
                     !OperationsUtil.IsSSEHeader(key))
-                {
                     newKVList.Add(new Tuple<string, string>("x-amz-meta-" + key.ToLowerInvariant(), item.Value));
-                }
             }
 
             foreach (var item in newKVList) Headers[item.Item1] = item.Item2;
@@ -1513,9 +1443,7 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
         ReplaceTagsDirective = args.ReplaceTagsDirective;
         if (args.ReplaceTagsDirective && args.ObjectTags != null &&
             args.ObjectTags.TaggingSet.Tag.Count > 0) // Tags of Source object
-        {
             ObjectTags = Tagging.GetObjectTags(args.ObjectTags.GetTags());
-        }
     }
 
     internal MultipartCopyUploadArgs()
@@ -1562,10 +1490,8 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
         if (ObjectLockSet)
         {
             if (!RetentionUntilDate.Equals(default))
-            {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
                     Utils.To8601String(RetentionUntilDate));
-            }
 
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
                 ObjectLockRetentionMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
@@ -1608,10 +1534,8 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
     {
         base.Validate();
         if (SourceObjectInfo == null || SourceObject == null)
-        {
             throw new InvalidOperationException(nameof(SourceObjectInfo) + " and " + nameof(SourceObject) +
                                                 " need to be initialized for a NewMultipartUpload operation to work.");
-        }
 
         Populate();
     }
@@ -1632,9 +1556,7 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
                 if (!OperationsUtil.IsSupportedHeader(item.Key) &&
                     !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase) &&
                     !OperationsUtil.IsSSEHeader(key))
-                {
                     newKVList.Add(new Tuple<string, string>("x-amz-meta-" + key.ToLowerInvariant(), item.Value));
-                }
             }
 
             foreach (var item in newKVList) Headers[item.Item1] = item.Item2;
@@ -1722,10 +1644,8 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
         if (ObjectLockSet)
         {
             if (!RetentionUntilDate.Equals(default))
-            {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
                     Utils.To8601String(RetentionUntilDate));
-            }
 
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
                 ObjectLockRetentionMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
@@ -1752,10 +1672,8 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
         SSE = args.SSE;
         SSE?.Marshal(args.Headers);
         if (args.Headers != null && args.Headers.Count > 0)
-        {
             Headers = Headers.Concat(args.Headers).GroupBy(item => item.Key)
                 .ToDictionary(item => item.Key, item => item.First().Value);
-        }
     }
 
     internal string UploadId { get; set; }
@@ -1788,11 +1706,9 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
         var parts = new List<XElement>();
 
         for (var i = 1; i <= ETags.Count; i++)
-        {
             parts.Add(new XElement("Part",
                 new XElement("PartNumber", i),
                 new XElement("ETag", ETags[i])));
-        }
 
         var completeMultipartUploadXml = new XElement("CompleteMultipartUpload", parts);
         var bodyString = completeMultipartUploadXml.ToString();
@@ -1902,22 +1818,16 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         base.Validate();
         // Check atleast one of filename or stream are initialized
         if (string.IsNullOrWhiteSpace(FileName) && ObjectStreamData == null)
-        {
             throw new ArgumentException("One of " + nameof(FileName) + " or " + nameof(ObjectStreamData) +
                                         " must be set.");
-        }
 
         if (PartNumber < 0)
-        {
             throw new ArgumentOutOfRangeException(nameof(PartNumber), PartNumber,
                 "Invalid Part number value. Cannot be less than 0");
-        }
         // Check if only one of filename or stream are initialized
         if (!string.IsNullOrWhiteSpace(FileName) && ObjectStreamData != null)
-        {
             throw new ArgumentException("Only one of " + nameof(FileName) + " or " + nameof(ObjectStreamData) +
                                         " should be set.");
-        }
 
         if (!string.IsNullOrWhiteSpace(FileName)) Utils.ValidateFile(FileName);
         // Check object size when using stream data
@@ -1951,9 +1861,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
 
         if (ObjectTags != null && ObjectTags.TaggingSet != null
                                && ObjectTags.TaggingSet.Tag.Count > 0)
-        {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
-        }
 
         if (Retention != null)
         {
@@ -1965,10 +1873,8 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         }
 
         if (LegalHoldEnabled != null)
-        {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-legal-hold",
                 LegalHoldEnabled == true ? "ON" : "OFF");
-        }
 
         if (RequestBody != null)
         {
@@ -1987,7 +1893,6 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         var sseHeaders = new Dictionary<string, string>();
         Headers = Headers ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         if (metaData != null)
-        {
             foreach (var p in metaData)
             {
                 var key = p.Key;
@@ -2003,7 +1908,6 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
                 if (key == "Content-Type")
                     ContentType = p.Value;
             }
-        }
 
         if (string.IsNullOrWhiteSpace(ContentType)) ContentType = "application/octet-stream";
         if (!Headers.ContainsKey("Content-Type")) Headers["Content-Type"] = ContentType;

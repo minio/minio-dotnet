@@ -95,11 +95,9 @@ public class CertificateIdentityProvider : ClientProvider
         if (string.IsNullOrEmpty(stsEndpoint))
             throw new InvalidEndpointException("Missing mandatory argument: stsEndpoint");
         if (!stsEndpoint.StartsWith("https", StringComparison.OrdinalIgnoreCase))
-        {
             throw new InvalidEndpointException(
                 $"stsEndpoint {stsEndpoint} is invalid." +
                 " The scheme must be https");
-        }
 
         this.stsEndpoint = stsEndpoint;
         return this;
@@ -147,9 +145,7 @@ public class CertificateIdentityProvider : ClientProvider
         if (credentials == null &&
             certResponse != null &&
             certResponse.cr != null)
-        {
             credentials = certResponse.cr.Credentials;
-        }
 
         return credentials;
     }

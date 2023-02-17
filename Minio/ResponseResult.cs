@@ -103,10 +103,8 @@ public class ResponseResult : IDisposable
             if (!_headers.Any())
             {
                 if (Response.Content != null)
-                {
                     foreach (var item in Response.Content.Headers)
                         _headers.Add(item.Key, item.Value.FirstOrDefault());
-                }
 
                 foreach (var item in Response.Headers) _headers.Add(item.Key, item.Value.FirstOrDefault());
             }

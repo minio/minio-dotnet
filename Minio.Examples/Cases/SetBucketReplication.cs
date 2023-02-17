@@ -30,9 +30,7 @@ public class SetBucketReplication
                      "[", "]", "@", "#", "$",
                      "%", "&", "+"
                  })
-        {
             escapedArgs = cmd.Replace("str", "\\str");
-        }
 
         var fileName = "/bin/bash";
         var arguments = $"-c \"{escapedArgs}\"" +
@@ -74,12 +72,8 @@ public class SetBucketReplication
             accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
             secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
             if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") != null)
-            {
                 if (Environment.GetEnvironmentVariable("ENABLE_HTTPS").Equals("1"))
-                {
                     schema = "https://";
-                }
-            }
         }
         else
         {

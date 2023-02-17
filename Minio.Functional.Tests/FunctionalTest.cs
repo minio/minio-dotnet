@@ -4743,7 +4743,8 @@ public class FunctionalTest
                             Assert.AreEqual(expectedFileSize, actualFileSize);
 
                             // Checking the content
-                            var actualContent = (await File.ReadAllTextAsync(tempFileName)).Replace("\n", "").Replace("\r", "");
+                            var actualContent = (await File.ReadAllTextAsync(tempFileName)).Replace("\n", "")
+                                .Replace("\r", "");
                             Assert.AreEqual(actualContent, expectedContent);
                         });
 

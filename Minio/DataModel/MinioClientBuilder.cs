@@ -151,10 +151,8 @@ public partial class MinioClient : IMinioClient
     public MinioClient WithRegion(string region)
     {
         if (string.IsNullOrEmpty(region))
-        {
             throw new ArgumentException(string.Format("{0} the region value can't be null or empty.", region),
                 "region");
-        }
 
         Region = region;
         return this;
@@ -208,21 +206,17 @@ public partial class MinioClient : IMinioClient
     private Uri GetBaseUrl(string endpoint)
     {
         if (string.IsNullOrEmpty(endpoint))
-        {
             throw new ArgumentException(
                 string.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint), "endpoint");
-        }
 
         if (endpoint.EndsWith("/")) endpoint = endpoint.Substring(0, endpoint.Length - 1);
         if (!BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
             throw new InvalidEndpointException(string.Format("{0} is invalid hostname.", endpoint), "endpoint");
         string conn_url;
         if (endpoint.StartsWith("http"))
-        {
             throw new InvalidEndpointException(
                 string.Format("{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),
                 "endpoint");
-        }
 
         var enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
         var scheme = enable_https != null && enable_https.Equals("1") ? "https://" : "http://";
@@ -232,10 +226,8 @@ public partial class MinioClient : IMinioClient
         url = new Uri(conn_url);
         hostnameOfUri = url.Authority;
         if (!string.IsNullOrEmpty(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
-        {
             throw new InvalidEndpointException(string.Format("{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),
                 "endpoint");
-        }
 
         return url;
     }
