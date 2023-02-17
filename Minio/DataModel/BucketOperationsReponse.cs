@@ -71,7 +71,6 @@ internal class ListObjectsItemResponse
         IObserver<Item> obs)
     {
         ItemObservable = obs;
-        var marker = string.Empty;
         NextMarker = string.Empty;
         foreach (var item in objectList.Item2)
         {
@@ -108,7 +107,6 @@ internal class ListObjectVersionResponse
         IObserver<Item> obs)
     {
         ItemObservable = obs;
-        var marker = string.Empty;
         foreach (var item in objectList.Item2)
         {
             BucketObjectsLastItem = item;

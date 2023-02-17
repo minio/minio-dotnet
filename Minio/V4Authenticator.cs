@@ -403,8 +403,7 @@ internal class V4Authenticator
         }
 
         var isFormData = false;
-        if (requestBuilder.Request.Content != null && requestBuilder.Request.Content.Headers != null &&
-            requestBuilder.Request.Content.Headers.ContentType != null)
+        if (requestBuilder.Request.Content != null && requestBuilder.Request.Content.Headers?.ContentType != null)
             isFormData = requestBuilder.Request.Content.Headers.ContentType.ToString() ==
                          "application/x-www-form-urlencoded";
 

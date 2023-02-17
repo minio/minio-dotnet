@@ -97,7 +97,7 @@ public class ObjectStat
                     break;
                 case "x-amz-object-lock-mode":
                     if (!string.IsNullOrWhiteSpace(paramValue))
-                        objInfo.ObjectLockMode = paramValue.ToLower().Equals("governance")
+                        objInfo.ObjectLockMode = paramValue.Equals("governance", StringComparison.OrdinalIgnoreCase)
                             ? RetentionMode.GOVERNANCE
                             : RetentionMode.COMPLIANCE;
 
@@ -113,7 +113,7 @@ public class ObjectStat
                 case "x-amz-object-lock-legal-hold":
                     var legalHoldON = paramValue.Trim();
                     if (!string.IsNullOrWhiteSpace(legalHoldON))
-                        objInfo.LegalHoldEnabled = legalHoldON.ToLower().Equals("on");
+                        objInfo.LegalHoldEnabled = legalHoldON.Equals("on", StringComparison.OrdinalIgnoreCase);
                     break;
                 default:
                     if (OperationsUtil.IsSupportedHeader(paramName))

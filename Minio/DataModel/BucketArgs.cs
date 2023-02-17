@@ -41,7 +41,7 @@ public abstract class BucketArgs<T> : Args
     public T WithHeaders(Dictionary<string, string> headers)
     {
         if (headers == null || headers.Count <= 0) return (T)this;
-        Headers = Headers ?? new Dictionary<string, string>();
+        Headers ??= new Dictionary<string, string>();
         foreach (var key in headers.Keys)
         {
             if (Headers.ContainsKey(key))

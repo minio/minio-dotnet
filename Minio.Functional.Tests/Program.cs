@@ -66,8 +66,7 @@ internal class Program
             (sender, certificate, chain, sslPolicyErrors) => true;
 #pragma warning restore MA0039 // Do not write your own certificate validation method
 
-        MinioClient minioClient = null;
-        minioClient = new MinioClient()
+        using var minioClient = new MinioClient()
             .WithEndpoint(endPoint, port)
             .WithCredentials(accessKey, secretKey)
             .WithSSL(isSecure)

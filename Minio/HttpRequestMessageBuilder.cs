@@ -80,8 +80,7 @@ internal class HttpRequestMessageBuilder
                 var addSuccess = request.Headers.TryAddWithoutValidation(key, val);
                 if (!addSuccess)
                 {
-                    if (request.Content == null)
-                        request.Content = new StringContent("");
+                    request.Content ??= new StringContent("");
                     switch (key)
                     {
                         case "content-type":
@@ -118,7 +117,7 @@ internal class HttpRequestMessageBuilder
                     BodyParameters.ContainsKey("Content-Md5") &&
                     BodyParameters["Content-Md5"] != null)
                 {
-                    var returnValue = "";
+                    string returnValue;
                     BodyParameters.TryGetValue("Content-Md5", out returnValue);
                     request.Content.Headers.ContentMD5 = Convert.FromBase64String(returnValue);
                 }

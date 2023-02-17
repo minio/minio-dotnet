@@ -41,7 +41,7 @@ public class RuleFilter
             Prefix = null;
         else
             Prefix = prefix;
-        if (tag != null && tag.TaggingSet.Tag.Count == 0)
+        if (tag?.TaggingSet.Tag.Count == 0)
             tag = null;
         else
             Tag = tag;

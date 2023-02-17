@@ -215,7 +215,7 @@ public class UtilsTest
     {
         var config = new CreateBucketConfiguration("us-west-1");
         var xs = new XmlSerializer(typeof(CreateBucketConfiguration));
-        var writer = new StringWriter();
+        using var writer = new StringWriter();
         xs.Serialize(writer, config);
         Console.WriteLine(writer.ToString());
     }

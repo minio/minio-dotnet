@@ -151,7 +151,7 @@ public static class Utils
                 throw new ArgumentException($"'{fileName}': not a regular file", nameof(filePath));
         }
 
-        if (contentType == null) contentType = GetContentType(filePath);
+        contentType ??= GetContentType(filePath);
     }
 
     internal static string GetContentType(string fileName)
@@ -213,7 +213,7 @@ public static class Utils
         var minPartSize = copy ? Constants.MinimumCOPYPartSize : Constants.MinimumPUTPartSize;
         partSize = (double)Math.Ceiling((decimal)partSize / minPartSize) * minPartSize;
         var partCount = Math.Ceiling(size / partSize);
-        var lastPartSize = size - (partCount - 1) * partSize;
+        var lastPartSize = size - ((partCount - 1) * partSize);
         dynamic obj = new ExpandoObject();
         obj.partSize = partSize;
         obj.partCount = partCount;
@@ -796,27 +796,22 @@ public static class Utils
 
     public static string MarshalXML(object obj, string nmspc)
     {
-        XmlSerializer xs = null;
-        XmlWriterSettings settings = null;
-        XmlSerializerNamespaces ns = null;
-
         XmlWriter xw = null;
 
         var str = string.Empty;
 
         try
         {
-            settings = new XmlWriterSettings
+            XmlWriterSettings settings = new XmlWriterSettings
             {
                 OmitXmlDeclaration = true
             };
-
-            ns = new XmlSerializerNamespaces();
+            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
             ns.Add("", nmspc);
 
             using var sw = new StringWriter(CultureInfo.InvariantCulture);
 
-            xs = new XmlSerializer(obj.GetType());
+            XmlSerializer xs = new XmlSerializer(obj.GetType());
             using (xw = XmlWriter.Create(sw, settings))
             {
                 xs.Serialize(xw, obj, ns);
@@ -827,7 +822,7 @@ public static class Utils
         }
         finally
         {
-            if (xw != null) xw.Close();
+            xw?.Close();
         }
 
         return str;
@@ -879,12 +874,10 @@ public static class Utils
                 "endpoint");
 
         var enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
-        var scheme = enable_https != null && enable_https.Equals("1") ? "https://" : "http://";
+        var scheme = enable_https?.Equals("1") == true ? "https://" : "http://";
         conn_url = scheme + endpoint;
-        var hostnameOfUri = string.Empty;
-        Uri url = null;
-        url = new Uri(conn_url);
-        hostnameOfUri = url.Authority;
+        Uri url = new Uri(conn_url);
+        string hostnameOfUri = url.Authority;
         if (!string.IsNullOrWhiteSpace(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
             throw new InvalidEndpointException(string.Format("{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),
                 "endpoint");

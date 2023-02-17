@@ -29,7 +29,7 @@ public class GetBucketTags
                 new GetBucketTagsArgs()
                     .WithBucket(bucketName)
             );
-            if (tags != null && tags.GetTags() != null && tags.GetTags().Count > 0)
+            if (tags != null && tags.GetTags()?.Count > 0)
             {
                 Console.WriteLine($"Got Bucket Tags set for bucket {bucketName}.");
                 foreach (var tag in tags.GetTags()) Console.WriteLine(tag.Key + " : " + tag.Value);

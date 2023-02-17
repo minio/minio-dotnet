@@ -25,7 +25,7 @@ public class RetryHandlerTest
     [TestMethod]
     public async Task TestRetryPolicyOnSuccess()
     {
-        var client = new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint(TestHelper.Endpoint)
             .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
             .WithSSL()
@@ -49,7 +49,7 @@ public class RetryHandlerTest
     [TestMethod]
     public async Task TestRetryPolicyOnFailure()
     {
-        var client = new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint(TestHelper.Endpoint)
             .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
             .WithSSL()

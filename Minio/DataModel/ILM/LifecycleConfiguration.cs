@@ -48,27 +48,22 @@ public class LifecycleConfiguration
 
     public string MarshalXML()
     {
-        XmlSerializer xs = null;
-        XmlWriterSettings settings = null;
-        XmlSerializerNamespaces ns = null;
-
         XmlWriter xw = null;
 
         var str = string.Empty;
 
         try
         {
-            settings = new XmlWriterSettings
+            XmlWriterSettings settings = new XmlWriterSettings
             {
                 OmitXmlDeclaration = true
             };
-
-            ns = new XmlSerializerNamespaces();
+            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
             ns.Add(string.Empty, string.Empty);
 
             using var sw = new StringWriter(CultureInfo.InvariantCulture);
 
-            xs = new XmlSerializer(typeof(LifecycleConfiguration), "");
+            XmlSerializer xs = new XmlSerializer(typeof(LifecycleConfiguration), "");
             using (xw = XmlWriter.Create(sw, settings))
             {
                 xs.Serialize(xw, this, ns);
@@ -83,7 +78,7 @@ public class LifecycleConfiguration
         }
         finally
         {
-            if (xw != null) xw.Close();
+            xw?.Close();
         }
 
         return str;

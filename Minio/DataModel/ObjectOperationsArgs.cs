@@ -226,8 +226,8 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
     {
         if (!string.IsNullOrEmpty(VersionId))
             requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
-        if (Headers.ContainsKey(S3ZipExtractKey))
-            requestMessageBuilder.AddQueryParameter(S3ZipExtractKey, Headers[S3ZipExtractKey]);
+        if (Headers.TryGetValue(S3ZipExtractKey, out string value))
+            requestMessageBuilder.AddQueryParameter(S3ZipExtractKey, value);
 
         return requestMessageBuilder;
     }
@@ -260,8 +260,8 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
 
     private void Populate()
     {
-        Headers = Headers ?? new Dictionary<string, string>();
-        if (SSE != null && SSE.GetType().Equals(EncryptionType.SSE_C)) SSE.Marshal(Headers);
+        Headers ??= new Dictionary<string, string>();
+        if (SSE?.GetType().Equals(EncryptionType.SSE_C) == true) SSE.Marshal(Headers);
         if (OffsetLengthSet)
         {
             // "Range" header accepts byte start index and end index
@@ -536,8 +536,8 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
 
     private void Populate()
     {
-        Headers = Headers ?? new Dictionary<string, string>();
-        if (SSE != null && SSE.GetType().Equals(EncryptionType.SSE_C)) SSE.Marshal(Headers);
+        Headers ??= new Dictionary<string, string>();
+        if (SSE?.GetType().Equals(EncryptionType.SSE_C) == true) SSE.Marshal(Headers);
 
         if (OffsetLengthSet)
         {
@@ -557,8 +557,8 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
         if (CallBack is not null) requestMessageBuilder.ResponseWriter = CallBack;
         else requestMessageBuilder.FunctionResponseWriter = FuncCallBack;
 
-        if (Headers.ContainsKey(S3ZipExtractKey))
-            requestMessageBuilder.AddQueryParameter(S3ZipExtractKey, Headers[S3ZipExtractKey]);
+        if (Headers.TryGetValue(S3ZipExtractKey, out string value))
+            requestMessageBuilder.AddQueryParameter(S3ZipExtractKey, value);
 
         return requestMessageBuilder;
     }
@@ -614,7 +614,7 @@ public class RemoveObjectArgs : ObjectArgs<RemoveObjectArgs>
         if (!string.IsNullOrEmpty(VersionId))
         {
             requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
-            if (BypassGovernanceMode != null && BypassGovernanceMode.Value)
+            if (BypassGovernanceMode == true)
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-bypass-governance-retention",
                     BypassGovernanceMode.Value.ToString());
         }
@@ -696,9 +696,9 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        XElement deleteObjectsRequest = null;
         var objects = new List<XElement>();
         requestMessageBuilder.AddQueryParameter("delete", "");
+        XElement deleteObjectsRequest;
         if (ObjectNamesVersions.Count > 0)
         {
             // Object(s) & multiple versions
@@ -915,11 +915,6 @@ public class CopySourceObjectArgs : ObjectConditionalQueryArgs<CopySourceObjectA
     internal string CopySourceObjectPath { get; set; }
     internal CopyConditions CopyOperationConditions { get; set; }
 
-    internal override void Validate()
-    {
-        base.Validate();
-    }
-
     public CopySourceObjectArgs WithCopyConditions(CopyConditions cp)
     {
         CopyOperationConditions = cp != null ? cp.Clone() : new CopyConditions();
@@ -962,7 +957,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
     internal CopyObjectRequestArgs WithPartCondition(CopyConditions partCondition)
     {
         CopyCondition = partCondition.Clone();
-        Headers = Headers ?? new Dictionary<string, string>();
+        Headers ??= new Dictionary<string, string>();
         Headers["x-amz-copy-source-range"] = "bytes=" + partCondition.byteRangeStart + "-" + partCondition.byteRangeEnd;
 
         return this;
@@ -985,7 +980,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
         if (cs == null)
             throw new InvalidOperationException("The copy source object needed for copy operation is not initialized.");
 
-        SourceObject = SourceObject ?? new CopySourceObjectArgs();
+        SourceObject ??= new CopySourceObjectArgs();
         SourceObject.RequestMethod = HttpMethod.Put;
         SourceObject.BucketName = cs.BucketName;
         SourceObject.ObjectName = cs.ObjectName;
@@ -1034,8 +1029,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-modified-since",
                 Utils.To8601String(UnModifiedSince));
 
-        if (ObjectTags != null && ObjectTags.TaggingSet != null
-                               && ObjectTags.TaggingSet.Tag.Count > 0)
+        if (ObjectTags?.TaggingSet?.Tag.Count > 0)
         {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
@@ -1097,7 +1091,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
         if (!ReplaceMetadataDirective && SourceObjectInfo.MetaData != null)
             Headers = SourceObjectInfo.MetaData.Concat(Headers).GroupBy(item => item.Key)
                 .ToDictionary(item => item.Key, item => item.First().Value);
-        else if (ReplaceMetadataDirective) Headers = Headers ?? new Dictionary<string, string>();
+        else if (ReplaceMetadataDirective) Headers ??= new Dictionary<string, string>();
     }
 }
 
@@ -1149,7 +1143,7 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
     private void Populate()
     {
         if (string.IsNullOrEmpty(ObjectName)) ObjectName = SourceObject.ObjectName;
-        if (SSE != null && SSE.GetType().Equals(EncryptionType.SSE_C))
+        if (SSE?.GetType().Equals(EncryptionType.SSE_C) == true)
         {
             Headers = new Dictionary<string, string>();
             SSE.Marshal(Headers);
@@ -1158,13 +1152,11 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         if (!ReplaceMetadataDirective)
         {
             // Check in copy conditions if replace metadata has been set
-            var copyReplaceMeta = SourceObject.CopyOperationConditions != null
-                ? SourceObject.CopyOperationConditions.HasReplaceMetadataDirective()
-                : false;
+            var copyReplaceMeta = SourceObject.CopyOperationConditions?.HasReplaceMetadataDirective() == true;
             WithReplaceMetadataDirective(copyReplaceMeta);
         }
 
-        Headers = Headers ?? new Dictionary<string, string>();
+        Headers ??= new Dictionary<string, string>();
         if (ReplaceMetadataDirective)
         {
             if (Headers != null)
@@ -1173,7 +1165,7 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
                     var comparer = StringComparer.OrdinalIgnoreCase;
                     var newDictionary = new Dictionary<string, string>(Headers, comparer);
 
-                    if (newDictionary.ContainsKey(pair.Key)) SourceObjectInfo.MetaData.Remove(pair.Key);
+                    SourceObjectInfo.MetaData.Remove(pair.Key);
                 }
 
             Headers = Headers
@@ -1212,7 +1204,7 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
             throw new InvalidOperationException("The copy source object needed for copy operation is not initialized.");
 
         SourceObject.RequestMethod = HttpMethod.Put;
-        SourceObject = SourceObject ?? new CopySourceObjectArgs();
+        SourceObject ??= new CopySourceObjectArgs();
         SourceObject.BucketName = cs.BucketName;
         SourceObject.ObjectName = cs.ObjectName;
         SourceObject.VersionId = cs.VersionId;
@@ -1259,7 +1251,7 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         SourceObjectInfo = info;
         if (info.MetaData != null && !ReplaceMetadataDirective)
         {
-            SourceObject.Headers = SourceObject.Headers ?? new Dictionary<string, string>();
+            SourceObject.Headers ??= new Dictionary<string, string>();
             SourceObject.Headers = SourceObject.Headers.Concat(info.MetaData).GroupBy(item => item.Key)
                 .ToDictionary(item => item.Key, item => item.First().Value);
         }
@@ -1291,12 +1283,14 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
                 Utils.To8601String(ModifiedSince));
 
         if (UnModifiedSince != default)
-            requestMessageBuilder.Request.Headers.Add("x-amz-copy-source-if-modified-since",
+        {
+            using var request = requestMessageBuilder.Request;
+            request.Headers.Add("x-amz-copy-source-if-modified-since",
                 Utils.To8601String(UnModifiedSince));
+        }
 
         if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", VersionId);
-        if (ObjectTags != null && ObjectTags.TaggingSet != null
-                               && ObjectTags.TaggingSet.Tag.Count > 0)
+        if (ObjectTags?.TaggingSet?.Tag.Count > 0)
         {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
@@ -1307,7 +1301,7 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-metadata-directive", "REPLACE");
         if (!string.IsNullOrEmpty(StorageClass))
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-storage-class", StorageClass);
-        if (LegalHoldEnabled != null && LegalHoldEnabled.Value)
+        if (LegalHoldEnabled == true)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-legal-hold", "ON");
         if (ObjectLockSet)
         {
@@ -1375,8 +1369,7 @@ internal class NewMultipartUploadPutArgs : NewMultipartUploadArgs<NewMultipartUp
     {
         requestMessageBuilder.AddQueryParameter("uploads", "");
 
-        if (ObjectTags != null && ObjectTags.TaggingSet != null
-                               && ObjectTags.TaggingSet.Tag.Count > 0)
+        if (ObjectTags?.TaggingSet?.Tag.Count > 0)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
 
         requestMessageBuilder.AddOrUpdateHeaderParameter("content-type", ContentType);
@@ -1424,7 +1417,7 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
         // Header part
         if (!args.ReplaceMetadataDirective)
             Headers = new Dictionary<string, string>(args.SourceObjectInfo.MetaData);
-        else if (args.ReplaceMetadataDirective) Headers = Headers ?? new Dictionary<string, string>();
+        else if (args.ReplaceMetadataDirective) Headers ??= new Dictionary<string, string>();
         if (Headers != null)
         {
             var newKVList = new List<Tuple<string, string>>();
@@ -1441,8 +1434,7 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
         }
 
         ReplaceTagsDirective = args.ReplaceTagsDirective;
-        if (args.ReplaceTagsDirective && args.ObjectTags != null &&
-            args.ObjectTags.TaggingSet.Tag.Count > 0) // Tags of Source object
+        if (args.ReplaceTagsDirective && args.ObjectTags?.TaggingSet.Tag.Count > 0) // Tags of Source object
             ObjectTags = Tagging.GetObjectTags(args.ObjectTags.GetTags());
     }
 
@@ -1475,8 +1467,7 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        if (ObjectTags != null && ObjectTags.TaggingSet != null
-                               && ObjectTags.TaggingSet.Tag.Count > 0)
+        if (ObjectTags?.TaggingSet?.Tag.Count > 0)
         {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
@@ -1543,10 +1534,10 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
     private void Populate()
     {
         //Concat as Headers may have byte range info .etc.
-        if (!ReplaceMetadataDirective && SourceObjectInfo.MetaData != null && SourceObjectInfo.MetaData.Count > 0)
+        if (!ReplaceMetadataDirective && SourceObjectInfo.MetaData?.Count > 0)
             Headers = SourceObjectInfo.MetaData.Concat(Headers).GroupBy(item => item.Key)
                 .ToDictionary(item => item.Key, item => item.First().Value);
-        else if (ReplaceMetadataDirective) Headers = Headers ?? new Dictionary<string, string>();
+        else if (ReplaceMetadataDirective) Headers ??= new Dictionary<string, string>();
         if (Headers != null)
         {
             var newKVList = new List<Tuple<string, string>>();
@@ -1610,7 +1601,7 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
         if (cs == null)
             throw new InvalidOperationException("The copy source object needed for copy operation is not initialized.");
 
-        SourceObject = SourceObject ?? new CopySourceObjectArgs();
+        SourceObject ??= new CopySourceObjectArgs();
         SourceObject.RequestMethod = HttpMethod.Put;
         SourceObject.BucketName = cs.BucketName;
         SourceObject.ObjectName = cs.ObjectName;
@@ -1629,8 +1620,7 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
         requestMessageBuilder.AddQueryParameter("uploads", "");
-        if (ObjectTags != null && ObjectTags.TaggingSet != null
-                               && ObjectTags.TaggingSet.Tag.Count > 0)
+        if (ObjectTags?.TaggingSet?.Tag.Count > 0)
         {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
@@ -1671,7 +1661,7 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
         Headers = new Dictionary<string, string>();
         SSE = args.SSE;
         SSE?.Marshal(args.Headers);
-        if (args.Headers != null && args.Headers.Count > 0)
+        if (args.Headers?.Count > 0)
             Headers = Headers.Concat(args.Headers).GroupBy(item => item.Key)
                 .ToDictionary(item => item.Key, item => item.First().Value);
     }
@@ -1696,7 +1686,7 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
 
     internal CompleteMultipartUploadArgs WithETags(Dictionary<int, string> etags)
     {
-        if (etags != null && etags.Count > 0) ETags = new Dictionary<int, string>(etags);
+        if (etags?.Count > 0) ETags = new Dictionary<int, string>(etags);
         return this;
     }
 
@@ -1712,7 +1702,6 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
 
         var completeMultipartUploadXml = new XElement("CompleteMultipartUpload", parts);
         var bodyString = completeMultipartUploadXml.ToString();
-        var body = Encoding.UTF8.GetBytes(bodyString);
         var bodyInBytes = Encoding.UTF8.GetBytes(bodyString);
         requestMessageBuilder.BodyParameters.Add("content-type", "application/xml");
         requestMessageBuilder.SetBody(bodyInBytes);
@@ -1859,8 +1848,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
             requestMessageBuilder.AddQueryParameter("partNumber", $"{PartNumber}");
         }
 
-        if (ObjectTags != null && ObjectTags.TaggingSet != null
-                               && ObjectTags.TaggingSet.Tag.Count > 0)
+        if (ObjectTags?.TaggingSet?.Tag.Count > 0)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
 
         if (Retention != null)
@@ -1878,8 +1866,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
 
         if (RequestBody != null)
         {
-            using var sha256 = SHA256.Create();
-            var hash = sha256.ComputeHash(RequestBody);
+            var hash = SHA256.HashData(RequestBody);
             var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
             requestMessageBuilder.SetBody(RequestBody);
@@ -1891,8 +1878,9 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
     public PutObjectArgs WithHeaders(IDictionary<string, string> metaData)
     {
         var sseHeaders = new Dictionary<string, string>();
-        Headers = Headers ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        Headers ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         if (metaData != null)
+        {
             foreach (var p in metaData)
             {
                 var key = p.Key;
@@ -1908,6 +1896,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
                 if (key == "Content-Type")
                     ContentType = p.Value;
             }
+        }
 
         if (string.IsNullOrWhiteSpace(ContentType)) ContentType = "application/octet-stream";
         if (!Headers.ContainsKey("Content-Type")) Headers["Content-Type"] = ContentType;
@@ -1947,6 +1936,6 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
     ~PutObjectArgs()
     {
         if (!string.IsNullOrWhiteSpace(FileName) && ObjectStreamData != null)
-            ObjectStreamData.Close();
+            ObjectStreamData?.Close();
     }
 }

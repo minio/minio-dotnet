@@ -190,8 +190,8 @@ public partial class MinioClient : IMinioClient
         else
             Endpoint = host;
 
-        HTTPClient ??= Proxy is null ? new HttpClient() : new HttpClient(new HttpClientHandler { Proxy = Proxy });
-        HTTPClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", FullUserAgent);
+        httpClient ??= Proxy is null ? new HttpClient() : new HttpClient(new HttpClientHandler { Proxy = Proxy });
+        httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", FullUserAgent);
         return this;
     }
 
@@ -219,12 +219,10 @@ public partial class MinioClient : IMinioClient
                 "endpoint");
 
         var enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
-        var scheme = enable_https != null && enable_https.Equals("1") ? "https://" : "http://";
+        var scheme = enable_https?.Equals("1") == true ? "https://" : "http://";
         conn_url = scheme + endpoint;
-        var hostnameOfUri = string.Empty;
-        Uri url = null;
-        url = new Uri(conn_url);
-        hostnameOfUri = url.Authority;
+        Uri url = new Uri(conn_url);
+        string hostnameOfUri = url.Authority;
         if (!string.IsNullOrEmpty(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
             throw new InvalidEndpointException(string.Format("{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),
                 "endpoint");

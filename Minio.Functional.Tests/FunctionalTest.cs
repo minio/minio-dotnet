@@ -265,7 +265,7 @@ public class FunctionalTest
         return "minio-dotnet-example-" + result;
     }
 
-    internal static void generateRandomFile(string fileName)
+    internal static void GenerateRandomFile(string fileName)
     {
         using var fs = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true);
         var fileSize = 3L * 1024 * 1024 * 1024;
@@ -606,11 +606,11 @@ public class FunctionalTest
                 else
                     objectNames.Add(item.Key);
             },
-            ex => { exceptionList.Add(ex); },
+            ex => exceptionList.Add(ex),
             () => { });
 
         await Task.Delay(4500);
-        if (lockConfig != null && lockConfig.ObjectLockEnabled.Equals(ObjectLockConfiguration.LockEnabled))
+        if (lockConfig?.ObjectLockEnabled.Equals(ObjectLockConfiguration.LockEnabled) == true)
         {
             foreach (var item in objectNamesVersions)
             {
@@ -619,7 +619,7 @@ public class FunctionalTest
                     .WithObject(item.Item1)
                     .WithVersionId(item.Item2);
                 var retentionConfig = await minio.GetObjectRetentionAsync(objectRetentionArgs).ConfigureAwait(false);
-                var bypassGovMode = retentionConfig.Mode == RetentionMode.GOVERNANCE ? true : false;
+                var bypassGovMode = retentionConfig.Mode == RetentionMode.GOVERNANCE;
                 var removeObjectArgs = new RemoveObjectArgs()
                     .WithBucket(bucketName)
                     .WithObject(item.Item1)
@@ -712,10 +712,10 @@ public class FunctionalTest
                     .WithBucket(bucketName)
                     .WithObject(objectName)
                     .WithServerSideEncryption(ssec)
-                    .WithCallbackStream(stream =>
+                    .WithCallbackStream(async (stream, cancellationToken) =>
                     {
                         var fileStream = File.Create(tempFileName);
-                        stream.CopyTo(fileStream);
+                        await stream.CopyToAsync(fileStream, cancellationToken);
                         fileStream.Dispose();
                         var writtenInfo = new FileInfo(tempFileName);
                         file_read_size = writtenInfo.Length;
@@ -796,10 +796,10 @@ public class FunctionalTest
                     .WithBucket(bucketName)
                     .WithObject(objectName)
                     .WithServerSideEncryption(ssec)
-                    .WithCallbackStream(stream =>
+                    .WithCallbackStream(async (stream, cancellationToken) =>
                     {
                         var fileStream = File.Create(tempFileName);
-                        stream.CopyTo(fileStream);
+                        await stream.CopyToAsync(fileStream, cancellationToken);
                         fileStream.Dispose();
                         var writtenInfo = new FileInfo(tempFileName);
                         file_read_size = writtenInfo.Length;
@@ -877,10 +877,10 @@ public class FunctionalTest
                 var getObjectArgs = new GetObjectArgs()
                     .WithBucket(bucketName)
                     .WithObject(objectName)
-                    .WithCallbackStream(stream =>
+                    .WithCallbackStream(async (stream, cancellationToken) =>
                     {
                         var fileStream = File.Create(tempFileName);
-                        stream.CopyTo(fileStream);
+                        await stream.CopyToAsync(fileStream, cancellationToken);
                         fileStream.Dispose();
                         var writtenInfo = new FileInfo(tempFileName);
                         file_read_size = writtenInfo.Length;
@@ -1229,19 +1229,21 @@ public class FunctionalTest
             var observable = minio.ListObjectsAsync(listObjectsArgs);
             var objVersions = new List<Tuple<string, string>>();
             using var subscription = observable.Subscribe(
-                item => { objVersions.Add(new Tuple<string, string>(item.Key, item.VersionId)); },
+                item => objVersions.Add(new Tuple<string, string>(item.Key, item.VersionId)),
                 ex => throw ex,
                 async () =>
                 {
                     var removeObjectsArgs = new RemoveObjectsArgs()
                         .WithBucket(bucketName)
                         .WithObjectsVersions(objVersions);
+
                     var rmObservable = await minio.RemoveObjectsAsync(removeObjectsArgs).ConfigureAwait(false);
+
                     var deList = new List<DeleteError>();
                     using var rmSub = rmObservable.Subscribe(
-                        err => { deList.Add(err); },
-                        ex => { throw ex; },
-                        async () => { await TearDown(minio, bucketName).ConfigureAwait(false); });
+                        err => deList.Add(err),
+                        ex => throw ex,
+                        async () => await TearDown(minio, bucketName).ConfigureAwait(false));
                 });
 
             await Task.Delay(2 * 1000);
@@ -1276,8 +1278,9 @@ public class FunctionalTest
 
     internal static async Task UploadObjectAsync(MinioClient minio, string url, string filePath)
     {
-        using var strm = new StreamContent(new FileStream(filePath, FileMode.Open, FileAccess.Read));
-        await minio.WrapperPutAsync(url, strm).ConfigureAwait(false);
+        using var filestream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+        using var stream = new StreamContent(filestream);
+        await minio.WrapperPutAsync(url, stream).ConfigureAwait(false);
     }
 
     internal static async Task PresignedPostPolicy_Test1(MinioClient minio)
@@ -1483,8 +1486,10 @@ public class FunctionalTest
                 .WithQueryExpression("select * from s3object")
                 .WithInputSerialization(inputSerialization)
                 .WithOutputSerialization(outputSerialization);
+
             var resp = await minio.SelectObjectContentAsync(selArgs).ConfigureAwait(false);
-            var output = await new StreamReader(resp.Payload).ReadToEndAsync().ConfigureAwait(false);
+            using var streamReader = new StreamReader(resp.Payload);
+            var output = await streamReader.ReadToEndAsync().ConfigureAwait(false);
             var csvStringNoWS = Regex.Replace(csvString.ToString(), @"\s+", "");
             var outputNoWS = Regex.Replace(output, @"\s+", "");
             // Compute MD5 for a better result.
@@ -2079,7 +2084,7 @@ public class FunctionalTest
                     var versioningConfig = await minio.GetVersioningAsync(getVersioningArgs).ConfigureAwait(false);
                     Assert.IsNotNull(versioningConfig);
                     Assert.IsNotNull(versioningConfig.Status);
-                    Assert.IsTrue(versioningConfig.Status.ToLower().Equals("enabled"));
+                    Assert.IsTrue(versioningConfig.Status.Equals("enabled", StringComparison.OrdinalIgnoreCase));
 
                     new MintLogger(nameof(ObjectVersioningAsync_Test1), getVersioningSignature,
                         "Tests whether SetVersioningAsync/GetVersioningAsync/RemoveVersioningAsync passes",
@@ -2477,7 +2482,8 @@ public class FunctionalTest
             };
             zipStream.PutNextEntry(newEntry);
 
-            bytes = rsg.GenerateStreamFromSeed(i).ToArray();
+            using var stream = rsg.GenerateStreamFromSeed(i);
+            bytes = stream.ToArray();
             using var inStream = new MemoryStream(bytes);
             StreamUtils.Copy(inStream, zipStream, new byte[i * 128]);
 
@@ -2606,7 +2612,6 @@ public class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomName(10);
         var contentType = "application/octet-stream";
-        IDisposable subscription = null;
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -2629,7 +2634,7 @@ public class FunctionalTest
                 .WithBucket(bucketName)
                 .WithEvents(eventsList);
             var events = minio.ListenBucketNotificationsAsync(listenArgs);
-            subscription = events.Subscribe(
+            using var subscription = events.Subscribe(
                 ev => received.Add(ev),
                 ex => { },
                 () => { }
@@ -2742,8 +2747,6 @@ public class FunctionalTest
         finally
         {
             await TearDown(minio, bucketName);
-            if (subscription != null)
-                subscription.Dispose();
         }
     }
 
@@ -2756,7 +2759,6 @@ public class FunctionalTest
         };
         var rxEventData = new MinioNotificationRaw("");
         var rxEventsList = new List<NotificationEvent>();
-        IDisposable subscription = null;
         var bucketName = GetRandomName(15);
         var contentType = "application/json";
         var args = new Dictionary<string, string>
@@ -2803,7 +2805,7 @@ public class FunctionalTest
                 .WithEvents(events);
             var observable = minio.ListenBucketNotificationsAsync(listenArgs);
 
-            subscription = observable.Subscribe(
+            using var subscription = observable.Subscribe(
                 ev =>
                 {
                     rxEventData = ev;
@@ -2858,8 +2860,6 @@ public class FunctionalTest
         finally
         {
             await TearDown(minio, bucketName);
-            if (subscription != null)
-                subscription.Dispose();
         }
     }
 
@@ -2916,8 +2916,8 @@ public class FunctionalTest
             Exception exception = null;
             var notifications = minio.ListenBucketNotificationsAsync(notificationsArgs);
             disposable = notifications.Subscribe(
-                x => { rxEventData = x; },
-                ex => { exception = ex; },
+                x => rxEventData = x,
+                ex => exception = ex,
                 () => { });
 
             // Sleep to give enough time for the subscriber to be ready
@@ -4556,10 +4556,10 @@ public class FunctionalTest
                 var getObjectArgs = new GetObjectArgs()
                     .WithBucket(bucketName)
                     .WithObject(objectName)
-                    .WithCallbackStream(stream =>
+                    .WithCallbackStream(async (stream, cancellationToken) =>
                     {
                         var fileStream = File.Create(tempFileName);
-                        stream.CopyTo(fileStream);
+                        await stream.CopyToAsync(fileStream, cancellationToken);
                         fileStream.Dispose();
                         var writtenInfo = new FileInfo(tempFileName);
                         file_read_size = writtenInfo.Length;
@@ -4732,10 +4732,10 @@ public class FunctionalTest
                         .WithBucket(bucketName)
                         .WithObject(objectName)
                         .WithOffsetAndLength(offsetToStartFrom, lengthToBeRead)
-                        .WithCallbackStream(async stream =>
+                        .WithCallbackStream(async (stream, cancellationToken) =>
                         {
                             var fileStream = File.Create(tempFileName);
-                            stream.CopyTo(fileStream);
+                            await stream.CopyToAsync(fileStream, cancellationToken);
                             fileStream.Dispose();
                             var writtenInfo = new FileInfo(tempFileName);
                             actualFileSize = writtenInfo.Length;
@@ -4743,7 +4743,7 @@ public class FunctionalTest
                             Assert.AreEqual(expectedFileSize, actualFileSize);
 
                             // Checking the content
-                            var actualContent = (await File.ReadAllTextAsync(tempFileName)).Replace("\n", "")
+                            var actualContent = (await File.ReadAllTextAsync(tempFileName, cancellationToken)).Replace("\n", "")
                                 .Replace("\r", "");
                             Assert.AreEqual(actualContent, expectedContent);
                         });
@@ -4787,13 +4787,14 @@ public class FunctionalTest
         try
         {
             // Create a large local file
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) generateRandomFile(fileName);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) GenerateRandomFile(fileName);
             else Bash("truncate -s 2G " + fileName);
 
             // Create the bucket
             await Setup_Test(minio, bucketName);
 
-            using var filestream = new FileStream(File.OpenHandle(fileName), FileAccess.Read);
+            using var file = File.OpenHandle(fileName);
+            using var filestream = new FileStream(file, FileAccess.Read);
             // Upload the large file, "fileName", into the bucket
             var size = filestream.Length;
             long file_read_size = 0;
@@ -5152,7 +5153,7 @@ public class FunctionalTest
                     count++;
                 },
                 ex => throw ex,
-                () => { Assert.AreEqual(count, numObjects); });
+                () => Assert.AreEqual(count, numObjects));
             await Task.Delay(3500);
             new MintLogger("ListObjects_Test6", listObjectsSignature,
                 "Tests whether ListObjects lists more than 1000 objects correctly(max-keys = 1000)", TestStatus.PASS,
@@ -5218,7 +5219,7 @@ public class FunctionalTest
                     objectVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
                 },
                 ex => throw ex,
-                () => { Assert.AreEqual(count, numObjectVersions); });
+                () => Assert.AreEqual(count, numObjectVersions));
 
             await Task.Delay(4000);
             new MintLogger("ListObjectVersions_Test1", listObjectsSignature,
@@ -5655,8 +5656,8 @@ public class FunctionalTest
                 var observable = minio.ListIncompleteUploads(listArgs);
 
                 using var subscription = observable.Subscribe(
-                    item => { Assert.IsTrue(item.Key.Contains(objectName)); },
-                    ex => { Assert.Fail(); });
+                    item => Assert.IsTrue(item.Key.Contains(objectName)),
+                    ex => Assert.Fail());
             }
             catch (Exception ex)
             {

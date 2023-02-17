@@ -99,7 +99,7 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
 
     public override async Task<AccessCredentials> GetCredentialsAsync()
     {
-        if (credentials != null && !credentials.AreExpired()) return credentials;
+        if (credentials?.AreExpired() == false) return credentials;
 
         var requestBuilder = await BuildRequest();
         if (Client != null)
@@ -120,8 +120,7 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
                 }
 
                 if (credentials == null &&
-                    assumeRoleResp != null &&
-                    assumeRoleResp.arr != null)
+                    assumeRoleResp?.arr != null)
                     credentials = assumeRoleResp.arr.Credentials;
 
                 return credentials;

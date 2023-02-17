@@ -29,7 +29,7 @@ public class GetBucketLifecycle
                 new GetBucketLifecycleArgs()
                     .WithBucket(bucketName)
             );
-            if (lfc != null && lfc.Rules != null && lfc.Rules.Count > 0)
+            if (lfc != null && lfc.Rules?.Count > 0)
             {
                 Console.WriteLine($"Got Bucket Lifecycle set for bucket {bucketName}.");
                 Console.WriteLine(lfc.MarshalXML());

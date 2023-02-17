@@ -37,7 +37,7 @@ public class AndOperator
     public AndOperator(string prefix, List<Tag> tag)
     {
         Prefix = prefix;
-        if (tag != null && tag.Count > 0) Tags = new List<Tag>(tag);
+        if (tag?.Count > 0) Tags = new List<Tag>(tag);
     }
 
     public AndOperator(string prefix, Dictionary<string, string> tags)

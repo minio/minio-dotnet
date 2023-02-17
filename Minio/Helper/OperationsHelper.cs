@@ -324,13 +324,13 @@ public static class OperationsUtil
 
     internal static bool IsSupportedHeader(string hdr, IEqualityComparer<string> comparer = null)
     {
-        comparer = comparer ?? StringComparer.OrdinalIgnoreCase;
+        comparer ??= StringComparer.OrdinalIgnoreCase;
         return SupportedHeaders.Contains(hdr, comparer);
     }
 
     internal static bool IsSSEHeader(string hdr, IEqualityComparer<string> comparer = null)
     {
-        comparer = comparer ?? StringComparer.OrdinalIgnoreCase;
+        comparer ??= StringComparer.OrdinalIgnoreCase;
         return SSEHeaders.Contains(hdr, comparer);
     }
 }

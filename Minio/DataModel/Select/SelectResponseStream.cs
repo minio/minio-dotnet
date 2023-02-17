@@ -130,9 +130,9 @@ public class SelectResponseStream
             if (headerMap.TryGetValue(":message-type", out var value))
                 if (value.Equals(":error"))
                 {
-                    string errorCode = null;
-                    string errorMessage = null;
+                    string errorCode;
                     headerMap.TryGetValue(":error-code", out errorCode);
+                    string errorMessage;
                     headerMap.TryGetValue(":error-message", out errorMessage);
                     throw new SelectObjectContentException(errorCode + ":" + errorMessage);
                 }

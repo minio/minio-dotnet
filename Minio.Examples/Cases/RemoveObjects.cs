@@ -36,7 +36,7 @@ internal class RemoveObjects
                 var objectsSubscription = objectsOservable.Subscribe(
                     objDeleteError => Console.WriteLine($"Object: {objDeleteError.Key}"),
                     ex => Console.WriteLine($"OnError: {ex}"),
-                    () => { Console.WriteLine($"Removed objects in list from {bucketName}\n"); });
+                    () => Console.WriteLine($"Removed objects in list from {bucketName}\n"));
                 return;
             }
 
@@ -48,7 +48,7 @@ internal class RemoveObjects
                 objVerDeleteError => Console.WriteLine($"Object: {objVerDeleteError.Key} " +
                                                        $"Object Version: {objVerDeleteError.VersionId}"),
                 ex => Console.WriteLine($"OnError: {ex}"),
-                () => { Console.WriteLine($"Removed objects versions from {bucketName}\n"); });
+                () => Console.WriteLine($"Removed objects versions from {bucketName}\n"));
         }
         catch (Exception e)
         {

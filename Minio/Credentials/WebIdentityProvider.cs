@@ -69,7 +69,7 @@ public class WebIdentityProvider : WebIdentityClientGrantsProvider<WebIdentityPr
         // RoleArn to be set already.
         WithRoleAction("AssumeRoleWithWebIdentity");
         WithDurationInSeconds(GetDurationInSeconds(CurrentJsonWebToken.Expiry));
-        if (RoleSessionName == null) RoleSessionName = Utils.To8601String(DateTime.Now);
+        RoleSessionName ??= Utils.To8601String(DateTime.Now);
         return base.BuildRequest();
     }
 

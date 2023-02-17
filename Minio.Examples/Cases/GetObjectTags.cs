@@ -33,7 +33,7 @@ public class GetObjectTags
                     .WithObject(objectName)
                     .WithVersionId(versionId)
             );
-            if (tags != null && tags.GetTags() != null && tags.GetTags().Count > 0)
+            if (tags != null && tags.GetTags()?.Count > 0)
             {
                 Console.WriteLine($"Got tags set for object {bucketName}/{objectName}.");
                 foreach (var tag in tags.GetTags()) Console.WriteLine(tag.Key + " : " + tag.Value);

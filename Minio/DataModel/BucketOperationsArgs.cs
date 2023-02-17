@@ -41,8 +41,8 @@ public class RemoveBucketArgs : BucketArgs<RemoveBucketArgs>
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        if (Headers.ContainsKey(BucketForceDeleteKey))
-            requestMessageBuilder.AddHeaderParameter(BucketForceDeleteKey, Headers[BucketForceDeleteKey]);
+        if (Headers.TryGetValue(BucketForceDeleteKey, out string value))
+            requestMessageBuilder.AddHeaderParameter(BucketForceDeleteKey, value);
         return requestMessageBuilder;
     }
 }
@@ -400,6 +400,7 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
             {
                 using var sr = new StreamReader(responseStream);
                 while (!sr.EndOfStream)
+                {
                     try
                     {
                         var line = await sr.ReadLineAsync().ConfigureAwait(false);
@@ -420,6 +421,7 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
                     {
                         break;
                     }
+                }
             }
         };
         return requestMessageBuilder;
@@ -446,10 +448,6 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
     public ListenBucketNotificationsArgs WithEvents(List<EventType> events)
     {
         Events.AddRange(events);
-        foreach (var ev in events)
-        {
-        }
-
         return this;
     }
 }
@@ -483,8 +481,7 @@ public class SetBucketEncryptionArgs : BucketArgs<SetBucketEncryptionArgs>
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        if (EncryptionConfig == null)
-            EncryptionConfig = ServerSideEncryptionConfiguration.GetSSEConfigurationWithS3Rule();
+        EncryptionConfig ??= ServerSideEncryptionConfiguration.GetSSEConfigurationWithS3Rule();
 
         requestMessageBuilder.AddQueryParameter("encryption", "");
         var body = Utils.MarshalXML(EncryptionConfig, "http://s3.amazonaws.com/doc/2006-03-01/");

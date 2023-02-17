@@ -28,7 +28,7 @@ public class NegativeTest
     public async Task TestNoConnectionError()
     {
         // invalid uri
-        var minio = new MinioClient()
+        using var minio = new MinioClient()
             .WithEndpoint("localhost", 12121)
             .WithCredentials("minio", "minio")
             .Build();
@@ -43,7 +43,7 @@ public class NegativeTest
     public async Task TestInvalidBucketNameError()
     {
         var badName = new string('A', 260);
-        var minio = new MinioClient()
+        using var minio = new MinioClient()
             .WithEndpoint(TestHelper.Endpoint)
             .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
             .WithSSL()
@@ -58,7 +58,7 @@ public class NegativeTest
     {
         var badName = new string('A', 260);
         var bucketName = Guid.NewGuid().ToString("N");
-        var minio = new MinioClient()
+        using var minio = new MinioClient()
             .WithEndpoint(TestHelper.Endpoint)
             .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
             .WithSSL()
@@ -77,8 +77,7 @@ public class NegativeTest
             var ex = await Assert.ThrowsExceptionAsync<InvalidObjectNameException>(
                 () => minio.StatObjectAsync(statObjArgs));
             for (var i = 0;
-                 i < tryCount && ex.ServerResponse != null &&
-                 ex.ServerResponse.StatusCode.Equals(HttpStatusCode.ServiceUnavailable);
+                 i < tryCount && ex.ServerResponse?.StatusCode.Equals(HttpStatusCode.ServiceUnavailable) == true;
                  ++i)
                 ex = await Assert.ThrowsExceptionAsync<InvalidObjectNameException>(
                     () => minio.StatObjectAsync(statObjArgs));

@@ -29,12 +29,13 @@ public class Program
 
         /// Note: s3 AccessKey and SecretKey needs to be added in App.config file
         /// See instructions in README.md on running examples for more information.
-        var minio = new MinioClient()
+        using var minio = new MinioClient()
             .WithEndpoint("play.min.io")
             .WithCredentials("Q3AM3UQ867SPQQA43P2F",
                 "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
             .WithSSL()
             .Build();
+
         var getListBucketsTask = minio.ListBucketsAsync();
 
         try
@@ -51,7 +52,7 @@ public class Program
 
         //Supply a new bucket name
         var bucketName = "mynewbucket";
-        if (isBucketExists(minio, bucketName))
+        if (IsBucketExists(minio, bucketName))
         {
             var remBuckArgs = new RemoveBucketArgs()
                 .WithBucket(bucketName);
@@ -63,12 +64,12 @@ public class Program
             .WithBucket(bucketName);
         Task.WaitAll(minio.MakeBucketAsync(mkBktArgs));
 
-        var found = isBucketExists(minio, bucketName);
+        var found = IsBucketExists(minio, bucketName);
         Console.WriteLine("Bucket exists? = " + found);
         Console.ReadLine();
     }
 
-    private static bool isBucketExists(IMinioClient minio,
+    private static bool IsBucketExists(IMinioClient minio,
         string bucketName)
     {
         var bktExistsArgs = new BucketExistsArgs()

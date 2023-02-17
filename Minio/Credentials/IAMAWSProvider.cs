@@ -44,9 +44,7 @@ public class IAMAWSProvider : EnvironmentProvider
                 throw new ArgumentNullException("Endpoint field " + nameof(CustomEndPoint) + " is invalid.");
         }
 
-        if (client == null)
-            throw new ArgumentException("MinioClient reference field " + nameof(Minio_Client) + " cannot be null.");
-        Minio_Client = client;
+        Minio_Client = client ?? throw new ArgumentException("MinioClient reference field " + nameof(Minio_Client) + " cannot be null.");
         CustomEndPoint = new Uri(endpoint);
     }
 
@@ -128,7 +126,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
 };*/
 
         var credentials = JsonSerializer.Deserialize<ECSCredentials>(response.Content);
-        if (credentials.Code != null && !credentials.Code.ToLower().Equals("success"))
+        if (credentials.Code?.Equals("success", StringComparison.OrdinalIgnoreCase) == false)
             throw new CredentialsProviderException("IAMAWSProvider",
                 "Credential Get operation failed with code: " + credentials.Code + " and message " +
                 credentials.Message);
@@ -139,9 +137,8 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
 
     public override async Task<AccessCredentials> GetCredentialsAsync()
     {
-        if (Credentials != null && !Credentials.AreExpired())
+        if (Credentials?.AreExpired() == false)
         {
-            Credentials = Credentials;
             return Credentials;
         }
 
@@ -177,8 +174,6 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
     public async Task<string> GetIamRoleNameAsync(Uri url)
     {
         Validate();
-        string[] roleNames = null;
-
         var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, url);
         requestBuilder.AddQueryParameter("location", "");
 
@@ -190,7 +185,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             throw new CredentialsProviderException("IAMAWSProvider",
                 "Credential Get operation failed with HTTP Status code: " + response.StatusCode);
 
-        roleNames = response.Content.Split('\n');
+        string[] roleNames = response.Content.Split('\n');
         if (roleNames.Length <= 0)
             throw new CredentialsProviderException("IAMAWSProvider",
                 "No IAM roles are attached to AWS service at " + url);
@@ -204,7 +199,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
     {
         Validate();
         var url = CustomEndPoint;
-        string newUrlStr = null;
+        string newUrlStr;
         if (url == null || string.IsNullOrWhiteSpace(url.Authority))
         {
             url = new Uri("http://169.254.169.254/latest/meta-data/iam/security-credentials/");

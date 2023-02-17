@@ -20,12 +20,10 @@ public class NotificationTest
         try
         {
             var contentBytes = Encoding.UTF8.GetBytes(notificationString);
-            using (var stream = new MemoryStream(contentBytes))
-            {
-                var notification =
-                    (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(stream);
-                Assert.AreEqual(1, notification.TopicConfigs.Count);
-            }
+            using var stream = new MemoryStream(contentBytes);
+            var notification =
+                (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(stream);
+            Assert.AreEqual(1, notification.TopicConfigs.Count);
         }
         catch (Exception ex)
         {

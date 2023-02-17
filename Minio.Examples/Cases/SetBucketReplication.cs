@@ -60,12 +60,10 @@ public class SetBucketReplication
             .WithBucket(destBucketName)
             .WithVersioningEnabled();
         await minio.SetVersioningAsync(setArgs);
-
-        var serverEndPoint = "";
         var schema = "http://";
-        var accessKey = "";
-        var secretKey = "";
-
+        string serverEndPoint;
+        string accessKey;
+        string secretKey;
         if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
         {
             serverEndPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");

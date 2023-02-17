@@ -76,7 +76,7 @@ internal class GetMultipartUploadsListResponse : GenericResponse
 
         var root = XDocument.Parse(responseContent);
         var itemCheck = root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload").FirstOrDefault();
-        if (uploadsResult == null || itemCheck == null || !itemCheck.HasElements) return;
+        if (uploadsResult == null || itemCheck?.HasElements != true) return;
         var uploads = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
             select new Upload
             {

@@ -34,7 +34,7 @@ public class GetObjectLockConfiguration
             if (config != null)
             {
                 Console.WriteLine($"Object lock configuration on bucket {bucketName} is : " + config.ObjectLockEnabled);
-                if (config.Rule != null && config.Rule.DefaultRetention != null)
+                if (config.Rule?.DefaultRetention != null)
                 {
                     var mode = config.Rule.DefaultRetention.Mode == RetentionMode.GOVERNANCE
                         ? "GOVERNANCE"

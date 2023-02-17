@@ -73,7 +73,7 @@ public sealed class AWSS3Endpoints
     {
         string endpoint = null;
         if (region != null) Instance.endpoints.TryGetValue(region, out endpoint);
-        if (endpoint == null) endpoint = "s3.amazonaws.com";
+        endpoint ??= "s3.amazonaws.com";
         return endpoint;
     }
 }

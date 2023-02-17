@@ -18,7 +18,7 @@ using System.Text;
 
 namespace Minio.Tests;
 
-internal class TestHelper
+internal static class TestHelper
 {
     internal const string Endpoint = "play.min.io";
     internal const string AccessKey = "Q3AM3UQ867SPQQA43P2F";

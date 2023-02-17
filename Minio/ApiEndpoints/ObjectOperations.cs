@@ -25,6 +25,7 @@ using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Tags;
 using Minio.Exceptions;
 using Minio.Helper;
+using System;
 
 namespace Minio;
 
@@ -107,8 +108,7 @@ public partial class MinioClient : IObjectOperations
                         .WithPrefix(args.Prefix)
                         .WithKeyMarker(nextKeyMarker)
                         .WithUploadIdMarker(nextUploadIdMarker);
-                    Tuple<ListMultipartUploadsResult, List<Upload>> uploads = null;
-                    uploads = await GetMultipartUploadsListAsync(getArgs, cancellationToken).ConfigureAwait(false);
+                    Tuple<ListMultipartUploadsResult, List<Upload>> uploads = await GetMultipartUploadsListAsync(getArgs, cancellationToken).ConfigureAwait(false);
                     if (uploads == null)
                     {
                         isRunning = false;
@@ -148,15 +148,15 @@ public partial class MinioClient : IObjectOperations
         {
             uploads = await ListIncompleteUploads(listUploadArgs, cancellationToken)?.ToArray();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex.GetType() == typeof(BucketNotFoundException))
         {
-            //Bucket Not found. So, incomplete uploads are removed.
-            if (ex.GetType() != typeof(BucketNotFoundException)) throw;
+            throw;
         }
 
         if (uploads == null) return;
         foreach (var upload in uploads)
-            if (upload.Key.ToLower().Equals(args.ObjectName.ToLower()))
+        {
+            if (upload.Key.Equals(args.ObjectName, StringComparison.OrdinalIgnoreCase))
             {
                 var rmArgs = new RemoveUploadArgs()
                     .WithBucket(args.BucketName)
@@ -164,6 +164,7 @@ public partial class MinioClient : IObjectOperations
                     .WithUploadId(upload.UploadId);
                 await RemoveUploadAsync(rmArgs, cancellationToken).ConfigureAwait(false);
             }
+        }
     }
 
     /// <summary>
@@ -260,8 +261,8 @@ public partial class MinioClient : IObjectOperations
         args.Validate();
         var requestMessageBuilder = await CreateRequest(HttpMethod.Put, args.BucketName,
             args.ObjectName,
-            contentType: Convert.ToString(args.GetType()), // contentType
-            headerMap: args.Headers, // metaData
+            headerMap: args.Headers, // contentType
+            contentType: Convert.ToString(args.GetType()), // metaData
             body: Utils.ObjectToByteArray(args.RequestBody));
         var authenticator = new V4Authenticator(Secure, AccessKey, SecretKey, Region,
             SessionToken);
@@ -293,9 +294,7 @@ public partial class MinioClient : IObjectOperations
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
         var legalHoldConfig = new GetLegalHoldResponse(response.StatusCode, response.Content);
-        return legalHoldConfig.CurrentLegalHoldConfiguration == null
-            ? false
-            : legalHoldConfig.CurrentLegalHoldConfiguration.Status.ToLower().Equals("on");
+        return legalHoldConfig.CurrentLegalHoldConfiguration?.Status.Equals("on", StringComparison.OrdinalIgnoreCase) == true;
     }
 
     /// <summary>
@@ -547,16 +546,15 @@ public partial class MinioClient : IObjectOperations
     public async Task PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default)
     {
         args.Validate();
-        if (args.SSE != null) args.SSE.Marshal(args.Headers);
+        args.SSE?.Marshal(args.Headers);
 
         // Upload object in single part if size falls under restricted part size.
         if (args.ObjectSize < Constants.MinimumPartSize && args.ObjectSize >= 0 && args.ObjectStreamData != null)
         {
             var bytes = await ReadFullAsync(args.ObjectStreamData, (int)args.ObjectSize).ConfigureAwait(false);
-            var bytesRead = bytes == null ? 0 : bytes.Length;
+            var bytesRead = (bytes?.Length) ?? 0;
             if (bytesRead != (int)args.ObjectSize)
-                throw new UnexpectedShortReadException(
-                    $"Data read {bytesRead} is shorter than the size {args.ObjectSize} of input buffer.");
+                throw new UnexpectedShortReadException($"Data read {bytesRead} is shorter than the size {args.ObjectSize} of input buffer.");
 
             args = args.WithRequestBody(bytes)
                 .WithStreamData(null)
@@ -594,7 +592,6 @@ public partial class MinioClient : IObjectOperations
         if (!string.IsNullOrEmpty(args.FileName))
         {
             var fileInfo = new FileInfo(args.FileName);
-            var size = fileInfo.Length;
             using var fileStream = new FileStream(args.FileName, FileMode.Open, FileAccess.Read);
             putObjectPartArgs = putObjectPartArgs
                 .WithStreamData(fileStream)
@@ -655,9 +652,7 @@ public partial class MinioClient : IObjectOperations
         }
 
         args.Validate();
-        var srcByteRangeSize = args.SourceObject.CopyOperationConditions != null
-            ? args.SourceObject.CopyOperationConditions.GetByteRange()
-            : 0L;
+        var srcByteRangeSize = (args.SourceObject.CopyOperationConditions?.GetByteRange()) ?? 0L;
         var copySize = srcByteRangeSize == 0 ? args.SourceObjectInfo.Size : srcByteRangeSize;
 
         if (srcByteRangeSize > args.SourceObjectInfo.Size ||
@@ -697,14 +692,14 @@ public partial class MinioClient : IObjectOperations
                 .WithReplaceTagsDirective(args.ReplaceTagsDirective)
                 .WithTagging(args.ObjectTags);
             cpReqArgs.Validate();
-            Dictionary<string, string> newMeta = null;
+            Dictionary<string, string> newMeta;
             if (args.ReplaceMetadataDirective)
                 newMeta = new Dictionary<string, string>(args.Headers);
             else
                 newMeta = new Dictionary<string, string>(args.SourceObjectInfo.MetaData);
             if (args.SourceObject.SSE != null && args.SourceObject.SSE is SSECopy)
                 args.SourceObject.SSE.Marshal(newMeta);
-            if (args.SSE != null) args.SSE.Marshal(newMeta);
+            args.SSE?.Marshal(newMeta);
             cpReqArgs.WithHeaders(newMeta);
             await CopyObjectRequestAsync(cpReqArgs, cancellationToken).ConfigureAwait(false);
         }
@@ -1079,10 +1074,9 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken)
     {
         args.Validate();
-        ResponseResult response = null;
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
-            .ConfigureAwait(false);
+        ResponseResult response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+    .ConfigureAwait(false);
         var getUploadResponse = new GetMultipartUploadsListResponse(response.StatusCode, response.Content);
         response.Dispose();
 
@@ -1168,7 +1162,7 @@ public partial class MinioClient : IObjectOperations
                 .WithUploadId(args.UploadId)
                 .WithPartNumber(partNumber);
             var etag = await PutObjectSinglePartAsync(putObjectArgs, cancellationToken).ConfigureAwait(false);
-            numPartsUploaded += 1;
+            numPartsUploaded++;
             totalParts[partNumber - 1] = new Part
                 { PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize };
             etags[partNumber] = etag;
@@ -1227,7 +1221,7 @@ public partial class MinioClient : IObjectOperations
         for (partNumber = 1; partNumber <= partCount; partNumber++)
         {
             var partCondition = args.SourceObject.CopyOperationConditions.Clone();
-            partCondition.byteRangeStart = (long)partSize * (partNumber - 1) + partCondition.byteRangeStart;
+            partCondition.byteRangeStart = ((long)partSize * (partNumber - 1)) + partCondition.byteRangeStart;
             if (partNumber < partCount)
                 partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)partSize - 1;
             else
@@ -1241,7 +1235,7 @@ public partial class MinioClient : IObjectOperations
 
             if (args.SourceObject.SSE != null && args.SourceObject.SSE is SSECopy)
                 args.SourceObject.SSE.Marshal(args.Headers);
-            if (args.SSE != null) args.SSE.Marshal(args.Headers);
+            args.SSE?.Marshal(args.Headers);
             var cpPartArgs = new CopyObjectRequestArgs()
                 .WithBucket(args.BucketName)
                 .WithObject(args.ObjectName)
@@ -1384,7 +1378,6 @@ public partial class MinioClient : IObjectOperations
 
         var completeMultipartUploadXml = new XElement("CompleteMultipartUpload", parts);
         var bodyString = completeMultipartUploadXml.ToString();
-        var body = Encoding.UTF8.GetBytes(bodyString);
 
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Type", "application/xml");
 
@@ -1523,8 +1516,8 @@ public partial class MinioClient : IObjectOperations
 
         var requestMessageBuilder = await CreateRequest(HttpMethod.Put, bucketName,
                 objectName,
-                contentType: contentType,
                 headerMap: metaData,
+                contentType: contentType,
                 body: data)
             .ConfigureAwait(false);
         if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
@@ -1538,8 +1531,12 @@ public partial class MinioClient : IObjectOperations
 
         string etag = null;
         foreach (var parameter in response.Headers)
+        {
             if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
+            {
                 etag = parameter.Value;
+            }
+        }
 
         return etag;
     }
@@ -1576,7 +1573,7 @@ public partial class MinioClient : IObjectOperations
         while (totalRead < currentPartSize)
         {
             var curData = new byte[currentPartSize - totalRead];
-            var curRead = await data.ReadAsync(curData, 0, currentPartSize - totalRead).ConfigureAwait(false);
+            var curRead = await data.ReadAsync(curData.AsMemory(0, currentPartSize - totalRead)).ConfigureAwait(false);
             if (curRead == 0) break;
             for (var i = 0; i < curRead; i++) result[totalRead + i] = curData[i];
             totalRead += curRead;
@@ -1618,7 +1615,7 @@ public partial class MinioClient : IObjectOperations
         var sourceObjectPath = bucketName + "/" + Utils.UrlEncode(objectName);
 
         // Destination object name is optional, if empty default to source object name.
-        if (destObjectName == null) destObjectName = objectName;
+        destObjectName ??= objectName;
 
         var requestMessageBuilder = await CreateRequest(HttpMethod.Put, destBucketName,
                 destObjectName,
@@ -1683,7 +1680,7 @@ public partial class MinioClient : IObjectOperations
         var totalParts = new Part[(int)partCount];
 
         var sseHeaders = new Dictionary<string, string>();
-        if (sseDest != null) sseDest.Marshal(sseHeaders);
+        sseDest?.Marshal(sseHeaders);
 
         // No need to resume upload since this is a Server-side copy. Just initiate a new upload.
         var uploadId = await NewMultipartUploadAsync(destBucketName,
@@ -1696,7 +1693,7 @@ public partial class MinioClient : IObjectOperations
         for (partNumber = 1; partNumber <= partCount; partNumber++)
         {
             var partCondition = copyConditions.Clone();
-            partCondition.byteRangeStart = (long)partSize * (partNumber - 1) + partCondition.byteRangeStart;
+            partCondition.byteRangeStart = ((long)partSize * (partNumber - 1)) + partCondition.byteRangeStart;
             if (partNumber < partCount)
                 partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)partSize - 1;
             else
@@ -1718,7 +1715,7 @@ public partial class MinioClient : IObjectOperations
             };
 
             if (sseSrc != null && sseSrc is SSECopy) sseSrc.Marshal(customHeader);
-            if (sseDest != null) sseDest.Marshal(customHeader);
+            sseDest?.Marshal(customHeader);
 
             var cpPartResult = (CopyPartResult)await CopyObjectRequestAsync(bucketName, objectName,
                 destBucketName, destObjectName, copyConditions, customHeader, queryMap, cancellationToken,

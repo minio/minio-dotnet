@@ -32,7 +32,7 @@ public class GetBucketReplication
                 new GetBucketReplicationArgs()
                     .WithBucket(bucketName)
             );
-            if (repl != null && repl.Rules != null && repl.Rules.Count > 0)
+            if (repl != null && repl.Rules?.Count > 0)
             {
                 Console.WriteLine($"Got Bucket Replication Configuration set for bucket {bucketName}.");
                 foreach (var rule in repl.Rules)

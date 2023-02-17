@@ -73,7 +73,7 @@ internal static class RequestUtil
 
         // This is the actual url pointed to for all HTTP requests
         var endpointURL = string.Format("{0}://{1}", scheme, endpoint);
-        Uri uri = null;
+        Uri uri;
         try
         {
             uri = new Uri(endpointURL);
