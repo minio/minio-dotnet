@@ -156,7 +156,8 @@ public static class Program
         await CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName).ConfigureAwait(false);
 
         // Server side copyObject with metadata replacement
-        await CopyObjectMetadata.Run(minioClient, bucketName, objectName, destBucketName, objectName).ConfigureAwait(false);
+        await CopyObjectMetadata.Run(minioClient, bucketName, objectName, destBucketName, objectName)
+            .ConfigureAwait(false);
 
         // Upload a File with PutObject
         await FPutObject.Run(minioClient, bucketName, objectName, smallFileName).ConfigureAwait(false);
@@ -186,7 +187,8 @@ public static class Program
         var putFileName1 = CreateFile(1 * UNIT_MB);
         await PutObject.Run(minioClient, bucketName, objectName, putFileName1, ssec).ConfigureAwait(false);
         // Copy SSE-C encrypted object to unencrypted object
-        await CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName, sseCpy, ssec).ConfigureAwait(false);
+        await CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName, sseCpy, ssec)
+            .ConfigureAwait(false);
         // Download SSE-C encrypted object
         await FGetObject.Run(minioClient, destBucketName, objectName, bigFileName, ssec).ConfigureAwait(false);
 
@@ -221,7 +223,8 @@ public static class Program
 
         // Bucket Replication operations
         var replicationRuleID = "myreplicationID-3333";
-        await SetBucketReplication.Run(minioClient, bucketName, destBucketName, replicationRuleID).ConfigureAwait(false);
+        await SetBucketReplication.Run(minioClient, bucketName, destBucketName, replicationRuleID)
+            .ConfigureAwait(false);
         await GetBucketReplication.Run(minioClient, bucketName, replicationRuleID).ConfigureAwait(false);
         // TODO: we can verify that the replication happens by checking
         // the content in the destination matches the source content.

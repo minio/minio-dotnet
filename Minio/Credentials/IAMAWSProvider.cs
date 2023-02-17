@@ -114,7 +114,8 @@ public class IAMAWSProvider : EnvironmentProvider
         requestBuilder.AddQueryParameter("location", "");
 
         using var response =
-            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder).ConfigureAwait(false);
+            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder)
+                .ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(response.Content) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))
             throw new CredentialsProviderException("IAMAWSProvider",
@@ -177,7 +178,8 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
         requestBuilder.AddQueryParameter("location", "");
 
         using var response =
-            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder).ConfigureAwait(false);
+            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder)
+                .ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(response.Content) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))

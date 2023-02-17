@@ -35,7 +35,8 @@ public class NegativeTest
         var args = new BucketExistsArgs()
             .WithBucket("test");
 
-        var ex = await Assert.ThrowsExceptionAsync<ConnectionException>(() => minio.BucketExistsAsync(args)).ConfigureAwait(false);
+        var ex = await Assert.ThrowsExceptionAsync<ConnectionException>(() => minio.BucketExistsAsync(args))
+            .ConfigureAwait(false);
         Assert.IsNotNull(ex.ServerResponse);
     }
 
@@ -50,7 +51,9 @@ public class NegativeTest
             .Build();
         var args = new BucketExistsArgs()
             .WithBucket(badName);
-        await Assert.ThrowsExceptionAsync<InvalidBucketNameException>(async () => await minio.BucketExistsAsync(args).ConfigureAwait(false)).ConfigureAwait(false);
+        await Assert
+            .ThrowsExceptionAsync<InvalidBucketNameException>(async () =>
+                await minio.BucketExistsAsync(args).ConfigureAwait(false)).ConfigureAwait(false);
     }
 
     [TestMethod]

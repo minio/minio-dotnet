@@ -38,7 +38,7 @@ public static class Program
 
         var listBuckets = await minio.ListBucketsAsync().ConfigureAwait(false);
 
-        foreach (var bucket in listBuckets.Buckets) 
+        foreach (var bucket in listBuckets.Buckets)
             Console.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
 
         //Supply a new bucket name

@@ -191,7 +191,7 @@ internal static class Program
         // Test incomplete uploads
         await FunctionalTest.ListIncompleteUpload_Test1(minioClient).ConfigureAwait(false);
         await FunctionalTest.ListIncompleteUpload_Test2(minioClient).ConfigureAwait(false);
-        await FunctionalTest.ListIncompleteUpload_Test3(minioClient ).ConfigureAwait(false);
+        await FunctionalTest.ListIncompleteUpload_Test3(minioClient).ConfigureAwait(false);
         await FunctionalTest.RemoveIncompleteUpload_Test(minioClient).ConfigureAwait(false);
 
         // Test GetBucket policy

@@ -78,7 +78,9 @@ public partial class MinioClient : IObjectOperations
             await stream.CopyToAsync(dest, cancellationToken).ConfigureAwait(false);
         };
 
-        using var cts = new CancellationTokenSource();
+#pragma warning disable IDISP001 // Dispose created
+        var cts = new CancellationTokenSource();
+#pragma warning restore IDISP001 // Dispose created
         cts.CancelAfter(TimeSpan.FromMilliseconds(15));
         args.WithCallbackStream(async (stream, cancellationToken) =>
         {
@@ -292,14 +294,16 @@ public partial class MinioClient : IObjectOperations
             iterObjects.Insert(i, objName);
             if (++i == 1000)
             {
-                fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList, cancellationToken).ConfigureAwait(false);
+                fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList, cancellationToken)
+                    .ConfigureAwait(false);
                 iterObjects.Clear();
                 i = 0;
             }
         }
 
         if (iterObjects.Count > 0)
-            fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList, cancellationToken).ConfigureAwait(false);
+            fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList, cancellationToken)
+                .ConfigureAwait(false);
         return fullErrorsList;
     }
 }

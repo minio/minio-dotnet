@@ -222,7 +222,7 @@ public partial class MinioClient : IMinioClient
 
     public void Dispose()
     {
-        if (disposeHttpClient) 
+        if (disposeHttpClient)
             httpClient?.Dispose();
     }
 
@@ -579,7 +579,8 @@ public partial class MinioClient : IMinioClient
             if (requestMessageBuilder.ResponseWriter != null)
                 requestMessageBuilder.ResponseWriter(responseResult.ContentStream);
             if (requestMessageBuilder.FunctionResponseWriter != null)
-                await requestMessageBuilder.FunctionResponseWriter(responseResult.ContentStream, cancellationToken).ConfigureAwait(false);
+                await requestMessageBuilder.FunctionResponseWriter(responseResult.ContentStream, cancellationToken)
+                    .ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {

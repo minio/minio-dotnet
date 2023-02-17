@@ -15,6 +15,7 @@
  */
 
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Minio.DataModel;
 
@@ -40,62 +41,64 @@ public class MinioNotificationRaw
 [Serializable]
 public class MinioNotification
 {
-    public string Err;
-    public NotificationEvent[] Records;
+    public string Err { get; set; }
+    public NotificationEvent[] Records { get; set; }
 }
 
 public class NotificationEvent
 {
-    public string awsRegion;
-    public string eventName;
-    public string eventSource;
-    public string eventTime;
-    public string eventVersion;
-    public Dictionary<string, string> requestParameters;
-    public Dictionary<string, string> responseElements;
-    public EventMeta s3;
-    public SourceInfo source;
-    public Identity userIdentity;
+    public string awsRegion { get; set; }
+    public string eventName { get; set; }
+    public string eventSource { get; set; }
+    public string eventTime { get; set; }
+    public string eventVersion { get; set; }
+    public Dictionary<string, string> requestParameters { get; set; }
+    public Dictionary<string, string> responseElements { get; set; }
+    public EventMeta s3 { get; set; }
+    public SourceInfo source { get; set; }
+    public Identity userIdentity { get; set; }
 }
 
 [DataContract]
 public class EventMeta
 {
-    [DataMember] public BucketMeta bucket;
+    [DataMember] public BucketMeta bucket { get; set; }
 
-    [DataMember] public string configurationId;
+    [DataMember] public string configurationId { get; set; }
 
-    [DataMember(Name = "object")] public ObjectMeta objectMeta; // C# won't allow the keyword 'object' as a name
+    [DataMember(Name = "object")]
+    [JsonPropertyName("object")]
+    public ObjectMeta objectMeta { get; set; } // C# won't allow the keyword 'object' as a name
 
-    [DataMember] public string schemaVersion;
+    [DataMember] public string schemaVersion { get; set; }
 }
 
 public class ObjectMeta
 {
-    public string contentType;
-    public string etag;
-    public string key;
-    public string sequencer;
-    public int size;
-    public Dictionary<string, string> userMetadata;
-    public string versionId;
+    public string contentType { get; set; }
+    public string etag { get; set; }
+    public string key { get; set; }
+    public string sequencer { get; set; }
+    public int size { get; set; }
+    public Dictionary<string, string> userMetadata { get; set; }
+    public string versionId { get; set; }
 }
 
 public class BucketMeta
 {
-    public string arn;
-    public string name;
-    public Identity ownerIdentity;
+    public string arn { get; set; }
+    public string name { get; set; }
+    public Identity ownerIdentity { get; set; }
 }
 
 public class Identity
 {
-    public string principalId;
+    public string principalId { get; set; }
 }
 
 public class SourceInfo
 {
-    public string host;
-    public string port;
-    public string userAgent;
+    public string host { get; set; }
+    public string port { get; set; }
+    public string userAgent { get; set; }
 }

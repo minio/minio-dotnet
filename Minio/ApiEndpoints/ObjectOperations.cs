@@ -362,7 +362,8 @@ public partial class MinioClient : IObjectOperations
     {
         args.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+        using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1117,7 +1118,8 @@ public partial class MinioClient : IObjectOperations
     {
         //Skipping validate as we need the case where stream sends 0 bytes
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            .ConfigureAwait(false);
         var putObjectResponse = new PutObjectResponse(response.StatusCode, response.Content, response.Headers);
         return putObjectResponse.Etag;
     }
@@ -1283,7 +1285,8 @@ public partial class MinioClient : IObjectOperations
     {
         args.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            .ConfigureAwait(false);
         var uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
         return uploadResponse.UploadId;
     }
@@ -1308,7 +1311,8 @@ public partial class MinioClient : IObjectOperations
     {
         args.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken).ConfigureAwait(false);
+        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+            .ConfigureAwait(false);
         var uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
         return uploadResponse.UploadId;
     }
