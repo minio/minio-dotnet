@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-internal class GetBucketNotification
+internal static class GetBucketNotification
 {
     // Get bucket notifications - this works only with AWS endpoint
     public static async Task Run(IMinioClient minio,

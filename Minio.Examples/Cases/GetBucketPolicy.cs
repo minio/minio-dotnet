@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-internal class GetBucketPolicy
+internal static class GetBucketPolicy
 {
     // Get bucket policy 
     public static async Task Run(IMinioClient minio,

@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-internal class GetVersioning
+internal static class GetVersioning
 {
     // Check if Versioning is Enabled on a bucket
     public static async Task Run(IMinioClient minio,

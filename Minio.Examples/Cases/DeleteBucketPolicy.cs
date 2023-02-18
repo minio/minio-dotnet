@@ -18,7 +18,7 @@ using Minio.Exceptions;
 
 namespace Minio.Examples.Cases;
 
-internal class DeleteBucketPolicy
+internal static class DeleteBucketPolicy
 {
     // Set bucket policy
     public static async Task Run(IMinioClient minio,

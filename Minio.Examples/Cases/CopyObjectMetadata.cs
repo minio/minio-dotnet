@@ -18,7 +18,7 @@ using Minio.DataModel;
 
 namespace Minio.Examples.Cases;
 
-internal class CopyObjectMetadata
+internal static class CopyObjectMetadata
 {
     // Copy object from one bucket to another
     public static async Task Run(IMinioClient minio,

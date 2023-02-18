@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-internal class ListBuckets
+internal static class ListBuckets
 {
     // List all buckets on host
     public static async Task Run(IMinioClient minio)

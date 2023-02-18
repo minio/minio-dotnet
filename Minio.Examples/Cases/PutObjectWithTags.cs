@@ -18,7 +18,7 @@ using Minio.DataModel.Tags;
 
 namespace Minio.Examples.Cases;
 
-internal class PutObjectWithTags
+internal static class PutObjectWithTags
 {
     private const int MB = 1024 * 1024;
 

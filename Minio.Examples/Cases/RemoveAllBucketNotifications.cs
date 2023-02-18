@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-internal class RemoveAllBucketNotifications
+internal static class RemoveAllBucketNotifications
 {
     // Removes all bucket notifications
     public static async Task Run(IMinioClient minio,

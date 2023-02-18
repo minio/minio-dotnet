@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-internal class GetObjectQuery
+internal static class GetObjectQuery
 {
     // Get object in a bucket
     public static async Task Run(IMinioClient minio,

@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-internal class SetBucketPolicy
+internal static class SetBucketPolicy
 {
     // Set bucket policy
     public static async Task Run(IMinioClient minio,

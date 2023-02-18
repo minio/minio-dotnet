@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-internal class GetObjectVersion
+internal static class GetObjectVersion
 {
     // Get object in a bucket
     public static async Task Run(IMinioClient minio,

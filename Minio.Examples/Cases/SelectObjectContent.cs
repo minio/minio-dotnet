@@ -19,7 +19,7 @@ using Minio.DataModel;
 
 namespace Minio.Examples.Cases;
 
-internal class SelectObjectContent
+internal static class SelectObjectContent
 {
     // Get object in a bucket
     public static async Task Run(IMinioClient minio,

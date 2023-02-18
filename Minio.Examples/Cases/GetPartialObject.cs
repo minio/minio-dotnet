@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-internal class GetPartialObject
+internal static class GetPartialObject
 {
     // Get object in a bucket for a particular offset range. Dotnet SDK currently
     // requires both start offset and end 

@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-internal class FPutObject
+internal static class FPutObject
 {
     // Upload object to bucket from file
     public static async Task Run(IMinioClient minio,

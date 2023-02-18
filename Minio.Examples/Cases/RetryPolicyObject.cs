@@ -75,7 +75,7 @@ internal static class RetryPolicyHelper
     }
 }
 
-internal class RetryPolicyObject
+internal static class RetryPolicyObject
 {
     // Polly retry policy sample
     public static async Task Run(MinioClient minio,

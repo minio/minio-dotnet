@@ -18,7 +18,7 @@ using Minio.DataModel;
 
 namespace Minio.Examples.Cases;
 
-internal class ListenBucketNotifications
+internal static class ListenBucketNotifications
 {
     // Listen for notifications from a specified bucket (a Minio-only extension)
     public static void Run(MinioClient minio,

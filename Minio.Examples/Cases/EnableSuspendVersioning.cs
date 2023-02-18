@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-internal class EnableSuspendVersioning
+internal static class EnableSuspendVersioning
 {
     // Enable Versioning on a bucket
     public static async Task Run(IMinioClient minio,

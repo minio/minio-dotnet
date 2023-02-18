@@ -38,7 +38,7 @@ public static class SetBucketReplication
                         "UseShellExecute = false" +
                         "CreateNoWindow = true";
         var startInfo = new ProcessStartInfo(fileName, arguments);
-        var process = Process.Start(startInfo);
+        using var process = Process.Start(startInfo);
 
         var result = process.StandardOutput.ReadToEnd();
         process.WaitForExit();

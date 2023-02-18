@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-internal class RemoveBucket
+internal static class RemoveBucket
 {
     // Remove a bucket
     public static async Task Run(IMinioClient minio,

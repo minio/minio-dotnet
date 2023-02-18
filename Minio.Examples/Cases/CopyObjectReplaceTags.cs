@@ -18,7 +18,7 @@ using Minio.DataModel.Tags;
 
 namespace Minio.Examples.Cases;
 
-internal class CopyObjectReplaceTags
+internal static class CopyObjectReplaceTags
 {
     // Copy object from one bucket to another, replace tags in the copied object
     public static async Task Run(IMinioClient minio,

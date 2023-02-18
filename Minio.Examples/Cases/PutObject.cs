@@ -18,7 +18,7 @@ using Minio.DataModel;
 
 namespace Minio.Examples.Cases;
 
-internal class PutObject
+internal static class PutObject
 {
     private const int MB = 1024 * 1024;
 

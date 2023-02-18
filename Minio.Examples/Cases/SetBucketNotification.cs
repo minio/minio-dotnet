@@ -18,7 +18,7 @@ using Minio.DataModel;
 
 namespace Minio.Examples.Cases;
 
-internal class SetBucketNotification
+internal static class SetBucketNotification
 {
     // Set bucket notifications. The resource ARN needs to exist on AWS with correct permissions.
     // For further info: see http://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html

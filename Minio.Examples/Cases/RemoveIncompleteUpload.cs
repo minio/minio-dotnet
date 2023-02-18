@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-internal class RemoveIncompleteUpload
+internal static class RemoveIncompleteUpload
 {
     // Remove incomplete upload object from a bucket
     public static async Task Run(IMinioClient minio,

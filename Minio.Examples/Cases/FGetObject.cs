@@ -18,7 +18,7 @@ using Minio.DataModel;
 
 namespace Minio.Examples.Cases;
 
-internal class FGetObject
+internal static class FGetObject
 {
     // Download object from bucket into local file
     public static async Task Run(IMinioClient minio,
