@@ -20,7 +20,7 @@ using Minio.Exceptions;
 
 namespace Minio.Examples.Cases;
 
-public class ChainedCredentialProvider
+public static class ChainedCredentialProvider
 {
     // Establish Credentials with AWS Session token
     public static async Task Run()

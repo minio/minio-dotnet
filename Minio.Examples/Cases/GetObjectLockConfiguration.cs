@@ -18,7 +18,7 @@ using Minio.DataModel.ObjectLock;
 
 namespace Minio.Examples.Cases;
 
-public class GetObjectLockConfiguration
+public static class GetObjectLockConfiguration
 {
     // Get the Object Lock Configuration on the bucket
     public static async Task Run(IMinioClient minio,

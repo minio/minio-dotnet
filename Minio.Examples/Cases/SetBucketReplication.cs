@@ -19,7 +19,7 @@ using Minio.DataModel.Replication;
 
 namespace Minio.Examples.Cases;
 
-public class SetBucketReplication
+public static class SetBucketReplication
 {
     private static string Bash(string cmd)
     {

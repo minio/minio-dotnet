@@ -119,7 +119,8 @@ public class SSEKMS : ServerSideEncryption
 
     public SSEKMS(string key, Dictionary<string, string> context = null)
     {
-        if (key == string.Empty) throw new ArgumentException("KMS Key cannot be empty", nameof(key));
+        if (string.IsNullOrEmpty(key))
+            throw new ArgumentException("KMS Key cannot be empty", nameof(key));
         this.key = key;
         this.context = context;
     }
@@ -133,14 +134,14 @@ public class SSEKMS : ServerSideEncryption
     {
         headers.Add(Constants.SSEKMSKeyId, key);
         headers.Add(Constants.SSEGenericHeader, "aws:kms");
-        if (context != null) headers.Add(Constants.SSEKMSContext, marshalContext());
+        if (context != null) headers.Add(Constants.SSEKMSContext, MarshalContext());
     }
 
     /// <summary>
     ///     Serialize context into JSON string.
     /// </summary>
     /// <returns>Serialized JSON context</returns>
-    private string marshalContext()
+    private string MarshalContext()
     {
         var sb = new StringBuilder();
 
@@ -152,7 +153,7 @@ public class SSEKMS : ServerSideEncryption
             sb.Append("\"").Append(pair.Key).Append("\"");
             sb.Append(":");
             sb.Append("\"").Append(pair.Value).Append("\"");
-            i += 1;
+            i++;
             if (i != len) sb.Append(":");
         }
 

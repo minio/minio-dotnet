@@ -18,7 +18,7 @@ using Minio.DataModel.Tags;
 
 namespace Minio.Examples.Cases;
 
-public class SetObjectTags
+public static class SetObjectTags
 {
     // Set Tags for the object
     public static async Task Run(IMinioClient minio,

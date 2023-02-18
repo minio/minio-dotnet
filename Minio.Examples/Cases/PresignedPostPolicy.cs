@@ -22,7 +22,7 @@ public delegate PostPolicy DefaultPolicy(string bucketName,
     string objectName,
     DateTime expiration);
 
-public class PresignedPostPolicy
+public static class PresignedPostPolicy
 {
     public static async Task Run(IMinioClient client,
         string bucketName = "my-bucketname",

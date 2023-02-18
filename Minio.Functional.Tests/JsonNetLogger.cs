@@ -19,7 +19,7 @@ using Minio.DataModel.Tracing;
 
 namespace Minio.Functional.Tests;
 
-internal class JsonNetLogger : IRequestLogger
+internal sealed class JsonNetLogger : IRequestLogger
 {
     public void LogRequest(RequestToLog requestToLog, ResponseToLog responseToLog, double durationMs)
     {

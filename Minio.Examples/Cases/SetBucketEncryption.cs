@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-public class SetBucketEncryption
+public static class SetBucketEncryption
 {
     // Put Encryption Configuration for the bucket
     public static async Task Run(IMinioClient minio,

@@ -18,7 +18,7 @@ using Minio.DataModel.ILM;
 
 namespace Minio.Examples.Cases;
 
-public class SetBucketLifecycle
+public static class SetBucketLifecycle
 {
     // Set Lifecycle configuration to the bucket
     public static async Task Run(IMinioClient minio,

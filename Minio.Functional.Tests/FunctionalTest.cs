@@ -718,7 +718,7 @@ public static class FunctionalTest
                     {
                         var fileStream = File.Create(tempFileName);
                         await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                        fileStream.Dispose();
+                        await fileStream.DisposeAsync().ConfigureAwait(false);
                         var writtenInfo = new FileInfo(tempFileName);
                         file_read_size = writtenInfo.Length;
 
@@ -802,7 +802,7 @@ public static class FunctionalTest
                     {
                         var fileStream = File.Create(tempFileName);
                         await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                        fileStream.Dispose();
+                        await fileStream.DisposeAsync().ConfigureAwait(false);
                         var writtenInfo = new FileInfo(tempFileName);
                         file_read_size = writtenInfo.Length;
 
@@ -883,7 +883,7 @@ public static class FunctionalTest
                     {
                         var fileStream = File.Create(tempFileName);
                         await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                        fileStream.Dispose();
+                        await fileStream.DisposeAsync().ConfigureAwait(false);
                         var writtenInfo = new FileInfo(tempFileName);
                         file_read_size = writtenInfo.Length;
 
@@ -2074,7 +2074,8 @@ public static class FunctionalTest
 
                     // In each run, there will be 2 more versions of the object
                     var objectVersionCount = loopIndex * 2;
-                    ListObjects_Test(minio, bucketName, "", objectVersionCount, true, true);
+                    await ListObjects_Test(minio, bucketName, "", objectVersionCount, true, true).ConfigureAwait(false);
+
                     new MintLogger(nameof(ObjectVersioningAsync_Test1), setVersioningSignature,
                         "Tests whether SetVersioningAsync/GetVersioningAsync/RemoveVersioningAsync passes",
                         TestStatus.PASS,
@@ -2100,7 +2101,8 @@ public static class FunctionalTest
                     await minio.SetVersioningAsync(setVersioningArgs).ConfigureAwait(false);
 
                     var objectCount = 1;
-                    ListObjects_Test(minio, bucketName, "", objectCount, false);
+                    await ListObjects_Test(minio, bucketName, "", objectCount, false).ConfigureAwait(false);
+
                     new MintLogger(nameof(ObjectVersioningAsync_Test1), removeVersioningSignature,
                         "Tests whether SetVersioningAsync/GetVersioningAsync/RemoveVersioningAsync passes",
                         TestStatus.PASS,
@@ -2564,30 +2566,36 @@ public static class FunctionalTest
             // ListObject api test with different prefix values
             // prefix value="", expected number of files listed=1
             var prefix = "";
-            ListObjects_Test(minio, bucketName, prefix, 1, true, headers: extractHeader);
+            await ListObjects_Test(minio, bucketName, prefix, 1, true, headers: extractHeader).ConfigureAwait(false);
 
             // prefix value="/", expected number of files listed=nFiles
             prefix = objectName + "/";
-            ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader);
+            await ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader)
+                .ConfigureAwait(false);
 
             // prefix value="/test", expected number of files listed=nFiles
             prefix = objectName + "/test";
-            ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader);
+            await ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader)
+                .ConfigureAwait(false);
 
             // prefix value="/test/", expected number of files listed=nFiles
             prefix = objectName + "/test/";
-            ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader);
+            await ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader)
+                .ConfigureAwait(false);
 
             // prefix value="/test", expected number of files listed=nFiles
             prefix = objectName + "/test/small";
-            ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader);
+            await ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader)
+                .ConfigureAwait(false);
 
             // prefix value="/test", expected number of files listed=nFiles
             prefix = objectName + "/test/small/";
-            ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader);
+            await ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader)
+                .ConfigureAwait(false);
 
             // prefix value="/test", expected number of files listed=1
-            ListObjects_Test(minio, bucketName, singleObjectName, 1, true, headers: extractHeader);
+            await ListObjects_Test(minio, bucketName, singleObjectName, 1, true, headers: extractHeader)
+                .ConfigureAwait(false);
 
             new MintLogger("GetObjectS3Zip_Test1", getObjectSignature, "Tests s3Zip files", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
@@ -4564,7 +4572,7 @@ public static class FunctionalTest
                     {
                         var fileStream = File.Create(tempFileName);
                         await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                        fileStream.Dispose();
+                        await fileStream.DisposeAsync().ConfigureAwait(false);
                         var writtenInfo = new FileInfo(tempFileName);
                         file_read_size = writtenInfo.Length;
 
@@ -4740,7 +4748,7 @@ public static class FunctionalTest
                         {
                             var fileStream = File.Create(tempFileName);
                             await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                            fileStream.Dispose();
+                            await fileStream.DisposeAsync().ConfigureAwait(false);
                             var writtenInfo = new FileInfo(tempFileName);
                             actualFileSize = writtenInfo.Length;
 
@@ -4925,7 +4933,7 @@ public static class FunctionalTest
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            ListObjects_Test(minio, bucketName, prefix, 2, false);
+            await ListObjects_Test(minio, bucketName, prefix, 2, false).ConfigureAwait(false);
             await Task.Delay(2000).ConfigureAwait(false);
             new MintLogger("ListObjects_Test1", listObjectsSignature,
                 "Tests whether ListObjects lists all objects matching a prefix non-recursive", TestStatus.PASS,
@@ -4956,7 +4964,7 @@ public static class FunctionalTest
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
 
-            ListObjects_Test(minio, bucketName, null, 0);
+            await ListObjects_Test(minio, bucketName, null, 0).ConfigureAwait(false);
             await Task.Delay(2000).ConfigureAwait(false);
             new MintLogger("ListObjects_Test2", listObjectsSignature,
                 "Tests whether ListObjects passes when bucket is empty", TestStatus.PASS, DateTime.Now - startTime,
@@ -5000,7 +5008,7 @@ public static class FunctionalTest
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            ListObjects_Test(minio, bucketName, prefix, 2);
+            await ListObjects_Test(minio, bucketName, prefix, 2).ConfigureAwait(false);
             await Task.Delay(2000).ConfigureAwait(false);
             new MintLogger("ListObjects_Test3", listObjectsSignature,
                 "Tests whether ListObjects lists all objects matching a prefix and recursive", TestStatus.PASS,
@@ -5042,7 +5050,7 @@ public static class FunctionalTest
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            ListObjects_Test(minio, bucketName, "", 2, false);
+            await ListObjects_Test(minio, bucketName, "", 2, false).ConfigureAwait(false);
             await Task.Delay(2000).ConfigureAwait(false);
             new MintLogger("ListObjects_Test4", listObjectsSignature,
                 "Tests whether ListObjects lists all objects when no prefix is specified", TestStatus.PASS,
@@ -5091,7 +5099,7 @@ public static class FunctionalTest
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            ListObjects_Test(minio, bucketName, objectNamePrefix, numObjects, false);
+            await ListObjects_Test(minio, bucketName, objectNamePrefix, numObjects, false).ConfigureAwait(false);
             await Task.Delay(5000).ConfigureAwait(false);
             new MintLogger("ListObjects_Test5", listObjectsSignature,
                 "Tests whether ListObjects lists all objects when number of objects == 100", TestStatus.PASS,
@@ -5208,7 +5216,8 @@ public static class FunctionalTest
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            ListObjects_Test(minio, bucketName, prefix, 2, false, true);
+            await ListObjects_Test(minio, bucketName, prefix, 2, false, true).ConfigureAwait(false);
+
             await Task.Delay(2000).ConfigureAwait(false);
             var listObjectsArgs = new ListObjectsArgs()
                 .WithBucket(bucketName)

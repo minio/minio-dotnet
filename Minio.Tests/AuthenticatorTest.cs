@@ -68,7 +68,7 @@ public class AuthenticatorTest
         authenticator.Authenticate(request);
         Assert.IsTrue(HasPayloadHeader(request, "x-amz-content-sha256"));
         var match = GetHeaderKV(request, "x-amz-content-sha256");
-        Assert.IsTrue(match?.Item2.Equals("UNSIGNED-PAYLOAD") == true);
+        Assert.IsTrue(match?.Item2.Equals("UNSIGNED-PAYLOAD", StringComparison.Ordinal) == true);
     }
 
     [TestMethod]

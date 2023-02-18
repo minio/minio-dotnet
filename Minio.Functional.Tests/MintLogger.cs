@@ -39,7 +39,7 @@ internal static class TestStatusExtender
     }
 }
 
-internal class MintLogger
+internal sealed class MintLogger
 {
     public MintLogger(string testName, string function, string description, TestStatus status, TimeSpan duration,
         string alert = null, string message = null, string error = null, Dictionary<string, string> args = null)

@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-public class MakeBucketWithLock
+public static class MakeBucketWithLock
 {
     // Make a bucket
     public static async Task Run(IMinioClient minio,

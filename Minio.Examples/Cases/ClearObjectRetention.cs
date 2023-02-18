@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-public class ClearObjectRetention
+public static class ClearObjectRetention
 {
     // Put Empty Retention Configuration for the bucket
     public static async Task Run(IMinioClient minio,

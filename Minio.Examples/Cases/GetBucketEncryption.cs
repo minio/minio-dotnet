@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-public class GetBucketEncryption
+public static class GetBucketEncryption
 {
     // Get Encryption Configuration for the bucket
     public static async Task Run(IMinioClient minio,

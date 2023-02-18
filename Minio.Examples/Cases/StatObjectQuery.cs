@@ -19,7 +19,7 @@ using Minio.Exceptions;
 
 namespace Minio.Examples.Cases;
 
-internal class StatObjectQuery
+internal static class StatObjectQuery
 {
     public static void PrintStat(string bucketObject, ObjectStat statObject)
     {

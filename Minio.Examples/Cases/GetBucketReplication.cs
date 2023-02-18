@@ -18,7 +18,7 @@ using Minio.Exceptions;
 
 namespace Minio.Examples.Cases;
 
-public class GetBucketReplication
+public static class GetBucketReplication
 {
     // Get Replication configuration assigned to the bucket
     public static async Task Run(IMinioClient minio,

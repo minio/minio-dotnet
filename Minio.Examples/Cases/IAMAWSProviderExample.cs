@@ -20,7 +20,7 @@ using Minio.Exceptions;
 
 namespace Minio.Examples.Cases;
 
-public class IAMAWSProviderExample
+public static class IAMAWSProviderExample
 {
     // Establish Credentials with AWS IAM Credentials
     public static async Task Run()

@@ -128,7 +128,7 @@ public class UnitTest1
     [TestMethod]
     public void TestEndpointSuccess()
     {
-        new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint("s3.amazonaws.com")
             .Build();
     }
@@ -137,7 +137,7 @@ public class UnitTest1
     [ExpectedException(typeof(InvalidEndpointException))]
     public void TestEndpointFailure()
     {
-        new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint("s3-us-west-1.amazonaws.com")
             .Build();
     }

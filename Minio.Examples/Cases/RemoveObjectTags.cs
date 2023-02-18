@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-public class RemoveObjectTags
+public static class RemoveObjectTags
 {
     // Remove Tags set for the object
     public static async Task Run(IMinioClient minio,

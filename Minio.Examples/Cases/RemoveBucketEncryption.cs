@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-public class RemoveBucketEncryption
+public static class RemoveBucketEncryption
 {
     // Remove Encryption Configuration for the bucket
     public static async Task Run(IMinioClient minio,

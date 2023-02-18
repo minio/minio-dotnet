@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-public class PresignedGetObject
+public static class PresignedGetObject
 {
     public static async Task Run(IMinioClient client,
         string bucketName = "my-bucket-name",

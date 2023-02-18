@@ -18,7 +18,7 @@ using Minio.DataModel.ObjectLock;
 
 namespace Minio.Examples.Cases;
 
-public class GetObjectRetention
+public static class GetObjectRetention
 {
     // Get Object Retention Configuration for the bucket
     public static async Task Run(IMinioClient minio,

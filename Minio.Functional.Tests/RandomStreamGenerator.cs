@@ -17,7 +17,7 @@
 
 namespace Minio.Functional.Tests;
 
-internal class RandomStreamGenerator
+internal sealed class RandomStreamGenerator
 {
     private readonly Random _random = new();
     private readonly byte[] _seedBuffer;

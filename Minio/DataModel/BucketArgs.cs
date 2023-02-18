@@ -21,16 +21,11 @@ public abstract class BucketArgs<T> : Args
 {
     protected const string BucketForceDeleteKey = "X-Minio-Force-Delete";
 
-    public BucketArgs()
-    {
-        Headers = new Dictionary<string, string>();
-    }
-
-    public bool IsBucketCreationRequest { get; set; } = false;
+    public bool IsBucketCreationRequest { get; set; }
 
     internal string BucketName { get; set; }
 
-    internal Dictionary<string, string> Headers { get; set; }
+    internal Dictionary<string, string> Headers { get; set; } = new();
 
     public T WithBucket(string bucket)
     {
@@ -44,8 +39,7 @@ public abstract class BucketArgs<T> : Args
         Headers ??= new Dictionary<string, string>();
         foreach (var key in headers.Keys)
         {
-            if (Headers.ContainsKey(key))
-                Headers.Remove(key);
+            Headers.Remove(key);
             Headers[key] = headers[key];
         }
 

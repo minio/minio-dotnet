@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-public class GetObjectTags
+public static class GetObjectTags
 {
     // Get Tags set for the object
     public static async Task Run(IMinioClient minio,

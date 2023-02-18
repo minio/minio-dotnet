@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-public class MakeBucket
+public static class MakeBucket
 {
     // Make a bucket
     public static async Task Run(IMinioClient minio,

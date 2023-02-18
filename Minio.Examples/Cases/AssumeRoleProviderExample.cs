@@ -19,7 +19,7 @@ using Minio.Credentials;
 
 namespace Minio.Examples.Cases;
 
-public class AssumeRoleProviderExample
+public static class AssumeRoleProviderExample
 {
     // Establish Authentication by assuming the role of an existing user
     public static async Task Run()

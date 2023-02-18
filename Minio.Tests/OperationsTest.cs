@@ -39,7 +39,7 @@ public class OperationsTest
     public async Task PresignedGetObject()
     {
         // todo how to test this with mock client.
-        var client = new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint(TestHelper.Endpoint)
             .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
             .WithSSL()

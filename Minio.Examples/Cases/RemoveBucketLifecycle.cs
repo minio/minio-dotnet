@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-public class RemoveBucketLifecycle
+public static class RemoveBucketLifecycle
 {
     // Remove Lifecycle configuration set for the bucket
     public static async Task Run(IMinioClient minio,

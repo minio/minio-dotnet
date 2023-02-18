@@ -19,7 +19,7 @@ using Minio.DataModel.Tracing;
 
 namespace Minio.Examples.Cases;
 
-public class CustomRequestLogger
+public static class CustomRequestLogger
 {
     // Check if a bucket exists
     public static async Task Run(IMinioClient minio)

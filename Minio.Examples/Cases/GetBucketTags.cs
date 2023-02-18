@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-public class GetBucketTags
+public static class GetBucketTags
 {
     // Get Tags assigned to the bucket
     public static async Task Run(IMinioClient minio,

@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-public class RemoveBucketTags
+public static class RemoveBucketTags
 {
     // Remove Tags set for the bucket
     public static async Task Run(IMinioClient minio,

@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-public class RemoveObjectLockConfiguration
+public static class RemoveObjectLockConfiguration
 {
     // Remove Object Lock Configuration on the bucket
     public static async Task Run(IMinioClient minio,

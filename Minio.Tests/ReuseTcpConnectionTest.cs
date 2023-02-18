@@ -9,14 +9,14 @@ public class ReuseTcpConnectionTest
 {
     public ReuseTcpConnectionTest()
     {
-        MinioClient = new MinioClient()
+        _minioClient = new MinioClient()
             .WithEndpoint(TestHelper.Endpoint)
             .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
             .WithSSL()
             .Build();
     }
 
-    private MinioClient MinioClient { get; }
+    private MinioClient _minioClient { get; }
 
     private async Task<bool> ObjectExistsAsync(MinioClient client, string bucket, string objectName)
     {
@@ -44,15 +44,15 @@ public class ReuseTcpConnectionTest
 
         var bktExistArgs = new BucketExistsArgs()
             .WithBucket(bucket);
-        var found = await MinioClient.BucketExistsAsync(bktExistArgs).ConfigureAwait(false);
+        var found = await _minioClient.BucketExistsAsync(bktExistArgs).ConfigureAwait(false);
         if (!found)
         {
             var mkBktArgs = new MakeBucketArgs()
                 .WithBucket(bucket);
-            await MinioClient.MakeBucketAsync(mkBktArgs).ConfigureAwait(false);
+            await _minioClient.MakeBucketAsync(mkBktArgs).ConfigureAwait(false);
         }
 
-        if (!await ObjectExistsAsync(MinioClient, bucket, objectName).ConfigureAwait(false))
+        if (!await ObjectExistsAsync(_minioClient, bucket, objectName).ConfigureAwait(false))
         {
             var helloData = Encoding.UTF8.GetBytes("hello world");
             using var helloStream = new MemoryStream();
@@ -63,7 +63,7 @@ public class ReuseTcpConnectionTest
                 .WithObject(objectName)
                 .WithStreamData(helloStream)
                 .WithObjectSize(helloData.Length);
-            await MinioClient.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+            await _minioClient.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
         }
 
         await GetObjectLength(bucket, objectName).ConfigureAwait(false);
@@ -77,7 +77,7 @@ public class ReuseTcpConnectionTest
             {
                 MaxDegreeOfParallelism = 8
             },
-            async i =>
+            async _ =>
             {
                 // concurrent execution, produce eight tcp connections.
                 await GetObjectLength(bucket, objectName).ConfigureAwait(false);
@@ -91,7 +91,7 @@ public class ReuseTcpConnectionTest
             .WithBucket(bucket)
             .WithObject(objectName)
             .WithCallbackStream(stream => stream.Dispose());
-        await MinioClient.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+        await _minioClient.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
 
         return objectLength;
     }

@@ -20,7 +20,7 @@ using Minio.Exceptions;
 
 namespace Minio.Examples.Cases;
 
-public class AWSEnvironmentProviderExample
+public static class AWSEnvironmentProviderExample
 {
     // Establish Credentials with AWS IAM Credentials in Environmental variables
     public static async Task Run()

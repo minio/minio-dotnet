@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-internal class SetLegalHold
+internal static class SetLegalHold
 {
     // Enable Legal Hold
     public static async Task Run(IMinioClient minio,

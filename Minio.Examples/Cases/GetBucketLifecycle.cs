@@ -16,7 +16,7 @@
 
 namespace Minio.Examples.Cases;
 
-public class GetBucketLifecycle
+public static class GetBucketLifecycle
 {
     // Get Lifecycle configuration assigned to the bucket
     public static async Task Run(IMinioClient minio,
