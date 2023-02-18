@@ -5281,6 +5281,7 @@ public static class FunctionalTest
                 ex => throw ex,
                 () => { });
         }
+
         await Task.Delay(1000);
         Assert.AreEqual(numObjects, count);
     }
