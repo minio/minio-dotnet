@@ -28,7 +28,7 @@ public class RetryHandlerTest
     public async Task TestRetryPolicyOnSuccess()
     {
         var client = new MinioClient()
-            .WithEndpoint("play.min.io")
+            .WithEndpoint("play.min.io", 443)
             .WithCredentials("Q3AM3UQ867SPQQA43P2F",
                 "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
             .WithSSL()
@@ -44,7 +44,7 @@ public class RetryHandlerTest
 
         var bktArgs = new BucketExistsArgs()
             .WithBucket(Guid.NewGuid().ToString());
-        var result = await client.BucketExistsAsync(bktArgs);
+        var result = await client.BucketExistsAsync(bktArgs).ConfigureAwait(false);
         Assert.IsFalse(result);
         Assert.AreEqual(invokeCount, 1);
     }
@@ -53,7 +53,7 @@ public class RetryHandlerTest
     public async Task TestRetryPolicyOnFailure()
     {
         var client = new MinioClient()
-            .WithEndpoint("play.min.io")
+            .WithEndpoint("play.min.io", 443)
             .WithCredentials("Q3AM3UQ867SPQQA43P2F",
                 "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
             .WithSSL()
@@ -86,7 +86,7 @@ public class RetryHandlerTest
             .WithObject("aa")
             .WithCallbackStream(s => { });
         await Assert.ThrowsExceptionAsync<BucketNotFoundException>(
-            () => client.GetObjectAsync(getObjectArgs));
+            () => client.GetObjectAsync(getObjectArgs)).ConfigureAwait(false);
         Assert.AreEqual(invokeCount, retryCount);
     }
 }
