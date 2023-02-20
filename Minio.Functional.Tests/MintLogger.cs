@@ -103,6 +103,6 @@ internal sealed class MintLogger
     {
         Console.WriteLine(JsonSerializer.Serialize(this,
             new JsonSerializerOptions
-                { WriteIndented = false, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault }));
+                { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault }));
     }
 }
