@@ -600,7 +600,7 @@ public static class FunctionalTest
         var observable = minio.ListObjectsAsync(listObjectsArgs);
 
         var exceptionList = new List<Exception>();
-        using var subscription = observable.Subscribe(
+        var subscription = observable.Subscribe(
             item =>
             {
                 if (getVersions)
@@ -1230,7 +1230,7 @@ public static class FunctionalTest
                 .WithVersions(true);
             var observable = minio.ListObjectsAsync(listObjectsArgs);
             var objVersions = new List<Tuple<string, string>>();
-            using var subscription = observable.Subscribe(
+            var subscription = observable.Subscribe(
                 item => objVersions.Add(new Tuple<string, string>(item.Key, item.VersionId)),
                 ex => throw ex,
                 async () =>
@@ -1405,7 +1405,7 @@ public static class FunctionalTest
                     .WithBucket(bucketName);
                 var observable = minio.ListIncompleteUploads(listArgs);
 
-                using var subscription = observable.Subscribe(
+                var subscription = observable.Subscribe(
                     item => Assert.Fail(),
                     ex => Assert.Fail());
             }
@@ -2644,7 +2644,7 @@ public static class FunctionalTest
                 .WithBucket(bucketName)
                 .WithEvents(eventsList);
             var events = minio.ListenBucketNotificationsAsync(listenArgs);
-            using var subscription = events.Subscribe(
+            var subscription = events.Subscribe(
                 ev => received.Add(ev),
                 ex => { },
                 () => { }
@@ -2815,7 +2815,7 @@ public static class FunctionalTest
                 .WithEvents(events);
             var observable = minio.ListenBucketNotificationsAsync(listenArgs);
 
-            using var subscription = observable.Subscribe(
+            var subscription = observable.Subscribe(
                 ev =>
                 {
                     rxEventData = ev;
@@ -5153,7 +5153,7 @@ public static class FunctionalTest
                 .WithRecursive(false)
                 .WithVersions(false);
             var observable = minio.ListObjectsAsync(listArgs);
-            using var subscription = observable.Subscribe(
+            var subscription = observable.Subscribe(
                 item =>
                 {
                     Assert.IsTrue(item.Key.StartsWith(objectNamePrefix));
@@ -5227,7 +5227,7 @@ public static class FunctionalTest
             var numObjectVersions = 8;
 
             var observable = minio.ListObjectsAsync(listObjectsArgs);
-            using var subscription = observable.Subscribe(
+            var subscription = observable.Subscribe(
                 item =>
                 {
                     Assert.IsTrue(item.Key.StartsWith(prefix));
@@ -5269,10 +5269,11 @@ public static class FunctionalTest
         if (!versions)
         {
             var observable = minio.ListObjectsAsync(args);
-            using var subscription = observable.Subscribe(
+            var subscription = observable.Subscribe(
                 item =>
                 {
-                    if (!string.IsNullOrEmpty(prefix)) Assert.IsTrue(item.Key.StartsWith(prefix));
+                    if (!string.IsNullOrEmpty(prefix))
+                        Assert.IsTrue(item.Key.StartsWith(prefix));
                     count++;
                 },
                 ex => throw ex,
@@ -5281,7 +5282,7 @@ public static class FunctionalTest
         else
         {
             var observable = minio.ListObjectsAsync(args);
-            using var subscription = observable.Subscribe(
+            var subscription = observable.Subscribe(
                 item =>
                 {
                     Assert.IsTrue(item.Key.StartsWith(prefix));
@@ -5291,7 +5292,7 @@ public static class FunctionalTest
                 () => { });
         }
 
-        await Task.Delay(2000);
+        await Task.Delay(1000).ConfigureAwait(false);
         Assert.AreEqual(numObjects, count);
     }
 
@@ -5671,7 +5672,7 @@ public static class FunctionalTest
                     .WithBucket(bucketName);
                 var observable = minio.ListIncompleteUploads(listArgs);
 
-                using var subscription = observable.Subscribe(
+                var subscription = observable.Subscribe(
                     item => Assert.IsTrue(item.Key.Contains(objectName)),
                     ex => Assert.Fail());
             }
@@ -5738,7 +5739,7 @@ public static class FunctionalTest
                     .WithRecursive(false);
                 var observable = minio.ListIncompleteUploads(listArgs);
 
-                using var subscription = observable.Subscribe(
+                var subscription = observable.Subscribe(
                     item => Assert.AreEqual(item.Key, objectName),
                     ex => Assert.Fail());
             }
@@ -5799,7 +5800,7 @@ public static class FunctionalTest
                     .WithRecursive(true);
                 var observable = minio.ListIncompleteUploads(listArgs);
 
-                using var subscription = observable.Subscribe(
+                var subscription = observable.Subscribe(
                     item => Assert.AreEqual(item.Key, objectName),
                     ex => Assert.Fail());
             }
