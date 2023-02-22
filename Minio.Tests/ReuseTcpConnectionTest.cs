@@ -13,7 +13,7 @@ public class ReuseTcpConnectionTest
     public ReuseTcpConnectionTest()
     {
         MinioClient = new MinioClient()
-            .WithEndpoint("play.min.io", 443)
+            .WithEndpoint("play.min.io")
             .WithCredentials("Q3AM3UQ867SPQQA43P2F",
                 "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
             .WithSSL()
