@@ -261,7 +261,7 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
     private void Populate()
     {
         Headers ??= new Dictionary<string, string>();
-        if (SSE?.GetType().Equals(EncryptionType.SSE_C) == true) SSE.Marshal(Headers);
+        if (SSE?.GetEncryptionType().Equals(EncryptionType.SSE_C) == true) SSE.Marshal(Headers);
         if (OffsetLengthSet)
         {
             // "Range" header accepts byte start index and end index
@@ -539,7 +539,7 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
     private void Populate()
     {
         Headers ??= new Dictionary<string, string>();
-        if (SSE?.GetType().Equals(EncryptionType.SSE_C) == true) SSE.Marshal(Headers);
+        if (SSE?.GetEncryptionType().Equals(EncryptionType.SSE_C) == true) SSE.Marshal(Headers);
 
         if (OffsetLengthSet)
         {
@@ -1152,7 +1152,7 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
     private void Populate()
     {
         if (string.IsNullOrEmpty(ObjectName)) ObjectName = SourceObject.ObjectName;
-        if (SSE?.GetType().Equals(EncryptionType.SSE_C) == true)
+        if (SSE?.GetEncryptionType().Equals(EncryptionType.SSE_C) == true)
         {
             Headers = new Dictionary<string, string>();
             SSE.Marshal(Headers);

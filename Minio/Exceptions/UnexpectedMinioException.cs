@@ -35,4 +35,8 @@ public class UnexpectedMinioException : MinioException
     public UnexpectedMinioException()
     {
     }
+
+    public UnexpectedMinioException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }

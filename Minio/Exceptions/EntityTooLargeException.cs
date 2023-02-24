@@ -34,4 +34,8 @@ public class EntityTooLargeException : MinioException
     public EntityTooLargeException()
     {
     }
+
+    public EntityTooLargeException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }

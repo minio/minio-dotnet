@@ -42,6 +42,10 @@ public class ObjectNotFoundException : MinioException
     {
     }
 
+    public ObjectNotFoundException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+
     public override string ToString()
     {
         return $"{objectName}: {base.ToString()}";

@@ -236,7 +236,7 @@ public partial class MinioClient : IObjectOperations
         args.Policy.formData["x-amz-algorithm"] = signV4Algorithm;
         args.Policy.formData["x-amz-credential"] = credential;
         args.Policy.formData["x-amz-date"] = t.ToString("yyyyMMddTHHmmssZ");
-        if (SessionToken != "") args.Policy.formData["x-amz-security-token"] = SessionToken;
+        if (!string.IsNullOrEmpty(SessionToken)) args.Policy.formData["x-amz-security-token"] = SessionToken;
         args.Policy.formData["x-amz-signature"] = signature;
 
         uri = RequestUtil.MakeTargetURL(BaseUrl, Secure, args.BucketName, region, false);

@@ -34,4 +34,8 @@ public class UnexpectedShortReadException : MinioException
     public UnexpectedShortReadException()
     {
     }
+
+    public UnexpectedShortReadException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }

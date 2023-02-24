@@ -42,6 +42,10 @@ public class InvalidObjectPrefixException : MinioException
     {
     }
 
+    public InvalidObjectPrefixException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+
     public override string ToString()
     {
         return $"{objectPrefix}: {base.ToString()}";

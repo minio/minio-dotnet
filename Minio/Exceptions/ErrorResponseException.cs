@@ -41,4 +41,8 @@ public class ErrorResponseException : MinioException
     public ErrorResponseException()
     {
     }
+
+    public ErrorResponseException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }

@@ -35,4 +35,8 @@ public class InternalClientException : MinioException
     public InternalClientException()
     {
     }
+
+    public InternalClientException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }

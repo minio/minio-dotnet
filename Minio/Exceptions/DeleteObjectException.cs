@@ -34,4 +34,8 @@ public class DeleteObjectException : MinioException
     public DeleteObjectException()
     {
     }
+
+    public DeleteObjectException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }

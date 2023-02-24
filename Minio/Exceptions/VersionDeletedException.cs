@@ -42,6 +42,10 @@ public class VersionDeletedException : MinioException
     {
     }
 
+    public VersionDeletedException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+
     public override string ToString()
     {
         return $"{versionId}: {base.ToString()}";

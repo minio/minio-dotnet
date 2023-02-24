@@ -34,4 +34,8 @@ public class InternalServerException : MinioException
     public InternalServerException()
     {
     }
+
+    public InternalServerException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }

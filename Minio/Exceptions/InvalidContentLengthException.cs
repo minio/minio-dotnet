@@ -44,6 +44,10 @@ public class InvalidContentLengthException : MinioException
     {
     }
 
+    public InvalidContentLengthException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+
     public override string ToString()
     {
         return $"{bucketName} :{objectName}: {base.ToString()}";

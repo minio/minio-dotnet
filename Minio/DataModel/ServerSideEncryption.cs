@@ -33,7 +33,7 @@ public enum EncryptionType
 public interface IServerSideEncryption
 {
     // GetType() needs to return the type of Server-side encryption
-    EncryptionType GetType();
+    EncryptionType GetEncryptionType();
 
     // Marshals the Server-side encryption headers into dictionary
     void Marshal(Dictionary<string, string> headers);
@@ -54,7 +54,7 @@ public class SSEC : IServerSideEncryption
         this.key = key;
     }
 
-    public new EncryptionType GetType()
+    public EncryptionType GetEncryptionType()
     {
         return EncryptionType.SSE_C;
     }
@@ -96,7 +96,7 @@ public class SSECopy : SSEC
 /// </summary>
 public class SSES3 : IServerSideEncryption
 {
-    public new EncryptionType GetType()
+    public EncryptionType GetEncryptionType()
     {
         return EncryptionType.SSE_S3;
     }
@@ -125,7 +125,7 @@ public class SSEKMS : IServerSideEncryption
         this.context = context;
     }
 
-    public new EncryptionType GetType()
+    public EncryptionType GetEncryptionType()
     {
         return EncryptionType.SSE_KMS;
     }

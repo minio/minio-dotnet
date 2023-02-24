@@ -34,4 +34,8 @@ public class ForbiddenException : MinioException
     public ForbiddenException()
     {
     }
+
+    public ForbiddenException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }

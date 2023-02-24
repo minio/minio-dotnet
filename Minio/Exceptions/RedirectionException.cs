@@ -34,4 +34,8 @@ public class RedirectionException : MinioException
     public RedirectionException()
     {
     }
+
+    public RedirectionException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }

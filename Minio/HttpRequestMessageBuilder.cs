@@ -116,8 +116,7 @@ internal class HttpRequestMessageBuilder
                 if (!isSecure && !isMultiDeleteRequest &&
                     BodyParameters.TryGetValue("Content-Md5", out var value) && value != null)
                 {
-                    string returnValue;
-                    BodyParameters.TryGetValue("Content-Md5", out returnValue);
+                    BodyParameters.TryGetValue("Content-Md5", out var returnValue);
                     request.Content.Headers.ContentMD5 = Convert.FromBase64String(returnValue);
                 }
             }

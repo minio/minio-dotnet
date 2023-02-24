@@ -34,4 +34,8 @@ public class InvalidExpiryRangeException : MinioException
     public InvalidExpiryRangeException()
     {
     }
+
+    public InvalidExpiryRangeException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }

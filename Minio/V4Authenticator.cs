@@ -79,7 +79,7 @@ internal class V4Authenticator
         if (!string.IsNullOrEmpty(this.region)) return this.region;
 
         var region = Regions.GetRegionFromEndpoint(endpoint);
-        return region == string.Empty ? "us-east-1" : region;
+        return string.IsNullOrEmpty(region) ? "us-east-1" : region;
     }
 
     /// <summary>
@@ -250,7 +250,7 @@ internal class V4Authenticator
     /// <returns>Hexlified string of input bytes</returns>
     private string BytesToHex(byte[] checkSum)
     {
-        return BitConverter.ToString(checkSum).Replace("-", string.Empty).ToLower();
+        return BitConverter.ToString(checkSum).Replace("-", string.Empty).ToLowerInvariant();
     }
 
     /// <summary>
@@ -430,8 +430,8 @@ internal class V4Authenticator
             canonicalStringList.AddLast(header + ":" + s3utils.TrimAll(headersToSign[header]));
         canonicalStringList.AddLast(string.Empty);
         canonicalStringList.AddLast(string.Join(";", headersToSign.Keys));
-        if (headersToSign.Keys.Contains("x-amz-content-sha256"))
-            canonicalStringList.AddLast(headersToSign["x-amz-content-sha256"]);
+        if (headersToSign.TryGetValue("x-amz-content-sha256", out var value))
+            canonicalStringList.AddLast(value);
         else
             canonicalStringList.AddLast(sha256EmptyFileHash);
         return string.Join("\n", canonicalStringList);
@@ -456,7 +456,7 @@ internal class V4Authenticator
 
         foreach (var header in headers)
         {
-            var headerName = header.Key.ToLower();
+            var headerName = header.Key.ToLowerInvariant();
             var headerValue = header.Value;
 
             if (!ignoredHeaders.Contains(headerName)) sortedHeaders.Add(headerName, headerValue);
@@ -530,7 +530,7 @@ internal class V4Authenticator
             }
 
             var hash = SHA256.HashData(body);
-            var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
+            var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
             requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
         }
         else if (!isSecure && requestBuilder.Content != null)

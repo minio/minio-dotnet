@@ -42,6 +42,10 @@ public class CredentialsProviderException : MinioException
     {
     }
 
+    public CredentialsProviderException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+
     public override string ToString()
     {
         return $"{CredentialProviderType}: {base.ToString()}";
