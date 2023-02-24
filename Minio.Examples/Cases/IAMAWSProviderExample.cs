@@ -26,7 +26,7 @@ public static class IAMAWSProviderExample
     public static async Task Run()
     {
         var provider = new IAMAWSProvider();
-        var minioClient = new MinioClient()
+        using var minioClient = new MinioClient()
             .WithEndpoint("s3.amazonaws.com")
             .WithSSL()
             .WithCredentialsProvider(provider)

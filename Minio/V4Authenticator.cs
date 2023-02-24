@@ -76,10 +76,10 @@ internal class V4Authenticator
 
     private string GetRegion(string endpoint)
     {
-        if (!string.IsNullOrEmpty(this.region)) return this.region;
+        if (!string.IsNullOrEmpty(region)) return region;
 
-        var region = Regions.GetRegionFromEndpoint(endpoint);
-        return string.IsNullOrEmpty(region) ? "us-east-1" : region;
+        var endpointRegion = Regions.GetRegionFromEndpoint(endpoint);
+        return string.IsNullOrEmpty(endpointRegion) ? "us-east-1" : endpointRegion;
     }
 
     /// <summary>
@@ -419,7 +419,7 @@ internal class V4Authenticator
 
         if (!string.IsNullOrEmpty(queryParams) &&
             !isFormData &&
-            requestBuilder.RequestUri.Query != "?location=")
+            !string.Equals(requestBuilder.RequestUri.Query, "?location=", StringComparison.OrdinalIgnoreCase))
             requestBuilder.RequestUri = new Uri(requestBuilder.RequestUri + "?" + queryParams);
 
         canonicalStringList.AddLast(requestBuilder.RequestUri.AbsolutePath);

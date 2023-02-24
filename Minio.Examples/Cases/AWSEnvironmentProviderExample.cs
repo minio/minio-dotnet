@@ -26,7 +26,7 @@ public static class AWSEnvironmentProviderExample
     public static async Task Run()
     {
         var provider = new AWSEnvironmentProvider();
-        var minioClient = new MinioClient()
+        using var minioClient = new MinioClient()
             .WithEndpoint("s3.amazonaws.com")
             .WithSSL()
             .WithCredentialsProvider(provider)

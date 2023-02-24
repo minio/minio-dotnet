@@ -569,7 +569,7 @@ public partial class MinioClient : IMinioClient
 
         var request = requestMessageBuilder.Request;
 
-        ResponseResult responseResult;
+        ResponseResult responseResult = null;
         try
         {
             var response = await httpClient.SendAsync(request,
@@ -588,6 +588,7 @@ public partial class MinioClient : IMinioClient
         }
         catch (Exception e)
         {
+            responseResult?.Dispose();
             responseResult = new ResponseResult(request, e);
         }
 

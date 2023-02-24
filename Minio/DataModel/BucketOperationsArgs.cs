@@ -396,31 +396,28 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
 
         requestMessageBuilder.FunctionResponseWriter = async (responseStream, cancellationToken) =>
         {
-            using (responseStream)
-            {
-                using var sr = new StreamReader(responseStream);
-                while (!sr.EndOfStream)
-                    try
-                    {
-                        var line = await sr.ReadLineAsync().ConfigureAwait(false);
-                        if (string.IsNullOrEmpty(line))
-                            break;
-
-                        if (EnableTrace)
-                        {
-                            Console.WriteLine("== ListenBucketNotificationsAsync read line ==");
-                            Console.WriteLine(line);
-                            Console.WriteLine("==============================================");
-                        }
-
-                        var trimmed = line.Trim();
-                        if (trimmed.Length > 2) NotificationObserver.OnNext(new MinioNotificationRaw(trimmed));
-                    }
-                    catch
-                    {
+            using var sr = new StreamReader(responseStream);
+            while (!sr.EndOfStream)
+                try
+                {
+                    var line = await sr.ReadLineAsync().ConfigureAwait(false);
+                    if (string.IsNullOrEmpty(line))
                         break;
+
+                    if (EnableTrace)
+                    {
+                        Console.WriteLine("== ListenBucketNotificationsAsync read line ==");
+                        Console.WriteLine(line);
+                        Console.WriteLine("==============================================");
                     }
-            }
+
+                    var trimmed = line.Trim();
+                    if (trimmed.Length > 2) NotificationObserver.OnNext(new MinioNotificationRaw(trimmed));
+                }
+                catch
+                {
+                    break;
+                }
         };
         return requestMessageBuilder;
     }

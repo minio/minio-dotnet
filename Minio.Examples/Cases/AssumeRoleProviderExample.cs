@@ -33,7 +33,7 @@ public static class AssumeRoleProviderExample
         // Secret key to fetch credentials from STS endpoint.
         var secretKey = "secret-key";
 
-        var minio = new MinioClient()
+        using var minio = new MinioClient()
             .WithEndpoint(endpoint)
             .WithCredentials(accessKey, secretKey)
             .WithSSL()
@@ -44,7 +44,7 @@ public static class AssumeRoleProviderExample
 
             var token = await provider.GetCredentialsAsync().ConfigureAwait(false);
             // Console.WriteLine("\nToken = "); utils.Print(token);
-            var minioClient = new MinioClient()
+            using var minioClient = new MinioClient()
                     .WithEndpoint(endpoint)
                     .WithCredentials(token.AccessKey, token.SecretKey)
                     .WithSessionToken(token.SessionToken)

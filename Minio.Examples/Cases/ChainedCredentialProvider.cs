@@ -28,7 +28,7 @@ public static class ChainedCredentialProvider
         var provider = new ChainedProvider()
             .AddProviders(new ClientProvider[] { new AWSEnvironmentProvider(), new MinioEnvironmentProvider() });
         //Chained provider definition here.
-        var minioClient = new MinioClient()
+        using var minioClient = new MinioClient()
             .WithEndpoint("s3.amazonaws.com")
             .WithSSL()
             .WithCredentialsProvider(provider)

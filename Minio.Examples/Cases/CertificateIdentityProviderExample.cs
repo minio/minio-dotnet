@@ -38,7 +38,7 @@ public static class CertificateIdentityProviderExample
                 .WithCertificate(cert)
                 .Build();
 
-            var minioClient = new MinioClient()
+            using var minioClient = new MinioClient()
                 .WithEndpoint("alias:port")
                 .WithSSL()
                 .WithCredentialsProvider(provider)
