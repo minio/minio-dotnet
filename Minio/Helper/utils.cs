@@ -67,7 +67,7 @@ public static class Utils
     // http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
     internal static void ValidateObjectName(string objectName)
     {
-        if (string.IsNullOrEmpty(objectName) || objectName.Trim() == string.Empty)
+        if (string.IsNullOrEmpty(objectName) || string.IsNullOrEmpty(objectName.Trim()))
             throw new InvalidObjectNameException(objectName, "Object name cannot be empty.");
 
         // c# strings are in utf16 format. they are already in unicode format when they arrive here.
@@ -123,18 +123,18 @@ public static class Utils
         foreach (var pathSegment in path.Split('/'))
             if (pathSegment.Length != 0)
             {
-                if (encodedPathBuf.Length > 0) encodedPathBuf.Append("/");
+                if (encodedPathBuf.Length > 0) encodedPathBuf.Append('/');
                 encodedPathBuf.Append(UrlEncode(pathSegment));
             }
 
         if (path.StartsWith("/")) encodedPathBuf.Insert(0, "/");
-        if (path.EndsWith("/")) encodedPathBuf.Append("/");
+        if (path.EndsWith("/")) encodedPathBuf.Append('/');
         return encodedPathBuf.ToString();
     }
 
     internal static bool IsAnonymousClient(string accessKey, string secretKey)
     {
-        return secretKey == string.Empty && accessKey == string.Empty;
+        return string.IsNullOrEmpty(secretKey) && string.IsNullOrEmpty(accessKey);
     }
 
     internal static void ValidateFile(string filePath, string contentType = null)
@@ -198,7 +198,7 @@ public static class Utils
     public static bool CaseInsensitiveContains(string text, string value,
         StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
     {
-        return text.IndexOf(value, stringComparison) >= 0;
+        return text.Contains(value, stringComparison);
     }
 
     /// <summary>
@@ -868,7 +868,8 @@ public static class Utils
     {
         if (string.IsNullOrEmpty(endpoint))
             throw new ArgumentException(
-                string.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint), "endpoint");
+                string.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint),
+                nameof(endpoint));
 
         if (endpoint.EndsWith("/")) endpoint = endpoint.Substring(0, endpoint.Length - 1);
         if (!endpoint.StartsWith("http") && !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))

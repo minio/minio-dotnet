@@ -31,11 +31,6 @@ namespace Minio.Credentials;
 public class WebIdentityResponse
 {
     [XmlElement("Credentials")] public AccessCredentials Credentials { get; set; }
-
-    public AccessCredentials GetAccessCredentials()
-    {
-        return Credentials;
-    }
 }
 
 public class WebIdentityProvider : WebIdentityClientGrantsProvider<WebIdentityProvider>

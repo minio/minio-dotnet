@@ -38,6 +38,10 @@ public class ObjectNotFoundException : MinioException
     {
     }
 
+    public ObjectNotFoundException()
+    {
+    }
+
     public override string ToString()
     {
         return $"{objectName}: {base.ToString()}";

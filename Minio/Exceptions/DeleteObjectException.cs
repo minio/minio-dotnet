@@ -30,4 +30,8 @@ public class DeleteObjectException : MinioException
     public DeleteObjectException(string message, ResponseResult serverResponse) : base(message, serverResponse)
     {
     }
+
+    public DeleteObjectException()
+    {
+    }
 }

@@ -42,7 +42,7 @@ public class MinioNotificationRaw
 public class MinioNotification
 {
     public string Err { get; set; }
-    public NotificationEvent[] Records { get; set; }
+    public IList<NotificationEvent> Records { get; set; }
 }
 
 public class NotificationEvent

@@ -27,12 +27,12 @@ public class DeleteObjectsResult
     [XmlElement("Error")] public List<DeleteError> errorList;
 
 
-    public List<DeletedObject> ObjectsList()
+    public IList<DeletedObject> ObjectsList()
     {
         return objectsList;
     }
 
-    public List<DeleteError> ErrorList()
+    public IList<DeleteError> ErrorList()
     {
         return errorList;
     }

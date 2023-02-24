@@ -39,6 +39,14 @@ public class BucketNotFoundException : MinioException
     {
     }
 
+    public BucketNotFoundException()
+    {
+    }
+
+    public BucketNotFoundException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+
     public override string ToString()
     {
         return $"{bucketName}: {base.ToString()}";

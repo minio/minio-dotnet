@@ -31,4 +31,8 @@ public class UnexpectedMinioException : MinioException
     public UnexpectedMinioException(string message, ResponseResult serverResponse) : base(message, serverResponse)
     {
     }
+
+    public UnexpectedMinioException()
+    {
+    }
 }

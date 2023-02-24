@@ -245,7 +245,7 @@ public partial class MinioClient : IMinioClient
         if (rgn?.Length == 0)
         {
             if (!BucketRegionCache.Instance.Exists(bucketName))
-                rgn = await BucketRegionCache.Instance.Update(this, bucketName).ConfigureAwait(false);
+                rgn = await BucketRegionCache.Update(this, bucketName).ConfigureAwait(false);
             else
                 rgn = BucketRegionCache.Instance.Region(bucketName);
         }
@@ -386,7 +386,7 @@ public partial class MinioClient : IMinioClient
                 else if (resourcePath?.Contains("location") == true)
                     // use path style for location query
                     usePathStyle = true;
-                else if (bucketName?.Contains(".") == true && Secure)
+                else if (bucketName?.Contains('.') == true && Secure)
                     // use path style where '.' in bucketName causes SSL certificate validation error
                     usePathStyle = true;
 
@@ -779,7 +779,7 @@ public partial class MinioClient : IMinioClient
 
         if (response.StatusCode.Equals(HttpStatusCode.Conflict)
             && errResponse.Code.Equals("BucketAlreadyOwnedByYou"))
-            throw new Exception("Bucket already owned by you: " + errResponse.BucketName);
+            throw new ArgumentException("Bucket already owned by you: " + errResponse.BucketName);
 
         throw new UnexpectedMinioException(errResponse.Message)
         {

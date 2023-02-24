@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<AssemblyName>Minio</AssemblyName>
 		<RootNamespace>Minio</RootNamespace>
-		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+		<TargetFramework>net6.0</TargetFramework>
 		<DebugType>embedded</DebugType>
 		<AssemblyOriginatorKeyFile>..\Minio.snk</AssemblyOriginatorKeyFile>
 		<SignAssembly>true</SignAssembly>

@@ -301,7 +301,7 @@ public interface IObjectOperations
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     [Obsolete(
         "Use GetObjectAsync method with GetObjectArgs object. Refer GetObject, GetObjectVersion & GetObjectQuery example code.")]
-    Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, ServerSideEncryption sse = null,
+    Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, IServerSideEncryption sse = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -317,7 +317,7 @@ public interface IObjectOperations
     [Obsolete(
         "Use GetObjectAsync method with GetObjectArgs object. Refer GetObject, GetObjectVersion & GetObjectQuery example code.")]
     Task GetObjectAsync(string bucketName, string objectName, long offset, long length, Action<Stream> cb,
-        ServerSideEncryption sse = null, CancellationToken cancellationToken = default);
+        IServerSideEncryption sse = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Select an object's content. The object will be streamed to the callback given by the user.
@@ -344,7 +344,7 @@ public interface IObjectOperations
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     [Obsolete("Use PutObjectAsync method with PutObjectArgs object. Refer PutObject example code.")]
     Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType = null,
-        IDictionary<string, string> metaData = null, ServerSideEncryption sse = null,
+        IDictionary<string, string> metaData = null, IServerSideEncryption sse = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -378,7 +378,7 @@ public interface IObjectOperations
     /// <returns>Facts about the object</returns>
     [Obsolete(
         "Use StatObjectAsync method with StatObjectArgs object. Refer StatObject & StatObjectQuery example code.")]
-    Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, ServerSideEncryption sse = null,
+    Task<ObjectStat> StatObjectAsync(string bucketName, string objectName, IServerSideEncryption sse = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -438,7 +438,7 @@ public interface IObjectOperations
     [Obsolete("Use CopyObjectAsync method with CopyObjectArgs object. Refer CopyObject example code.")]
     Task CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null,
         CopyConditions copyConditions = null, Dictionary<string, string> metadata = null,
-        ServerSideEncryption sseSrc = null, ServerSideEncryption sseDest = null,
+        IServerSideEncryption sseSrc = null, IServerSideEncryption sseDest = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -453,7 +453,7 @@ public interface IObjectOperations
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     [Obsolete("Use PutObjectAsync method with PutObjectArgs object. Refer PutObject example code.")]
     Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType = null,
-        IDictionary<string, string> metaData = null, ServerSideEncryption sse = null,
+        IDictionary<string, string> metaData = null, IServerSideEncryption sse = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -467,7 +467,7 @@ public interface IObjectOperations
     /// <returns></returns>
     [Obsolete(
         "Use GetObjectAsync method with GetObjectArgs object. Refer GetObject, GetObjectVersion & GetObjectQuery example code.")]
-    Task GetObjectAsync(string bucketName, string objectName, string filePath, ServerSideEncryption sse = null,
+    Task GetObjectAsync(string bucketName, string objectName, string filePath, IServerSideEncryption sse = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

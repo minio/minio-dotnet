@@ -69,7 +69,7 @@ public sealed class AWSS3Endpoints
     /// </summary>
     /// <param name="region"></param>
     /// <returns></returns>
-    public string Endpoint(string region)
+    public static string Endpoint(string region)
     {
         string endpoint = null;
         if (region != null) Instance.endpoints.TryGetValue(region, out endpoint);

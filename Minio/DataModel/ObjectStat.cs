@@ -55,7 +55,7 @@ public class ObjectStat
         foreach (var paramName in responseHeaders.Keys)
         {
             var paramValue = responseHeaders[paramName];
-            switch (paramName.ToLower())
+            switch (paramName.ToLowerInvariant())
             {
                 case "content-length":
                     objInfo.Size = long.Parse(paramValue);

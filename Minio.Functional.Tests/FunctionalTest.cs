@@ -468,7 +468,7 @@ public static class FunctionalTest
     {
         var startTime = DateTime.Now;
         var args = new Dictionary<string, string>();
-        var bucketList = new List<Bucket>();
+        IList<Bucket> bucketList = new List<Bucket>();
         var bucketName = "buucketnaame";
         var noOfBuckets = 5;
         try
@@ -494,7 +494,7 @@ public static class FunctionalTest
             bucketList = list.Buckets;
             bucketList = bucketList.Where(x => x.Name.StartsWith(bucketName)).ToList();
             Assert.AreEqual(noOfBuckets, bucketList.Count);
-            bucketList.Sort((Bucket x, Bucket y) =>
+            bucketList.ToList().Sort((Bucket x, Bucket y) =>
             {
                 if (x.Name == y.Name) return 0;
                 if (x.Name == null) return -1;
@@ -1272,7 +1272,7 @@ public static class FunctionalTest
     {
         using var response = await minio.WrapperGetAsync(url).ConfigureAwait(false);
         if (string.IsNullOrEmpty(Convert.ToString(response.Content)) || !HttpStatusCode.OK.Equals(response.StatusCode))
-            throw new ArgumentNullException("Unable to download via presigned URL");
+            throw new ArgumentNullException(nameof(response.Content), "Unable to download via presigned URL");
 
         using var fs = new FileStream(filePath, FileMode.CreateNew);
         await response.Content.CopyToAsync(fs).ConfigureAwait(false);
@@ -2691,7 +2691,7 @@ public static class FunctionalTest
 
                     if (notification.Records != null)
                     {
-                        Assert.AreEqual(1, notification.Records.Length);
+                        Assert.AreEqual(1, notification.Records.Count);
                         Assert.IsTrue(notification.Records[0].eventName.Contains("s3:ObjectCreated:Put"));
                         Assert.IsTrue(
                             objectName.Contains(HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key)));
@@ -2821,8 +2821,8 @@ public static class FunctionalTest
                     rxEventData = ev;
                     Notify(rxEventData);
                 },
-                ex => throw new Exception($"OnError: {ex.Message}"),
-                () => throw new Exception("STOPPED LISTENING FOR BUCKET NOTIFICATIONS\n"));
+                ex => throw new ArgumentException($"OnError: {ex.Message}"),
+                () => throw new ArgumentException("STOPPED LISTENING FOR BUCKET NOTIFICATIONS\n"));
 
             // Sleep to give enough time for the subscriber to be ready
             var sleepTime = 1000; // Milliseconds
@@ -2848,7 +2848,7 @@ public static class FunctionalTest
             {
                 await Task.Delay(waitTime).ConfigureAwait(false);
                 if ((DateTime.UtcNow - stTime).TotalMilliseconds >= timeout)
-                    throw new Exception("Timeout: while waiting for events");
+                    throw new ArgumentException("Timeout: while waiting for events");
             }
 
             foreach (var ev in rxEventsList) Assert.AreEqual("s3:ObjectCreated:Put", ev.eventName);
@@ -2943,7 +2943,7 @@ public static class FunctionalTest
             {
                 await Task.Delay(waitTime).ConfigureAwait(false);
                 if ((DateTime.UtcNow - stTime).TotalMilliseconds >= timeout)
-                    throw new Exception("Timeout: while waiting for events");
+                    throw new ArgumentException("Timeout: while waiting for events");
             }
 
             if (!string.IsNullOrEmpty(rxEventData.json))
@@ -2961,7 +2961,7 @@ public static class FunctionalTest
             }
             else
             {
-                throw new Exception("Missed Event: Bucket notification failed.");
+                throw new ArgumentException("Missed Event: Bucket notification failed.");
             }
         }
         catch (Exception ex)
@@ -5478,10 +5478,9 @@ public static class FunctionalTest
             var presigned_url = await minio.PresignedGetObjectAsync(preArgs).ConfigureAwait(false);
 
             using var response = await minio.WrapperGetAsync(presigned_url).ConfigureAwait(false);
-            if (string.IsNullOrEmpty(Convert.ToString(response.Content)) ||
-                !HttpStatusCode.OK.Equals(response.StatusCode))
+            if (response.StatusCode != HttpStatusCode.OK || string.IsNullOrEmpty(Convert.ToString(response.Content)))
             {
-                throw new ArgumentNullException("Unable to download via presigned URL");
+                throw new ArgumentNullException(nameof(response.Content), "Unable to download via presigned URL");
             }
 
             Assert.IsTrue(response.Content.Headers.GetValues("Content-Type")

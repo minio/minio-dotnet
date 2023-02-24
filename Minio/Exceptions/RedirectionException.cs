@@ -30,4 +30,8 @@ public class RedirectionException : MinioException
     public RedirectionException(string message, ResponseResult serverResponse) : base(message, serverResponse)
     {
     }
+
+    public RedirectionException()
+    {
+    }
 }

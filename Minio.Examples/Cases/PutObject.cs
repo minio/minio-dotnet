@@ -27,7 +27,7 @@ internal static class PutObject
         string bucketName = "my-bucket-name",
         string objectName = "my-object-name",
         string fileName = "location-of-file",
-        ServerSideEncryption sse = null)
+        IServerSideEncryption sse = null)
     {
         try
         {

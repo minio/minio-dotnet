@@ -59,19 +59,14 @@ public class CertificateResponse
         var xml = streamReader.ReadToEnd();
         return xml;
     }
+}
 
-    [Serializable]
-    [XmlRoot(ElementName = "AssumeRoleWithCertificateResult")]
-    public class CertificateResult
-    {
-        [XmlElement(ElementName = "Credentials")]
-        public AccessCredentials Credentials { get; set; }
-
-        public AccessCredentials GetAccessCredentials()
-        {
-            return Credentials;
-        }
-    }
+[Serializable]
+[XmlRoot(ElementName = "AssumeRoleWithCertificateResult")]
+public class CertificateResult
+{
+    [XmlElement(ElementName = "Credentials")]
+    public AccessCredentials Credentials { get; set; }
 }
 
 public class CertificateIdentityProvider : ClientProvider

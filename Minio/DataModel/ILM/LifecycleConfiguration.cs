@@ -35,7 +35,7 @@ public class LifecycleConfiguration
     {
     }
 
-    public LifecycleConfiguration(List<LifecycleRule> rules)
+    public LifecycleConfiguration(IList<LifecycleRule> rules)
     {
         if (rules == null || rules.Count <= 0)
             throw new ArgumentNullException(nameof(Rules),

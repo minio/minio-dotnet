@@ -443,7 +443,7 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
         return this;
     }
 
-    public ListenBucketNotificationsArgs WithEvents(List<EventType> events)
+    public ListenBucketNotificationsArgs WithEvents(IList<EventType> events)
     {
         Events.AddRange(events);
         return this;
@@ -531,6 +531,8 @@ public class SetBucketTagsArgs : BucketArgs<SetBucketTagsArgs>
 
     public SetBucketTagsArgs WithTagging(Tagging tags)
     {
+        ArgumentNullException.ThrowIfNull(tags);
+
         BucketTags = Tagging.GetBucketTags(tags.GetTags());
         return this;
     }

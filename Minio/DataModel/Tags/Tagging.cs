@@ -68,7 +68,7 @@ public class Tagging
         if (string.IsNullOrEmpty(key) ||
             string.IsNullOrWhiteSpace(key) ||
             key.Length > MAX_TAG_KEY_LENGTH ||
-            key.Contains("&"))
+            key.Contains('&'))
             return false;
 
         return true;
@@ -78,7 +78,7 @@ public class Tagging
     {
         if (value == null || // Empty or whitespace is allowed
             value.Length > MAX_TAG_VALUE_LENGTH ||
-            value.Contains("&"))
+            value.Contains('&'))
             return false;
 
         return true;

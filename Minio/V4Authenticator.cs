@@ -240,8 +240,7 @@ internal class V4Authenticator
     /// <returns>Bytes of sha256 checksum</returns>
     private byte[] ComputeSha256(byte[] body)
     {
-        using var sha256 = SHA256.Create();
-        return sha256.ComputeHash(body);
+        return SHA256.HashData(body);
     }
 
     /// <summary>
@@ -395,7 +394,7 @@ internal class V4Authenticator
             foreach (var p in queryKeys)
             {
                 if (sb1.Length > 0)
-                    sb1.Append("&");
+                    sb1.Append('&');
                 sb1.AppendFormat("{0}={1}", p, queryParamsDict[p]);
             }
 
@@ -530,15 +529,13 @@ internal class V4Authenticator
                 return;
             }
 
-            using var sha256 = SHA256.Create();
-            var hash = sha256.ComputeHash(body);
+            var hash = SHA256.HashData(body);
             var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
             requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
         }
         else if (!isSecure && requestBuilder.Content != null)
         {
-            using var md5 = MD5.Create();
-            var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(requestBuilder.Content.ToString()));
+            var hash = MD5.HashData(Encoding.UTF8.GetBytes(requestBuilder.Content.ToString()));
 
             var base64 = Convert.ToBase64String(hash);
             requestBuilder.AddHeaderParameter("Content-Md5", base64);

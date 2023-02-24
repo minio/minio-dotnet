@@ -22,7 +22,7 @@ public class PostPolicy
 {
     public readonly Dictionary<string, string> formData = new();
 
-    public List<List<(string, string, string)>> conditions = new();
+    public IList<IList<(string, string, string)>> conditions = new List<IList<(string, string, string)>>();
 
     public DateTime expiration { get; set; }
     public string Key { get; private set; }
@@ -254,11 +254,11 @@ public class PostPolicy
 
         // expiration and policies will never be empty because of checks at PresignedPostPolicy()
         var sb = new StringBuilder();
-        sb.Append("{");
-        sb.Append("\"expiration\":\"").Append(expiration.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")).Append("\"")
-            .Append(",");
-        sb.Append("\"conditions\":[").Append(string.Join(",", policyList)).Append("]");
-        sb.Append("}");
+        sb.Append('{');
+        sb.Append("\"expiration\":\"").Append(expiration.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")).Append('"')
+            .Append(',');
+        sb.Append("\"conditions\":[").Append(string.Join(",", policyList)).Append(']');
+        sb.Append('}');
         return Encoding.UTF8.GetBytes(sb.ToString());
     }
 

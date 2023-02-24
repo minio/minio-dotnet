@@ -48,19 +48,14 @@ public class AssumeRoleResponse
         using var streamReader = new StreamReader(ms);
         return streamReader.ReadToEnd();
     }
+}
 
-    [Serializable]
-    [XmlRoot(ElementName = "AssumeRoleResult")]
-    public class AssumeRoleResult
-    {
-        [XmlElement(ElementName = "Credentials")]
-        public AccessCredentials Credentials { get; set; }
-
-        public AccessCredentials GetAccessCredentials()
-        {
-            return Credentials;
-        }
-    }
+[Serializable]
+[XmlRoot(ElementName = "AssumeRoleResult")]
+public class AssumeRoleResult
+{
+    [XmlElement(ElementName = "Credentials")]
+    public AccessCredentials Credentials { get; set; }
 }
 
 public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>

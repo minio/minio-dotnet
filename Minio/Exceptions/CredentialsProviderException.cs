@@ -38,6 +38,10 @@ public class CredentialsProviderException : MinioException
     {
     }
 
+    public CredentialsProviderException()
+    {
+    }
+
     public override string ToString()
     {
         return $"{CredentialProviderType}: {base.ToString()}";

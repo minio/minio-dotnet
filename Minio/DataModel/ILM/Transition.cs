@@ -36,7 +36,7 @@ public class Transition : Duration
     public Transition(DateTime date, string storageClass) : base(date)
     {
         CheckStorageClass(storageClass);
-        StorageClass = storageClass.ToUpper();
+        StorageClass = storageClass.ToUpperInvariant();
     }
 
     [XmlElement(ElementName = "StorageClass", IsNullable = true)]

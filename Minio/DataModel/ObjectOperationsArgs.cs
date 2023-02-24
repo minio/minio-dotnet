@@ -380,6 +380,8 @@ public class PresignedPostPolicyArgs : ObjectArgs<PresignedPostPolicyArgs>
 
     public PresignedPostPolicyArgs WithPolicy(PostPolicy policy)
     {
+        ArgumentNullException.ThrowIfNull(policy);
+
         Policy = policy;
         if (policy.expiration != DateTime.MinValue)
             // policy.expiration has an assigned value
@@ -645,13 +647,15 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
         RequestMethod = HttpMethod.Post;
     }
 
-    internal List<string> ObjectNames { get; private set; }
+    internal IList<string> ObjectNames { get; private set; }
 
     // Each element in the list is a Tuple. Each Tuple has an Object name & the version ID.
     internal List<Tuple<string, string>> ObjectNamesVersions { get; }
 
     public RemoveObjectsArgs WithObjectAndVersions(string objectName, IList<string> versions)
     {
+        ArgumentNullException.ThrowIfNull(versions);
+
         foreach (var vid in versions)
             ObjectNamesVersions.Add(new Tuple<string, string>(objectName, vid));
         return this;
@@ -660,6 +664,8 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
     // Tuple<string, List<string>>. Tuple object name -> List of Version IDs.
     public RemoveObjectsArgs WithObjectsVersions(IList<Tuple<string, List<string>>> objectsVersionsList)
     {
+        ArgumentNullException.ThrowIfNull(objectsVersionsList);
+
         foreach (var objVersions in objectsVersionsList)
         foreach (var vid in objVersions.Item2)
             ObjectNamesVersions.Add(new Tuple<string, string>(objVersions.Item1, vid));
@@ -673,7 +679,7 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
         return this;
     }
 
-    public RemoveObjectsArgs WithObjects(List<string> names)
+    public RemoveObjectsArgs WithObjects(IList<string> names)
     {
         ObjectNames = names;
         return this;
@@ -742,6 +748,8 @@ public class SetObjectTagsArgs : ObjectVersionArgs<SetObjectTagsArgs>
 
     public SetObjectTagsArgs WithTagging(Tagging tags)
     {
+        ArgumentNullException.ThrowIfNull(tags);
+
         ObjectTags = Tagging.GetObjectTags(tags.GetTags());
         return this;
     }

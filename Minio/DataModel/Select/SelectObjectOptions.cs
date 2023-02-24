@@ -24,7 +24,7 @@ namespace Minio.DataModel;
 [XmlRoot(ElementName = "SelectObjectContentRequest")]
 public class SelectObjectOptions
 {
-    [XmlIgnore] public ServerSideEncryption SSE { get; set; }
+    [XmlIgnore] public IServerSideEncryption SSE { get; set; }
 
     public string Expression { get; set; }
 

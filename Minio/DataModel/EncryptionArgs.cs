@@ -21,9 +21,9 @@ namespace Minio;
 public abstract class EncryptionArgs<T> : ObjectArgs<T>
     where T : EncryptionArgs<T>
 {
-    internal ServerSideEncryption SSE { get; set; }
+    internal IServerSideEncryption SSE { get; set; }
 
-    public T WithServerSideEncryption(ServerSideEncryption sse)
+    public T WithServerSideEncryption(IServerSideEncryption sse)
     {
         SSE = sse;
         return (T)this;

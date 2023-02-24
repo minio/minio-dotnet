@@ -138,7 +138,8 @@ public partial class MinioClient : IMinioClient
     public MinioClient WithEndpoint(string endpoint, int port)
     {
         if (port < 1 || port > 65535)
-            throw new ArgumentException(string.Format("Port {0} is not a number between 1 and 65535", port), "port");
+            throw new ArgumentException(string.Format("Port {0} is not a number between 1 and 65535", port),
+                nameof(port));
         return WithEndpoint(endpoint + ":" + port);
     }
 
@@ -152,7 +153,7 @@ public partial class MinioClient : IMinioClient
     {
         if (string.IsNullOrEmpty(region))
             throw new ArgumentException(string.Format("{0} the region value can't be null or empty.", region),
-                "region");
+                nameof(region));
 
         Region = region;
         return this;
@@ -207,7 +208,8 @@ public partial class MinioClient : IMinioClient
     {
         if (string.IsNullOrEmpty(endpoint))
             throw new ArgumentException(
-                string.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint), "endpoint");
+                string.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint),
+                nameof(endpoint));
 
         if (endpoint.EndsWith("/")) endpoint = endpoint.Substring(0, endpoint.Length - 1);
         if (!BuilderUtil.IsValidHostnameOrIPAddress(endpoint))

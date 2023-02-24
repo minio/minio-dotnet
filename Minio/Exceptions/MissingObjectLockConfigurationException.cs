@@ -39,6 +39,10 @@ public class MissingObjectLockConfigurationException : MinioException
     {
     }
 
+    public MissingObjectLockConfigurationException()
+    {
+    }
+
     public override string ToString()
     {
         return $"{bucketName}: {base.ToString()}";

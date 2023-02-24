@@ -30,4 +30,8 @@ public class ForbiddenException : MinioException
     public ForbiddenException(string message, ResponseResult serverResponse) : base(message, serverResponse)
     {
     }
+
+    public ForbiddenException()
+    {
+    }
 }

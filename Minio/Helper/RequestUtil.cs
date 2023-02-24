@@ -25,7 +25,7 @@ internal static class RequestUtil
 {
     internal static Uri GetEndpointURL(string endPoint, bool secure)
     {
-        if (endPoint.Contains(":"))
+        if (endPoint.Contains(':'))
         {
             var parts = endPoint.Split(':');
             var host = parts[0];
@@ -53,7 +53,7 @@ internal static class RequestUtil
         var host = endPoint;
         if (s3utils.IsAmazonEndPoint(endPoint))
             // Fetch new host based on the bucket location.
-            host = AWSS3Endpoints.Instance.Endpoint(region);
+            host = AWSS3Endpoints.Endpoint(region);
 
         if (!usePathStyle)
         {

@@ -46,7 +46,7 @@ public class IAMAWSProvider : EnvironmentProvider
 
         Minio_Client = client ??
                        throw new ArgumentException("MinioClient reference field " +
-                            nameof(Minio_Client) + " cannot be null.");
+                                                   nameof(Minio_Client) + " cannot be null.");
         CustomEndPoint = new Uri(endpoint);
     }
 
@@ -107,6 +107,8 @@ public class IAMAWSProvider : EnvironmentProvider
 
     public async Task<AccessCredentials> GetAccessCredentials(Uri url)
     {
+        ArgumentNullException.ThrowIfNull(url);
+
         Validate();
         using var request = new HttpRequestMessage(HttpMethod.Get, url.ToString());
 

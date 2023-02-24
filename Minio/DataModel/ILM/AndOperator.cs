@@ -34,7 +34,7 @@ public class AndOperator
     {
     }
 
-    public AndOperator(string prefix, List<Tag> tag)
+    public AndOperator(string prefix, IList<Tag> tag)
     {
         Prefix = prefix;
         if (tag?.Count > 0) Tags = new List<Tag>(tag);
@@ -51,5 +51,5 @@ public class AndOperator
     [XmlElement("Prefix")] internal string Prefix { get; set; }
 
     [XmlElement(ElementName = "Tag", IsNullable = false)]
-    public List<Tag> Tags { get; set; }
+    public IList<Tag> Tags { get; set; }
 }

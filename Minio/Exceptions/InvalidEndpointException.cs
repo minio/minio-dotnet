@@ -38,6 +38,10 @@ public class InvalidEndpointException : MinioException
     {
     }
 
+    public InvalidEndpointException()
+    {
+    }
+
     public override string ToString()
     {
         if (string.IsNullOrEmpty(endpoint))

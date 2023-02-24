@@ -37,4 +37,8 @@ public class ErrorResponseException : MinioException
     public ErrorResponseException(string message, ResponseResult serverResponse) : base(message, serverResponse)
     {
     }
+
+    public ErrorResponseException()
+    {
+    }
 }

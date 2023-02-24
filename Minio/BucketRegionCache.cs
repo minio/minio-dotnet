@@ -82,7 +82,7 @@ public sealed class BucketRegionCache
     /// </summary>
     /// <param name="client"></param>
     /// <param name="bucketName"></param>
-    internal async Task<string> Update(MinioClient client, string bucketName)
+    internal static async Task<string> Update(MinioClient client, string bucketName)
     {
         string region = null;
 

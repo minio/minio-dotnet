@@ -30,4 +30,8 @@ public class UnexpectedShortReadException : MinioException
     public UnexpectedShortReadException(string message, ResponseResult serverResponse) : base(message, serverResponse)
     {
     }
+
+    public UnexpectedShortReadException()
+    {
+    }
 }

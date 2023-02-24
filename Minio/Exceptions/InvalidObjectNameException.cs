@@ -38,6 +38,10 @@ public class InvalidObjectNameException : MinioException
     {
     }
 
+    public InvalidObjectNameException()
+    {
+    }
+
     public override string ToString()
     {
         return $"{objectName}: {base.ToString()}";

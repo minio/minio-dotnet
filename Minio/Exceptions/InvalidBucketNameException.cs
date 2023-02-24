@@ -38,6 +38,10 @@ public class InvalidBucketNameException : MinioException
     {
     }
 
+    public InvalidBucketNameException()
+    {
+    }
+
     public override string ToString()
     {
         return $"{bucketName}: {base.ToString()}";

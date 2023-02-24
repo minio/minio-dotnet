@@ -31,4 +31,8 @@ public class ConnectionException : MinioException
     public ConnectionException(string message) : base(message)
     {
     }
+
+    public ConnectionException()
+    {
+    }
 }

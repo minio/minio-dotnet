@@ -191,7 +191,7 @@ public partial class MinioClient : IBucketOperations
         {
             using var stream = new MemoryStream(response.ContentBytes);
             bucketList =
-                (ListAllMyBucketsResult)new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream);
+                new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream) as ListAllMyBucketsResult;
         }
 
         return bucketList;
@@ -205,7 +205,7 @@ public partial class MinioClient : IBucketOperations
     /// <returns> Task </returns>
     public async Task<bool> BucketExistsAsync(BucketExistsArgs args, CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         try
         {
             var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
@@ -238,7 +238,7 @@ public partial class MinioClient : IBucketOperations
     /// <exception cref="InvalidBucketNameException">When bucketName is null</exception>
     public async Task RemoveBucketAsync(RemoveBucketArgs args, CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers,
             requestMessageBuilder, cancellationToken).ConfigureAwait(false);
@@ -255,11 +255,11 @@ public partial class MinioClient : IBucketOperations
     /// <exception cref="NotImplementedException">When object-lock or another extension is not implemented</exception>
     public async Task MakeBucketAsync(MakeBucketArgs args, CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         if (string.IsNullOrEmpty(args.Location))
             args.Location = Region;
 
-        if (args.Location == "us-east-1" && Region != string.Empty)
+        if (args.Location == "us-east-1" && !string.IsNullOrEmpty(Region))
             args.Location = Region;
 
         args.IsBucketCreationRequest = true;
@@ -282,7 +282,7 @@ public partial class MinioClient : IBucketOperations
     public async Task<VersioningConfiguration> GetVersioningAsync(GetVersioningArgs args,
         CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
 
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
@@ -305,7 +305,7 @@ public partial class MinioClient : IBucketOperations
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
     public async Task SetVersioningAsync(SetVersioningArgs args, CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers,
             requestMessageBuilder, cancellationToken).ConfigureAwait(false);
@@ -331,7 +331,7 @@ public partial class MinioClient : IBucketOperations
     /// </exception>
     public IObservable<Item> ListObjectsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         return Observable.Create<Item>(
             async (obs, ct) =>
             {
@@ -398,6 +398,8 @@ public partial class MinioClient : IBucketOperations
     public async Task<BucketNotification> GetBucketNotificationsAsync(GetBucketNotificationsArgs args,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(args);
+
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -422,6 +424,8 @@ public partial class MinioClient : IBucketOperations
     public async Task SetBucketNotificationsAsync(SetBucketNotificationsArgs args,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(args);
+
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -440,6 +444,8 @@ public partial class MinioClient : IBucketOperations
     public async Task RemoveAllBucketNotificationsAsync(RemoveAllBucketNotificationsArgs args,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(args);
+
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -463,7 +469,8 @@ public partial class MinioClient : IBucketOperations
     {
         if (s3utils.IsAmazonEndPoint(BaseUrl))
             // Amazon AWS does not support bucket notifications
-            throw new Exception("Listening for bucket notification is specific only to `minio` server endpoints");
+            throw new ArgumentException(
+                "Listening for bucket notification is specific only to `minio` server endpoints");
 
         return Observable.Create<MinioNotificationRaw>(
             async (obs, ct) =>
@@ -492,7 +499,7 @@ public partial class MinioClient : IBucketOperations
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     public async Task<Tagging> GetBucketTagsAsync(GetBucketTagsArgs args, CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -515,7 +522,7 @@ public partial class MinioClient : IBucketOperations
     public async Task SetBucketEncryptionAsync(SetBucketEncryptionArgs args,
         CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -534,7 +541,7 @@ public partial class MinioClient : IBucketOperations
     public async Task<ServerSideEncryptionConfiguration> GetBucketEncryptionAsync(GetBucketEncryptionArgs args,
         CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -557,7 +564,7 @@ public partial class MinioClient : IBucketOperations
     public async Task RemoveBucketEncryptionAsync(RemoveBucketEncryptionArgs args,
         CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -576,7 +583,7 @@ public partial class MinioClient : IBucketOperations
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
     public async Task SetBucketTagsAsync(SetBucketTagsArgs args, CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -595,7 +602,7 @@ public partial class MinioClient : IBucketOperations
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
     public async Task RemoveBucketTagsAsync(RemoveBucketTagsArgs args, CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -619,7 +626,7 @@ public partial class MinioClient : IBucketOperations
     public async Task SetObjectLockConfigurationAsync(SetObjectLockConfigurationArgs args,
         CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -639,7 +646,7 @@ public partial class MinioClient : IBucketOperations
     public async Task<ObjectLockConfiguration> GetObjectLockConfigurationAsync(GetObjectLockConfigurationArgs args,
         CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -662,7 +669,7 @@ public partial class MinioClient : IBucketOperations
     public async Task RemoveObjectLockConfigurationAsync(RemoveObjectLockConfigurationArgs args,
         CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -685,7 +692,7 @@ public partial class MinioClient : IBucketOperations
     public async Task SetBucketLifecycleAsync(SetBucketLifecycleArgs args,
         CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -704,7 +711,7 @@ public partial class MinioClient : IBucketOperations
     public async Task<LifecycleConfiguration> GetBucketLifecycleAsync(GetBucketLifecycleArgs args,
         CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -726,7 +733,7 @@ public partial class MinioClient : IBucketOperations
     public async Task RemoveBucketLifecycleAsync(RemoveBucketLifecycleArgs args,
         CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -746,7 +753,7 @@ public partial class MinioClient : IBucketOperations
     public async Task<ReplicationConfiguration> GetBucketReplicationAsync(GetBucketReplicationArgs args,
         CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -771,7 +778,7 @@ public partial class MinioClient : IBucketOperations
     public async Task SetBucketReplicationAsync(SetBucketReplicationArgs args,
         CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -791,7 +798,7 @@ public partial class MinioClient : IBucketOperations
     public async Task RemoveBucketReplicationAsync(RemoveBucketReplicationArgs args,
         CancellationToken cancellationToken = default)
     {
-        args.Validate();
+        args?.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var restResponse = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -833,6 +840,8 @@ public partial class MinioClient : IBucketOperations
     /// <exception cref="UnexpectedMinioException">When a policy is not set</exception>
     public async Task<string> GetPolicyAsync(GetPolicyArgs args, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(args);
+
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -851,6 +860,8 @@ public partial class MinioClient : IBucketOperations
     /// <returns>Task to set a policy</returns>
     public async Task SetPolicyAsync(SetPolicyArgs args, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(args);
+
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);
@@ -867,6 +878,8 @@ public partial class MinioClient : IBucketOperations
     /// <exception cref="UnexpectedMinioException">When a policy is not set</exception>
     public async Task RemovePolicyAsync(RemovePolicyArgs args, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(args);
+
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
             .ConfigureAwait(false);

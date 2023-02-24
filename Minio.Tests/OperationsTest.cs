@@ -13,7 +13,7 @@ public class OperationsTest
     {
         // todo how to test this with mock client.
         var resource = httpRequest.RequestUri.LocalPath;
-        return !resource.Contains("?") &&
+        return !resource.Contains('?') &&
                httpRequest.QueryParameters.ContainsKey("location");
     }
 

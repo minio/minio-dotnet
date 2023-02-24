@@ -39,6 +39,10 @@ public class MissingBucketReplicationConfigurationException : MinioException
     {
     }
 
+    public MissingBucketReplicationConfigurationException()
+    {
+    }
+
     public override string ToString()
     {
         return $"{bucketName}: {base.ToString()}";

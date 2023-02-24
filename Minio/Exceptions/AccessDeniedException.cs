@@ -31,4 +31,12 @@ public class AccessDeniedException : MinioException
     public AccessDeniedException(string message, ResponseResult serverResponse) : base(message, serverResponse)
     {
     }
+
+    public AccessDeniedException()
+    {
+    }
+
+    public AccessDeniedException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }

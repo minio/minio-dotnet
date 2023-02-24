@@ -18,7 +18,7 @@
 namespace Minio.Exceptions;
 
 [Serializable]
-internal class MalFormedXMLException : Exception
+public class MalFormedXMLException : Exception
 {
     internal string bucketName;
     internal string key;

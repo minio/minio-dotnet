@@ -114,8 +114,7 @@ internal class HttpRequestMessageBuilder
                 var isSecure = RequestUri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);
 
                 if (!isSecure && !isMultiDeleteRequest &&
-                    BodyParameters.ContainsKey("Content-Md5") &&
-                    BodyParameters["Content-Md5"] != null)
+                    BodyParameters.TryGetValue("Content-Md5", out var value) && value != null)
                 {
                     string returnValue;
                     BodyParameters.TryGetValue("Content-Md5", out returnValue);

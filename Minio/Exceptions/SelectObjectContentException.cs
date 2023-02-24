@@ -31,4 +31,8 @@ public class SelectObjectContentException : MinioException
     public SelectObjectContentException(string message, ResponseResult serverResponse) : base(message, serverResponse)
     {
     }
+
+    public SelectObjectContentException()
+    {
+    }
 }

@@ -44,7 +44,7 @@ public partial class MinioClient : IObjectOperations
             .WithHeaders(args.Headers);
         if (args.OffsetLengthSet) statArgs.WithOffsetAndLength(args.ObjectOffset, args.ObjectLength);
         var objStat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
-        args.Validate();
+        args?.Validate();
         if (args.FileName != null)
             await getObjectFileAsync(args, objStat, cancellationToken).ConfigureAwait(false);
         else if (args.CallBack is not null)
@@ -146,7 +146,7 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    private async Task<List<DeleteError>> removeObjectsAsync(RemoveObjectsArgs args,
+    private async Task<IList<DeleteError>> removeObjectsAsync(RemoveObjectsArgs args,
         CancellationToken cancellationToken)
     {
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
@@ -170,8 +170,8 @@ public partial class MinioClient : IObjectOperations
     /// </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns></returns>
-    private async Task<List<DeleteError>> callRemoveObjectVersions(RemoveObjectsArgs args,
-        List<Tuple<string, string>> objVersions, List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
+    private async Task<IList<DeleteError>> callRemoveObjectVersions(RemoveObjectsArgs args,
+        IList<Tuple<string, string>> objVersions, List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
     {
         var iterArgs = new RemoveObjectsArgs()
             .WithBucket(args.BucketName)
@@ -195,7 +195,7 @@ public partial class MinioClient : IObjectOperations
     /// </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns></returns>
-    private async Task<List<DeleteError>> callRemoveObjects(RemoveObjectsArgs args, List<string> objNames,
+    private async Task<IList<DeleteError>> callRemoveObjects(RemoveObjectsArgs args, IList<string> objNames,
         List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
     {
         // var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
@@ -226,7 +226,7 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    private async Task<List<DeleteError>> removeObjectVersionsHelper(RemoveObjectsArgs args,
+    private async Task<IList<DeleteError>> removeObjectVersionsHelper(RemoveObjectsArgs args,
         List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
     {
         if (args.ObjectNamesVersions.Count <= 1000)
@@ -283,7 +283,8 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    private async Task<List<DeleteError>> removeObjectsHelper(RemoveObjectsArgs args, List<DeleteError> fullErrorsList,
+    private async Task<IList<DeleteError>> removeObjectsHelper(RemoveObjectsArgs args,
+        IList<DeleteError> fullErrorsList,
         CancellationToken cancellationToken)
     {
         var iterObjects = new List<string>(1000);
@@ -294,7 +295,7 @@ public partial class MinioClient : IObjectOperations
             iterObjects.Insert(i, objName);
             if (++i == 1000)
             {
-                fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList, cancellationToken)
+                fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList.ToList(), cancellationToken)
                     .ConfigureAwait(false);
                 iterObjects.Clear();
                 i = 0;
@@ -302,7 +303,7 @@ public partial class MinioClient : IObjectOperations
         }
 
         if (iterObjects.Count > 0)
-            fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList, cancellationToken)
+            fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList.ToList(), cancellationToken)
                 .ConfigureAwait(false);
         return fullErrorsList;
     }

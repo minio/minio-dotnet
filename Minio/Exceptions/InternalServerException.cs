@@ -30,4 +30,8 @@ public class InternalServerException : MinioException
     public InternalServerException(string message, ResponseResult serverResponse) : base(message, serverResponse)
     {
     }
+
+    public InternalServerException()
+    {
+    }
 }
