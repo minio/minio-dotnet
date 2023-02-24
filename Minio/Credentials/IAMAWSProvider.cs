@@ -45,7 +45,8 @@ public class IAMAWSProvider : EnvironmentProvider
         }
 
         Minio_Client = client ??
-                       throw new ArgumentException("MinioClient reference field " + nameof(Minio_Client) +
+                       throw new ArgumentException("MinioClient reference field " +
+                            nameof(Minio_Client) + " cannot be null.");
                                                    " cannot be null.");
         CustomEndPoint = new Uri(endpoint);
     }
