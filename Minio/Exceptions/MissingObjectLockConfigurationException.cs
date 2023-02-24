@@ -16,6 +16,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class MissingObjectLockConfigurationException : MinioException
 {
     private readonly string bucketName;

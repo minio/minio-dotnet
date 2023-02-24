@@ -16,6 +16,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class ObjectNotFoundException : MinioException
 {
     private readonly string objectName;

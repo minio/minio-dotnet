@@ -16,6 +16,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class InvalidEndpointException : MinioException
 {
     private readonly string endpoint;

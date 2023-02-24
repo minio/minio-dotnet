@@ -17,6 +17,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class ErrorResponseException : MinioException
 {
     public ErrorResponseException(ErrorResponse errorResponse, ResponseResult serverResponse) :

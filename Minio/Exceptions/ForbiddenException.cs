@@ -16,6 +16,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class ForbiddenException : MinioException
 {
     public ForbiddenException(string message) : base(message)

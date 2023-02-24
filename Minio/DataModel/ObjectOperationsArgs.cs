@@ -650,14 +650,15 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
     // Each element in the list is a Tuple. Each Tuple has an Object name & the version ID.
     internal List<Tuple<string, string>> ObjectNamesVersions { get; }
 
-    public RemoveObjectsArgs WithObjectAndVersions(string objectName, List<string> versions)
+    public RemoveObjectsArgs WithObjectAndVersions(string objectName, IList<string> versions)
     {
-        foreach (var vid in versions) ObjectNamesVersions.Add(new Tuple<string, string>(objectName, vid));
+        foreach (var vid in versions)
+            ObjectNamesVersions.Add(new Tuple<string, string>(objectName, vid));
         return this;
     }
 
     // Tuple<string, List<string>>. Tuple object name -> List of Version IDs.
-    public RemoveObjectsArgs WithObjectsVersions(List<Tuple<string, List<string>>> objectsVersionsList)
+    public RemoveObjectsArgs WithObjectsVersions(IList<Tuple<string, List<string>>> objectsVersionsList)
     {
         foreach (var objVersions in objectsVersionsList)
         foreach (var vid in objVersions.Item2)
@@ -666,7 +667,7 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
         return this;
     }
 
-    public RemoveObjectsArgs WithObjectsVersions(List<Tuple<string, string>> objectVersions)
+    public RemoveObjectsArgs WithObjectsVersions(IList<Tuple<string, string>> objectVersions)
     {
         ObjectNamesVersions.AddRange(objectVersions);
         return this;
@@ -1867,7 +1868,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         if (RequestBody != null)
         {
             var hash = SHA256.HashData(RequestBody);
-            var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
+            var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
             requestMessageBuilder.SetBody(RequestBody);
         }
@@ -1877,7 +1878,6 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
 
     public PutObjectArgs WithHeaders(IDictionary<string, string> metaData)
     {
-        var sseHeaders = new Dictionary<string, string>();
         Headers ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         if (metaData != null)
             foreach (var p in metaData)
@@ -1933,7 +1933,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
 
     ~PutObjectArgs()
     {
-        if (!string.IsNullOrWhiteSpace(FileName) && ObjectStreamData != null)
+        if (!string.IsNullOrWhiteSpace(FileName))
             ObjectStreamData?.Close();
     }
 }

@@ -16,6 +16,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class VersionDeletedException : MinioException
 {
     private readonly string versionId;

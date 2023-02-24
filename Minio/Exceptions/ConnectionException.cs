@@ -17,6 +17,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class ConnectionException : MinioException
 {
     public ConnectionException(string message, ResponseResult response) : base(message, response)

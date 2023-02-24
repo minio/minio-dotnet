@@ -16,6 +16,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class UnexpectedShortReadException : MinioException
 {
     public UnexpectedShortReadException(string message) : base(message)

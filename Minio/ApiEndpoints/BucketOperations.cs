@@ -923,7 +923,6 @@ public partial class MinioClient : IBucketOperations
     private Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix,
         string delimiter, string marker, CancellationToken cancellationToken = default)
     {
-        var queryMap = new Dictionary<string, string>();
         // null values are treated as empty strings.
         var args = new GetObjectListArgs()
             .WithBucket(bucketName)

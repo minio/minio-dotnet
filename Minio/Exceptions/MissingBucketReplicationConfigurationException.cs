@@ -16,6 +16,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class MissingBucketReplicationConfigurationException : MinioException
 {
     private readonly string bucketName;

@@ -16,6 +16,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class RedirectionException : MinioException
 {
     public RedirectionException(string message) : base(message)

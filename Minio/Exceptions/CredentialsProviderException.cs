@@ -16,6 +16,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class CredentialsProviderException : MinioException
 {
     private readonly string CredentialProviderType;

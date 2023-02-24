@@ -16,6 +16,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class InvalidObjectPrefixException : MinioException
 {
     private readonly string objectPrefix;

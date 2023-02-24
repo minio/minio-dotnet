@@ -16,6 +16,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class InternalServerException : MinioException
 {
     public InternalServerException(string message) : base(message)

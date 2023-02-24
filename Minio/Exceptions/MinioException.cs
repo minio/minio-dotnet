@@ -20,13 +20,17 @@ namespace Minio.Exceptions;
 [Serializable]
 public class MinioException : Exception
 {
-    public MinioException(ResponseResult serverResponse)
-        : this(null, serverResponse)
+    public MinioException() {
+    }
+
+    public MinioException(string message, Exception innerException) : base(message, innerException) {
+    }
+
+    public MinioException(ResponseResult serverResponse) : this(null, serverResponse)
     {
     }
 
-    public MinioException(string message)
-        : this(message, null)
+    public MinioException(string message) : this(message, serverResponse: null)
     {
     }
 
