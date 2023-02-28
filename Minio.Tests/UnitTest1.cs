@@ -37,6 +37,7 @@ public class UnitTest1
             .WithEndpoint("play.min.io")
             .WithCredentials("Q3AM3UQ867SPQQA43P2F",
                 "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+            .WithSSL()
             .Build();
     }
 
@@ -181,7 +182,9 @@ public class UnitTest2
                                                | SecurityProtocolType.Tls12;
         var minio = new MinioClient()
             .WithEndpoint("play.min.io")
-            .WithCredentials("Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+            .WithCredentials("Q3AM3UQ867SPQQA43P2F",
+                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+            .WithSSL()
             .Build();
     }
 

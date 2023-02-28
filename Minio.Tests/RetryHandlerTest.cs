@@ -44,7 +44,7 @@ public class RetryHandlerTest
 
         var bktArgs = new BucketExistsArgs()
             .WithBucket(Guid.NewGuid().ToString());
-        var result = await client.BucketExistsAsync(bktArgs);
+        var result = await client.BucketExistsAsync(bktArgs).ConfigureAwait(false);
         Assert.IsFalse(result);
         Assert.AreEqual(invokeCount, 1);
     }
@@ -86,7 +86,7 @@ public class RetryHandlerTest
             .WithObject("aa")
             .WithCallbackStream(s => { });
         await Assert.ThrowsExceptionAsync<BucketNotFoundException>(
-            () => client.GetObjectAsync(getObjectArgs));
+            () => client.GetObjectAsync(getObjectArgs)).ConfigureAwait(false);
         Assert.AreEqual(invokeCount, retryCount);
     }
 }
