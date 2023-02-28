@@ -51,5 +51,5 @@ public class AndOperator
     [XmlElement("Prefix")] internal string Prefix { get; set; }
 
     [XmlElement(ElementName = "Tag", IsNullable = false)]
-    public IList<Tag> Tags { get; set; }
+    public List<Tag> Tags { get; set; }
 }
