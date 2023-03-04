@@ -1172,7 +1172,6 @@ public partial class MinioClient : IObjectOperations
             totalParts[partNumber - 1] = new Part
                 { PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize };
             etags[partNumber] = etag;
-            Console.Write("\rPart {0} of {1} processed", partNumber, partCount);
         }
 
         // This shouldn't happen where stream size is known.
