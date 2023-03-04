@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-public class MakeBucket
+public static class MakeBucket
 {
     // Make a bucket
     public static async Task Run(IMinioClient minio,
@@ -32,7 +29,7 @@ public class MakeBucket
                 new MakeBucketArgs()
                     .WithBucket(bucketName)
                     .WithLocation(loc)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Created bucket {bucketName}");
             Console.WriteLine();
         }

@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using Force.Crc32;
@@ -131,14 +127,11 @@ public class SelectResponseStream
                 throw new ArgumentException("message CRC Mismatch");
             var headerMap = extractHeaders(headers);
 
-            string value = null;
-            if (headerMap.TryGetValue(":message-type", out value))
+            if (headerMap.TryGetValue(":message-type", out var value))
                 if (value.Equals(":error"))
                 {
-                    string errorCode = null;
-                    string errorMessage = null;
-                    headerMap.TryGetValue(":error-code", out errorCode);
-                    headerMap.TryGetValue(":error-message", out errorMessage);
+                    headerMap.TryGetValue(":error-code", out var errorCode);
+                    headerMap.TryGetValue(":error-message", out var errorMessage);
                     throw new SelectObjectContentException(errorCode + ":" + errorMessage);
                 }
 

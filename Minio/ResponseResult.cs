@@ -15,12 +15,7 @@
 * limitations under the License.
 */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text;
 
 namespace Minio;
@@ -65,7 +60,7 @@ public class ResponseResult : IDisposable
         {
             if (Response == null) return null;
 
-            return _stream ?? (_stream = Response.Content.ReadAsStreamAsync().Result);
+            return _stream ??= Response.Content.ReadAsStreamAsync().Result;
         }
     }
 
@@ -73,14 +68,15 @@ public class ResponseResult : IDisposable
     {
         get
         {
-            if (ContentStream == null) return new byte[0];
+            if (ContentStream == null)
+                return Array.Empty<byte>();
 
             if (_contentBytes == null)
-                using (var memoryStream = new MemoryStream())
-                {
-                    ContentStream.CopyTo(memoryStream);
-                    _contentBytes = memoryStream.ToArray();
-                }
+            {
+                using var memoryStream = new MemoryStream();
+                ContentStream.CopyTo(memoryStream);
+                _contentBytes = memoryStream.ToArray();
+            }
 
             return _contentBytes;
         }
@@ -92,7 +88,7 @@ public class ResponseResult : IDisposable
         {
             if (ContentBytes.Length == 0) return "";
 
-            if (_content == null) _content = Encoding.UTF8.GetString(ContentBytes);
+            _content ??= Encoding.UTF8.GetString(ContentBytes);
 
             return _content;
         }

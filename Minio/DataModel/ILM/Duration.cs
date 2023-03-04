@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel;
@@ -31,7 +30,7 @@ public abstract class Duration
     public Duration(DateTime date)
     {
         date = new DateTime(date.Year, date.Month, date.Day, 0, 0, 0);
-        Date = utils.To8601String(date);
+        Date = Utils.To8601String(date);
     }
 
     public Duration(double days)

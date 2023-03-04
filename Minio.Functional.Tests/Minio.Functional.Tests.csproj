@@ -1,14 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <IsPackable>False</IsPackable>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="MSTest.TestFramework" Version="1.3.2" />
-    <PackageReference Include="SharpZipLib" Version="1.3.3" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.0.2" />
+    <PackageReference Include="SharpZipLib" Version="1.4.2" />
     <ProjectReference Include="..\Minio\Minio.csproj" />
   </ItemGroup>
 </Project>

@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-public class GetBucketLifecycle
+public static class GetBucketLifecycle
 {
     // Get Lifecycle configuration assigned to the bucket
     public static async Task Run(IMinioClient minio,
@@ -31,8 +28,8 @@ public class GetBucketLifecycle
             var lfc = await minio.GetBucketLifecycleAsync(
                 new GetBucketLifecycleArgs()
                     .WithBucket(bucketName)
-            );
-            if (lfc != null && lfc.Rules != null && lfc.Rules.Count > 0)
+            ).ConfigureAwait(false);
+            if (lfc != null && lfc.Rules?.Count > 0)
             {
                 Console.WriteLine($"Got Bucket Lifecycle set for bucket {bucketName}.");
                 Console.WriteLine(lfc.MarshalXML());

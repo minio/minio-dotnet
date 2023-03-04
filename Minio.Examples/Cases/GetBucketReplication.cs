@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
 using Minio.Exceptions;
 
 namespace Minio.Examples.Cases;
 
-public class GetBucketReplication
+public static class GetBucketReplication
 {
     // Get Replication configuration assigned to the bucket
     public static async Task Run(IMinioClient minio,
@@ -33,8 +31,8 @@ public class GetBucketReplication
             var repl = await minio.GetBucketReplicationAsync(
                 new GetBucketReplicationArgs()
                     .WithBucket(bucketName)
-            );
-            if (repl != null && repl.Rules != null && repl.Rules.Count > 0)
+            ).ConfigureAwait(false);
+            if (repl != null && repl.Rules?.Count > 0)
             {
                 Console.WriteLine($"Got Bucket Replication Configuration set for bucket {bucketName}.");
                 foreach (var rule in repl.Rules)

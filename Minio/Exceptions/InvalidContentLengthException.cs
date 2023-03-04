@@ -16,6 +16,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class InvalidContentLengthException : MinioException
 {
     private readonly string bucketName;
@@ -25,6 +26,26 @@ public class InvalidContentLengthException : MinioException
     {
         this.bucketName = bucketName;
         this.objectName = objectName;
+    }
+
+    public InvalidContentLengthException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public InvalidContentLengthException(string message) : base(message)
+    {
+    }
+
+    public InvalidContentLengthException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
+
+    public InvalidContentLengthException()
+    {
+    }
+
+    public InvalidContentLengthException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 
     public override string ToString()

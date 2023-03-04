@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Minio.DataModel;
 
 namespace Minio.Examples.Cases;
 
-internal class CopyObject
+internal static class CopyObject
 {
     // Copy object from one bucket to another
     public static async Task Run(IMinioClient minio,
@@ -29,8 +26,8 @@ internal class CopyObject
         string fromObjectName = "from-object-name",
         string destBucketName = "dest-bucket",
         string destObjectName = " to-object-name",
-        ServerSideEncryption sseSrc = null,
-        ServerSideEncryption sseDest = null)
+        IServerSideEncryption sseSrc = null,
+        IServerSideEncryption sseDest = null)
     {
         try
         {
@@ -49,7 +46,7 @@ internal class CopyObject
                 .WithObject(destObjectName)
                 .WithCopyObjectSource(cpSrcArgs)
                 .WithServerSideEncryption(sseDest);
-            await minio.CopyObjectAsync(args);
+            await minio.CopyObjectAsync(args).ConfigureAwait(false);
             Console.WriteLine("Copied object {0} from bucket {1} to bucket {2}", fromObjectName, fromBucketName,
                 destBucketName);
             Console.WriteLine();

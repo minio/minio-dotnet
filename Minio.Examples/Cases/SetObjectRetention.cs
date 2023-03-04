@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
 using Minio.DataModel.ObjectLock;
 
 namespace Minio.Examples.Cases;
 
-public class SetObjectRetention
+public static class SetObjectRetention
 {
     // Put Object Retention Configuration for the bucket
     public static async Task Run(IMinioClient minio,
@@ -42,7 +40,7 @@ public class SetObjectRetention
                     .WithVersionId(versionId)
                     .WithRetentionMode(mode)
                     .WithRetentionUntilDate(retentionValidDate)
-            );
+            ).ConfigureAwait(false);
             var versionInfo = string.IsNullOrEmpty(versionId) ? "" : " Version ID: " + versionId;
             Console.WriteLine($"Assigned retention configuration to object {bucketName}/{objectName} " +
                               versionInfo +

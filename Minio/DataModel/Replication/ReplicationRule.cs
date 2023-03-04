@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 /*
@@ -46,15 +45,13 @@ public class ReplicationRule
             throw new ArgumentNullException(nameof(Status) + " cannot be null or empty.");
         if (string.IsNullOrEmpty(id) || string.IsNullOrWhiteSpace(id))
             throw new ArgumentNullException(nameof(ID) + " cannot be null or empty.");
-        if (deleteReplication == null)
-            throw new ArgumentNullException(nameof(DeleteReplication) + " cannot be null or empty.");
-        if (destination == null) throw new ArgumentNullException(nameof(Destination) + " cannot be null or empty.");
         DeleteMarkerReplication = deleteMarkerReplication;
-        Destination = destination;
+        Destination = destination ?? throw new ArgumentNullException(nameof(Destination) + " cannot be null or empty.");
         ExistingObjectReplication = existingObjectReplication;
         Filter = filter;
         Priority = priority;
-        DeleteReplication = deleteReplication;
+        DeleteReplication = deleteReplication ??
+                            throw new ArgumentNullException(nameof(DeleteReplication) + " cannot be null or empty.");
         ID = id;
         Prefix = prefix;
         SourceSelectionCriteria = sourceSelectionCriteria;

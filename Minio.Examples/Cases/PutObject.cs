@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Minio.DataModel;
 
 namespace Minio.Examples.Cases;
 
-internal class PutObject
+internal static class PutObject
 {
     private const int MB = 1024 * 1024;
 
@@ -31,11 +27,11 @@ internal class PutObject
         string bucketName = "my-bucket-name",
         string objectName = "my-object-name",
         string fileName = "location-of-file",
-        ServerSideEncryption sse = null)
+        IServerSideEncryption sse = null)
     {
         try
         {
-            var bs = File.ReadAllBytes(fileName);
+            var bs = await File.ReadAllBytesAsync(fileName).ConfigureAwait(false);
             Console.WriteLine("Running example for API: PutObjectAsync");
             using (var filestream = new MemoryStream(bs))
             {
@@ -52,7 +48,7 @@ internal class PutObject
                     .WithContentType("application/octet-stream")
                     .WithHeaders(metaData)
                     .WithServerSideEncryption(sse);
-                await minio.PutObjectAsync(args);
+                await minio.PutObjectAsync(args).ConfigureAwait(false);
             }
 
             Console.WriteLine($"Uploaded object {objectName} to bucket {bucketName}");

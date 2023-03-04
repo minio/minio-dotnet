@@ -15,14 +15,13 @@
 * limitations under the License.
 */
 
-using System;
 using System.Net;
 
 namespace Minio.Functional.Tests;
 
-internal class Program
+internal static class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         string endPoint = null;
         string accessKey = null;
@@ -62,11 +61,12 @@ internal class Program
             kmsEnabled = "1";
         }
 
+#pragma warning disable MA0039 // Do not write your own certificate validation method
         ServicePointManager.ServerCertificateValidationCallback +=
             (sender, certificate, chain, sslPolicyErrors) => true;
+#pragma warning restore MA0039 // Do not write your own certificate validation method
 
-        MinioClient minioClient = null;
-        minioClient = new MinioClient()
+        using var minioClient = new MinioClient()
             .WithEndpoint(endPoint, port)
             .WithCredentials(accessKey, secretKey)
             .WithSSL(isSecure)
@@ -99,135 +99,138 @@ internal class Program
         // If the following test is run against AWS, then the SDK throws
         // "Listening for bucket notification is specific only to `minio`
         // server endpoints".
-        FunctionalTest.ListenBucketNotificationsAsync_Test1(minioClient).Wait();
-        FunctionalTest.ListenBucketNotificationsAsync_Test2(minioClient).Wait();
-        FunctionalTest.ListenBucketNotificationsAsync_Test3(minioClient).Wait();
+        await FunctionalTest.ListenBucketNotificationsAsync_Test1(minioClient).ConfigureAwait(false);
+        await FunctionalTest.ListenBucketNotificationsAsync_Test2(minioClient).ConfigureAwait(false);
+        await FunctionalTest.ListenBucketNotificationsAsync_Test3(minioClient).ConfigureAwait(false);
 
         // Check if bucket exists
-        FunctionalTest.BucketExists_Test(minioClient).Wait();
-        FunctionalTest.MakeBucket_Test5(minioClient).Wait();
+        await FunctionalTest.BucketExists_Test(minioClient).ConfigureAwait(false);
+        await FunctionalTest.MakeBucket_Test5(minioClient).ConfigureAwait(false);
 
         if (useAWS)
         {
-            FunctionalTest.MakeBucket_Test2(minioClient, useAWS).Wait();
-            FunctionalTest.MakeBucket_Test3(minioClient, useAWS).Wait();
-            FunctionalTest.MakeBucket_Test4(minioClient, useAWS).Wait();
+            await FunctionalTest.MakeBucket_Test2(minioClient, useAWS).ConfigureAwait(false);
+            await FunctionalTest.MakeBucket_Test3(minioClient, useAWS).ConfigureAwait(false);
+            await FunctionalTest.MakeBucket_Test4(minioClient, useAWS).ConfigureAwait(false);
         }
 
         // Test removal of bucket
-        FunctionalTest.RemoveBucket_Test1(minioClient).Wait();
-        FunctionalTest.RemoveBucket_Test2(minioClient).Wait();
+        await FunctionalTest.RemoveBucket_Test1(minioClient).ConfigureAwait(false);
+        await FunctionalTest.RemoveBucket_Test2(minioClient).ConfigureAwait(false);
 
         // Test ListBuckets function
-        FunctionalTest.ListBuckets_Test(minioClient).Wait();
+        await FunctionalTest.ListBuckets_Test(minioClient).ConfigureAwait(false);
 
         // Test Putobject function
-        FunctionalTest.PutObject_Test1(minioClient).Wait();
-        FunctionalTest.PutObject_Test2(minioClient).Wait();
-        FunctionalTest.PutObject_Test3(minioClient).Wait();
-        FunctionalTest.PutObject_Test4(minioClient).Wait();
-        FunctionalTest.PutObject_Test5(minioClient).Wait();
-        FunctionalTest.PutObject_Test7(minioClient).Wait();
-        FunctionalTest.PutObject_Test8(minioClient).Wait();
+        await FunctionalTest.PutObject_Test1(minioClient).ConfigureAwait(false);
+        await FunctionalTest.PutObject_Test2(minioClient).ConfigureAwait(false);
+        await FunctionalTest.PutObject_Test3(minioClient).ConfigureAwait(false);
+        await FunctionalTest.PutObject_Test4(minioClient).ConfigureAwait(false);
+        await FunctionalTest.PutObject_Test5(minioClient).ConfigureAwait(false);
+        await FunctionalTest.PutObject_Test7(minioClient).ConfigureAwait(false);
+        await FunctionalTest.PutObject_Test8(minioClient).ConfigureAwait(false);
 
         // Test StatObject function
-        FunctionalTest.StatObject_Test1(minioClient).Wait();
+        await FunctionalTest.StatObject_Test1(minioClient).ConfigureAwait(false);
 
         // Test GetObjectAsync function
-        FunctionalTest.GetObject_Test1(minioClient).Wait();
-        FunctionalTest.GetObject_Test2(minioClient).Wait();
+        await FunctionalTest.GetObject_Test1(minioClient).ConfigureAwait(false);
+        await FunctionalTest.GetObject_Test2(minioClient).ConfigureAwait(false);
         // 3 tests will run to check different values of offset and length parameters
         // when GetObject api returns part of the object as defined by the offset
         // and length parameters. Tests will be reported as GetObject_Test3,
         // GetObject_Test4 and GetObject_Test5.
-        FunctionalTest.GetObject_3_OffsetLength_Tests(minioClient).Wait();
+        await FunctionalTest.GetObject_3_OffsetLength_Tests(minioClient).ConfigureAwait(false);
         // Test async callback function to download an object
-        FunctionalTest.GetObject_AsyncCallback_Test1(minioClient).Wait();
+        await FunctionalTest.GetObject_AsyncCallback_Test1(minioClient).ConfigureAwait(false);
 
         // Test File GetObject and PutObject functions
-        FunctionalTest.FGetObject_Test1(minioClient).Wait();
-        FunctionalTest.FPutObject_Test2(minioClient).Wait();
+        await FunctionalTest.FGetObject_Test1(minioClient).ConfigureAwait(false);
+        await FunctionalTest.FPutObject_Test2(minioClient).ConfigureAwait(false);
 
         // Test SelectObjectContentAsync function
-        FunctionalTest.SelectObjectContent_Test(minioClient).Wait();
+        await FunctionalTest.SelectObjectContent_Test(minioClient).ConfigureAwait(false);
 
         // Test ListObjectAsync function
-        FunctionalTest.ListObjects_Test1(minioClient).Wait();
-        FunctionalTest.ListObjects_Test2(minioClient).Wait();
-        FunctionalTest.ListObjects_Test3(minioClient).Wait();
-        FunctionalTest.ListObjects_Test4(minioClient).Wait();
-        FunctionalTest.ListObjects_Test5(minioClient).Wait();
-        FunctionalTest.ListObjects_Test6(minioClient).Wait();
+        await FunctionalTest.ListObjects_Test1(minioClient).ConfigureAwait(false);
+        await FunctionalTest.ListObjects_Test2(minioClient).ConfigureAwait(false);
+        await FunctionalTest.ListObjects_Test3(minioClient).ConfigureAwait(false);
+        await FunctionalTest.ListObjects_Test4(minioClient).ConfigureAwait(false);
+        await FunctionalTest.ListObjects_Test5(minioClient).ConfigureAwait(false);
+        await FunctionalTest.ListObjects_Test6(minioClient).ConfigureAwait(false);
 
         // Test RemoveObjectAsync function
-        FunctionalTest.RemoveObject_Test1(minioClient).Wait();
-        FunctionalTest.RemoveObjects_Test2(minioClient).Wait();
-        FunctionalTest.RemoveObjects_Test3(minioClient).Wait();
+        await FunctionalTest.RemoveObject_Test1(minioClient).ConfigureAwait(false);
+        await FunctionalTest.RemoveObjects_Test2(minioClient).ConfigureAwait(false);
+        await FunctionalTest.RemoveObjects_Test3(minioClient).ConfigureAwait(false);
 
         // Test CopyObjectAsync function
-        FunctionalTest.CopyObject_Test1(minioClient).Wait();
-        FunctionalTest.CopyObject_Test2(minioClient).Wait();
-        FunctionalTest.CopyObject_Test3(minioClient).Wait();
-        FunctionalTest.CopyObject_Test4(minioClient).Wait();
-        FunctionalTest.CopyObject_Test5(minioClient).Wait();
-        FunctionalTest.CopyObject_Test6(minioClient).Wait();
-        FunctionalTest.CopyObject_Test7(minioClient).Wait();
-        FunctionalTest.CopyObject_Test8(minioClient).Wait();
+        await FunctionalTest.CopyObject_Test1(minioClient).ConfigureAwait(false);
+        await FunctionalTest.CopyObject_Test2(minioClient).ConfigureAwait(false);
+        await FunctionalTest.CopyObject_Test3(minioClient).ConfigureAwait(false);
+        await FunctionalTest.CopyObject_Test4(minioClient).ConfigureAwait(false);
+        await FunctionalTest.CopyObject_Test5(minioClient).ConfigureAwait(false);
+        await FunctionalTest.CopyObject_Test6(minioClient).ConfigureAwait(false);
+        await FunctionalTest.CopyObject_Test7(minioClient).ConfigureAwait(false);
+        await FunctionalTest.CopyObject_Test8(minioClient).ConfigureAwait(false);
 
         // Test SetPolicyAsync function
-        FunctionalTest.SetBucketPolicy_Test1(minioClient).Wait();
+        await FunctionalTest.SetBucketPolicy_Test1(minioClient).ConfigureAwait(false);
 
         // Test S3Zip function
-        FunctionalTest.GetObjectS3Zip_Test1(minioClient).Wait();
+        await FunctionalTest.GetObjectS3Zip_Test1(minioClient).ConfigureAwait(false);
 
         // Test Presigned Get/Put operations
-        FunctionalTest.PresignedGetObject_Test1(minioClient).Wait();
-        FunctionalTest.PresignedGetObject_Test2(minioClient).Wait();
-        FunctionalTest.PresignedGetObject_Test3(minioClient).Wait();
-        FunctionalTest.PresignedPutObject_Test1(minioClient).Wait();
-        FunctionalTest.PresignedPutObject_Test2(minioClient).Wait();
+        await FunctionalTest.PresignedGetObject_Test1(minioClient).ConfigureAwait(false);
+        await FunctionalTest.PresignedGetObject_Test2(minioClient).ConfigureAwait(false);
+        await FunctionalTest.PresignedGetObject_Test3(minioClient).ConfigureAwait(false);
+        await FunctionalTest.PresignedPutObject_Test1(minioClient).ConfigureAwait(false);
+        await FunctionalTest.PresignedPutObject_Test2(minioClient).ConfigureAwait(false);
         // FunctionalTest.PresignedPostPolicy_Test1(minioClient).Wait();
 
         // Test incomplete uploads
-        FunctionalTest.ListIncompleteUpload_Test1(minioClient).Wait();
-        FunctionalTest.ListIncompleteUpload_Test2(minioClient).Wait();
-        FunctionalTest.ListIncompleteUpload_Test3(minioClient).Wait();
-        FunctionalTest.RemoveIncompleteUpload_Test(minioClient).Wait();
+        await FunctionalTest.ListIncompleteUpload_Test1(minioClient).ConfigureAwait(false);
+        await FunctionalTest.ListIncompleteUpload_Test2(minioClient).ConfigureAwait(false);
+        await FunctionalTest.ListIncompleteUpload_Test3(minioClient).ConfigureAwait(false);
+        await FunctionalTest.RemoveIncompleteUpload_Test(minioClient).ConfigureAwait(false);
 
         // Test GetBucket policy
-        FunctionalTest.GetBucketPolicy_Test1(minioClient).Wait();
+        await FunctionalTest.GetBucketPolicy_Test1(minioClient).ConfigureAwait(false);
 
         // Test object versioning
-        FunctionalTest.ObjectVersioningAsync_Test1(minioClient).Wait();
+        await FunctionalTest.ObjectVersioningAsync_Test1(minioClient).ConfigureAwait(false);
 
         // Test Object Lock Configuration
-        FunctionalTest.ObjectLockConfigurationAsync_Test1(minioClient).Wait();
+        await FunctionalTest.ObjectLockConfigurationAsync_Test1(minioClient).ConfigureAwait(false);
 
         // Test Bucket, Object Tags
-        FunctionalTest.BucketTagsAsync_Test1(minioClient).Wait();
-        FunctionalTest.ObjectTagsAsync_Test1(minioClient).Wait();
+        await FunctionalTest.BucketTagsAsync_Test1(minioClient).ConfigureAwait(false);
+        await FunctionalTest.ObjectTagsAsync_Test1(minioClient).ConfigureAwait(false);
 
         // Test Bucket Lifecycle configuration
-        FunctionalTest.BucketLifecycleAsync_Test1(minioClient).Wait();
-        FunctionalTest.BucketLifecycleAsync_Test2(minioClient).Wait();
+        await FunctionalTest.BucketLifecycleAsync_Test1(minioClient).ConfigureAwait(false);
+        await FunctionalTest.BucketLifecycleAsync_Test2(minioClient).ConfigureAwait(false);
 
         // Test encryption
         if (isSecure)
         {
+#pragma warning disable MA0039 // Do not write your own certificate validation method
             ServicePointManager.ServerCertificateValidationCallback +=
                 (sender, certificate, chain, sslPolicyErrors) => true;
-            FunctionalTest.PutGetStatEncryptedObject_Test1(minioClient).Wait();
-            FunctionalTest.PutGetStatEncryptedObject_Test2(minioClient).Wait();
+#pragma warning restore MA0039 // Do not write your own certificate validation method
 
-            FunctionalTest.EncryptedCopyObject_Test1(minioClient).Wait();
-            FunctionalTest.EncryptedCopyObject_Test2(minioClient).Wait();
+            await FunctionalTest.PutGetStatEncryptedObject_Test1(minioClient).ConfigureAwait(false);
+            await FunctionalTest.PutGetStatEncryptedObject_Test2(minioClient).ConfigureAwait(false);
+
+            await FunctionalTest.EncryptedCopyObject_Test1(minioClient).ConfigureAwait(false);
+            await FunctionalTest.EncryptedCopyObject_Test2(minioClient).ConfigureAwait(false);
         }
 
         if (kmsEnabled != null && kmsEnabled == "1")
         {
-            FunctionalTest.PutGetStatEncryptedObject_Test3(minioClient).Wait();
-            FunctionalTest.EncryptedCopyObject_Test3(minioClient).Wait();
-            FunctionalTest.EncryptedCopyObject_Test4(minioClient).Wait();
+            await FunctionalTest.PutGetStatEncryptedObject_Test3(minioClient).ConfigureAwait(false);
+            await FunctionalTest.EncryptedCopyObject_Test3(minioClient).ConfigureAwait(false);
+            await FunctionalTest.EncryptedCopyObject_Test4(minioClient).ConfigureAwait(false);
         }
     }
 }

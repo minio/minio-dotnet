@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -48,6 +45,7 @@ public class ReplicationConfiguration
         if (rules.Count >= 1000)
             throw new ArgumentOutOfRangeException(
                 nameof(Rules) + " Count of rules cannot exceed maximum limit of 1000.");
+
         Role = role;
         Rules = rules;
     }
@@ -58,30 +56,29 @@ public class ReplicationConfiguration
 
     public string MarshalXML()
     {
-        XmlSerializer xs = null;
-        XmlWriterSettings settings = null;
-        XmlSerializerNamespaces ns = null;
-
         XmlWriter xw = null;
 
         var str = string.Empty;
 
         try
         {
-            settings = new XmlWriterSettings();
-            settings.OmitXmlDeclaration = true;
-
-            ns = new XmlSerializerNamespaces();
+            var settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true
+            };
+            var ns = new XmlSerializerNamespaces();
             ns.Add(string.Empty, string.Empty);
 
-            var sw = new StringWriter(CultureInfo.InvariantCulture);
+            using var sw = new StringWriter(CultureInfo.InvariantCulture);
 
-            xs = new XmlSerializer(typeof(ReplicationConfiguration), "");
-            xw = XmlWriter.Create(sw, settings);
-            xs.Serialize(xw, this, ns);
-            xw.Flush();
+            var xs = new XmlSerializer(typeof(ReplicationConfiguration), "");
+            using (xw = XmlWriter.Create(sw, settings))
+            {
+                xs.Serialize(xw, this, ns);
+                xw.Flush();
 
-            str = utils.RemoveNamespaceInXML(sw.ToString()).Replace("\r", "").Replace("\n", "");
+                str = Utils.RemoveNamespaceInXML(sw.ToString()).Replace("\r", "").Replace("\n", "");
+            }
         }
         catch (Exception ex)
         {
@@ -90,7 +87,7 @@ public class ReplicationConfiguration
         }
         finally
         {
-            if (xw != null) xw.Close();
+            xw?.Close();
         }
 
         return str;

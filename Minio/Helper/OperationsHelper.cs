@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Minio.DataModel;
 using Minio.Exceptions;
 using Minio.Helper;
@@ -50,12 +44,12 @@ public partial class MinioClient : IObjectOperations
             .WithHeaders(args.Headers);
         if (args.OffsetLengthSet) statArgs.WithOffsetAndLength(args.ObjectOffset, args.ObjectLength);
         var objStat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
-        args.Validate();
+        args?.Validate();
         if (args.FileName != null)
-            await getObjectFileAsync(args, objStat, cancellationToken);
+            await getObjectFileAsync(args, objStat, cancellationToken).ConfigureAwait(false);
         else if (args.CallBack is not null)
-            await getObjectStreamAsync(args, objStat, args.CallBack, cancellationToken);
-        else await getObjectStreamAsync(args, objStat, args.FuncCallBack, cancellationToken);
+            await getObjectStreamAsync(args, objStat, args.CallBack, cancellationToken).ConfigureAwait(false);
+        else await getObjectStreamAsync(args, objStat, args.FuncCallBack, cancellationToken).ConfigureAwait(false);
         return objStat;
     }
 
@@ -75,27 +69,26 @@ public partial class MinioClient : IObjectOperations
         if (!string.IsNullOrEmpty(args.VersionId)) tempFileName = $"{args.FileName}.{etag}.{args.VersionId}.part.minio";
         if (File.Exists(args.FileName)) File.Delete(args.FileName);
 
-        utils.ValidateFile(tempFileName);
+        Utils.ValidateFile(tempFileName);
         if (File.Exists(tempFileName)) File.Delete(tempFileName);
 
-        var callbackAsync = async delegate(Stream stream, CancellationToken cancellationToken)
+        var callbackAsync = async (Stream stream, CancellationToken cancellationToken) =>
         {
-            using (var dest = new FileStream(tempFileName, FileMode.Create, FileAccess.Write))
-            {
-                await stream.CopyToAsync(dest);
-            }
+            using var dest = new FileStream(tempFileName, FileMode.Create, FileAccess.Write);
+            await stream.CopyToAsync(dest, cancellationToken).ConfigureAwait(false);
         };
 
+#pragma warning disable IDISP001 // Dispose created
         var cts = new CancellationTokenSource();
-        cts.CancelAfter(TimeSpan.FromMilliseconds(15));
+#pragma warning restore IDISP001 // Dispose created
+        cts.CancelAfter(TimeSpan.FromSeconds(15));
         args.WithCallbackStream(async (stream, cancellationToken) =>
         {
-            await callbackAsync(stream, cts.Token);
-            utils.MoveWithReplace(tempFileName, args.FileName);
+            await callbackAsync(stream, cts.Token).ConfigureAwait(false);
+            Utils.MoveWithReplace(tempFileName, args.FileName);
         });
         return getObjectStreamAsync(args, objectStat, null, cancellationToken);
     }
-
 
     /// <summary>
     ///     private helper method. It returns the specified portion or full object from the bucket
@@ -153,7 +146,7 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    private async Task<List<DeleteError>> removeObjectsAsync(RemoveObjectsArgs args,
+    private async Task<IList<DeleteError>> removeObjectsAsync(RemoveObjectsArgs args,
         CancellationToken cancellationToken)
     {
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
@@ -177,8 +170,8 @@ public partial class MinioClient : IObjectOperations
     /// </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns></returns>
-    private async Task<List<DeleteError>> callRemoveObjectVersions(RemoveObjectsArgs args,
-        List<Tuple<string, string>> objVersions, List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
+    private async Task<IList<DeleteError>> callRemoveObjectVersions(RemoveObjectsArgs args,
+        IList<Tuple<string, string>> objVersions, List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
     {
         var iterArgs = new RemoveObjectsArgs()
             .WithBucket(args.BucketName)
@@ -187,7 +180,6 @@ public partial class MinioClient : IObjectOperations
         fullErrorsList.AddRange(errorsList);
         return fullErrorsList;
     }
-
 
     /// <summary>
     ///     private helper method to call function to remove objects/version items in iterations of 1000 each from bucket
@@ -203,7 +195,7 @@ public partial class MinioClient : IObjectOperations
     /// </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns></returns>
-    private async Task<List<DeleteError>> callRemoveObjects(RemoveObjectsArgs args, List<string> objNames,
+    private async Task<IList<DeleteError>> callRemoveObjects(RemoveObjectsArgs args, IList<string> objNames,
         List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
     {
         // var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
@@ -214,7 +206,6 @@ public partial class MinioClient : IObjectOperations
         fullErrorsList.AddRange(errorsList);
         return fullErrorsList;
     }
-
 
     /// <summary>
     ///     private helper method to remove objects/version items in iterations of 1000 each from bucket
@@ -235,13 +226,13 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    private async Task<List<DeleteError>> removeObjectVersionsHelper(RemoveObjectsArgs args,
+    private async Task<IList<DeleteError>> removeObjectVersionsHelper(RemoveObjectsArgs args,
         List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
     {
         if (args.ObjectNamesVersions.Count <= 1000)
         {
             fullErrorsList.AddRange(await callRemoveObjectVersions(args, args.ObjectNamesVersions, fullErrorsList,
-                cancellationToken));
+                cancellationToken).ConfigureAwait(false));
             return fullErrorsList;
         }
 
@@ -292,30 +283,33 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    private async Task<List<DeleteError>> removeObjectsHelper(RemoveObjectsArgs args, List<DeleteError> fullErrorsList,
+    private async Task<IList<DeleteError>> removeObjectsHelper(RemoveObjectsArgs args,
+        IList<DeleteError> fullErrorsList,
         CancellationToken cancellationToken)
     {
         var iterObjects = new List<string>(1000);
         var i = 0;
         foreach (var objName in args.ObjectNames)
         {
-            utils.ValidateObjectName(objName);
+            Utils.ValidateObjectName(objName);
             iterObjects.Insert(i, objName);
             if (++i == 1000)
             {
-                fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList, cancellationToken);
+                fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList.ToList(), cancellationToken)
+                    .ConfigureAwait(false);
                 iterObjects.Clear();
                 i = 0;
             }
         }
 
         if (iterObjects.Count > 0)
-            fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList, cancellationToken);
+            fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList.ToList(), cancellationToken)
+                .ConfigureAwait(false);
         return fullErrorsList;
     }
 }
 
-public class OperationsUtil
+public static class OperationsUtil
 {
     private static readonly List<string> SupportedHeaders = new()
     {
@@ -335,13 +329,13 @@ public class OperationsUtil
 
     internal static bool IsSupportedHeader(string hdr, IEqualityComparer<string> comparer = null)
     {
-        comparer = comparer ?? StringComparer.OrdinalIgnoreCase;
+        comparer ??= StringComparer.OrdinalIgnoreCase;
         return SupportedHeaders.Contains(hdr, comparer);
     }
 
     internal static bool IsSSEHeader(string hdr, IEqualityComparer<string> comparer = null)
     {
-        comparer = comparer ?? StringComparer.OrdinalIgnoreCase;
+        comparer ??= StringComparer.OrdinalIgnoreCase;
         return SSEHeaders.Contains(hdr, comparer);
     }
 }

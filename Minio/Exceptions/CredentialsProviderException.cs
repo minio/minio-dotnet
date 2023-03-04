@@ -16,6 +16,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class CredentialsProviderException : MinioException
 {
     private readonly string CredentialProviderType;
@@ -23,6 +24,26 @@ public class CredentialsProviderException : MinioException
     public CredentialsProviderException(string credentialProviderType, string message) : base(message)
     {
         CredentialProviderType = credentialProviderType;
+    }
+
+    public CredentialsProviderException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public CredentialsProviderException(string message) : base(message)
+    {
+    }
+
+    public CredentialsProviderException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
+
+    public CredentialsProviderException()
+    {
+    }
+
+    public CredentialsProviderException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 
     public override string ToString()

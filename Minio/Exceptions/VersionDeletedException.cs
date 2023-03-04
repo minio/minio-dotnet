@@ -16,6 +16,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class VersionDeletedException : MinioException
 {
     private readonly string versionId;
@@ -23,6 +24,26 @@ public class VersionDeletedException : MinioException
     public VersionDeletedException(string vid, string message) : base(message)
     {
         versionId = vid;
+    }
+
+    public VersionDeletedException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public VersionDeletedException(string message) : base(message)
+    {
+    }
+
+    public VersionDeletedException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
+
+    public VersionDeletedException()
+    {
+    }
+
+    public VersionDeletedException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 
     public override string ToString()

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace Minio.DataModel;
@@ -103,8 +101,9 @@ public class CopyConditions
     {
         foreach (var item in copyConditions)
             if (item.Key.Equals("x-amz-metadata-directive", StringComparison.OrdinalIgnoreCase) &&
-                item.Value.ToUpper().Equals("REPLACE"))
+                item.Value.ToUpperInvariant().Equals("REPLACE"))
                 return true;
+
         return false;
     }
 

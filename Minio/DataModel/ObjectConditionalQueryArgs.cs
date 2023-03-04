@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Minio;
 
 public abstract class ObjectConditionalQueryArgs<T> : ObjectVersionArgs<T>
@@ -32,6 +30,7 @@ public abstract class ObjectConditionalQueryArgs<T> : ObjectVersionArgs<T>
         if (!string.IsNullOrEmpty(MatchETag) && !string.IsNullOrEmpty(NotMatchETag))
             throw new InvalidOperationException("Cannot set both " + nameof(MatchETag) + " and " +
                                                 nameof(NotMatchETag) + " for query.");
+
         if (ModifiedSince != default &&
             UnModifiedSince != default)
             throw new InvalidOperationException("Cannot set both " + nameof(ModifiedSince) + " and " +
@@ -44,10 +43,11 @@ public abstract class ObjectConditionalQueryArgs<T> : ObjectVersionArgs<T>
         if (!string.IsNullOrEmpty(NotMatchETag))
             requestMessageBuilder.AddOrUpdateHeaderParameter("If-None-Match", NotMatchETag);
         if (ModifiedSince != default)
-            requestMessageBuilder.AddOrUpdateHeaderParameter("If-Modified-Since", utils.To8601String(ModifiedSince));
+            requestMessageBuilder.AddOrUpdateHeaderParameter("If-Modified-Since", Utils.To8601String(ModifiedSince));
         if (UnModifiedSince != default)
             requestMessageBuilder.AddOrUpdateHeaderParameter("If-Unmodified-Since",
-                utils.To8601String(UnModifiedSince));
+                Utils.To8601String(UnModifiedSince));
+
         return requestMessageBuilder;
     }
 

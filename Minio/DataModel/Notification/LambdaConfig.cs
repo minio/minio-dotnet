@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel;
@@ -46,7 +45,8 @@ public class LambdaConfig : NotificationConfiguration
     {
         var other = (LambdaConfig)obj;
         // If parameter is null return false.
-        if (obj == null || (LambdaConfig)obj == null) return false;
+        if (obj == null)
+            return false;
         return other.Lambda.Equals(Lambda);
     }
 

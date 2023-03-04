@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Minio.Exceptions;
 
 [Serializable]
@@ -27,6 +25,26 @@ public class BucketNotFoundException : MinioException
     public BucketNotFoundException(string bucketName, string message) : base(message)
     {
         this.bucketName = bucketName;
+    }
+
+    public BucketNotFoundException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public BucketNotFoundException(string message) : base(message)
+    {
+    }
+
+    public BucketNotFoundException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
+
+    public BucketNotFoundException()
+    {
+    }
+
+    public BucketNotFoundException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 
     public override string ToString()

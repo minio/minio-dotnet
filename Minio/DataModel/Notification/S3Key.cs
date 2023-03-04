@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel;
@@ -34,7 +32,7 @@ public class S3Key
     {
         get
         {
-            if (filterRules == null) filterRules = new List<FilterRule>();
+            filterRules ??= new List<FilterRule>();
 
             return filterRules;
         }
@@ -43,7 +41,7 @@ public class S3Key
 
     internal bool IsFilterRulesSet()
     {
-        return filterRules != null && filterRules.Count > 0;
+        return filterRules?.Count > 0;
     }
 
     public bool ShouldSerializeFilterRules()

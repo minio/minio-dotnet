@@ -14,9 +14,8 @@
 * limitations under the License.
 */
 
-using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Minio.Functional.Tests;
 
@@ -40,7 +39,7 @@ internal static class TestStatusExtender
     }
 }
 
-internal class MintLogger
+internal sealed class MintLogger
 {
     public MintLogger(string testName, string function, string description, TestStatus status, TimeSpan duration,
         string alert = null, string message = null, string error = null, Dictionary<string, string> args = null)
@@ -102,7 +101,8 @@ internal class MintLogger
 
     public void Log()
     {
-        Console.WriteLine(JsonConvert.SerializeObject(this, Formatting.None,
-            new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
+        Console.WriteLine(JsonSerializer.Serialize(this,
+            new JsonSerializerOptions
+                { WriteIndented = false, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault }));
     }
 }

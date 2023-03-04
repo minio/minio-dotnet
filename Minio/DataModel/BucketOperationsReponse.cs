@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -42,13 +37,11 @@ internal class GetVersioningResponse : GenericResponse
             !HttpStatusCode.OK.Equals(statusCode))
             return;
 
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            stream.Position = 0;
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
+        stream.Position = 0;
 
-            VersioningConfig =
-                (VersioningConfiguration)new XmlSerializer(typeof(VersioningConfiguration)).Deserialize(stream);
-        }
+        VersioningConfig =
+            (VersioningConfiguration)new XmlSerializer(typeof(VersioningConfiguration)).Deserialize(stream);
     }
 
     internal VersioningConfiguration VersioningConfig { get; set; }
@@ -61,14 +54,11 @@ internal class ListBucketsResponse : GenericResponse
     internal ListBucketsResponse(HttpStatusCode statusCode, string responseContent)
         : base(statusCode, responseContent)
     {
-        if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
+        if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
             return;
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            BucketsResult =
-                (ListAllMyBucketsResult)new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream);
-        }
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
+        BucketsResult =
+            (ListAllMyBucketsResult)new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream);
     }
 }
 
@@ -81,7 +71,6 @@ internal class ListObjectsItemResponse
         IObserver<Item> obs)
     {
         ItemObservable = obs;
-        var marker = string.Empty;
         NextMarker = string.Empty;
         foreach (var item in objectList.Item2)
         {
@@ -118,7 +107,6 @@ internal class ListObjectVersionResponse
         IObserver<Item> obs)
     {
         ItemObservable = obs;
-        var marker = string.Empty;
         foreach (var item in objectList.Item2)
         {
             BucketObjectsLastItem = item;
@@ -174,6 +162,7 @@ internal class GetObjectsListResponse : GenericResponse
         if (string.IsNullOrEmpty(responseContent) ||
             !HttpStatusCode.OK.Equals(statusCode))
             return;
+
         using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
         {
             BucketResult = (ListBucketResult)new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream);
@@ -212,6 +201,7 @@ internal class GetObjectsVersionsListResponse : GenericResponse
         if (string.IsNullOrEmpty(responseContent) ||
             !HttpStatusCode.OK.Equals(statusCode))
             return;
+
         using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
         {
             BucketResult = (ListVersionsResult)new XmlSerializer(typeof(ListVersionsResult)).Deserialize(stream);
@@ -248,6 +238,7 @@ internal class GetPolicyResponse : GenericResponse
         if (string.IsNullOrEmpty(responseContent) ||
             !HttpStatusCode.OK.Equals(statusCode))
             return;
+
         Initialize().Wait();
     }
 
@@ -255,12 +246,10 @@ internal class GetPolicyResponse : GenericResponse
 
     private async Task Initialize()
     {
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(ResponseContent)))
-        using (var streamReader = new StreamReader(stream))
-        {
-            PolicyJsonString = await streamReader.ReadToEndAsync()
-                .ConfigureAwait(false);
-        }
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(ResponseContent));
+        using var streamReader = new StreamReader(stream);
+        PolicyJsonString = await streamReader.ReadToEndAsync()
+            .ConfigureAwait(false);
     }
 }
 
@@ -276,11 +265,9 @@ internal class GetBucketNotificationsResponse : GenericResponse
             return;
         }
 
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            BucketNotificationConfiguration =
-                (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(stream);
-        }
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
+        BucketNotificationConfiguration =
+            (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(stream);
     }
 
     internal BucketNotification BucketNotificationConfiguration { set; get; }
@@ -297,12 +284,10 @@ internal class GetBucketEncryptionResponse : GenericResponse
             return;
         }
 
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            BucketEncryptionConfiguration =
-                (ServerSideEncryptionConfiguration)new XmlSerializer(typeof(ServerSideEncryptionConfiguration))
-                    .Deserialize(stream);
-        }
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
+        BucketEncryptionConfiguration =
+            (ServerSideEncryptionConfiguration)new XmlSerializer(typeof(ServerSideEncryptionConfiguration))
+                .Deserialize(stream);
     }
 
     internal ServerSideEncryptionConfiguration BucketEncryptionConfiguration { get; set; }
@@ -321,11 +306,9 @@ internal class GetBucketTagsResponse : GenericResponse
         }
 
         // Remove namespace from response content, if present.
-        responseContent = utils.RemoveNamespaceInXML(responseContent);
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            BucketTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(stream);
-        }
+        responseContent = Utils.RemoveNamespaceInXML(responseContent);
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
+        BucketTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(stream);
     }
 
     internal Tagging BucketTags { set; get; }
@@ -342,11 +325,9 @@ internal class GetObjectLockConfigurationResponse : GenericResponse
             return;
         }
 
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            LockConfiguration =
-                (ObjectLockConfiguration)new XmlSerializer(typeof(ObjectLockConfiguration)).Deserialize(stream);
-        }
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
+        LockConfiguration =
+            (ObjectLockConfiguration)new XmlSerializer(typeof(ObjectLockConfiguration)).Deserialize(stream);
     }
 
     internal ObjectLockConfiguration LockConfiguration { get; set; }
@@ -365,12 +346,10 @@ internal class GetBucketLifecycleResponse : GenericResponse
         }
 
         //Remove xmlns content for config serialization
-        responseContent = utils.RemoveNamespaceInXML(responseContent);
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            BucketLifecycle =
-                (LifecycleConfiguration)new XmlSerializer(typeof(LifecycleConfiguration)).Deserialize(stream);
-        }
+        responseContent = Utils.RemoveNamespaceInXML(responseContent);
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
+        BucketLifecycle =
+            (LifecycleConfiguration)new XmlSerializer(typeof(LifecycleConfiguration)).Deserialize(stream);
     }
 
     internal LifecycleConfiguration BucketLifecycle { set; get; }
@@ -388,10 +367,8 @@ internal class GetBucketReplicationResponse : GenericResponse
             return;
         }
 
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            Config = (ReplicationConfiguration)new XmlSerializer(typeof(ReplicationConfiguration)).Deserialize(stream);
-        }
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
+        Config = (ReplicationConfiguration)new XmlSerializer(typeof(ReplicationConfiguration)).Deserialize(stream);
     }
 
     internal ReplicationConfiguration Config { set; get; }

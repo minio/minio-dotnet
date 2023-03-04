@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Minio.Helper;
 
-internal class s3utils
+internal static class s3utils
 {
     internal static readonly Regex TrimWhitespaceRegex = new("\\s+");
 
@@ -52,7 +49,7 @@ internal class s3utils
         if (endpointURL == null) return false;
         // bucketName can be valid but '.' in the hostname will fail SSL
         // certificate validation. So do not use host-style for such buckets.
-        if (endpointURL.Scheme == "https" && bucketName.Contains(".")) return false;
+        if (endpointURL.Scheme == "https" && bucketName.Contains('.')) return false;
         // Return true for all other cases
         return IsAmazonEndPoint(endpointURL.Host);
     }
@@ -63,7 +60,7 @@ internal class s3utils
         {
             var combination = Path.Combine(p1, p2);
             // combination = Uri.EscapeUriString(combination);
-            combination = utils.EncodePath(combination);
+            combination = Utils.EncodePath(combination);
             return combination;
         }
         catch (Exception ex)

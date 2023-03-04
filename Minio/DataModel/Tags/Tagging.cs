@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -54,6 +51,7 @@ public class Tagging
         if (tags.Count > tagging_upper_limit)
             throw new ArgumentOutOfRangeException(nameof(tags) + ". Count of tags exceeds maximum limit allowed for " +
                                                   (isObjects ? "objects." : "buckets."));
+
         foreach (var tag in tags)
         {
             if (!validateTagKey(tag.Key)) throw new ArgumentException("Invalid Tagging key " + tag.Key);
@@ -70,8 +68,9 @@ public class Tagging
         if (string.IsNullOrEmpty(key) ||
             string.IsNullOrWhiteSpace(key) ||
             key.Length > MAX_TAG_KEY_LENGTH ||
-            key.Contains("&"))
+            key.Contains('&'))
             return false;
+
         return true;
     }
 
@@ -79,8 +78,9 @@ public class Tagging
     {
         if (value == null || // Empty or whitespace is allowed
             value.Length > MAX_TAG_VALUE_LENGTH ||
-            value.Contains("&"))
+            value.Contains('&'))
             return false;
+
         return true;
     }
 
@@ -94,29 +94,28 @@ public class Tagging
 
     public string MarshalXML()
     {
-        XmlSerializer xs = null;
-        XmlWriterSettings settings = null;
-        XmlSerializerNamespaces ns = null;
-
         XmlWriter xw = null;
 
         var str = string.Empty;
 
         try
         {
-            settings = new XmlWriterSettings();
-            settings.OmitXmlDeclaration = true;
-
-            ns = new XmlSerializerNamespaces();
+            var settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true
+            };
+            var ns = new XmlSerializerNamespaces();
             ns.Add(string.Empty, string.Empty);
 
-            var sw = new StringWriter(CultureInfo.InvariantCulture);
+            using var sw = new StringWriter(CultureInfo.InvariantCulture);
 
-            xs = new XmlSerializer(typeof(Tagging), "");
-            xw = XmlWriter.Create(sw, settings);
-            xs.Serialize(xw, this, ns);
-            xw.Flush();
-            str = utils.RemoveNamespaceInXML(sw.ToString());
+            var xs = new XmlSerializer(typeof(Tagging), "");
+            using (xw = XmlWriter.Create(sw, settings))
+            {
+                xs.Serialize(xw, this, ns);
+                xw.Flush();
+                str = Utils.RemoveNamespaceInXML(sw.ToString());
+            }
         }
         catch (Exception ex)
         {
@@ -124,7 +123,7 @@ public class Tagging
         }
         finally
         {
-            if (xw != null) xw.Close();
+            xw?.Close();
         }
 
         return str;

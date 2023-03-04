@@ -14,26 +14,22 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Dynamic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
 using Minio.Exceptions;
 using Minio.Helper;
-using Newtonsoft.Json;
 
 namespace Minio;
 
-public class utils
+public static class Utils
 {
     // We support '.' with bucket names but we fallback to using path
     // style requests instead for such buckets.
@@ -71,7 +67,7 @@ public class utils
     // http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
     internal static void ValidateObjectName(string objectName)
     {
-        if (string.IsNullOrEmpty(objectName) || objectName.Trim() == string.Empty)
+        if (string.IsNullOrEmpty(objectName) || string.IsNullOrEmpty(objectName.Trim()))
             throw new InvalidObjectNameException(objectName, "Object name cannot be empty.");
 
         // c# strings are in utf16 format. they are already in unicode format when they arrive here.
@@ -127,18 +123,18 @@ public class utils
         foreach (var pathSegment in path.Split('/'))
             if (pathSegment.Length != 0)
             {
-                if (encodedPathBuf.Length > 0) encodedPathBuf.Append("/");
+                if (encodedPathBuf.Length > 0) encodedPathBuf.Append('/');
                 encodedPathBuf.Append(UrlEncode(pathSegment));
             }
 
         if (path.StartsWith("/")) encodedPathBuf.Insert(0, "/");
-        if (path.EndsWith("/")) encodedPathBuf.Append("/");
+        if (path.EndsWith("/")) encodedPathBuf.Append('/');
         return encodedPathBuf.ToString();
     }
 
     internal static bool IsAnonymousClient(string accessKey, string secretKey)
     {
-        return secretKey == string.Empty && accessKey == string.Empty;
+        return string.IsNullOrEmpty(secretKey) && string.IsNullOrEmpty(accessKey);
     }
 
     internal static void ValidateFile(string filePath, string contentType = null)
@@ -155,7 +151,7 @@ public class utils
                 throw new ArgumentException($"'{fileName}': not a regular file", nameof(filePath));
         }
 
-        if (contentType == null) contentType = GetContentType(filePath);
+        contentType ??= GetContentType(filePath);
     }
 
     internal static string GetContentType(string fileName)
@@ -178,10 +174,16 @@ public class utils
 
     public static void MoveWithReplace(string sourceFileName, string destFileName)
     {
-        // first, delete target file if exists, as File.Move() does not support overwrite
-        if (File.Exists(destFileName)) File.Delete(destFileName);
+        try
+        {
+            // first, delete target file if exists, as File.Move() does not support overwrite
+            if (File.Exists(destFileName)) File.Delete(destFileName);
 
-        File.Move(sourceFileName, destFileName);
+            File.Move(sourceFileName, destFileName);
+        }
+        catch
+        {
+        }
     }
 
     internal static bool IsSupersetOf(IList<string> l1, IList<string> l2)
@@ -196,7 +198,7 @@ public class utils
     public static bool CaseInsensitiveContains(string text, string value,
         StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
     {
-        return text.IndexOf(value, stringComparison) >= 0;
+        return text.Contains(value, stringComparison);
     }
 
     /// <summary>
@@ -237,9 +239,7 @@ public class utils
 
     internal static string getMD5SumStr(byte[] key)
     {
-        var hashedBytes = MD5
-            .Create()
-            .ComputeHash(key);
+        var hashedBytes = MD5.HashData(key);
 
         return Convert.ToBase64String(hashedBytes);
     }
@@ -802,34 +802,33 @@ public class utils
 
     public static string MarshalXML(object obj, string nmspc)
     {
-        XmlSerializer xs = null;
-        XmlWriterSettings settings = null;
-        XmlSerializerNamespaces ns = null;
-
         XmlWriter xw = null;
 
         var str = string.Empty;
 
         try
         {
-            settings = new XmlWriterSettings();
-            settings.OmitXmlDeclaration = true;
-
-            ns = new XmlSerializerNamespaces();
+            var settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true
+            };
+            var ns = new XmlSerializerNamespaces();
             ns.Add("", nmspc);
 
-            var sw = new StringWriter(CultureInfo.InvariantCulture);
+            using var sw = new StringWriter(CultureInfo.InvariantCulture);
 
-            xs = new XmlSerializer(obj.GetType());
-            xw = XmlWriter.Create(sw, settings);
-            xs.Serialize(xw, obj, ns);
-            xw.Flush();
+            var xs = new XmlSerializer(obj.GetType());
+            using (xw = XmlWriter.Create(sw, settings))
+            {
+                xs.Serialize(xw, obj, ns);
+                xw.Flush();
 
-            str = sw.ToString();
+                str = sw.ToString();
+            }
         }
         finally
         {
-            if (xw != null) xw.Close();
+            xw?.Close();
         }
 
         return str;
@@ -869,7 +868,9 @@ public class utils
     {
         if (string.IsNullOrEmpty(endpoint))
             throw new ArgumentException(
-                string.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint), "endpoint");
+                string.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint),
+                nameof(endpoint));
+
         if (endpoint.EndsWith("/")) endpoint = endpoint.Substring(0, endpoint.Length - 1);
         if (!endpoint.StartsWith("http") && !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
             throw new InvalidEndpointException(string.Format("{0} is invalid hostname.", endpoint), "endpoint");
@@ -878,13 +879,12 @@ public class utils
             throw new InvalidEndpointException(
                 string.Format("{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),
                 "endpoint");
+
         var enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
-        var scheme = enable_https != null && enable_https.Equals("1") ? "https://" : "http://";
+        var scheme = enable_https?.Equals("1") == true ? "https://" : "http://";
         conn_url = scheme + endpoint;
-        var hostnameOfUri = string.Empty;
-        Uri url = null;
-        url = new Uri(conn_url);
-        hostnameOfUri = url.Authority;
+        var url = new Uri(conn_url);
+        var hostnameOfUri = url.Authority;
         if (!string.IsNullOrWhiteSpace(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
             throw new InvalidEndpointException(string.Format("{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),
                 "endpoint");
@@ -894,7 +894,7 @@ public class utils
 
     internal static HttpRequestMessageBuilder GetEmptyRestRequest(HttpRequestMessageBuilder requestBuilder)
     {
-        var serializedBody = JsonConvert.SerializeObject("");
+        var serializedBody = JsonSerializer.Serialize("");
         requestBuilder.AddOrUpdateHeaderParameter("application/json; charset=utf-8", serializedBody);
         return requestBuilder;
     }
@@ -905,11 +905,9 @@ public class utils
         if (obj == null)
             return null;
         var serializer = new XmlSerializer(typeof(object));
-        using (var ms = new MemoryStream())
-        {
-            serializer.Serialize(ms, obj);
-            return ms.ToArray();
-        }
+        using var ms = new MemoryStream();
+        serializer.Serialize(ms, obj);
+        return ms.ToArray();
     }
 
     // Print object key properties and their values
@@ -930,7 +928,7 @@ public class utils
         foreach (var prop in obj.GetType()
                      .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
         {
-            var value = prop.GetValue(obj, new object[] { });
+            var value = prop.GetValue(obj, Array.Empty<object>());
             Console.WriteLine("DEBUG >>   {0} = {1}", prop.Name, value);
         }
 
@@ -942,6 +940,7 @@ public class utils
         if (d != null)
             foreach (var kv in d)
                 Console.WriteLine("DEBUG >>        {0} = {1}", kv.Key, kv.Value);
+
         Console.WriteLine("DEBUG >>   Done printing\n");
     }
 }

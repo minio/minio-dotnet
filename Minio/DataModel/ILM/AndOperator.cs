@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Xml.Serialization;
 using Minio.DataModel.Tags;
 
@@ -25,7 +23,6 @@ using Minio.DataModel.Tags;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketLifecycleConfiguration.html
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html
  */
-
 
 namespace Minio.DataModel.ILM;
 
@@ -37,10 +34,10 @@ public class AndOperator
     {
     }
 
-    public AndOperator(string prefix, List<Tag> tag)
+    public AndOperator(string prefix, IList<Tag> tag)
     {
         Prefix = prefix;
-        if (tag != null && tag.Count > 0) Tags = new List<Tag>(tag);
+        if (tag?.Count > 0) Tags = new List<Tag>(tag);
     }
 
     public AndOperator(string prefix, Dictionary<string, string> tags)

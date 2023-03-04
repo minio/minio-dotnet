@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel.ObjectLock;
@@ -36,7 +35,7 @@ public class ObjectRetentionConfiguration
 
     public ObjectRetentionConfiguration(DateTime date, RetentionMode mode = RetentionMode.GOVERNANCE)
     {
-        RetainUntilDate = utils.To8601String(date);
+        RetainUntilDate = Utils.To8601String(date);
         Mode = mode;
     }
 

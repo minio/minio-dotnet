@@ -15,16 +15,10 @@
  * limitations under the License.
  */
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
+using System.Text.Json;
 using Minio.DataModel;
 using Minio.Exceptions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 /*
  * IAM roles for Amazon EC2
@@ -50,9 +44,9 @@ public class IAMAWSProvider : EnvironmentProvider
                 throw new ArgumentNullException("Endpoint field " + nameof(CustomEndPoint) + " is invalid.");
         }
 
-        if (client == null)
-            throw new ArgumentException("MinioClient reference field " + nameof(Minio_Client) + " cannot be null.");
-        Minio_Client = client;
+        Minio_Client = client ??
+                       throw new ArgumentException("MinioClient reference field " +
+                                                   nameof(Minio_Client) + " cannot be null.");
         CustomEndPoint = new Uri(endpoint);
     }
 
@@ -113,40 +107,42 @@ public class IAMAWSProvider : EnvironmentProvider
 
     public async Task<AccessCredentials> GetAccessCredentials(Uri url)
     {
+        ArgumentNullException.ThrowIfNull(url);
+
         Validate();
-        var request = new HttpRequestMessage(HttpMethod.Get, url.ToString());
+        using var request = new HttpRequestMessage(HttpMethod.Get, url.ToString());
 
         var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, url);
         requestBuilder.AddQueryParameter("location", "");
 
         using var response =
-            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
+            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder)
+                .ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(response.Content) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))
             throw new CredentialsProviderException("IAMAWSProvider",
                 "Credential Get operation failed with HTTP Status code: " + response.StatusCode);
-        JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-        {
-            MissingMemberHandling = MissingMemberHandling.Error,
-            ContractResolver = new CamelCasePropertyNamesContractResolver(),
-            Error = null
-        };
-        var credentials = JsonConvert.DeserializeObject<ECSCredentials>(response.Content);
-        if (credentials.Code != null && !credentials.Code.ToLower().Equals("success"))
+        /*
+JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+{
+   MissingMemberHandling = MissingMemberHandling.Error,
+   ContractResolver = new CamelCasePropertyNamesContractResolver(),
+   Error = null
+};*/
+
+        var credentials = JsonSerializer.Deserialize<ECSCredentials>(response.Content);
+        if (credentials.Code?.Equals("success", StringComparison.OrdinalIgnoreCase) == false)
             throw new CredentialsProviderException("IAMAWSProvider",
                 "Credential Get operation failed with code: " + credentials.Code + " and message " +
                 credentials.Message);
+
         Credentials = credentials.GetAccessCredentials();
         return Credentials;
     }
 
     public override async Task<AccessCredentials> GetCredentialsAsync()
     {
-        if (Credentials != null && !Credentials.AreExpired())
-        {
-            Credentials = Credentials;
-            return Credentials;
-        }
+        if (Credentials?.AreExpired() == false) return Credentials;
 
         var url = CustomEndPoint;
         var awsTokenFile = Environment.GetEnvironmentVariable("AWS_WEB_IDENTITY_TOKEN_FILE");
@@ -170,33 +166,33 @@ public class IAMAWSProvider : EnvironmentProvider
         }
         else
         {
-            url = await GetIamRoleNamedURL();
+            url = await GetIamRoleNamedURL().ConfigureAwait(false);
         }
 
-        Credentials = await GetAccessCredentials(url);
+        Credentials = await GetAccessCredentials(url).ConfigureAwait(false);
         return Credentials;
     }
 
     public async Task<string> GetIamRoleNameAsync(Uri url)
     {
         Validate();
-        string[] roleNames = null;
-
         var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, url);
         requestBuilder.AddQueryParameter("location", "");
 
         using var response =
-            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder);
-
+            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandlingDelegate>(), requestBuilder)
+                .ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(response.Content) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))
             throw new CredentialsProviderException("IAMAWSProvider",
                 "Credential Get operation failed with HTTP Status code: " + response.StatusCode);
-        roleNames = response.Content.Split('\n');
+
+        var roleNames = response.Content.Split('\n');
         if (roleNames.Length <= 0)
             throw new CredentialsProviderException("IAMAWSProvider",
                 "No IAM roles are attached to AWS service at " + url);
+
         var index = 0;
         foreach (var item in roleNames) roleNames[index++] = item.Trim();
         return roleNames[0];
@@ -206,7 +202,7 @@ public class IAMAWSProvider : EnvironmentProvider
     {
         Validate();
         var url = CustomEndPoint;
-        string newUrlStr = null;
+        string newUrlStr;
         if (url == null || string.IsNullOrWhiteSpace(url.Authority))
         {
             url = new Uri("http://169.254.169.254/latest/meta-data/iam/security-credentials/");
@@ -219,7 +215,7 @@ public class IAMAWSProvider : EnvironmentProvider
             newUrlStr = urlStr;
         }
 
-        var roleName = await GetIamRoleNameAsync(url);
+        var roleName = await GetIamRoleNameAsync(url).ConfigureAwait(false);
         newUrlStr += roleName;
         return new Uri(newUrlStr);
     }
@@ -230,6 +226,7 @@ public class IAMAWSProvider : EnvironmentProvider
         if (Credentials == null ||
             string.IsNullOrWhiteSpace(Credentials.AccessKey) || string.IsNullOrWhiteSpace(Credentials.SecretKey))
             Credentials = GetCredentialsAsync().GetAwaiter().GetResult();
+
         return this;
     }
 

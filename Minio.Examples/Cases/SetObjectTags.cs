@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Minio.DataModel.Tags;
 
 namespace Minio.Examples.Cases;
 
-public class SetObjectTags
+public static class SetObjectTags
 {
     // Set Tags for the object
     public static async Task Run(IMinioClient minio,
@@ -38,7 +35,7 @@ public class SetObjectTags
                 .WithObject(objectName)
                 .WithVersionId(versionId)
                 .WithTagging(Tagging.GetObjectTags(tags));
-            await minio.SetObjectTagsAsync(args);
+            await minio.SetObjectTagsAsync(args).ConfigureAwait(false);
             Console.WriteLine($"Tags set for object {bucketName}/{objectName}.");
             Console.WriteLine();
         }

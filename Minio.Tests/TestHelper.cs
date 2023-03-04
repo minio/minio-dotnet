@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-using System;
 using System.Text;
 
 namespace Minio.Tests;
 
-internal class TestHelper
+internal static class TestHelper
 {
+    internal const string Endpoint = "play.min.io";
+    internal const string AccessKey = "Q3AM3UQ867SPQQA43P2F";
+    internal const string SecretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
+
     private static readonly Random rnd = new();
 
     // Generate a random string

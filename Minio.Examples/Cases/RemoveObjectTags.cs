@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-public class RemoveObjectTags
+public static class RemoveObjectTags
 {
     // Remove Tags set for the object
     public static async Task Run(IMinioClient minio,
@@ -35,7 +32,7 @@ public class RemoveObjectTags
                     .WithBucket(bucketName)
                     .WithObject(objectName)
                     .WithVersionId(versionId)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Tags removed for object {bucketName}/{objectName}.");
             Console.WriteLine();
         }

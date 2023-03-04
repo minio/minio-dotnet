@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using Minio.DataModel;
 
 namespace Minio.Examples.Cases;
 
-internal class ListenBucketNotifications
+internal static class ListenBucketNotifications
 {
     // Listen for notifications from a specified bucket (a Minio-only extension)
     public static void Run(MinioClient minio,
@@ -34,7 +32,7 @@ internal class ListenBucketNotifications
         {
             Console.WriteLine("Running example for API: ListenBucketNotifications");
             Console.WriteLine();
-            events = events ?? new List<EventType> { EventType.ObjectCreatedAll };
+            events ??= new List<EventType> { EventType.ObjectCreatedAll };
             var args = new ListenBucketNotificationsArgs()
                 .WithBucket(bucketName)
                 .WithPrefix(prefix)

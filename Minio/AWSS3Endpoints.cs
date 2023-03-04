@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Collections.Concurrent;
 
 namespace Minio;
@@ -70,11 +69,11 @@ public sealed class AWSS3Endpoints
     /// </summary>
     /// <param name="region"></param>
     /// <returns></returns>
-    public string Endpoint(string region)
+    public static string Endpoint(string region)
     {
         string endpoint = null;
         if (region != null) Instance.endpoints.TryGetValue(region, out endpoint);
-        if (endpoint == null) endpoint = "s3.amazonaws.com";
+        endpoint ??= "s3.amazonaws.com";
         return endpoint;
     }
 }

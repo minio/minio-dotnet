@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Minio.DataModel.Replication;
 
 namespace Minio.Examples.Cases;
 
-public class SetBucketReplication
+public static class SetBucketReplication
 {
     private static string Bash(string cmd)
     {
@@ -41,7 +38,7 @@ public class SetBucketReplication
                         "UseShellExecute = false" +
                         "CreateNoWindow = true";
         var startInfo = new ProcessStartInfo(fileName, arguments);
-        var process = Process.Start(startInfo);
+        using var process = Process.Start(startInfo);
 
         var result = process.StandardOutput.ReadToEnd();
         process.WaitForExit();
@@ -58,17 +55,15 @@ public class SetBucketReplication
         var setArgs = new SetVersioningArgs()
             .WithBucket(bucketName)
             .WithVersioningEnabled();
-        await minio.SetVersioningAsync(setArgs);
+        await minio.SetVersioningAsync(setArgs).ConfigureAwait(false);
         setArgs = new SetVersioningArgs()
             .WithBucket(destBucketName)
             .WithVersioningEnabled();
-        await minio.SetVersioningAsync(setArgs);
-
-        var serverEndPoint = "";
+        await minio.SetVersioningAsync(setArgs).ConfigureAwait(false);
         var schema = "http://";
-        var accessKey = "";
-        var secretKey = "";
-
+        string serverEndPoint;
+        string accessKey;
+        string secretKey;
         if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
         {
             serverEndPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");
@@ -115,14 +110,16 @@ public class SetBucketReplication
                     SseKmsEncryptedObjects.StatusEnabled)),
                 ReplicationRule.StatusEnabled
             );
-        var rules = new List<ReplicationRule>();
-        rules.Add(rule);
+        var rules = new List<ReplicationRule>
+        {
+            rule
+        };
         var repl = new ReplicationConfiguration(arn, rules);
 
         await minio.SetBucketReplicationAsync(
             new SetBucketReplicationArgs()
                 .WithBucket(bucketName)
                 .WithConfiguration(repl)
-        );
+        ).ConfigureAwait(false);
     }
 }

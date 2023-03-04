@@ -16,6 +16,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class InvalidBucketNameException : MinioException
 {
     private readonly string bucketName;
@@ -23,6 +24,26 @@ public class InvalidBucketNameException : MinioException
     public InvalidBucketNameException(string bucketName, string message) : base(message)
     {
         this.bucketName = bucketName;
+    }
+
+    public InvalidBucketNameException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public InvalidBucketNameException(string message) : base(message)
+    {
+    }
+
+    public InvalidBucketNameException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
+
+    public InvalidBucketNameException()
+    {
+    }
+
+    public InvalidBucketNameException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 
     public override string ToString()

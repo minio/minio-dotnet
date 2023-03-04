@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-using System.Threading.Tasks;
 using Minio.DataModel;
 
 namespace Minio.Credentials;

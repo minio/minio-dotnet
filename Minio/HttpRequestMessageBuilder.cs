@@ -15,14 +15,8 @@
 * limitations under the License.
 */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Web;
 using Minio.Exceptions;
 
@@ -83,12 +77,10 @@ internal class HttpRequestMessageBuilder
                 var key = parameter.Key.ToLower();
                 var val = parameter.Value;
 
-
                 var addSuccess = request.Headers.TryAddWithoutValidation(key, val);
                 if (!addSuccess)
                 {
-                    if (request.Content == null)
-                        request.Content = new StringContent("");
+                    request.Content ??= new StringContent("");
                     switch (key)
                     {
                         case "content-type":
@@ -122,11 +114,9 @@ internal class HttpRequestMessageBuilder
                 var isSecure = RequestUri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);
 
                 if (!isSecure && !isMultiDeleteRequest &&
-                    BodyParameters.ContainsKey("Content-Md5") &&
-                    BodyParameters["Content-Md5"] != null)
+                    BodyParameters.TryGetValue("Content-Md5", out var value) && value != null)
                 {
-                    var returnValue = "";
-                    BodyParameters.TryGetValue("Content-Md5", out returnValue);
+                    BodyParameters.TryGetValue("Content-Md5", out var returnValue);
                     request.Content.Headers.ContentMD5 = Convert.FromBase64String(returnValue);
                 }
             }
@@ -152,6 +142,7 @@ internal class HttpRequestMessageBuilder
             !string.IsNullOrEmpty(value) &&
             !BodyParameters.ContainsKey(key))
             BodyParameters.Add(key, value);
+
         HeaderParameters[key] = value;
     }
 

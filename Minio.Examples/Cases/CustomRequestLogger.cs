@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-using System;
 using System.Text;
-using System.Threading.Tasks;
 using Minio.DataModel.Tracing;
 
 namespace Minio.Examples.Cases;
 
-public class CustomRequestLogger
+public static class CustomRequestLogger
 {
     // Check if a bucket exists
     public static async Task Run(IMinioClient minio)
@@ -30,7 +28,7 @@ public class CustomRequestLogger
         {
             Console.WriteLine("Running example for: set custom request logger");
             minio.SetTraceOn(new MyRequestLogger());
-            await minio.ListBucketsAsync();
+            await minio.ListBucketsAsync().ConfigureAwait(false);
             minio.SetTraceOff();
             Console.WriteLine();
         }

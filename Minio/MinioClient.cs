@@ -15,17 +15,10 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Minio.Credentials;
 using Minio.DataModel;
@@ -101,7 +94,7 @@ public partial class MinioClient : IMinioClient
         Region = "";
         SessionToken = "";
         Provider = null;
-        HTTPClient = httpClient;
+        this.httpClient = httpClient;
     }
 
     /// <summary>
@@ -131,13 +124,13 @@ public partial class MinioClient : IMinioClient
         if (string.IsNullOrEmpty(BaseUrl)) throw new InvalidEndpointException("Endpoint cannot be empty.");
 
         var host = BaseUrl;
-        var scheme = Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
+        var scheme = Secure ? Utils.UrlEncode("https") : Utils.UrlEncode("http");
         // This is the actual url pointed to for all HTTP requests
         Endpoint = string.Format("{0}://{1}", scheme, host);
         uri = RequestUtil.GetEndpointURL(BaseUrl, Secure);
         RequestUtil.ValidateEndpoint(uri, Endpoint);
 
-        HTTPClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", FullUserAgent);
+        httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", FullUserAgent);
     }
 
     // Save Credentials from user
@@ -153,7 +146,7 @@ public partial class MinioClient : IMinioClient
     // Indicates if we are using HTTPS or not
     internal bool Secure { get; private set; }
 
-    internal HttpClient HTTPClient { get; private set; }
+    internal HttpClient httpClient { get; private set; }
 
     private static string SystemUserAgent
     {
@@ -182,16 +175,16 @@ public partial class MinioClient : IMinioClient
     /// </summary>
     public async Task<HttpResponseMessage> WrapperGetAsync(string url)
     {
-        var response = await HTTPClient.GetAsync(url).ConfigureAwait(false);
+        var response = await httpClient.GetAsync(url).ConfigureAwait(false);
         return response;
     }
 
     /// <summary>
     ///     Runs httpClient's PutObjectAsync method
     /// </summary>
-    public async Task WrapperPutAsync(string url, StreamContent strm)
+    public Task WrapperPutAsync(string url, StreamContent strm)
     {
-        await Task.Run(async () => await HTTPClient.PutAsync(url, strm).ConfigureAwait(false)).ConfigureAwait(false);
+        return Task.Run(async () => await httpClient.PutAsync(url, strm).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -229,7 +222,8 @@ public partial class MinioClient : IMinioClient
 
     public void Dispose()
     {
-        if (disposeHttpClient) HTTPClient?.Dispose();
+        if (disposeHttpClient)
+            httpClient?.Dispose();
     }
 
     /// <summary>
@@ -248,16 +242,16 @@ public partial class MinioClient : IMinioClient
             rgn = Regions.GetRegionFromEndpoint(Endpoint);
 
         // Pick region from location HEAD request
-        if (rgn == string.Empty)
+        if (rgn?.Length == 0)
         {
             if (!BucketRegionCache.Instance.Exists(bucketName))
-                rgn = await BucketRegionCache.Instance.Update(this, bucketName).ConfigureAwait(false);
+                rgn = await BucketRegionCache.Update(this, bucketName).ConfigureAwait(false);
             else
                 rgn = BucketRegionCache.Instance.Region(bucketName);
         }
 
         // Defaults to us-east-1 if region could not be found
-        return rgn == string.Empty ? "us-east-1" : rgn;
+        return rgn?.Length == 0 ? "us-east-1" : rgn;
     }
 
     /// <summary>
@@ -337,13 +331,13 @@ public partial class MinioClient : IMinioClient
         var region = string.Empty;
         if (bucketName != null)
         {
-            utils.ValidateBucketName(bucketName);
+            Utils.ValidateBucketName(bucketName);
             // Fetch correct region for bucket if this is not a bucket creation
             if (!isBucketCreationRequest)
                 region = await GetRegion(bucketName).ConfigureAwait(false);
         }
 
-        if (objectName != null) utils.ValidateObjectName(objectName);
+        if (objectName != null) Utils.ValidateObjectName(objectName);
 
         if (Provider != null)
         {
@@ -355,12 +349,11 @@ public partial class MinioClient : IMinioClient
                                    (Provider is ChainedProvider chained &&
                                     chained.CurrentProvider is AWSEnvironmentProvider);
 
-            AccessCredentials creds = null;
-
+            AccessCredentials creds;
             if (isAWSEnvProvider)
             {
                 var aWSEnvProvider = (AWSEnvironmentProvider)Provider;
-                creds = await aWSEnvProvider.GetCredentialsAsync();
+                creds = await aWSEnvProvider.GetCredentialsAsync().ConfigureAwait(false);
             }
             else if (isIAMAWSProvider)
             {
@@ -369,7 +362,7 @@ public partial class MinioClient : IMinioClient
             }
             else
             {
-                creds = await Provider.GetCredentialsAsync();
+                creds = await Provider.GetCredentialsAsync().ConfigureAwait(false);
             }
 
             if (creds != null)
@@ -390,24 +383,23 @@ public partial class MinioClient : IMinioClient
                 if (method == HttpMethod.Put && objectName == null && resourcePath == null)
                     // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
                     usePathStyle = true;
-                else if (resourcePath != null && resourcePath.Contains("location"))
+                else if (resourcePath?.Contains("location") == true)
                     // use path style for location query
                     usePathStyle = true;
-                else if (bucketName != null && bucketName.Contains(".") && Secure)
+                else if (bucketName?.Contains('.') == true && Secure)
                     // use path style where '.' in bucketName causes SSL certificate validation error
                     usePathStyle = true;
 
-                if (usePathStyle) resource += utils.UrlEncode(bucketName) + "/";
+                if (usePathStyle) resource += Utils.UrlEncode(bucketName) + "/";
             }
 
         // Set Target URL
         var requestUrl = RequestUtil.MakeTargetURL(BaseUrl, Secure, bucketName, region, usePathStyle);
 
-        if (objectName != null) resource += utils.EncodePath(objectName);
+        if (objectName != null) resource += Utils.EncodePath(objectName);
 
         // Append query string passed in
         if (resourcePath != null) resource += resourcePath;
-
 
         HttpRequestMessageBuilder messageBuilder;
         if (!string.IsNullOrEmpty(resource))
@@ -422,9 +414,9 @@ public partial class MinioClient : IMinioClient
 
         if (headerMap != null)
         {
-            if (headerMap.ContainsKey(messageBuilder.ContentTypeKey) &&
-                !string.IsNullOrEmpty(headerMap[messageBuilder.ContentTypeKey]))
+            if (headerMap.TryGetValue(messageBuilder.ContentTypeKey, out var value) && !string.IsNullOrEmpty(value))
                 headerMap[messageBuilder.ContentTypeKey] = contentType;
+
             foreach (var entry in headerMap) messageBuilder.AddOrUpdateHeaderParameter(entry.Key, entry.Value);
         }
 
@@ -440,7 +432,8 @@ public partial class MinioClient : IMinioClient
         if (secure)
         {
             Secure = true;
-            if (string.IsNullOrEmpty(BaseUrl)) return this;
+            if (string.IsNullOrEmpty(BaseUrl))
+                return this;
             var secureUrl = RequestUtil.MakeTargetURL(BaseUrl, Secure);
         }
 
@@ -491,7 +484,7 @@ public partial class MinioClient : IMinioClient
     /// <returns></returns>
     public MinioClient WithHttpClient(HttpClient httpClient, bool disposeHttpClient = false)
     {
-        if (httpClient != null) HTTPClient = httpClient;
+        if (httpClient != null) this.httpClient = httpClient;
         this.disposeHttpClient = disposeHttpClient;
         return this;
     }
@@ -503,7 +496,7 @@ public partial class MinioClient : IMinioClient
     public MinioClient WithCredentialsProvider(ClientProvider provider)
     {
         Provider = provider;
-        AccessCredentials credentials = null;
+        AccessCredentials credentials;
         if (Provider is IAMAWSProvider iAMAWSProvider)
             // Empty object, we need the Minio client completely
             credentials = new AccessCredentials();
@@ -523,6 +516,7 @@ public partial class MinioClient : IMinioClient
              (Provider is ChainedProvider chainedProvider && chainedProvider.CurrentProvider is AWSEnvironmentProvider))
             && isSessionTokenAvailable)
             SessionToken = credentials.SessionToken;
+
         return this;
     }
 
@@ -542,8 +536,8 @@ public partial class MinioClient : IMinioClient
     {
         if (requestTimeout > 0)
         {
-            var internalTokenSource = new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, requestTimeout));
-            var timeoutTokenSource =
+            using var internalTokenSource = new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, requestTimeout));
+            using var timeoutTokenSource =
                 CancellationTokenSource.CreateLinkedTokenSource(internalTokenSource.Token, cancellationToken);
             cancellationToken = timeoutTokenSource.Token;
         }
@@ -575,18 +569,18 @@ public partial class MinioClient : IMinioClient
 
         var request = requestMessageBuilder.Request;
 
-        ResponseResult responseResult;
+        ResponseResult responseResult = null;
         try
         {
-            var response = await HTTPClient.SendAsync(request,
+            var response = await httpClient.SendAsync(request,
                     HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
             responseResult = new ResponseResult(request, response);
             if (requestMessageBuilder.ResponseWriter != null)
                 requestMessageBuilder.ResponseWriter(responseResult.ContentStream);
             if (requestMessageBuilder.FunctionResponseWriter != null)
-                await requestMessageBuilder.FunctionResponseWriter(responseResult.ContentStream,
-                    cancellationToken);
+                await requestMessageBuilder.FunctionResponseWriter(responseResult.ContentStream, cancellationToken)
+                    .ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -594,6 +588,7 @@ public partial class MinioClient : IMinioClient
         }
         catch (Exception e)
         {
+            responseResult?.Dispose();
             responseResult = new ResponseResult(request, e);
         }
 
@@ -737,7 +732,7 @@ public partial class MinioClient : IMinioClient
         }
 
         var contentBytes = Encoding.UTF8.GetBytes(response.Content);
-        var stream = new MemoryStream(contentBytes);
+        using var stream = new MemoryStream(contentBytes);
         var errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream);
 
         if (response.StatusCode.Equals(HttpStatusCode.Forbidden)
@@ -785,7 +780,7 @@ public partial class MinioClient : IMinioClient
 
         if (response.StatusCode.Equals(HttpStatusCode.Conflict)
             && errResponse.Code.Equals("BucketAlreadyOwnedByYou"))
-            throw new Exception("Bucket already owned by you: " + errResponse.BucketName);
+            throw new ArgumentException("Bucket already owned by you: " + errResponse.BucketName);
 
         throw new UnexpectedMinioException(errResponse.Message)
         {

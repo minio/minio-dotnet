@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 namespace Minio.DataModel;
 
 public sealed class SelectObjectType

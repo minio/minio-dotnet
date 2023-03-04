@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-using System;
 using System.Globalization;
-using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -26,7 +24,7 @@ namespace Minio.DataModel;
 [XmlRoot(ElementName = "SelectObjectContentRequest")]
 public class SelectObjectOptions
 {
-    [XmlIgnore] public ServerSideEncryption SSE { get; set; }
+    [XmlIgnore] public IServerSideEncryption SSE { get; set; }
 
     public string Expression { get; set; }
 
@@ -38,30 +36,29 @@ public class SelectObjectOptions
 
     public string MarshalXML()
     {
-        XmlSerializer xs = null;
-        XmlWriterSettings settings = null;
-        XmlSerializerNamespaces ns = null;
-
         XmlWriter xw = null;
 
         var str = string.Empty;
 
         try
         {
-            settings = new XmlWriterSettings();
-            settings.OmitXmlDeclaration = true;
-
-            ns = new XmlSerializerNamespaces();
+            var settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true
+            };
+            var ns = new XmlSerializerNamespaces();
             ns.Add("", "");
 
-            var sw = new StringWriter(CultureInfo.InvariantCulture);
+            using var sw = new StringWriter(CultureInfo.InvariantCulture);
 
-            xs = new XmlSerializer(typeof(SelectObjectOptions));
-            xw = XmlWriter.Create(sw, settings);
-            xs.Serialize(xw, this, ns);
-            xw.Flush();
+            var xs = new XmlSerializer(typeof(SelectObjectOptions));
+            using (xw = XmlWriter.Create(sw, settings))
+            {
+                xs.Serialize(xw, this, ns);
+                xw.Flush();
 
-            str = sw.ToString();
+                str = sw.ToString();
+            }
         }
         catch (Exception ex)
         {
@@ -69,7 +66,7 @@ public class SelectObjectOptions
         }
         finally
         {
-            if (xw != null) xw.Close();
+            xw?.Close();
         }
 
         return str;

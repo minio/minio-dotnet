@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.Net.Http;
 using System.Text;
 using Minio.DataModel;
 using Minio.Exceptions;
@@ -47,7 +46,7 @@ public class SetVersioningArgs : BucketArgs<SetVersioningArgs>
 
     internal override void Validate()
     {
-        utils.ValidateBucketName(BucketName);
+        Utils.ValidateBucketName(BucketName);
         if (CurrentVersioningStatus > VersioningStatus.Suspended)
             throw new UnexpectedMinioException("CurrentVersioningStatus invalid value .");
     }
@@ -68,10 +67,10 @@ public class SetVersioningArgs : BucketArgs<SetVersioningArgs>
     {
         var config = new VersioningConfiguration(CurrentVersioningStatus == VersioningStatus.Enabled);
 
-        var body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+        var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
         requestMessageBuilder.AddXmlBody(body);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            Utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
 
         requestMessageBuilder.AddQueryParameter("versioning", "");
         return requestMessageBuilder;

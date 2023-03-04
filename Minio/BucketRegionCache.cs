@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-using System;
 using System.Collections.Concurrent;
 using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace Minio;
@@ -85,7 +82,7 @@ public sealed class BucketRegionCache
     /// </summary>
     /// <param name="client"></param>
     /// <param name="bucketName"></param>
-    internal async Task<string> Update(MinioClient client, string bucketName)
+    internal static async Task<string> Update(MinioClient client, string bucketName)
     {
         string region = null;
 
@@ -93,7 +90,7 @@ public sealed class BucketRegionCache
                                && client.SecretKey != null && !Instance.Exists(bucketName))
         {
             string location = null;
-            var path = utils.UrlEncode(bucketName);
+            var path = Utils.UrlEncode(bucketName);
             // Initialize client
             var requestUrl = RequestUtil.MakeTargetURL(client.BaseUrl, client.Secure);
 

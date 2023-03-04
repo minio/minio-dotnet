@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Minio.DataModel;
 
 // JSONInputOptions json input specific options

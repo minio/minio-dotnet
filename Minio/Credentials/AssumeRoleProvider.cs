@@ -15,12 +15,7 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using Minio.DataModel;
@@ -40,35 +35,27 @@ public class AssumeRoleResponse
         {
             OmitXmlDeclaration = true
         };
-        using (var ms = new MemoryStream())
-        {
-            var xmlWriter = XmlWriter.Create(ms, settings);
-            var names = new XmlSerializerNamespaces();
-            names.Add(string.Empty, "https://sts.amazonaws.com/doc/2011-06-15/");
+        using var ms = new MemoryStream();
+        using var xmlWriter = XmlWriter.Create(ms, settings);
+        var names = new XmlSerializerNamespaces();
+        names.Add(string.Empty, "https://sts.amazonaws.com/doc/2011-06-15/");
 
-            var cs = new XmlSerializer(typeof(CertificateResponse));
-            cs.Serialize(xmlWriter, this, names);
+        var cs = new XmlSerializer(typeof(CertificateResponse));
+        cs.Serialize(xmlWriter, this, names);
 
-            ms.Flush();
-            ms.Seek(0, SeekOrigin.Begin);
-            var streamReader = new StreamReader(ms);
-            var xml = streamReader.ReadToEnd();
-            return xml;
-        }
+        ms.Flush();
+        ms.Seek(0, SeekOrigin.Begin);
+        using var streamReader = new StreamReader(ms);
+        return streamReader.ReadToEnd();
     }
+}
 
-    [Serializable]
-    [XmlRoot(ElementName = "AssumeRoleResult")]
-    public class AssumeRoleResult
-    {
-        [XmlElement(ElementName = "Credentials")]
-        public AccessCredentials Credentials { get; set; }
-
-        public AccessCredentials GetAccessCredentials()
-        {
-            return Credentials;
-        }
-    }
+[Serializable]
+[XmlRoot(ElementName = "AssumeRoleResult")]
+public class AssumeRoleResult
+{
+    [XmlElement(ElementName = "Credentials")]
+    public AccessCredentials Credentials { get; set; }
 }
 
 public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
@@ -93,12 +80,13 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
         if (string.IsNullOrWhiteSpace(endpoint))
             throw new ArgumentNullException("The STS endpoint cannot be null or empty.");
         STSEndPoint = endpoint;
-        var stsUri = utils.GetBaseUrl(endpoint);
+        var stsUri = Utils.GetBaseUrl(endpoint);
         if ((stsUri.Scheme == "http" && stsUri.Port == 80) ||
             (stsUri.Scheme == "https" && stsUri.Port == 443) ||
             stsUri.Port <= 0)
             Url = stsUri.Scheme + "://" + stsUri.Authority;
         else if (stsUri.Port > 0) Url = stsUri.Scheme + "://" + stsUri.Host + ":" + stsUri.Port;
+
         Url = stsUri.Authority;
 
         return this;
@@ -106,32 +94,31 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
 
     public override async Task<AccessCredentials> GetCredentialsAsync()
     {
-        if (credentials != null && !credentials.AreExpired()) return credentials;
+        if (credentials?.AreExpired() == false) return credentials;
 
-        var requestBuilder = await BuildRequest();
+        var requestBuilder = await BuildRequest().ConfigureAwait(false);
         if (Client != null)
         {
             ResponseResult responseResult = null;
             try
             {
-                responseResult = await Client.ExecuteTaskAsync(NoErrorHandlers, requestBuilder, isSts: true);
+                responseResult = await Client.ExecuteTaskAsync(NoErrorHandlers, requestBuilder, isSts: true)
+                    .ConfigureAwait(false);
 
                 AssumeRoleResponse assumeRoleResp = null;
                 if (responseResult.Response.IsSuccessStatusCode)
                 {
                     var contentBytes = Encoding.UTF8.GetBytes(responseResult.Content);
 
-                    using (var stream = new MemoryStream(contentBytes))
-                    {
-                        assumeRoleResp =
-                            (AssumeRoleResponse)new XmlSerializer(typeof(AssumeRoleResponse)).Deserialize(stream);
-                    }
+                    using var stream = new MemoryStream(contentBytes);
+                    assumeRoleResp =
+                        (AssumeRoleResponse)new XmlSerializer(typeof(AssumeRoleResponse)).Deserialize(stream);
                 }
 
                 if (credentials == null &&
-                    assumeRoleResp != null &&
-                    assumeRoleResp.arr != null)
+                    assumeRoleResp?.arr != null)
                     credentials = assumeRoleResp.arr.Credentials;
+
                 return credentials;
             }
             finally
@@ -149,15 +136,15 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
         if (DurationInSeconds == null || DurationInSeconds.Value == 0)
             DurationInSeconds = DefaultDurationInSeconds;
 
-        var requestMessageBuilder = await Client.CreateRequest(HttpMethod.Post);
+        var requestMessageBuilder = await Client.CreateRequest(HttpMethod.Post).ConfigureAwait(false);
 
-        var formContent = new FormUrlEncodedContent(new[]
+        using var formContent = new FormUrlEncodedContent(new[]
         {
             new KeyValuePair<string, string>("Action", "AssumeRole"),
             new KeyValuePair<string, string>("DurationSeconds", DurationInSeconds.ToString()),
             new KeyValuePair<string, string>("Version", "2011-06-15")
         });
-        var byteArrContent = await formContent.ReadAsByteArrayAsync();
+        var byteArrContent = await formContent.ReadAsByteArrayAsync().ConfigureAwait(false);
         requestMessageBuilder.SetBody(byteArrContent);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Type",
             "application/x-www-form-urlencoded; charset=utf-8");

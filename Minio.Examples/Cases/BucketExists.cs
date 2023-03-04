@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-internal class BucketExists
+internal static class BucketExists
 {
     // Check if a bucket exists
     public static async Task Run(IMinioClient minio,
@@ -30,7 +27,7 @@ internal class BucketExists
             Console.WriteLine("Running example for API: BucketExistsAsync");
             var args = new BucketExistsArgs()
                 .WithBucket(bucketName);
-            var found = await minio.BucketExistsAsync(args);
+            var found = await minio.BucketExistsAsync(args).ConfigureAwait(false);
             Console.WriteLine((found ? "Found" : "Couldn't find ") + "bucket " + bucketName);
             Console.WriteLine();
         }

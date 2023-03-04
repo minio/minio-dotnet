@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Minio.DataModel;
 using Minio.Exceptions;
 
 namespace Minio.Examples.Cases;
 
-internal class StatObject
+internal static class StatObject
 {
     public static void PrintStat(string bucketObject, ObjectStat statObject)
     {
@@ -48,7 +45,7 @@ internal class StatObject
                 var objectStatArgs = new StatObjectArgs()
                     .WithBucket(bucketName)
                     .WithObject(bucketObject);
-                var statObject = await minio.StatObjectAsync(objectStatArgs);
+                var statObject = await minio.StatObjectAsync(objectStatArgs).ConfigureAwait(false);
                 PrintStat(bucketObject, statObject);
                 PrintMetaData(statObject.MetaData);
                 return;
@@ -58,7 +55,7 @@ internal class StatObject
                 .WithBucket(bucketName)
                 .WithObject(bucketObject)
                 .WithVersionId(versionID);
-            var statObjectVersion = await minio.StatObjectAsync(args);
+            var statObjectVersion = await minio.StatObjectAsync(args).ConfigureAwait(false);
             PrintStat(bucketObject, statObjectVersion);
             PrintMetaData(statObjectVersion.MetaData);
         }
@@ -68,6 +65,7 @@ internal class StatObject
             if (!string.IsNullOrEmpty(versionID))
                 objectNameInfo = objectNameInfo +
                                  $" (Version ID) {me.Response.VersionId} (Delete Marker) {me.Response.DeleteMarker}";
+
             Console.WriteLine($"[StatObject] {objectNameInfo} Exception: {me}");
         }
         catch (Exception e)

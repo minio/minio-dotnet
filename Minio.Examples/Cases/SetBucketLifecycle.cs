@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
 using Minio.DataModel.ILM;
 
 namespace Minio.Examples.Cases;
 
-public class SetBucketLifecycle
+public static class SetBucketLifecycle
 {
     // Set Lifecycle configuration to the bucket
     public static async Task Run(IMinioClient minio,
@@ -34,7 +32,7 @@ public class SetBucketLifecycle
                 new SetBucketLifecycleArgs()
                     .WithBucket(bucketName)
                     .WithLifecycleConfiguration(lfc)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Bucket Lifecycle set for bucket {bucketName}.");
             Console.WriteLine();
         }

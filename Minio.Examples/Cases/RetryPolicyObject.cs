@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
 using Minio.Exceptions;
 using Polly;
 
@@ -68,7 +66,7 @@ internal static class RetryPolicyHelper
     {
         return policy == null
             ? null
-            : async executeCallback => await policy.ExecuteAsync(executeCallback);
+            : async executeCallback => await policy.ExecuteAsync(executeCallback).ConfigureAwait(false);
     }
 
     public static MinioClient WithRetryPolicy(this MinioClient client, AsyncPolicy<ResponseResult> policy)
@@ -77,7 +75,7 @@ internal static class RetryPolicyHelper
     }
 }
 
-internal class RetryPolicyObject
+internal static class RetryPolicyObject
 {
     // Polly retry policy sample
     public static async Task Run(MinioClient minio,
@@ -103,7 +101,7 @@ internal class RetryPolicyObject
                     .WithBucket("bad-bucket")
                     .WithObject("bad-file")
                     .WithCallbackStream(s => { });
-                await minio.GetObjectAsync(getObjectArgs);
+                await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
             }
             catch (BucketNotFoundException ex)
             {

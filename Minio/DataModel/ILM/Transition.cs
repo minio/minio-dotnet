@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 /*
@@ -23,7 +22,6 @@ using System.Xml.Serialization;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketLifecycleConfiguration.html
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html
  */
-
 
 namespace Minio.DataModel.ILM;
 
@@ -38,7 +36,7 @@ public class Transition : Duration
     public Transition(DateTime date, string storageClass) : base(date)
     {
         CheckStorageClass(storageClass);
-        StorageClass = storageClass.ToUpper();
+        StorageClass = storageClass.ToUpperInvariant();
     }
 
     [XmlElement(ElementName = "StorageClass", IsNullable = true)]

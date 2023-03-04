@@ -16,6 +16,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class MissingObjectLockConfigurationException : MinioException
 {
     private readonly string bucketName;
@@ -23,6 +24,28 @@ public class MissingObjectLockConfigurationException : MinioException
     public MissingObjectLockConfigurationException(string bucketName, string message) : base(message)
     {
         this.bucketName = bucketName;
+    }
+
+    public MissingObjectLockConfigurationException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public MissingObjectLockConfigurationException(string message) : base(message)
+    {
+    }
+
+    public MissingObjectLockConfigurationException(string message, ResponseResult serverResponse) : base(message,
+        serverResponse)
+    {
+    }
+
+    public MissingObjectLockConfigurationException()
+    {
+    }
+
+    public MissingObjectLockConfigurationException(string message, Exception innerException) : base(message,
+        innerException)
+    {
     }
 
     public override string ToString()

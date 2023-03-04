@@ -15,12 +15,7 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Minio.Credentials;
 using Minio.DataModel;
 using Minio.DataModel.ILM;
@@ -143,7 +138,8 @@ public partial class MinioClient : IMinioClient
     public MinioClient WithEndpoint(string endpoint, int port)
     {
         if (port < 1 || port > 65535)
-            throw new ArgumentException(string.Format("Port {0} is not a number between 1 and 65535", port), "port");
+            throw new ArgumentException(string.Format("Port {0} is not a number between 1 and 65535", port),
+                nameof(port));
         return WithEndpoint(endpoint + ":" + port);
     }
 
@@ -157,7 +153,8 @@ public partial class MinioClient : IMinioClient
     {
         if (string.IsNullOrEmpty(region))
             throw new ArgumentException(string.Format("{0} the region value can't be null or empty.", region),
-                "region");
+                nameof(region));
+
         Region = region;
         return this;
     }
@@ -187,15 +184,15 @@ public partial class MinioClient : IMinioClient
 
         var host = BaseUrl;
 
-        var scheme = Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
+        var scheme = Secure ? Utils.UrlEncode("https") : Utils.UrlEncode("http");
 
         if (!BaseUrl.StartsWith("http"))
             Endpoint = string.Format("{0}://{1}", scheme, host);
         else
             Endpoint = host;
 
-        HTTPClient ??= Proxy is null ? new HttpClient() : new HttpClient(new HttpClientHandler { Proxy = Proxy });
-        HTTPClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", FullUserAgent);
+        httpClient ??= Proxy is null ? new HttpClient() : new HttpClient(new HttpClientHandler { Proxy = Proxy });
+        httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", FullUserAgent);
         return this;
     }
 
@@ -211,7 +208,9 @@ public partial class MinioClient : IMinioClient
     {
         if (string.IsNullOrEmpty(endpoint))
             throw new ArgumentException(
-                string.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint), "endpoint");
+                string.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint),
+                nameof(endpoint));
+
         if (endpoint.EndsWith("/")) endpoint = endpoint.Substring(0, endpoint.Length - 1);
         if (!BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
             throw new InvalidEndpointException(string.Format("{0} is invalid hostname.", endpoint), "endpoint");
@@ -220,13 +219,12 @@ public partial class MinioClient : IMinioClient
             throw new InvalidEndpointException(
                 string.Format("{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),
                 "endpoint");
+
         var enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
-        var scheme = enable_https != null && enable_https.Equals("1") ? "https://" : "http://";
+        var scheme = enable_https?.Equals("1") == true ? "https://" : "http://";
         conn_url = scheme + endpoint;
-        var hostnameOfUri = string.Empty;
-        Uri url = null;
-        url = new Uri(conn_url);
-        hostnameOfUri = url.Authority;
+        var url = new Uri(conn_url);
+        var hostnameOfUri = url.Authority;
         if (!string.IsNullOrEmpty(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
             throw new InvalidEndpointException(string.Format("{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),
                 "endpoint");

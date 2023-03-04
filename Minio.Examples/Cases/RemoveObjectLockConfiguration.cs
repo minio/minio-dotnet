@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-public class RemoveObjectLockConfiguration
+public static class RemoveObjectLockConfiguration
 {
     // Remove Object Lock Configuration on the bucket
     public static async Task Run(IMinioClient minio,
@@ -31,7 +28,7 @@ public class RemoveObjectLockConfiguration
             await minio.RemoveObjectLockConfigurationAsync(
                 new RemoveObjectLockConfigurationArgs()
                     .WithBucket(bucketName)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Removed Object lock configuration on the bucket {bucketName}.");
             Console.WriteLine();
         }

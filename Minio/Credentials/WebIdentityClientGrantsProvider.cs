@@ -15,12 +15,8 @@
  * limitations under the License.
  */
 
-using System;
-using System.IO;
 using System.Net;
-using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Minio.DataModel;
 
@@ -52,8 +48,8 @@ public abstract class WebIdentityClientGrantsProvider<T> : AssumeRoleBaseProvide
     {
         Validate();
         var jwt = JWTSupplier();
-        var requestMessageBuilder = await base.BuildRequest();
-        requestMessageBuilder = utils.GetEmptyRestRequest(requestMessageBuilder);
+        var requestMessageBuilder = await base.BuildRequest().ConfigureAwait(false);
+        requestMessageBuilder = Utils.GetEmptyRestRequest(requestMessageBuilder);
         requestMessageBuilder.AddQueryParameter("WebIdentityToken", jwt.AccessToken);
         await Task.Yield();
         return requestMessageBuilder;
@@ -68,10 +64,9 @@ public abstract class WebIdentityClientGrantsProvider<T> : AssumeRoleBaseProvide
         if (string.IsNullOrWhiteSpace(Convert.ToString(response.Content)) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))
             throw new ArgumentNullException("Unable to get credentials. Response error.");
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(Convert.ToString(response.Content))))
-        {
-            return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(stream);
-        }
+
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(Convert.ToString(response.Content)));
+        return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(stream);
     }
 
     protected void Validate()

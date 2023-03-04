@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Minio.Examples.Cases;
 
-internal class ListIncompleteUploads
+internal static class ListIncompleteUploads
 {
     // List incomplete uploads on the bucket matching specified prefix
     public static void Run(MinioClient minio,

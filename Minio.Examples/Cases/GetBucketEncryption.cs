@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-public class GetBucketEncryption
+public static class GetBucketEncryption
 {
     // Get Encryption Configuration for the bucket
     public static async Task Run(IMinioClient minio,
@@ -31,9 +28,9 @@ public class GetBucketEncryption
             var config = await minio.GetBucketEncryptionAsync(
                 new GetBucketEncryptionArgs()
                     .WithBucket(bucketName)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Got encryption configuration for bucket {bucketName}.");
-            if (config != null && config.Rule != null && config.Rule.Apply != null)
+            if (config != null && config.Rule?.Apply != null)
                 Console.WriteLine("Server Side Encryption Algorithm: " + config.Rule.Apply.SSEAlgorithm);
             Console.WriteLine();
         }

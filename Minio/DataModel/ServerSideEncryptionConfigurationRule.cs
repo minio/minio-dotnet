@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 namespace Minio;
@@ -38,26 +37,4 @@ public class ServerSideEncryptionConfigurationRule
 
     [XmlElement("ApplyServerSideEncryptionByDefault")]
     public ServerSideEncryptionConfigurationApply Apply { get; set; }
-
-    public class ServerSideEncryptionConfigurationApply
-    {
-        public ServerSideEncryptionConfigurationApply()
-        {
-            SSEAlgorithm = SSE_AES256;
-            KMSMasterKeyId = null;
-        }
-
-        public ServerSideEncryptionConfigurationApply(string algorithm = SSE_AES256, string keyId = null)
-        {
-            if (string.IsNullOrEmpty(algorithm))
-                throw new ArgumentNullException(
-                    "The SSE Algorithm " + nameof(SSEAlgorithm) + " cannot be null or empty");
-            SSEAlgorithm = algorithm;
-            KMSMasterKeyId = keyId;
-        }
-
-        [XmlElement("KMSMasterKeyID")] public string KMSMasterKeyId { get; set; }
-
-        [XmlElement("SSEAlgorithm")] public string SSEAlgorithm { get; set; }
-    }
 }

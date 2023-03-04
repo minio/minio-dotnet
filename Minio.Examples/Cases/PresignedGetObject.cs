@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-public class PresignedGetObject
+public static class PresignedGetObject
 {
     public static async Task Run(IMinioClient client,
         string bucketName = "my-bucket-name",
@@ -31,6 +28,6 @@ public class PresignedGetObject
             .WithObject(objectName)
             .WithExpiry(1000)
             .WithHeaders(reqParams);
-        var presignedUrl = await client.PresignedGetObjectAsync(args);
+        var presignedUrl = await client.PresignedGetObjectAsync(args).ConfigureAwait(false);
     }
 }

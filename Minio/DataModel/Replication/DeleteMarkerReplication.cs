@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 /*
@@ -33,7 +32,6 @@ public class DeleteMarkerReplication
 {
     public const string StatusEnabled = "Enabled";
     public const string StatusDisabled = "Disabled";
-
 
     public DeleteMarkerReplication(string status)
     {

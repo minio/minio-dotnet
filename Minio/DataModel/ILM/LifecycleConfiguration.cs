@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -38,11 +35,12 @@ public class LifecycleConfiguration
     {
     }
 
-    public LifecycleConfiguration(List<LifecycleRule> rules)
+    public LifecycleConfiguration(IList<LifecycleRule> rules)
     {
         if (rules == null || rules.Count <= 0)
             throw new ArgumentNullException(nameof(Rules),
                 "Rules object cannot be empty. A finite set of Lifecycle Rules are needed for LifecycleConfiguration.");
+
         Rules = new List<LifecycleRule>(rules);
     }
 
@@ -50,29 +48,28 @@ public class LifecycleConfiguration
 
     public string MarshalXML()
     {
-        XmlSerializer xs = null;
-        XmlWriterSettings settings = null;
-        XmlSerializerNamespaces ns = null;
-
         XmlWriter xw = null;
 
         var str = string.Empty;
 
         try
         {
-            settings = new XmlWriterSettings();
-            settings.OmitXmlDeclaration = true;
-
-            ns = new XmlSerializerNamespaces();
+            var settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true
+            };
+            var ns = new XmlSerializerNamespaces();
             ns.Add(string.Empty, string.Empty);
 
-            var sw = new StringWriter(CultureInfo.InvariantCulture);
+            using var sw = new StringWriter(CultureInfo.InvariantCulture);
 
-            xs = new XmlSerializer(typeof(LifecycleConfiguration), "");
-            xw = XmlWriter.Create(sw, settings);
-            xs.Serialize(xw, this, ns);
-            xw.Flush();
-            str = utils.RemoveNamespaceInXML(sw.ToString());
+            var xs = new XmlSerializer(typeof(LifecycleConfiguration), "");
+            using (xw = XmlWriter.Create(sw, settings))
+            {
+                xs.Serialize(xw, this, ns);
+                xw.Flush();
+                str = Utils.RemoveNamespaceInXML(sw.ToString());
+            }
         }
         catch (Exception ex)
         {
@@ -81,7 +78,7 @@ public class LifecycleConfiguration
         }
         finally
         {
-            if (xw != null) xw.Close();
+            xw?.Close();
         }
 
         return str;

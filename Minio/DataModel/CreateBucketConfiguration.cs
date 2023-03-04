@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -42,24 +41,18 @@ public class CreateBucketConfiguration
         {
             OmitXmlDeclaration = true
         };
-        using (var ms = new MemoryStream())
-        {
-            using (var writer = XmlWriter.Create(ms, settings))
-            {
-                var names = new XmlSerializerNamespaces();
-                names.Add(string.Empty, "http://s3.amazonaws.com/doc/2006-03-01/");
+        using var ms = new MemoryStream();
+        using var writer = XmlWriter.Create(ms, settings);
+        var names = new XmlSerializerNamespaces();
+        names.Add(string.Empty, "http://s3.amazonaws.com/doc/2006-03-01/");
 
-                var cs = new XmlSerializer(typeof(BucketNotification));
-                cs.Serialize(writer, this, names);
+        var cs = new XmlSerializer(typeof(BucketNotification));
+        cs.Serialize(writer, this, names);
 
-                ms.Flush();
-                ms.Seek(0, SeekOrigin.Begin);
-                using (var sr = new StreamReader(ms))
-                {
-                    var xml = sr.ReadToEnd();
-                    return xml;
-                }
-            }
-        }
+        ms.Flush();
+        ms.Seek(0, SeekOrigin.Begin);
+        using var sr = new StreamReader(ms);
+        var xml = sr.ReadToEnd();
+        return xml;
     }
 }

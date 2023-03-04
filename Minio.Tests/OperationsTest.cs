@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Exceptions;
 
@@ -17,10 +13,9 @@ public class OperationsTest
     {
         // todo how to test this with mock client.
         var resource = httpRequest.RequestUri.LocalPath;
-        return resource.Contains("?") == false &&
+        return !resource.Contains('?') &&
                httpRequest.QueryParameters.ContainsKey("location");
     }
-
 
     private async Task<bool> ObjectExistsAsync(IMinioClient client, string bucket, string objectName)
     {
@@ -44,10 +39,9 @@ public class OperationsTest
     public async Task PresignedGetObject()
     {
         // todo how to test this with mock client.
-        var client = new MinioClient()
-            .WithEndpoint("play.min.io")
-            .WithCredentials("Q3AM3UQ867SPQQA43P2F",
-                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+        using var client = new MinioClient()
+            .WithEndpoint(TestHelper.Endpoint)
+            .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
             .WithSSL()
             .Build();
 
@@ -64,10 +58,10 @@ public class OperationsTest
             await client.MakeBucketAsync(mkBktArgs).ConfigureAwait(false);
         }
 
-        if (!await ObjectExistsAsync(client, bucket, objectName))
+        if (!await ObjectExistsAsync(client, bucket, objectName).ConfigureAwait(false))
         {
             var helloData = Encoding.UTF8.GetBytes("hello world");
-            var helloStream = new MemoryStream();
+            using var helloStream = new MemoryStream();
             helloStream.Write(helloData);
             helloStream.Seek(0, SeekOrigin.Begin);
             var PutObjectArgs = new PutObjectArgs()
@@ -94,10 +88,9 @@ public class OperationsTest
     public async Task PresignedGetObjectWithHeaders()
     {
         // todo how to test this with mock client.
-        var client = new MinioClient()
-            .WithEndpoint("play.min.io")
-            .WithCredentials("Q3AM3UQ867SPQQA43P2F",
-                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+        using var client = new MinioClient()
+            .WithEndpoint(TestHelper.Endpoint)
+            .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
             .WithSSL()
             .Build();
 
@@ -119,10 +112,10 @@ public class OperationsTest
             await client.MakeBucketAsync(mkBktArgs).ConfigureAwait(false);
         }
 
-        if (!await ObjectExistsAsync(client, bucket, objectName))
+        if (!await ObjectExistsAsync(client, bucket, objectName).ConfigureAwait(false))
         {
             var helloData = Encoding.UTF8.GetBytes("hello world");
-            var helloStream = new MemoryStream();
+            using var helloStream = new MemoryStream();
             helloStream.Write(helloData);
             var PutObjectArgs = new PutObjectArgs()
                 .WithBucket(bucket)

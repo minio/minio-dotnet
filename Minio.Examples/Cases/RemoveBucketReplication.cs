@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-public class RemoveBucketReplication
+public static class RemoveBucketReplication
 {
     // Remove Replication configuration set for the bucket
     public static async Task Run(IMinioClient minio,
@@ -31,7 +28,7 @@ public class RemoveBucketReplication
             await minio.RemoveBucketReplicationAsync(
                 new RemoveBucketReplicationArgs()
                     .WithBucket(bucketName)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Bucket Replication removed for bucket {bucketName}.");
             Console.WriteLine();
         }

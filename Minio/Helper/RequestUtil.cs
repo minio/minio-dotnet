@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Text.RegularExpressions;
 using System.Web;
 using Minio.Exceptions;
@@ -22,11 +21,11 @@ using Minio.Helper;
 
 namespace Minio;
 
-internal class RequestUtil
+internal static class RequestUtil
 {
     internal static Uri GetEndpointURL(string endPoint, bool secure)
     {
-        if (endPoint.Contains(":"))
+        if (endPoint.Contains(':'))
         {
             var parts = endPoint.Split(':');
             var host = parts[0];
@@ -54,7 +53,8 @@ internal class RequestUtil
         var host = endPoint;
         if (s3utils.IsAmazonEndPoint(endPoint))
             // Fetch new host based on the bucket location.
-            host = AWSS3Endpoints.Instance.Endpoint(region);
+            host = AWSS3Endpoints.Endpoint(region);
+
         if (!usePathStyle)
         {
             var suffix = bucketName != null ? bucketName + "/" : "";
@@ -73,7 +73,7 @@ internal class RequestUtil
 
         // This is the actual url pointed to for all HTTP requests
         var endpointURL = string.Format("{0}://{1}", scheme, endpoint);
-        Uri uri = null;
+        Uri uri;
         try
         {
             uri = new Uri(endpointURL);

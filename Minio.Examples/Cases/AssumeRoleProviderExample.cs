@@ -15,13 +15,11 @@
 // limitations under the License.
 //
 
-using System;
-using System.Threading.Tasks;
 using Minio.Credentials;
 
 namespace Minio.Examples.Cases;
 
-public class AssumeRoleProviderExample
+public static class AssumeRoleProviderExample
 {
     // Establish Authentication by assuming the role of an existing user
     public static async Task Run()
@@ -35,7 +33,7 @@ public class AssumeRoleProviderExample
         // Secret key to fetch credentials from STS endpoint.
         var secretKey = "secret-key";
 
-        var minio = new MinioClient()
+        using var minio = new MinioClient()
             .WithEndpoint(endpoint)
             .WithCredentials(accessKey, secretKey)
             .WithSSL()
@@ -44,9 +42,9 @@ public class AssumeRoleProviderExample
         {
             var provider = new AssumeRoleProvider(minio);
 
-            var token = await provider.GetCredentialsAsync();
+            var token = await provider.GetCredentialsAsync().ConfigureAwait(false);
             // Console.WriteLine("\nToken = "); utils.Print(token);
-            var minioClient = new MinioClient()
+            using var minioClient = new MinioClient()
                     .WithEndpoint(endpoint)
                     .WithCredentials(token.AccessKey, token.SecretKey)
                     .WithSessionToken(token.SessionToken)
@@ -56,7 +54,7 @@ public class AssumeRoleProviderExample
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket("bucket-name")
                 .WithObject("object-name");
-            var result = await minio.StatObjectAsync(statObjectArgs);
+            var result = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
             // Console.WriteLine("Object Stat: \n"); utils.Print(result);
             Console.WriteLine("AssumeRoleProvider test PASSed\n");
         }
