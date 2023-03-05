@@ -52,8 +52,8 @@ public class WebIdentityProvider : WebIdentityClientGrantsProvider<WebIdentityPr
 
     internal WebIdentityProvider WithJWTSupplier(Func<JsonWebToken> f)
     {
-        Validate();
         JWTSupplier = (Func<JsonWebToken>)f.Clone();
+        Validate();
         return this;
     }
 
