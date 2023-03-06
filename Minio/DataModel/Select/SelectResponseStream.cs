@@ -62,11 +62,11 @@ public class SelectResponseStream
     [XmlElement("Progress", IsNullable = false)]
     public ProgressMessage Progress { get; set; }
 
-    protected int ReadFromStream(byte[] buffer)
+    protected int ReadFromStream(Span<byte> buffer)
     {
         var read = -1;
         if (!_isProcessing) return read;
-        read = payloadStream.Read(buffer, 0, buffer.Length);
+        read = payloadStream.Read(buffer);
         if (!payloadStream.CanRead) _isProcessing = false;
         return read;
     }
@@ -83,45 +83,26 @@ public class SelectResponseStream
             if (BitConverter.IsLittleEndian) preludeCRCBytes.Reverse();
             numBytesRead += n;
             Span<byte> inputArray = new byte[prelude.Length + 4];
-            //Buffer.BlockCopy(prelude, 0, inputArray, 0, prelude.Length);
-
             prelude.CopyTo(inputArray.Slice(0, prelude.Length));
 
-            var destinationPrelude = inputArray.Slice(prelude.Length, 4);
-            var isValidPrelude = Crc32.TryHash(prelude, destinationPrelude, out var bytesWritten);
+            var destinationPrelude = inputArray.Slice(inputArray.Length - 4, 4);
+            var isValidPrelude = Crc32.TryHash(inputArray.Slice(0, inputArray.Length - 4), destinationPrelude, out var bytesWritten);
             if (!isValidPrelude) throw new ArgumentException("invalid prelude CRC");
 
             if (!destinationPrelude.SequenceEqual(preludeCRCBytes))
                 throw new ArgumentException("Prelude CRC Mismatch");
 
-            /*var n = ReadFromStream(prelude);
-            numBytesRead += n;
-            n = ReadFromStream(preludeCRC);
-            var preludeCRCBytes = preludeCRC.ToArray();
-            if (BitConverter.IsLittleEndian) Array.Reverse(preludeCRCBytes);
-            numBytesRead += n;
-            var inputArray = new byte[prelude.Length + 4];
-            Buffer.BlockCopy(prelude, 0, inputArray, 0, prelude.Length);
-
-            // write real data to inputArray
-            Crc32Algorithm.ComputeAndWriteToEnd(inputArray); // last 4 bytes contains CRC
-            // transferring data or writing reading, and checking as final operation
-            if (!Crc32Algorithm.IsValidWithCrcAtEnd(inputArray)) throw new ArgumentException("invalid prelude CRC");
-
-            if (!inputArray.Skip(prelude.Length).Take(4).SequenceEqual(preludeCRCBytes))
-                throw new ArgumentException("Prelude CRC Mismatch");*/
-
-            var bytes = prelude.Take(4).ToArray();
-            if (BitConverter.IsLittleEndian) Array.Reverse(bytes);
-            var totalLength = BitConverter.ToInt32(bytes, 0);
+            Span<byte> bytes = prelude.Take(4).ToArray();
+            if (BitConverter.IsLittleEndian) bytes.Reverse();
+            var totalLength = BitConverter.ToInt32(bytes);
             bytes = prelude.Skip(4).Take(4).ToArray();
-            if (BitConverter.IsLittleEndian) Array.Reverse(bytes);
+            if (BitConverter.IsLittleEndian) bytes.Reverse();
 
-            var headerLength = BitConverter.ToInt32(bytes, 0);
+            var headerLength = BitConverter.ToInt32(bytes);
             var payloadLength = totalLength - headerLength - 16;
 
-            var headers = new byte[headerLength];
-            var payload = new byte[payloadLength];
+            Span<byte> headers = new byte[headerLength];
+            Span<byte> payload = new byte[payloadLength];
             var num = ReadFromStream(headers);
             if (num != headerLength) throw new IOException("insufficient data");
             num = ReadFromStream(payload);
@@ -129,17 +110,10 @@ public class SelectResponseStream
 
             numBytesRead += num;
             num = ReadFromStream(messageCRC);
-            var messageCRCBytes = messageCRC.ToArray();
-            if (BitConverter.IsLittleEndian) Array.Reverse(messageCRCBytes);
+            Span<byte> messageCRCBytes = messageCRC.ToArray();
+            if (BitConverter.IsLittleEndian) messageCRCBytes.Reverse();
             // now verify message CRC
             inputArray = new byte[totalLength];
-
-            /*
-            Buffer.BlockCopy(prelude, 0, inputArray, 0, prelude.Length);
-            Buffer.BlockCopy(preludeCRC, 0, inputArray, prelude.Length, preludeCRC.Length);
-            Buffer.BlockCopy(headers, 0, inputArray, prelude.Length + preludeCRC.Length, headerLength);
-            Buffer.BlockCopy(payload, 0, inputArray, prelude.Length + preludeCRC.Length + headerLength, payloadLength);
-            */
 
             prelude.CopyTo(inputArray);
             preludeCRC.CopyTo(inputArray.Slice(prelude.Length, preludeCRC.Length));
@@ -185,7 +159,7 @@ public class SelectResponseStream
                 if (value.Equals("Progress"))
                 {
                     var progress = new ProgressMessage();
-                    using (var stream = new MemoryStream(payload))
+                    using (var stream = new MemoryStream(payload.ToArray()))
                     {
                         progress = (ProgressMessage)new XmlSerializer(typeof(ProgressMessage)).Deserialize(stream);
                     }
@@ -196,7 +170,7 @@ public class SelectResponseStream
                 if (value.Equals("Stats"))
                 {
                     var stats = new StatsMessage();
-                    using (var stream = new MemoryStream(payload))
+                    using (var stream = new MemoryStream(payload.ToArray()))
                     {
                         stats = (StatsMessage)new XmlSerializer(typeof(StatsMessage)).Deserialize(stream);
                     }
@@ -204,7 +178,7 @@ public class SelectResponseStream
                     Stats = stats;
                 }
 
-                if (value.Equals("Records")) Payload.Write(payload, 0, payloadLength);
+                if (value.Equals("Records")) Payload.Write(payload);
             }
         }
 
@@ -213,7 +187,7 @@ public class SelectResponseStream
         payloadStream.Close();
     }
 
-    protected Dictionary<string, string> extractHeaders(byte[] data)
+    protected Dictionary<string, string> extractHeaders(Span<byte> data)
     {
         var headerMap = new Dictionary<string, string>();
         var offset = 0;
@@ -221,17 +195,17 @@ public class SelectResponseStream
         while (offset < data.Length)
         {
             var nameLength = data[offset++];
-            var b = data.Skip(offset).Take(nameLength).ToArray();
-            var name = Encoding.UTF8.GetString(b, 0, b.Length);
+            var b = data.Slice(offset, nameLength);
+            var name = Encoding.UTF8.GetString(b);
             offset += nameLength;
             var hdrValue = data[offset++];
             if (hdrValue != 7) throw new IOException("header value type is not 7");
-            b = data.Skip(offset).Take(2).ToArray();
-            if (BitConverter.IsLittleEndian) Array.Reverse(b);
+            b = data.Slice(offset, 2);
+            if (BitConverter.IsLittleEndian) b.Reverse();
             offset += 2;
-            int headerValLength = BitConverter.ToInt16(b, 0);
-            b = data.Skip(offset).Take(headerValLength).ToArray();
-            var value = Encoding.UTF8.GetString(b, 0, b.Length);
+            int headerValLength = BitConverter.ToInt16(b);
+            b = data.Slice(offset, headerValLength);
+            var value = Encoding.UTF8.GetString(b);
             offset += headerValLength;
             headerMap.Add(name, value);
         }
