@@ -26,13 +26,13 @@ namespace Minio.DataModel;
 public class SelectResponseStream
 {
     private bool _isProcessing;
-    private byte[] headerValueLen = new byte[2];
-    private byte[] messageCRC = new byte[4];
+    private Memory<byte> headerValueLen = new byte[2];
+    private Memory<byte> messageCRC = new byte[4];
 
     private MemoryStream payloadStream;
 
-    private byte[] prelude = new byte[8];
-    private byte[] preludeCRC = new byte[4];
+    private Memory<byte> prelude = new byte[8];
+    private Memory<byte> preludeCRC = new byte[4];
 
     public SelectResponseStream()
     {
@@ -76,14 +76,14 @@ public class SelectResponseStream
         var numBytesRead = 0;
         while (_isProcessing)
         {
-            var n = ReadFromStream(prelude);
+            var n = ReadFromStream(prelude.Span);
             numBytesRead += n;
-            n = ReadFromStream(preludeCRC);
+            n = ReadFromStream(preludeCRC.Span);
             Span<byte> preludeCRCBytes = preludeCRC.ToArray();
             if (BitConverter.IsLittleEndian) preludeCRCBytes.Reverse();
             numBytesRead += n;
             Span<byte> inputArray = new byte[prelude.Length + 4];
-            prelude.CopyTo(inputArray.Slice(0, prelude.Length));
+            prelude.Span.CopyTo(inputArray.Slice(0, prelude.Length));
 
             var destinationPrelude = inputArray.Slice(inputArray.Length - 4, 4);
             var isValidPrelude = Crc32.TryHash(inputArray.Slice(0, inputArray.Length - 4), destinationPrelude, out var bytesWritten);
@@ -92,10 +92,10 @@ public class SelectResponseStream
             if (!destinationPrelude.SequenceEqual(preludeCRCBytes))
                 throw new ArgumentException("Prelude CRC Mismatch");
 
-            Span<byte> bytes = prelude.Take(4).ToArray();
+            Span<byte> bytes = prelude.Slice(0, 4).ToArray();
             if (BitConverter.IsLittleEndian) bytes.Reverse();
             var totalLength = BitConverter.ToInt32(bytes);
-            bytes = prelude.Skip(4).Take(4).ToArray();
+            bytes = prelude.Slice(4, 4).ToArray();
             if (BitConverter.IsLittleEndian) bytes.Reverse();
 
             var headerLength = BitConverter.ToInt32(bytes);
@@ -109,14 +109,14 @@ public class SelectResponseStream
             if (num != payloadLength) throw new IOException("insufficient data");
 
             numBytesRead += num;
-            num = ReadFromStream(messageCRC);
+            num = ReadFromStream(messageCRC.Span);
             Span<byte> messageCRCBytes = messageCRC.ToArray();
             if (BitConverter.IsLittleEndian) messageCRCBytes.Reverse();
             // now verify message CRC
             inputArray = new byte[totalLength];
 
-            prelude.CopyTo(inputArray);
-            preludeCRC.CopyTo(inputArray.Slice(prelude.Length, preludeCRC.Length));
+            prelude.Span.CopyTo(inputArray);
+            preludeCRC.Span.CopyTo(inputArray.Slice(prelude.Length, preludeCRC.Length));
             headers.CopyTo(inputArray.Slice(prelude.Length + preludeCRC.Length, headerLength));
             payload.CopyTo(inputArray.Slice(prelude.Length + preludeCRC.Length + headerLength, payloadLength));
 
@@ -124,7 +124,7 @@ public class SelectResponseStream
             var isValidMessage = Crc32.TryHash(inputArray.Slice(0, inputArray.Length - 4), destinationMessage, out var bytesWrittenMessage);
             if (!isValidMessage) throw new ArgumentException("invalid message CRC");
 
-            if (!inputArray.Slice(totalLength - 4, 4).SequenceEqual(messageCRCBytes))
+            if (!destinationMessage.SequenceEqual(messageCRCBytes))
                 throw new ArgumentException("message CRC Mismatch");
 
             /*
