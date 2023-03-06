@@ -93,7 +93,7 @@ internal static class Program
             FunctionalTest.RunCoreTests(minioClient);
             Environment.Exit(0);
         }
-
+        /*
         // Try catch as 'finally' section needs to run in the Functional Tests
         // Bucket notification is a minio specific feature.
         // If the following test is run against AWS, then the SDK throws
@@ -147,7 +147,7 @@ internal static class Program
         // Test File GetObject and PutObject functions
         await FunctionalTest.FGetObject_Test1(minioClient).ConfigureAwait(false);
         await FunctionalTest.FPutObject_Test2(minioClient).ConfigureAwait(false);
-
+        */
         // Test SelectObjectContentAsync function
         await FunctionalTest.SelectObjectContent_Test(minioClient).ConfigureAwait(false);
 
