@@ -17,7 +17,6 @@
 using System.IO.Hashing;
 using System.Text;
 using System.Xml.Serialization;
-using Force.Crc32;
 using Minio.Exceptions;
 
 namespace Minio.DataModel;
@@ -25,14 +24,13 @@ namespace Minio.DataModel;
 [Serializable]
 public class SelectResponseStream
 {
+    private readonly Memory<byte> messageCRC = new byte[4];
+
+    private readonly MemoryStream payloadStream;
+
+    private readonly Memory<byte> prelude = new byte[8];
+    private readonly Memory<byte> preludeCRC = new byte[4];
     private bool _isProcessing;
-    private Memory<byte> headerValueLen = new byte[2];
-    private Memory<byte> messageCRC = new byte[4];
-
-    private MemoryStream payloadStream;
-
-    private Memory<byte> prelude = new byte[8];
-    private Memory<byte> preludeCRC = new byte[4];
 
     public SelectResponseStream()
     {
@@ -86,7 +84,7 @@ public class SelectResponseStream
             prelude.Span.CopyTo(inputArray.Slice(0, prelude.Length));
 
             var destinationPrelude = inputArray.Slice(inputArray.Length - 4, 4);
-            var isValidPrelude = Crc32.TryHash(inputArray.Slice(0, inputArray.Length - 4), destinationPrelude, out var bytesWritten);
+            var isValidPrelude = Crc32.TryHash(inputArray.Slice(0, inputArray.Length - 4), destinationPrelude, out _);
             if (!isValidPrelude) throw new ArgumentException("invalid prelude CRC");
 
             if (!destinationPrelude.SequenceEqual(preludeCRCBytes))
@@ -121,21 +119,12 @@ public class SelectResponseStream
             payload.CopyTo(inputArray.Slice(prelude.Length + preludeCRC.Length + headerLength, payloadLength));
 
             var destinationMessage = inputArray.Slice(inputArray.Length - 4, 4);
-            var isValidMessage = Crc32.TryHash(inputArray.Slice(0, inputArray.Length - 4), destinationMessage, out var bytesWrittenMessage);
+            var isValidMessage = Crc32.TryHash(inputArray.Slice(0, inputArray.Length - 4), destinationMessage, out _);
             if (!isValidMessage) throw new ArgumentException("invalid message CRC");
 
             if (!destinationMessage.SequenceEqual(messageCRCBytes))
                 throw new ArgumentException("message CRC Mismatch");
 
-            /*
-            // write real data to inputArray
-            Crc32Algorithm.ComputeAndWriteToEnd(inputArray); // last 4 bytes contains CRC
-            // transferring data or writing reading, and checking as final operation
-            if (!Crc32Algorithm.IsValidWithCrcAtEnd(inputArray)) throw new ArgumentException("invalid message CRC");
-
-            if (!inputArray.Skip(totalLength - 4).Take(4).SequenceEqual(messageCRCBytes))
-                throw new ArgumentException("message CRC Mismatch");
-            */
             var headerMap = extractHeaders(headers);
 
             if (headerMap.TryGetValue(":message-type", out var value))
