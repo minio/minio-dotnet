@@ -85,13 +85,13 @@ public class SelectResponseStream
             Span<byte> inputArray = new byte[prelude.Length + 4];
             //Buffer.BlockCopy(prelude, 0, inputArray, 0, prelude.Length);
 
-            prelude.CopyTo(inputArray);
+            prelude.CopyTo(inputArray.Slice(0, prelude.Length));
 
-            var destination = inputArray.Slice(prelude.Length, 4);
-            var isValid = Crc32.TryHash(prelude, destination, out var bytesWritten);
-            if (!isValid) throw new ArgumentException("invalid prelude CRC");
+            var destinationPrelude = inputArray.Slice(prelude.Length, 4);
+            var isValidPrelude = Crc32.TryHash(prelude, destinationPrelude, out var bytesWritten);
+            if (!isValidPrelude) throw new ArgumentException("invalid prelude CRC");
 
-            if (!inputArray.Slice(prelude.Length, 4).SequenceEqual(preludeCRCBytes))
+            if (!destinationPrelude.SequenceEqual(preludeCRCBytes))
                 throw new ArgumentException("Prelude CRC Mismatch");
 
             /*var n = ReadFromStream(prelude);
@@ -142,9 +142,16 @@ public class SelectResponseStream
             */
 
             prelude.CopyTo(inputArray);
-            preludeCRC.CopyTo(inputArray);
-            headers.CopyTo(inputArray);
-            payload.CopyTo(inputArray);
+            preludeCRC.CopyTo(inputArray.Slice(prelude.Length, preludeCRC.Length));
+            headers.CopyTo(inputArray.Slice(prelude.Length + preludeCRC.Length, headerLength));
+            payload.CopyTo(inputArray.Slice(prelude.Length + preludeCRC.Length + headerLength, payloadLength));
+
+            var destinationMessage = inputArray.Slice(inputArray.Length - 4, 4);
+            var isValidMessage = Crc32.TryHash(inputArray.Slice(0, inputArray.Length - 4), destinationMessage, out var bytesWrittenMessage);
+            if (!isValidMessage) throw new ArgumentException("invalid message CRC");
+
+            if (!inputArray.Slice(totalLength - 4, 4).SequenceEqual(messageCRCBytes))
+                throw new ArgumentException("message CRC Mismatch");
 
             /*
             // write real data to inputArray
