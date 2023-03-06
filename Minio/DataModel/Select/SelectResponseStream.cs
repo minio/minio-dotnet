@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.IO.Hashing;
 using System.Text;
 using System.Xml.Serialization;
 using Force.Crc32;
@@ -78,6 +79,24 @@ public class SelectResponseStream
             var n = ReadFromStream(prelude);
             numBytesRead += n;
             n = ReadFromStream(preludeCRC);
+            Span<byte> preludeCRCBytes = preludeCRC.ToArray();
+            if (BitConverter.IsLittleEndian) preludeCRCBytes.Reverse();
+            numBytesRead += n;
+            Span<byte> inputArray = new byte[prelude.Length + 4];
+            //Buffer.BlockCopy(prelude, 0, inputArray, 0, prelude.Length);
+
+            prelude.CopyTo(inputArray);
+
+            var destination = inputArray.Slice(prelude.Length, 4);
+            var isValid = Crc32.TryHash(prelude, destination, out var bytesWritten);
+            if (!isValid) throw new ArgumentException("invalid prelude CRC");
+
+            if (!inputArray.Slice(prelude.Length, 4).SequenceEqual(preludeCRCBytes))
+                throw new ArgumentException("Prelude CRC Mismatch");
+
+            /*var n = ReadFromStream(prelude);
+            numBytesRead += n;
+            n = ReadFromStream(preludeCRC);
             var preludeCRCBytes = preludeCRC.ToArray();
             if (BitConverter.IsLittleEndian) Array.Reverse(preludeCRCBytes);
             numBytesRead += n;
@@ -90,7 +109,8 @@ public class SelectResponseStream
             if (!Crc32Algorithm.IsValidWithCrcAtEnd(inputArray)) throw new ArgumentException("invalid prelude CRC");
 
             if (!inputArray.Skip(prelude.Length).Take(4).SequenceEqual(preludeCRCBytes))
-                throw new ArgumentException("Prelude CRC Mismatch");
+                throw new ArgumentException("Prelude CRC Mismatch");*/
+
             var bytes = prelude.Take(4).ToArray();
             if (BitConverter.IsLittleEndian) Array.Reverse(bytes);
             var totalLength = BitConverter.ToInt32(bytes, 0);
@@ -113,11 +133,20 @@ public class SelectResponseStream
             if (BitConverter.IsLittleEndian) Array.Reverse(messageCRCBytes);
             // now verify message CRC
             inputArray = new byte[totalLength];
+
+            /*
             Buffer.BlockCopy(prelude, 0, inputArray, 0, prelude.Length);
             Buffer.BlockCopy(preludeCRC, 0, inputArray, prelude.Length, preludeCRC.Length);
             Buffer.BlockCopy(headers, 0, inputArray, prelude.Length + preludeCRC.Length, headerLength);
             Buffer.BlockCopy(payload, 0, inputArray, prelude.Length + preludeCRC.Length + headerLength, payloadLength);
+            */
 
+            prelude.CopyTo(inputArray);
+            preludeCRC.CopyTo(inputArray);
+            headers.CopyTo(inputArray);
+            payload.CopyTo(inputArray);
+
+            /*
             // write real data to inputArray
             Crc32Algorithm.ComputeAndWriteToEnd(inputArray); // last 4 bytes contains CRC
             // transferring data or writing reading, and checking as final operation
@@ -125,6 +154,7 @@ public class SelectResponseStream
 
             if (!inputArray.Skip(totalLength - 4).Take(4).SequenceEqual(messageCRCBytes))
                 throw new ArgumentException("message CRC Mismatch");
+            */
             var headerMap = extractHeaders(headers);
 
             if (headerMap.TryGetValue(":message-type", out var value))
