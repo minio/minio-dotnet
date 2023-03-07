@@ -24,33 +24,33 @@ namespace Minio.DataModel;
 [Serializable]
 public class SelectResponseStream
 {
-    private readonly Memory<byte> messageCRC = new byte[4];
-
     private readonly MemoryStream payloadStream;
 
+    private readonly Memory<byte> messageCRC = new byte[4];
     private readonly Memory<byte> prelude = new byte[8];
     private readonly Memory<byte> preludeCRC = new byte[4];
+
     private bool _isProcessing;
 
     public SelectResponseStream()
     {
     }
 
-    public SelectResponseStream(Stream s)
+    // SelectResponseStream is a struct for selectobjectcontent response.
+    public SelectResponseStream(Stream stream)
     {
-        if (s != null)
+        if (stream != null)
         {
             var _ms = new MemoryStream();
-            s.CopyTo(_ms);
+            stream.CopyTo(_ms);
             payloadStream = _ms;
             Payload = new MemoryStream();
         }
 
         _isProcessing = true;
         payloadStream.Seek(0, SeekOrigin.Begin);
-        start();
+        Start();
     }
-    // SelectResponseStream is a struct for selectobjectcontent response.
 
     public Stream Payload { get; set; }
 
@@ -69,7 +69,7 @@ public class SelectResponseStream
         return read;
     }
 
-    private void start()
+    private void Start()
     {
         var numBytesRead = 0;
         while (_isProcessing)
@@ -125,7 +125,7 @@ public class SelectResponseStream
             if (!destinationMessage.SequenceEqual(messageCRCBytes))
                 throw new ArgumentException("message CRC Mismatch");
 
-            var headerMap = extractHeaders(headers);
+            var headerMap = ExtractHeaders(headers);
 
             if (headerMap.TryGetValue(":message-type", out var value))
                 if (value.Equals(":error"))
@@ -176,7 +176,7 @@ public class SelectResponseStream
         payloadStream.Close();
     }
 
-    protected Dictionary<string, string> extractHeaders(Span<byte> data)
+    protected Dictionary<string, string> ExtractHeaders(Span<byte> data)
     {
         var headerMap = new Dictionary<string, string>();
         var offset = 0;
