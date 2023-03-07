@@ -147,7 +147,7 @@ internal static class Program
         // Test File GetObject and PutObject functions
         await FunctionalTest.FGetObject_Test1(minioClient).ConfigureAwait(false);
         await FunctionalTest.FPutObject_Test2(minioClient).ConfigureAwait(false);
-        
+
         // Test SelectObjectContentAsync function
         await FunctionalTest.SelectObjectContent_Test(minioClient).ConfigureAwait(false);
 

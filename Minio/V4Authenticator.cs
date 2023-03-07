@@ -176,10 +176,10 @@ internal class V4Authenticator
     /// <param name="signingDate">Date for signature to be signed</param>
     /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
     /// <returns>bytes of computed hmac</returns>
-    private byte[] GenerateSigningKey(string region, DateTime signingDate, bool isSts = false)
+    private Span<byte> GenerateSigningKey(string region, DateTime signingDate, bool isSts = false)
     {
-        byte[] dateRegionServiceKey;
-        byte[] requestBytes;
+        Span<byte> dateRegionServiceKey;
+        Span<byte> requestBytes;
 
         var serviceBytes = Encoding.UTF8.GetBytes(getService(isSts));
         var formattedDateBytes = Encoding.UTF8.GetBytes(signingDate.ToString("yyyyMMdd"));
@@ -199,11 +199,11 @@ internal class V4Authenticator
     /// <param name="key">Hmac key</param>
     /// <param name="content">Bytes to be hmac computed</param>
     /// <returns>Computed hmac of input content</returns>
-    private byte[] SignHmac(byte[] key, byte[] content)
+    private Span<byte> SignHmac(Span<byte> key, Span<byte> content)
     {
-        using var hmac = new HMACSHA256(key);
-        hmac.Initialize();
-        return hmac.ComputeHash(content);
+        var destination = new Span<byte>();
+        HMACSHA256.HashData(key, content, destination);
+        return destination;
     }
 
     /// <summary>
@@ -238,7 +238,7 @@ internal class V4Authenticator
     /// </summary>
     /// <param name="body">Bytes body</param>
     /// <returns>Bytes of sha256 checksum</returns>
-    private byte[] ComputeSha256(byte[] body)
+    private ReadOnlySpan<byte> ComputeSha256(ReadOnlySpan<byte> body)
     {
         return SHA256.HashData(body);
     }
@@ -248,9 +248,9 @@ internal class V4Authenticator
     /// </summary>
     /// <param name="checkSum">Bytes of any checksum</param>
     /// <returns>Hexlified string of input bytes</returns>
-    private string BytesToHex(byte[] checkSum)
+    private string BytesToHex(ReadOnlySpan<byte> checkSum)
     {
-        return BitConverter.ToString(checkSum).Replace("-", string.Empty).ToLowerInvariant();
+        return BitConverter.ToString(checkSum.ToArray()).Replace("-", string.Empty).ToLowerInvariant();
     }
 
     /// <summary>
@@ -411,7 +411,7 @@ internal class V4Authenticator
             // Convert stream content to byte[]
             var cntntByteData = Array.Empty<byte>();
             if (requestBuilder.Request.Content != null)
-                cntntByteData = requestBuilder.Request.Content.ReadAsByteArrayAsync().Result;
+                cntntByteData = requestBuilder.Request.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
 
             // UTF conversion - String from bytes
             queryParams = Encoding.UTF8.GetString(cntntByteData, 0, cntntByteData.Length);

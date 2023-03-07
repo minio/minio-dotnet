@@ -24,9 +24,8 @@ namespace Minio.DataModel;
 [Serializable]
 public class SelectResponseStream
 {
-    private readonly MemoryStream payloadStream;
-
     private readonly Memory<byte> messageCRC = new byte[4];
+    private readonly MemoryStream payloadStream;
     private readonly Memory<byte> prelude = new byte[8];
     private readonly Memory<byte> preludeCRC = new byte[4];
 

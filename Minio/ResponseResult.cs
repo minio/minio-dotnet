@@ -60,7 +60,7 @@ public class ResponseResult : IDisposable
         {
             if (Response == null) return null;
 
-            return _stream ??= Response.Content.ReadAsStreamAsync().Result;
+            return _stream ??= Response.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
         }
     }
 
