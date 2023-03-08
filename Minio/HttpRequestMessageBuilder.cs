@@ -70,7 +70,7 @@ internal class HttpRequestMessageBuilder
             var requestUri = requestUriBuilder.Uri;
             var request = new HttpRequestMessage(Method, requestUri);
 
-            if (Content != null) request.Content = new ByteArrayContent(Content);
+            if (!Content.IsEmpty) request.Content = new ReadOnlyMemoryContent(Content);
 
             foreach (var parameter in HeaderParameters)
             {
@@ -131,7 +131,7 @@ internal class HttpRequestMessageBuilder
 
     public Dictionary<string, string> BodyParameters { get; }
 
-    public byte[] Content { get; private set; }
+    public ReadOnlyMemory<byte> Content { get; private set; }
 
     public string ContentTypeKey => "Content-Type";
 
@@ -163,7 +163,7 @@ internal class HttpRequestMessageBuilder
         QueryParameters[key] = value;
     }
 
-    public void SetBody(byte[] body)
+    public void SetBody(ReadOnlyMemory<byte> body)
     {
         Content = body;
     }

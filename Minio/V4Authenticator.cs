@@ -107,13 +107,13 @@ internal class V4Authenticator
         var signedHeaders = GetSignedHeaders(headersToSign);
 
         var canonicalRequest = GetCanonicalRequest(requestBuilder, headersToSign);
-        var canonicalRequestBytes = Encoding.UTF8.GetBytes(canonicalRequest);
+        ReadOnlySpan<byte> canonicalRequestBytes = Encoding.UTF8.GetBytes(canonicalRequest);
         var hash = ComputeSha256(canonicalRequestBytes);
         var canonicalRequestHash = BytesToHex(hash);
         var region = GetRegion(requestUri.Host);
         var stringToSign = GetStringToSign(region, signingDate, canonicalRequestHash, isSts);
         var signingKey = GenerateSigningKey(region, signingDate, isSts);
-        var stringToSignBytes = Encoding.UTF8.GetBytes(stringToSign);
+        ReadOnlySpan<byte> stringToSignBytes = Encoding.UTF8.GetBytes(stringToSign);
         var signatureBytes = SignHmac(signingKey, stringToSignBytes);
         var signature = BytesToHex(signatureBytes);
         var authorization = GetAuthorizationHeader(signedHeaders, signature, signingDate, region, isSts);
@@ -182,8 +182,8 @@ internal class V4Authenticator
         ReadOnlySpan<byte> requestBytes;
 
         ReadOnlySpan<byte> serviceBytes = Encoding.UTF8.GetBytes(getService(isSts));
-        var formattedDateBytes = Encoding.UTF8.GetBytes(signingDate.ToString("yyyyMMdd"));
-        var formattedKeyBytes = Encoding.UTF8.GetBytes($"AWS4{secretKey}");
+        ReadOnlySpan<byte> formattedDateBytes = Encoding.UTF8.GetBytes(signingDate.ToString("yyyyMMdd"));
+        ReadOnlySpan<byte> formattedKeyBytes = Encoding.UTF8.GetBytes($"AWS4{secretKey}");
         var dateKey = SignHmac(formattedKeyBytes, formattedDateBytes);
         ReadOnlySpan<byte> regionBytes = Encoding.UTF8.GetBytes(region);
         var dateRegionKey = SignHmac(dateKey, regionBytes);
@@ -305,11 +305,11 @@ internal class V4Authenticator
         var presignUri = new UriBuilder(requestUri) { Query = requestQuery }.Uri;
         var canonicalRequest = GetPresignCanonicalRequest(requestBuilder.Method, presignUri, headersToSign);
         var headers = string.Concat(headersToSign.Select(p => $"&{p.Key}={Utils.UrlEncode(p.Value)}"));
-        var canonicalRequestBytes = Encoding.UTF8.GetBytes(canonicalRequest);
+        ReadOnlySpan<byte> canonicalRequestBytes = Encoding.UTF8.GetBytes(canonicalRequest);
         var canonicalRequestHash = BytesToHex(ComputeSha256(canonicalRequestBytes));
         var stringToSign = GetStringToSign(region, signingDate, canonicalRequestHash);
         var signingKey = GenerateSigningKey(region, signingDate);
-        var stringToSignBytes = Encoding.UTF8.GetBytes(stringToSign);
+        ReadOnlySpan<byte> stringToSignBytes = Encoding.UTF8.GetBytes(stringToSign);
         var signatureBytes = SignHmac(signingKey, stringToSignBytes);
         var signature = BytesToHex(signatureBytes);
 
@@ -521,19 +521,19 @@ internal class V4Authenticator
             requestBuilder.Method.Equals(HttpMethod.Post))
         {
             var body = requestBuilder.Content;
-            if (body == null)
+            if (body.IsEmpty)
             {
                 requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", sha256EmptyFileHash);
                 return;
             }
 
-            var hash = SHA256.HashData(body);
+            var hash = SHA256.HashData(body.Span);
             var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
             requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
         }
-        else if (!isSecure && requestBuilder.Content != null)
+        else if (!isSecure && !requestBuilder.Content.IsEmpty)
         {
-            var hash = MD5.HashData(Encoding.UTF8.GetBytes(requestBuilder.Content.ToString()));
+            ReadOnlySpan<byte> hash = MD5.HashData(Encoding.UTF8.GetBytes(requestBuilder.Content.ToString()));
 
             var base64 = Convert.ToBase64String(hash);
             requestBuilder.AddHeaderParameter("Content-Md5", base64);
