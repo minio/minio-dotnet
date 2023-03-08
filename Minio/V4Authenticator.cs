@@ -176,16 +176,16 @@ internal class V4Authenticator
     /// <param name="signingDate">Date for signature to be signed</param>
     /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
     /// <returns>bytes of computed hmac</returns>
-    private Span<byte> GenerateSigningKey(string region, DateTime signingDate, bool isSts = false)
+    private ReadOnlySpan<byte> GenerateSigningKey(string region, DateTime signingDate, bool isSts = false)
     {
-        Span<byte> dateRegionServiceKey;
-        Span<byte> requestBytes;
+        ReadOnlySpan<byte> dateRegionServiceKey;
+        ReadOnlySpan<byte> requestBytes;
 
-        var serviceBytes = Encoding.UTF8.GetBytes(getService(isSts));
+        ReadOnlySpan<byte> serviceBytes = Encoding.UTF8.GetBytes(getService(isSts));
         var formattedDateBytes = Encoding.UTF8.GetBytes(signingDate.ToString("yyyyMMdd"));
         var formattedKeyBytes = Encoding.UTF8.GetBytes($"AWS4{secretKey}");
         var dateKey = SignHmac(formattedKeyBytes, formattedDateBytes);
-        var regionBytes = Encoding.UTF8.GetBytes(region);
+        ReadOnlySpan<byte> regionBytes = Encoding.UTF8.GetBytes(region);
         var dateRegionKey = SignHmac(dateKey, regionBytes);
         dateRegionServiceKey = SignHmac(dateRegionKey, serviceBytes);
         requestBytes = Encoding.UTF8.GetBytes("aws4_request");
@@ -199,11 +199,9 @@ internal class V4Authenticator
     /// <param name="key">Hmac key</param>
     /// <param name="content">Bytes to be hmac computed</param>
     /// <returns>Computed hmac of input content</returns>
-    private Span<byte> SignHmac(Span<byte> key, Span<byte> content)
+    private ReadOnlySpan<byte> SignHmac(ReadOnlySpan<byte> key, ReadOnlySpan<byte> content)
     {
-        var destination = new Span<byte>();
-        HMACSHA256.HashData(key, content, destination);
-        return destination;
+        return HMACSHA256.HashData(key, content);
     }
 
     /// <summary>

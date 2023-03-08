@@ -62,7 +62,7 @@ public class SelectObjectContentArgs : EncryptionArgs<SelectObjectContentArgs>
         }
 
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.getMD5SumStr(RequestBody));
+            Utils.GetMD5SumStr(RequestBody));
 
         return requestMessageBuilder;
     }
@@ -497,7 +497,7 @@ public class SetObjectLegalHoldArgs : ObjectVersionArgs<SetObjectLegalHoldArgs>
         var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
         requestMessageBuilder.AddXmlBody(body);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
         return requestMessageBuilder;
     }
 }
@@ -731,7 +731,7 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
         }
 
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.getMD5SumStr(Encoding.UTF8.GetBytes(Convert.ToString(deleteObjectsRequest))));
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(Convert.ToString(deleteObjectsRequest))));
 
         return requestMessageBuilder;
     }
@@ -855,7 +855,7 @@ public class SetObjectRetentionArgs : ObjectVersionArgs<SetObjectRetentionArgs>
         var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
         requestMessageBuilder.AddXmlBody(body);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
         return requestMessageBuilder;
     }
 }
@@ -907,7 +907,7 @@ public class ClearObjectRetentionArgs : ObjectVersionArgs<ClearObjectRetentionAr
         var body = EmptyRetentionConfigXML();
         requestMessageBuilder.AddXmlBody(body);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
         return requestMessageBuilder;
     }
 }
@@ -1866,7 +1866,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
                 Retention.RetainUntilDate);
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode", Retention.Mode.ToString());
             requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-                Utils.getMD5SumStr(RequestBody));
+                Utils.GetMD5SumStr(RequestBody));
         }
 
         if (LegalHoldEnabled != null)

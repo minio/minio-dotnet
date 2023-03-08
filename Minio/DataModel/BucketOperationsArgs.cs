@@ -78,7 +78,7 @@ public class MakeBucketArgs : BucketArgs<MakeBucketArgs>
             var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
             requestMessageBuilder.AddXmlBody(body);
             requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-                Utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+                Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
         }
 
         if (ObjectLock) requestMessageBuilder.AddOrUpdateHeaderParameter("X-Amz-Bucket-Object-Lock-Enabled", "true");
@@ -541,7 +541,7 @@ public class SetBucketTagsArgs : BucketArgs<SetBucketTagsArgs>
 
         requestMessageBuilder.AddXmlBody(body);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
 
         //
         return requestMessageBuilder;
@@ -620,7 +620,7 @@ public class SetObjectLockConfigurationArgs : BucketArgs<SetObjectLockConfigurat
         // string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
         requestMessageBuilder.AddXmlBody(body);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
         //
         return requestMessageBuilder;
     }
@@ -653,7 +653,7 @@ public class RemoveObjectLockConfigurationArgs : BucketArgs<RemoveObjectLockConf
         var body = Utils.MarshalXML(new ObjectLockConfiguration(), "http://s3.amazonaws.com/doc/2006-03-01/");
         requestMessageBuilder.AddXmlBody(body);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
         return requestMessageBuilder;
     }
 }
@@ -682,7 +682,7 @@ public class SetBucketLifecycleArgs : BucketArgs<SetBucketLifecycleArgs>
         requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
         requestMessageBuilder.SetBody(bodyInBytes);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.getMD5SumStr(bodyInBytes));
+            Utils.GetMD5SumStr(bodyInBytes));
 
         return requestMessageBuilder;
     }

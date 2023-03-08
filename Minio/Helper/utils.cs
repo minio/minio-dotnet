@@ -237,10 +237,9 @@ public static class Utils
         return expiryInt > 0 && expiryInt <= Constants.DefaultExpiryTime;
     }
 
-    internal static string getMD5SumStr(byte[] key)
+    internal static string GetMD5SumStr(ReadOnlySpan<byte> key)
     {
-        var hashedBytes = MD5.HashData(key);
-
+        ReadOnlySpan<byte> hashedBytes = MD5.HashData(key);
         return Convert.ToBase64String(hashedBytes);
     }
 

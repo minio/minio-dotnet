@@ -70,7 +70,7 @@ public class SetVersioningArgs : BucketArgs<SetVersioningArgs>
         var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
         requestMessageBuilder.AddXmlBody(body);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
 
         requestMessageBuilder.AddQueryParameter("versioning", "");
         return requestMessageBuilder;
