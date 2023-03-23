@@ -201,7 +201,8 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
     public async Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PresignedPostPolicyArgs args)
     {
-        ArgumentNullException.ThrowIfNull(args);
+        if (args is null)
+            throw new ArgumentNullException(nameof(args));
 
         // string region = string.Empty;
         var region = await GetRegion(args.BucketName).ConfigureAwait(false);
@@ -632,7 +633,8 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
     public async Task CopyObjectAsync(CopyObjectArgs args, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(args);
+        if (args is null)
+            throw new ArgumentNullException(nameof(args));
 
         IServerSideEncryption sseGet = null;
         if (args.SourceObject.SSE is SSECopy sSECopy) sseGet = sSECopy.CloneToSSEC();
@@ -716,7 +718,8 @@ public partial class MinioClient : IObjectOperations
     /// <returns></returns>
     public Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PostPolicy policy)
     {
-        ArgumentNullException.ThrowIfNull(policy);
+        if (policy is null)
+            throw new ArgumentNullException(nameof(policy));
 
         var args = new PresignedPostPolicyArgs()
             .WithBucket(policy.Bucket)

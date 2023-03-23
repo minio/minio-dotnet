@@ -398,7 +398,8 @@ public partial class MinioClient : IBucketOperations
     public async Task<BucketNotification> GetBucketNotificationsAsync(GetBucketNotificationsArgs args,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(args);
+        if (args is null)
+            throw new ArgumentNullException(nameof(args));
 
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
@@ -424,7 +425,8 @@ public partial class MinioClient : IBucketOperations
     public async Task SetBucketNotificationsAsync(SetBucketNotificationsArgs args,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(args);
+        if (args is null)
+            throw new ArgumentNullException(nameof(args));
 
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
@@ -444,7 +446,8 @@ public partial class MinioClient : IBucketOperations
     public async Task RemoveAllBucketNotificationsAsync(RemoveAllBucketNotificationsArgs args,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(args);
+        if (args is null)
+            throw new ArgumentNullException(nameof(args));
 
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
@@ -840,7 +843,8 @@ public partial class MinioClient : IBucketOperations
     /// <exception cref="UnexpectedMinioException">When a policy is not set</exception>
     public async Task<string> GetPolicyAsync(GetPolicyArgs args, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(args);
+        if (args is null)
+            throw new ArgumentNullException(nameof(args));
 
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var responseResult = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
@@ -860,7 +864,8 @@ public partial class MinioClient : IBucketOperations
     /// <returns>Task to set a policy</returns>
     public async Task SetPolicyAsync(SetPolicyArgs args, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(args);
+        if (args is null)
+            throw new ArgumentNullException(nameof(args));
 
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
@@ -878,7 +883,8 @@ public partial class MinioClient : IBucketOperations
     /// <exception cref="UnexpectedMinioException">When a policy is not set</exception>
     public async Task RemovePolicyAsync(RemovePolicyArgs args, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(args);
+        if (args is null)
+            throw new ArgumentNullException(nameof(args));
 
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
