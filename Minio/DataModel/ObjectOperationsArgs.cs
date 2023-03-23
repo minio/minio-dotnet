@@ -380,7 +380,8 @@ public class PresignedPostPolicyArgs : ObjectArgs<PresignedPostPolicyArgs>
 
     public PresignedPostPolicyArgs WithPolicy(PostPolicy policy)
     {
-        ArgumentNullException.ThrowIfNull(policy);
+        if (policy is null)
+            throw new ArgumentNullException(nameof(policy));
 
         Policy = policy;
         if (policy.expiration != DateTime.MinValue)
@@ -654,7 +655,8 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
 
     public RemoveObjectsArgs WithObjectAndVersions(string objectName, IList<string> versions)
     {
-        ArgumentNullException.ThrowIfNull(versions);
+        if (versions is null)
+            throw new ArgumentNullException(nameof(versions));
 
         foreach (var vid in versions)
             ObjectNamesVersions.Add(new Tuple<string, string>(objectName, vid));
@@ -664,7 +666,8 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
     // Tuple<string, List<string>>. Tuple object name -> List of Version IDs.
     public RemoveObjectsArgs WithObjectsVersions(IList<Tuple<string, List<string>>> objectsVersionsList)
     {
-        ArgumentNullException.ThrowIfNull(objectsVersionsList);
+        if (objectsVersionsList is null)
+            throw new ArgumentNullException(nameof(objectsVersionsList));
 
         foreach (var objVersions in objectsVersionsList)
         foreach (var vid in objVersions.Item2)
@@ -748,7 +751,8 @@ public class SetObjectTagsArgs : ObjectVersionArgs<SetObjectTagsArgs>
 
     public SetObjectTagsArgs WithTagging(Tagging tags)
     {
-        ArgumentNullException.ThrowIfNull(tags);
+        if (tags is null)
+            throw new ArgumentNullException(nameof(tags));
 
         ObjectTags = Tagging.GetObjectTags(tags.GetTags());
         return this;

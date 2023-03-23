@@ -528,7 +528,8 @@ public class SetBucketTagsArgs : BucketArgs<SetBucketTagsArgs>
 
     public SetBucketTagsArgs WithTagging(Tagging tags)
     {
-        ArgumentNullException.ThrowIfNull(tags);
+        if (tags is null)
+            throw new ArgumentNullException(nameof(tags));
 
         BucketTags = Tagging.GetBucketTags(tags.GetTags());
         return this;
