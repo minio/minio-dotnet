@@ -243,7 +243,7 @@ public static class Utils
         var md5 = MD5.Create();
         var hashedBytes = md5.ComputeHash(key);
 #else
-            var hashedBytes = MD5.HashData(key);
+        var hashedBytes = MD5.HashData(key);
 #endif
         return Convert.ToBase64String(hashedBytes);
     }
