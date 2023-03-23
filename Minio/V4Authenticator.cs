@@ -242,7 +242,7 @@ internal class V4Authenticator
         var sha = SHA256.Create();
         var hash = sha.ComputeHash(body);
 #else
-            var hash = SHA256.HashData(body);
+        var hash = SHA256.HashData(body);
 #endif
         return hash;
     }
