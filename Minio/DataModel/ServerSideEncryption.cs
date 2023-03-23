@@ -159,6 +159,10 @@ public class SSEKMS : IServerSideEncryption
 
         sb.Append('}');
         ReadOnlySpan<byte> contextBytes = Encoding.UTF8.GetBytes(sb.ToString());
+#if NETSTANDARD
+        return Convert.ToBase64String(contextBytes.ToArray());
+#else
         return Convert.ToBase64String(contextBytes);
+#endif
     }
 }

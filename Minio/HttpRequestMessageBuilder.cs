@@ -70,8 +70,11 @@ internal class HttpRequestMessageBuilder
             var requestUri = requestUriBuilder.Uri;
             var request = new HttpRequestMessage(Method, requestUri);
 
+#if NETSTANDARD
+            if (!Content.IsEmpty) request.Content = new ByteArrayContent(Content.ToArray());
+#else
             if (!Content.IsEmpty) request.Content = new ReadOnlyMemoryContent(Content);
-
+#endif
             foreach (var parameter in HeaderParameters)
             {
                 var key = parameter.Key.ToLower();

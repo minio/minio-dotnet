@@ -63,7 +63,12 @@ public class SelectResponseStream
     {
         var read = -1;
         if (!_isProcessing) return read;
+
+#if NETSTANDARD
+        read = payloadStream.Read(buffer.ToArray(), 0, buffer.Length);
+#else
         read = payloadStream.Read(buffer);
+#endif
         if (!payloadStream.CanRead) _isProcessing = false;
         return read;
     }
@@ -91,11 +96,20 @@ public class SelectResponseStream
 
             Span<byte> bytes = prelude.Slice(0, 4).ToArray();
             if (BitConverter.IsLittleEndian) bytes.Reverse();
+
+#if NETSTANDARD
+            var totalLength = BitConverter.ToInt32(bytes.ToArray(), 0);
+#else
             var totalLength = BitConverter.ToInt32(bytes);
+#endif
             bytes = prelude.Slice(4, 4).ToArray();
             if (BitConverter.IsLittleEndian) bytes.Reverse();
 
+#if NETSTANDARD
+            var headerLength = BitConverter.ToInt32(bytes.ToArray(), 0);
+#else
             var headerLength = BitConverter.ToInt32(bytes);
+#endif
             var payloadLength = totalLength - headerLength - 16;
 
             Span<byte> headers = new byte[headerLength];
@@ -166,7 +180,11 @@ public class SelectResponseStream
                     Stats = stats;
                 }
 
+#if NETSTANDARD
+                if (value.Equals("Records")) Payload.Write(payload.ToArray(), 0, payloadLength);
+#else
                 if (value.Equals("Records")) Payload.Write(payload);
+#endif
             }
         }
 
@@ -184,16 +202,31 @@ public class SelectResponseStream
         {
             var nameLength = data[offset++];
             var b = data.Slice(offset, nameLength);
+
+#if NETSTANDARD
+            var name = Encoding.UTF8.GetString(b.ToArray());
+#else
             var name = Encoding.UTF8.GetString(b);
+#endif
             offset += nameLength;
             var hdrValue = data[offset++];
             if (hdrValue != 7) throw new IOException("header value type is not 7");
             b = data.Slice(offset, 2);
             if (BitConverter.IsLittleEndian) b.Reverse();
             offset += 2;
+
+#if NETSTANDARD
+            int headerValLength = BitConverter.ToInt16(b.ToArray(), 0);
+#else
             int headerValLength = BitConverter.ToInt16(b);
+#endif
             b = data.Slice(offset, headerValLength);
+
+#if NETSTANDARD
+            var value = Encoding.UTF8.GetString(b.ToArray());
+#else
             var value = Encoding.UTF8.GetString(b);
+#endif
             offset += headerValLength;
             headerMap.Add(name, value);
         }

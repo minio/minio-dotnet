@@ -241,7 +241,7 @@ public static class Utils
     {
 #if NETSTANDARD
         var md5 = MD5.Create();
-        var hashedBytes = md5.ComputeHash(key);
+        var hashedBytes = md5.ComputeHash(key.ToArray());
 #else
         var hashedBytes = MD5.HashData(key);
 #endif
