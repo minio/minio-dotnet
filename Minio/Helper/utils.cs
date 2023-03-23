@@ -198,7 +198,7 @@ public static class Utils
     public static bool CaseInsensitiveContains(string text, string value,
         StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
     {
-        return text.Contains(value, stringComparison);
+        return text.Contains(value);
     }
 
     /// <summary>
@@ -239,8 +239,12 @@ public static class Utils
 
     internal static string getMD5SumStr(byte[] key)
     {
-        var hashedBytes = MD5.HashData(key);
-
+#if NETSTANDARD
+        var md5 = MD5.Create();
+        var hashedBytes = md5.ComputeHash(key);
+#else
+            var hashedBytes = MD5.HashData(key);
+#endif
         return Convert.ToBase64String(hashedBytes);
     }
 

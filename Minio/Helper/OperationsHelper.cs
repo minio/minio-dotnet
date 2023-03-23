@@ -75,7 +75,7 @@ public partial class MinioClient : IObjectOperations
         var callbackAsync = async (Stream stream, CancellationToken cancellationToken) =>
         {
             using var dest = new FileStream(tempFileName, FileMode.Create, FileAccess.Write);
-            await stream.CopyToAsync(dest, cancellationToken).ConfigureAwait(false);
+            await stream.CopyToAsync(dest).ConfigureAwait(false);
         };
 
 #pragma warning disable IDISP001 // Dispose created

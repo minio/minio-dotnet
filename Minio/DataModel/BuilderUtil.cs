@@ -22,7 +22,7 @@ public static class BuilderUtil
 {
     public static bool IsAwsDualStackEndpoint(string endpoint)
     {
-        return endpoint.Contains(".dualstack.", StringComparison.OrdinalIgnoreCase);
+        return endpoint.Contains(".dualstack.");
     }
 
     public static bool IsAwsAccelerateEndpoint(string endpoint)

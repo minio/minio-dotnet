@@ -1875,7 +1875,12 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
 
         if (RequestBody != null)
         {
+#if NETSTANDARD
+            var sha = SHA256.Create();
+            var hash = sha.ComputeHash(RequestBody);
+#else
             var hash = SHA256.HashData(RequestBody);
+#endif
             var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
             requestMessageBuilder.SetBody(RequestBody);
