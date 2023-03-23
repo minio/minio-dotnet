@@ -238,7 +238,13 @@ internal class V4Authenticator
     /// <returns>Bytes of sha256 checksum</returns>
     private ReadOnlySpan<byte> ComputeSha256(ReadOnlySpan<byte> body)
     {
-        return SHA256.HashData(body);
+#if NETSTANDARD
+        var sha = SHA256.Create();
+        var hash = sha.ComputeHash(body);
+#else
+            var hash = SHA256.HashData(body);
+#endif
+        return hash;
     }
 
     /// <summary>
@@ -526,15 +532,25 @@ internal class V4Authenticator
                 requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", sha256EmptyFileHash);
                 return;
             }
-
-            var hash = SHA256.HashData(body.Span);
+#if NETSTANDARD
+            var sha = SHA256.Create();
+            var hash = sha.ComputeHash(body);
+#else
+            var hash = SHA256.HashData(body);
+#endif
             var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
             requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
         }
         else if (!isSecure && !requestBuilder.Content.IsEmpty)
         {
-            ReadOnlySpan<byte> hash = MD5.HashData(Encoding.UTF8.GetBytes(requestBuilder.Content.ToString()));
+            var bytes = Encoding.UTF8.GetBytes(requestBuilder.Content.ToString());
 
+#if NETSTANDARD
+            var md5 = MD5.Create();
+            var hash = md5.ComputeHash(bytes);
+#else
+            var hash = MD5.HashData(bytes);
+#endif
             var base64 = Convert.ToBase64String(hash);
             requestBuilder.AddHeaderParameter("Content-Md5", base64);
         }

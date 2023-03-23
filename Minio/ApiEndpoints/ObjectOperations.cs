@@ -1577,7 +1577,11 @@ public partial class MinioClient : IObjectOperations
         while (totalRead < currentPartSize)
         {
             var curData = new byte[currentPartSize - totalRead];
+#if NETSTANDARD
+            var curRead = await data.ReadAsync(curData, 0, currentPartSize - totalRead).ConfigureAwait(false);
+#else
             var curRead = await data.ReadAsync(curData.AsMemory(0, currentPartSize - totalRead)).ConfigureAwait(false);
+#endif
             if (curRead == 0) break;
             for (var i = 0; i < curRead; i++) result[totalRead + i] = curData[i];
             totalRead += curRead;

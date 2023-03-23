@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<AssemblyName>Minio</AssemblyName>
 		<RootNamespace>Minio</RootNamespace>
-		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+		<TargetFrameworks>net6.0;net7.0;netstandard2.0</TargetFrameworks>
 		<DebugType>embedded</DebugType>
 		<AssemblyOriginatorKeyFile>..\Minio.snk</AssemblyOriginatorKeyFile>
 		<SignAssembly>true</SignAssembly>
@@ -14,6 +14,16 @@
 	<ItemGroup>
 		<PackageReference Include="System.IO.Hashing" Version="7.0.0" />
 		<PackageReference Include="System.Reactive.Linq" Version="5.0.0" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard2')) ">
+		<PackageReference Include="System.Net.Http" Version="4.3.4"/>
+		<PackageReference Include="System.Net.Primitives" Version="4.3.1"/>
+		<PackageReference Include="System.ValueTuple" Version="4.4.0" />
+
+		<PackageReference Include="System.Text.Json" Version="7.0.2" />
+		<PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
+		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
 	</ItemGroup>
 
 </Project>
