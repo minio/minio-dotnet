@@ -145,7 +145,7 @@ public class Program
         StatObject.Run(minioClient, bucketName, objectName).Wait();
 
         // List the objects in the new bucket
-        ListObjects.Run(minioClient, bucketName);
+        ListObjects.Run(minioClient, bucketName, null, true, false, true);
 
         // Get the file and Download the object as file
         GetObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
