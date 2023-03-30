@@ -4820,7 +4820,7 @@ public static class FunctionalTest
                                 .ConfigureAwait(false);
 #endif
 
-                            actualContent.Replace("\n", "").Replace("\r", "");
+                            actualContent = actualContent.Replace("\n", "").Replace("\r", "");
                             Assert.AreEqual(actualContent, expectedContent);
                         });
 
