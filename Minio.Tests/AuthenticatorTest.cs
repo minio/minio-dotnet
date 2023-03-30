@@ -26,13 +26,13 @@ public class AuthenticatorTest
     {
         //test anonymous insecure request headers
         var authenticator = new V4Authenticator(false, "", "");
-        Assert.IsTrue(authenticator.isAnonymous);
+        Assert.IsTrue(authenticator.IsAnonymous);
 
         var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
         request.AddJsonBody("[]");
 
         var authenticatorInsecure = new V4Authenticator(false, "a", "b");
-        Assert.IsFalse(authenticatorInsecure.isAnonymous);
+        Assert.IsFalse(authenticatorInsecure.IsAnonymous);
 
         authenticatorInsecure.Authenticate(request);
         Assert.IsTrue(HasPayloadHeader(request, "x-amz-content-sha256"));
@@ -43,13 +43,13 @@ public class AuthenticatorTest
     {
         //test anonymous secure request headers
         var authenticator = new V4Authenticator(true, "", "");
-        Assert.IsTrue(authenticator.isAnonymous);
+        Assert.IsTrue(authenticator.IsAnonymous);
 
         var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
         request.AddJsonBody("[]");
 
         var authenticatorSecure = new V4Authenticator(true, "a", "b");
-        Assert.IsFalse(authenticatorSecure.isAnonymous);
+        Assert.IsFalse(authenticatorSecure.IsAnonymous);
 
         authenticatorSecure.Authenticate(request);
         Assert.IsTrue(HasPayloadHeader(request, "x-amz-content-sha256"));
@@ -60,8 +60,8 @@ public class AuthenticatorTest
     {
         // secure authenticated requests
         var authenticator = new V4Authenticator(true, "accesskey", "secretkey");
-        Assert.IsTrue(authenticator.isSecure);
-        Assert.IsFalse(authenticator.isAnonymous);
+        Assert.IsTrue(authenticator.IsSecure);
+        Assert.IsFalse(authenticator.IsAnonymous);
 
         var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
         request.AddJsonBody("[]");
@@ -76,8 +76,8 @@ public class AuthenticatorTest
     {
         // insecure authenticated requests
         var authenticator = new V4Authenticator(false, "accesskey", "secretkey");
-        Assert.IsFalse(authenticator.isSecure);
-        Assert.IsFalse(authenticator.isAnonymous);
+        Assert.IsFalse(authenticator.IsSecure);
+        Assert.IsFalse(authenticator.IsAnonymous);
         var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
         request.AddJsonBody("[]");
         authenticator.Authenticate(request);

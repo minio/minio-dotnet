@@ -63,16 +63,16 @@ internal class V4Authenticator
     public V4Authenticator(bool secure, string accessKey, string secretKey, string region = "",
         string sessionToken = "")
     {
-        isSecure = secure;
+        IsSecure = secure;
         this.accessKey = accessKey;
         this.secretKey = secretKey;
-        isAnonymous = Utils.IsAnonymousClient(accessKey, secretKey);
+        IsAnonymous = Utils.IsAnonymousClient(accessKey, secretKey);
         this.region = region;
         this.sessionToken = sessionToken;
     }
 
-    internal bool isAnonymous { get; }
-    internal bool isSecure { get; }
+    internal bool IsAnonymous { get; }
+    internal bool IsSecure { get; }
 
     private string GetRegion(string endpoint)
     {
@@ -164,7 +164,7 @@ internal class V4Authenticator
     /// </summary>
     /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
     /// <returns>returns the kind of service as a string</returns>
-    private string getService(bool isSts)
+    private string GetService(bool isSts)
     {
         return isSts ? "sts" : "s3";
     }
@@ -181,7 +181,7 @@ internal class V4Authenticator
         ReadOnlySpan<byte> dateRegionServiceKey;
         ReadOnlySpan<byte> requestBytes;
 
-        ReadOnlySpan<byte> serviceBytes = Encoding.UTF8.GetBytes(getService(isSts));
+        ReadOnlySpan<byte> serviceBytes = Encoding.UTF8.GetBytes(GetService(isSts));
         ReadOnlySpan<byte> formattedDateBytes = Encoding.UTF8.GetBytes(signingDate.ToString("yyyyMMdd"));
         ReadOnlySpan<byte> formattedKeyBytes = Encoding.UTF8.GetBytes($"AWS4{secretKey}");
         var dateKey = SignHmac(formattedKeyBytes, formattedDateBytes);
@@ -228,7 +228,7 @@ internal class V4Authenticator
     /// <returns>Scope string</returns>
     private string GetScope(string region, DateTime signingDate, bool isSts = false)
     {
-        return $"{signingDate:yyyyMMdd}/{region}/{getService(isSts)}/aws4_request";
+        return $"{signingDate:yyyyMMdd}/{region}/{GetService(isSts)}/aws4_request";
     }
 
     /// <summary>
@@ -507,7 +507,7 @@ internal class V4Authenticator
     /// <param name="requestBuilder">Instantiated requestBuilder object</param>
     private void SetContentSha256(HttpRequestMessageBuilder requestBuilder, bool isSts = false)
     {
-        if (isAnonymous)
+        if (IsAnonymous)
             return;
         // No need to compute SHA256 if the endpoint scheme is https
         // or the command method is not a Post to delete multiple files
@@ -516,7 +516,7 @@ internal class V4Authenticator
             isMultiDeleteRequest =
                 requestBuilder.QueryParameters.Any(p => p.Key.Equals("delete", StringComparison.OrdinalIgnoreCase));
 
-        if ((isSecure && !isSts) || isMultiDeleteRequest)
+        if ((IsSecure && !isSts) || isMultiDeleteRequest)
         {
             requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", "UNSIGNED-PAYLOAD");
             return;
@@ -541,7 +541,7 @@ internal class V4Authenticator
             var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
             requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
         }
-        else if (!isSecure && !requestBuilder.Content.IsEmpty)
+        else if (!IsSecure && !requestBuilder.Content.IsEmpty)
         {
             var bytes = Encoding.UTF8.GetBytes(requestBuilder.Content.ToString());
 

@@ -26,6 +26,7 @@ using System.Xml.Serialization;
 
 namespace Minio.DataModel.Replication;
 
+[Serializable]
 public class EncryptionConfiguration
 {
     public EncryptionConfiguration(string replicaKmsKeyID)

@@ -233,6 +233,11 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
 
     public IAMAWSProvider WithEndpoint(string endpoint)
     {
+        if (string.IsNullOrEmpty(endpoint))
+        {
+            throw new ArgumentException($"'{nameof(endpoint)}' cannot be null or empty.", nameof(endpoint));
+        }
+
         if (endpoint.Contains("https") || endpoint.Contains("http"))
             CustomEndPoint = new Uri(endpoint);
         else

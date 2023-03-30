@@ -24,7 +24,7 @@ public class PostPolicy
 
     public IList<IList<(string, string, string)>> conditions = new List<IList<(string, string, string)>>();
 
-    public DateTime expiration { get; set; }
+    public DateTime Expiration { get; set; }
     public string Key { get; private set; }
     public string Bucket { get; private set; }
 
@@ -35,7 +35,7 @@ public class PostPolicy
     public void SetExpires(DateTime expiration)
     {
         // this.formData.Add("expiration", expiration.ToString());
-        this.expiration = expiration;
+        this.Expiration = expiration;
     }
 
     /// <summary>
@@ -255,7 +255,7 @@ public class PostPolicy
         // expiration and policies will never be empty because of checks at PresignedPostPolicy()
         var sb = new StringBuilder();
         sb.Append('{');
-        sb.Append("\"expiration\":\"").Append(expiration.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")).Append('"')
+        sb.Append("\"expiration\":\"").Append(Expiration.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")).Append('"')
             .Append(',');
         sb.Append("\"conditions\":[").Append(string.Join(",", policyList)).Append(']');
         sb.Append('}');
@@ -304,7 +304,7 @@ public class PostPolicy
     /// <returns>true if expiration is set</returns>
     public bool IsExpirationSet()
     {
-        if (!string.IsNullOrEmpty(expiration.ToString())) return true;
+        if (!string.IsNullOrEmpty(Expiration.ToString())) return true;
 
         return false;
     }
@@ -313,8 +313,5 @@ public class PostPolicy
     ///     Get the populated dictionary of policy data.
     /// </summary>
     /// <returns>Dictionary of policy data</returns>
-    public Dictionary<string, string> GetFormData()
-    {
-        return formData;
-    }
+    public Dictionary<string, string> FormData => formData;
 }

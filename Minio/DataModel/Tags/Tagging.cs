@@ -54,8 +54,8 @@ public class Tagging
 
         foreach (var tag in tags)
         {
-            if (!validateTagKey(tag.Key)) throw new ArgumentException("Invalid Tagging key " + tag.Key);
-            if (!validateTagValue(tag.Value)) throw new ArgumentException("Invalid Tagging value " + tag.Value);
+            if (!ValidateTagKey(tag.Key)) throw new ArgumentException("Invalid Tagging key " + tag.Key);
+            if (!ValidateTagValue(tag.Value)) throw new ArgumentException("Invalid Tagging value " + tag.Value);
         }
 
         TaggingSet = new TagSet(tags);
@@ -63,7 +63,7 @@ public class Tagging
 
     [XmlElement("TagSet")] public TagSet TaggingSet { get; set; }
 
-    internal bool validateTagKey(string key)
+    internal bool ValidateTagKey(string key)
     {
         if (string.IsNullOrEmpty(key) ||
             string.IsNullOrWhiteSpace(key) ||
@@ -74,7 +74,7 @@ public class Tagging
         return true;
     }
 
-    internal bool validateTagValue(string value)
+    internal bool ValidateTagValue(string value)
     {
         if (value == null || // Empty or whitespace is allowed
             value.Length > MAX_TAG_VALUE_LENGTH ||
@@ -84,12 +84,15 @@ public class Tagging
         return true;
     }
 
-    public Dictionary<string, string> GetTags()
+    public Dictionary<string, string> Tags
     {
-        if (TaggingSet == null || TaggingSet.Tag.Count == 0) return null;
-        var tagMap = new Dictionary<string, string>();
-        foreach (var tag in TaggingSet.Tag) tagMap[tag.Key] = tag.Value;
-        return tagMap;
+        get
+        {
+            if (TaggingSet == null || TaggingSet.Tag.Count == 0) return null;
+            var tagMap = new Dictionary<string, string>();
+            foreach (var tag in TaggingSet.Tag) tagMap[tag.Key] = tag.Value;
+            return tagMap;
+        }
     }
 
     public string MarshalXML()

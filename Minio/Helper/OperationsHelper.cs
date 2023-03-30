@@ -27,7 +27,7 @@ public partial class MinioClient : IObjectOperations
     /// </summary>
     /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name etc </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    private async Task<ObjectStat> getObjectHelper(GetObjectArgs args, CancellationToken cancellationToken = default)
+    private async Task<ObjectStat> GetObjectHelper(GetObjectArgs args, CancellationToken cancellationToken = default)
     {
         // StatObject is called to both verify the existence of the object and return it with GetObject.
         // NOTE: This avoids writing the error body to the action stream passed (Do not remove).
@@ -46,10 +46,10 @@ public partial class MinioClient : IObjectOperations
         var objStat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
         args?.Validate();
         if (args.FileName != null)
-            await getObjectFileAsync(args, objStat, cancellationToken).ConfigureAwait(false);
+            await GetObjectFileAsync(args, objStat, cancellationToken).ConfigureAwait(false);
         else if (args.CallBack is not null)
-            await getObjectStreamAsync(args, objStat, args.CallBack, cancellationToken).ConfigureAwait(false);
-        else await getObjectStreamAsync(args, objStat, args.FuncCallBack, cancellationToken).ConfigureAwait(false);
+            await GetObjectStreamAsync(args, objStat, args.CallBack, cancellationToken).ConfigureAwait(false);
+        else await GetObjectStreamAsync(args, objStat, args.FuncCallBack, cancellationToken).ConfigureAwait(false);
         return objStat;
     }
 
@@ -59,7 +59,7 @@ public partial class MinioClient : IObjectOperations
     /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name etc </param>
     /// <param name="objectStat"> ObjectStat object encapsulates information like - object name, size, etag etc </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    private Task getObjectFileAsync(GetObjectArgs args, ObjectStat objectStat,
+    private Task GetObjectFileAsync(GetObjectArgs args, ObjectStat objectStat,
         CancellationToken cancellationToken = default)
     {
         var length = objectStat.Size;
@@ -75,7 +75,11 @@ public partial class MinioClient : IObjectOperations
         var callbackAsync = async (Stream stream, CancellationToken cancellationToken) =>
         {
             using var dest = new FileStream(tempFileName, FileMode.Create, FileAccess.Write);
+#if NETSTANDARD
             await stream.CopyToAsync(dest).ConfigureAwait(false);
+#else
+            await stream.CopyToAsync(dest, cancellationToken).ConfigureAwait(false);
+#endif
         };
 
 #pragma warning disable IDISP001 // Dispose created
@@ -87,7 +91,7 @@ public partial class MinioClient : IObjectOperations
             await callbackAsync(stream, cts.Token).ConfigureAwait(false);
             Utils.MoveWithReplace(tempFileName, args.FileName);
         });
-        return getObjectStreamAsync(args, objectStat, null, cancellationToken);
+        return GetObjectStreamAsync(args, objectStat, null, cancellationToken);
     }
 
     /// <summary>
@@ -100,11 +104,11 @@ public partial class MinioClient : IObjectOperations
     /// </param>
     /// <param name="cb"> Action object of type Stream, callback to send Object contents, if assigned </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    private async Task getObjectStreamAsync(GetObjectArgs args, ObjectStat objectStat, Action<Stream> cb,
+    private async Task GetObjectStreamAsync(GetObjectArgs args, ObjectStat objectStat, Action<Stream> cb,
         CancellationToken cancellationToken = default)
     {
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -122,12 +126,12 @@ public partial class MinioClient : IObjectOperations
     ///     and Task as output, if assigned
     /// </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    private async Task getObjectStreamAsync(GetObjectArgs args, ObjectStat objectStat,
+    private async Task GetObjectStreamAsync(GetObjectArgs args, ObjectStat objectStat,
         Func<Stream, CancellationToken, Task> cb,
         CancellationToken cancellationToken = default)
     {
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -150,7 +154,7 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken)
     {
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken)
+        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
         var removeObjectsResponse = new RemoveObjectsResponse(response.StatusCode, response.Content);
         return removeObjectsResponse.DeletedObjectsResult.errorList;
@@ -170,7 +174,7 @@ public partial class MinioClient : IObjectOperations
     /// </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns></returns>
-    private async Task<IList<DeleteError>> callRemoveObjectVersions(RemoveObjectsArgs args,
+    private async Task<IList<DeleteError>> CallRemoveObjectVersions(RemoveObjectsArgs args,
         IList<Tuple<string, string>> objVersions, List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
     {
         var iterArgs = new RemoveObjectsArgs()
@@ -195,7 +199,7 @@ public partial class MinioClient : IObjectOperations
     /// </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns></returns>
-    private async Task<IList<DeleteError>> callRemoveObjects(RemoveObjectsArgs args, IList<string> objNames,
+    private async Task<IList<DeleteError>> CallRemoveObjects(RemoveObjectsArgs args, IList<string> objNames,
         List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
     {
         // var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
@@ -226,12 +230,12 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    private async Task<IList<DeleteError>> removeObjectVersionsHelper(RemoveObjectsArgs args,
+    private async Task<IList<DeleteError>> RemoveObjectVersionsHelper(RemoveObjectsArgs args,
         List<DeleteError> fullErrorsList, CancellationToken cancellationToken)
     {
         if (args.ObjectNamesVersions.Count <= 1000)
         {
-            fullErrorsList.AddRange(await callRemoveObjectVersions(args, args.ObjectNamesVersions, fullErrorsList,
+            fullErrorsList.AddRange(await CallRemoveObjectVersions(args, args.ObjectNamesVersions, fullErrorsList,
                 cancellationToken).ConfigureAwait(false));
             return fullErrorsList;
         }
@@ -241,7 +245,7 @@ public partial class MinioClient : IObjectOperations
         var deletedCount = 0;
         while (delVersionNextIndex <= args.ObjectNamesVersions.Count)
         {
-            var errorList = await callRemoveObjectVersions(args, curItemList, fullErrorsList, cancellationToken)
+            var errorList = await CallRemoveObjectVersions(args, curItemList, fullErrorsList, cancellationToken)
                 .ConfigureAwait(false);
             if (delVersionNextIndex == args.ObjectNamesVersions.Count)
                 break;
@@ -283,7 +287,7 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    private async Task<IList<DeleteError>> removeObjectsHelper(RemoveObjectsArgs args,
+    private async Task<IList<DeleteError>> RemoveObjectsHelper(RemoveObjectsArgs args,
         IList<DeleteError> fullErrorsList,
         CancellationToken cancellationToken)
     {
@@ -295,7 +299,7 @@ public partial class MinioClient : IObjectOperations
             iterObjects.Insert(i, objName);
             if (++i == 1000)
             {
-                fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList.ToList(), cancellationToken)
+                fullErrorsList = await CallRemoveObjects(args, iterObjects, fullErrorsList.ToList(), cancellationToken)
                     .ConfigureAwait(false);
                 iterObjects.Clear();
                 i = 0;
@@ -303,7 +307,7 @@ public partial class MinioClient : IObjectOperations
         }
 
         if (iterObjects.Count > 0)
-            fullErrorsList = await callRemoveObjects(args, iterObjects, fullErrorsList.ToList(), cancellationToken)
+            fullErrorsList = await CallRemoveObjects(args, iterObjects, fullErrorsList.ToList(), cancellationToken)
                 .ConfigureAwait(false);
         return fullErrorsList;
     }

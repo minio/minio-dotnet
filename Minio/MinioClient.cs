@@ -30,8 +30,8 @@ namespace Minio;
 
 public class InnerItemType
 {
-    public int sortOrder { get; set; }
-    public string value { get; set; }
+    public int SortOrder { get; set; }
+    public string Value { get; set; }
 }
 
 public partial class MinioClient : IMinioClient
@@ -94,7 +94,7 @@ public partial class MinioClient : IMinioClient
         Region = "";
         SessionToken = "";
         Provider = null;
-        this.httpClient = httpClient;
+        this.HttpClient = httpClient;
     }
 
     /// <summary>
@@ -130,7 +130,7 @@ public partial class MinioClient : IMinioClient
         uri = RequestUtil.GetEndpointURL(BaseUrl, Secure);
         RequestUtil.ValidateEndpoint(uri, Endpoint);
 
-        httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", FullUserAgent);
+        HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", FullUserAgent);
     }
 
     // Save Credentials from user
@@ -146,7 +146,7 @@ public partial class MinioClient : IMinioClient
     // Indicates if we are using HTTPS or not
     internal bool Secure { get; private set; }
 
-    internal HttpClient httpClient { get; private set; }
+    internal HttpClient HttpClient { get; private set; }
 
     private static string SystemUserAgent
     {
@@ -175,7 +175,7 @@ public partial class MinioClient : IMinioClient
     /// </summary>
     public async Task<HttpResponseMessage> WrapperGetAsync(string url)
     {
-        var response = await httpClient.GetAsync(url).ConfigureAwait(false);
+        var response = await HttpClient.GetAsync(url).ConfigureAwait(false);
         return response;
     }
 
@@ -184,7 +184,7 @@ public partial class MinioClient : IMinioClient
     /// </summary>
     public Task WrapperPutAsync(string url, StreamContent strm)
     {
-        return Task.Run(async () => await httpClient.PutAsync(url, strm).ConfigureAwait(false));
+        return Task.Run(async () => await HttpClient.PutAsync(url, strm).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -223,7 +223,7 @@ public partial class MinioClient : IMinioClient
     public void Dispose()
     {
         if (disposeHttpClient)
-            httpClient?.Dispose();
+            HttpClient?.Dispose();
     }
 
     /// <summary>
@@ -444,7 +444,7 @@ public partial class MinioClient : IMinioClient
     ///     Uses webproxy for all requests if this method is invoked on client object.
     /// </summary>
     /// <remarks>
-    ///     This setting will be ignored when injecting an external <see cref="HttpClient" /> instance with
+    ///     This setting will be ignored when injecting an external <see cref="System.Net.Http.HttpClient" /> instance with
     ///     <see cref="MinioClient(HttpClient)" /> <see cref="WithHttpClient(HttpClient, bool)" />.
     /// </remarks>
     /// <returns></returns>
@@ -484,7 +484,7 @@ public partial class MinioClient : IMinioClient
     /// <returns></returns>
     public MinioClient WithHttpClient(HttpClient httpClient, bool disposeHttpClient = false)
     {
-        if (httpClient != null) this.httpClient = httpClient;
+        if (httpClient != null) this.HttpClient = httpClient;
         this.disposeHttpClient = disposeHttpClient;
         return this;
     }
@@ -525,14 +525,14 @@ public partial class MinioClient : IMinioClient
     /// </summary>
     /// <param name="errorHandlers">List of handlers to override default handling</param>
     /// <param name="requestMessageBuilder">The build of HttpRequestMessageBuilder </param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns>ResponseResult</returns>
     internal Task<ResponseResult> ExecuteTaskAsync(
         IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
         HttpRequestMessageBuilder requestMessageBuilder,
-        CancellationToken cancellationToken = default,
-        bool isSts = false)
+        bool isSts = false,
+        CancellationToken cancellationToken = default)
     {
         if (requestTimeout > 0)
         {
@@ -544,14 +544,14 @@ public partial class MinioClient : IMinioClient
 
         return ExecuteWithRetry(
             () => ExecuteTaskCoreAsync(errorHandlers, requestMessageBuilder,
-                cancellationToken, isSts));
+                isSts, cancellationToken));
     }
 
     private async Task<ResponseResult> ExecuteTaskCoreAsync(
         IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
         HttpRequestMessageBuilder requestMessageBuilder,
-        CancellationToken cancellationToken = default,
-        bool isSts = false)
+        bool isSts = false,
+        CancellationToken cancellationToken = default)
     {
         var startTime = DateTime.Now;
         // Logs full url when HTTPtracing is enabled.
@@ -572,7 +572,7 @@ public partial class MinioClient : IMinioClient
         ResponseResult responseResult = null;
         try
         {
-            var response = await httpClient.SendAsync(request,
+            var response = await HttpClient.SendAsync(request,
                     HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
             responseResult = new ResponseResult(request, response);

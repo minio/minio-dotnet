@@ -39,7 +39,7 @@ public static class CustomRequestLogger
     }
 }
 
-internal class MyRequestLogger : IRequestLogger
+internal sealed class MyRequestLogger : IRequestLogger
 {
     public void LogRequest(RequestToLog requestToLog, ResponseToLog responseToLog, double durationMs)
     {

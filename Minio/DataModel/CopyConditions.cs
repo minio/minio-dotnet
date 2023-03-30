@@ -127,17 +127,11 @@ public class CopyConditions
     ///     Get range size
     /// </summary>
     /// <returns></returns>
-    public long GetByteRange()
-    {
-        return byteRangeStart == -1 ? 0 : byteRangeEnd - byteRangeStart + 1;
-    }
+    public long ByteRange => byteRangeStart == -1 ? 0 : byteRangeEnd - byteRangeStart + 1;
 
     /// <summary>
     ///     Get all the set copy conditions map.
     /// </summary>
     /// <returns></returns>
-    public ReadOnlyDictionary<string, string> GetConditions()
-    {
-        return new ReadOnlyDictionary<string, string>(copyConditions);
-    }
+    public ReadOnlyDictionary<string, string> Conditions => new ReadOnlyDictionary<string, string>(copyConditions);
 }

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.IO;
 using System.Text;
 using Minio.DataModel;
 using Minio.DataModel.ILM;
@@ -400,7 +401,11 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
             while (!sr.EndOfStream)
                 try
                 {
+#if NETSTANDARD || NET6_0
                     var line = await sr.ReadLineAsync().ConfigureAwait(false);
+#elif NET7_0_OR_GREATER
+                    var line = await sr.ReadLineAsync(cancellationToken).ConfigureAwait(false);
+#endif
                     if (string.IsNullOrEmpty(line))
                         break;
 
@@ -531,7 +536,7 @@ public class SetBucketTagsArgs : BucketArgs<SetBucketTagsArgs>
         if (tags is null)
             throw new ArgumentNullException(nameof(tags));
 
-        BucketTags = Tagging.GetBucketTags(tags.GetTags());
+        BucketTags = Tagging.GetBucketTags(tags.Tags);
         return this;
     }
 
@@ -551,7 +556,7 @@ public class SetBucketTagsArgs : BucketArgs<SetBucketTagsArgs>
     internal override void Validate()
     {
         base.Validate();
-        if (BucketTags == null || BucketTags.GetTags().Count == 0)
+        if (BucketTags == null || BucketTags.Tags.Count == 0)
             throw new InvalidOperationException("Unable to set empty tags.");
     }
 }

@@ -77,7 +77,7 @@ internal class HttpRequestMessageBuilder
 #endif
             foreach (var parameter in HeaderParameters)
             {
-                var key = parameter.Key.ToLower();
+                var key = parameter.Key.ToLowerInvariant();
                 var val = parameter.Value;
 
                 var addSuccess = request.Headers.TryAddWithoutValidation(key, val);

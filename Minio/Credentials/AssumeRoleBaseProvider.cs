@@ -29,12 +29,12 @@ public abstract class AssumeRoleBaseProvider<T> : ClientProvider
     internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers =
         Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
 
-    public AssumeRoleBaseProvider(MinioClient client)
+    protected AssumeRoleBaseProvider(MinioClient client)
     {
         Client = client;
     }
 
-    public AssumeRoleBaseProvider()
+    protected AssumeRoleBaseProvider()
     {
         Client = null;
     }

@@ -75,7 +75,7 @@ public static class Utils
             throw new InvalidObjectNameException(objectName, "Object name cannot be greater than 1024 characters.");
     }
 
-    internal static void validateObjectPrefix(string objectPrefix)
+    internal static void ValidateObjectPrefix(string objectPrefix)
     {
         if (objectPrefix.Length > 512)
             throw new InvalidObjectPrefixException(objectPrefix,
@@ -198,7 +198,11 @@ public static class Utils
     public static bool CaseInsensitiveContains(string text, string value,
         StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
     {
-        return text.Contains(value);
+#if NETSTANDARD
+        return text.IndexOf(value, stringComparison) >= 0;
+#else
+        return text.Contains(value, stringComparison);
+#endif
     }
 
     /// <summary>
@@ -917,13 +921,13 @@ public static class Utils
     // Print object key properties and their values
     // Added for debugging purposes
 
-    public static void objPrint(object obj)
+    public static void ObjPrint(object obj)
     {
         foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(obj))
         {
             var name = descriptor.Name;
             var value = descriptor.GetValue(obj);
-            Console.WriteLine("{0}={1}", name, value);
+            Console.WriteLine($"{name}={value}");
         }
     }
 
@@ -939,7 +943,7 @@ public static class Utils
         Console.WriteLine("DEBUG >>   Print is DONE!\n\n");
     }
 
-    public static void printDict(Dictionary<string, string> d)
+    public static void PrintDict(Dictionary<string, string> d)
     {
         if (d != null)
             foreach (var kv in d)

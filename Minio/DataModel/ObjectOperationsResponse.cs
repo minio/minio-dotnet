@@ -94,7 +94,7 @@ public class PresignedPostPolicyResponse
 {
     public PresignedPostPolicyResponse(PresignedPostPolicyArgs args, Uri URI)
     {
-        URIPolicyTuple = Tuple.Create(URI.AbsolutePath, args.Policy.GetFormData());
+        URIPolicyTuple = Tuple.Create(URI.AbsolutePath, args.Policy.FormData);
     }
 
     internal Tuple<string, Dictionary<string, string>> URIPolicyTuple { get; }

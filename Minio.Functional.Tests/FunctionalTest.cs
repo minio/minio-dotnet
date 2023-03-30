@@ -1846,8 +1846,8 @@ public static class FunctionalTest
                 .WithBucket(bucketName);
             var tagObj = await minio.GetBucketTagsAsync(tagsArgs).ConfigureAwait(false);
             Assert.IsNotNull(tagObj);
-            Assert.IsNotNull(tagObj.GetTags());
-            var tagsRes = tagObj.GetTags();
+            Assert.IsNotNull(tagObj.Tags);
+            var tagsRes = tagObj.Tags;
             Assert.AreEqual(tagsRes.Count, tags.Count);
 
             new MintLogger(nameof(BucketTagsAsync_Test1), getBucketTagsSignature,
@@ -1992,8 +1992,8 @@ public static class FunctionalTest
                     .WithObject(objectName);
                 var tagObj = await minio.GetObjectTagsAsync(tagsArgs).ConfigureAwait(false);
                 Assert.IsNotNull(tagObj);
-                Assert.IsNotNull(tagObj.GetTags());
-                var tagsRes = tagObj.GetTags();
+                Assert.IsNotNull(tagObj.Tags);
+                var tagsRes = tagObj.Tags;
                 Assert.AreEqual(tagsRes.Count, tags.Count);
                 new MintLogger(nameof(ObjectTagsAsync_Test1), getObjectTagsSignature,
                         "Tests whether GetObjectTagsAsync passes", TestStatus.PASS, DateTime.Now - startTime,
@@ -2033,7 +2033,7 @@ public static class FunctionalTest
                     .WithObject(objectName);
                 var tagObj = await minio.GetObjectTagsAsync(getTagsArgs).ConfigureAwait(false);
                 Assert.IsNotNull(tagObj);
-                var tagsRes = tagObj.GetTags();
+                var tagsRes = tagObj.Tags;
                 Assert.IsNull(tagsRes);
                 new MintLogger(nameof(ObjectTagsAsync_Test1), deleteObjectTagsSignature,
                         "Tests whether RemoveObjectTagsAsync passes", TestStatus.PASS, DateTime.Now - startTime,
@@ -4238,7 +4238,7 @@ public static class FunctionalTest
                 .WithObject(destObjectName);
             var tags = await minio.GetObjectTagsAsync(getObjectTagsArgs).ConfigureAwait(false);
             Assert.IsNotNull(tags);
-            var copiedTags = tags.GetTags();
+            var copiedTags = tags.Tags;
             Assert.IsNotNull(tags);
             Assert.IsNotNull(copiedTags);
             Assert.IsTrue(copiedTags.Count > 0);

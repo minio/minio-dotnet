@@ -384,9 +384,9 @@ public class PresignedPostPolicyArgs : ObjectArgs<PresignedPostPolicyArgs>
             throw new ArgumentNullException(nameof(policy));
 
         Policy = policy;
-        if (policy.expiration != DateTime.MinValue)
+        if (policy.Expiration != DateTime.MinValue)
             // policy.expiration has an assigned value
-            Expiration = policy.expiration;
+            Expiration = policy.Expiration;
 
         return this;
     }
@@ -754,7 +754,7 @@ public class SetObjectTagsArgs : ObjectVersionArgs<SetObjectTagsArgs>
         if (tags is null)
             throw new ArgumentNullException(nameof(tags));
 
-        ObjectTags = Tagging.GetObjectTags(tags.GetTags());
+        ObjectTags = Tagging.GetObjectTags(tags.Tags);
         return this;
     }
 
@@ -771,7 +771,7 @@ public class SetObjectTagsArgs : ObjectVersionArgs<SetObjectTagsArgs>
     internal override void Validate()
     {
         base.Validate();
-        if (ObjectTags == null || ObjectTags.GetTags().Count == 0)
+        if (ObjectTags == null || ObjectTags.Tags.Count == 0)
             throw new InvalidOperationException("Unable to set empty tags.");
     }
 }
@@ -1027,7 +1027,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
                 requestMessageBuilder.AddQueryParameter(query.Key, query.Value);
 
         if (SourceObject.CopyOperationConditions != null)
-            foreach (var item in SourceObject.CopyOperationConditions.GetConditions())
+            foreach (var item in SourceObject.CopyOperationConditions.Conditions)
                 requestMessageBuilder.AddOrUpdateHeaderParameter(item.Key, item.Value);
 
         if (!string.IsNullOrEmpty(MatchETag))
@@ -1448,7 +1448,7 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
 
         ReplaceTagsDirective = args.ReplaceTagsDirective;
         if (args.ReplaceTagsDirective && args.ObjectTags?.TaggingSet.Tag.Count > 0) // Tags of Source object
-            ObjectTags = Tagging.GetObjectTags(args.ObjectTags.GetTags());
+            ObjectTags = Tagging.GetObjectTags(args.ObjectTags.Tags);
     }
 
     internal MultipartCopyUploadArgs()
