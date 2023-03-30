@@ -25,7 +25,11 @@ internal sealed class RandomStreamGenerator
     public RandomStreamGenerator(int maxBufferSize)
     {
         _seedBuffer = new byte[maxBufferSize];
+#if NETFRAMEWORK
+        _random.NextBytes(_seedBuffer.Span.ToArray());
+#else
         _random.NextBytes(_seedBuffer.Span);
+#endif
     }
 
     public MemoryStream GenerateStreamFromSeed(int size)

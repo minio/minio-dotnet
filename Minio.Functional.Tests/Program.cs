@@ -141,8 +141,11 @@ internal static class Program
         // and length parameters. Tests will be reported as GetObject_Test3,
         // GetObject_Test4 and GetObject_Test5.
         await FunctionalTest.GetObject_3_OffsetLength_Tests(minioClient).ConfigureAwait(false);
+
+#if NET6_0_OR_GREATER
         // Test async callback function to download an object
         await FunctionalTest.GetObject_AsyncCallback_Test1(minioClient).ConfigureAwait(false);
+#endif
 
         // Test File GetObject and PutObject functions
         await FunctionalTest.FGetObject_Test1(minioClient).ConfigureAwait(false);
