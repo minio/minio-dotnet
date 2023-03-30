@@ -189,7 +189,7 @@ internal class GetObjectsListResponse : GenericResponse
                 Size = ulong.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value,
                     CultureInfo.CurrentCulture),
                 IsDir = false,
-                UserMetadata = c.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}UserMetadata").Any() ? c.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}UserMetadata").First().Nodes()?.Select(x => new MetadataItem(((XElement)x).Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value, ((XElement)x).Element("{http://s3.amazonaws.com/doc/2006-03-01/}Value").Value)).ToList() : null
+                UserMetadata = c.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}UserMetadata").Any() ? c.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}UserMetadata").First().Nodes()?.Select(x => new MetadataItem(((XElement)x).Name.LocalName, ((XElement)x).Value)).ToList() : null
                     };
         var prefixes = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}CommonPrefixes")
             select new Item
