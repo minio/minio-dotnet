@@ -14,7 +14,6 @@
 * limitations under the License.
 */
 
-using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -100,14 +99,10 @@ internal sealed class MintLogger
     /// </summary>
     public string error { get; }
 
-    public void Log(bool isJson = true)
+    public void Log()
     {
         Console.WriteLine(JsonSerializer.Serialize(this,
             new JsonSerializerOptions
-            {
-                WriteIndented = false,
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
-            }));
+                { WriteIndented = false, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault }));
     }
 }
