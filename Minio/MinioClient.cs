@@ -94,7 +94,7 @@ public partial class MinioClient : IMinioClient
         Region = "";
         SessionToken = "";
         Provider = null;
-        this.HttpClient = httpClient;
+        HttpClient = httpClient;
     }
 
     /// <summary>
@@ -484,7 +484,7 @@ public partial class MinioClient : IMinioClient
     /// <returns></returns>
     public MinioClient WithHttpClient(HttpClient httpClient, bool disposeHttpClient = false)
     {
-        if (httpClient != null) this.HttpClient = httpClient;
+        if (httpClient != null) HttpClient = httpClient;
         this.disposeHttpClient = disposeHttpClient;
         return this;
     }

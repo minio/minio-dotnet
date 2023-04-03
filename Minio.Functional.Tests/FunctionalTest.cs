@@ -23,7 +23,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Web;
 using System.Xml;
 using System.Xml.Serialization;
 using ICSharpCode.SharpZipLib.Core;
@@ -246,7 +245,11 @@ public static class FunctionalTest
     {
         // Server side does not allow the following characters in object names
         // '-', '_', '.', '/', '*'
+#if NET6_0_OR_GREATER
         var characters = "abcd+%$#@&{}[]()";
+#else
+        var characters = "abcdefgh+%$#@&";
+#endif
         var result = new StringBuilder(length);
 
         for (var i = 0; i < length; i++) result.Append(characters[rnd.Next(characters.Length)]);
@@ -716,15 +719,10 @@ public static class FunctionalTest
                     .WithServerSideEncryption(ssec)
                     .WithCallbackStream(async (stream, cancellationToken) =>
                     {
-                        var fileStream = File.Create(tempFileName);
-
-#if NETFRAMEWORK
-                        await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                        fileStream.Dispose();
-#else
-                        await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                        await fileStream.DisposeAsync().ConfigureAwait(false);
-#endif
+                        using (var fileStream = File.Create(tempFileName))
+                        {
+                            await stream.CopyToAsync(fileStream, 8192, cancellationToken).ConfigureAwait(false);
+                        }
 
                         var writtenInfo = new FileInfo(tempFileName);
                         file_read_size = writtenInfo.Length;
@@ -807,15 +805,10 @@ public static class FunctionalTest
                     .WithServerSideEncryption(ssec)
                     .WithCallbackStream(async (stream, cancellationToken) =>
                     {
-                        var fileStream = File.Create(tempFileName);
-
-#if NETFRAMEWORK
-                        await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                        fileStream.Dispose();
-#else
-                        await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                        await fileStream.DisposeAsync().ConfigureAwait(false);
-#endif
+                        using (var fileStream = File.Create(tempFileName))
+                        {
+                            await stream.CopyToAsync(fileStream, 8192, cancellationToken).ConfigureAwait(false);
+                        }
 
                         var writtenInfo = new FileInfo(tempFileName);
                         file_read_size = writtenInfo.Length;
@@ -895,14 +888,11 @@ public static class FunctionalTest
                     .WithObject(objectName)
                     .WithCallbackStream(async (stream, cancellationToken) =>
                     {
-                        var fileStream = File.Create(tempFileName);
-#if NETFRAMEWORK
-                        await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                        fileStream.Dispose();
-#else
-                        await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                        await fileStream.DisposeAsync().ConfigureAwait(false);
-#endif
+                        using (var fileStream = File.Create(tempFileName))
+                        {
+                            await stream.CopyToAsync(fileStream, 8192, cancellationToken).ConfigureAwait(false);
+                        }
+
                         var writtenInfo = new FileInfo(tempFileName);
                         file_read_size = writtenInfo.Length;
 
@@ -942,11 +932,7 @@ public static class FunctionalTest
         var filestream = mstream;
         if (filestream == null)
         {
-#if NETFRAMEWORK
             var bs = File.ReadAllBytes(fileName);
-#else
-            var bs = await File.ReadAllBytesAsync(fileName).ConfigureAwait(false);
-#endif
             filestream = new MemoryStream(bs);
         }
 
@@ -980,11 +966,7 @@ public static class FunctionalTest
         var filestream = mstream;
         if (filestream == null)
         {
-#if NETFRAMEWORK
             var bs = File.ReadAllBytes(fileName);
-#else
-            var bs = await File.ReadAllBytesAsync(fileName).ConfigureAwait(false);
-#endif
             filestream = new MemoryStream(bs);
         }
 
@@ -1521,25 +1503,11 @@ public static class FunctionalTest
             var output = await streamReader.ReadToEndAsync().ConfigureAwait(false);
             var csvStringNoWS = Regex.Replace(csvString.ToString(), @"\s+", "");
             var outputNoWS = Regex.Replace(output, @"\s+", "");
-
-#if NETFRAMEWORK
-            var hashedOutputBytes = MD5
-                .Create()
-                .ComputeHash(Encoding.UTF8.GetBytes(outputNoWS));
-#else
             // Compute MD5 for a better result.
-            var hashedOutputBytes = MD5.HashData(Encoding.UTF8.GetBytes(outputNoWS));
-#endif
-
+            var hashedOutputBytes = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(outputNoWS));
             var outputMd5 = Convert.ToBase64String(hashedOutputBytes);
-
-#if NETFRAMEWORK
-            var hashedCSVBytes = MD5
-                .Create()
-                .ComputeHash(Encoding.UTF8.GetBytes(csvStringNoWS));
-#else
-            var hashedCSVBytes = MD5.HashData(Encoding.UTF8.GetBytes(csvStringNoWS));
-#endif
+            // var hashedCSVBytes = new MD5CryptoServiceProvider().ComputeHash(Encoding.UTF8.GetBytes(csvStringNoWS));
+            var hashedCSVBytes = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(csvStringNoWS));
             var csvMd5 = Convert.ToBase64String(hashedCSVBytes);
 
             Assert.IsTrue(csvMd5.Contains(outputMd5));
@@ -1846,9 +1814,9 @@ public static class FunctionalTest
                 .WithBucket(bucketName);
             var tagObj = await minio.GetBucketTagsAsync(tagsArgs).ConfigureAwait(false);
             Assert.IsNotNull(tagObj);
-            Assert.IsNotNull(tagObj.Tags);
-            var tagsRes = tagObj.Tags;
-            Assert.AreEqual(tagsRes.Count, tags.Count);
+            Assert.IsNotNull(tagObj.GetTags());
+            var tagsRes = tagObj.GetTags();
+            Assert.AreEqual(tagsRes.Count(), tags.Count);
 
             new MintLogger(nameof(BucketTagsAsync_Test1), getBucketTagsSignature,
                 "Tests whether GetBucketTagsAsync passes", TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
@@ -1994,7 +1962,7 @@ public static class FunctionalTest
                 Assert.IsNotNull(tagObj);
                 Assert.IsNotNull(tagObj.Tags);
                 var tagsRes = tagObj.Tags;
-                Assert.AreEqual(tagsRes.Count, tags.Count);
+                Assert.AreEqual(tagsRes.Count(), tags.Count);
                 new MintLogger(nameof(ObjectTagsAsync_Test1), getObjectTagsSignature,
                         "Tests whether GetObjectTagsAsync passes", TestStatus.PASS, DateTime.Now - startTime,
                         args: args)
@@ -2736,7 +2704,7 @@ public static class FunctionalTest
                         Assert.AreEqual(1, notification.Records.Count);
                         Assert.IsTrue(notification.Records[0].eventName.Contains("s3:ObjectCreated:Put"));
                         Assert.IsTrue(
-                            objectName.Contains(HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key)));
+                            objectName.Contains(WebUtility.UrlDecode(notification.Records[0].s3.objectMeta.key)));
                         Assert.IsTrue(contentType.Contains(notification.Records[0].s3.objectMeta.contentType));
                         eventDetected = true;
                         break;
@@ -2988,7 +2956,7 @@ public static class FunctionalTest
                     throw new ArgumentException("Timeout: while waiting for events");
             }
 
-            if (!string.IsNullOrEmpty(rxEventData.json))
+            if (!string.IsNullOrEmpty(rxEventData?.json))
             {
                 var notification = JsonSerializer.Deserialize<MinioNotification>(rxEventData.json);
                 Assert.IsTrue(notification.Records[0].eventName.Equals("s3:ObjectCreated:Put"));
@@ -4148,7 +4116,6 @@ public static class FunctionalTest
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName)
                 .WithHeaders(customMetadata);
-
             await minio.CopyObjectAsync(copyObjectArgs).ConfigureAwait(false);
 
             statObjectArgs = new StatObjectArgs()
@@ -4241,7 +4208,7 @@ public static class FunctionalTest
             var copiedTags = tags.Tags;
             Assert.IsNotNull(tags);
             Assert.IsNotNull(copiedTags);
-            Assert.IsTrue(copiedTags.Count > 0);
+            Assert.IsTrue(copiedTags.Count() > 0);
             Assert.IsNotNull(copiedTags["key1"]);
             Assert.IsTrue(copiedTags["key1"].Contains("CopyObjectTags"));
             new MintLogger("CopyObject_Test9", copyObjectSignature, "Tests whether CopyObject passes", TestStatus.PASS,
@@ -4612,14 +4579,11 @@ public static class FunctionalTest
                     .WithObject(objectName)
                     .WithCallbackStream(async (stream, cancellationToken) =>
                     {
-                        var fileStream = File.Create(tempFileName);
-#if NETFRAMEWORK
-                        await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                        fileStream.Dispose();
-#else
-                        await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                        await fileStream.DisposeAsync().ConfigureAwait(false);
-#endif
+                        using (var fileStream = File.Create(tempFileName))
+                        {
+                            await stream.CopyToAsync(fileStream, 8192, cancellationToken).ConfigureAwait(false);
+                        }
+
                         var writtenInfo = new FileInfo(tempFileName);
                         file_read_size = writtenInfo.Length;
 
@@ -4761,12 +4725,8 @@ public static class FunctionalTest
                 //   ^1stChr, ^10thChr, ^20thChr, ^30th ^35thChr => characters' sequence
                 // Example: offset 10 and length 4, the expected size and content
                 // getObjectAsync will return are 4 and "klmn" respectively.
-
-#if NETFRAMEWORK
                 File.WriteAllLines(tempSource, line);
-#else
-                await File.WriteAllLinesAsync(tempSource, line).ConfigureAwait(false);
-#endif
+
                 using (var filestream = File.Open(tempSource, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     var objectSize = (int)filestream.Length;
@@ -4797,30 +4757,20 @@ public static class FunctionalTest
                         .WithOffsetAndLength(offsetToStartFrom, lengthToBeRead)
                         .WithCallbackStream(async (stream, cancellationToken) =>
                         {
-                            var fileStream = File.Create(tempFileName);
-#if NETFRAMEWORK
-                            await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                            fileStream.Dispose();
-#else
-                            await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                            await fileStream.DisposeAsync().ConfigureAwait(false);
-#endif
+                            using (var fileStream = File.Create(tempFileName))
+                            {
+                                await stream.CopyToAsync(fileStream, 8192, cancellationToken).ConfigureAwait(false);
+                            }
+
                             var writtenInfo = new FileInfo(tempFileName);
                             actualFileSize = writtenInfo.Length;
 
                             Assert.AreEqual(expectedFileSize, actualFileSize);
 
                             // Checking the content
-
-
-#if NETFRAMEWORK
-                            var actualContent = File.ReadAllText(tempFileName);
-#else
-                            var actualContent = await File.ReadAllTextAsync(tempFileName, cancellationToken)
-                                .ConfigureAwait(false);
-#endif
-
-                            actualContent = actualContent.Replace("\n", "").Replace("\r", "");
+                            var actualContent = File.ReadAllText(tempFileName)
+                                .Replace("\n", "")
+                                .Replace("\r", "");
                             Assert.AreEqual(actualContent, expectedContent);
                         });
 
@@ -4844,7 +4794,7 @@ public static class FunctionalTest
             }
         }
     }
-#if NET6_0_OR_GREATER
+
     internal static async Task GetObject_AsyncCallback_Test1(MinioClient minio)
     {
         var startTime = DateTime.Now;
@@ -4869,8 +4819,7 @@ public static class FunctionalTest
             // Create the bucket
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
 
-            using var file = File.OpenHandle(fileName);
-            using var filestream = new FileStream(file, FileAccess.Read);
+            using var filestream = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.Read);
             // Upload the large file, "fileName", into the bucket
             var size = filestream.Length;
             long file_read_size = 0;
@@ -4886,7 +4835,7 @@ public static class FunctionalTest
             var callbackAsync = async (Stream stream, CancellationToken cancellationToken) =>
             {
                 using var dest = new FileStream(destFileName, FileMode.Create, FileAccess.Write);
-                await stream.CopyToAsync(dest, cancellationToken).ConfigureAwait(false);
+                await stream.CopyToAsync(dest, 8192, cancellationToken).ConfigureAwait(false);
             };
 
             var getObjectArgs = new GetObjectArgs()
@@ -4919,7 +4868,7 @@ public static class FunctionalTest
             await TearDown(minio, bucketName).ConfigureAwait(false);
         }
     }
-#endif
+
     internal static async Task FGetObject_Test1(MinioClient minio)
     {
         var startTime = DateTime.Now;

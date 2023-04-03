@@ -108,8 +108,9 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken = default)
     {
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        using var response =
+            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -131,8 +132,9 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken = default)
     {
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        using var response =
+            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -154,8 +156,9 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken)
     {
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        using var response =
+            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
         var removeObjectsResponse = new RemoveObjectsResponse(response.StatusCode, response.Content);
         return removeObjectsResponse.DeletedObjectsResult.errorList;
     }

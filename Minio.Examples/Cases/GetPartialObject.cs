@@ -42,9 +42,11 @@ internal static class GetPartialObject
                 .WithOffsetAndLength(1024L, 4096L)
                 .WithCallbackStream(async stream =>
                 {
-                    var fileStream = File.Create(fileName);
-                    await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                    await fileStream.DisposeAsync().ConfigureAwait(false);
+                    using (var fileStream = File.Create(fileName))
+                    {
+                        await stream.CopyToAsync(fileStream).ConfigureAwait(false);
+                    }
+
                     var writtenInfo = new FileInfo(fileName);
                     var file_read_size = writtenInfo.Length;
                     // Uncomment to print the file on output console

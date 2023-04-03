@@ -92,13 +92,13 @@ public class CertificateIdentityProvider : ClientProvider
         if (!stsEndpoint.StartsWith("https", StringComparison.OrdinalIgnoreCase))
             throw new InvalidEndpointException($"stsEndpoint {stsEndpoint} is invalid." + " The scheme must be https");
 
-        this.StsEndpoint = stsEndpoint;
+        StsEndpoint = stsEndpoint;
         return this;
     }
 
     public CertificateIdentityProvider WithHttpClient(HttpClient httpClient = null)
     {
-        this.HttpClient = httpClient;
+        HttpClient = httpClient;
         return this;
     }
 

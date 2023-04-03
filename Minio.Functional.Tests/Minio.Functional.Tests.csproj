@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net48</TargetFrameworks>
+    <TargetFrameworks>net472;net48;net481;net6.0;net7.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <IsPackable>False</IsPackable>
   </PropertyGroup>
@@ -10,9 +10,4 @@
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
     <ProjectReference Include="..\Minio\Minio.csproj" />
   </ItemGroup>
-
-	<ItemGroup Condition=" $(TargetFramework.StartsWith('net4')) ">
-		<Reference Include="System.Web" />
-	</ItemGroup>
-
 </Project>
