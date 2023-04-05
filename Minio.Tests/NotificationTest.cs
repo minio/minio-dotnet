@@ -12,17 +12,20 @@ namespace Minio.Tests;
 [TestClass]
 public class NotificationTest
 {
-    [TestMethod]
-    public void TestNotificationStringHydration()
+    [DataTestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void TestNotificationStringHydration(bool contentContainsNamespace)
     {
         var notificationString =
-            "<NotificationConfiguration xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\"><TopicConfiguration><Id>YjVkM2Y0YmUtNGI3NC00ZjQyLWEwNGItNDIyYWUxY2I0N2M4 </Id><Arn>arnstring</Arn><Topic> arn:aws:sns:us-east-1:account-id:s3notificationtopic2 </Topic><Event> s3:ReducedRedundancyLostObject </Event><Event> s3:ObjectCreated: *</Event></TopicConfiguration></NotificationConfiguration>";
+            "<NotificationConfiguration" +
+            (contentContainsNamespace ? " xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\"" : string.Empty) +
+            "><TopicConfiguration><Id>YjVkM2Y0YmUtNGI3NC00ZjQyLWEwNGItNDIyYWUxY2I0N2M4 </Id><Arn>arnstring</Arn><Topic> arn:aws:sns:us-east-1:account-id:s3notificationtopic2 </Topic><Event> s3:ReducedRedundancyLostObject </Event><Event> s3:ObjectCreated: *</Event></TopicConfiguration></NotificationConfiguration>";
 
         try
         {
             ReadOnlyMemory<byte> contentBytes = Encoding.UTF8.GetBytes(notificationString);
-            var notification =
-                (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(contentBytes.AsStream());
+            var notification = Utils.DeserializeXml<BucketNotification>(contentBytes.AsStream());
             Assert.AreEqual(1, notification.TopicConfigs.Count);
         }
         catch (Exception ex)

@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
@@ -109,9 +110,7 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
 
                 AssumeRoleResponse assumeRoleResp = null;
                 if (responseResult.Response.IsSuccessStatusCode)
-                    assumeRoleResp =
-                        (AssumeRoleResponse)new XmlSerializer(typeof(AssumeRoleResponse)).Deserialize(
-                            Encoding.UTF8.GetBytes(responseResult.Content).AsMemory().AsStream());
+                    assumeRoleResp = Utils.DeserializeXml<AssumeRoleResponse>(Encoding.UTF8.GetBytes(responseResult.Content).AsMemory().AsStream());
 
                 if (credentials == null &&
                     assumeRoleResp?.arr != null)

@@ -731,9 +731,9 @@ public partial class MinioClient : IMinioClient
             BucketRegionCache.Instance.Remove(bucketName);
             throw new BucketNotFoundException(bucketName, "Not found.");
         }
-
+        
         ReadOnlyMemory<byte> contentBytes = Encoding.UTF8.GetBytes(response.Content);
-        var errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(contentBytes.AsStream());
+        var errResponse = Utils.DeserializeXml<ErrorResponse>(contentBytes.AsStream());
 
         if (response.StatusCode.Equals(HttpStatusCode.Forbidden)
             && (errResponse.Code.Equals("SignatureDoesNotMatch", StringComparison.OrdinalIgnoreCase) ||

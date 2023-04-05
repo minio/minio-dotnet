@@ -23,6 +23,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 using Minio.Exceptions;
 using Minio.Helper;
@@ -956,4 +957,42 @@ public static class Utils
 
         Console.WriteLine("DEBUG >>   Done printing\n");
     }
+
+    public static string DetermineNamespace(XDocument document)
+    {
+        return document.Root.Attributes().FirstOrDefault(attr => attr.IsNamespaceDeclaration)?.Value ?? string.Empty;
+    }
+
+    public static T DeserializeXml<T>(Stream stream) where T : class
+    {
+        var ns = GetNamespace<T>();
+        if (!string.IsNullOrWhiteSpace(ns) && ns == "http://s3.amazonaws.com/doc/2006-03-01/")
+        {
+            return (T)new XmlSerializer(typeof(T)).Deserialize(new AmazonAwsS3XmlReader(stream));
+        }
+
+        return (T)new XmlSerializer(typeof(T)).Deserialize(stream);
+    }
+
+    private static string GetNamespace<T>()
+    {
+        var xmlRootAttribute = typeof(T).GetCustomAttributes(
+            typeof(XmlRootAttribute), true
+        ).FirstOrDefault() as XmlRootAttribute;
+        if (xmlRootAttribute != null)
+        {
+            return xmlRootAttribute.Namespace;
+        }
+
+        return null;
+    }
+}
+
+public class AmazonAwsS3XmlReader : XmlTextReader
+{
+    public AmazonAwsS3XmlReader(Stream stream) : base(stream)
+    {
+    }
+
+    public override string NamespaceURI => "http://s3.amazonaws.com/doc/2006-03-01/";
 }

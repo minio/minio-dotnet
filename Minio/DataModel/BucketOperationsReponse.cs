@@ -15,6 +15,7 @@
  */
 
 using System.Globalization;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
@@ -38,8 +39,7 @@ internal class GetVersioningResponse : GenericResponse
             !HttpStatusCode.OK.Equals(statusCode))
             return;
 
-        VersioningConfig =
-            (VersioningConfiguration)new XmlSerializer(typeof(VersioningConfiguration)).Deserialize(Encoding.UTF8
+        VersioningConfig = Utils.DeserializeXml<VersioningConfiguration>(Encoding.UTF8
                 .GetBytes(responseContent).AsMemory().AsStream());
     }
 
@@ -56,8 +56,7 @@ internal class ListBucketsResponse : GenericResponse
         if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
             return;
 
-        BucketsResult =
-            (ListAllMyBucketsResult)new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(Encoding.UTF8
+        BucketsResult = Utils.DeserializeXml<ListAllMyBucketsResult>(Encoding.UTF8
                 .GetBytes(responseContent).AsMemory().AsStream());
     }
 }
@@ -163,25 +162,26 @@ internal class GetObjectsListResponse : GenericResponse
             !HttpStatusCode.OK.Equals(statusCode))
             return;
 
-        BucketResult =
-            (ListBucketResult)new XmlSerializer(typeof(ListBucketResult)).Deserialize(Encoding.UTF8
+        BucketResult = Utils.DeserializeXml<ListBucketResult>(Encoding.UTF8
                 .GetBytes(responseContent).AsMemory().AsStream());
 
         var root = XDocument.Parse(responseContent);
-        var items = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
+        XNamespace ns = Utils.DetermineNamespace(root);
+
+        var items = from c in root.Root.Descendants(ns + "Contents")
             select new Item
             {
-                Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
-                LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
-                ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value,
-                Size = ulong.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value,
+                Key = c.Element(ns + "Key").Value,
+                LastModified = c.Element(ns + "LastModified").Value,
+                ETag = c.Element(ns + "ETag").Value,
+                Size = ulong.Parse(c.Element(ns + "Size").Value,
                     CultureInfo.CurrentCulture),
                 IsDir = false
             };
-        var prefixes = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}CommonPrefixes")
+        var prefixes = from c in root.Root.Descendants(ns + "CommonPrefixes")
             select new Item
             {
-                Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Prefix").Value,
+                Key = c.Element(ns + "Prefix").Value,
                 IsDir = true
             };
         items = items.Concat(prefixes);
@@ -201,26 +201,27 @@ internal class GetObjectsVersionsListResponse : GenericResponse
             !HttpStatusCode.OK.Equals(statusCode))
             return;
 
-        BucketResult =
-            (ListVersionsResult)new XmlSerializer(typeof(ListVersionsResult)).Deserialize(Encoding.UTF8
+        BucketResult = Utils.DeserializeXml<ListVersionsResult>(Encoding.UTF8
                 .GetBytes(responseContent).AsMemory().AsStream());
 
         var root = XDocument.Parse(responseContent);
-        var items = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Version")
+        XNamespace ns = Utils.DetermineNamespace(root);
+
+        var items = from c in root.Root.Descendants(ns + "Version")
             select new Item
             {
-                Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
-                LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
-                ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value,
-                VersionId = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}VersionId").Value,
-                Size = ulong.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value,
+                Key = c.Element(ns + "Key").Value,
+                LastModified = c.Element(ns + "LastModified").Value,
+                ETag = c.Element(ns + "ETag").Value,
+                VersionId = c.Element(ns + "VersionId").Value,
+                Size = ulong.Parse(c.Element(ns + "Size").Value,
                     CultureInfo.CurrentCulture),
                 IsDir = false
             };
-        var prefixes = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}CommonPrefixes")
+        var prefixes = from c in root.Root.Descendants(ns + "CommonPrefixes")
             select new Item
             {
-                Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Prefix").Value,
+                Key = c.Element(ns + "Prefix").Value,
                 IsDir = true
             };
         items = items.Concat(prefixes);
@@ -262,9 +263,7 @@ internal class GetBucketNotificationsResponse : GenericResponse
             BucketNotificationConfiguration = new BucketNotification();
             return;
         }
-
-        BucketNotificationConfiguration =
-            (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(Encoding.UTF8
+        BucketNotificationConfiguration = Utils.DeserializeXml<BucketNotification>(Encoding.UTF8
                 .GetBytes(responseContent).AsMemory().AsStream());
     }
 
@@ -281,10 +280,7 @@ internal class GetBucketEncryptionResponse : GenericResponse
             BucketEncryptionConfiguration = null;
             return;
         }
-
-        BucketEncryptionConfiguration =
-            (ServerSideEncryptionConfiguration)new XmlSerializer(typeof(ServerSideEncryptionConfiguration))
-                .Deserialize(Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
+        BucketEncryptionConfiguration = Utils.DeserializeXml<ServerSideEncryptionConfiguration>(Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal ServerSideEncryptionConfiguration BucketEncryptionConfiguration { get; set; }
@@ -304,8 +300,7 @@ internal class GetBucketTagsResponse : GenericResponse
 
         // Remove namespace from response content, if present.
         responseContent = Utils.RemoveNamespaceInXML(responseContent);
-        BucketTags =
-            (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(Encoding.UTF8.GetBytes(responseContent).AsMemory()
+        BucketTags = Utils.DeserializeXml<Tagging>(Encoding.UTF8.GetBytes(responseContent).AsMemory()
                 .AsStream());
     }
 
@@ -322,9 +317,7 @@ internal class GetObjectLockConfigurationResponse : GenericResponse
             LockConfiguration = null;
             return;
         }
-
-        LockConfiguration =
-            (ObjectLockConfiguration)new XmlSerializer(typeof(ObjectLockConfiguration)).Deserialize(Encoding.UTF8
+        LockConfiguration = Utils.DeserializeXml<ObjectLockConfiguration>(Encoding.UTF8
                 .GetBytes(responseContent).AsMemory().AsStream());
     }
 
@@ -345,8 +338,7 @@ internal class GetBucketLifecycleResponse : GenericResponse
 
         //Remove xmlns content for config serialization
         responseContent = Utils.RemoveNamespaceInXML(responseContent);
-        BucketLifecycle =
-            (LifecycleConfiguration)new XmlSerializer(typeof(LifecycleConfiguration)).Deserialize(Encoding.UTF8
+        BucketLifecycle = Utils.DeserializeXml<LifecycleConfiguration>(Encoding.UTF8
                 .GetBytes(responseContent).AsMemory().AsStream());
     }
 
@@ -365,8 +357,8 @@ internal class GetBucketReplicationResponse : GenericResponse
             return;
         }
 
-        Config = (ReplicationConfiguration)new XmlSerializer(typeof(ReplicationConfiguration)).Deserialize(Encoding.UTF8
-            .GetBytes(responseContent).AsMemory().AsStream());
+        Config = Utils.DeserializeXml<ReplicationConfiguration>(Encoding.UTF8
+                .GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal ReplicationConfiguration Config { set; get; }

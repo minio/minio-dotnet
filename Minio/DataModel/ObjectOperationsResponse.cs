@@ -19,6 +19,7 @@ using System.Text;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
+using Minio;
 using Minio.DataModel;
 using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Tags;
@@ -55,9 +56,8 @@ internal class RemoveObjectsResponse : GenericResponse
     internal RemoveObjectsResponse(HttpStatusCode statusCode, string responseContent)
         : base(statusCode, responseContent)
     {
-        DeletedObjectsResult =
-            (DeleteObjectsResult)new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(Encoding.UTF8
-                .GetBytes(responseContent).AsMemory().AsStream());
+        DeletedObjectsResult = Utils.DeserializeXml<DeleteObjectsResult>(Encoding.UTF8
+                        .GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal DeleteObjectsResult DeletedObjectsResult { get; }
@@ -68,21 +68,21 @@ internal class GetMultipartUploadsListResponse : GenericResponse
     internal GetMultipartUploadsListResponse(HttpStatusCode statusCode, string responseContent)
         : base(statusCode, responseContent)
     {
-        var uploadsResult =
-            (ListMultipartUploadsResult)new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(Encoding.UTF8
-                .GetBytes(responseContent).AsMemory().AsStream());
-
+        var uploadsResult = Utils.DeserializeXml<ListMultipartUploadsResult>(Encoding.UTF8
+                        .GetBytes(responseContent).AsMemory().AsStream());
         var root = XDocument.Parse(responseContent);
-        var itemCheck = root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload").FirstOrDefault();
-        if (uploadsResult == null || itemCheck?.HasElements != true) return;
-        var uploads = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
-            select new Upload
-            {
-                Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
-                UploadId = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}UploadId").Value,
-                Initiated = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Initiated").Value
-            };
-        UploadResult = new Tuple<ListMultipartUploadsResult, List<Upload>>(uploadsResult, uploads.ToList());
+            XNamespace ns = Utils.DetermineNamespace(root);
+
+            var itemCheck = root.Root.Descendants(ns + "Upload").FirstOrDefault();
+            if (uploadsResult == null || itemCheck?.HasElements != true) return;
+            var uploads = from c in root.Root.Descendants(ns + "Upload")
+                select new Upload
+                {
+                    Key = c.Element(ns + "Key").Value,
+                    UploadId = c.Element(ns + "UploadId").Value,
+                    Initiated = c.Element(ns + "Initiated").Value
+                };
+            UploadResult = new Tuple<ListMultipartUploadsResult, List<Upload>>(uploadsResult, uploads.ToList());
     }
 
     internal Tuple<ListMultipartUploadsResult, List<Upload>> UploadResult { get; }
@@ -109,9 +109,7 @@ public class GetLegalHoldResponse : GenericResponse
             return;
         }
 
-        CurrentLegalHoldConfiguration =
-            (ObjectLegalHoldConfiguration)new XmlSerializer(typeof(ObjectLegalHoldConfiguration)).Deserialize(
-                Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
+        CurrentLegalHoldConfiguration = Utils.DeserializeXml<ObjectLegalHoldConfiguration>(Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
 
         if (CurrentLegalHoldConfiguration == null
             || string.IsNullOrEmpty(CurrentLegalHoldConfiguration.Status))
@@ -137,9 +135,8 @@ internal class GetObjectTagsResponse : GenericResponse
         }
 
         responseContent = Utils.RemoveNamespaceInXML(responseContent);
-        ObjectTags =
-            (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(Encoding.UTF8.GetBytes(responseContent).AsMemory()
-                .AsStream());
+        ObjectTags = Utils.DeserializeXml<Tagging>(Encoding.UTF8.GetBytes(responseContent).AsMemory()
+                        .AsStream());
     }
 
     public Tagging ObjectTags { get; set; }
@@ -156,9 +153,7 @@ internal class GetRetentionResponse : GenericResponse
             return;
         }
 
-        CurrentRetentionConfiguration =
-            (ObjectRetentionConfiguration)new XmlSerializer(typeof(ObjectRetentionConfiguration)).Deserialize(
-                Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
+        CurrentRetentionConfiguration = Utils.DeserializeXml<ObjectRetentionConfiguration>(Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal ObjectRetentionConfiguration CurrentRetentionConfiguration { get; }
@@ -171,10 +166,9 @@ internal class CopyObjectResponse : GenericResponse
     {
         var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
         if (reqType == typeof(CopyObjectResult))
-            CopyObjectRequestResult =
-                (CopyObjectResult)new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream);
+            CopyObjectRequestResult = Utils.DeserializeXml<CopyObjectResult>(stream);
         else
-            CopyPartRequestResult = (CopyPartResult)new XmlSerializer(typeof(CopyPartResult)).Deserialize(stream);
+            CopyPartRequestResult = Utils.DeserializeXml<CopyPartResult>(stream);
     }
 
     internal CopyObjectResult CopyObjectRequestResult { get; set; }
@@ -187,8 +181,7 @@ internal class NewMultipartUploadResponse : GenericResponse
         : base(statusCode, responseContent)
     {
         InitiateMultipartUploadResult newUpload = null;
-        newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult))
-            .Deserialize(Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
+        newUpload = Utils.DeserializeXml<InitiateMultipartUploadResult>(Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
 
         UploadId = newUpload.UploadId;
     }
