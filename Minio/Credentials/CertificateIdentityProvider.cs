@@ -134,7 +134,7 @@ public class CertificateIdentityProvider : ClientProvider
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             using var stream = new MemoryStream(contentBytes);
-            certResponse = (CertificateResponse)new XmlSerializer(typeof(CertificateResponse)).Deserialize(stream);
+            certResponse = Utils.DeserializeXml<CertificateResponse>(stream);
         }
 
         if (credentials == null && certResponse?.Cr != null)

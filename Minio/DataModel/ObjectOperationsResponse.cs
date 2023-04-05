@@ -55,8 +55,7 @@ internal class RemoveObjectsResponse : GenericResponse
         : base(statusCode, responseContent)
     {
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
-        DeletedObjectsResult =
-            (DeleteObjectsResult)new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(stream);
+        DeletedObjectsResult = Utils.DeserializeXml<DeleteObjectsResult>(stream);
     }
 
     internal DeleteObjectsResult DeletedObjectsResult { get; }
@@ -70,21 +69,22 @@ internal class GetMultipartUploadsListResponse : GenericResponse
         ListMultipartUploadsResult uploadsResult = null;
         using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
         {
-            uploadsResult =
-                (ListMultipartUploadsResult)new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(stream);
-        }
+            uploadsResult = Utils.DeserializeXml<ListMultipartUploadsResult>(stream);
 
-        var root = XDocument.Parse(responseContent);
-        var itemCheck = root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload").FirstOrDefault();
-        if (uploadsResult == null || itemCheck?.HasElements != true) return;
-        var uploads = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload")
-            select new Upload
-            {
-                Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
-                UploadId = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}UploadId").Value,
-                Initiated = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Initiated").Value
-            };
-        UploadResult = new Tuple<ListMultipartUploadsResult, List<Upload>>(uploadsResult, uploads.ToList());
+            var root = XDocument.Parse(responseContent);
+            XNamespace ns = Utils.DetermineNamespace(root);
+
+            var itemCheck = root.Root.Descendants(ns + "Upload").FirstOrDefault();
+            if (uploadsResult == null || itemCheck?.HasElements != true) return;
+            var uploads = from c in root.Root.Descendants(ns + "Upload")
+                select new Upload
+                {
+                    Key = c.Element(ns + "Key").Value,
+                    UploadId = c.Element(ns + "UploadId").Value,
+                    Initiated = c.Element(ns + "Initiated").Value
+                };
+            UploadResult = new Tuple<ListMultipartUploadsResult, List<Upload>>(uploadsResult, uploads.ToList());
+        }
     }
 
     internal Tuple<ListMultipartUploadsResult, List<Upload>> UploadResult { get; }
@@ -113,9 +113,7 @@ public class GetLegalHoldResponse : GenericResponse
 
         using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
         {
-            CurrentLegalHoldConfiguration =
-                (ObjectLegalHoldConfiguration)new XmlSerializer(typeof(ObjectLegalHoldConfiguration)).Deserialize(
-                    stream);
+            CurrentLegalHoldConfiguration = Utils.DeserializeXml<ObjectLegalHoldConfiguration>(stream);
         }
 
         if (CurrentLegalHoldConfiguration == null
@@ -143,7 +141,7 @@ internal class GetObjectTagsResponse : GenericResponse
 
         responseContent = Utils.RemoveNamespaceInXML(responseContent);
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
-        ObjectTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(stream);
+        ObjectTags = Utils.DeserializeXml<Tagging>(stream);
     }
 
     public Tagging ObjectTags { get; set; }
@@ -161,9 +159,7 @@ internal class GetRetentionResponse : GenericResponse
         }
 
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
-        CurrentRetentionConfiguration =
-            (ObjectRetentionConfiguration)new XmlSerializer(typeof(ObjectRetentionConfiguration)).Deserialize(
-                stream);
+        CurrentRetentionConfiguration = Utils.DeserializeXml<ObjectRetentionConfiguration>(stream);
     }
 
     internal ObjectRetentionConfiguration CurrentRetentionConfiguration { get; }
@@ -176,10 +172,9 @@ internal class CopyObjectResponse : GenericResponse
     {
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
         if (reqType == typeof(CopyObjectResult))
-            CopyObjectRequestResult =
-                (CopyObjectResult)new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream);
+            CopyObjectRequestResult = Utils.DeserializeXml<CopyObjectResult>(stream);
         else
-            CopyPartRequestResult = (CopyPartResult)new XmlSerializer(typeof(CopyPartResult)).Deserialize(stream);
+            CopyPartRequestResult = Utils.DeserializeXml<CopyPartResult>(stream);
     }
 
     internal CopyObjectResult CopyObjectRequestResult { get; set; }
@@ -194,8 +189,7 @@ internal class NewMultipartUploadResponse : GenericResponse
         InitiateMultipartUploadResult newUpload = null;
         using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
         {
-            newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult))
-                .Deserialize(stream);
+            newUpload = Utils.DeserializeXml<InitiateMultipartUploadResult>(stream);
         }
 
         UploadId = newUpload.UploadId;

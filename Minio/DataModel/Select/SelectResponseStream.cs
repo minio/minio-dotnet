@@ -150,7 +150,7 @@ public class SelectResponseStream
                     var progress = new ProgressMessage();
                     using (var stream = new MemoryStream(payload))
                     {
-                        progress = (ProgressMessage)new XmlSerializer(typeof(ProgressMessage)).Deserialize(stream);
+                        progress = Utils.DeserializeXml<ProgressMessage>(stream);
                     }
 
                     Progress = progress;
@@ -161,7 +161,7 @@ public class SelectResponseStream
                     var stats = new StatsMessage();
                     using (var stream = new MemoryStream(payload))
                     {
-                        stats = (StatsMessage)new XmlSerializer(typeof(StatsMessage)).Deserialize(stream);
+                        stats = Utils.DeserializeXml<StatsMessage>(stream);
                     }
 
                     Stats = stats;

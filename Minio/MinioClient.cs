@@ -733,7 +733,7 @@ public partial class MinioClient : IMinioClient
 
         var contentBytes = Encoding.UTF8.GetBytes(response.Content);
         using var stream = new MemoryStream(contentBytes);
-        var errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream);
+        var errResponse = Utils.DeserializeXml<ErrorResponse>(stream);
 
         if (response.StatusCode.Equals(HttpStatusCode.Forbidden)
             && (errResponse.Code.Equals("SignatureDoesNotMatch") || errResponse.Code.Equals("InvalidAccessKeyId")))

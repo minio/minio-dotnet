@@ -16,6 +16,7 @@
  */
 
 using System.Globalization;
+using System.IO;
 using System.Reactive.Linq;
 using System.Text;
 using System.Xml.Linq;
@@ -1448,18 +1449,19 @@ public partial class MinioClient : IObjectOperations
         ListPartsResult listPartsResult = null;
         using (var stream = new MemoryStream(contentBytes))
         {
-            listPartsResult = (ListPartsResult)new XmlSerializer(typeof(ListPartsResult)).Deserialize(stream);
+            listPartsResult = Utils.DeserializeXml<ListPartsResult>(stream);
         }
 
         var root = XDocument.Parse(response.Content);
+        XNamespace ns = Utils.DetermineNamespace(root);
 
-        var uploads = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Part")
+        var uploads = from c in root.Root.Descendants(ns + "Part")
             select new Part
             {
-                PartNumber = int.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}PartNumber").Value,
+                PartNumber = int.Parse(c.Element(ns + "PartNumber").Value,
                     CultureInfo.CurrentCulture),
-                ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value.Replace("\"", string.Empty),
-                Size = long.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value,
+                ETag = c.Element(ns + "ETag").Value.Replace("\"", string.Empty),
+                Size = long.Parse(c.Element(ns + "Size").Value,
                     CultureInfo.CurrentCulture)
             };
 
@@ -1492,8 +1494,7 @@ public partial class MinioClient : IObjectOperations
         InitiateMultipartUploadResult newUpload = null;
         using (var contentStream = new MemoryStream(response.ContentBytes))
         {
-            newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult))
-                .Deserialize(contentStream);
+            newUpload = Utils.DeserializeXml<InitiateMultipartUploadResult>(contentStream);
         }
 
         return newUpload.UploadId;
@@ -1646,11 +1647,10 @@ public partial class MinioClient : IObjectOperations
         using (var contentStream = new MemoryStream(response.ContentBytes))
         {
             if (type == typeof(CopyObjectResult))
-                copyResult =
-                    (CopyObjectResult)new XmlSerializer(typeof(CopyObjectResult)).Deserialize(contentStream);
+                copyResult = Utils.DeserializeXml<CopyObjectResult>(contentStream);
 
             if (type == typeof(CopyPartResult))
-                copyResult = (CopyPartResult)new XmlSerializer(typeof(CopyPartResult)).Deserialize(contentStream);
+                copyResult = Utils.DeserializeXml<CopyPartResult>(contentStream);
         }
 
         return copyResult;

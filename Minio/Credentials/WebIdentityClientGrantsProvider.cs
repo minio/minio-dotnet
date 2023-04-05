@@ -66,7 +66,7 @@ public abstract class WebIdentityClientGrantsProvider<T> : AssumeRoleBaseProvide
             throw new ArgumentNullException("Unable to get credentials. Response error.");
 
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(Convert.ToString(response.Content)));
-        return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(stream);
+        return Utils.DeserializeXml<AccessCredentials>(stream);
     }
 
     protected void Validate()
