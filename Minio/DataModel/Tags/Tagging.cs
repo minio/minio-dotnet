@@ -84,7 +84,8 @@ public class Tagging
         return true;
     }
 
-    public Dictionary<string, string> Tags
+    [XmlIgnore]
+    public IReadOnlyDictionary<string, string> Tags
     {
         get
         {
@@ -132,12 +133,12 @@ public class Tagging
         return str;
     }
 
-    public static Tagging GetBucketTags(Dictionary<string, string> tags)
+    public static Tagging GetBucketTags(IReadOnlyDictionary<string, string> tags)
     {
         return new Tagging(tags, false);
     }
 
-    public static Tagging GetObjectTags(Dictionary<string, string> tags)
+    public static Tagging GetObjectTags(IReadOnlyDictionary<string, string> tags)
     {
         return new Tagging(tags, true);
     }
