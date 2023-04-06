@@ -736,7 +736,7 @@ public partial class MinioClient : IMinioClient
         var errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream);
 
         if (response.StatusCode.Equals(HttpStatusCode.Forbidden)
-            && (errResponse.Code.Equals("SignatureDoesNotMatch") || errResponse.Code.Equals("InvalidAccessKeyId")))
+            && (errResponse.Code.Equals("SignatureDoesNotMatch", StringComparison.OrdinalIgnoreCase) || errResponse.Code.Equals("InvalidAccessKeyId", StringComparison.OrdinalIgnoreCase)))
             throw new AuthorizationException(errResponse.Resource, errResponse.BucketName, errResponse.Message);
 
         // Handle XML response for Bucket Policy not found case
@@ -754,16 +754,16 @@ public partial class MinioClient : IMinioClient
             throw new BucketNotFoundException(errResponse.BucketName, "Not found.");
 
         if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
-            && errResponse.Code.Equals("MalformedXML"))
+            && errResponse.Code.Equals("MalformedXML", StringComparison.OrdinalIgnoreCase))
             throw new MalFormedXMLException(errResponse.Resource, errResponse.BucketName, errResponse.Message,
                 errResponse.Key);
 
         if (response.StatusCode.Equals(HttpStatusCode.NotImplemented)
-            && errResponse.Code.Equals("NotImplemented"))
+            && errResponse.Code.Equals("NotImplemented", StringComparison.OrdinalIgnoreCase))
             throw new NotImplementedException(errResponse.Message);
 
         if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
-            && errResponse.Code.Equals("InvalidRequest"))
+            && errResponse.Code.Equals("InvalidRequest", StringComparison.OrdinalIgnoreCase))
         {
             var legalHold = new Dictionary<string, string> { { "legal-hold", "" } };
             if (response.Request.RequestUri.Query.Contains("legalHold"))
@@ -771,15 +771,15 @@ public partial class MinioClient : IMinioClient
         }
 
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-            && errResponse.Code.Equals("ObjectLockConfigurationNotFoundError"))
+            && errResponse.Code.Equals("ObjectLockConfigurationNotFoundError", StringComparison.OrdinalIgnoreCase))
             throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
 
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-            && errResponse.Code.Equals("ReplicationConfigurationNotFoundError"))
+            && errResponse.Code.Equals("ReplicationConfigurationNotFoundError", StringComparison.OrdinalIgnoreCase))
             throw new MissingBucketReplicationConfigurationException(errResponse.BucketName, errResponse.Message);
 
         if (response.StatusCode.Equals(HttpStatusCode.Conflict)
-            && errResponse.Code.Equals("BucketAlreadyOwnedByYou"))
+            && errResponse.Code.Equals("BucketAlreadyOwnedByYou", StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("Bucket already owned by you: " + errResponse.BucketName);
 
         throw new UnexpectedMinioException(errResponse.Message)

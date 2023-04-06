@@ -31,12 +31,13 @@ internal static class TestStatusExtender
 {
     public static string AsText(this TestStatus status)
     {
-        switch (status)
+        return status switch
         {
-            case TestStatus.PASS: return "PASS";
-            case TestStatus.FAIL: return "FAIL";
-            default: return "NA";
-        }
+            TestStatus.PASS => "PASS",
+            TestStatus.FAIL => "FAIL",
+            TestStatus.NA => "NA",
+            _ => "NA",
+        };
     }
 }
 
@@ -53,6 +54,7 @@ internal sealed class MintLogger
         string alert = null, string message = null, string error = null, Dictionary<string, string> args = null)
     {
         this.function = function;
+        this.description = description;
         this.duration = (int)duration.TotalMilliseconds;
         name = $"{name} : {testName}";
         this.alert = alert;
