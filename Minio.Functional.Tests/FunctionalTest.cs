@@ -425,10 +425,8 @@ public static class FunctionalTest
         var tasks = new Task[count];
         await Setup_Test(minio, bucketName).ConfigureAwait(false);
         for (var i = 0; i < count; i++)
-        {
             tasks[i] = PutObject_Task(minio, bucketName, objectName + i, null, null, 0, null,
                 rsg.GenerateStreamFromSeed(5));
-        }
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
         await Task.Delay(1000).ConfigureAwait(false);
@@ -494,7 +492,7 @@ public static class FunctionalTest
             bucketList = list.Buckets;
             bucketList = bucketList.Where(x => x.Name.StartsWith(bucketName)).ToList();
             Assert.AreEqual(noOfBuckets, bucketList.Count);
-            bucketList.ToList().Sort((Bucket x, Bucket y) =>
+            bucketList.ToList().Sort((x, y) =>
             {
                 if (x.Name == y.Name) return 0;
                 if (x.Name == null) return -1;
@@ -574,9 +572,7 @@ public static class FunctionalTest
                 .WithBucket(bucketName)).ConfigureAwait(false);
             if (versioningConfig != null && (versioningConfig.Status.Contains("Enabled") ||
                                              versioningConfig.Status.Contains("Suspended")))
-            {
                 getVersions = true;
-            }
 
             lockConfig = await minio.GetObjectLockConfigurationAsync(lockConfigurationArgs).ConfigureAwait(false);
         }
@@ -2608,35 +2604,35 @@ public static class FunctionalTest
             // ListObject api test with different prefix values
             // prefix value="", expected number of files listed=1
             var prefix = "";
-            await ListObjects_Test(minio, bucketName, prefix, 1, true, headers: extractHeader).ConfigureAwait(false);
+            await ListObjects_Test(minio, bucketName, prefix, 1, headers: extractHeader).ConfigureAwait(false);
 
             // prefix value="/", expected number of files listed=nFiles
             prefix = objectName + "/";
-            await ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader)
+            await ListObjects_Test(minio, bucketName, prefix, nFiles, headers: extractHeader)
                 .ConfigureAwait(false);
 
             // prefix value="/test", expected number of files listed=nFiles
             prefix = objectName + "/test";
-            await ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader)
+            await ListObjects_Test(minio, bucketName, prefix, nFiles, headers: extractHeader)
                 .ConfigureAwait(false);
 
             // prefix value="/test/", expected number of files listed=nFiles
             prefix = objectName + "/test/";
-            await ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader)
+            await ListObjects_Test(minio, bucketName, prefix, nFiles, headers: extractHeader)
                 .ConfigureAwait(false);
 
             // prefix value="/test", expected number of files listed=nFiles
             prefix = objectName + "/test/small";
-            await ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader)
+            await ListObjects_Test(minio, bucketName, prefix, nFiles, headers: extractHeader)
                 .ConfigureAwait(false);
 
             // prefix value="/test", expected number of files listed=nFiles
             prefix = objectName + "/test/small/";
-            await ListObjects_Test(minio, bucketName, prefix, nFiles, true, headers: extractHeader)
+            await ListObjects_Test(minio, bucketName, prefix, nFiles, headers: extractHeader)
                 .ConfigureAwait(false);
 
             // prefix value="/test", expected number of files listed=1
-            await ListObjects_Test(minio, bucketName, singleObjectName, 1, true, headers: extractHeader)
+            await ListObjects_Test(minio, bucketName, singleObjectName, 1, headers: extractHeader)
                 .ConfigureAwait(false);
 
             new MintLogger("GetObjectS3Zip_Test1", getObjectSignature, "Tests s3Zip files", TestStatus.PASS,
@@ -2698,7 +2694,6 @@ public static class FunctionalTest
             // wait for notifications
             var eventDetected = false;
             for (var attempt = 0; attempt < 10; attempt++)
-            {
                 if (received.Count > 0)
                 {
                     // Check if there is any unexpected error returned
@@ -2742,7 +2737,6 @@ public static class FunctionalTest
                         break;
                     }
                 }
-            }
 
             // subscription.Dispose();
             if (!eventDetected)
@@ -2778,13 +2772,11 @@ public static class FunctionalTest
 
                 if (Environment.GetEnvironmentVariable("AWS_ENDPOINT") != null ||
                     isAWS(Environment.GetEnvironmentVariable("SERVER_ENDPOINT")))
-                {
                     // This is a PASS
                     new MintLogger(nameof(ListenBucketNotificationsAsync_Test1),
                         listenBucketNotificationsSignature,
                         "Tests whether ListenBucketNotifications passes for small object",
                         TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
-                }
             }
             else
             {
@@ -2822,7 +2814,7 @@ public static class FunctionalTest
 
         try
         {
-            async static Task<Stream> ToStream(string input)
+            static async Task<Stream> ToStream(string input)
             {
                 var stream = new MemoryStream();
                 var writer = new StreamWriter(stream);
@@ -2846,7 +2838,7 @@ public static class FunctionalTest
             void Notify(MinioNotificationRaw data)
             {
                 var notification = JsonSerializer.Deserialize<MinioNotification>(data.json);
-                if (notification is not { Records: { } }) return;
+                if (notification is not { Records: not null }) return;
 
                 foreach (var @event in notification.Records)
                     rxEventsList.Add(@event);
@@ -4988,10 +4980,8 @@ public static class FunctionalTest
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
             var tasks = new Task[2];
             for (var i = 0; i < 2; i++)
-            {
                 tasks[i] = PutObject_Task(minio, bucketName, objectName + i, null, null, 0, null,
                     rsg.GenerateStreamFromSeed(1));
-            }
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -5063,10 +5053,8 @@ public static class FunctionalTest
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
             var tasks = new Task[2];
             for (var i = 0; i < 2; i++)
-            {
                 tasks[i] = PutObject_Task(minio, bucketName, objectName + i, null, null, 0, null,
                     rsg.GenerateStreamFromSeed(1 * KB));
-            }
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -5105,10 +5093,8 @@ public static class FunctionalTest
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
             var tasks = new Task[2];
             for (var i = 0; i < 2; i++)
-            {
                 tasks[i] = PutObject_Task(minio, bucketName, objectName + i, null, null, 0, null,
                     rsg.GenerateStreamFromSeed(1 * KB));
-            }
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -5220,12 +5206,10 @@ public static class FunctionalTest
                 {
                     Assert.IsTrue(item.Key.StartsWith(objectNamePrefix));
                     if (!objectNamesSet.Add(item.Key))
-                    {
                         new MintLogger("ListObjects_Test6", listObjectsSignature,
                             "Tests whether ListObjects lists more than 1000 objects correctly(max-keys = 1000)",
                             TestStatus.FAIL, DateTime.Now - startTime,
                             "Failed to add. Object already exists: " + item.Key, "", args: args).Log();
-                    }
 
                     count++;
                 },
@@ -5541,9 +5525,7 @@ public static class FunctionalTest
 
             using var response = await minio.WrapperGetAsync(presigned_url).ConfigureAwait(false);
             if (response.StatusCode != HttpStatusCode.OK || string.IsNullOrEmpty(Convert.ToString(response.Content)))
-            {
                 throw new ArgumentNullException(nameof(response.Content), "Unable to download via presigned URL");
-            }
 
             Assert.IsTrue(response.Content.Headers.GetValues("Content-Type")
                 .Contains(reqParams["response-content-type"]));

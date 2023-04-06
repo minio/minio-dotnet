@@ -75,7 +75,7 @@ internal sealed class MintLogger
     /// <summary>
     ///     Test function description
     /// </summary>
-    public string description { get; private set; }
+    public string description { get; }
 
     /// <summary>
     ///     Key-value pair of args relevant to test
