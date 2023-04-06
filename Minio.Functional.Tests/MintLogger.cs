@@ -99,10 +99,15 @@ internal sealed class MintLogger
     /// </summary>
     public string error { get; }
 
+    private JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions
+    {
+        WriteIndented = false,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
     public void Log()
     {
-        Console.WriteLine(JsonSerializer.Serialize(this,
-            new JsonSerializerOptions
-                { WriteIndented = false, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault }));
+        Console.WriteLine(JsonSerializer.Serialize(this, jsonSerializerOptions));
     }
 }
