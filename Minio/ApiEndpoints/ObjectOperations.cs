@@ -264,7 +264,7 @@ public partial class MinioClient : IObjectOperations
             args.ObjectName,
             args.Headers, // contentType
             Convert.ToString(args.GetType()), // metaData
-            Utils.ObjectToByteArray(args.RequestBody)).ConfigureAwait(false);
+            Utils.ObjectToByteArray(args.RequestBody.ToArray()).ToArray()).ConfigureAwait(false);
         var authenticator = new V4Authenticator(Secure, AccessKey, SecretKey, Region,
             SessionToken);
         return authenticator.PresignURL(requestMessageBuilder, args.Expiry, Region, SessionToken);
@@ -564,7 +564,7 @@ public partial class MinioClient : IObjectOperations
         if (args.ObjectSize < Constants.MinimumPartSize && args.ObjectSize >= 0 && args.ObjectStreamData != null)
         {
             var bytes = await ReadFullAsync(args.ObjectStreamData, (int)args.ObjectSize).ConfigureAwait(false);
-            var bytesRead = bytes?.Length ?? 0;
+            var bytesRead = bytes.Length;
             if (bytesRead != (int)args.ObjectSize)
                 throw new UnexpectedShortReadException(
                     $"Data read {bytesRead} is shorter than the size {args.ObjectSize} of input buffer.");
@@ -1186,7 +1186,7 @@ public partial class MinioClient : IObjectOperations
         for (partNumber = 1; partNumber <= partCount; partNumber++)
         {
             var dataToCopy = await ReadFullAsync(args.ObjectStreamData, (int)partSize).ConfigureAwait(false);
-            if (dataToCopy == null && numPartsUploaded > 0) break;
+            if (dataToCopy.IsEmpty && numPartsUploaded > 0) break;
             if (partNumber == partCount) expectedReadSize = lastPartSize;
             var putObjectArgs = new PutObjectArgs(args)
                 .WithRequestBody(dataToCopy)
@@ -1521,7 +1521,7 @@ public partial class MinioClient : IObjectOperations
 
         var contentBytes = Encoding.UTF8.GetBytes(response.Content);
         InitiateMultipartUploadResult newUpload = null;
-        using (var contentStream = new MemoryStream(response.ContentBytes))
+        using (var contentStream = new MemoryStream(response.ContentBytes.ToArray()))
         {
             newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult))
                 .Deserialize(contentStream);
@@ -1602,7 +1602,7 @@ public partial class MinioClient : IObjectOperations
     /// <param name="data"></param>
     /// <param name="currentPartSize"></param>
     /// <returns>bytes read in a byte array</returns>
-    internal async Task<byte[]> ReadFullAsync(Stream data, int currentPartSize)
+    internal async Task<ReadOnlyMemory<byte>> ReadFullAsync(Stream data, int currentPartSize)
     {
         var result = new byte[currentPartSize];
         var totalRead = 0;
@@ -1680,7 +1680,7 @@ public partial class MinioClient : IObjectOperations
         var contentBytes = Encoding.UTF8.GetBytes(response.Content);
 
         object copyResult = null;
-        using (var contentStream = new MemoryStream(response.ContentBytes))
+        using (var contentStream = new MemoryStream(response.ContentBytes.ToArray()))
         {
             if (type == typeof(CopyObjectResult))
                 copyResult =

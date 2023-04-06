@@ -1760,7 +1760,7 @@ internal class PutObjectPartArgs : PutObjectArgs
 
     public PutObjectPartArgs WithRequestBody(object data)
     {
-        return (PutObjectPartArgs)base.WithRequestBody(Utils.ObjectToByteArray(data));
+        return (PutObjectPartArgs)base.WithRequestBody(Utils.ObjectToByteArray(data).ToArray());
     }
 
     public new PutObjectPartArgs WithStreamData(Stream data)
@@ -1881,7 +1881,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         {
 #if NETSTANDARD
             var sha = SHA256.Create();
-            var hash = sha.ComputeHash(RequestBody);
+            var hash = sha.ComputeHash(RequestBody.ToArray());
 #else
             var hash = SHA256.HashData(RequestBody);
 #endif

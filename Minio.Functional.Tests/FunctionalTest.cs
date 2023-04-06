@@ -2509,7 +2509,7 @@ public static class FunctionalTest
         using var zipStream = new ZipOutputStream(outputMemStream);
 
         zipStream.SetLevel(3); //0-9, 9 being the highest level of compression
-        byte[] bytes = null;
+        Span<byte> bytes = null;
 
         Directory.CreateDirectory(prefix);
         for (var i = 1; i <= nFiles; i++)
@@ -2526,7 +2526,7 @@ public static class FunctionalTest
 
             using var stream = rsg.GenerateStreamFromSeed(i);
             bytes = stream.ToArray();
-            using var inStream = new MemoryStream(bytes);
+            using var inStream = new MemoryStream(bytes.ToArray());
             StreamUtils.Copy(inStream, zipStream, new byte[i * 128]);
 
             inStream.Close();

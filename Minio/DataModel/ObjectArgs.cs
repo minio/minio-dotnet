@@ -30,9 +30,9 @@ public abstract class ObjectArgs<T> : BucketArgs<T>
         return (T)this;
     }
 
-    public T WithRequestBody(byte[] data)
+    public T WithRequestBody(ReadOnlyMemory<byte> data)
     {
-        RequestBody = data;
+        RequestBody = data.ToArray();
         return (T)this;
     }
 

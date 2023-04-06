@@ -324,7 +324,7 @@ public partial class MinioClient : IMinioClient
         string objectName = null,
         Dictionary<string, string> headerMap = null,
         string contentType = "application/octet-stream",
-        byte[] body = null,
+        ReadOnlyMemory<byte> body = default,
         string resourcePath = null,
         bool isBucketCreationRequest = false)
     {
@@ -406,7 +406,7 @@ public partial class MinioClient : IMinioClient
             messageBuilder = new HttpRequestMessageBuilder(method, requestUrl, resource);
         else
             messageBuilder = new HttpRequestMessageBuilder(method, requestUrl);
-        if (body != null)
+        if (!body.IsEmpty)
         {
             messageBuilder.SetBody(body);
             messageBuilder.AddOrUpdateHeaderParameter("Content-Type", contentType);

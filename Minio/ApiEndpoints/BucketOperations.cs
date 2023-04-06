@@ -190,7 +190,7 @@ public partial class MinioClient : IBucketOperations
         var bucketList = new ListAllMyBucketsResult();
         if (HttpStatusCode.OK.Equals(response.StatusCode))
         {
-            using var stream = new MemoryStream(response.ContentBytes);
+            using var stream = new MemoryStream(response.ContentBytes.ToArray());
             bucketList =
                 new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream) as ListAllMyBucketsResult;
         }

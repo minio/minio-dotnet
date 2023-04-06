@@ -908,7 +908,7 @@ public static class Utils
     }
 
     // Converts an object to a byte array
-    public static byte[] ObjectToByteArray(object obj)
+    public static ReadOnlySpan<byte> ObjectToByteArray(object obj)
     {
         if (obj == null)
             return null;
