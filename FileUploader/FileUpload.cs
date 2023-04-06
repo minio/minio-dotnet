@@ -34,7 +34,7 @@ public static class FileUpload
         return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
     }
 
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                                | SecurityProtocolType.Tls11
@@ -50,7 +50,7 @@ public static class FileUpload
                 .WithCredentials(accessKey, secretKey)
                 .WithSSL()
                 .Build();
-            Run(minio).Wait();
+            await Run(minio).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

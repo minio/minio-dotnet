@@ -296,32 +296,32 @@ public static class FunctionalTest
         return $"{path}/{fileName}";
     }
 
-    internal static void RunCoreTests(MinioClient minioClient)
+    internal static async Task RunCoreTests(MinioClient minioClient)
     {
         // Check if bucket exists
-        BucketExists_Test(minioClient).Wait();
+        await BucketExists_Test(minioClient).ConfigureAwait(false);
 
         // Create a new bucket
-        MakeBucket_Test1(minioClient).Wait();
-        PutObject_Test1(minioClient).Wait();
-        PutObject_Test2(minioClient).Wait();
-        ListObjects_Test1(minioClient).Wait();
-        RemoveObject_Test1(minioClient).Wait();
-        CopyObject_Test1(minioClient).Wait();
+        await MakeBucket_Test1(minioClient).ConfigureAwait(false);
+        await PutObject_Test1(minioClient).ConfigureAwait(false);
+        await PutObject_Test2(minioClient).ConfigureAwait(false);
+        await ListObjects_Test1(minioClient).ConfigureAwait(false);
+        await RemoveObject_Test1(minioClient).ConfigureAwait(false);
+        await CopyObject_Test1(minioClient).ConfigureAwait(false);
 
         // Test SetPolicyAsync function
-        SetBucketPolicy_Test1(minioClient).Wait();
+        await SetBucketPolicy_Test1(minioClient).ConfigureAwait(false);
 
         // Test Presigned Get/Put operations
-        PresignedGetObject_Test1(minioClient).Wait();
-        PresignedPutObject_Test1(minioClient).Wait();
+        await PresignedGetObject_Test1(minioClient).ConfigureAwait(false);
+        await PresignedPutObject_Test1(minioClient).ConfigureAwait(false);
 
         // Test incomplete uploads
-        ListIncompleteUpload_Test1(minioClient).Wait();
-        RemoveIncompleteUpload_Test(minioClient).Wait();
+        await ListIncompleteUpload_Test1(minioClient).ConfigureAwait(false);
+        await RemoveIncompleteUpload_Test(minioClient).ConfigureAwait(false);
 
         // Test GetBucket policy
-        GetBucketPolicy_Test1(minioClient).Wait();
+        await GetBucketPolicy_Test1(minioClient).ConfigureAwait(false);
     }
 
     internal static async Task BucketExists_Test(MinioClient minio)
