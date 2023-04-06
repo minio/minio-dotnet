@@ -223,7 +223,7 @@ public static class Utils
         var minPartSize = copy ? Constants.MinimumCOPYPartSize : Constants.MinimumPUTPartSize;
         partSize = (double)Math.Ceiling((decimal)partSize / minPartSize) * minPartSize;
         var partCount = Math.Ceiling(size / partSize);
-        var lastPartSize = size - ((partCount - 1) * partSize);
+        var lastPartSize = size - (partCount - 1) * partSize;
         dynamic obj = new ExpandoObject();
         obj.partSize = partSize;
         obj.partCount = partCount;
@@ -869,7 +869,7 @@ public static class Utils
 
     public static DateTime From8601String(string dt)
     {
-        return DateTime.Parse(dt, provider: null, DateTimeStyles.RoundtripKind);
+        return DateTime.Parse(dt, null, DateTimeStyles.RoundtripKind);
     }
 
     public static Uri GetBaseUrl(string endpoint)
@@ -879,8 +879,10 @@ public static class Utils
                 string.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint),
                 nameof(endpoint));
 
-        if (endpoint.EndsWith("/", StringComparison.OrdinalIgnoreCase)) endpoint = endpoint.Substring(0, endpoint.Length - 1);
-        if (!endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase) && !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
+        if (endpoint.EndsWith("/", StringComparison.OrdinalIgnoreCase))
+            endpoint = endpoint.Substring(0, endpoint.Length - 1);
+        if (!endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
+            !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
             throw new InvalidEndpointException(string.Format("{0} is invalid hostname.", endpoint), "endpoint");
         string conn_url;
         if (endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase))

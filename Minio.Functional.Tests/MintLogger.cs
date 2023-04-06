@@ -36,7 +36,7 @@ internal static class TestStatusExtender
             TestStatus.PASS => "PASS",
             TestStatus.FAIL => "FAIL",
             TestStatus.NA => "NA",
-            _ => "NA",
+            _ => "NA"
         };
     }
 }

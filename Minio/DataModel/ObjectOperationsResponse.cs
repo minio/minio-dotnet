@@ -26,7 +26,8 @@ namespace Minio;
 
 internal class SelectObjectContentResponse : GenericResponse
 {
-    internal SelectObjectContentResponse(HttpStatusCode statusCode, string responseContent, ReadOnlySpan<byte> responseRawBytes)
+    internal SelectObjectContentResponse(HttpStatusCode statusCode, string responseContent,
+        ReadOnlySpan<byte> responseRawBytes)
         : base(statusCode, responseContent)
     {
         using var stream = new MemoryStream(responseRawBytes.ToArray());

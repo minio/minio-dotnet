@@ -45,7 +45,8 @@ internal static class Program
             secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
             if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") != null)
             {
-                isSecure = Environment.GetEnvironmentVariable("ENABLE_HTTPS").Equals("1", StringComparison.OrdinalIgnoreCase);
+                isSecure = Environment.GetEnvironmentVariable("ENABLE_HTTPS")
+                    .Equals("1", StringComparison.OrdinalIgnoreCase);
                 if (isSecure && port == 80) port = 443;
             }
 

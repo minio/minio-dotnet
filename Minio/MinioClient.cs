@@ -736,7 +736,8 @@ public partial class MinioClient : IMinioClient
         var errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream);
 
         if (response.StatusCode.Equals(HttpStatusCode.Forbidden)
-            && (errResponse.Code.Equals("SignatureDoesNotMatch", StringComparison.OrdinalIgnoreCase) || errResponse.Code.Equals("InvalidAccessKeyId", StringComparison.OrdinalIgnoreCase)))
+            && (errResponse.Code.Equals("SignatureDoesNotMatch", StringComparison.OrdinalIgnoreCase) ||
+                errResponse.Code.Equals("InvalidAccessKeyId", StringComparison.OrdinalIgnoreCase)))
             throw new AuthorizationException(errResponse.Resource, errResponse.BucketName, errResponse.Message);
 
         // Handle XML response for Bucket Policy not found case
