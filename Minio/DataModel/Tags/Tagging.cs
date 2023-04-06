@@ -63,6 +63,18 @@ public class Tagging
 
     [XmlElement("TagSet")] public TagSet TaggingSet { get; set; }
 
+    [XmlIgnore]
+    public IReadOnlyDictionary<string, string> Tags
+    {
+        get
+        {
+            if (TaggingSet == null || TaggingSet.Tag.Count == 0) return null;
+            var tagMap = new Dictionary<string, string>();
+            foreach (var tag in TaggingSet.Tag) tagMap[tag.Key] = tag.Value;
+            return tagMap;
+        }
+    }
+
     internal bool ValidateTagKey(string key)
     {
         if (string.IsNullOrEmpty(key) ||
@@ -82,18 +94,6 @@ public class Tagging
             return false;
 
         return true;
-    }
-
-    [XmlIgnore]
-    public IReadOnlyDictionary<string, string> Tags
-    {
-        get
-        {
-            if (TaggingSet == null || TaggingSet.Tag.Count == 0) return null;
-            var tagMap = new Dictionary<string, string>();
-            foreach (var tag in TaggingSet.Tag) tagMap[tag.Key] = tag.Value;
-            return tagMap;
-        }
     }
 
     public string MarshalXML()

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.IO;
 using System.Text;
 using Minio.DataModel;
 using Minio.DataModel.ILM;

@@ -14,6 +14,7 @@
 * limitations under the License.
 */
 
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -41,6 +42,13 @@ internal static class TestStatusExtender
 
 internal sealed class MintLogger
 {
+    private readonly JsonSerializerOptions jsonSerializerOptions = new()
+    {
+        WriteIndented = false,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
     public MintLogger(string testName, string function, string description, TestStatus status, TimeSpan duration,
         string alert = null, string message = null, string error = null, Dictionary<string, string> args = null)
     {
@@ -98,13 +106,6 @@ internal sealed class MintLogger
     ///     actual low level exception/error thrown by the program
     /// </summary>
     public string error { get; }
-
-    private JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions
-    {
-        WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
-        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-    };
 
     public void Log()
     {

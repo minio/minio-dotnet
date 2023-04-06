@@ -29,13 +29,19 @@ public class PostPolicy
     public string Bucket { get; private set; }
 
     /// <summary>
+    ///     Get the populated dictionary of policy data.
+    /// </summary>
+    /// <returns>Dictionary of policy data</returns>
+    public Dictionary<string, string> FormData => formData;
+
+    /// <summary>
     ///     Set expiration policy.
     /// </summary>
     /// <param name="expiration">Expiration time for the policy</param>
     public void SetExpires(DateTime expiration)
     {
         // this.formData.Add("expiration", expiration.ToString());
-        this.Expiration = expiration;
+        Expiration = expiration;
     }
 
     /// <summary>
@@ -308,10 +314,4 @@ public class PostPolicy
 
         return false;
     }
-
-    /// <summary>
-    ///     Get the populated dictionary of policy data.
-    /// </summary>
-    /// <returns>Dictionary of policy data</returns>
-    public Dictionary<string, string> FormData => formData;
 }
