@@ -570,7 +570,7 @@ public partial class MinioClient : IObjectOperations
                 throw new UnexpectedShortReadException(
                     $"Data read {bytesRead} is shorter than the size {args.ObjectSize} of input buffer.");
 
-            args = args.WithRequestBody(bytes.Span)
+            args = args.WithRequestBody(bytes)
                 .WithStreamData(null)
                 .WithObjectSize(bytesRead);
             await PutObjectSinglePartAsync(args, cancellationToken).ConfigureAwait(false);
@@ -1190,7 +1190,7 @@ public partial class MinioClient : IObjectOperations
             if (dataToCopy.IsEmpty && numPartsUploaded > 0) break;
             if (partNumber == partCount) expectedReadSize = lastPartSize;
             var putObjectArgs = new PutObjectArgs(args)
-                .WithRequestBody(dataToCopy.Span)
+                .WithRequestBody(dataToCopy)
                 .WithUploadId(args.UploadId)
                 .WithPartNumber(partNumber);
             var etag = await PutObjectSinglePartAsync(putObjectArgs, cancellationToken).ConfigureAwait(false);

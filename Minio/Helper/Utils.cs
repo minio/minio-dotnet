@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System;
 using System.ComponentModel;
 using System.Dynamic;
 using System.Globalization;
@@ -910,14 +911,14 @@ public static class Utils
     }
 
     // Converts an object to a byte array
-    public static ReadOnlySpan<byte> ObjectToByteArray(object obj)
+    public static ReadOnlyMemory<byte> ObjectToByteArray(object obj)
     {
         if (obj == null)
             return null;
         var serializer = new XmlSerializer(typeof(object));
         using var ms = new MemoryStream();
         serializer.Serialize(ms, obj);
-        return ms.ToArray();
+        return ms.GetBuffer().AsMemory();
     }
 
     // Print object key properties and their values
