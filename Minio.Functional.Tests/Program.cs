@@ -91,7 +91,7 @@ internal static class Program
 
         if (!string.IsNullOrEmpty(runMode) && runMode == "core")
         {
-            FunctionalTest.RunCoreTests(minioClient);
+            await FunctionalTest.RunCoreTests(minioClient).ConfigureAwait(false);
             Environment.Exit(0);
         }
 
