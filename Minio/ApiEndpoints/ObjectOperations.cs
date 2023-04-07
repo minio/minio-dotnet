@@ -265,7 +265,7 @@ public partial class MinioClient : IObjectOperations
             args.ObjectName,
             args.Headers, // contentType
             Convert.ToString(args.GetType()), // metaData
-            Utils.ObjectToByteArray(args.RequestBody).ToArray()).ConfigureAwait(false);
+            Utils.ObjectToByteArray(args.RequestBody)).ConfigureAwait(false);
         var authenticator = new V4Authenticator(Secure, AccessKey, SecretKey, Region,
             SessionToken);
         return authenticator.PresignURL(requestMessageBuilder, args.Expiry, Region, SessionToken);
