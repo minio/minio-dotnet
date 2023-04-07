@@ -1544,7 +1544,7 @@ public partial class MinioClient : IObjectOperations
     /// <returns></returns>
     [Obsolete("Use PutObjectAsync method with PutObjectArgs object. Refer PutObject example code.")]
     private async Task<string> PutObjectAsync(string bucketName, string objectName,
-        string uploadId, int partNumber, byte[] data, Dictionary<string, string> metaData,
+        string uploadId, int partNumber, ReadOnlyMemory<byte> data, Dictionary<string, string> metaData,
         Dictionary<string, string> sseHeaders, CancellationToken cancellationToken)
     {
         // For multi-part upload requests, metadata needs to be passed in the NewMultiPartUpload request
@@ -1604,18 +1604,19 @@ public partial class MinioClient : IObjectOperations
     /// <returns>bytes read in a byte array</returns>
     internal async Task<ReadOnlyMemory<byte>> ReadFullAsync(Stream data, int currentPartSize)
     {
-        var result = new byte[currentPartSize];
+        Memory<byte> result = new byte[currentPartSize];
         var totalRead = 0;
         while (totalRead < currentPartSize)
         {
-            var curData = new byte[currentPartSize - totalRead];
+            Memory<byte> curData = new byte[currentPartSize - totalRead];
 #if NETSTANDARD
-            var curRead = await data.ReadAsync(curData, 0, currentPartSize - totalRead).ConfigureAwait(false);
+            var curRead = await data.ReadAsync(curData.ToArray(), 0, currentPartSize - totalRead).ConfigureAwait(false);
 #else
-            var curRead = await data.ReadAsync(curData.AsMemory(0, currentPartSize - totalRead)).ConfigureAwait(false);
+            var curRead = await data.ReadAsync(curData.Slice(0, currentPartSize - totalRead)).ConfigureAwait(false);
 #endif
             if (curRead == 0) break;
-            for (var i = 0; i < curRead; i++) result[totalRead + i] = curData[i];
+            for (var i = 0; i < curRead; i++)
+                curData.Slice(i).CopyTo(result.Slice(totalRead + i));
             totalRead += curRead;
         }
 
@@ -1623,8 +1624,9 @@ public partial class MinioClient : IObjectOperations
 
         if (totalRead == currentPartSize) return result;
 
-        var truncatedResult = new byte[totalRead];
-        for (var i = 0; i < totalRead; i++) truncatedResult[i] = result[i];
+        Memory<byte> truncatedResult = new byte[totalRead];
+        for (var i = 0; i < totalRead; i++)
+            result.Slice(i).CopyTo(truncatedResult.Slice(i));
         return truncatedResult;
     }
 

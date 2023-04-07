@@ -251,7 +251,7 @@ public class PostPolicy
     ///     Serialize policy into JSON string.
     /// </summary>
     /// <returns>Serialized JSON policy</returns>
-    private byte[] MarshalJSON()
+    private ReadOnlySpan<byte> MarshalJSON()
     {
         var policyList = new List<string>();
         foreach (var condition in conditions)
@@ -275,7 +275,11 @@ public class PostPolicy
     public string Base64()
     {
         var policyStrBytes = MarshalJSON();
+#if NETSTANDARD
+        return Convert.ToBase64String(policyStrBytes.ToArray());
+#else
         return Convert.ToBase64String(policyStrBytes);
+#endif
     }
 
     /// <summary>

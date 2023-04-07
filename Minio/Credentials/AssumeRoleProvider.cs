@@ -144,7 +144,7 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
             new KeyValuePair<string, string>("DurationSeconds", DurationInSeconds.ToString()),
             new KeyValuePair<string, string>("Version", "2011-06-15")
         });
-        var byteArrContent = await formContent.ReadAsByteArrayAsync().ConfigureAwait(false);
+        ReadOnlyMemory<byte> byteArrContent = await formContent.ReadAsByteArrayAsync().ConfigureAwait(false);
         requestMessageBuilder.SetBody(byteArrContent);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Type",
             "application/x-www-form-urlencoded; charset=utf-8");
