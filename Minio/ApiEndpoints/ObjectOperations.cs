@@ -1684,10 +1684,12 @@ public partial class MinioClient : IObjectOperations
 
         if (type == typeof(CopyObjectResult))
             copyResult =
-                (CopyObjectResult)new XmlSerializer(typeof(CopyObjectResult)).Deserialize(response.ContentBytes.AsStream());
+                (CopyObjectResult)new XmlSerializer(typeof(CopyObjectResult)).Deserialize(
+                    response.ContentBytes.AsStream());
 
         if (type == typeof(CopyPartResult))
-            copyResult = (CopyPartResult)new XmlSerializer(typeof(CopyPartResult)).Deserialize(response.ContentBytes.AsStream());
+            copyResult =
+                (CopyPartResult)new XmlSerializer(typeof(CopyPartResult)).Deserialize(response.ContentBytes.AsStream());
 
         return copyResult;
     }
