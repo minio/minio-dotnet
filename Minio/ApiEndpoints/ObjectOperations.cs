@@ -20,6 +20,7 @@ using System.Reactive.Linq;
 using System.Text;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Tags;
@@ -569,7 +570,7 @@ public partial class MinioClient : IObjectOperations
                 throw new UnexpectedShortReadException(
                     $"Data read {bytesRead} is shorter than the size {args.ObjectSize} of input buffer.");
 
-            args = args.WithRequestBody(bytes)
+            args = args.WithRequestBody(bytes.Span)
                 .WithStreamData(null)
                 .WithObjectSize(bytesRead);
             await PutObjectSinglePartAsync(args, cancellationToken).ConfigureAwait(false);
@@ -1189,7 +1190,7 @@ public partial class MinioClient : IObjectOperations
             if (dataToCopy.IsEmpty && numPartsUploaded > 0) break;
             if (partNumber == partCount) expectedReadSize = lastPartSize;
             var putObjectArgs = new PutObjectArgs(args)
-                .WithRequestBody(dataToCopy)
+                .WithRequestBody(dataToCopy.Span)
                 .WithUploadId(args.UploadId)
                 .WithPartNumber(partNumber);
             var etag = await PutObjectSinglePartAsync(putObjectArgs, cancellationToken).ConfigureAwait(false);
@@ -1521,11 +1522,9 @@ public partial class MinioClient : IObjectOperations
 
         var contentBytes = Encoding.UTF8.GetBytes(response.Content);
         InitiateMultipartUploadResult newUpload = null;
-        using (var contentStream = new MemoryStream(response.ContentBytes.ToArray()))
-        {
-            newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult))
-                .Deserialize(contentStream);
-        }
+
+        newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult))
+            .Deserialize(response.ContentBytes.AsStream());
 
         return newUpload.UploadId;
     }
@@ -1682,15 +1681,13 @@ public partial class MinioClient : IObjectOperations
         var contentBytes = Encoding.UTF8.GetBytes(response.Content);
 
         object copyResult = null;
-        using (var contentStream = new MemoryStream(response.ContentBytes.ToArray()))
-        {
-            if (type == typeof(CopyObjectResult))
-                copyResult =
-                    (CopyObjectResult)new XmlSerializer(typeof(CopyObjectResult)).Deserialize(contentStream);
 
-            if (type == typeof(CopyPartResult))
-                copyResult = (CopyPartResult)new XmlSerializer(typeof(CopyPartResult)).Deserialize(contentStream);
-        }
+        if (type == typeof(CopyObjectResult))
+            copyResult =
+                (CopyObjectResult)new XmlSerializer(typeof(CopyObjectResult)).Deserialize(response.ContentBytes.AsStream());
+
+        if (type == typeof(CopyPartResult))
+            copyResult = (CopyPartResult)new XmlSerializer(typeof(CopyPartResult)).Deserialize(response.ContentBytes.AsStream());
 
         return copyResult;
     }

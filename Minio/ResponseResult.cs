@@ -15,6 +15,7 @@
 * limitations under the License.
 */
 
+using CommunityToolkit.HighPerformance;
 using System.Net;
 using System.Text;
 
@@ -64,7 +65,7 @@ public class ResponseResult : IDisposable
         }
     }
 
-    public ReadOnlySpan<byte> ContentBytes
+    public ReadOnlyMemory<byte> ContentBytes
     {
         get
         {
@@ -78,7 +79,7 @@ public class ResponseResult : IDisposable
                 _contentBytes = memoryStream.ToArray();
             }
 
-            return _contentBytes.Span;
+            return _contentBytes;
         }
     }
 
@@ -90,7 +91,7 @@ public class ResponseResult : IDisposable
 #if NETSTANDARD
             _content ??= Encoding.UTF8.GetString(ContentBytes.ToArray());
 #else
-            _content ??= Encoding.UTF8.GetString(ContentBytes);
+            _content ??= Encoding.UTF8.GetString(ContentBytes.Span);
 #endif
             return _content;
         }

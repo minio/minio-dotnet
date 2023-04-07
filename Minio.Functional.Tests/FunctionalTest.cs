@@ -931,7 +931,7 @@ public static class FunctionalTest
 
     internal static async Task PutObject_Task(MinioClient minio, string bucketName, string objectName,
         string fileName = null, string contentType = "application/octet-stream", long size = 0,
-        Dictionary<string, string> metaData = null, MemoryStream mstream = null)
+        Dictionary<string, string> metaData = null, Stream mstream = null)
     {
         var startTime = DateTime.Now;
 
@@ -968,7 +968,7 @@ public static class FunctionalTest
     internal static async Task<ObjectStat> PutObject_Tester(MinioClient minio,
         string bucketName, string objectName, string fileName = null,
         string contentType = "application/octet-stream", long size = 0,
-        Dictionary<string, string> metaData = null, MemoryStream mstream = null)
+        Dictionary<string, string> metaData = null, Stream mstream = null)
     {
         ObjectStat statObject = null;
         var startTime = DateTime.Now;
@@ -2509,7 +2509,6 @@ public static class FunctionalTest
         using var zipStream = new ZipOutputStream(outputMemStream);
 
         zipStream.SetLevel(3); //0-9, 9 being the highest level of compression
-        Span<byte> bytes = null;
 
         Directory.CreateDirectory(prefix);
         for (var i = 1; i <= nFiles; i++)
@@ -2525,11 +2524,7 @@ public static class FunctionalTest
             zipStream.PutNextEntry(newEntry);
 
             using var stream = rsg.GenerateStreamFromSeed(i);
-            bytes = stream.ToArray();
-            using var inStream = new MemoryStream(bytes.ToArray());
-            StreamUtils.Copy(inStream, zipStream, new byte[i * 128]);
-
-            inStream.Close();
+            StreamUtils.Copy(stream, zipStream, new byte[i * 128]);
             zipStream.CloseEntry();
         }
 

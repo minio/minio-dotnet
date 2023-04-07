@@ -15,6 +15,8 @@
 * limitations under the License.
 */
 
+using CommunityToolkit.HighPerformance;
+
 namespace Minio.Functional.Tests;
 
 internal sealed class RandomStreamGenerator
@@ -32,15 +34,15 @@ internal sealed class RandomStreamGenerator
 #endif
     }
 
-    public MemoryStream GenerateStreamFromSeed(int size)
+    public Stream GenerateStreamFromSeed(int size)
     {
         var randomWindow = _random.Next(0, size);
 
-        Span<byte> buffer = new byte[size];
+        Memory<byte> buffer = new byte[size];
 
-        _seedBuffer.Span.Slice(randomWindow, size - randomWindow).CopyTo(buffer.Slice(0, size - randomWindow));
-        _seedBuffer.Span.Slice(0, randomWindow).CopyTo(buffer.Slice(size - randomWindow, randomWindow));
+        _seedBuffer.Slice(randomWindow, size - randomWindow).CopyTo(buffer.Slice(0, size - randomWindow));
+        _seedBuffer.Slice(0, randomWindow).CopyTo(buffer.Slice(size - randomWindow, randomWindow));
 
-        return new MemoryStream(buffer.ToArray());
+        return buffer.AsStream();
     }
 }

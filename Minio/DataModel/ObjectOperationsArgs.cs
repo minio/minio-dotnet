@@ -1760,7 +1760,7 @@ internal class PutObjectPartArgs : PutObjectArgs
 
     public PutObjectPartArgs WithRequestBody(object data)
     {
-        return (PutObjectPartArgs)base.WithRequestBody(Utils.ObjectToByteArray(data).ToArray());
+        return (PutObjectPartArgs)base.WithRequestBody(Utils.ObjectToByteArray(data));
     }
 
     public new PutObjectPartArgs WithStreamData(Stream data)

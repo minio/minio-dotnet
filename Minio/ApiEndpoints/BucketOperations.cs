@@ -18,6 +18,7 @@
 using System.Net;
 using System.Reactive.Linq;
 using System.Xml.Serialization;
+using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 using Minio.DataModel.ILM;
 using Minio.DataModel.ObjectLock;
@@ -190,9 +191,8 @@ public partial class MinioClient : IBucketOperations
         var bucketList = new ListAllMyBucketsResult();
         if (HttpStatusCode.OK.Equals(response.StatusCode))
         {
-            using var stream = new MemoryStream(response.ContentBytes.ToArray());
             bucketList =
-                new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream) as ListAllMyBucketsResult;
+                new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(response.ContentBytes.AsStream()) as ListAllMyBucketsResult;
         }
 
         return bucketList;

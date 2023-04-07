@@ -18,6 +18,7 @@ using System.Net;
 using System.Text;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Tags;
@@ -27,11 +28,10 @@ namespace Minio;
 internal class SelectObjectContentResponse : GenericResponse
 {
     internal SelectObjectContentResponse(HttpStatusCode statusCode, string responseContent,
-        ReadOnlySpan<byte> responseRawBytes)
+        ReadOnlyMemory<byte> responseRawBytes)
         : base(statusCode, responseContent)
     {
-        using var stream = new MemoryStream(responseRawBytes.ToArray());
-        ResponseStream = new SelectResponseStream(stream);
+        ResponseStream = new SelectResponseStream(responseRawBytes.AsStream());
     }
 
     internal SelectResponseStream ResponseStream { get; }
