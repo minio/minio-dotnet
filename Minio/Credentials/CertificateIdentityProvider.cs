@@ -56,8 +56,7 @@ public class CertificateResponse
         ms.Flush();
         ms.Seek(0, SeekOrigin.Begin);
         using var streamReader = new StreamReader(ms);
-        var xml = streamReader.ReadToEnd();
-        return xml;
+        return streamReader.ReadToEnd();
     }
 }
 

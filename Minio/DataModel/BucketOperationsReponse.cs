@@ -20,6 +20,7 @@ using System.Text;
 using System.Web;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 using Minio.DataModel.ILM;
 using Minio.DataModel.ObjectLock;
@@ -246,8 +247,8 @@ internal class GetPolicyResponse : GenericResponse
 
     private async Task Initialize()
     {
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(ResponseContent));
-        using var streamReader = new StreamReader(stream);
+        Memory<byte> content = Encoding.UTF8.GetBytes(ResponseContent);
+        using var streamReader = new StreamReader(content.AsStream());
         PolicyJsonString = await streamReader.ReadToEndAsync()
             .ConfigureAwait(false);
     }
