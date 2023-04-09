@@ -914,10 +914,8 @@ public static class Utils
     {
         if (obj == null)
             return null;
-        var serializer = new XmlSerializer(typeof(object));
-        using var ms = new MemoryStream();
-        serializer.Serialize(ms, obj);
-        return ms.GetBuffer().AsMemory();
+
+        return JsonSerializer.SerializeToUtf8Bytes(obj);
     }
 
     // Print object key properties and their values

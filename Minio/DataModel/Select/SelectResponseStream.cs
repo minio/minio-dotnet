@@ -17,6 +17,7 @@
 using System.IO.Hashing;
 using System.Text;
 using System.Xml.Serialization;
+using CommunityToolkit.HighPerformance;
 using Minio.Exceptions;
 
 namespace Minio.DataModel;
@@ -113,10 +114,10 @@ public class SelectResponseStream
             var payloadLength = totalLength - headerLength - 16;
 
             Span<byte> headers = new byte[headerLength];
-            Span<byte> payload = new byte[payloadLength];
+            Memory<byte> payload = new byte[payloadLength];
             var num = ReadFromStream(headers);
             if (num != headerLength) throw new IOException("insufficient data");
-            num = ReadFromStream(payload);
+            num = ReadFromStream(payload.Span);
             if (num != payloadLength) throw new IOException("insufficient data");
 
             numBytesRead += num;
@@ -129,7 +130,7 @@ public class SelectResponseStream
             prelude.Span.CopyTo(inputArray);
             preludeCRC.Span.CopyTo(inputArray.Slice(prelude.Length, preludeCRC.Length));
             headers.CopyTo(inputArray.Slice(prelude.Length + preludeCRC.Length, headerLength));
-            payload.CopyTo(inputArray.Slice(prelude.Length + preludeCRC.Length + headerLength, payloadLength));
+            payload.Span.CopyTo(inputArray.Slice(prelude.Length + preludeCRC.Length + headerLength, payloadLength));
 
             var destinationMessage = inputArray.Slice(inputArray.Length - 4, 4);
             var isValidMessage = Crc32.TryHash(inputArray.Slice(0, inputArray.Length - 4), destinationMessage, out _);
@@ -161,10 +162,8 @@ public class SelectResponseStream
                 if (value.Equals("Progress"))
                 {
                     var progress = new ProgressMessage();
-                    using (var stream = new MemoryStream(payload.ToArray()))
-                    {
-                        progress = (ProgressMessage)new XmlSerializer(typeof(ProgressMessage)).Deserialize(stream);
-                    }
+
+                        progress = (ProgressMessage)new XmlSerializer(typeof(ProgressMessage)).Deserialize(payload.AsStream());
 
                     Progress = progress;
                 }
@@ -172,10 +171,8 @@ public class SelectResponseStream
                 if (value.Equals("Stats"))
                 {
                     var stats = new StatsMessage();
-                    using (var stream = new MemoryStream(payload.ToArray()))
-                    {
-                        stats = (StatsMessage)new XmlSerializer(typeof(StatsMessage)).Deserialize(stream);
-                    }
+
+                        stats = (StatsMessage)new XmlSerializer(typeof(StatsMessage)).Deserialize(payload.AsStream());
 
                     Stats = stats;
                 }
@@ -183,7 +180,7 @@ public class SelectResponseStream
 #if NETSTANDARD
                 if (value.Equals("Records")) Payload.Write(payload.ToArray(), 0, payloadLength);
 #else
-                if (value.Equals("Records")) Payload.Write(payload);
+                if (value.Equals("Records")) Payload.Write(payload.Span);
 #endif
             }
         }

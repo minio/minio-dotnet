@@ -21,6 +21,7 @@ using System.Text;
 using System.Web;
 using System.Xml;
 using System.Xml.Serialization;
+using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 using Minio.Exceptions;
 
@@ -130,10 +131,8 @@ public class CertificateIdentityProvider : ClientProvider
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var contentBytes = Encoding.UTF8.GetBytes(content);
-
-            using var stream = new MemoryStream(contentBytes);
-            certResponse = (CertificateResponse)new XmlSerializer(typeof(CertificateResponse)).Deserialize(stream);
+            ReadOnlyMemory<byte> contentBytes = Encoding.UTF8.GetBytes(content);
+            certResponse = (CertificateResponse)new XmlSerializer(typeof(CertificateResponse)).Deserialize(contentBytes.AsStream());
         }
 
         if (Credentials == null && certResponse?.Cr != null)

@@ -1476,12 +1476,8 @@ public partial class MinioClient : IObjectOperations
             await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
-        var contentBytes = Encoding.UTF8.GetBytes(response.Content);
-        ListPartsResult listPartsResult = null;
-        using (var stream = new MemoryStream(contentBytes))
-        {
-            listPartsResult = (ListPartsResult)new XmlSerializer(typeof(ListPartsResult)).Deserialize(stream);
-        }
+        ReadOnlyMemory<byte> contentBytes = Encoding.UTF8.GetBytes(response.Content);
+        ListPartsResult listPartsResult = (ListPartsResult)new XmlSerializer(typeof(ListPartsResult)).Deserialize(contentBytes.AsStream());
 
         var root = XDocument.Parse(response.Content);
 
@@ -1520,10 +1516,7 @@ public partial class MinioClient : IObjectOperations
         using var response = await ExecuteTaskAsync(NoErrorHandlers,
             requestMessageBuilder, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        var contentBytes = Encoding.UTF8.GetBytes(response.Content);
-        InitiateMultipartUploadResult newUpload = null;
-
-        newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult))
+        InitiateMultipartUploadResult newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult))
             .Deserialize(response.ContentBytes.AsStream());
 
         return newUpload.UploadId;
@@ -1672,9 +1665,6 @@ public partial class MinioClient : IObjectOperations
         using var response =
             await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
-
-        // Just read the result and parse content.
-        var contentBytes = Encoding.UTF8.GetBytes(response.Content);
 
         object copyResult = null;
 

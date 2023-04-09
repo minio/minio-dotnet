@@ -20,6 +20,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Serialization;
+using CommunityToolkit.HighPerformance;
 using Minio.Credentials;
 using Minio.DataModel;
 using Minio.DataModel.Tracing;
@@ -731,9 +732,8 @@ public partial class MinioClient : IMinioClient
             throw new BucketNotFoundException(bucketName, "Not found.");
         }
 
-        var contentBytes = Encoding.UTF8.GetBytes(response.Content);
-        using var stream = new MemoryStream(contentBytes);
-        var errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream);
+        ReadOnlyMemory<byte> contentBytes = Encoding.UTF8.GetBytes(response.Content);
+        var errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(contentBytes.AsStream());
 
         if (response.StatusCode.Equals(HttpStatusCode.Forbidden)
             && (errResponse.Code.Equals("SignatureDoesNotMatch", StringComparison.OrdinalIgnoreCase) ||

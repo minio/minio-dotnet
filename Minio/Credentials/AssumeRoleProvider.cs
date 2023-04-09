@@ -18,6 +18,7 @@
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
+using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 
 namespace Minio.Credentials;
@@ -108,11 +109,9 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
                 AssumeRoleResponse assumeRoleResp = null;
                 if (responseResult.Response.IsSuccessStatusCode)
                 {
-                    var contentBytes = Encoding.UTF8.GetBytes(responseResult.Content);
-
-                    using var stream = new MemoryStream(contentBytes);
+                    ReadOnlyMemory<byte> contentBytes = Encoding.UTF8.GetBytes(responseResult.Content);
                     assumeRoleResp =
-                        (AssumeRoleResponse)new XmlSerializer(typeof(AssumeRoleResponse)).Deserialize(stream);
+                        (AssumeRoleResponse)new XmlSerializer(typeof(AssumeRoleResponse)).Deserialize(contentBytes.AsStream());
                 }
 
                 if (credentials == null &&
