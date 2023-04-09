@@ -59,8 +59,11 @@ public class ResponseResult : IDisposable
         get
         {
             if (Response == null) return null;
-
+#if NETSTANDARD
             return _stream ??= Response.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
+#else
+            return _stream ??= Response.Content.ReadAsStream();
+#endif
         }
     }
 
@@ -75,7 +78,7 @@ public class ResponseResult : IDisposable
             {
                 using var memoryStream = new MemoryStream();
                 ContentStream.CopyTo(memoryStream);
-                _contentBytes = memoryStream.ToArray();
+                _contentBytes = new ReadOnlyMemory<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
             }
 
             return _contentBytes;
