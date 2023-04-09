@@ -56,7 +56,8 @@ internal class RemoveObjectsResponse : GenericResponse
         : base(statusCode, responseContent)
     {
         DeletedObjectsResult =
-            (DeleteObjectsResult)new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
+            (DeleteObjectsResult)new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(Encoding.UTF8
+                .GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal DeleteObjectsResult DeletedObjectsResult { get; }
@@ -67,8 +68,9 @@ internal class GetMultipartUploadsListResponse : GenericResponse
     internal GetMultipartUploadsListResponse(HttpStatusCode statusCode, string responseContent)
         : base(statusCode, responseContent)
     {
-        ListMultipartUploadsResult uploadsResult =
-                (ListMultipartUploadsResult)new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
+        var uploadsResult =
+            (ListMultipartUploadsResult)new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(Encoding.UTF8
+                .GetBytes(responseContent).AsMemory().AsStream());
 
         var root = XDocument.Parse(responseContent);
         var itemCheck = root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload").FirstOrDefault();
@@ -107,9 +109,9 @@ public class GetLegalHoldResponse : GenericResponse
             return;
         }
 
-            CurrentLegalHoldConfiguration =
-                (ObjectLegalHoldConfiguration)new XmlSerializer(typeof(ObjectLegalHoldConfiguration)).Deserialize(
-                    Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
+        CurrentLegalHoldConfiguration =
+            (ObjectLegalHoldConfiguration)new XmlSerializer(typeof(ObjectLegalHoldConfiguration)).Deserialize(
+                Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
 
         if (CurrentLegalHoldConfiguration == null
             || string.IsNullOrEmpty(CurrentLegalHoldConfiguration.Status))
@@ -135,7 +137,9 @@ internal class GetObjectTagsResponse : GenericResponse
         }
 
         responseContent = Utils.RemoveNamespaceInXML(responseContent);
-        ObjectTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
+        ObjectTags =
+            (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(Encoding.UTF8.GetBytes(responseContent).AsMemory()
+                .AsStream());
     }
 
     public Tagging ObjectTags { get; set; }
@@ -183,8 +187,8 @@ internal class NewMultipartUploadResponse : GenericResponse
         : base(statusCode, responseContent)
     {
         InitiateMultipartUploadResult newUpload = null;
-            newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult))
-                .Deserialize(Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
+        newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult))
+            .Deserialize(Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
 
         UploadId = newUpload.UploadId;
     }

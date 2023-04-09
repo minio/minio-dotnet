@@ -111,7 +111,8 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
                 {
                     ReadOnlyMemory<byte> contentBytes = Encoding.UTF8.GetBytes(responseResult.Content);
                     assumeRoleResp =
-                        (AssumeRoleResponse)new XmlSerializer(typeof(AssumeRoleResponse)).Deserialize(contentBytes.AsStream());
+                        (AssumeRoleResponse)new XmlSerializer(typeof(AssumeRoleResponse)).Deserialize(
+                            contentBytes.AsStream());
                 }
 
                 if (credentials == null &&

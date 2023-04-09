@@ -2809,17 +2809,6 @@ public static class FunctionalTest
 
         try
         {
-            static async Task<Stream> ToStream(string input)
-            {
-                var stream = new MemoryStream();
-                var writer = new StreamWriter(stream);
-                await writer.WriteAsync(input).ConfigureAwait(false);
-                await writer.FlushAsync().ConfigureAwait(false);
-                stream.Position = 0;
-
-                return stream;
-            }
-
             var bucketExistsArgs = new BucketExistsArgs()
                 .WithBucket(bucketName);
             var found = await minio.BucketExistsAsync(bucketExistsArgs).ConfigureAwait(false);
@@ -2858,11 +2847,7 @@ public static class FunctionalTest
             await Task.Delay(sleepTime).ConfigureAwait(false);
 
             var modelJson = "{\"test\": \"test\"}";
-
-            //TODO: check
             var stream = Encoding.UTF8.GetBytes(modelJson).AsMemory().AsStream();
-
-            //using var stream = await ToStream(modelJson).ConfigureAwait(false);
             var putObjectArgs = new PutObjectArgs()
                 .WithObject("test.json")
                 .WithBucket(bucketName)
@@ -2945,13 +2930,6 @@ public static class FunctionalTest
             var modelJson = "{\"test\": \"test\"}";
 
             var stream = Encoding.UTF8.GetBytes(modelJson).AsMemory().AsStream();
-
-            /*var stream = new MemoryStream();
-            using var writer = new StreamWriter(stream);
-            await writer.WriteAsync(modelJson).ConfigureAwait(false);
-            await writer.FlushAsync().ConfigureAwait(false);
-            stream.Position = 0;*/
-
             var putObjectArgs = new PutObjectArgs()
                 .WithObject("test.json")
                 .WithBucket(bucketName)
