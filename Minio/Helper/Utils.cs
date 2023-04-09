@@ -912,10 +912,15 @@ public static class Utils
     // Converts an object to a byte array
     public static ReadOnlyMemory<byte> ObjectToByteArray(object obj)
     {
-        if (obj == null)
-            return null;
-
-        return JsonSerializer.SerializeToUtf8Bytes(obj);
+        switch (obj)
+        {
+            case null:
+            case Memory<byte> memory when memory.IsEmpty:
+            case ReadOnlyMemory<byte> readOnlyMemory when readOnlyMemory.IsEmpty:
+                return null;
+            default:
+                return JsonSerializer.SerializeToUtf8Bytes(obj);
+        }
     }
 
     // Print object key properties and their values

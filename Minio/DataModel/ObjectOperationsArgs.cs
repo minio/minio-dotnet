@@ -55,14 +55,14 @@ public class SelectObjectContentArgs : EncryptionArgs<SelectObjectContentArgs>
         requestMessageBuilder.AddQueryParameter("select", "");
         requestMessageBuilder.AddQueryParameter("select-type", "2");
 
-        if (RequestBody == null)
+        if (RequestBody.IsEmpty)
         {
             RequestBody = Encoding.UTF8.GetBytes(SelectOptions.MarshalXML());
             requestMessageBuilder.SetBody(RequestBody);
         }
 
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.GetMD5SumStr(RequestBody));
+            Utils.GetMD5SumStr(RequestBody.Span));
 
         return requestMessageBuilder;
     }
@@ -1065,7 +1065,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
                 ObjectLockRetentionMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
         }
 
-        if (RequestBody != null) requestMessageBuilder.SetBody(RequestBody);
+        if (!RequestBody.IsEmpty) requestMessageBuilder.SetBody(RequestBody);
         return requestMessageBuilder;
     }
 
@@ -1870,20 +1870,20 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
                 Retention.RetainUntilDate);
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode", Retention.Mode.ToString());
             requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-                Utils.GetMD5SumStr(RequestBody));
+                Utils.GetMD5SumStr(RequestBody.Span));
         }
 
         if (LegalHoldEnabled != null)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-legal-hold",
                 LegalHoldEnabled == true ? "ON" : "OFF");
 
-        if (RequestBody != null)
+        if (!RequestBody.IsEmpty)
         {
 #if NETSTANDARD
             var sha = SHA256.Create();
             var hash = sha.ComputeHash(RequestBody.ToArray());
 #else
-            var hash = SHA256.HashData(RequestBody);
+            var hash = SHA256.HashData(RequestBody.Span);
 #endif
             var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
