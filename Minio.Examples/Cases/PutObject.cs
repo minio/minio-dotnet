@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 
 namespace Minio.Examples.Cases;
@@ -31,25 +32,24 @@ internal static class PutObject
     {
         try
         {
-            var bs = await File.ReadAllBytesAsync(fileName).ConfigureAwait(false);
+            ReadOnlyMemory<byte> bs = await File.ReadAllBytesAsync(fileName).ConfigureAwait(false);
             Console.WriteLine("Running example for API: PutObjectAsync");
-            using (var filestream = new MemoryStream(bs))
+            var filestream = bs.AsStream();
+
+            var fileInfo = new FileInfo(fileName);
+            var metaData = new Dictionary<string, string>
             {
-                var fileInfo = new FileInfo(fileName);
-                var metaData = new Dictionary<string, string>
-                {
-                    { "Test-Metadata", "Test  Test" }
-                };
-                var args = new PutObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(objectName)
-                    .WithStreamData(filestream)
-                    .WithObjectSize(filestream.Length)
-                    .WithContentType("application/octet-stream")
-                    .WithHeaders(metaData)
-                    .WithServerSideEncryption(sse);
-                await minio.PutObjectAsync(args).ConfigureAwait(false);
-            }
+                { "Test-Metadata", "Test  Test" }
+            };
+            var args = new PutObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithStreamData(filestream)
+                .WithObjectSize(filestream.Length)
+                .WithContentType("application/octet-stream")
+                .WithHeaders(metaData)
+                .WithServerSideEncryption(sse);
+            await minio.PutObjectAsync(args).ConfigureAwait(false);
 
             Console.WriteLine($"Uploaded object {objectName} to bucket {bucketName}");
             Console.WriteLine();

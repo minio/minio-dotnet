@@ -18,6 +18,7 @@
 using System.Net;
 using System.Text;
 using System.Xml.Serialization;
+using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 
 namespace Minio.Credentials;
@@ -133,8 +134,7 @@ public abstract class AssumeRoleBaseProvider<T> : ClientProvider
     {
         if (string.IsNullOrEmpty(Convert.ToString(response.Content)) || !HttpStatusCode.OK.Equals(response.StatusCode))
             throw new ArgumentNullException("Unable to generate credentials. Response error.");
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(Convert.ToString(response.Content)));
-        return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(stream);
+        return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(Encoding.UTF8.GetBytes(Convert.ToString(response.Content)).AsMemory().AsStream());
     }
 
     public override AccessCredentials GetCredentials()

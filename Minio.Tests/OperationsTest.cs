@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using CommunityToolkit.HighPerformance;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Exceptions;
 
@@ -61,9 +62,7 @@ public class OperationsTest
         if (!await ObjectExistsAsync(client, bucket, objectName).ConfigureAwait(false))
         {
             var helloData = Encoding.UTF8.GetBytes("hello world");
-            using var helloStream = new MemoryStream();
-            helloStream.Write(helloData);
-            helloStream.Seek(0, SeekOrigin.Begin);
+            var helloStream = helloData.AsMemory().AsStream();
             var PutObjectArgs = new PutObjectArgs()
                 .WithBucket(bucket)
                 .WithObject(objectName)
@@ -115,8 +114,7 @@ public class OperationsTest
         if (!await ObjectExistsAsync(client, bucket, objectName).ConfigureAwait(false))
         {
             var helloData = Encoding.UTF8.GetBytes("hello world");
-            using var helloStream = new MemoryStream();
-            helloStream.Write(helloData);
+            var helloStream = helloData.AsMemory().AsStream();
             var PutObjectArgs = new PutObjectArgs()
                 .WithBucket(bucket)
                 .WithObject(objectName)

@@ -15,6 +15,7 @@
  */
 
 using System.Text;
+using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 
 namespace Minio.Examples.Cases;
@@ -39,16 +40,14 @@ internal static class SelectObjectContent
             csvString.AppendLine("Employee1,,1000");
             csvString.AppendLine("Employee5,Employee1,500");
             csvString.AppendLine("Employee2,Employee1,800");
-            var csvBytes = Encoding.UTF8.GetBytes(csvString.ToString());
-            using (var stream = new MemoryStream(csvBytes))
-            {
-                var putObjectArgs = new PutObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(newObjectName)
-                    .WithStreamData(stream)
-                    .WithObjectSize(stream.Length);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
-            }
+            ReadOnlyMemory<byte> csvBytes = Encoding.UTF8.GetBytes(csvString.ToString());
+            var stream = csvBytes.AsStream();
+            var putObjectArgs = new PutObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(newObjectName)
+                .WithStreamData(stream)
+                .WithObjectSize(stream.Length);
+            await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
 
             var queryType = QueryExpressionType.SQL;
             var queryExpr = "select count(*) from s3object";

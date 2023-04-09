@@ -24,7 +24,7 @@ public class ResponseResult : IDisposable
 {
     private readonly Dictionary<string, string> _headers = new();
     private string _content;
-    private Memory<byte> _contentBytes;
+    private ReadOnlyMemory<byte> _contentBytes;
 
     private Stream _stream;
 

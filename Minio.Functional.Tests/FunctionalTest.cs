@@ -940,11 +940,11 @@ public static class FunctionalTest
         if (filestream == null)
         {
 #if NETFRAMEWORK
-            var bs = File.ReadAllBytes(fileName);
+            ReadOnlyMemory<byte> bs = File.ReadAllBytes(fileName);
 #else
-            var bs = await File.ReadAllBytesAsync(fileName).ConfigureAwait(false);
+            ReadOnlyMemory<byte> bs = await File.ReadAllBytesAsync(fileName).ConfigureAwait(false);
 #endif
-            filestream = new MemoryStream(bs);
+            filestream = bs.AsStream();
         }
 
         using (filestream)
@@ -1476,16 +1476,15 @@ public static class FunctionalTest
             csvString.AppendLine("Employee1,,1000");
             csvString.AppendLine("Employee5,Employee1,500");
             csvString.AppendLine("Employee2,Employee1,800");
-            var csvBytes = Encoding.UTF8.GetBytes(csvString.ToString());
-            using (var stream = new MemoryStream(csvBytes))
-            {
-                var putObjectArgs = new PutObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(objectName)
-                    .WithStreamData(stream)
-                    .WithObjectSize(stream.Length);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
-            }
+            ReadOnlyMemory<byte> csvBytes = Encoding.UTF8.GetBytes(csvString.ToString());
+            var stream = csvBytes.AsStream();
+
+            var putObjectArgs = new PutObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithStreamData(stream)
+                .WithObjectSize(stream.Length);
+            await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
 
             var inputSerialization = new SelectObjectInputSerialization
             {
@@ -2859,7 +2858,11 @@ public static class FunctionalTest
             await Task.Delay(sleepTime).ConfigureAwait(false);
 
             var modelJson = "{\"test\": \"test\"}";
-            using var stream = await ToStream(modelJson).ConfigureAwait(false);
+
+            //TODO: check
+            var stream = Encoding.UTF8.GetBytes(modelJson).AsMemory().AsStream();
+
+            //using var stream = await ToStream(modelJson).ConfigureAwait(false);
             var putObjectArgs = new PutObjectArgs()
                 .WithObject("test.json")
                 .WithBucket(bucketName)
@@ -2940,11 +2943,14 @@ public static class FunctionalTest
                 .WithEvents(events);
 
             var modelJson = "{\"test\": \"test\"}";
-            var stream = new MemoryStream();
+
+            var stream = Encoding.UTF8.GetBytes(modelJson).AsMemory().AsStream();
+
+            /*var stream = new MemoryStream();
             using var writer = new StreamWriter(stream);
             await writer.WriteAsync(modelJson).ConfigureAwait(false);
             await writer.FlushAsync().ConfigureAwait(false);
-            stream.Position = 0;
+            stream.Position = 0;*/
 
             var putObjectArgs = new PutObjectArgs()
                 .WithObject("test.json")

@@ -17,6 +17,7 @@
 
 using System.Text;
 using System.Xml.Serialization;
+using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 
 /*
@@ -72,7 +73,6 @@ public class WebIdentityProvider : WebIdentityClientGrantsProvider<WebIdentityPr
     {
         Validate();
         var credentials = base.ParseResponse(response);
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(Convert.ToString(response.Content)));
-        return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(stream);
+        return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(Encoding.UTF8.GetBytes(Convert.ToString(response.Content)).AsMemory().AsStream());
     }
 }

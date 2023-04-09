@@ -1,4 +1,5 @@
 using System.Text;
+using CommunityToolkit.HighPerformance;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Exceptions;
 
@@ -55,9 +56,7 @@ public class ReuseTcpConnectionTest
         if (!await ObjectExistsAsync(_minioClient, bucket, objectName).ConfigureAwait(false))
         {
             var helloData = Encoding.UTF8.GetBytes("hello world");
-            using var helloStream = new MemoryStream();
-            helloStream.Write(helloData);
-            helloStream.Seek(0, SeekOrigin.Begin);
+            var helloStream = helloData.AsMemory().AsStream();
             var putObjectArgs = new PutObjectArgs()
                 .WithBucket(bucket)
                 .WithObject(objectName)
