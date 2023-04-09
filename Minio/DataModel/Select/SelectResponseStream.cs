@@ -82,7 +82,8 @@ public class SelectResponseStream
             var n = ReadFromStream(prelude.Span);
             numBytesRead += n;
             n = ReadFromStream(preludeCRC.Span);
-            Span<byte> preludeCRCBytes = preludeCRC.ToArray();
+            Span<byte> preludeCRCBytes = new byte[preludeCRC.Length];
+            preludeCRC.Span.CopyTo(preludeCRCBytes);
             if (BitConverter.IsLittleEndian) preludeCRCBytes.Reverse();
             numBytesRead += n;
             Span<byte> inputArray = new byte[prelude.Length + 4];
@@ -95,7 +96,9 @@ public class SelectResponseStream
             if (!destinationPrelude.SequenceEqual(preludeCRCBytes))
                 throw new ArgumentException("Prelude CRC Mismatch");
 
-            Span<byte> bytes = prelude.Slice(0, 4).ToArray();
+            var preludeBytes = prelude.Slice(0, 4).Span;
+            Span<byte> bytes = new byte[preludeBytes.Length];
+            preludeBytes.CopyTo(bytes);
             if (BitConverter.IsLittleEndian) bytes.Reverse();
 
 #if NETSTANDARD
@@ -103,7 +106,9 @@ public class SelectResponseStream
 #else
             var totalLength = BitConverter.ToInt32(bytes);
 #endif
-            bytes = prelude.Slice(4, 4).ToArray();
+            preludeBytes = prelude.Slice(4, 4).Span;
+            bytes = new byte[preludeBytes.Length];
+            preludeBytes.CopyTo(bytes);
             if (BitConverter.IsLittleEndian) bytes.Reverse();
 
 #if NETSTANDARD
@@ -122,7 +127,10 @@ public class SelectResponseStream
 
             numBytesRead += num;
             num = ReadFromStream(messageCRC.Span);
-            Span<byte> messageCRCBytes = messageCRC.ToArray();
+
+            var messageBytes = messageCRC.Span;
+            Span<byte> messageCRCBytes = new byte[messageBytes.Length];
+            messageBytes.CopyTo(messageCRCBytes);
             if (BitConverter.IsLittleEndian) messageCRCBytes.Reverse();
             // now verify message CRC
             inputArray = new byte[totalLength];
