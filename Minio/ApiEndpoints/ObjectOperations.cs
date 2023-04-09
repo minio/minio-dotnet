@@ -1608,14 +1608,10 @@ public partial class MinioClient : IObjectOperations
         while (totalRead < currentPartSize)
         {
             Memory<byte> curData = new byte[currentPartSize - totalRead];
-#if NETSTANDARD
-            var curRead = await data.ReadAsync(curData.ToArray(), 0, currentPartSize - totalRead).ConfigureAwait(false);
-#else
             var curRead = await data.ReadAsync(curData.Slice(0, currentPartSize - totalRead)).ConfigureAwait(false);
-#endif
             if (curRead == 0) break;
             for (var i = 0; i < curRead; i++)
-                curData.Slice(i).CopyTo(result.Slice(totalRead + i));
+                curData.Slice(i, 1).CopyTo(result.Slice(totalRead + i));
             totalRead += curRead;
         }
 
@@ -1625,7 +1621,7 @@ public partial class MinioClient : IObjectOperations
 
         Memory<byte> truncatedResult = new byte[totalRead];
         for (var i = 0; i < totalRead; i++)
-            result.Slice(i).CopyTo(truncatedResult.Slice(i));
+            result.Slice(i, 1).CopyTo(truncatedResult.Slice(i));
         return truncatedResult;
     }
 

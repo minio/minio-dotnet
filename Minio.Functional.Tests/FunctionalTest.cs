@@ -26,6 +26,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml;
 using System.Xml.Serialization;
+using CommunityToolkit.HighPerformance;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -977,11 +978,11 @@ public static class FunctionalTest
         if (filestream == null)
         {
 #if NETFRAMEWORK
-            var bs = File.ReadAllBytes(fileName);
+            Memory<byte> bs = File.ReadAllBytes(fileName);
 #else
-            var bs = await File.ReadAllBytesAsync(fileName).ConfigureAwait(false);
+            Memory<byte> bs = await File.ReadAllBytesAsync(fileName).ConfigureAwait(false);
 #endif
-            filestream = new MemoryStream(bs);
+            filestream = bs.AsStream();
         }
 
         using (filestream)
