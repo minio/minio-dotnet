@@ -236,7 +236,7 @@ public partial class MinioClient : IMinioClient
     {
         var rgn = "";
         // Use user specified region in client constructor if present
-        if (Region != string.Empty) return Region;
+        if (!string.IsNullOrEmpty(Region)) return Region;
 
         // pick region from endpoint if present
         if (!string.IsNullOrEmpty(Endpoint))
@@ -677,7 +677,7 @@ public partial class MinioClient : IMinioClient
             {
                 var resource = resourceSplits[0];
 
-                if (isAWS && isVirtual && pathAndQuery != string.Empty)
+                if (isAWS && isVirtual && !string.IsNullOrEmpty(pathAndQuery))
                 {
                     errorResponse.Code = "NoSuchKey";
                     error = new ObjectNotFoundException(resource, "Not found.");

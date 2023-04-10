@@ -1880,7 +1880,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         if (!RequestBody.IsEmpty)
         {
 #if NETSTANDARD
-            var sha = SHA256.Create();
+            using var sha = SHA256.Create();
             var hash = sha.ComputeHash(RequestBody.ToArray());
 #else
             var hash = SHA256.HashData(RequestBody.Span);

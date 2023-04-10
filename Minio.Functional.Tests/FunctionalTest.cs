@@ -1519,9 +1519,8 @@ public static class FunctionalTest
             var outputNoWS = Regex.Replace(output, @"\s+", "");
 
 #if NETFRAMEWORK
-            var hashedOutputBytes = MD5
-                .Create()
-                .ComputeHash(Encoding.UTF8.GetBytes(outputNoWS));
+            using var md5 = MD5.Create();
+            var hashedOutputBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(outputNoWS));
 #else
             // Compute MD5 for a better result.
             var hashedOutputBytes = MD5.HashData(Encoding.UTF8.GetBytes(outputNoWS));
@@ -1530,9 +1529,8 @@ public static class FunctionalTest
             var outputMd5 = Convert.ToBase64String(hashedOutputBytes);
 
 #if NETFRAMEWORK
-            var hashedCSVBytes = MD5
-                .Create()
-                .ComputeHash(Encoding.UTF8.GetBytes(csvStringNoWS));
+            using var md5CSV = MD5.Create();
+            var hashedCSVBytes = md5CSV.ComputeHash(Encoding.UTF8.GetBytes(csvStringNoWS));
 #else
             var hashedCSVBytes = MD5.HashData(Encoding.UTF8.GetBytes(csvStringNoWS));
 #endif
@@ -2969,7 +2967,7 @@ public static class FunctionalTest
                     "Tests whether ListenBucketNotifications passes for no event processing",
                     TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
             }
-            else if (exception != null)
+            else if (exception is not null)
             {
                 throw exception;
             }

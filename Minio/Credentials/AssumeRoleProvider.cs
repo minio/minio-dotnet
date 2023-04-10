@@ -79,7 +79,8 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
     public AssumeRoleProvider WithSTSEndpoint(string endpoint)
     {
         if (string.IsNullOrWhiteSpace(endpoint))
-            throw new ArgumentNullException("The STS endpoint cannot be null or empty.");
+            throw new ArgumentNullException(nameof(endpoint), "The STS endpoint cannot be null or empty.");
+
         STSEndPoint = endpoint;
         var stsUri = Utils.GetBaseUrl(endpoint);
         if ((stsUri.Scheme == "http" && stsUri.Port == 80) ||

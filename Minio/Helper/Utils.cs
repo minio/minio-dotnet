@@ -244,7 +244,7 @@ public static class Utils
     internal static string GetMD5SumStr(ReadOnlySpan<byte> key)
     {
 #if NETSTANDARD
-        var md5 = MD5.Create();
+        using var md5 = MD5.Create();
         var hashedBytes = md5.ComputeHash(key.ToArray());
 #else
         var hashedBytes = MD5.HashData(key);
