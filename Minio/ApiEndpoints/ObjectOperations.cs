@@ -1477,7 +1477,8 @@ public partial class MinioClient : IObjectOperations
                 .ConfigureAwait(false);
 
         var listPartsResult =
-            (ListPartsResult)new XmlSerializer(typeof(ListPartsResult)).Deserialize(Encoding.UTF8.GetBytes(response.Content).AsMemory().AsStream());
+            (ListPartsResult)new XmlSerializer(typeof(ListPartsResult)).Deserialize(Encoding.UTF8
+                .GetBytes(response.Content).AsMemory().AsStream());
 
         var root = XDocument.Parse(response.Content);
 

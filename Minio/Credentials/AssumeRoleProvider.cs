@@ -108,11 +108,9 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
 
                 AssumeRoleResponse assumeRoleResp = null;
                 if (responseResult.Response.IsSuccessStatusCode)
-                {
                     assumeRoleResp =
                         (AssumeRoleResponse)new XmlSerializer(typeof(AssumeRoleResponse)).Deserialize(
                             Encoding.UTF8.GetBytes(responseResult.Content).AsMemory().AsStream());
-                }
 
                 if (credentials == null &&
                     assumeRoleResp?.arr != null)
