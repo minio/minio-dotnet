@@ -609,7 +609,7 @@ public static class FunctionalTest
             () => { });
 
         await Task.Delay(4500).ConfigureAwait(false);
-        if (lockConfig?.ObjectLockEnabled.Equals(ObjectLockConfiguration.LockEnabled) == true)
+        if (lockConfig?.ObjectLockEnabled.Equals(ObjectLockConfiguration.LockEnabled, StringComparison.OrdinalIgnoreCase) == true)
         {
             foreach (var item in objectNamesVersions)
             {
@@ -1005,13 +1005,13 @@ public static class FunctionalTest
 
             statObject = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
             Assert.IsNotNull(statObject);
-            Assert.IsTrue(statObject.ObjectName.Equals(objectName));
+            Assert.IsTrue(statObject.ObjectName.Equals(objectName, StringComparison.Ordinal));
             Assert.AreEqual(statObject.Size, size);
 
             if (contentType != null)
             {
                 Assert.IsNotNull(statObject.ContentType);
-                Assert.IsTrue(statObject.ContentType.Equals(contentType));
+                Assert.IsTrue(statObject.ContentType.Equals(contentType, StringComparison.OrdinalIgnoreCase));
             }
 
             var rmArgs = new RemoveObjectArgs()
@@ -1363,11 +1363,11 @@ public static class FunctionalTest
 
             var statObject = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
             Assert.IsNotNull(statObject);
-            Assert.IsTrue(statObject.ObjectName.Equals(objectName));
+            Assert.IsTrue(statObject.ObjectName.Equals(objectName, StringComparison.Ordinal));
             Assert.AreEqual(statObject.Size, sizeExpected);
             Assert.IsTrue(statObject.MetaData["Content-Type"] != null);
             Assert.IsTrue(statObject.ContentType.Equals(contentType));
-            Assert.IsTrue(statObject.MetaData[metadataKey].Equals(metadataValue));
+            Assert.IsTrue(statObject.MetaData[metadataKey].Equals(metadataValue, StringComparison.Ordinal));
 
             new MintLogger("PresignedPostPolicy_Test1", presignedPostPolicySignature,
                 "Tests whether PresignedPostPolicy url applies policy on server", TestStatus.PASS,
@@ -2961,7 +2961,7 @@ public static class FunctionalTest
             if (!string.IsNullOrEmpty(rxEventData.json))
             {
                 var notification = JsonSerializer.Deserialize<MinioNotification>(rxEventData.json);
-                Assert.IsTrue(notification.Records[0].eventName.Equals("s3:ObjectCreated:Put"));
+                Assert.IsTrue(notification.Records[0].eventName.Equals("s3:ObjectCreated:Put", StringComparison.OrdinalIgnoreCase));
                 new MintLogger(nameof(ListenBucketNotificationsAsync_Test3),
                     listenBucketNotificationsSignature,
                     "Tests whether ListenBucketNotifications passes for no event processing",
@@ -3353,7 +3353,7 @@ public static class FunctionalTest
             var statMeta = new Dictionary<string, string>(statObject.MetaData, StringComparer.OrdinalIgnoreCase);
             Assert.IsTrue(statMeta.ContainsKey("Customheader"));
             Assert.IsTrue(statObject.MetaData.ContainsKey("Content-Type") &&
-                          statObject.MetaData["Content-Type"].Equals("custom/contenttype"));
+                          statObject.MetaData["Content-Type"].Equals("custom/contenttype", StringComparison.OrdinalIgnoreCase));
             new MintLogger(nameof(PutObject_Test4), putObjectSignature,
                 "Tests whether PutObject with different content-type and custom header passes", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
