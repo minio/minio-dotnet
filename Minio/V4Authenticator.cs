@@ -189,7 +189,12 @@ internal class V4Authenticator
         var dateRegionKey = SignHmac(dateKey, regionBytes);
         dateRegionServiceKey = SignHmac(dateRegionKey, serviceBytes);
         requestBytes = Encoding.UTF8.GetBytes("aws4_request");
-        var signingKey = Encoding.UTF8.GetString(SignHmac(dateRegionServiceKey, requestBytes));
+        var hmac = SignHmac(dateRegionServiceKey, requestBytes);
+#if NETSTANDARD
+        var signingKey = Encoding.UTF8.GetString(hmac.ToArray());
+#else
+        var signingKey = Encoding.UTF8.GetString(hmac);
+#endif
         return SignHmac(dateRegionServiceKey, requestBytes);
     }
 
@@ -201,7 +206,13 @@ internal class V4Authenticator
     /// <returns>Computed hmac of input content</returns>
     private ReadOnlySpan<byte> SignHmac(ReadOnlySpan<byte> key, ReadOnlySpan<byte> content)
     {
+#if NETSTANDARD
+        using var hmac = new HMACSHA256(key.ToArray());
+        hmac.Initialize();
+        return hmac.ComputeHash(content.ToArray());
+#else
         return HMACSHA256.HashData(key, content);
+#endif
     }
 
     /// <summary>
@@ -240,7 +251,7 @@ internal class V4Authenticator
     {
 #if NETSTANDARD
         var sha = SHA256.Create();
-        var hash = sha.ComputeHash(body);
+        var hash = sha.ComputeHash(body.ToArray());
 #else
         var hash = SHA256.HashData(body);
 #endif
@@ -534,9 +545,9 @@ internal class V4Authenticator
             }
 #if NETSTANDARD
             var sha = SHA256.Create();
-            var hash = sha.ComputeHash(body);
+            var hash = sha.ComputeHash(body.ToArray());
 #else
-            var hash = SHA256.HashData(body);
+            var hash = SHA256.HashData(body.Span);
 #endif
             var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
             requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
