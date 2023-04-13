@@ -34,7 +34,7 @@ internal static class PutObject
         {
             ReadOnlyMemory<byte> bs = await File.ReadAllBytesAsync(fileName).ConfigureAwait(false);
             Console.WriteLine("Running example for API: PutObjectAsync");
-            var filestream = bs.AsStream();
+            using var filestream = bs.AsStream();
 
             var fileInfo = new FileInfo(fileName);
             var metaData = new Dictionary<string, string>

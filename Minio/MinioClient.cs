@@ -731,8 +731,8 @@ public partial class MinioClient : IMinioClient
             throw new BucketNotFoundException(bucketName, "Not found.");
         }
 
-        ReadOnlyMemory<byte> contentBytes = Encoding.UTF8.GetBytes(response.Content);
-        var errResponse = Utils.DeserializeXml<ErrorResponse>(contentBytes.AsStream());
+        using var stream = Encoding.UTF8.GetBytes(response.Content).AsMemory().AsStream();
+        var errResponse = Utils.DeserializeXml<ErrorResponse>(stream);
 
         if (response.StatusCode.Equals(HttpStatusCode.Forbidden)
             && (errResponse.Code.Equals("SignatureDoesNotMatch", StringComparison.OrdinalIgnoreCase) ||

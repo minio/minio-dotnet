@@ -170,7 +170,8 @@ public class SelectResponseStream
                 if (value.Equals("Progress"))
                 {
                     var progress = new ProgressMessage();
-                    progress = Utils.DeserializeXml<ProgressMessage>(payload.AsStream());
+                    using var stream = payload.AsStream();
+                    progress = Utils.DeserializeXml<ProgressMessage>(stream);
 
                     Progress = progress;
                 }
@@ -178,7 +179,8 @@ public class SelectResponseStream
                 if (value.Equals("Stats"))
                 {
                     var stats = new StatsMessage();
-                    stats = Utils.DeserializeXml<StatsMessage>(payload.AsStream());
+                    using var stream = payload.AsStream();
+                    stats = Utils.DeserializeXml<StatsMessage>(stream);
 
                     Stats = stats;
                 }

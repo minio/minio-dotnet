@@ -37,8 +37,8 @@ internal class GetVersioningResponse : GenericResponse
             !HttpStatusCode.OK.Equals(statusCode))
             return;
 
-        VersioningConfig = Utils.DeserializeXml<VersioningConfiguration>(Encoding.UTF8
-            .GetBytes(responseContent).AsMemory().AsStream());
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        VersioningConfig = Utils.DeserializeXml<VersioningConfiguration>(stream);
     }
 
     internal VersioningConfiguration VersioningConfig { get; set; }
@@ -54,8 +54,8 @@ internal class ListBucketsResponse : GenericResponse
         if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
             return;
 
-        BucketsResult = Utils.DeserializeXml<ListAllMyBucketsResult>(Encoding.UTF8
-            .GetBytes(responseContent).AsMemory().AsStream());
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        BucketsResult = Utils.DeserializeXml<ListAllMyBucketsResult>(stream);
     }
 }
 
@@ -160,8 +160,8 @@ internal class GetObjectsListResponse : GenericResponse
             !HttpStatusCode.OK.Equals(statusCode))
             return;
 
-        BucketResult = Utils.DeserializeXml<ListBucketResult>(Encoding.UTF8
-            .GetBytes(responseContent).AsMemory().AsStream());
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        BucketResult = Utils.DeserializeXml<ListBucketResult>(stream);
 
         var root = XDocument.Parse(responseContent);
         XNamespace ns = Utils.DetermineNamespace(root);
@@ -199,8 +199,8 @@ internal class GetObjectsVersionsListResponse : GenericResponse
             !HttpStatusCode.OK.Equals(statusCode))
             return;
 
-        BucketResult = Utils.DeserializeXml<ListVersionsResult>(Encoding.UTF8
-            .GetBytes(responseContent).AsMemory().AsStream());
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        BucketResult = Utils.DeserializeXml<ListVersionsResult>(stream);
 
         var root = XDocument.Parse(responseContent);
         XNamespace ns = Utils.DetermineNamespace(root);
@@ -243,8 +243,8 @@ internal class GetPolicyResponse : GenericResponse
 
     private async Task Initialize()
     {
-        Memory<byte> content = Encoding.UTF8.GetBytes(ResponseContent);
-        using var streamReader = new StreamReader(content.AsStream());
+        using var stream = Encoding.UTF8.GetBytes(ResponseContent).AsMemory().AsStream();
+        using var streamReader = new StreamReader(stream);
         PolicyJsonString = await streamReader.ReadToEndAsync()
             .ConfigureAwait(false);
     }
@@ -262,8 +262,8 @@ internal class GetBucketNotificationsResponse : GenericResponse
             return;
         }
 
-        BucketNotificationConfiguration = Utils.DeserializeXml<BucketNotification>(Encoding.UTF8
-            .GetBytes(responseContent).AsMemory().AsStream());
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        BucketNotificationConfiguration = Utils.DeserializeXml<BucketNotification>(stream);
     }
 
     internal BucketNotification BucketNotificationConfiguration { set; get; }
@@ -280,9 +280,9 @@ internal class GetBucketEncryptionResponse : GenericResponse
             return;
         }
 
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
         BucketEncryptionConfiguration =
-            Utils.DeserializeXml<ServerSideEncryptionConfiguration>(Encoding.UTF8.GetBytes(responseContent).AsMemory()
-                .AsStream());
+            Utils.DeserializeXml<ServerSideEncryptionConfiguration>(stream);
     }
 
     internal ServerSideEncryptionConfiguration BucketEncryptionConfiguration { get; set; }
@@ -302,8 +302,8 @@ internal class GetBucketTagsResponse : GenericResponse
 
         // Remove namespace from response content, if present.
         responseContent = Utils.RemoveNamespaceInXML(responseContent);
-        BucketTags = Utils.DeserializeXml<Tagging>(Encoding.UTF8.GetBytes(responseContent).AsMemory()
-            .AsStream());
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        BucketTags = Utils.DeserializeXml<Tagging>(stream);
     }
 
     internal Tagging BucketTags { set; get; }
@@ -320,8 +320,8 @@ internal class GetObjectLockConfigurationResponse : GenericResponse
             return;
         }
 
-        LockConfiguration = Utils.DeserializeXml<ObjectLockConfiguration>(Encoding.UTF8
-            .GetBytes(responseContent).AsMemory().AsStream());
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        LockConfiguration = Utils.DeserializeXml<ObjectLockConfiguration>(stream);
     }
 
     internal ObjectLockConfiguration LockConfiguration { get; set; }
@@ -341,8 +341,8 @@ internal class GetBucketLifecycleResponse : GenericResponse
 
         //Remove xmlns content for config serialization
         responseContent = Utils.RemoveNamespaceInXML(responseContent);
-        BucketLifecycle = Utils.DeserializeXml<LifecycleConfiguration>(Encoding.UTF8
-            .GetBytes(responseContent).AsMemory().AsStream());
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        BucketLifecycle = Utils.DeserializeXml<LifecycleConfiguration>(stream);
     }
 
     internal LifecycleConfiguration BucketLifecycle { set; get; }
@@ -360,8 +360,8 @@ internal class GetBucketReplicationResponse : GenericResponse
             return;
         }
 
-        Config = Utils.DeserializeXml<ReplicationConfiguration>(Encoding.UTF8
-            .GetBytes(responseContent).AsMemory().AsStream());
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        Config = Utils.DeserializeXml<ReplicationConfiguration>(stream);
     }
 
     internal ReplicationConfiguration Config { set; get; }

@@ -131,8 +131,9 @@ public class CertificateIdentityProvider : ClientProvider
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            using var stream = Encoding.UTF8.GetBytes(content).AsMemory().AsStream();
             certResponse =
-                Utils.DeserializeXml<CertificateResponse>(Encoding.UTF8.GetBytes(content).AsMemory().AsStream());
+                Utils.DeserializeXml<CertificateResponse>(stream);
         }
 
         if (Credentials == null && certResponse?.Cr != null)

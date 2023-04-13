@@ -54,8 +54,8 @@ internal class RemoveObjectsResponse : GenericResponse
     internal RemoveObjectsResponse(HttpStatusCode statusCode, string responseContent)
         : base(statusCode, responseContent)
     {
-        DeletedObjectsResult = Utils.DeserializeXml<DeleteObjectsResult>(Encoding.UTF8
-            .GetBytes(responseContent).AsMemory().AsStream());
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        DeletedObjectsResult = Utils.DeserializeXml<DeleteObjectsResult>(stream);
     }
 
     internal DeleteObjectsResult DeletedObjectsResult { get; }
@@ -66,8 +66,8 @@ internal class GetMultipartUploadsListResponse : GenericResponse
     internal GetMultipartUploadsListResponse(HttpStatusCode statusCode, string responseContent)
         : base(statusCode, responseContent)
     {
-        var uploadsResult = Utils.DeserializeXml<ListMultipartUploadsResult>(Encoding.UTF8
-            .GetBytes(responseContent).AsMemory().AsStream());
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        var uploadsResult = Utils.DeserializeXml<ListMultipartUploadsResult>(stream);
         var root = XDocument.Parse(responseContent);
         XNamespace ns = Utils.DetermineNamespace(root);
 
@@ -107,9 +107,9 @@ public class GetLegalHoldResponse : GenericResponse
             return;
         }
 
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
         CurrentLegalHoldConfiguration =
-            Utils.DeserializeXml<ObjectLegalHoldConfiguration>(Encoding.UTF8.GetBytes(responseContent).AsMemory()
-                .AsStream());
+            Utils.DeserializeXml<ObjectLegalHoldConfiguration>(stream);
 
         if (CurrentLegalHoldConfiguration == null
             || string.IsNullOrEmpty(CurrentLegalHoldConfiguration.Status))
@@ -135,8 +135,8 @@ internal class GetObjectTagsResponse : GenericResponse
         }
 
         responseContent = Utils.RemoveNamespaceInXML(responseContent);
-        ObjectTags = Utils.DeserializeXml<Tagging>(Encoding.UTF8.GetBytes(responseContent).AsMemory()
-            .AsStream());
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        ObjectTags = Utils.DeserializeXml<Tagging>(stream);
     }
 
     public Tagging ObjectTags { get; set; }
@@ -153,9 +153,9 @@ internal class GetRetentionResponse : GenericResponse
             return;
         }
 
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
         CurrentRetentionConfiguration =
-            Utils.DeserializeXml<ObjectRetentionConfiguration>(Encoding.UTF8.GetBytes(responseContent).AsMemory()
-                .AsStream());
+            Utils.DeserializeXml<ObjectRetentionConfiguration>(stream);
     }
 
     internal ObjectRetentionConfiguration CurrentRetentionConfiguration { get; }
@@ -182,9 +182,8 @@ internal class NewMultipartUploadResponse : GenericResponse
     internal NewMultipartUploadResponse(HttpStatusCode statusCode, string responseContent)
         : base(statusCode, responseContent)
     {
-        InitiateMultipartUploadResult newUpload = null;
-        newUpload = Utils.DeserializeXml<InitiateMultipartUploadResult>(Encoding.UTF8.GetBytes(responseContent)
-            .AsMemory().AsStream());
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        var newUpload = Utils.DeserializeXml<InitiateMultipartUploadResult>(stream);
 
         UploadId = newUpload.UploadId;
     }

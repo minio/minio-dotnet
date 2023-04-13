@@ -1475,8 +1475,8 @@ public partial class MinioClient : IObjectOperations
             await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
-        var listPartsResult = Utils.DeserializeXml<ListPartsResult>(Encoding.UTF8
-            .GetBytes(response.Content).AsMemory().AsStream());
+        using var stream = Encoding.UTF8.GetBytes(response.Content).AsMemory().AsStream();
+        var listPartsResult = Utils.DeserializeXml<ListPartsResult>(stream);
 
         var root = XDocument.Parse(response.Content);
         XNamespace ns = Utils.DetermineNamespace(root);
@@ -1516,7 +1516,8 @@ public partial class MinioClient : IObjectOperations
         using var response = await ExecuteTaskAsync(NoErrorHandlers,
             requestMessageBuilder, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        var newUpload = Utils.DeserializeXml<InitiateMultipartUploadResult>(response.ContentBytes.AsStream());
+        using var stream = response.ContentBytes.AsStream();
+        var newUpload = Utils.DeserializeXml<InitiateMultipartUploadResult>(stream);
         return newUpload.UploadId;
     }
 
@@ -1667,10 +1668,16 @@ public partial class MinioClient : IObjectOperations
         object copyResult = null;
 
         if (type == typeof(CopyObjectResult))
-            copyResult = Utils.DeserializeXml<CopyObjectResult>(response.ContentBytes.AsStream());
+        {
+            using var stream = response.ContentBytes.AsStream();
+            copyResult = Utils.DeserializeXml<CopyObjectResult>(stream);
+        }
 
         if (type == typeof(CopyPartResult))
-            copyResult = Utils.DeserializeXml<CopyPartResult>(response.ContentBytes.AsStream());
+        {
+            using var stream = response.ContentBytes.AsStream();
+            copyResult = Utils.DeserializeXml<CopyPartResult>(stream);
+        }
 
         return copyResult;
     }

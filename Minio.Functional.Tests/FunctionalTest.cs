@@ -714,7 +714,7 @@ public static class FunctionalTest
                     .WithServerSideEncryption(ssec)
                     .WithCallbackStream(async (stream, cancellationToken) =>
                     {
-                        var fileStream = File.Create(tempFileName);
+                        using var fileStream = File.Create(tempFileName);
 
 #if NETFRAMEWORK
                         await stream.CopyToAsync(fileStream).ConfigureAwait(false);
@@ -805,7 +805,7 @@ public static class FunctionalTest
                     .WithServerSideEncryption(ssec)
                     .WithCallbackStream(async (stream, cancellationToken) =>
                     {
-                        var fileStream = File.Create(tempFileName);
+                        using var fileStream = File.Create(tempFileName);
 
 #if NETFRAMEWORK
                         await stream.CopyToAsync(fileStream).ConfigureAwait(false);
@@ -893,7 +893,7 @@ public static class FunctionalTest
                     .WithObject(objectName)
                     .WithCallbackStream(async (stream, cancellationToken) =>
                     {
-                        var fileStream = File.Create(tempFileName);
+                        using var fileStream = File.Create(tempFileName);
 #if NETFRAMEWORK
                         await stream.CopyToAsync(fileStream).ConfigureAwait(false);
                         fileStream.Dispose();
@@ -1478,7 +1478,7 @@ public static class FunctionalTest
             csvString.AppendLine("Employee5,Employee1,500");
             csvString.AppendLine("Employee2,Employee1,800");
             ReadOnlyMemory<byte> csvBytes = Encoding.UTF8.GetBytes(csvString.ToString());
-            var stream = csvBytes.AsStream();
+            using var stream = csvBytes.AsStream();
 
             var putObjectArgs = new PutObjectArgs()
                 .WithBucket(bucketName)
@@ -2846,7 +2846,7 @@ public static class FunctionalTest
             await Task.Delay(sleepTime).ConfigureAwait(false);
 
             var modelJson = "{\"test\": \"test\"}";
-            var stream = Encoding.UTF8.GetBytes(modelJson).AsMemory().AsStream();
+            using var stream = Encoding.UTF8.GetBytes(modelJson).AsMemory().AsStream();
             var putObjectArgs = new PutObjectArgs()
                 .WithObject("test.json")
                 .WithBucket(bucketName)
@@ -2928,7 +2928,7 @@ public static class FunctionalTest
 
             var modelJson = "{\"test\": \"test\"}";
 
-            var stream = Encoding.UTF8.GetBytes(modelJson).AsMemory().AsStream();
+            using var stream = Encoding.UTF8.GetBytes(modelJson).AsMemory().AsStream();
             var putObjectArgs = new PutObjectArgs()
                 .WithObject("test.json")
                 .WithBucket(bucketName)
