@@ -897,11 +897,12 @@ public partial class MinioClient : IObjectOperations
             return null;
         }
 
-        if(args.ObjectSize == -1)
+        if (args.ObjectSize == -1)
         {
             progressReport.Percentage = 100;
             args.Progress?.Report(progressReport);
         }
+
         return etags;
     }
 
