@@ -1785,6 +1785,11 @@ internal class PutObjectPartArgs : PutObjectArgs
         return (PutObjectPartArgs)base.WithUploadId(id);
     }
 
+    public new PutObjectPartArgs WithProgress(IProgress<ProgressReport> progress)
+    {
+        return (PutObjectPartArgs)base.WithProgress(progress);
+    }
+
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
         return requestMessageBuilder;
@@ -1821,6 +1826,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
     internal string FileName { get; set; }
     internal long ObjectSize { get; set; }
     internal Stream ObjectStreamData { get; set; }
+    internal IProgress<ProgressReport> Progress { get; set; }
 
     internal override void Validate()
     {
@@ -1952,6 +1958,12 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
     public PutObjectArgs WithStreamData(Stream data)
     {
         ObjectStreamData = data;
+        return this;
+    }
+
+    public PutObjectArgs WithProgress(IProgress<ProgressReport> progress)
+    {
+        Progress = progress;
         return this;
     }
 
