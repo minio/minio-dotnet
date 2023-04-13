@@ -109,9 +109,10 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
 
                 AssumeRoleResponse assumeRoleResp = null;
                 if (responseResult.Response.IsSuccessStatusCode)
-                    assumeRoleResp =
-                        Utils.DeserializeXml<AssumeRoleResponse>(Encoding.UTF8.GetBytes(responseResult.Content)
-                            .AsMemory().AsStream());
+                {
+                    using var stream = Encoding.UTF8.GetBytes(responseResult.Content).AsMemory().AsStream();
+                    assumeRoleResp = Utils.DeserializeXml<AssumeRoleResponse>(stream);
+                }
 
                 if (credentials == null &&
                     assumeRoleResp?.arr != null)

@@ -24,7 +24,8 @@ public class NotificationTest
         try
         {
             ReadOnlyMemory<byte> contentBytes = Encoding.UTF8.GetBytes(notificationString);
-            var notification = Utils.DeserializeXml<BucketNotification>(contentBytes.AsStream());
+            using var stream = contentBytes.AsStream();
+            var notification = Utils.DeserializeXml<BucketNotification>(stream);
             Assert.AreEqual(1, notification.TopicConfigs.Count);
         }
         catch (Exception ex)
