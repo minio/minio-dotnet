@@ -963,23 +963,53 @@ public static class Utils
         return document.Root.Attributes().FirstOrDefault(attr => attr.IsNamespaceDeclaration)?.Value ?? string.Empty;
     }
 
-    public static T DeserializeXml<T>(Stream stream) where T : class
+    public static string SerializeToXml<T>(T anyobject) where T : class
     {
-        var ns = GetNamespace<T>();
-        if (!string.IsNullOrWhiteSpace(ns) && ns == "http://s3.amazonaws.com/doc/2006-03-01/")
-        {
-            return (T)new XmlSerializer(typeof(T)).Deserialize(new AmazonAwsS3XmlReader(stream));
-        }
+        XmlSerializer xs = new XmlSerializer(anyobject.GetType());
+        using var sw = new StringWriter(CultureInfo.InvariantCulture);
+        using var xw = XmlWriter.Create(sw);
 
-        return (T)new XmlSerializer(typeof(T)).Deserialize(stream);
+        xs.Serialize(xw, anyobject);
+        xw.Flush();
+
+        return sw.ToString();
     }
 
-    private static string GetNamespace<T>()
+    public static T DeserializeXml<T>(Stream stream) where T : class
     {
-        var xmlRootAttribute = typeof(T).GetCustomAttributes(
-            typeof(XmlRootAttribute), true
-        ).FirstOrDefault() as XmlRootAttribute;
-        if (xmlRootAttribute != null)
+        try
+        {
+            var ns = GetNamespace<T>();
+            if (!string.IsNullOrWhiteSpace(ns) && ns is "http://s3.amazonaws.com/doc/2006-03-01/")
+            {
+                return (T)new XmlSerializer(typeof(T)).Deserialize(new AmazonAwsS3XmlReader(stream));
+            }
+
+            return (T)new XmlSerializer(typeof(T)).Deserialize(stream);
+        }
+        catch (Exception ex)
+        {
+        }
+        return default(T);
+    }
+
+    public static T DeserializeXml<T>(string xml) where T : class
+    {
+        try
+        {
+            var serializer = new XmlSerializer(typeof(T));
+            return (T)serializer.Deserialize(new StringReader(xml));
+        }
+        catch (Exception ex)
+        {
+        }
+        return default(T);
+    }
+
+    private static string? GetNamespace<T>()
+    {
+        if (typeof(T).GetCustomAttributes(typeof(XmlRootAttribute), true)
+            .FirstOrDefault() is XmlRootAttribute xmlRootAttribute)
         {
             return xmlRootAttribute.Namespace;
         }
