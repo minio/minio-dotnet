@@ -14,6 +14,7 @@
 * limitations under the License.
 */
 
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -30,21 +31,30 @@ internal static class TestStatusExtender
 {
     public static string AsText(this TestStatus status)
     {
-        switch (status)
+        return status switch
         {
-            case TestStatus.PASS: return "PASS";
-            case TestStatus.FAIL: return "FAIL";
-            default: return "NA";
-        }
+            TestStatus.PASS => "PASS",
+            TestStatus.FAIL => "FAIL",
+            TestStatus.NA => "NA",
+            _ => "NA"
+        };
     }
 }
 
 internal sealed class MintLogger
 {
+    private readonly JsonSerializerOptions jsonSerializerOptions = new()
+    {
+        WriteIndented = false,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
     public MintLogger(string testName, string function, string description, TestStatus status, TimeSpan duration,
         string alert = null, string message = null, string error = null, Dictionary<string, string> args = null)
     {
         this.function = function;
+        this.description = description;
         this.duration = (int)duration.TotalMilliseconds;
         name = $"{name} : {testName}";
         this.alert = alert;
@@ -67,7 +77,7 @@ internal sealed class MintLogger
     /// <summary>
     ///     Test function description
     /// </summary>
-    public string description { get; private set; }
+    public string description { get; }
 
     /// <summary>
     ///     Key-value pair of args relevant to test
@@ -101,8 +111,6 @@ internal sealed class MintLogger
 
     public void Log()
     {
-        Console.WriteLine(JsonSerializer.Serialize(this,
-            new JsonSerializerOptions
-                { WriteIndented = false, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault }));
+        Console.WriteLine(JsonSerializer.Serialize(this, jsonSerializerOptions));
     }
 }

@@ -20,6 +20,7 @@ using System.Text;
 using System.Web;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 using Minio.DataModel.ILM;
 using Minio.DataModel.ObjectLock;
@@ -37,11 +38,9 @@ internal class GetVersioningResponse : GenericResponse
             !HttpStatusCode.OK.Equals(statusCode))
             return;
 
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
-        stream.Position = 0;
-
         VersioningConfig =
-            (VersioningConfiguration)new XmlSerializer(typeof(VersioningConfiguration)).Deserialize(stream);
+            (VersioningConfiguration)new XmlSerializer(typeof(VersioningConfiguration)).Deserialize(Encoding.UTF8
+                .GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal VersioningConfiguration VersioningConfig { get; set; }
@@ -56,9 +55,10 @@ internal class ListBucketsResponse : GenericResponse
     {
         if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
             return;
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
+
         BucketsResult =
-            (ListAllMyBucketsResult)new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream);
+            (ListAllMyBucketsResult)new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(Encoding.UTF8
+                .GetBytes(responseContent).AsMemory().AsStream());
     }
 }
 
@@ -163,10 +163,9 @@ internal class GetObjectsListResponse : GenericResponse
             !HttpStatusCode.OK.Equals(statusCode))
             return;
 
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            BucketResult = (ListBucketResult)new XmlSerializer(typeof(ListBucketResult)).Deserialize(stream);
-        }
+        BucketResult =
+            (ListBucketResult)new XmlSerializer(typeof(ListBucketResult)).Deserialize(Encoding.UTF8
+                .GetBytes(responseContent).AsMemory().AsStream());
 
         var root = XDocument.Parse(responseContent);
         var items = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Contents")
@@ -202,10 +201,9 @@ internal class GetObjectsVersionsListResponse : GenericResponse
             !HttpStatusCode.OK.Equals(statusCode))
             return;
 
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            BucketResult = (ListVersionsResult)new XmlSerializer(typeof(ListVersionsResult)).Deserialize(stream);
-        }
+        BucketResult =
+            (ListVersionsResult)new XmlSerializer(typeof(ListVersionsResult)).Deserialize(Encoding.UTF8
+                .GetBytes(responseContent).AsMemory().AsStream());
 
         var root = XDocument.Parse(responseContent);
         var items = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Version")
@@ -246,8 +244,8 @@ internal class GetPolicyResponse : GenericResponse
 
     private async Task Initialize()
     {
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(ResponseContent));
-        using var streamReader = new StreamReader(stream);
+        Memory<byte> content = Encoding.UTF8.GetBytes(ResponseContent);
+        using var streamReader = new StreamReader(content.AsStream());
         PolicyJsonString = await streamReader.ReadToEndAsync()
             .ConfigureAwait(false);
     }
@@ -265,9 +263,9 @@ internal class GetBucketNotificationsResponse : GenericResponse
             return;
         }
 
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
         BucketNotificationConfiguration =
-            (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(stream);
+            (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(Encoding.UTF8
+                .GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal BucketNotification BucketNotificationConfiguration { set; get; }
@@ -284,10 +282,9 @@ internal class GetBucketEncryptionResponse : GenericResponse
             return;
         }
 
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
         BucketEncryptionConfiguration =
             (ServerSideEncryptionConfiguration)new XmlSerializer(typeof(ServerSideEncryptionConfiguration))
-                .Deserialize(stream);
+                .Deserialize(Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal ServerSideEncryptionConfiguration BucketEncryptionConfiguration { get; set; }
@@ -307,8 +304,9 @@ internal class GetBucketTagsResponse : GenericResponse
 
         // Remove namespace from response content, if present.
         responseContent = Utils.RemoveNamespaceInXML(responseContent);
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
-        BucketTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(stream);
+        BucketTags =
+            (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(Encoding.UTF8.GetBytes(responseContent).AsMemory()
+                .AsStream());
     }
 
     internal Tagging BucketTags { set; get; }
@@ -325,9 +323,9 @@ internal class GetObjectLockConfigurationResponse : GenericResponse
             return;
         }
 
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
         LockConfiguration =
-            (ObjectLockConfiguration)new XmlSerializer(typeof(ObjectLockConfiguration)).Deserialize(stream);
+            (ObjectLockConfiguration)new XmlSerializer(typeof(ObjectLockConfiguration)).Deserialize(Encoding.UTF8
+                .GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal ObjectLockConfiguration LockConfiguration { get; set; }
@@ -347,9 +345,9 @@ internal class GetBucketLifecycleResponse : GenericResponse
 
         //Remove xmlns content for config serialization
         responseContent = Utils.RemoveNamespaceInXML(responseContent);
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
         BucketLifecycle =
-            (LifecycleConfiguration)new XmlSerializer(typeof(LifecycleConfiguration)).Deserialize(stream);
+            (LifecycleConfiguration)new XmlSerializer(typeof(LifecycleConfiguration)).Deserialize(Encoding.UTF8
+                .GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal LifecycleConfiguration BucketLifecycle { set; get; }
@@ -367,8 +365,8 @@ internal class GetBucketReplicationResponse : GenericResponse
             return;
         }
 
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
-        Config = (ReplicationConfiguration)new XmlSerializer(typeof(ReplicationConfiguration)).Deserialize(stream);
+        Config = (ReplicationConfiguration)new XmlSerializer(typeof(ReplicationConfiguration)).Deserialize(Encoding.UTF8
+            .GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal ReplicationConfiguration Config { set; get; }

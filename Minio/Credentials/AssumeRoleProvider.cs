@@ -18,6 +18,7 @@
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
+using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 
 namespace Minio.Credentials;
@@ -78,7 +79,8 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
     public AssumeRoleProvider WithSTSEndpoint(string endpoint)
     {
         if (string.IsNullOrWhiteSpace(endpoint))
-            throw new ArgumentNullException("The STS endpoint cannot be null or empty.");
+            throw new ArgumentNullException(nameof(endpoint), "The STS endpoint cannot be null or empty.");
+
         STSEndPoint = endpoint;
         var stsUri = Utils.GetBaseUrl(endpoint);
         if ((stsUri.Scheme == "http" && stsUri.Port == 80) ||
@@ -102,18 +104,14 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
             ResponseResult responseResult = null;
             try
             {
-                responseResult = await Client.ExecuteTaskAsync(NoErrorHandlers, requestBuilder, isSts: true)
+                responseResult = await Client.ExecuteTaskAsync(NoErrorHandlers, requestBuilder, true)
                     .ConfigureAwait(false);
 
                 AssumeRoleResponse assumeRoleResp = null;
                 if (responseResult.Response.IsSuccessStatusCode)
-                {
-                    var contentBytes = Encoding.UTF8.GetBytes(responseResult.Content);
-
-                    using var stream = new MemoryStream(contentBytes);
                     assumeRoleResp =
-                        (AssumeRoleResponse)new XmlSerializer(typeof(AssumeRoleResponse)).Deserialize(stream);
-                }
+                        (AssumeRoleResponse)new XmlSerializer(typeof(AssumeRoleResponse)).Deserialize(
+                            Encoding.UTF8.GetBytes(responseResult.Content).AsMemory().AsStream());
 
                 if (credentials == null &&
                     assumeRoleResp?.arr != null)
@@ -144,7 +142,7 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
             new KeyValuePair<string, string>("DurationSeconds", DurationInSeconds.ToString()),
             new KeyValuePair<string, string>("Version", "2011-06-15")
         });
-        var byteArrContent = await formContent.ReadAsByteArrayAsync().ConfigureAwait(false);
+        ReadOnlyMemory<byte> byteArrContent = await formContent.ReadAsByteArrayAsync().ConfigureAwait(false);
         requestMessageBuilder.SetBody(byteArrContent);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Type",
             "application/x-www-form-urlencoded; charset=utf-8");

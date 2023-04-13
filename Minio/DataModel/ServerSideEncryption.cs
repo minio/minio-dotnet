@@ -61,7 +61,7 @@ public class SSEC : IServerSideEncryption
 
     public virtual void Marshal(Dictionary<string, string> headers)
     {
-        var md5SumStr = Utils.getMD5SumStr(key);
+        var md5SumStr = Utils.GetMD5SumStr(key);
         headers.Add("X-Amz-Server-Side-Encryption-Customer-Algorithm", "AES256");
         headers.Add("X-Amz-Server-Side-Encryption-Customer-Key", Convert.ToBase64String(key));
         headers.Add("X-Amz-Server-Side-Encryption-Customer-Key-Md5", md5SumStr);
@@ -79,7 +79,7 @@ public class SSECopy : SSEC
 
     public override void Marshal(Dictionary<string, string> headers)
     {
-        var md5SumStr = Utils.getMD5SumStr(key);
+        var md5SumStr = Utils.GetMD5SumStr(key);
         headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Algorithm", "AES256");
         headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key", Convert.ToBase64String(key));
         headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key-Md5", md5SumStr);
@@ -158,7 +158,11 @@ public class SSEKMS : IServerSideEncryption
         }
 
         sb.Append('}');
-        var contextBytes = Encoding.UTF8.GetBytes(sb.ToString());
+        ReadOnlySpan<byte> contextBytes = Encoding.UTF8.GetBytes(sb.ToString());
+#if NETSTANDARD
+        return Convert.ToBase64String(contextBytes.ToArray());
+#else
         return Convert.ToBase64String(contextBytes);
+#endif
     }
 }

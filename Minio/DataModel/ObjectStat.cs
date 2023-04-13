@@ -40,7 +40,7 @@ public class ObjectStat
     public uint? TaggingCount { get; private set; }
     public string ArchiveStatus { get; private set; }
     public DateTime? Expires { get; private set; }
-    public string ReplicationStatus { get; private set; }
+    public string ReplicationStatus { get; }
     public RetentionMode? ObjectLockMode { get; private set; }
     public DateTime? ObjectLockRetainUntilDate { get; private set; }
     public bool? LegalHoldEnabled { get; private set; }

@@ -44,7 +44,7 @@ public class QueueConfig : NotificationConfiguration
         var other = (QueueConfig)obj;
         // If parameter is null return false.
         if (other == null) return false;
-        return other.Queue.Equals(Queue);
+        return other.Queue.Equals(Queue, StringComparison.Ordinal);
     }
 
     public override int GetHashCode()

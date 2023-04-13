@@ -55,14 +55,14 @@ public class SelectObjectContentArgs : EncryptionArgs<SelectObjectContentArgs>
         requestMessageBuilder.AddQueryParameter("select", "");
         requestMessageBuilder.AddQueryParameter("select-type", "2");
 
-        if (RequestBody == null)
+        if (RequestBody.IsEmpty)
         {
             RequestBody = Encoding.UTF8.GetBytes(SelectOptions.MarshalXML());
             requestMessageBuilder.SetBody(RequestBody);
         }
 
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.getMD5SumStr(RequestBody));
+            Utils.GetMD5SumStr(RequestBody.Span));
 
         return requestMessageBuilder;
     }
@@ -380,12 +380,13 @@ public class PresignedPostPolicyArgs : ObjectArgs<PresignedPostPolicyArgs>
 
     public PresignedPostPolicyArgs WithPolicy(PostPolicy policy)
     {
-        ArgumentNullException.ThrowIfNull(policy);
+        if (policy is null)
+            throw new ArgumentNullException(nameof(policy));
 
         Policy = policy;
-        if (policy.expiration != DateTime.MinValue)
+        if (policy.Expiration != DateTime.MinValue)
             // policy.expiration has an assigned value
-            Expiration = policy.expiration;
+            Expiration = policy.Expiration;
 
         return this;
     }
@@ -497,7 +498,7 @@ public class SetObjectLegalHoldArgs : ObjectVersionArgs<SetObjectLegalHoldArgs>
         var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
         requestMessageBuilder.AddXmlBody(body);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
         return requestMessageBuilder;
     }
 }
@@ -654,7 +655,8 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
 
     public RemoveObjectsArgs WithObjectAndVersions(string objectName, IList<string> versions)
     {
-        ArgumentNullException.ThrowIfNull(versions);
+        if (versions is null)
+            throw new ArgumentNullException(nameof(versions));
 
         foreach (var vid in versions)
             ObjectNamesVersions.Add(new Tuple<string, string>(objectName, vid));
@@ -664,7 +666,8 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
     // Tuple<string, List<string>>. Tuple object name -> List of Version IDs.
     public RemoveObjectsArgs WithObjectsVersions(IList<Tuple<string, List<string>>> objectsVersionsList)
     {
-        ArgumentNullException.ThrowIfNull(objectsVersionsList);
+        if (objectsVersionsList is null)
+            throw new ArgumentNullException(nameof(objectsVersionsList));
 
         foreach (var objVersions in objectsVersionsList)
         foreach (var vid in objVersions.Item2)
@@ -731,7 +734,7 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
         }
 
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.getMD5SumStr(Encoding.UTF8.GetBytes(Convert.ToString(deleteObjectsRequest))));
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(Convert.ToString(deleteObjectsRequest))));
 
         return requestMessageBuilder;
     }
@@ -748,9 +751,10 @@ public class SetObjectTagsArgs : ObjectVersionArgs<SetObjectTagsArgs>
 
     public SetObjectTagsArgs WithTagging(Tagging tags)
     {
-        ArgumentNullException.ThrowIfNull(tags);
+        if (tags is null)
+            throw new ArgumentNullException(nameof(tags));
 
-        ObjectTags = Tagging.GetObjectTags(tags.GetTags());
+        ObjectTags = Tagging.GetObjectTags(tags.Tags);
         return this;
     }
 
@@ -767,7 +771,7 @@ public class SetObjectTagsArgs : ObjectVersionArgs<SetObjectTagsArgs>
     internal override void Validate()
     {
         base.Validate();
-        if (ObjectTags == null || ObjectTags.GetTags().Count == 0)
+        if (ObjectTags == null || ObjectTags.Tags.Count == 0)
             throw new InvalidOperationException("Unable to set empty tags.");
     }
 }
@@ -855,7 +859,7 @@ public class SetObjectRetentionArgs : ObjectVersionArgs<SetObjectRetentionArgs>
         var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
         requestMessageBuilder.AddXmlBody(body);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
         return requestMessageBuilder;
     }
 }
@@ -907,7 +911,7 @@ public class ClearObjectRetentionArgs : ObjectVersionArgs<ClearObjectRetentionAr
         var body = EmptyRetentionConfigXML();
         requestMessageBuilder.AddXmlBody(body);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
         return requestMessageBuilder;
     }
 }
@@ -1023,7 +1027,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
                 requestMessageBuilder.AddQueryParameter(query.Key, query.Value);
 
         if (SourceObject.CopyOperationConditions != null)
-            foreach (var item in SourceObject.CopyOperationConditions.GetConditions())
+            foreach (var item in SourceObject.CopyOperationConditions.Conditions)
                 requestMessageBuilder.AddOrUpdateHeaderParameter(item.Key, item.Value);
 
         if (!string.IsNullOrEmpty(MatchETag))
@@ -1061,7 +1065,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
                 ObjectLockRetentionMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
         }
 
-        if (RequestBody != null) requestMessageBuilder.SetBody(RequestBody);
+        if (!RequestBody.IsEmpty) requestMessageBuilder.SetBody(RequestBody);
         return requestMessageBuilder;
     }
 
@@ -1444,7 +1448,7 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
 
         ReplaceTagsDirective = args.ReplaceTagsDirective;
         if (args.ReplaceTagsDirective && args.ObjectTags?.TaggingSet.Tag.Count > 0) // Tags of Source object
-            ObjectTags = Tagging.GetObjectTags(args.ObjectTags.GetTags());
+            ObjectTags = Tagging.GetObjectTags(args.ObjectTags.Tags);
     }
 
     internal MultipartCopyUploadArgs()
@@ -1711,7 +1715,7 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
 
         var completeMultipartUploadXml = new XElement("CompleteMultipartUpload", parts);
         var bodyString = completeMultipartUploadXml.ToString();
-        var bodyInBytes = Encoding.UTF8.GetBytes(bodyString);
+        ReadOnlyMemory<byte> bodyInBytes = Encoding.UTF8.GetBytes(bodyString);
         requestMessageBuilder.BodyParameters.Add("content-type", "application/xml");
         requestMessageBuilder.SetBody(bodyInBytes);
         // var bodyInCharArr = Encoding.UTF8.GetString(requestMessageBuilder.Content).ToCharArray();
@@ -1866,16 +1870,21 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
                 Retention.RetainUntilDate);
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode", Retention.Mode.ToString());
             requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-                Utils.getMD5SumStr(RequestBody));
+                Utils.GetMD5SumStr(RequestBody.Span));
         }
 
         if (LegalHoldEnabled != null)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-legal-hold",
                 LegalHoldEnabled == true ? "ON" : "OFF");
 
-        if (RequestBody != null)
+        if (!RequestBody.IsEmpty)
         {
-            var hash = SHA256.HashData(RequestBody);
+#if NETSTANDARD
+            using var sha = SHA256.Create();
+            var hash = sha.ComputeHash(RequestBody.ToArray());
+#else
+            var hash = SHA256.HashData(RequestBody.Span);
+#endif
             var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
             requestMessageBuilder.SetBody(RequestBody);

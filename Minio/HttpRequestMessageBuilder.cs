@@ -70,11 +70,14 @@ internal class HttpRequestMessageBuilder
             var requestUri = requestUriBuilder.Uri;
             var request = new HttpRequestMessage(Method, requestUri);
 
-            if (Content != null) request.Content = new ByteArrayContent(Content);
-
+#if NETSTANDARD
+            if (!Content.IsEmpty) request.Content = new ByteArrayContent(Content.ToArray());
+#else
+            if (!Content.IsEmpty) request.Content = new ReadOnlyMemoryContent(Content);
+#endif
             foreach (var parameter in HeaderParameters)
             {
-                var key = parameter.Key.ToLower();
+                var key = parameter.Key.ToLowerInvariant();
                 var val = parameter.Value;
 
                 var addSuccess = request.Headers.TryAddWithoutValidation(key, val);
@@ -131,7 +134,7 @@ internal class HttpRequestMessageBuilder
 
     public Dictionary<string, string> BodyParameters { get; }
 
-    public byte[] Content { get; private set; }
+    public ReadOnlyMemory<byte> Content { get; private set; }
 
     public string ContentTypeKey => "Content-Type";
 
@@ -163,7 +166,7 @@ internal class HttpRequestMessageBuilder
         QueryParameters[key] = value;
     }
 
-    public void SetBody(byte[] body)
+    public void SetBody(ReadOnlyMemory<byte> body)
     {
         Content = body;
     }

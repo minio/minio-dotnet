@@ -75,7 +75,7 @@ public static class Utils
             throw new InvalidObjectNameException(objectName, "Object name cannot be greater than 1024 characters.");
     }
 
-    internal static void validateObjectPrefix(string objectPrefix)
+    internal static void ValidateObjectPrefix(string objectPrefix)
     {
         if (objectPrefix.Length > 512)
             throw new InvalidObjectPrefixException(objectPrefix,
@@ -127,8 +127,8 @@ public static class Utils
                 encodedPathBuf.Append(UrlEncode(pathSegment));
             }
 
-        if (path.StartsWith("/")) encodedPathBuf.Insert(0, "/");
-        if (path.EndsWith("/")) encodedPathBuf.Append('/');
+        if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase)) encodedPathBuf.Insert(0, '/');
+        if (path.EndsWith("/", StringComparison.OrdinalIgnoreCase)) encodedPathBuf.Append('/');
         return encodedPathBuf.ToString();
     }
 
@@ -198,7 +198,11 @@ public static class Utils
     public static bool CaseInsensitiveContains(string text, string value,
         StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
     {
+#if NETSTANDARD
+        return text.IndexOf(value, stringComparison) >= 0;
+#else
         return text.Contains(value, stringComparison);
+#endif
     }
 
     /// <summary>
@@ -237,10 +241,14 @@ public static class Utils
         return expiryInt > 0 && expiryInt <= Constants.DefaultExpiryTime;
     }
 
-    internal static string getMD5SumStr(byte[] key)
+    internal static string GetMD5SumStr(ReadOnlySpan<byte> key)
     {
+#if NETSTANDARD
+        using var md5 = MD5.Create();
+        var hashedBytes = md5.ComputeHash(key.ToArray());
+#else
         var hashedBytes = MD5.HashData(key);
-
+#endif
         return Convert.ToBase64String(hashedBytes);
     }
 
@@ -871,17 +879,19 @@ public static class Utils
                 string.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint),
                 nameof(endpoint));
 
-        if (endpoint.EndsWith("/")) endpoint = endpoint.Substring(0, endpoint.Length - 1);
-        if (!endpoint.StartsWith("http") && !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
+        if (endpoint.EndsWith("/", StringComparison.OrdinalIgnoreCase))
+            endpoint = endpoint.Substring(0, endpoint.Length - 1);
+        if (!endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
+            !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
             throw new InvalidEndpointException(string.Format("{0} is invalid hostname.", endpoint), "endpoint");
         string conn_url;
-        if (endpoint.StartsWith("http"))
+        if (endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             throw new InvalidEndpointException(
                 string.Format("{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),
                 "endpoint");
 
         var enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
-        var scheme = enable_https?.Equals("1") == true ? "https://" : "http://";
+        var scheme = enable_https?.Equals("1", StringComparison.OrdinalIgnoreCase) == true ? "https://" : "http://";
         conn_url = scheme + endpoint;
         var url = new Uri(conn_url);
         var hostnameOfUri = url.Authority;
@@ -900,26 +910,29 @@ public static class Utils
     }
 
     // Converts an object to a byte array
-    public static byte[] ObjectToByteArray(object obj)
+    public static ReadOnlyMemory<byte> ObjectToByteArray(object obj)
     {
-        if (obj == null)
-            return null;
-        var serializer = new XmlSerializer(typeof(object));
-        using var ms = new MemoryStream();
-        serializer.Serialize(ms, obj);
-        return ms.ToArray();
+        switch (obj)
+        {
+            case null:
+            case Memory<byte> memory when memory.IsEmpty:
+            case ReadOnlyMemory<byte> readOnlyMemory when readOnlyMemory.IsEmpty:
+                return null;
+            default:
+                return JsonSerializer.SerializeToUtf8Bytes(obj);
+        }
     }
 
     // Print object key properties and their values
     // Added for debugging purposes
 
-    public static void objPrint(object obj)
+    public static void ObjPrint(object obj)
     {
         foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(obj))
         {
             var name = descriptor.Name;
             var value = descriptor.GetValue(obj);
-            Console.WriteLine("{0}={1}", name, value);
+            Console.WriteLine($"{name}={value}");
         }
     }
 
@@ -935,7 +948,7 @@ public static class Utils
         Console.WriteLine("DEBUG >>   Print is DONE!\n\n");
     }
 
-    public static void printDict(Dictionary<string, string> d)
+    public static void PrintDict(Dictionary<string, string> d)
     {
         if (d != null)
             foreach (var kv in d)

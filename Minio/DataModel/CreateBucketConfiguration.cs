@@ -52,7 +52,6 @@ public class CreateBucketConfiguration
         ms.Flush();
         ms.Seek(0, SeekOrigin.Begin);
         using var sr = new StreamReader(ms);
-        var xml = sr.ReadToEnd();
-        return xml;
+        return sr.ReadToEnd();
     }
 }

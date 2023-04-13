@@ -18,6 +18,7 @@ using System.Net;
 using System.Text;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Tags;
@@ -26,11 +27,11 @@ namespace Minio;
 
 internal class SelectObjectContentResponse : GenericResponse
 {
-    internal SelectObjectContentResponse(HttpStatusCode statusCode, string responseContent, byte[] responseRawBytes)
+    internal SelectObjectContentResponse(HttpStatusCode statusCode, string responseContent,
+        ReadOnlyMemory<byte> responseRawBytes)
         : base(statusCode, responseContent)
     {
-        using var stream = new MemoryStream(responseRawBytes);
-        ResponseStream = new SelectResponseStream(stream);
+        ResponseStream = new SelectResponseStream(responseRawBytes.AsStream());
     }
 
     internal SelectResponseStream ResponseStream { get; }
@@ -54,9 +55,9 @@ internal class RemoveObjectsResponse : GenericResponse
     internal RemoveObjectsResponse(HttpStatusCode statusCode, string responseContent)
         : base(statusCode, responseContent)
     {
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
         DeletedObjectsResult =
-            (DeleteObjectsResult)new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(stream);
+            (DeleteObjectsResult)new XmlSerializer(typeof(DeleteObjectsResult)).Deserialize(Encoding.UTF8
+                .GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal DeleteObjectsResult DeletedObjectsResult { get; }
@@ -67,12 +68,9 @@ internal class GetMultipartUploadsListResponse : GenericResponse
     internal GetMultipartUploadsListResponse(HttpStatusCode statusCode, string responseContent)
         : base(statusCode, responseContent)
     {
-        ListMultipartUploadsResult uploadsResult = null;
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            uploadsResult =
-                (ListMultipartUploadsResult)new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(stream);
-        }
+        var uploadsResult =
+            (ListMultipartUploadsResult)new XmlSerializer(typeof(ListMultipartUploadsResult)).Deserialize(Encoding.UTF8
+                .GetBytes(responseContent).AsMemory().AsStream());
 
         var root = XDocument.Parse(responseContent);
         var itemCheck = root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Upload").FirstOrDefault();
@@ -94,7 +92,7 @@ public class PresignedPostPolicyResponse
 {
     public PresignedPostPolicyResponse(PresignedPostPolicyArgs args, Uri URI)
     {
-        URIPolicyTuple = Tuple.Create(URI.AbsolutePath, args.Policy.GetFormData());
+        URIPolicyTuple = Tuple.Create(URI.AbsolutePath, args.Policy.FormData);
     }
 
     internal Tuple<string, Dictionary<string, string>> URIPolicyTuple { get; }
@@ -111,12 +109,9 @@ public class GetLegalHoldResponse : GenericResponse
             return;
         }
 
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            CurrentLegalHoldConfiguration =
-                (ObjectLegalHoldConfiguration)new XmlSerializer(typeof(ObjectLegalHoldConfiguration)).Deserialize(
-                    stream);
-        }
+        CurrentLegalHoldConfiguration =
+            (ObjectLegalHoldConfiguration)new XmlSerializer(typeof(ObjectLegalHoldConfiguration)).Deserialize(
+                Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
 
         if (CurrentLegalHoldConfiguration == null
             || string.IsNullOrEmpty(CurrentLegalHoldConfiguration.Status))
@@ -142,8 +137,9 @@ internal class GetObjectTagsResponse : GenericResponse
         }
 
         responseContent = Utils.RemoveNamespaceInXML(responseContent);
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
-        ObjectTags = (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(stream);
+        ObjectTags =
+            (Tagging)new XmlSerializer(typeof(Tagging)).Deserialize(Encoding.UTF8.GetBytes(responseContent).AsMemory()
+                .AsStream());
     }
 
     public Tagging ObjectTags { get; set; }
@@ -160,10 +156,9 @@ internal class GetRetentionResponse : GenericResponse
             return;
         }
 
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent));
         CurrentRetentionConfiguration =
             (ObjectRetentionConfiguration)new XmlSerializer(typeof(ObjectRetentionConfiguration)).Deserialize(
-                stream);
+                Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal ObjectRetentionConfiguration CurrentRetentionConfiguration { get; }
@@ -171,10 +166,10 @@ internal class GetRetentionResponse : GenericResponse
 
 internal class CopyObjectResponse : GenericResponse
 {
-    public CopyObjectResponse(HttpStatusCode statusCode, string content, Type reqType)
-        : base(statusCode, content)
+    public CopyObjectResponse(HttpStatusCode statusCode, string responseContent, Type reqType)
+        : base(statusCode, responseContent)
     {
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+        var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
         if (reqType == typeof(CopyObjectResult))
             CopyObjectRequestResult =
                 (CopyObjectResult)new XmlSerializer(typeof(CopyObjectResult)).Deserialize(stream);
@@ -192,11 +187,8 @@ internal class NewMultipartUploadResponse : GenericResponse
         : base(statusCode, responseContent)
     {
         InitiateMultipartUploadResult newUpload = null;
-        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(responseContent)))
-        {
-            newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult))
-                .Deserialize(stream);
-        }
+        newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult))
+            .Deserialize(Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
 
         UploadId = newUpload.UploadId;
     }

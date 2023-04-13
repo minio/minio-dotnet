@@ -107,7 +107,8 @@ public class IAMAWSProvider : EnvironmentProvider
 
     public async Task<AccessCredentials> GetAccessCredentials(Uri url)
     {
-        ArgumentNullException.ThrowIfNull(url);
+        if (url is null)
+            throw new ArgumentNullException(nameof(url));
 
         Validate();
         using var request = new HttpRequestMessage(HttpMethod.Get, url.ToString());
@@ -232,6 +233,9 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
 
     public IAMAWSProvider WithEndpoint(string endpoint)
     {
+        if (string.IsNullOrEmpty(endpoint))
+            throw new ArgumentException($"'{nameof(endpoint)}' cannot be null or empty.", nameof(endpoint));
+
         if (endpoint.Contains("https") || endpoint.Contains("http"))
             CustomEndPoint = new Uri(endpoint);
         else

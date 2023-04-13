@@ -18,6 +18,7 @@ using System.Xml.Serialization;
 
 namespace Minio.DataModel;
 
+[Serializable]
 public sealed class JSONType
 {
     // Constants for JSONTypes.

@@ -24,7 +24,7 @@ public class ResponseResult : IDisposable
 {
     private readonly Dictionary<string, string> _headers = new();
     private string _content;
-    private byte[] _contentBytes;
+    private ReadOnlyMemory<byte> _contentBytes;
 
     private Stream _stream;
 
@@ -59,23 +59,26 @@ public class ResponseResult : IDisposable
         get
         {
             if (Response == null) return null;
-
-            return _stream ??= Response.Content.ReadAsStreamAsync().Result;
+#if NETSTANDARD
+            return _stream ??= Response.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
+#else
+            return _stream ??= Response.Content.ReadAsStream();
+#endif
         }
     }
 
-    public byte[] ContentBytes
+    public ReadOnlyMemory<byte> ContentBytes
     {
         get
         {
             if (ContentStream == null)
                 return Array.Empty<byte>();
 
-            if (_contentBytes == null)
+            if (_contentBytes.IsEmpty)
             {
                 using var memoryStream = new MemoryStream();
                 ContentStream.CopyTo(memoryStream);
-                _contentBytes = memoryStream.ToArray();
+                _contentBytes = new ReadOnlyMemory<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
             }
 
             return _contentBytes;
@@ -87,9 +90,11 @@ public class ResponseResult : IDisposable
         get
         {
             if (ContentBytes.Length == 0) return "";
-
-            _content ??= Encoding.UTF8.GetString(ContentBytes);
-
+#if NETSTANDARD
+            _content ??= Encoding.UTF8.GetString(ContentBytes.ToArray());
+#else
+            _content ??= Encoding.UTF8.GetString(ContentBytes.Span);
+#endif
             return _content;
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Xml.Serialization;
+using CommunityToolkit.HighPerformance;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
 
@@ -19,10 +20,9 @@ public class NotificationTest
 
         try
         {
-            var contentBytes = Encoding.UTF8.GetBytes(notificationString);
-            using var stream = new MemoryStream(contentBytes);
+            ReadOnlyMemory<byte> contentBytes = Encoding.UTF8.GetBytes(notificationString);
             var notification =
-                (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(stream);
+                (BucketNotification)new XmlSerializer(typeof(BucketNotification)).Deserialize(contentBytes.AsStream());
             Assert.AreEqual(1, notification.TopicConfigs.Count);
         }
         catch (Exception ex)

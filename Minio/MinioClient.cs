@@ -20,6 +20,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Serialization;
+using CommunityToolkit.HighPerformance;
 using Minio.Credentials;
 using Minio.DataModel;
 using Minio.DataModel.Tracing;
@@ -30,8 +31,8 @@ namespace Minio;
 
 public class InnerItemType
 {
-    public int sortOrder { get; set; }
-    public string value { get; set; }
+    public int SortOrder { get; set; }
+    public string Value { get; set; }
 }
 
 public partial class MinioClient : IMinioClient
@@ -94,7 +95,7 @@ public partial class MinioClient : IMinioClient
         Region = "";
         SessionToken = "";
         Provider = null;
-        this.httpClient = httpClient;
+        HttpClient = httpClient;
     }
 
     /// <summary>
@@ -130,7 +131,7 @@ public partial class MinioClient : IMinioClient
         uri = RequestUtil.GetEndpointURL(BaseUrl, Secure);
         RequestUtil.ValidateEndpoint(uri, Endpoint);
 
-        httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", FullUserAgent);
+        HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", FullUserAgent);
     }
 
     // Save Credentials from user
@@ -146,7 +147,7 @@ public partial class MinioClient : IMinioClient
     // Indicates if we are using HTTPS or not
     internal bool Secure { get; private set; }
 
-    internal HttpClient httpClient { get; private set; }
+    internal HttpClient HttpClient { get; private set; }
 
     private static string SystemUserAgent
     {
@@ -175,7 +176,7 @@ public partial class MinioClient : IMinioClient
     /// </summary>
     public async Task<HttpResponseMessage> WrapperGetAsync(string url)
     {
-        var response = await httpClient.GetAsync(url).ConfigureAwait(false);
+        var response = await HttpClient.GetAsync(url).ConfigureAwait(false);
         return response;
     }
 
@@ -184,7 +185,7 @@ public partial class MinioClient : IMinioClient
     /// </summary>
     public Task WrapperPutAsync(string url, StreamContent strm)
     {
-        return Task.Run(async () => await httpClient.PutAsync(url, strm).ConfigureAwait(false));
+        return Task.Run(async () => await HttpClient.PutAsync(url, strm).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -223,7 +224,7 @@ public partial class MinioClient : IMinioClient
     public void Dispose()
     {
         if (disposeHttpClient)
-            httpClient?.Dispose();
+            HttpClient?.Dispose();
     }
 
     /// <summary>
@@ -235,7 +236,7 @@ public partial class MinioClient : IMinioClient
     {
         var rgn = "";
         // Use user specified region in client constructor if present
-        if (Region != string.Empty) return Region;
+        if (!string.IsNullOrEmpty(Region)) return Region;
 
         // pick region from endpoint if present
         if (!string.IsNullOrEmpty(Endpoint))
@@ -324,7 +325,7 @@ public partial class MinioClient : IMinioClient
         string objectName = null,
         Dictionary<string, string> headerMap = null,
         string contentType = "application/octet-stream",
-        byte[] body = null,
+        ReadOnlyMemory<byte> body = default,
         string resourcePath = null,
         bool isBucketCreationRequest = false)
     {
@@ -406,7 +407,7 @@ public partial class MinioClient : IMinioClient
             messageBuilder = new HttpRequestMessageBuilder(method, requestUrl, resource);
         else
             messageBuilder = new HttpRequestMessageBuilder(method, requestUrl);
-        if (body != null)
+        if (!body.IsEmpty)
         {
             messageBuilder.SetBody(body);
             messageBuilder.AddOrUpdateHeaderParameter("Content-Type", contentType);
@@ -444,7 +445,7 @@ public partial class MinioClient : IMinioClient
     ///     Uses webproxy for all requests if this method is invoked on client object.
     /// </summary>
     /// <remarks>
-    ///     This setting will be ignored when injecting an external <see cref="HttpClient" /> instance with
+    ///     This setting will be ignored when injecting an external <see cref="System.Net.Http.HttpClient" /> instance with
     ///     <see cref="MinioClient(HttpClient)" /> <see cref="WithHttpClient(HttpClient, bool)" />.
     /// </remarks>
     /// <returns></returns>
@@ -484,7 +485,7 @@ public partial class MinioClient : IMinioClient
     /// <returns></returns>
     public MinioClient WithHttpClient(HttpClient httpClient, bool disposeHttpClient = false)
     {
-        if (httpClient != null) this.httpClient = httpClient;
+        if (httpClient != null) HttpClient = httpClient;
         this.disposeHttpClient = disposeHttpClient;
         return this;
     }
@@ -525,14 +526,14 @@ public partial class MinioClient : IMinioClient
     /// </summary>
     /// <param name="errorHandlers">List of handlers to override default handling</param>
     /// <param name="requestMessageBuilder">The build of HttpRequestMessageBuilder </param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns>ResponseResult</returns>
     internal Task<ResponseResult> ExecuteTaskAsync(
         IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
         HttpRequestMessageBuilder requestMessageBuilder,
-        CancellationToken cancellationToken = default,
-        bool isSts = false)
+        bool isSts = false,
+        CancellationToken cancellationToken = default)
     {
         if (requestTimeout > 0)
         {
@@ -544,14 +545,14 @@ public partial class MinioClient : IMinioClient
 
         return ExecuteWithRetry(
             () => ExecuteTaskCoreAsync(errorHandlers, requestMessageBuilder,
-                cancellationToken, isSts));
+                isSts, cancellationToken));
     }
 
     private async Task<ResponseResult> ExecuteTaskCoreAsync(
         IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
         HttpRequestMessageBuilder requestMessageBuilder,
-        CancellationToken cancellationToken = default,
-        bool isSts = false)
+        bool isSts = false,
+        CancellationToken cancellationToken = default)
     {
         var startTime = DateTime.Now;
         // Logs full url when HTTPtracing is enabled.
@@ -572,7 +573,7 @@ public partial class MinioClient : IMinioClient
         ResponseResult responseResult = null;
         try
         {
-            var response = await httpClient.SendAsync(request,
+            var response = await HttpClient.SendAsync(request,
                     HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
             responseResult = new ResponseResult(request, response);
@@ -676,7 +677,7 @@ public partial class MinioClient : IMinioClient
             {
                 var resource = resourceSplits[0];
 
-                if (isAWS && isVirtual && pathAndQuery != string.Empty)
+                if (isAWS && isVirtual && !string.IsNullOrEmpty(pathAndQuery))
                 {
                     errorResponse.Code = "NoSuchKey";
                     error = new ObjectNotFoundException(resource, "Not found.");
@@ -731,12 +732,12 @@ public partial class MinioClient : IMinioClient
             throw new BucketNotFoundException(bucketName, "Not found.");
         }
 
-        var contentBytes = Encoding.UTF8.GetBytes(response.Content);
-        using var stream = new MemoryStream(contentBytes);
-        var errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream);
+        ReadOnlyMemory<byte> contentBytes = Encoding.UTF8.GetBytes(response.Content);
+        var errResponse = (ErrorResponse)new XmlSerializer(typeof(ErrorResponse)).Deserialize(contentBytes.AsStream());
 
         if (response.StatusCode.Equals(HttpStatusCode.Forbidden)
-            && (errResponse.Code.Equals("SignatureDoesNotMatch") || errResponse.Code.Equals("InvalidAccessKeyId")))
+            && (errResponse.Code.Equals("SignatureDoesNotMatch", StringComparison.OrdinalIgnoreCase) ||
+                errResponse.Code.Equals("InvalidAccessKeyId", StringComparison.OrdinalIgnoreCase)))
             throw new AuthorizationException(errResponse.Resource, errResponse.BucketName, errResponse.Message);
 
         // Handle XML response for Bucket Policy not found case
@@ -754,16 +755,16 @@ public partial class MinioClient : IMinioClient
             throw new BucketNotFoundException(errResponse.BucketName, "Not found.");
 
         if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
-            && errResponse.Code.Equals("MalformedXML"))
+            && errResponse.Code.Equals("MalformedXML", StringComparison.OrdinalIgnoreCase))
             throw new MalFormedXMLException(errResponse.Resource, errResponse.BucketName, errResponse.Message,
                 errResponse.Key);
 
         if (response.StatusCode.Equals(HttpStatusCode.NotImplemented)
-            && errResponse.Code.Equals("NotImplemented"))
+            && errResponse.Code.Equals("NotImplemented", StringComparison.OrdinalIgnoreCase))
             throw new NotImplementedException(errResponse.Message);
 
         if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
-            && errResponse.Code.Equals("InvalidRequest"))
+            && errResponse.Code.Equals("InvalidRequest", StringComparison.OrdinalIgnoreCase))
         {
             var legalHold = new Dictionary<string, string> { { "legal-hold", "" } };
             if (response.Request.RequestUri.Query.Contains("legalHold"))
@@ -771,15 +772,15 @@ public partial class MinioClient : IMinioClient
         }
 
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-            && errResponse.Code.Equals("ObjectLockConfigurationNotFoundError"))
+            && errResponse.Code.Equals("ObjectLockConfigurationNotFoundError", StringComparison.OrdinalIgnoreCase))
             throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
 
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-            && errResponse.Code.Equals("ReplicationConfigurationNotFoundError"))
+            && errResponse.Code.Equals("ReplicationConfigurationNotFoundError", StringComparison.OrdinalIgnoreCase))
             throw new MissingBucketReplicationConfigurationException(errResponse.BucketName, errResponse.Message);
 
         if (response.StatusCode.Equals(HttpStatusCode.Conflict)
-            && errResponse.Code.Equals("BucketAlreadyOwnedByYou"))
+            && errResponse.Code.Equals("BucketAlreadyOwnedByYou", StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("Bucket already owned by you: " + errResponse.BucketName);
 
         throw new UnexpectedMinioException(errResponse.Message)

@@ -18,6 +18,7 @@ using System.Xml.Serialization;
 
 namespace Minio.DataModel;
 
+[Serializable]
 public sealed class CSVFileHeaderInfo
 {
     // Constants for file header info.

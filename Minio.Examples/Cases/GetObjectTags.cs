@@ -33,10 +33,10 @@ public static class GetObjectTags
                     .WithObject(objectName)
                     .WithVersionId(versionId)
             ).ConfigureAwait(false);
-            if (tags != null && tags.GetTags()?.Count > 0)
+            if (tags != null && tags.Tags?.Count > 0)
             {
                 Console.WriteLine($"Got tags set for object {bucketName}/{objectName}.");
-                foreach (var tag in tags.GetTags()) Console.WriteLine(tag.Key + " : " + tag.Value);
+                foreach (var tag in tags.Tags) Console.WriteLine(tag.Key + " : " + tag.Value);
                 Console.WriteLine();
                 return;
             }

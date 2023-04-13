@@ -28,6 +28,18 @@ public class CopyConditions
     internal long byteRangeStart;
 
     /// <summary>
+    ///     Get range size
+    /// </summary>
+    /// <returns></returns>
+    public long ByteRange => byteRangeStart == -1 ? 0 : byteRangeEnd - byteRangeStart + 1;
+
+    /// <summary>
+    ///     Get all the set copy conditions map.
+    /// </summary>
+    /// <returns></returns>
+    public ReadOnlyDictionary<string, string> Conditions => new(copyConditions);
+
+    /// <summary>
     ///     Clone CopyConditions object
     /// </summary>
     /// <returns>new CopyConditions object</returns>
@@ -121,23 +133,5 @@ public class CopyConditions
 
         byteRangeStart = firstByte;
         byteRangeEnd = lastByte;
-    }
-
-    /// <summary>
-    ///     Get range size
-    /// </summary>
-    /// <returns></returns>
-    public long GetByteRange()
-    {
-        return byteRangeStart == -1 ? 0 : byteRangeEnd - byteRangeStart + 1;
-    }
-
-    /// <summary>
-    ///     Get all the set copy conditions map.
-    /// </summary>
-    /// <returns></returns>
-    public ReadOnlyDictionary<string, string> GetConditions()
-    {
-        return new ReadOnlyDictionary<string, string>(copyConditions);
     }
 }

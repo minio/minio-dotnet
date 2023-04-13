@@ -191,8 +191,8 @@ public partial class MinioClient : IMinioClient
         else
             Endpoint = host;
 
-        httpClient ??= Proxy is null ? new HttpClient() : new HttpClient(new HttpClientHandler { Proxy = Proxy });
-        httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", FullUserAgent);
+        HttpClient ??= Proxy is null ? new HttpClient() : new HttpClient(new HttpClientHandler { Proxy = Proxy });
+        HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", FullUserAgent);
         return this;
     }
 

@@ -45,7 +45,8 @@ internal static class Program
             secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
             if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") != null)
             {
-                isSecure = Environment.GetEnvironmentVariable("ENABLE_HTTPS").Equals("1");
+                isSecure = Environment.GetEnvironmentVariable("ENABLE_HTTPS")
+                    .Equals("1", StringComparison.OrdinalIgnoreCase);
                 if (isSecure && port == 80) port = 443;
             }
 
@@ -90,7 +91,7 @@ internal static class Program
 
         if (!string.IsNullOrEmpty(runMode) && runMode == "core")
         {
-            FunctionalTest.RunCoreTests(minioClient);
+            await FunctionalTest.RunCoreTests(minioClient).ConfigureAwait(false);
             Environment.Exit(0);
         }
 
@@ -141,8 +142,11 @@ internal static class Program
         // and length parameters. Tests will be reported as GetObject_Test3,
         // GetObject_Test4 and GetObject_Test5.
         await FunctionalTest.GetObject_3_OffsetLength_Tests(minioClient).ConfigureAwait(false);
+
+#if NET6_0_OR_GREATER
         // Test async callback function to download an object
         await FunctionalTest.GetObject_AsyncCallback_Test1(minioClient).ConfigureAwait(false);
+#endif
 
         // Test File GetObject and PutObject functions
         await FunctionalTest.FGetObject_Test1(minioClient).ConfigureAwait(false);

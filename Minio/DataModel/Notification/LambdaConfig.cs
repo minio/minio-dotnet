@@ -47,7 +47,7 @@ public class LambdaConfig : NotificationConfiguration
         // If parameter is null return false.
         if (obj == null)
             return false;
-        return other.Lambda.Equals(Lambda);
+        return other.Lambda.Equals(Lambda, StringComparison.Ordinal);
     }
 
     public override int GetHashCode()
