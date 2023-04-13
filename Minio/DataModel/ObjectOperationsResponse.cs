@@ -17,9 +17,7 @@
 using System.Net;
 using System.Text;
 using System.Xml.Linq;
-using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
-using Minio;
 using Minio.DataModel;
 using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Tags;
@@ -57,7 +55,7 @@ internal class RemoveObjectsResponse : GenericResponse
         : base(statusCode, responseContent)
     {
         DeletedObjectsResult = Utils.DeserializeXml<DeleteObjectsResult>(Encoding.UTF8
-                        .GetBytes(responseContent).AsMemory().AsStream());
+            .GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal DeleteObjectsResult DeletedObjectsResult { get; }
@@ -69,20 +67,20 @@ internal class GetMultipartUploadsListResponse : GenericResponse
         : base(statusCode, responseContent)
     {
         var uploadsResult = Utils.DeserializeXml<ListMultipartUploadsResult>(Encoding.UTF8
-                        .GetBytes(responseContent).AsMemory().AsStream());
+            .GetBytes(responseContent).AsMemory().AsStream());
         var root = XDocument.Parse(responseContent);
-            XNamespace ns = Utils.DetermineNamespace(root);
+        XNamespace ns = Utils.DetermineNamespace(root);
 
-            var itemCheck = root.Root.Descendants(ns + "Upload").FirstOrDefault();
-            if (uploadsResult == null || itemCheck?.HasElements != true) return;
-            var uploads = from c in root.Root.Descendants(ns + "Upload")
-                select new Upload
-                {
-                    Key = c.Element(ns + "Key").Value,
-                    UploadId = c.Element(ns + "UploadId").Value,
-                    Initiated = c.Element(ns + "Initiated").Value
-                };
-            UploadResult = new Tuple<ListMultipartUploadsResult, List<Upload>>(uploadsResult, uploads.ToList());
+        var itemCheck = root.Root.Descendants(ns + "Upload").FirstOrDefault();
+        if (uploadsResult == null || itemCheck?.HasElements != true) return;
+        var uploads = from c in root.Root.Descendants(ns + "Upload")
+            select new Upload
+            {
+                Key = c.Element(ns + "Key").Value,
+                UploadId = c.Element(ns + "UploadId").Value,
+                Initiated = c.Element(ns + "Initiated").Value
+            };
+        UploadResult = new Tuple<ListMultipartUploadsResult, List<Upload>>(uploadsResult, uploads.ToList());
     }
 
     internal Tuple<ListMultipartUploadsResult, List<Upload>> UploadResult { get; }
@@ -109,7 +107,9 @@ public class GetLegalHoldResponse : GenericResponse
             return;
         }
 
-        CurrentLegalHoldConfiguration = Utils.DeserializeXml<ObjectLegalHoldConfiguration>(Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
+        CurrentLegalHoldConfiguration =
+            Utils.DeserializeXml<ObjectLegalHoldConfiguration>(Encoding.UTF8.GetBytes(responseContent).AsMemory()
+                .AsStream());
 
         if (CurrentLegalHoldConfiguration == null
             || string.IsNullOrEmpty(CurrentLegalHoldConfiguration.Status))
@@ -136,7 +136,7 @@ internal class GetObjectTagsResponse : GenericResponse
 
         responseContent = Utils.RemoveNamespaceInXML(responseContent);
         ObjectTags = Utils.DeserializeXml<Tagging>(Encoding.UTF8.GetBytes(responseContent).AsMemory()
-                        .AsStream());
+            .AsStream());
     }
 
     public Tagging ObjectTags { get; set; }
@@ -153,7 +153,9 @@ internal class GetRetentionResponse : GenericResponse
             return;
         }
 
-        CurrentRetentionConfiguration = Utils.DeserializeXml<ObjectRetentionConfiguration>(Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
+        CurrentRetentionConfiguration =
+            Utils.DeserializeXml<ObjectRetentionConfiguration>(Encoding.UTF8.GetBytes(responseContent).AsMemory()
+                .AsStream());
     }
 
     internal ObjectRetentionConfiguration CurrentRetentionConfiguration { get; }
@@ -181,7 +183,8 @@ internal class NewMultipartUploadResponse : GenericResponse
         : base(statusCode, responseContent)
     {
         InitiateMultipartUploadResult newUpload = null;
-        newUpload = Utils.DeserializeXml<InitiateMultipartUploadResult>(Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
+        newUpload = Utils.DeserializeXml<InitiateMultipartUploadResult>(Encoding.UTF8.GetBytes(responseContent)
+            .AsMemory().AsStream());
 
         UploadId = newUpload.UploadId;
     }

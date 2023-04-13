@@ -965,7 +965,7 @@ public static class Utils
 
     public static string SerializeToXml<T>(T anyobject) where T : class
     {
-        XmlSerializer xs = new XmlSerializer(anyobject.GetType());
+        var xs = new XmlSerializer(anyobject.GetType());
         using var sw = new StringWriter(CultureInfo.InvariantCulture);
         using var xw = XmlWriter.Create(sw);
 
@@ -981,16 +981,15 @@ public static class Utils
         {
             var ns = GetNamespace<T>();
             if (!string.IsNullOrWhiteSpace(ns) && ns is "http://s3.amazonaws.com/doc/2006-03-01/")
-            {
                 return (T)new XmlSerializer(typeof(T)).Deserialize(new AmazonAwsS3XmlReader(stream));
-            }
 
             return (T)new XmlSerializer(typeof(T)).Deserialize(stream);
         }
         catch (Exception ex)
         {
         }
-        return default(T);
+
+        return default;
     }
 
     public static T DeserializeXml<T>(string xml) where T : class
@@ -1003,16 +1002,15 @@ public static class Utils
         catch (Exception ex)
         {
         }
-        return default(T);
+
+        return default;
     }
 
     private static string? GetNamespace<T>()
     {
         if (typeof(T).GetCustomAttributes(typeof(XmlRootAttribute), true)
-            .FirstOrDefault() is XmlRootAttribute xmlRootAttribute)
-        {
+                .FirstOrDefault() is XmlRootAttribute xmlRootAttribute)
             return xmlRootAttribute.Namespace;
-        }
 
         return null;
     }

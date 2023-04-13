@@ -15,12 +15,10 @@
  */
 
 using System.Globalization;
-using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
 using System.Xml.Linq;
-using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 using Minio.DataModel.ILM;
@@ -40,7 +38,7 @@ internal class GetVersioningResponse : GenericResponse
             return;
 
         VersioningConfig = Utils.DeserializeXml<VersioningConfiguration>(Encoding.UTF8
-                .GetBytes(responseContent).AsMemory().AsStream());
+            .GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal VersioningConfiguration VersioningConfig { get; set; }
@@ -57,7 +55,7 @@ internal class ListBucketsResponse : GenericResponse
             return;
 
         BucketsResult = Utils.DeserializeXml<ListAllMyBucketsResult>(Encoding.UTF8
-                .GetBytes(responseContent).AsMemory().AsStream());
+            .GetBytes(responseContent).AsMemory().AsStream());
     }
 }
 
@@ -163,7 +161,7 @@ internal class GetObjectsListResponse : GenericResponse
             return;
 
         BucketResult = Utils.DeserializeXml<ListBucketResult>(Encoding.UTF8
-                .GetBytes(responseContent).AsMemory().AsStream());
+            .GetBytes(responseContent).AsMemory().AsStream());
 
         var root = XDocument.Parse(responseContent);
         XNamespace ns = Utils.DetermineNamespace(root);
@@ -202,7 +200,7 @@ internal class GetObjectsVersionsListResponse : GenericResponse
             return;
 
         BucketResult = Utils.DeserializeXml<ListVersionsResult>(Encoding.UTF8
-                .GetBytes(responseContent).AsMemory().AsStream());
+            .GetBytes(responseContent).AsMemory().AsStream());
 
         var root = XDocument.Parse(responseContent);
         XNamespace ns = Utils.DetermineNamespace(root);
@@ -263,8 +261,9 @@ internal class GetBucketNotificationsResponse : GenericResponse
             BucketNotificationConfiguration = new BucketNotification();
             return;
         }
+
         BucketNotificationConfiguration = Utils.DeserializeXml<BucketNotification>(Encoding.UTF8
-                .GetBytes(responseContent).AsMemory().AsStream());
+            .GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal BucketNotification BucketNotificationConfiguration { set; get; }
@@ -280,7 +279,10 @@ internal class GetBucketEncryptionResponse : GenericResponse
             BucketEncryptionConfiguration = null;
             return;
         }
-        BucketEncryptionConfiguration = Utils.DeserializeXml<ServerSideEncryptionConfiguration>(Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream());
+
+        BucketEncryptionConfiguration =
+            Utils.DeserializeXml<ServerSideEncryptionConfiguration>(Encoding.UTF8.GetBytes(responseContent).AsMemory()
+                .AsStream());
     }
 
     internal ServerSideEncryptionConfiguration BucketEncryptionConfiguration { get; set; }
@@ -301,7 +303,7 @@ internal class GetBucketTagsResponse : GenericResponse
         // Remove namespace from response content, if present.
         responseContent = Utils.RemoveNamespaceInXML(responseContent);
         BucketTags = Utils.DeserializeXml<Tagging>(Encoding.UTF8.GetBytes(responseContent).AsMemory()
-                .AsStream());
+            .AsStream());
     }
 
     internal Tagging BucketTags { set; get; }
@@ -317,8 +319,9 @@ internal class GetObjectLockConfigurationResponse : GenericResponse
             LockConfiguration = null;
             return;
         }
+
         LockConfiguration = Utils.DeserializeXml<ObjectLockConfiguration>(Encoding.UTF8
-                .GetBytes(responseContent).AsMemory().AsStream());
+            .GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal ObjectLockConfiguration LockConfiguration { get; set; }
@@ -339,7 +342,7 @@ internal class GetBucketLifecycleResponse : GenericResponse
         //Remove xmlns content for config serialization
         responseContent = Utils.RemoveNamespaceInXML(responseContent);
         BucketLifecycle = Utils.DeserializeXml<LifecycleConfiguration>(Encoding.UTF8
-                .GetBytes(responseContent).AsMemory().AsStream());
+            .GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal LifecycleConfiguration BucketLifecycle { set; get; }
@@ -358,7 +361,7 @@ internal class GetBucketReplicationResponse : GenericResponse
         }
 
         Config = Utils.DeserializeXml<ReplicationConfiguration>(Encoding.UTF8
-                .GetBytes(responseContent).AsMemory().AsStream());
+            .GetBytes(responseContent).AsMemory().AsStream());
     }
 
     internal ReplicationConfiguration Config { set; get; }

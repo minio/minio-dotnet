@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;

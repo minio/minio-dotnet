@@ -16,11 +16,9 @@
  */
 
 using System.Globalization;
-using System.IO;
 using System.Reactive.Linq;
 using System.Text;
 using System.Xml.Linq;
-using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 using Minio.DataModel.ObjectLock;
@@ -1478,7 +1476,7 @@ public partial class MinioClient : IObjectOperations
                 .ConfigureAwait(false);
 
         var listPartsResult = Utils.DeserializeXml<ListPartsResult>(Encoding.UTF8
-                .GetBytes(response.Content).AsMemory().AsStream());
+            .GetBytes(response.Content).AsMemory().AsStream());
 
         var root = XDocument.Parse(response.Content);
         XNamespace ns = Utils.DetermineNamespace(root);

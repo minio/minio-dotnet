@@ -19,7 +19,6 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
 using Minio.Credentials;
 using Minio.DataModel;
@@ -731,7 +730,7 @@ public partial class MinioClient : IMinioClient
             BucketRegionCache.Instance.Remove(bucketName);
             throw new BucketNotFoundException(bucketName, "Not found.");
         }
-        
+
         ReadOnlyMemory<byte> contentBytes = Encoding.UTF8.GetBytes(response.Content);
         var errResponse = Utils.DeserializeXml<ErrorResponse>(contentBytes.AsStream());
 
