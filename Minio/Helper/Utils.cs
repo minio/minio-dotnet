@@ -985,7 +985,7 @@ public static class Utils
 
             return (T)new XmlSerializer(typeof(T)).Deserialize(stream);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
 
@@ -999,14 +999,14 @@ public static class Utils
             var serializer = new XmlSerializer(typeof(T));
             return (T)serializer.Deserialize(new StringReader(xml));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
 
         return default;
     }
 
-    private static string? GetNamespace<T>()
+    private static string GetNamespace<T>()
     {
         if (typeof(T).GetCustomAttributes(typeof(XmlRootAttribute), true)
                 .FirstOrDefault() is XmlRootAttribute xmlRootAttribute)

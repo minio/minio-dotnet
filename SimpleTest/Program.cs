@@ -27,8 +27,8 @@ public static class Program
                                                | SecurityProtocolType.Tls11
                                                | SecurityProtocolType.Tls12;
 
-        /// Note: s3 AccessKey and SecretKey needs to be added in App.config file
-        /// See instructions in README.md on running examples for more information.
+        // Note: s3 AccessKey and SecretKey needs to be added in App.config file
+        // See instructions in README.md on running examples for more information.
         using var minio = new MinioClient()
             .WithEndpoint("play.min.io")
             .WithCredentials("Q3AM3UQ867SPQQA43P2F",
