@@ -17,7 +17,6 @@
 
 using System.Net;
 using System.Text;
-using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 
@@ -132,10 +131,12 @@ public abstract class AssumeRoleBaseProvider<T> : ClientProvider
 
     internal virtual AccessCredentials ParseResponse(HttpResponseMessage response)
     {
-        if (string.IsNullOrEmpty(Convert.ToString(response.Content)) || !HttpStatusCode.OK.Equals(response.StatusCode))
-            throw new ArgumentNullException("Unable to generate credentials. Response error.");
-        return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(Encoding.UTF8
-            .GetBytes(Convert.ToString(response.Content)).AsMemory().AsStream());
+        var content = Convert.ToString(response.Content);
+        if (string.IsNullOrEmpty(content) || !HttpStatusCode.OK.Equals(response.StatusCode))
+            throw new ArgumentNullException(nameof(response), "Unable to generate credentials. Response error.");
+
+        using var stream = Encoding.UTF8.GetBytes(content).AsMemory().AsStream();
+        return Utils.DeserializeXml<AccessCredentials>(stream);
     }
 
     public override AccessCredentials GetCredentials()

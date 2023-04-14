@@ -19,7 +19,6 @@ using System.Globalization;
 using System.Reactive.Linq;
 using System.Text;
 using System.Xml.Linq;
-using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 using Minio.DataModel.ObjectLock;
@@ -1476,19 +1475,19 @@ public partial class MinioClient : IObjectOperations
             await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
-        var listPartsResult =
-            (ListPartsResult)new XmlSerializer(typeof(ListPartsResult)).Deserialize(Encoding.UTF8
-                .GetBytes(response.Content).AsMemory().AsStream());
+        using var stream = Encoding.UTF8.GetBytes(response.Content).AsMemory().AsStream();
+        var listPartsResult = Utils.DeserializeXml<ListPartsResult>(stream);
 
         var root = XDocument.Parse(response.Content);
+        XNamespace ns = Utils.DetermineNamespace(root);
 
-        var uploads = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Part")
+        var uploads = from c in root.Root.Descendants(ns + "Part")
             select new Part
             {
-                PartNumber = int.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}PartNumber").Value,
+                PartNumber = int.Parse(c.Element(ns + "PartNumber").Value,
                     CultureInfo.CurrentCulture),
-                ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value.Replace("\"", string.Empty),
-                Size = long.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value,
+                ETag = c.Element(ns + "ETag").Value.Replace("\"", string.Empty),
+                Size = long.Parse(c.Element(ns + "Size").Value,
                     CultureInfo.CurrentCulture)
             };
 
@@ -1517,9 +1516,8 @@ public partial class MinioClient : IObjectOperations
         using var response = await ExecuteTaskAsync(NoErrorHandlers,
             requestMessageBuilder, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        var newUpload = (InitiateMultipartUploadResult)new XmlSerializer(typeof(InitiateMultipartUploadResult))
-            .Deserialize(response.ContentBytes.AsStream());
-
+        using var stream = response.ContentBytes.AsStream();
+        var newUpload = Utils.DeserializeXml<InitiateMultipartUploadResult>(stream);
         return newUpload.UploadId;
     }
 
@@ -1670,13 +1668,16 @@ public partial class MinioClient : IObjectOperations
         object copyResult = null;
 
         if (type == typeof(CopyObjectResult))
-            copyResult =
-                (CopyObjectResult)new XmlSerializer(typeof(CopyObjectResult)).Deserialize(
-                    response.ContentBytes.AsStream());
+        {
+            using var stream = response.ContentBytes.AsStream();
+            copyResult = Utils.DeserializeXml<CopyObjectResult>(stream);
+        }
 
         if (type == typeof(CopyPartResult))
-            copyResult =
-                (CopyPartResult)new XmlSerializer(typeof(CopyPartResult)).Deserialize(response.ContentBytes.AsStream());
+        {
+            using var stream = response.ContentBytes.AsStream();
+            copyResult = Utils.DeserializeXml<CopyPartResult>(stream);
+        }
 
         return copyResult;
     }

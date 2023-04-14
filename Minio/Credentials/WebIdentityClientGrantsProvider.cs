@@ -17,7 +17,6 @@
 
 using System.Net;
 using System.Text;
-using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 
@@ -62,12 +61,13 @@ public abstract class WebIdentityClientGrantsProvider<T> : AssumeRoleBaseProvide
         // Stream receiveStream = response.Content.ReadAsStreamAsync();
         // StreamReader readStream = new StreamReader (receiveStream, Encoding.UTF8);
         // txtBlock.Text = readStream.ReadToEnd();
-        if (string.IsNullOrWhiteSpace(Convert.ToString(response.Content)) ||
+        var content = Convert.ToString(response.Content);
+        if (string.IsNullOrWhiteSpace(content) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))
-            throw new ArgumentNullException("Unable to get credentials. Response error.");
+            throw new ArgumentNullException(nameof(response), "Unable to get credentials. Response error.");
 
-        return (AccessCredentials)new XmlSerializer(typeof(AccessCredentials)).Deserialize(Encoding.UTF8
-            .GetBytes(Convert.ToString(response.Content)).AsMemory().AsStream());
+        using var stream = Encoding.UTF8.GetBytes(content).AsMemory().AsStream();
+        return Utils.DeserializeXml<AccessCredentials>(stream);
     }
 
     protected void Validate()

@@ -23,6 +23,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 using Minio.Exceptions;
 using Minio.Helper;
@@ -956,4 +957,70 @@ public static class Utils
 
         Console.WriteLine("DEBUG >>   Done printing\n");
     }
+
+    public static string DetermineNamespace(XDocument document)
+    {
+        return document.Root.Attributes().FirstOrDefault(attr => attr.IsNamespaceDeclaration)?.Value ?? string.Empty;
+    }
+
+    public static string SerializeToXml<T>(T anyobject) where T : class
+    {
+        var xs = new XmlSerializer(anyobject.GetType());
+        using var sw = new StringWriter(CultureInfo.InvariantCulture);
+        using var xw = XmlWriter.Create(sw);
+
+        xs.Serialize(xw, anyobject);
+        xw.Flush();
+
+        return sw.ToString();
+    }
+
+    public static T DeserializeXml<T>(Stream stream) where T : class
+    {
+        try
+        {
+            var ns = GetNamespace<T>();
+            if (!string.IsNullOrWhiteSpace(ns) && ns is "http://s3.amazonaws.com/doc/2006-03-01/")
+                return (T)new XmlSerializer(typeof(T)).Deserialize(new AmazonAwsS3XmlReader(stream));
+
+            return (T)new XmlSerializer(typeof(T)).Deserialize(stream);
+        }
+        catch (Exception)
+        {
+        }
+
+        return default;
+    }
+
+    public static T DeserializeXml<T>(string xml) where T : class
+    {
+        try
+        {
+            var serializer = new XmlSerializer(typeof(T));
+            return (T)serializer.Deserialize(new StringReader(xml));
+        }
+        catch (Exception)
+        {
+        }
+
+        return default;
+    }
+
+    private static string GetNamespace<T>()
+    {
+        if (typeof(T).GetCustomAttributes(typeof(XmlRootAttribute), true)
+                .FirstOrDefault() is XmlRootAttribute xmlRootAttribute)
+            return xmlRootAttribute.Namespace;
+
+        return null;
+    }
+}
+
+public class AmazonAwsS3XmlReader : XmlTextReader
+{
+    public AmazonAwsS3XmlReader(Stream stream) : base(stream)
+    {
+    }
+
+    public override string NamespaceURI => "http://s3.amazonaws.com/doc/2006-03-01/";
 }

@@ -17,7 +17,6 @@
 
 using System.Net;
 using System.Reactive.Linq;
-using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 using Minio.DataModel.ILM;
@@ -190,9 +189,10 @@ public partial class MinioClient : IBucketOperations
 
         var bucketList = new ListAllMyBucketsResult();
         if (HttpStatusCode.OK.Equals(response.StatusCode))
-            bucketList =
-                new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(response.ContentBytes.AsStream()) as
-                    ListAllMyBucketsResult;
+        {
+            using var stream = response.ContentBytes.AsStream();
+            bucketList = Utils.DeserializeXml<ListAllMyBucketsResult>(stream);
+        }
 
         return bucketList;
     }

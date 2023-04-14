@@ -41,7 +41,7 @@ internal static class SelectObjectContent
             csvString.AppendLine("Employee5,Employee1,500");
             csvString.AppendLine("Employee2,Employee1,800");
             ReadOnlyMemory<byte> csvBytes = Encoding.UTF8.GetBytes(csvString.ToString());
-            var stream = csvBytes.AsStream();
+            using var stream = csvBytes.AsStream();
             var putObjectArgs = new PutObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(newObjectName)
