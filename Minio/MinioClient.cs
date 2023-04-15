@@ -594,13 +594,13 @@ public partial class MinioClient : IMinioClient
 
         foreach (var parameter in response.Headers)
         {
-            if (parameter.Key.Equals("x-amz-id-2", StringComparison.CurrentCultureIgnoreCase))
+            if (parameter.Key.Equals("x-amz-id-2", StringComparison.OrdinalIgnoreCase))
                 errorResponse.HostId = parameter.Value;
 
-            if (parameter.Key.Equals("x-amz-request-id", StringComparison.CurrentCultureIgnoreCase))
+            if (parameter.Key.Equals("x-amz-request-id", StringComparison.OrdinalIgnoreCase))
                 errorResponse.RequestId = parameter.Value;
 
-            if (parameter.Key.Equals("x-amz-bucket-region", StringComparison.CurrentCultureIgnoreCase))
+            if (parameter.Key.Equals("x-amz-bucket-region", StringComparison.OrdinalIgnoreCase))
                 errorResponse.BucketRegion = parameter.Value;
         }
 
@@ -614,8 +614,8 @@ public partial class MinioClient : IMinioClient
         if (HttpStatusCode.NotFound.Equals(response.StatusCode))
         {
             var pathLength = resourceSplits.Length;
-            var isAWS = host.EndsWith("s3.amazonaws.com");
-            var isVirtual = isAWS && !host.StartsWith("s3.amazonaws.com");
+            var isAWS = host.EndsWith("s3.amazonaws.com", StringComparison.OrdinalIgnoreCase);
+            var isVirtual = isAWS && !host.StartsWith("s3.amazonaws.com", StringComparison.OrdinalIgnoreCase);
 
             if (pathLength > 1)
             {
@@ -674,7 +674,7 @@ public partial class MinioClient : IMinioClient
     private static void ParseErrorFromContent(ResponseResult response)
     {
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-            && response.Request.RequestUri.PathAndQuery.EndsWith("?location")
+            && response.Request.RequestUri.PathAndQuery.EndsWith("?location", StringComparison.OrdinalIgnoreCase)
             && response.Request.Method.Equals(HttpMethod.Get))
         {
             var bucketName = response.Request.RequestUri.PathAndQuery.Split('?')[0];
@@ -692,16 +692,16 @@ public partial class MinioClient : IMinioClient
 
         // Handle XML response for Bucket Policy not found case
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-            && response.Request.RequestUri.PathAndQuery.EndsWith("?policy")
+            && response.Request.RequestUri.PathAndQuery.EndsWith("?policy", StringComparison.OrdinalIgnoreCase)
             && response.Request.Method.Equals(HttpMethod.Get)
-            && errResponse.Code == "NoSuchBucketPolicy")
+            && string.Equals(errResponse.Code, "NoSuchBucketPolicy", StringComparison.OrdinalIgnoreCase))
             throw new ErrorResponseException(errResponse, response)
             {
                 XmlError = response.Content
             };
 
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-            && errResponse.Code == "NoSuchBucket")
+            && string.Equals(errResponse.Code, "NoSuchBucket", StringComparison.OrdinalIgnoreCase))
             throw new BucketNotFoundException(errResponse.BucketName, "Not found.");
 
         if (response.StatusCode.Equals(HttpStatusCode.BadRequest)

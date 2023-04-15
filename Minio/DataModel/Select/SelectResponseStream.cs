@@ -150,7 +150,7 @@ public class SelectResponseStream
             var headerMap = ExtractHeaders(headers);
 
             if (headerMap.TryGetValue(":message-type", out var value))
-                if (value.Equals(":error"))
+                if (value.Equals(":error", StringComparison.OrdinalIgnoreCase))
                 {
                     headerMap.TryGetValue(":error-code", out var errorCode);
                     headerMap.TryGetValue(":error-message", out var errorMessage);
@@ -159,15 +159,15 @@ public class SelectResponseStream
 
             if (headerMap.TryGetValue(":event-type", out value))
             {
-                if (value.Equals("End"))
+                if (value.Equals("End", StringComparison.OrdinalIgnoreCase))
                 {
                     // throw new UnexpectedShortReadException("Insufficient data");
                     _isProcessing = false;
                     break;
                 }
 
-                if (value.Equals("Cont") || payloadLength < 1) continue;
-                if (value.Equals("Progress"))
+                if (value.Equals("Cont", StringComparison.OrdinalIgnoreCase) || payloadLength < 1) continue;
+                if (value.Equals("Progress", StringComparison.OrdinalIgnoreCase))
                 {
                     var progress = new ProgressMessage();
                     using var stream = payload.AsStream();
@@ -176,7 +176,7 @@ public class SelectResponseStream
                     Progress = progress;
                 }
 
-                if (value.Equals("Stats"))
+                if (value.Equals("Stats", StringComparison.OrdinalIgnoreCase))
                 {
                     var stats = new StatsMessage();
                     using var stream = payload.AsStream();
@@ -186,9 +186,9 @@ public class SelectResponseStream
                 }
 
 #if NETSTANDARD
-                if (value.Equals("Records")) Payload.Write(payload.ToArray(), 0, payloadLength);
+                if (value.Equals("Records", StringComparison.OrdinalIgnoreCase)) Payload.Write(payload.ToArray(), 0, payloadLength);
 #else
-                if (value.Equals("Records")) Payload.Write(payload.Span);
+                if (value.Equals("Records", StringComparison.OrdinalIgnoreCase)) Payload.Write(payload.Span);
 #endif
             }
         }

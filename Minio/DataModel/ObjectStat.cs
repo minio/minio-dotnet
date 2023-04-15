@@ -74,7 +74,7 @@ public class ObjectStat
                     objInfo.VersionId = paramValue;
                     break;
                 case "x-amz-delete-marker":
-                    objInfo.DeleteMarker = paramValue.Equals("true");
+                    objInfo.DeleteMarker = paramValue.Equals("true", StringComparison.OrdinalIgnoreCase);
                     break;
                 case "x-amz-archive-status":
                     objInfo.ArchiveStatus = paramValue;

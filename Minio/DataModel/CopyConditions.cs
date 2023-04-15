@@ -113,7 +113,7 @@ public class CopyConditions
     {
         foreach (var item in copyConditions)
             if (item.Key.Equals("x-amz-metadata-directive", StringComparison.OrdinalIgnoreCase) &&
-                item.Value.ToUpperInvariant().Equals("REPLACE"))
+                item.Value.ToUpperInvariant().Equals("REPLACE", StringComparison.Ordinal))
                 return true;
 
         return false;

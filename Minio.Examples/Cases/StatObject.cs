@@ -74,7 +74,7 @@ internal static class StatObject
         }
     }
 
-    private static void PrintMetaData(Dictionary<string, string> metaData)
+    private static void PrintMetaData(IDictionary<string, string> metaData)
     {
         Console.WriteLine("Metadata:");
         foreach (var metaPair in metaData) Console.WriteLine("    " + metaPair.Key + ":\t" + metaPair.Value);

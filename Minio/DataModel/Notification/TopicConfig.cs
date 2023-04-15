@@ -50,7 +50,7 @@ public class TopicConfig : NotificationConfiguration
         var other = (TopicConfig)obj;
         // If parameter is null return false.
         if (other == null) return false;
-        return other.Topic.Equals(Topic);
+        return other.Topic.Equals(Topic, StringComparison.OrdinalIgnoreCase);
     }
 
     public override int GetHashCode()

@@ -22,16 +22,31 @@ public static class BuilderUtil
 {
     public static bool IsAwsDualStackEndpoint(string endpoint)
     {
+        if (string.IsNullOrEmpty(endpoint))
+        {
+            throw new ArgumentException($"'{nameof(endpoint)}' cannot be null or empty.", nameof(endpoint));
+        }
+
         return endpoint.Contains(".dualstack.");
     }
 
     public static bool IsAwsAccelerateEndpoint(string endpoint)
     {
+        if (string.IsNullOrEmpty(endpoint))
+        {
+            throw new ArgumentException($"'{nameof(endpoint)}' cannot be null or empty.", nameof(endpoint));
+        }
+
         return endpoint.StartsWith("s3-accelerate.", StringComparison.OrdinalIgnoreCase);
     }
 
     public static bool IsAwsEndpoint(string endpoint)
     {
+        if (string.IsNullOrEmpty(endpoint))
+        {
+            throw new ArgumentException($"'{nameof(endpoint)}' cannot be null or empty.", nameof(endpoint));
+        }
+
         return (endpoint.StartsWith("s3.", StringComparison.OrdinalIgnoreCase) ||
                 IsAwsAccelerateEndpoint(endpoint)) &&
                (endpoint.EndsWith(".amazonaws.com", StringComparison.OrdinalIgnoreCase) ||
@@ -40,22 +55,32 @@ public static class BuilderUtil
 
     public static bool IsChineseDomain(string host)
     {
+        if (string.IsNullOrEmpty(host))
+        {
+            throw new ArgumentException($"'{nameof(host)}' cannot be null or empty.", nameof(host));
+        }
+
         return host.EndsWith(".cn", StringComparison.OrdinalIgnoreCase);
     }
 
     public static string ExtractRegion(string endpoint)
     {
+        if (string.IsNullOrEmpty(endpoint))
+        {
+            throw new ArgumentException($"'{nameof(endpoint)}' cannot be null or empty.", nameof(endpoint));
+        }
+
         var tokens = endpoint.Split('.');
         if (tokens.Length < 2)
             return null;
         var token = tokens[1];
 
         // If token is "dualstack", then region might be in next token.
-        if (token.Equals("dualstack") && tokens.Length >= 3)
+        if (token.Equals("dualstack", StringComparison.OrdinalIgnoreCase) && tokens.Length >= 3)
             token = tokens[2];
 
         // If token is equal to "amazonaws", region is not passed in the endpoint.
-        if (token.Equals("amazonaws"))
+        if (token.Equals("amazonaws", StringComparison.OrdinalIgnoreCase))
             return null;
 
         // Return token as region.

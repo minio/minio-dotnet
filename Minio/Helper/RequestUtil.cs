@@ -95,12 +95,12 @@ internal static class RequestUtil
         var host = uri.Host;
 
         if (!IsValidEndpoint(uri.Host)) throw new InvalidEndpointException(endpoint, "Invalid endpoint.");
-        if (!uri.AbsolutePath.Equals("/", StringComparison.CurrentCultureIgnoreCase))
+        if (!uri.AbsolutePath.Equals("/", StringComparison.OrdinalIgnoreCase))
             throw new InvalidEndpointException(endpoint, "No path allowed in endpoint.");
 
         if (!string.IsNullOrEmpty(uri.Query))
             throw new InvalidEndpointException(endpoint, "No query parameter allowed in endpoint.");
-        if (!uri.Scheme.ToLowerInvariant().Equals("https") && !uri.Scheme.ToLowerInvariant().Equals("http"))
+        if (!uri.Scheme.ToUpperInvariant().Equals("https", StringComparison.OrdinalIgnoreCase) && !uri.Scheme.ToUpperInvariant().Equals("http", StringComparison.OrdinalIgnoreCase))
             throw new InvalidEndpointException(endpoint, "Invalid scheme detected in endpoint.");
     }
 

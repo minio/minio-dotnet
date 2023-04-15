@@ -949,7 +949,7 @@ public static class Utils
         Console.WriteLine("DEBUG >>   Print is DONE!\n\n");
     }
 
-    public static void PrintDict(Dictionary<string, string> d)
+    public static void PrintDict(IDictionary<string, string> d)
     {
         if (d != null)
             foreach (var kv in d)

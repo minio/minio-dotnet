@@ -33,7 +33,7 @@ public abstract class BucketArgs<T> : Args
         return (T)this;
     }
 
-    public T WithHeaders(Dictionary<string, string> headers)
+    public T WithHeaders(IDictionary<string, string> headers)
     {
         if (headers == null || headers.Count <= 0) return (T)this;
         Headers ??= new Dictionary<string, string>();

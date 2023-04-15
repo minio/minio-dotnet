@@ -211,17 +211,17 @@ public partial class MinioClient : IMinioClient
                 string.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint),
                 nameof(endpoint));
 
-        if (endpoint.EndsWith("/")) endpoint = endpoint.Substring(0, endpoint.Length - 1);
+        if (endpoint.EndsWith("/", StringComparison.OrdinalIgnoreCase)) endpoint = endpoint.Substring(0, endpoint.Length - 1);
         if (!BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
             throw new InvalidEndpointException(string.Format("{0} is invalid hostname.", endpoint), "endpoint");
         string conn_url;
-        if (endpoint.StartsWith("http"))
+        if (endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             throw new InvalidEndpointException(
                 string.Format("{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),
                 "endpoint");
 
         var enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
-        var scheme = enable_https?.Equals("1") == true ? "https://" : "http://";
+        var scheme = enable_https?.Equals("1", StringComparison.OrdinalIgnoreCase) == true ? "https://" : "http://";
         conn_url = scheme + endpoint;
         var url = new Uri(conn_url);
         var hostnameOfUri = url.Authority;
