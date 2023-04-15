@@ -84,55 +84,6 @@ public partial class MinioClient : IMinioClient
         Provider = null;
     }
 
-    /// <summary>
-    ///     Creates and returns an MinIO Client with custom HTTP Client
-    /// </summary>
-    /// <returns>Client with no arguments to be used with other builder methods</returns>
-    [Obsolete("Use MinioClient() and Builder method .WithHttpClient(httpClient)")]
-    public MinioClient(HttpClient httpClient)
-    {
-        Region = "";
-        SessionToken = "";
-        Provider = null;
-        HttpClient = httpClient;
-    }
-
-    /// <summary>
-    ///     Creates and returns a MinIO Client
-    /// </summary>
-    /// <param name="endpoint">Location of the server, supports HTTP and HTTPS</param>
-    /// <param name="accessKey">Access Key for authenticated requests (Optional, can be omitted for anonymous requests)</param>
-    /// <param name="secretKey">Secret Key for authenticated requests (Optional, can be omitted for anonymous requests)</param>
-    /// <param name="region">Optional custom region</param>
-    /// <param name="sessionToken">Optional session token</param>
-    /// <returns>Client initialized with user credentials</returns>
-    [Obsolete("Use appropriate Builder object and call Build() or BuildAsync()")]
-    public MinioClient(string endpoint, string accessKey = "",
-        string secretKey = "", string region = "", string sessionToken = "")
-    {
-        Secure = false;
-
-        // Save user entered credentials
-        BaseUrl = endpoint;
-        AccessKey = accessKey;
-        SecretKey = secretKey;
-        SessionToken = sessionToken;
-        Region = region;
-        // Instantiate a region cache
-        regionCache = BucketRegionCache.Instance;
-
-        if (string.IsNullOrEmpty(BaseUrl)) throw new InvalidEndpointException("Endpoint cannot be empty.");
-
-        var host = BaseUrl;
-        var scheme = Secure ? Utils.UrlEncode("https") : Utils.UrlEncode("http");
-        // This is the actual url pointed to for all HTTP requests
-        Endpoint = string.Format("{0}://{1}", scheme, host);
-        uri = RequestUtil.GetEndpointURL(BaseUrl, Secure);
-        RequestUtil.ValidateEndpoint(uri, Endpoint);
-
-        HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", FullUserAgent);
-    }
-
     // Save Credentials from user
     internal string AccessKey { get; private set; }
     internal string SecretKey { get; private set; }
