@@ -273,7 +273,7 @@ public partial class MinioClient : IMinioClient
         HttpMethod method,
         string bucketName = null,
         string objectName = null,
-        Dictionary<string, string> headerMap = null,
+        IDictionary<string, string> headerMap = null,
         string contentType = "application/octet-stream",
         ReadOnlyMemory<byte> body = default,
         string resourcePath = null,
@@ -792,13 +792,13 @@ public partial class MinioClient : IMinioClient
 
         var responseToLog = new ResponseToLog
         {
-            statusCode = response.StatusCode,
-            content = response.Content,
-            headers = response.Headers.ToDictionary(o => o.Key, o => string.Join(Environment.NewLine, o.Value)),
+            StatusCode = response.StatusCode,
+            Content = response.Content,
+            Headers = response.Headers.ToDictionary(o => o.Key, o => string.Join(Environment.NewLine, o.Value)),
             // The Uri that actually responded (could be different from the requestUri if a redirection occurred)
-            responseUri = response.Request.RequestUri,
-            errorMessage = response.ErrorMessage,
-            durationMs = durationMs
+            ResponseUri = response.Request.RequestUri,
+            ErrorMessage = response.ErrorMessage,
+            DurationMs = durationMs
         };
 
         logger.LogRequest(requestToLog, responseToLog, durationMs);

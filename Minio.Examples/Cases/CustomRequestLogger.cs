@@ -47,11 +47,11 @@ internal sealed class MyRequestLogger : IRequestLogger
 
         sb.AppendLine("My logger says:");
         sb.Append("statusCode: ");
-        sb.AppendLine(responseToLog.statusCode.ToString());
+        sb.AppendLine(responseToLog.StatusCode.ToString());
         sb.AppendLine();
 
         sb.AppendLine("Response: ");
-        sb.Append(responseToLog.content);
+        sb.Append(responseToLog.Content);
 
         Console.WriteLine(sb.ToString());
     }

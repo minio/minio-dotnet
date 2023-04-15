@@ -56,11 +56,11 @@ public sealed class DefaultRequestLogger : IRequestLogger
         sb.AppendLine();
 
         sb.Append("HTTP/1.1 ");
-        sb.Append((int)responseToLog.statusCode);
+        sb.Append((int)responseToLog.StatusCode);
         sb.Append(' ');
-        sb.AppendLine(responseToLog.statusCode.ToString());
+        sb.AppendLine(responseToLog.StatusCode.ToString());
 
-        var responseHeaders = responseToLog.headers;
+        var responseHeaders = responseToLog.Headers;
 
         foreach (var item in responseHeaders)
         {
@@ -72,8 +72,8 @@ public sealed class DefaultRequestLogger : IRequestLogger
         sb.AppendLine();
         sb.AppendLine();
 
-        sb.AppendLine(responseToLog.content);
-        sb.AppendLine(responseToLog.errorMessage);
+        sb.AppendLine(responseToLog.Content);
+        sb.AppendLine(responseToLog.ErrorMessage);
 
         sb.AppendLine("- - - - - - - - - - END RESPONSE - - - - - - - - - -");
 

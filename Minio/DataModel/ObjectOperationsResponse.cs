@@ -39,7 +39,7 @@ internal class SelectObjectContentResponse : GenericResponse
 internal class StatObjectResponse : GenericResponse
 {
     internal StatObjectResponse(HttpStatusCode statusCode, string responseContent,
-        Dictionary<string, string> responseHeaders, StatObjectArgs args)
+        IDictionary<string, string> responseHeaders, StatObjectArgs args)
         : base(statusCode, responseContent)
     {
         // StatObjectResponse object is populated with available stats from the response.
@@ -196,7 +196,7 @@ internal class PutObjectResponse : GenericResponse
     internal string Etag;
 
     internal PutObjectResponse(HttpStatusCode statusCode, string responseContent,
-        Dictionary<string, string> responseHeaders)
+        IDictionary<string, string> responseHeaders)
         : base(statusCode, responseContent)
     {
         if (responseHeaders.ContainsKey("Etag"))

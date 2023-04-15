@@ -99,7 +99,7 @@ public class ResponseResult : IDisposable
         }
     }
 
-    public Dictionary<string, string> Headers
+    public IDictionary<string, string> Headers
     {
         get
         {

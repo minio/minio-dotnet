@@ -40,7 +40,7 @@ public class AndOperator
         if (tag?.Count > 0) Tags = new List<Tag>(tag);
     }
 
-    public AndOperator(string prefix, Dictionary<string, string> tags)
+    public AndOperator(string prefix, IDictionary<string, string> tags)
     {
         Prefix = prefix;
         if (tags == null || tags.Count == 0)

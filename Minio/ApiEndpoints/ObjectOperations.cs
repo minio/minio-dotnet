@@ -229,20 +229,20 @@ public partial class MinioClient : IObjectOperations
             .WithRegion(region);
 
         // Fill in the form data.
-        args.Policy.formData["bucket"] = args.BucketName;
+        args.Policy.FormData["bucket"] = args.BucketName;
         // args.Policy.formData["key"] = "\\\"" + args.ObjectName + "\\\"";
 
-        args.Policy.formData["key"] = args.ObjectName;
+        args.Policy.FormData["key"] = args.ObjectName;
 
-        args.Policy.formData["policy"] = policyBase64;
-        args.Policy.formData["x-amz-algorithm"] = signV4Algorithm;
-        args.Policy.formData["x-amz-credential"] = credential;
-        args.Policy.formData["x-amz-date"] = t.ToString("yyyyMMddTHHmmssZ");
-        if (!string.IsNullOrEmpty(SessionToken)) args.Policy.formData["x-amz-security-token"] = SessionToken;
-        args.Policy.formData["x-amz-signature"] = signature;
+        args.Policy.FormData["policy"] = policyBase64;
+        args.Policy.FormData["x-amz-algorithm"] = signV4Algorithm;
+        args.Policy.FormData["x-amz-credential"] = credential;
+        args.Policy.FormData["x-amz-date"] = t.ToString("yyyyMMddTHHmmssZ");
+        if (!string.IsNullOrEmpty(SessionToken)) args.Policy.FormData["x-amz-security-token"] = SessionToken;
+        args.Policy.FormData["x-amz-signature"] = signature;
 
         uri = RequestUtil.MakeTargetURL(BaseUrl, Secure, args.BucketName, region, false);
-        return (uri, args.Policy.formData);
+        return (uri, args.Policy.FormData);
     }
 
     /// <summary>
@@ -600,7 +600,7 @@ public partial class MinioClient : IObjectOperations
             .WithStreamData(args.ObjectStreamData)
             .WithRequestBody(args.RequestBody)
             .WithHeaders(args.Headers);
-        Dictionary<int, string> etags = null;
+        IDictionary<int, string> etags = null;
         // Upload file contents.
         if (!string.IsNullOrEmpty(args.FileName))
         {
@@ -838,7 +838,7 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="NotSupportedException">The file stream cannot be read from</exception>
     /// <exception cref="InvalidOperationException">The file stream is currently in a read operation</exception>
     /// <exception cref="AccessDeniedException">For encrypted PUT operation, Access is denied if the key is wrong</exception>
-    private async Task<Dictionary<int, string>> PutObjectPartAsync(PutObjectPartArgs args,
+    private async Task<IDictionary<int, string>> PutObjectPartAsync(PutObjectPartArgs args,
         CancellationToken cancellationToken = default)
     {
         args?.Validate();
@@ -1068,7 +1068,7 @@ public partial class MinioClient : IObjectOperations
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns></returns>
     private async Task CompleteMultipartUploadAsync(string bucketName, string objectName, string uploadId,
-        Dictionary<int, string> etags, CancellationToken cancellationToken)
+        IDictionary<int, string> etags, CancellationToken cancellationToken)
     {
         var requestMessageBuilder = await CreateRequest(HttpMethod.Post, bucketName,
                 objectName)
@@ -1173,7 +1173,7 @@ public partial class MinioClient : IObjectOperations
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns></returns>
     private async Task<string> NewMultipartUploadAsync(string bucketName, string objectName,
-        Dictionary<string, string> metaData, Dictionary<string, string> sseHeaders,
+        IDictionary<string, string> metaData, Dictionary<string, string> sseHeaders,
         CancellationToken cancellationToken = default)
     {
         foreach (var kv in sseHeaders) metaData.Add(kv.Key, kv.Value);
@@ -1240,8 +1240,8 @@ public partial class MinioClient : IObjectOperations
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns></returns>
     private async Task<object> CopyObjectRequestAsync(string bucketName, string objectName, string destBucketName,
-        string destObjectName, CopyConditions copyConditions, Dictionary<string, string> customHeaders,
-        Dictionary<string, string> queryMap, Type type, CancellationToken cancellationToken)
+        string destObjectName, CopyConditions copyConditions, IDictionary<string, string> customHeaders,
+        IDictionary<string, string> queryMap, Type type, CancellationToken cancellationToken)
     {
         // Escape source object path.
         var sourceObjectPath = bucketName + "/" + Utils.UrlEncode(objectName);
@@ -1301,7 +1301,7 @@ public partial class MinioClient : IObjectOperations
     /// <returns></returns>
     private async Task MultipartCopyUploadAsync(string bucketName, string objectName, string destBucketName,
         string destObjectName, CopyConditions copyConditions, long copySize,
-        Dictionary<string, string> metadata = null, IServerSideEncryption sseSrc = null,
+        IDictionary<string, string> metadata = null, IServerSideEncryption sseSrc = null,
         IServerSideEncryption sseDest = null, CancellationToken cancellationToken = default)
     {
         // For all sizes greater than 5GB or if Copy byte range specified in conditions and byte range larger
