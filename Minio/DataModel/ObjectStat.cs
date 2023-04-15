@@ -47,7 +47,8 @@ public class ObjectStat
 
     public static ObjectStat FromResponseHeaders(string objectName, IDictionary<string, string> responseHeaders)
     {
-        if (string.IsNullOrEmpty(objectName)) throw new ArgumentNullException("Name of an object cannot be empty");
+        if (string.IsNullOrEmpty(objectName))
+            throw new ArgumentNullException(nameof(objectName), "Name of an object cannot be empty");
         var objInfo = new ObjectStat
         {
             ObjectName = objectName

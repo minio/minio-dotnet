@@ -186,7 +186,7 @@ public partial class MinioClient : IMinioClient
 
         var scheme = Secure ? Utils.UrlEncode("https") : Utils.UrlEncode("http");
 
-        if (!BaseUrl.StartsWith("http"))
+        if (!BaseUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             Endpoint = string.Format("{0}://{1}", scheme, host);
         else
             Endpoint = host;

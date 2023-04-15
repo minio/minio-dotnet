@@ -30,7 +30,8 @@ internal class SelectObjectContentResponse : GenericResponse
         ReadOnlyMemory<byte> responseRawBytes)
         : base(statusCode, responseContent)
     {
-        ResponseStream = new SelectResponseStream(responseRawBytes.AsStream());
+        using var stream = responseRawBytes.AsStream();
+        ResponseStream = new SelectResponseStream(stream);
     }
 
     internal SelectResponseStream ResponseStream { get; }
@@ -166,7 +167,7 @@ internal class CopyObjectResponse : GenericResponse
     public CopyObjectResponse(HttpStatusCode statusCode, string responseContent, Type reqType)
         : base(statusCode, responseContent)
     {
-        var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
         if (reqType == typeof(CopyObjectResult))
             CopyObjectRequestResult = Utils.DeserializeXml<CopyObjectResult>(stream);
         else

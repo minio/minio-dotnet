@@ -495,7 +495,7 @@ public static class FunctionalTest
             Assert.AreEqual(noOfBuckets, bucketList.Count);
             bucketList.ToList().Sort((x, y) =>
             {
-                if (x.Name == y.Name) return 0;
+                if (string.Equals(x.Name, y.Name, StringComparison.Ordinal)) return 0;
                 if (x.Name == null) return -1;
                 if (y.Name == null) return 1;
                 return x.Name.CompareTo(y.Name);
@@ -1367,7 +1367,7 @@ public static class FunctionalTest
             Assert.IsTrue(statObject.ObjectName.Equals(objectName, StringComparison.Ordinal));
             Assert.AreEqual(statObject.Size, sizeExpected);
             Assert.IsTrue(statObject.MetaData["Content-Type"] != null);
-            Assert.IsTrue(statObject.ContentType.Equals(contentType));
+            Assert.IsTrue(statObject.ContentType.Equals(contentType, StringComparison.OrdinalIgnoreCase));
             Assert.IsTrue(statObject.MetaData[metadataKey].Equals(metadataValue, StringComparison.Ordinal));
 
             new MintLogger("PresignedPostPolicy_Test1", presignedPostPolicySignature,
@@ -2713,7 +2713,7 @@ public static class FunctionalTest
                         var err = JsonSerializer.Deserialize<ErrorResponse>(trimmedFull);
 
                         Exception ex = new UnexpectedMinioException(err.Message);
-                        if (err.Code == "NotImplemented")
+                        if (string.Equals(err.Code, "NotImplemented", StringComparison.OrdinalIgnoreCase))
                             ex = new NotImplementedException(err.Message);
 
                         throw ex;

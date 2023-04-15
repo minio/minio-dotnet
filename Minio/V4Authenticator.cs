@@ -418,18 +418,22 @@ internal class V4Authenticator
 
         var isFormData = false;
         if (requestBuilder.Request.Content != null && requestBuilder.Request.Content.Headers?.ContentType != null)
-            isFormData = requestBuilder.Request.Content.Headers.ContentType.ToString() ==
-                         "application/x-www-form-urlencoded";
+            isFormData = string.Equals(requestBuilder.Request.Content.Headers.ContentType.ToString(),
+                "application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase);
 
         if (string.IsNullOrEmpty(queryParams) && isFormData)
         {
             // Convert stream content to byte[]
-            var cntntByteData = Array.Empty<byte>();
+            var cntntByteData = Span<byte>.Empty;
             if (requestBuilder.Request.Content != null)
                 cntntByteData = requestBuilder.Request.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
 
             // UTF conversion - String from bytes
-            queryParams = Encoding.UTF8.GetString(cntntByteData, 0, cntntByteData.Length);
+#if NETSTANDARD
+            queryParams = Encoding.UTF8.GetString(cntntByteData.ToArray(), 0, cntntByteData.Length);
+#else
+            queryParams = Encoding.UTF8.GetString(cntntByteData);
+#endif
         }
 
         if (!string.IsNullOrEmpty(queryParams) &&

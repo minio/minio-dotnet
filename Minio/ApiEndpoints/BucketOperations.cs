@@ -116,7 +116,8 @@ public partial class MinioClient : IBucketOperations
         if (string.IsNullOrEmpty(args.Location))
             args.Location = Region;
 
-        if (args.Location == "us-east-1" && !string.IsNullOrEmpty(Region))
+        if (string.Equals(args.Location, "us-east-1", StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrEmpty(Region))
             args.Location = Region;
 
         args.IsBucketCreationRequest = true;

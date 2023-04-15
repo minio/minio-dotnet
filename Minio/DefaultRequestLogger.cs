@@ -37,7 +37,8 @@ public sealed class DefaultRequestLogger : IRequestLogger
         sb.AppendLine(" HTTP/1.1");
 
         var requestHeaders = requestToLog.parameters;
-        requestHeaders = requestHeaders.OrderByDescending(p => p.name == "Host");
+        requestHeaders =
+            requestHeaders.OrderByDescending(p => string.Equals(p.name, "Host", StringComparison.OrdinalIgnoreCase));
 
         foreach (var item in requestHeaders)
         {

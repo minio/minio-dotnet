@@ -37,7 +37,7 @@ public static class GetBucketReplication
                 Console.WriteLine($"Got Bucket Replication Configuration set for bucket {bucketName}.");
                 foreach (var rule in repl.Rules)
                 {
-                    if (rule.ID != replicationRuleID)
+                    if (!string.Equals(rule.ID, replicationRuleID, StringComparison.OrdinalIgnoreCase))
                     {
                         // failed test due to replication rule id mismatch
                         var errMessage = "Unexpected replication rule ID: " +

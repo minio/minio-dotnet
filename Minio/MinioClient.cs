@@ -328,21 +328,20 @@ public partial class MinioClient : IMinioClient
         var resource = string.Empty;
         var usePathStyle = false;
 
-        if (bucketName != null)
-            if (s3utils.IsAmazonEndPoint(BaseUrl))
-            {
-                if (method == HttpMethod.Put && objectName == null && resourcePath == null)
-                    // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
-                    usePathStyle = true;
-                else if (resourcePath?.Contains("location") == true)
-                    // use path style for location query
-                    usePathStyle = true;
-                else if (bucketName?.Contains('.') == true && Secure)
-                    // use path style where '.' in bucketName causes SSL certificate validation error
-                    usePathStyle = true;
+        if (bucketName != null && s3utils.IsAmazonEndPoint(BaseUrl))
+        {
+            if (method == HttpMethod.Put && objectName == null && resourcePath == null)
+                // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
+                usePathStyle = true;
+            else if (resourcePath?.Contains("location") == true)
+                // use path style for location query
+                usePathStyle = true;
+            else if (bucketName?.Contains('.') == true && Secure)
+                // use path style where '.' in bucketName causes SSL certificate validation error
+                usePathStyle = true;
 
-                if (usePathStyle) resource += Utils.UrlEncode(bucketName) + "/";
-            }
+            if (usePathStyle) resource += Utils.UrlEncode(bucketName) + "/";
+        }
 
         // Set Target URL
         var requestUrl = RequestUtil.MakeTargetURL(BaseUrl, Secure, bucketName, region, usePathStyle);

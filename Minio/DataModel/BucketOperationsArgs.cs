@@ -72,7 +72,8 @@ public class MakeBucketArgs : BucketArgs<MakeBucketArgs>
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
         // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
-        if (!string.IsNullOrEmpty(Location) && Location != "us-east-1")
+        if (!string.IsNullOrEmpty(Location) &&
+            !string.Equals(Location, "us-east-1", StringComparison.OrdinalIgnoreCase))
         {
             var config = new CreateBucketConfiguration(Location);
             var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");

@@ -18,6 +18,7 @@ using System.Xml.Serialization;
 
 namespace Minio.DataModel;
 
+[Serializable]
 public sealed class CSVQuoteFields
 {
     // Constants for csv quote styles.

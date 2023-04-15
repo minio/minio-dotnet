@@ -1909,7 +1909,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
                 }
 
                 Headers[key] = p.Value;
-                if (key == "Content-Type")
+                if (string.Equals(key, "Content-Type", StringComparison.OrdinalIgnoreCase))
                     ContentType = p.Value;
             }
 

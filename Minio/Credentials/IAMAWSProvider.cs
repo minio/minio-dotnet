@@ -163,7 +163,8 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
         else if (!string.IsNullOrWhiteSpace(containerFullUri) && isURLEmpty)
         {
             var fullUri = new Uri(containerFullUri);
-            url = RequestUtil.MakeTargetURL(fullUri.AbsolutePath, fullUri.Scheme == "https");
+            url = RequestUtil.MakeTargetURL(fullUri.AbsolutePath,
+                string.Equals(fullUri.Scheme, "https", StringComparison.OrdinalIgnoreCase));
         }
         else
         {

@@ -41,7 +41,7 @@ public class ReplicationRule
         ExistingObjectReplication existingObjectReplication, RuleFilter filter, DeleteReplication deleteReplication,
         uint priority, string id, string prefix, SourceSelectionCriteria sourceSelectionCriteria, string status)
     {
-        if (string.IsNullOrEmpty(status) || string.IsNullOrWhiteSpace(status))
+        if (string.IsNullOrWhiteSpace(status))
             throw new ArgumentNullException(nameof(status) + " cannot be null or empty.");
         if (string.IsNullOrEmpty(id) || string.IsNullOrWhiteSpace(id))
             throw new ArgumentNullException(nameof(id) + " cannot be null or empty.");

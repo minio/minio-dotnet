@@ -74,7 +74,7 @@ public sealed class BucketRegionCache
     public bool Exists(string bucketName)
     {
         regionMap.TryGetValue(bucketName, out var value);
-        return value != null;
+        return !string.Equals(value, null, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -86,8 +86,8 @@ public sealed class BucketRegionCache
     {
         string region = null;
 
-        if (bucketName != null && client.AccessKey != null
-                               && client.SecretKey != null && !Instance.Exists(bucketName))
+        if (!string.Equals(bucketName, null, StringComparison.OrdinalIgnoreCase) && client.AccessKey != null
+            && client.SecretKey != null && !Instance.Exists(bucketName))
         {
             string location = null;
             var path = Utils.UrlEncode(bucketName);
@@ -112,7 +112,7 @@ public sealed class BucketRegionCache
             else
             {
                 // eu-west-1 can be sometimes 'EU'.
-                if (location == "EU")
+                if (string.Equals(location, "EU", StringComparison.OrdinalIgnoreCase))
                     region = "eu-west-1";
                 else
                     region = location;
