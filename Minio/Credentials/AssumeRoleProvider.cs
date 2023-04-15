@@ -28,7 +28,7 @@ namespace Minio.Credentials;
 public class AssumeRoleResponse
 {
     [XmlElement(ElementName = "AssumeRoleResult")]
-    public AssumeRoleResult arr { get; set; }
+    public AssumeRoleResult AssumeRole { get; set; }
 
     public string ToXML()
     {
@@ -73,7 +73,6 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
     }
 
     internal string STSEndPoint { get; set; }
-    internal AccessCredentials credentials { get; set; }
     internal string Url { get; set; }
 
     public AssumeRoleProvider WithSTSEndpoint(string endpoint)
@@ -83,8 +82,8 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
 
         STSEndPoint = endpoint;
         var stsUri = Utils.GetBaseUrl(endpoint);
-        if ((stsUri.Scheme == "http" && stsUri.Port == 80) ||
-            (stsUri.Scheme == "https" && stsUri.Port == 443) ||
+        if ((string.Equals(stsUri.Scheme, "http", StringComparison.OrdinalIgnoreCase) && stsUri.Port == 80) ||
+            (string.Equals(stsUri.Scheme, "https", StringComparison.OrdinalIgnoreCase) && stsUri.Port == 443) ||
             stsUri.Port <= 0)
             Url = stsUri.Scheme + "://" + stsUri.Authority;
         else if (stsUri.Port > 0) Url = stsUri.Scheme + "://" + stsUri.Host + ":" + stsUri.Port;
@@ -96,7 +95,7 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
 
     public override async Task<AccessCredentials> GetCredentialsAsync()
     {
-        if (credentials?.AreExpired() == false) return credentials;
+        if (Credentials?.AreExpired() == false) return Credentials;
 
         var requestBuilder = await BuildRequest().ConfigureAwait(false);
         if (Client != null)
@@ -114,11 +113,11 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
                     assumeRoleResp = Utils.DeserializeXml<AssumeRoleResponse>(stream);
                 }
 
-                if (credentials == null &&
-                    assumeRoleResp?.arr != null)
-                    credentials = assumeRoleResp.arr.Credentials;
+                if (Credentials == null &&
+                    assumeRoleResp?.AssumeRole != null)
+                    Credentials = assumeRoleResp.AssumeRole.Credentials;
 
-                return credentials;
+                return Credentials;
             }
             finally
             {

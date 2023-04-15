@@ -143,7 +143,7 @@ public partial class MinioClient : IObjectOperations
             .WithBucket(args.BucketName)
             .WithPrefix(args.ObjectName);
 
-        Upload[] uploads = null;
+        Upload[] uploads;
         try
         {
             uploads = await ListIncompleteUploads(listUploadArgs, cancellationToken)?.ToArray();
@@ -207,7 +207,7 @@ public partial class MinioClient : IObjectOperations
 
         // string region = string.Empty;
         var region = await GetRegion(args.BucketName).ConfigureAwait(false);
-        args?.Validate();
+        args.Validate();
         // Presigned operations are not allowed for anonymous users
         if (string.IsNullOrEmpty(AccessKey) && string.IsNullOrEmpty(SecretKey))
             throw new MinioException("Presigned operations are not supported for anonymous credentials");
@@ -604,7 +604,6 @@ public partial class MinioClient : IObjectOperations
         // Upload file contents.
         if (!string.IsNullOrEmpty(args.FileName))
         {
-            var fileInfo = new FileInfo(args.FileName);
             using var fileStream = new FileStream(args.FileName, FileMode.Open, FileAccess.Read);
             putObjectPartArgs = putObjectPartArgs
                 .WithStreamData(fileStream)
@@ -667,7 +666,7 @@ public partial class MinioClient : IObjectOperations
             args.WithTagging(tag);
         }
 
-        args?.Validate();
+        args.Validate();
         var srcByteRangeSize = args.SourceObject.CopyOperationConditions?.ByteRange ?? 0L;
         var copySize = srcByteRangeSize == 0 ? args.SourceObjectInfo.Size : srcByteRangeSize;
 
