@@ -20,7 +20,7 @@ namespace Minio.DataModel;
 
 public class PostPolicy
 {
-    public readonly Dictionary<string, string> formData = new();
+    public readonly IDictionary<string, string> formData = new Dictionary<string, string>();
 
     public IList<IList<(string, string, string)>> conditions = new List<IList<(string, string, string)>>();
 
@@ -32,7 +32,7 @@ public class PostPolicy
     ///     Get the populated dictionary of policy data.
     /// </summary>
     /// <returns>Dictionary of policy data</returns>
-    public Dictionary<string, string> FormData => formData;
+    public IDictionary<string, string> FormData => formData;
 
     /// <summary>
     ///     Set expiration policy.

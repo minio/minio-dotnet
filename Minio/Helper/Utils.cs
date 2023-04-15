@@ -938,6 +938,11 @@ public static class Utils
 
     public static void Print(object obj)
     {
+        if (obj is null)
+        {
+            throw new ArgumentNullException(nameof(obj));
+        }
+
         foreach (var prop in obj.GetType()
                      .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
         {

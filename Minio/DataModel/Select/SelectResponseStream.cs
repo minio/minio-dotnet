@@ -199,7 +199,7 @@ public class SelectResponseStream
         payloadStream.Close();
     }
 
-    protected Dictionary<string, string> ExtractHeaders(Span<byte> data)
+    protected IDictionary<string, string> ExtractHeaders(Span<byte> data)
     {
         var headerMap = new Dictionary<string, string>();
         var offset = 0;

@@ -93,7 +93,7 @@ public class PresignedPostPolicyResponse
         URIPolicyTuple = Tuple.Create(URI.AbsolutePath, args.Policy.FormData);
     }
 
-    internal Tuple<string, Dictionary<string, string>> URIPolicyTuple { get; }
+    internal Tuple<string, IDictionary<string, string>> URIPolicyTuple { get; }
 }
 
 public class GetLegalHoldResponse : GenericResponse

@@ -200,7 +200,7 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    public async Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PresignedPostPolicyArgs args)
+    public async Task<(Uri, IDictionary<string, string>)> PresignedPostPolicyAsync(PresignedPostPolicyArgs args)
     {
         if (args is null)
             throw new ArgumentNullException(nameof(args));
@@ -725,7 +725,7 @@ public partial class MinioClient : IObjectOperations
     /// </summary>
     /// <param name="policy"></param>
     /// <returns></returns>
-    public Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PostPolicy policy)
+    public Task<(Uri, IDictionary<string, string>)> PresignedPostPolicyAsync(PostPolicy policy)
     {
         if (policy is null)
             throw new ArgumentNullException(nameof(policy));

@@ -17,7 +17,6 @@
 
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -2695,7 +2694,8 @@ public static class FunctionalTest
                     // and captured in the receivedJson list, like
                     // "NotImplemented" api error. If so, we throw an exception
                     // and skip running this test
-                    if (received.Count > 1 && received[1].json.StartsWith("<Error><Code>", StringComparison.OrdinalIgnoreCase))
+                    if (received.Count > 1 &&
+                        received[1].json.StartsWith("<Error><Code>", StringComparison.OrdinalIgnoreCase))
                     {
                         // Although the attribute is called "json",
                         // returned data in list "received" is in xml

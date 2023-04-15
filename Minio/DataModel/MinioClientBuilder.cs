@@ -74,8 +74,8 @@ public interface IMinioClient : IDisposable
     IObservable<Item> ListObjectsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default);
     Task MakeBucketAsync(MakeBucketArgs args, CancellationToken cancellationToken = default);
     Task<string> PresignedGetObjectAsync(PresignedGetObjectArgs args);
-    Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PostPolicy policy);
-    Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PresignedPostPolicyArgs args);
+    Task<(Uri, IDictionary<string, string>)> PresignedPostPolicyAsync(PostPolicy policy);
+    Task<(Uri, IDictionary<string, string>)> PresignedPostPolicyAsync(PresignedPostPolicyArgs args);
     Task<string> PresignedPutObjectAsync(PresignedPutObjectArgs args);
     Task PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default);
 
