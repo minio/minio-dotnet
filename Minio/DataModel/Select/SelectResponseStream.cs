@@ -186,7 +186,8 @@ public class SelectResponseStream
                 }
 
 #if NETSTANDARD
-                if (value.Equals("Records", StringComparison.OrdinalIgnoreCase)) Payload.Write(payload.ToArray(), 0, payloadLength);
+                if (value.Equals("Records", StringComparison.OrdinalIgnoreCase))
+                    Payload.Write(payload.ToArray(), 0, payloadLength);
 #else
                 if (value.Equals("Records", StringComparison.OrdinalIgnoreCase)) Payload.Write(payload.Span);
 #endif

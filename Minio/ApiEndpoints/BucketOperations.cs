@@ -227,7 +227,8 @@ public partial class MinioClient : IBucketOperations
                     else
                     {
                         var objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
-                        if (objectList.Item2.Count == 0 && objectList.Item1.KeyCount.Equals("0", StringComparison.OrdinalIgnoreCase) && count == 0)
+                        if (objectList.Item2.Count == 0 &&
+                            objectList.Item1.KeyCount.Equals("0", StringComparison.OrdinalIgnoreCase) && count == 0)
                             return;
 
                         var listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);

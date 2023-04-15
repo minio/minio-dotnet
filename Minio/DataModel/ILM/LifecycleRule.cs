@@ -46,9 +46,7 @@ public class LifecycleRule
         string status)
     {
         if (string.IsNullOrEmpty(status))
-        {
             throw new ArgumentException($"'{nameof(status)}' cannot be null or empty.", nameof(status));
-        }
 
         if (!status.Equals(LIFECYCLE_RULE_STATUS_ENABLED, StringComparison.Ordinal) &&
             !status.Equals(LIFECYCLE_RULE_STATUS_DISABLED, StringComparison.Ordinal))

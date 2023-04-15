@@ -452,7 +452,7 @@ internal class V4Authenticator
         return string.Join("\n", canonicalStringList);
     }
 
-    public static Dictionary<string, TValue> ToDictionary<TValue>(object obj)
+    public static IDictionary<string, TValue> ToDictionary<TValue>(object obj)
     {
         var json = JsonSerializer.Serialize(obj);
         var dictionary = JsonSerializer.Deserialize<Dictionary<string, TValue>>(json);
@@ -514,8 +514,9 @@ internal class V4Authenticator
     /// <summary>
     ///     Set 'x-amz-content-sha256' http header.
     /// </summary>
-    /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
+    /// ///
     /// <param name="requestBuilder">Instantiated requestBuilder object</param>
+    /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
     private void SetContentSha256(HttpRequestMessageBuilder requestBuilder, bool isSts = false)
     {
         if (IsAnonymous)

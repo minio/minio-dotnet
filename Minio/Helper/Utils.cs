@@ -859,13 +859,12 @@ public static class Utils
         var patternToMatch = @"<\w+\s+xmlns=""http://s3.amazonaws.com/doc/2006-03-01/""\s*>";
         if (Regex.Match(config, patternToMatch, regexOptions).Success)
             patternToReplace = @"xmlns=""http://s3.amazonaws.com/doc/2006-03-01/""\s*";
-        config = Regex.Replace(
+        return Regex.Replace(
             config,
             patternToReplace,
             string.Empty,
             regexOptions
         );
-        return config;
     }
 
     public static DateTime From8601String(string dt)
@@ -960,11 +959,15 @@ public static class Utils
 
     public static string DetermineNamespace(XDocument document)
     {
+        if (document is null) throw new ArgumentNullException(nameof(document));
+
         return document.Root.Attributes().FirstOrDefault(attr => attr.IsNamespaceDeclaration)?.Value ?? string.Empty;
     }
 
     public static string SerializeToXml<T>(T anyobject) where T : class
     {
+        if (anyobject is null) throw new ArgumentNullException(nameof(anyobject));
+
         var xs = new XmlSerializer(anyobject.GetType());
         using var sw = new StringWriter(CultureInfo.InvariantCulture);
         using var xw = XmlWriter.Create(sw);

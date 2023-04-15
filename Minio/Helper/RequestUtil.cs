@@ -100,7 +100,8 @@ internal static class RequestUtil
 
         if (!string.IsNullOrEmpty(uri.Query))
             throw new InvalidEndpointException(endpoint, "No query parameter allowed in endpoint.");
-        if (!uri.Scheme.ToUpperInvariant().Equals("https", StringComparison.OrdinalIgnoreCase) && !uri.Scheme.ToUpperInvariant().Equals("http", StringComparison.OrdinalIgnoreCase))
+        if (!uri.Scheme.ToUpperInvariant().Equals("https", StringComparison.OrdinalIgnoreCase) &&
+            !uri.Scheme.ToUpperInvariant().Equals("http", StringComparison.OrdinalIgnoreCase))
             throw new InvalidEndpointException(endpoint, "Invalid scheme detected in endpoint.");
     }
 

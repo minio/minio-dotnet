@@ -61,10 +61,7 @@ public class SSEC : IServerSideEncryption
 
     public virtual void Marshal(IDictionary<string, string> headers)
     {
-        if (headers is null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        if (headers is null) throw new ArgumentNullException(nameof(headers));
 
         var md5SumStr = Utils.GetMD5SumStr(key);
         headers.Add("X-Amz-Server-Side-Encryption-Customer-Algorithm", "AES256");
@@ -84,10 +81,7 @@ public class SSECopy : SSEC
 
     public override void Marshal(IDictionary<string, string> headers)
     {
-        if (headers is null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        if (headers is null) throw new ArgumentNullException(nameof(headers));
 
         var md5SumStr = Utils.GetMD5SumStr(key);
         headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Algorithm", "AES256");
@@ -113,10 +107,7 @@ public class SSES3 : IServerSideEncryption
 
     public virtual void Marshal(IDictionary<string, string> headers)
     {
-        if (headers is null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        if (headers is null) throw new ArgumentNullException(nameof(headers));
 
         headers.Add(Constants.SSEGenericHeader, "AES256");
     }
@@ -147,10 +138,7 @@ public class SSEKMS : IServerSideEncryption
 
     public void Marshal(IDictionary<string, string> headers)
     {
-        if (headers is null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        if (headers is null) throw new ArgumentNullException(nameof(headers));
 
         headers.Add(Constants.SSEKMSKeyId, key);
         headers.Add(Constants.SSEGenericHeader, "aws:kms");

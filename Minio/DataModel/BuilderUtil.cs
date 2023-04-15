@@ -23,9 +23,7 @@ public static class BuilderUtil
     public static bool IsAwsDualStackEndpoint(string endpoint)
     {
         if (string.IsNullOrEmpty(endpoint))
-        {
             throw new ArgumentException($"'{nameof(endpoint)}' cannot be null or empty.", nameof(endpoint));
-        }
 
         return endpoint.Contains(".dualstack.");
     }
@@ -33,9 +31,7 @@ public static class BuilderUtil
     public static bool IsAwsAccelerateEndpoint(string endpoint)
     {
         if (string.IsNullOrEmpty(endpoint))
-        {
             throw new ArgumentException($"'{nameof(endpoint)}' cannot be null or empty.", nameof(endpoint));
-        }
 
         return endpoint.StartsWith("s3-accelerate.", StringComparison.OrdinalIgnoreCase);
     }
@@ -43,9 +39,7 @@ public static class BuilderUtil
     public static bool IsAwsEndpoint(string endpoint)
     {
         if (string.IsNullOrEmpty(endpoint))
-        {
             throw new ArgumentException($"'{nameof(endpoint)}' cannot be null or empty.", nameof(endpoint));
-        }
 
         return (endpoint.StartsWith("s3.", StringComparison.OrdinalIgnoreCase) ||
                 IsAwsAccelerateEndpoint(endpoint)) &&
@@ -56,9 +50,7 @@ public static class BuilderUtil
     public static bool IsChineseDomain(string host)
     {
         if (string.IsNullOrEmpty(host))
-        {
             throw new ArgumentException($"'{nameof(host)}' cannot be null or empty.", nameof(host));
-        }
 
         return host.EndsWith(".cn", StringComparison.OrdinalIgnoreCase);
     }
@@ -66,9 +58,7 @@ public static class BuilderUtil
     public static string ExtractRegion(string endpoint)
     {
         if (string.IsNullOrEmpty(endpoint))
-        {
             throw new ArgumentException($"'{nameof(endpoint)}' cannot be null or empty.", nameof(endpoint));
-        }
 
         var tokens = endpoint.Split('.');
         if (tokens.Length < 2)

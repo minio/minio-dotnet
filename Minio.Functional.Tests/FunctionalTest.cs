@@ -1425,11 +1425,11 @@ public static class FunctionalTest
                     .WithBucket(bucketName)
                     .WithObject(objectName);
 
-                await minio.RemoveIncompleteUploadAsync(rmArgs).ConfigureAwait(false);
+                await minio.RemoveIncompleteUploadAsync(rmArgs, cts.Token).ConfigureAwait(false);
 
                 var listArgs = new ListIncompleteUploadsArgs()
                     .WithBucket(bucketName);
-                var observable = minio.ListIncompleteUploads(listArgs);
+                var observable = minio.ListIncompleteUploads(listArgs, cts.Token);
 
                 var subscription = observable.Subscribe(
                     item => Assert.Fail(),
@@ -4784,8 +4784,6 @@ public static class FunctionalTest
                             Assert.AreEqual(expectedFileSize, actualFileSize);
 
                             // Checking the content
-
-
 #if NETFRAMEWORK
                             var actualContent = File.ReadAllText(tempFileName);
 #else
@@ -5694,7 +5692,7 @@ public static class FunctionalTest
             {
                 var listArgs = new ListIncompleteUploadsArgs()
                     .WithBucket(bucketName);
-                var observable = minio.ListIncompleteUploads(listArgs);
+                var observable = minio.ListIncompleteUploads(listArgs, cts.Token);
 
                 var subscription = observable.Subscribe(
                     item => Assert.IsTrue(item.Key.Contains(objectName)),
@@ -5761,7 +5759,7 @@ public static class FunctionalTest
                     .WithBucket(bucketName)
                     .WithPrefix("minioprefix")
                     .WithRecursive(false);
-                var observable = minio.ListIncompleteUploads(listArgs);
+                var observable = minio.ListIncompleteUploads(listArgs, cts.Token);
 
                 var subscription = observable.Subscribe(
                     item => Assert.AreEqual(item.Key, objectName),
@@ -5822,7 +5820,7 @@ public static class FunctionalTest
                     .WithBucket(bucketName)
                     .WithPrefix(prefix)
                     .WithRecursive(true);
-                var observable = minio.ListIncompleteUploads(listArgs);
+                var observable = minio.ListIncompleteUploads(listArgs, cts.Token);
 
                 var subscription = observable.Subscribe(
                     item => Assert.AreEqual(item.Key, objectName),
