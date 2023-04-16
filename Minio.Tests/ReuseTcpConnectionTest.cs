@@ -21,10 +21,13 @@ public class ReuseTcpConnectionTest
 
     private async Task<bool> ObjectExistsAsync(MinioClient client, string bucket, string objectName)
     {
+        if (string.IsNullOrEmpty(bucket))
+            bucket = "bucket";
+
         try
         {
             var getObjectArgs = new GetObjectArgs()
-                .WithBucket("bucket")
+                .WithBucket(bucket)
                 .WithObject(objectName)
                 .WithFile("testfile");
             await client.GetObjectAsync(getObjectArgs).ConfigureAwait(false);

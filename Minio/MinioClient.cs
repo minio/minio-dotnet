@@ -51,6 +51,7 @@ public partial class MinioClient : IMinioClient
         Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
 
     private string CustomUserAgent = string.Empty;
+    private bool disposedValue;
 
     private bool disposeHttpClient = true;
 
@@ -173,8 +174,9 @@ public partial class MinioClient : IMinioClient
 
     public void Dispose()
     {
-        if (disposeHttpClient)
-            HttpClient?.Dispose();
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -809,6 +811,17 @@ public partial class MinioClient : IMinioClient
         return retryPolicyHandler == null
             ? executeRequestCallback()
             : retryPolicyHandler(executeRequestCallback);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposedValue)
+        {
+            if (disposing)
+                if (disposeHttpClient)
+                    HttpClient?.Dispose();
+            disposedValue = true;
+        }
     }
 }
 
