@@ -72,7 +72,7 @@ public class ResponseResult : IDisposable
         get
         {
             if (ContentStream == null)
-                return Array.Empty<byte>();
+                return ReadOnlyMemory<byte>.Empty;
 
             if (_contentBytes.IsEmpty)
             {

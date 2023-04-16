@@ -55,8 +55,8 @@ public class ReuseTcpConnectionTest
 
         if (!await ObjectExistsAsync(minioClient, bucket, objectName).ConfigureAwait(false))
         {
-            var helloData = Encoding.UTF8.GetBytes("hello world");
-            using var helloStream = helloData.AsMemory().AsStream();
+            ReadOnlyMemory<byte> helloData = Encoding.UTF8.GetBytes("hello world");
+            using var helloStream = helloData.AsStream();
             var putObjectArgs = new PutObjectArgs()
                 .WithBucket(bucket)
                 .WithObject(objectName)
