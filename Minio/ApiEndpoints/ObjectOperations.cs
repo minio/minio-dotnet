@@ -573,8 +573,7 @@ public partial class MinioClient : IObjectOperations
             args = args.WithRequestBody(bytes)
                 .WithStreamData(null)
                 .WithObjectSize(bytesRead);
-            var putObjResponse = await PutObjectSinglePartAsync(args, cancellationToken).ConfigureAwait(false);
-            return putObjResponse;
+            return await PutObjectSinglePartAsync(args, cancellationToken).ConfigureAwait(false);
         }
 
         // For all sizes greater than 5MiB do multipart.
