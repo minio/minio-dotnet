@@ -38,17 +38,6 @@ public interface IBucketOperations
     Task MakeBucketAsync(MakeBucketArgs args, CancellationToken cancellationToken = default);
 
     /// <summary>
-    ///     Create a private bucket with the given name.
-    /// </summary>
-    /// <param name="bucketName">Name of the new bucket</param>
-    /// <param name="location">Region</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>Task</returns>
-    [Obsolete("Use MakeBucketAsync method with MakeBucketArgs object. Refer MakeBucket example code.")]
-    Task MakeBucketAsync(string bucketName, string location = "us-east-1",
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
     ///     List all objects in a bucket
     /// </summary>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -68,15 +57,6 @@ public interface IBucketOperations
     Task<bool> BucketExistsAsync(BucketExistsArgs args, CancellationToken cancellationToken = default);
 
     /// <summary>
-    ///     Returns true if the specified bucketName exists, otherwise returns false.
-    /// </summary>
-    /// <param name="bucketName">Bucket to test existence of</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>Task that returns true if exists and user has access</returns>
-    [Obsolete("Use BucketExistsAsync method with BucketExistsArgs object. Refer BucketExists example code.")]
-    Task<bool> BucketExistsAsync(string bucketName, CancellationToken cancellationToken = default);
-
-    /// <summary>
     ///     Remove the bucket with the given name.
     /// </summary>
     /// <param name="args">RemoveBucketArgs Arguments Object which has bucket identifier information like bucket name .etc.</param>
@@ -86,15 +66,6 @@ public interface IBucketOperations
     /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     Task RemoveBucketAsync(RemoveBucketArgs args, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    ///     Remove a bucket
-    /// </summary>
-    /// <param name="bucketName">Name of bucket to remove</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>Task</returns>
-    [Obsolete("Use RemoveBucketAsync method with RemoveBucketArgs object. Refer RemoveBucket example code.")]
-    Task RemoveBucketAsync(string bucketName, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
@@ -254,84 +225,6 @@ public interface IBucketOperations
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
     Task RemoveObjectLockConfigurationAsync(RemoveObjectLockConfigurationArgs args,
         CancellationToken cancellationToken = default);
-
-    /// <summary>
-    ///     List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory
-    /// </summary>
-    /// <param name="bucketName">Bucket to list objects from</param>
-    /// <param name="prefix">Filter all incomplete uploads starting with this prefix</param>
-    /// <param name="recursive">List incomplete uploads recursively</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>An observable of items that client can subscribe to</returns>
-    [Obsolete("Use ListObjectsAsync method with ListObjectsArgs object. Refer ListObjects example code.")]
-    IObservable<Item> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = false,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    ///     Get bucket policy
-    /// </summary>
-    /// <param name="bucketName">Bucket name</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>Returns Task with bucket policy json as string </returns>
-    [Obsolete("Use GetPolicyAsync method with GetPolicyArgs object. Refer GetBucketPolicy example code.")]
-    Task<string> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    ///     Sets the current bucket policy
-    /// </summary>
-    /// <param name="bucketName">Bucket Name</param>
-    /// <param name="policyJson">policy json</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>Returns Task that sets the current bucket policy</returns>
-    [Obsolete("Use SetPolicyAsync method with SetPolicyArgs object. Refer SetBucketPolicy example code.")]
-    Task SetPolicyAsync(string bucketName, string policyJson, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    ///     Gets the notification configuration set for this bucket
-    /// </summary>
-    /// <param name="bucketName">Bucket Name</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>BucketNotification object populated with the notification subresource</returns>
-    [Obsolete(
-        "Use GetBucketNotificationsAsync method with GetBucketNotificationsArgs object. Refer GetBucketNotification example code.")]
-    Task<BucketNotification> GetBucketNotificationsAsync(string bucketName,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    ///     Sets bucket notification configuration
-    /// </summary>
-    /// <param name="bucketName">Bucket Name</param>
-    /// <param name="notification">BucketNotification object</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns></returns>
-    [Obsolete(
-        "Use SetBucketNotificationsAsync method with SetBucketNotificationsArgs object. Refer SetBucketNotification example code.")]
-    Task SetBucketNotificationsAsync(string bucketName, BucketNotification notification,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    ///     Remove all bucket notifications
-    /// </summary>
-    /// <param name="bucketName">bucketName</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns></returns>
-    [Obsolete(
-        "Use RemoveAllBucketNotificationsAsync method with RemoveAllBucketNotificationsArgs object. Refer RemoveAllBucketNotification example code.")]
-    Task RemoveAllBucketNotificationsAsync(string bucketName, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    ///     Subscribes to bucket change notifications (a Minio-only extension)
-    /// </summary>
-    /// <param name="bucketName">Bucket to get notifications from</param>
-    /// <param name="events">Events to listen for</param>
-    /// <param name="prefix">Filter keys starting with this prefix</param>
-    /// <param name="suffix">Filter keys ending with this suffix</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>An observable of JSON-based notification events</returns>
-    [Obsolete(
-        "Use ListenBucketNotificationsAsync method with ListenBucketNotificationsArgs object. Refer ListenBucketNotifications example code.")]
-    IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events,
-        string prefix = "", string suffix = "", CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Get Versioning information on the bucket with given bucket name
