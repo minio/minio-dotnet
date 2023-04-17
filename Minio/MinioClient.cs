@@ -776,19 +776,19 @@ public partial class MinioClient : IMinioClient
     {
         var requestToLog = new RequestToLog
         {
-            resource = request.RequestUri.PathAndQuery,
+            Resource = request.RequestUri.PathAndQuery,
             // Parameters are custom anonymous objects in order to have the parameter type as a nice string
             // otherwise it will just show the enum value
-            parameters = request.Headers.Select(parameter => new RequestParameter
+            Parameters = request.Headers.Select(parameter => new RequestParameter
             {
-                name = parameter.Key,
-                value = parameter.Value,
-                type = parameter.GetType().ToString()
+                Name = parameter.Key,
+                Value = parameter.Value,
+                Type = parameter.GetType().ToString()
             }),
             // ToString() here to have the method as a nice string otherwise it will just show the enum value
-            method = request.Method.ToString(),
+            Method = request.Method.ToString(),
             // This will generate the actual Uri used in the request
-            uri = request.RequestUri
+            Uri = request.RequestUri
         };
 
         var responseToLog = new ResponseToLog

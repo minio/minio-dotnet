@@ -18,7 +18,7 @@ namespace Minio.DataModel.Tracing;
 
 public sealed class RequestParameter
 {
-    public string name { get; internal set; }
-    public object value { get; internal set; }
-    public string type { get; internal set; }
+    public string Name { get; internal set; }
+    public object Value { get; internal set; }
+    public string Type { get; internal set; }
 }
