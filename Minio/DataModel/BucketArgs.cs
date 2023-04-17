@@ -25,7 +25,7 @@ public abstract class BucketArgs<T> : Args
 
     internal string BucketName { get; set; }
 
-    internal Dictionary<string, string> Headers { get; set; } = new();
+    internal IDictionary<string, string> Headers { get; set; } = new Dictionary<string, string>();
 
     public T WithBucket(string bucket)
     {
