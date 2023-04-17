@@ -74,7 +74,7 @@ public partial class MinioClient : IObjectOperations
 
         var callbackAsync = async (Stream stream, CancellationToken cancellationToken) =>
         {
-            var dest = new FileStream(tempFileName, FileMode.Create, FileAccess.Write);
+            using var dest = new FileStream(tempFileName, FileMode.Create, FileAccess.Write);
 #if NETSTANDARD
             await stream.CopyToAsync(dest).ConfigureAwait(false);
 #else
