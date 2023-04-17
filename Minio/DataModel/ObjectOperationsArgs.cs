@@ -961,7 +961,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
     internal DateTime RetentionUntilDate { get; set; }
     internal bool ObjectLockSet { get; set; }
 
-    internal CopyObjectRequestArgs WithQueryMap(Dictionary<string, string> queryMap)
+    internal CopyObjectRequestArgs WithQueryMap(IDictionary<string, string> queryMap)
     {
         QueryMap = new Dictionary<string, string>(queryMap);
         return this;
@@ -1573,7 +1573,7 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
         return this;
     }
 
-    public new NewMultipartUploadCopyArgs WithHeaders(Dictionary<string, string> headers)
+    public new NewMultipartUploadCopyArgs WithHeaders(IDictionary<string, string> headers)
     {
         base.WithHeaders(headers);
         return this;
@@ -1697,7 +1697,7 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
         return this;
     }
 
-    internal CompleteMultipartUploadArgs WithETags(Dictionary<int, string> etags)
+    internal CompleteMultipartUploadArgs WithETags(IDictionary<int, string> etags)
     {
         if (etags?.Count > 0) ETags = new Dictionary<int, string>(etags);
         return this;
@@ -1753,7 +1753,7 @@ internal class PutObjectPartArgs : PutObjectArgs
         return (PutObjectPartArgs)base.WithObjectSize(size);
     }
 
-    public new PutObjectPartArgs WithHeaders(Dictionary<string, string> hdr)
+    public new PutObjectPartArgs WithHeaders(IDictionary<string, string> hdr)
     {
         return (PutObjectPartArgs)base.WithHeaders(hdr);
     }
@@ -1893,7 +1893,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         return requestMessageBuilder;
     }
 
-    public PutObjectArgs WithHeaders(IDictionary<string, string> metaData)
+    public override PutObjectArgs WithHeaders(IDictionary<string, string> metaData)
     {
         Headers ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         if (metaData != null)
@@ -1909,7 +1909,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
                 }
 
                 Headers[key] = p.Value;
-                if (key == "Content-Type")
+                if (string.Equals(key, "Content-Type", StringComparison.OrdinalIgnoreCase))
                     ContentType = p.Value;
             }
 

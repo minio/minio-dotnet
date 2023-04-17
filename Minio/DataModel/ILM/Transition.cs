@@ -45,6 +45,6 @@ public class Transition : Duration
     internal static void CheckStorageClass(string storageClass)
     {
         if (string.IsNullOrEmpty(storageClass) || string.IsNullOrWhiteSpace(storageClass))
-            throw new ArgumentNullException(nameof(StorageClass) + " cannot be empty.");
+            throw new ArgumentNullException(nameof(storageClass) + " cannot be empty.");
     }
 }

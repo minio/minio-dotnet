@@ -38,7 +38,7 @@ internal static class s3utils
     // For more info https://aws.amazon.com/about-aws/whats-new/2013/12/18/announcing-the-aws-china-beijing-region/
     internal static bool IsAmazonChinaEndPoint(string endpoint)
     {
-        return endpoint == "s3.cn-north-1.amazonaws.com.cn";
+        return string.Equals(endpoint, "s3.cn-north-1.amazonaws.com.cn", StringComparison.OrdinalIgnoreCase);
     }
 
     // IsVirtualHostSupported - verifies if bucketName can be part of
@@ -49,7 +49,8 @@ internal static class s3utils
         if (endpointURL == null) return false;
         // bucketName can be valid but '.' in the hostname will fail SSL
         // certificate validation. So do not use host-style for such buckets.
-        if (endpointURL.Scheme == "https" && bucketName.Contains('.')) return false;
+        if (string.Equals(endpointURL.Scheme, "https", StringComparison.OrdinalIgnoreCase) &&
+            bucketName.Contains('.')) return false;
         // Return true for all other cases
         return IsAmazonEndPoint(endpointURL.Host);
     }

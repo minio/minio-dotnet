@@ -477,7 +477,7 @@ public static class FunctionalTest
         }
         catch (Exception ex)
         {
-            if (ex.Message.StartsWith("Bucket already owned by you"))
+            if (ex.Message.StartsWith("Bucket already owned by you", StringComparison.OrdinalIgnoreCase))
             {
                 // You have your bucket already created, continue
             }
@@ -495,7 +495,7 @@ public static class FunctionalTest
             Assert.AreEqual(noOfBuckets, bucketList.Count);
             bucketList.ToList().Sort((x, y) =>
             {
-                if (x.Name == y.Name) return 0;
+                if (string.Equals(x.Name, y.Name, StringComparison.Ordinal)) return 0;
                 if (x.Name == null) return -1;
                 if (y.Name == null) return 1;
                 return x.Name.CompareTo(y.Name);
@@ -1367,7 +1367,7 @@ public static class FunctionalTest
             Assert.IsTrue(statObject.ObjectName.Equals(objectName, StringComparison.Ordinal));
             Assert.AreEqual(statObject.Size, sizeExpected);
             Assert.IsTrue(statObject.MetaData["Content-Type"] != null);
-            Assert.IsTrue(statObject.ContentType.Equals(contentType));
+            Assert.IsTrue(statObject.ContentType.Equals(contentType, StringComparison.OrdinalIgnoreCase));
             Assert.IsTrue(statObject.MetaData[metadataKey].Equals(metadataValue, StringComparison.Ordinal));
 
             new MintLogger("PresignedPostPolicy_Test1", presignedPostPolicySignature,
@@ -2694,7 +2694,8 @@ public static class FunctionalTest
                     // and captured in the receivedJson list, like
                     // "NotImplemented" api error. If so, we throw an exception
                     // and skip running this test
-                    if (received.Count > 1 && received[1].json.StartsWith("<Error><Code>"))
+                    if (received.Count > 1 &&
+                        received[1].json.StartsWith("<Error><Code>", StringComparison.OrdinalIgnoreCase))
                     {
                         // Although the attribute is called "json",
                         // returned data in list "received" is in xml
@@ -2712,7 +2713,7 @@ public static class FunctionalTest
                         var err = JsonSerializer.Deserialize<ErrorResponse>(trimmedFull);
 
                         Exception ex = new UnexpectedMinioException(err.Message);
-                        if (err.Code == "NotImplemented")
+                        if (string.Equals(err.Code, "NotImplemented", StringComparison.OrdinalIgnoreCase))
                             ex = new NotImplementedException(err.Message);
 
                         throw ex;
@@ -2723,10 +2724,10 @@ public static class FunctionalTest
                     if (notification.Records != null)
                     {
                         Assert.AreEqual(1, notification.Records.Count);
-                        Assert.IsTrue(notification.Records[0].eventName.Contains("s3:ObjectCreated:Put"));
+                        Assert.IsTrue(notification.Records[0].EventName.Contains("s3:ObjectCreated:Put"));
                         Assert.IsTrue(
-                            objectName.Contains(HttpUtility.UrlDecode(notification.Records[0].s3.objectMeta.key)));
-                        Assert.IsTrue(contentType.Contains(notification.Records[0].s3.objectMeta.contentType));
+                            objectName.Contains(HttpUtility.UrlDecode(notification.Records[0].S3.ObjectMeta.Key)));
+                        Assert.IsTrue(contentType.Contains(notification.Records[0].S3.ObjectMeta.ContentType));
                         eventDetected = true;
                         break;
                     }
@@ -2823,8 +2824,7 @@ public static class FunctionalTest
                 var notification = JsonSerializer.Deserialize<MinioNotification>(data.json);
                 if (notification is not { Records: not null }) return;
 
-                foreach (var @event in notification.Records)
-                    rxEventsList.Add(@event);
+                rxEventsList.AddRange(notification.Records);
             }
 
             var listenArgs = new ListenBucketNotificationsArgs()
@@ -2868,7 +2868,7 @@ public static class FunctionalTest
                     throw new ArgumentException("Timeout: while waiting for events");
             }
 
-            foreach (var ev in rxEventsList) Assert.AreEqual("s3:ObjectCreated:Put", ev.eventName);
+            foreach (var ev in rxEventsList) Assert.AreEqual("s3:ObjectCreated:Put", ev.EventName);
 
             new MintLogger(nameof(ListenBucketNotificationsAsync_Test2),
                 listenBucketNotificationsSignature,
@@ -2962,7 +2962,7 @@ public static class FunctionalTest
             if (!string.IsNullOrEmpty(rxEventData.json))
             {
                 var notification = JsonSerializer.Deserialize<MinioNotification>(rxEventData.json);
-                Assert.IsTrue(notification.Records[0].eventName
+                Assert.IsTrue(notification.Records[0].EventName
                     .Equals("s3:ObjectCreated:Put", StringComparison.OrdinalIgnoreCase));
                 new MintLogger(nameof(ListenBucketNotificationsAsync_Test3),
                     listenBucketNotificationsSignature,
@@ -4744,14 +4744,14 @@ public static class FunctionalTest
                 {
                     var objectSize = (int)filestream.Length;
                     var expectedFileSize = lengthToBeRead;
-                    var expectedContent = string.Join("", line).Substring(offsetToStartFrom, expectedFileSize);
+                    var expectedContent = string.Concat(line).Substring(offsetToStartFrom, expectedFileSize);
                     if (lengthToBeRead == 0)
                     {
                         expectedFileSize = objectSize - offsetToStartFrom;
                         var noOfCtrlChars = 1;
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) noOfCtrlChars = 2;
 
-                        expectedContent = string.Join("", line)
+                        expectedContent = string.Concat(line)
                             .Substring(offsetToStartFrom, expectedFileSize - noOfCtrlChars);
                     }
 
@@ -4784,8 +4784,6 @@ public static class FunctionalTest
                             Assert.AreEqual(expectedFileSize, actualFileSize);
 
                             // Checking the content
-
-
 #if NETFRAMEWORK
                             var actualContent = File.ReadAllText(tempFileName);
 #else
@@ -5300,7 +5298,7 @@ public static class FunctionalTest
                 item =>
                 {
                     if (!string.IsNullOrEmpty(prefix))
-                        Assert.IsTrue(item.Key.StartsWith(prefix));
+                        Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
                     count++;
                 },
                 ex => throw ex,
@@ -5312,7 +5310,7 @@ public static class FunctionalTest
             var subscription = observable.Subscribe(
                 item =>
                 {
-                    Assert.IsTrue(item.Key.StartsWith(prefix));
+                    Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
                     count++;
                 },
                 ex => throw ex,

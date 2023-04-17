@@ -18,8 +18,8 @@ namespace Minio.DataModel.Tracing;
 
 public sealed class RequestToLog
 {
-    public string resource { get; internal set; }
-    public IEnumerable<RequestParameter> parameters { get; internal set; }
-    public string method { get; internal set; }
-    public Uri uri { get; internal set; }
+    public string Resource { get; internal set; }
+    public IEnumerable<RequestParameter> Parameters { get; internal set; }
+    public string Method { get; internal set; }
+    public Uri Uri { get; internal set; }
 }

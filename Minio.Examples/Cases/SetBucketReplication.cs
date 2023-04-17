@@ -70,7 +70,7 @@ public static class SetBucketReplication
             accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
             secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
             if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") != null)
-                if (Environment.GetEnvironmentVariable("ENABLE_HTTPS").Equals("1"))
+                if (Environment.GetEnvironmentVariable("ENABLE_HTTPS").Equals("1", StringComparison.OrdinalIgnoreCase))
                     schema = "https://";
         }
         else

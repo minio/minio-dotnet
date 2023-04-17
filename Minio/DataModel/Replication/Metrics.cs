@@ -32,8 +32,8 @@ public class Metrics
 {
     public Metrics(string status, ReplicationTimeValue eventThreshold)
     {
-        if (string.IsNullOrEmpty(Status) || string.IsNullOrWhiteSpace(Status))
-            throw new ArgumentNullException(nameof(Status) + " member cannot be empty.");
+        if (string.IsNullOrWhiteSpace(status))
+            throw new ArgumentNullException(nameof(status) + " member cannot be empty.");
         Status = status;
         EventThreshold = eventThreshold;
     }

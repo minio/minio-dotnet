@@ -51,6 +51,7 @@ public partial class MinioClient : IMinioClient
         Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
 
     private string CustomUserAgent = string.Empty;
+    private bool disposedValue;
 
     private bool disposeHttpClient = true;
 
@@ -173,8 +174,9 @@ public partial class MinioClient : IMinioClient
 
     public void Dispose()
     {
-        if (disposeHttpClient)
-            HttpClient?.Dispose();
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -273,7 +275,7 @@ public partial class MinioClient : IMinioClient
         HttpMethod method,
         string bucketName = null,
         string objectName = null,
-        Dictionary<string, string> headerMap = null,
+        IDictionary<string, string> headerMap = null,
         string contentType = "application/octet-stream",
         ReadOnlyMemory<byte> body = default,
         string resourcePath = null,
@@ -328,21 +330,20 @@ public partial class MinioClient : IMinioClient
         var resource = string.Empty;
         var usePathStyle = false;
 
-        if (bucketName != null)
-            if (s3utils.IsAmazonEndPoint(BaseUrl))
-            {
-                if (method == HttpMethod.Put && objectName == null && resourcePath == null)
-                    // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
-                    usePathStyle = true;
-                else if (resourcePath?.Contains("location") == true)
-                    // use path style for location query
-                    usePathStyle = true;
-                else if (bucketName?.Contains('.') == true && Secure)
-                    // use path style where '.' in bucketName causes SSL certificate validation error
-                    usePathStyle = true;
+        if (bucketName != null && s3utils.IsAmazonEndPoint(BaseUrl))
+        {
+            if (method == HttpMethod.Put && objectName == null && resourcePath == null)
+                // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
+                usePathStyle = true;
+            else if (resourcePath?.Contains("location") == true)
+                // use path style for location query
+                usePathStyle = true;
+            else if (bucketName?.Contains('.') == true && Secure)
+                // use path style where '.' in bucketName causes SSL certificate validation error
+                usePathStyle = true;
 
-                if (usePathStyle) resource += Utils.UrlEncode(bucketName) + "/";
-            }
+            if (usePathStyle) resource += Utils.UrlEncode(bucketName) + "/";
+        }
 
         // Set Target URL
         var requestUrl = RequestUtil.MakeTargetURL(BaseUrl, Secure, bucketName, region, usePathStyle);
@@ -594,13 +595,13 @@ public partial class MinioClient : IMinioClient
 
         foreach (var parameter in response.Headers)
         {
-            if (parameter.Key.Equals("x-amz-id-2", StringComparison.CurrentCultureIgnoreCase))
+            if (parameter.Key.Equals("x-amz-id-2", StringComparison.OrdinalIgnoreCase))
                 errorResponse.HostId = parameter.Value;
 
-            if (parameter.Key.Equals("x-amz-request-id", StringComparison.CurrentCultureIgnoreCase))
+            if (parameter.Key.Equals("x-amz-request-id", StringComparison.OrdinalIgnoreCase))
                 errorResponse.RequestId = parameter.Value;
 
-            if (parameter.Key.Equals("x-amz-bucket-region", StringComparison.CurrentCultureIgnoreCase))
+            if (parameter.Key.Equals("x-amz-bucket-region", StringComparison.OrdinalIgnoreCase))
                 errorResponse.BucketRegion = parameter.Value;
         }
 
@@ -614,8 +615,8 @@ public partial class MinioClient : IMinioClient
         if (HttpStatusCode.NotFound.Equals(response.StatusCode))
         {
             var pathLength = resourceSplits.Length;
-            var isAWS = host.EndsWith("s3.amazonaws.com");
-            var isVirtual = isAWS && !host.StartsWith("s3.amazonaws.com");
+            var isAWS = host.EndsWith("s3.amazonaws.com", StringComparison.OrdinalIgnoreCase);
+            var isVirtual = isAWS && !host.StartsWith("s3.amazonaws.com", StringComparison.OrdinalIgnoreCase);
 
             if (pathLength > 1)
             {
@@ -674,7 +675,7 @@ public partial class MinioClient : IMinioClient
     private static void ParseErrorFromContent(ResponseResult response)
     {
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-            && response.Request.RequestUri.PathAndQuery.EndsWith("?location")
+            && response.Request.RequestUri.PathAndQuery.EndsWith("?location", StringComparison.OrdinalIgnoreCase)
             && response.Request.Method.Equals(HttpMethod.Get))
         {
             var bucketName = response.Request.RequestUri.PathAndQuery.Split('?')[0];
@@ -692,16 +693,16 @@ public partial class MinioClient : IMinioClient
 
         // Handle XML response for Bucket Policy not found case
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-            && response.Request.RequestUri.PathAndQuery.EndsWith("?policy")
+            && response.Request.RequestUri.PathAndQuery.EndsWith("?policy", StringComparison.OrdinalIgnoreCase)
             && response.Request.Method.Equals(HttpMethod.Get)
-            && errResponse.Code == "NoSuchBucketPolicy")
+            && string.Equals(errResponse.Code, "NoSuchBucketPolicy", StringComparison.OrdinalIgnoreCase))
             throw new ErrorResponseException(errResponse, response)
             {
                 XmlError = response.Content
             };
 
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-            && errResponse.Code == "NoSuchBucket")
+            && string.Equals(errResponse.Code, "NoSuchBucket", StringComparison.OrdinalIgnoreCase))
             throw new BucketNotFoundException(errResponse.BucketName, "Not found.");
 
         if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
@@ -775,30 +776,30 @@ public partial class MinioClient : IMinioClient
     {
         var requestToLog = new RequestToLog
         {
-            resource = request.RequestUri.PathAndQuery,
+            Resource = request.RequestUri.PathAndQuery,
             // Parameters are custom anonymous objects in order to have the parameter type as a nice string
             // otherwise it will just show the enum value
-            parameters = request.Headers.Select(parameter => new RequestParameter
+            Parameters = request.Headers.Select(parameter => new RequestParameter
             {
-                name = parameter.Key,
-                value = parameter.Value,
-                type = parameter.GetType().ToString()
+                Name = parameter.Key,
+                Value = parameter.Value,
+                Type = parameter.GetType().ToString()
             }),
             // ToString() here to have the method as a nice string otherwise it will just show the enum value
-            method = request.Method.ToString(),
+            Method = request.Method.ToString(),
             // This will generate the actual Uri used in the request
-            uri = request.RequestUri
+            Uri = request.RequestUri
         };
 
         var responseToLog = new ResponseToLog
         {
-            statusCode = response.StatusCode,
-            content = response.Content,
-            headers = response.Headers.ToDictionary(o => o.Key, o => string.Join(Environment.NewLine, o.Value)),
+            StatusCode = response.StatusCode,
+            Content = response.Content,
+            Headers = response.Headers.ToDictionary(o => o.Key, o => string.Join(Environment.NewLine, o.Value)),
             // The Uri that actually responded (could be different from the requestUri if a redirection occurred)
-            responseUri = response.Request.RequestUri,
-            errorMessage = response.ErrorMessage,
-            durationMs = durationMs
+            ResponseUri = response.Request.RequestUri,
+            ErrorMessage = response.ErrorMessage,
+            DurationMs = durationMs
         };
 
         logger.LogRequest(requestToLog, responseToLog, durationMs);
@@ -810,6 +811,17 @@ public partial class MinioClient : IMinioClient
         return retryPolicyHandler == null
             ? executeRequestCallback()
             : retryPolicyHandler(executeRequestCallback);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposedValue)
+        {
+            if (disposing)
+                if (disposeHttpClient)
+                    HttpClient?.Dispose();
+            disposedValue = true;
+        }
     }
 }
 

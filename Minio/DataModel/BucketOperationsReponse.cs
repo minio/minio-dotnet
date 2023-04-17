@@ -72,20 +72,21 @@ internal class ListObjectsItemResponse
         foreach (var item in objectList.Item2)
         {
             BucketObjectsLastItem = item;
-            if (objectList.Item1.EncodingType == "url") item.Key = HttpUtility.UrlDecode(item.Key);
+            if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
+                item.Key = HttpUtility.UrlDecode(item.Key);
             ItemObservable.OnNext(item);
         }
 
         if (objectList.Item1.NextMarker != null)
         {
-            if (objectList.Item1.EncodingType == "url")
+            if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
                 NextMarker = HttpUtility.UrlDecode(objectList.Item1.NextMarker);
             else
                 NextMarker = objectList.Item1.NextMarker;
         }
         else if (BucketObjectsLastItem != null)
         {
-            if (objectList.Item1.EncodingType == "url")
+            if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
                 NextMarker = HttpUtility.UrlDecode(BucketObjectsLastItem.Key);
             else
                 NextMarker = BucketObjectsLastItem.Key;
@@ -107,13 +108,14 @@ internal class ListObjectVersionResponse
         foreach (var item in objectList.Item2)
         {
             BucketObjectsLastItem = item;
-            if (objectList.Item1.EncodingType == "url") item.Key = HttpUtility.UrlDecode(item.Key);
+            if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
+                item.Key = HttpUtility.UrlDecode(item.Key);
             ItemObservable.OnNext(item);
         }
 
         if (objectList.Item1.NextMarker != null)
         {
-            if (objectList.Item1.EncodingType == "url")
+            if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
             {
                 NextMarker = HttpUtility.UrlDecode(objectList.Item1.NextMarker);
                 NextKeyMarker = HttpUtility.UrlDecode(objectList.Item1.NextKeyMarker);
@@ -128,7 +130,7 @@ internal class ListObjectVersionResponse
         }
         else if (BucketObjectsLastItem != null)
         {
-            if (objectList.Item1.EncodingType == "url")
+            if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
             {
                 NextMarker = HttpUtility.UrlDecode(BucketObjectsLastItem.Key);
                 NextKeyMarker = HttpUtility.UrlDecode(BucketObjectsLastItem.Key);

@@ -24,7 +24,7 @@ public static class SetObjectTags
     public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name",
         string objectName = "my-object-name",
-        Dictionary<string, string> tags = null,
+        IDictionary<string, string> tags = null,
         string versionId = null)
     {
         try

@@ -251,9 +251,9 @@ internal class V4Authenticator
     {
 #if NETSTANDARD
         using var sha = SHA256.Create();
-        var hash = sha.ComputeHash(body.ToArray());
+        ReadOnlySpan<byte> hash = sha.ComputeHash(body.ToArray());
 #else
-        var hash = SHA256.HashData(body);
+        ReadOnlySpan<byte> hash = SHA256.HashData(body);
 #endif
         return hash;
     }
@@ -278,7 +278,7 @@ internal class V4Authenticator
     public string PresignPostSignature(string region, DateTime signingDate, string policyBase64)
     {
         var signingKey = GenerateSigningKey(region, signingDate);
-        var stringToSignBytes = Encoding.UTF8.GetBytes(policyBase64);
+        ReadOnlySpan<byte> stringToSignBytes = Encoding.UTF8.GetBytes(policyBase64);
         var signatureBytes = SignHmac(signingKey, stringToSignBytes);
         var signature = BytesToHex(signatureBytes);
         return signature;
@@ -418,18 +418,22 @@ internal class V4Authenticator
 
         var isFormData = false;
         if (requestBuilder.Request.Content != null && requestBuilder.Request.Content.Headers?.ContentType != null)
-            isFormData = requestBuilder.Request.Content.Headers.ContentType.ToString() ==
-                         "application/x-www-form-urlencoded";
+            isFormData = string.Equals(requestBuilder.Request.Content.Headers.ContentType.ToString(),
+                "application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase);
 
         if (string.IsNullOrEmpty(queryParams) && isFormData)
         {
             // Convert stream content to byte[]
-            var cntntByteData = Array.Empty<byte>();
+            var cntntByteData = Span<byte>.Empty;
             if (requestBuilder.Request.Content != null)
                 cntntByteData = requestBuilder.Request.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
 
             // UTF conversion - String from bytes
-            queryParams = Encoding.UTF8.GetString(cntntByteData, 0, cntntByteData.Length);
+#if NETSTANDARD
+            queryParams = Encoding.UTF8.GetString(cntntByteData.ToArray(), 0, cntntByteData.Length);
+#else
+            queryParams = Encoding.UTF8.GetString(cntntByteData);
+#endif
         }
 
         if (!string.IsNullOrEmpty(queryParams) &&
@@ -452,7 +456,7 @@ internal class V4Authenticator
         return string.Join("\n", canonicalStringList);
     }
 
-    public static Dictionary<string, TValue> ToDictionary<TValue>(object obj)
+    public static IDictionary<string, TValue> ToDictionary<TValue>(object obj)
     {
         var json = JsonSerializer.Serialize(obj);
         var dictionary = JsonSerializer.Deserialize<Dictionary<string, TValue>>(json);
@@ -514,8 +518,8 @@ internal class V4Authenticator
     /// <summary>
     ///     Set 'x-amz-content-sha256' http header.
     /// </summary>
-    /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
     /// <param name="requestBuilder">Instantiated requestBuilder object</param>
+    /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
     private void SetContentSha256(HttpRequestMessageBuilder requestBuilder, bool isSts = false)
     {
         if (IsAnonymous)
@@ -554,13 +558,13 @@ internal class V4Authenticator
         }
         else if (!IsSecure && !requestBuilder.Content.IsEmpty)
         {
-            var bytes = Encoding.UTF8.GetBytes(requestBuilder.Content.ToString());
+            ReadOnlySpan<byte> bytes = Encoding.UTF8.GetBytes(requestBuilder.Content.ToString());
 
 #if NETSTANDARD
             using var md5 = MD5.Create();
-            var hash = md5.ComputeHash(bytes);
+            var hash = md5.ComputeHash(bytes.ToArray());
 #else
-            var hash = MD5.HashData(bytes);
+            ReadOnlySpan<byte> hash = MD5.HashData(bytes);
 #endif
             var base64 = Convert.ToBase64String(hash);
             requestBuilder.AddHeaderParameter("Content-Md5", base64);

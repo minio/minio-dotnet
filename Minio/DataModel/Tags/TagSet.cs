@@ -27,7 +27,7 @@ public class TagSet
         Tag = null;
     }
 
-    public TagSet(IReadOnlyDictionary<string, string> tags)
+    public TagSet(IDictionary<string, string> tags)
     {
         if (tags == null || tags.Count == 0) return;
         Tag = new List<Tag>();

@@ -116,7 +116,8 @@ public partial class MinioClient : IBucketOperations
         if (string.IsNullOrEmpty(args.Location))
             args.Location = Region;
 
-        if (args.Location == "us-east-1" && !string.IsNullOrEmpty(Region))
+        if (string.Equals(args.Location, "us-east-1", StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrEmpty(Region))
             args.Location = Region;
 
         args.IsBucketCreationRequest = true;
@@ -227,7 +228,8 @@ public partial class MinioClient : IBucketOperations
                     else
                     {
                         var objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
-                        if (objectList.Item2.Count == 0 && objectList.Item1.KeyCount.Equals("0") && count == 0)
+                        if (objectList.Item2.Count == 0 &&
+                            objectList.Item1.KeyCount.Equals("0", StringComparison.OrdinalIgnoreCase) && count == 0)
                             return;
 
                         var listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);

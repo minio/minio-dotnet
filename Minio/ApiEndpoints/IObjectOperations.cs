@@ -275,7 +275,7 @@ public interface IObjectOperations
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PresignedPostPolicyArgs args);
+    Task<(Uri, IDictionary<string, string>)> PresignedPostPolicyAsync(PresignedPostPolicyArgs args);
 
     /// <summary>
     ///     Presigned Put url -returns a presigned url to upload an object without credentials.URL can have a maximum expiry of
@@ -307,7 +307,7 @@ public interface IObjectOperations
     /// </summary>
     /// <param name="policy"></param>
     /// <returns></returns>
-    Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PostPolicy policy);
+    Task<(Uri, IDictionary<string, string>)> PresignedPostPolicyAsync(PostPolicy policy);
 
     /// <summary>
     ///     Gets Tagging values set for this object

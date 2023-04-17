@@ -23,7 +23,7 @@ public static class SetBucketTags
     // Set Tags to the bucket
     public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name",
-        Dictionary<string, string> tags = null)
+        IDictionary<string, string> tags = null)
     {
         try
         {

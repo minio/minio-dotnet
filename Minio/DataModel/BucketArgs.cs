@@ -25,7 +25,7 @@ public abstract class BucketArgs<T> : Args
 
     internal string BucketName { get; set; }
 
-    internal Dictionary<string, string> Headers { get; set; } = new();
+    internal IDictionary<string, string> Headers { get; set; } = new Dictionary<string, string>();
 
     public T WithBucket(string bucket)
     {
@@ -33,7 +33,7 @@ public abstract class BucketArgs<T> : Args
         return (T)this;
     }
 
-    public T WithHeaders(Dictionary<string, string> headers)
+    public virtual T WithHeaders(IDictionary<string, string> headers)
     {
         if (headers == null || headers.Count <= 0) return (T)this;
         Headers ??= new Dictionary<string, string>();

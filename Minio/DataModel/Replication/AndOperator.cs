@@ -47,7 +47,7 @@ public class AndOperator
         Tags = tag;
     }
 
-    public AndOperator(string prefix, Dictionary<string, string> tags)
+    public AndOperator(string prefix, IDictionary<string, string> tags)
     {
         Prefix = prefix;
         foreach (var item in tags) Tags.Add(new Tag(item.Key, item.Value));

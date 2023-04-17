@@ -39,7 +39,7 @@ public class Tagging
         TaggingSet = null;
     }
 
-    public Tagging(IReadOnlyDictionary<string, string> tags, bool isObjects)
+    public Tagging(IDictionary<string, string> tags, bool isObjects)
     {
         if (tags == null)
         {
@@ -64,7 +64,7 @@ public class Tagging
     [XmlElement("TagSet")] public TagSet TaggingSet { get; set; }
 
     [XmlIgnore]
-    public IReadOnlyDictionary<string, string> Tags
+    public IDictionary<string, string> Tags
     {
         get
         {
@@ -133,12 +133,12 @@ public class Tagging
         return str;
     }
 
-    public static Tagging GetBucketTags(IReadOnlyDictionary<string, string> tags)
+    public static Tagging GetBucketTags(IDictionary<string, string> tags)
     {
         return new Tagging(tags, false);
     }
 
-    public static Tagging GetObjectTags(IReadOnlyDictionary<string, string> tags)
+    public static Tagging GetObjectTags(IDictionary<string, string> tags)
     {
         return new Tagging(tags, true);
     }

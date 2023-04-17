@@ -61,8 +61,8 @@ public class OperationsTest
 
         if (!await ObjectExistsAsync(client, bucket, objectName).ConfigureAwait(false))
         {
-            var helloData = Encoding.UTF8.GetBytes("hello world");
-            using var helloStream = helloData.AsMemory().AsStream();
+            ReadOnlyMemory<byte> helloData = Encoding.UTF8.GetBytes("hello world");
+            using var helloStream = helloData.AsStream();
             var PutObjectArgs = new PutObjectArgs()
                 .WithBucket(bucket)
                 .WithObject(objectName)
@@ -113,8 +113,8 @@ public class OperationsTest
 
         if (!await ObjectExistsAsync(client, bucket, objectName).ConfigureAwait(false))
         {
-            var helloData = Encoding.UTF8.GetBytes("hello world");
-            using var helloStream = helloData.AsMemory().AsStream();
+            ReadOnlyMemory<byte> helloData = Encoding.UTF8.GetBytes("hello world");
+            using var helloStream = helloData.AsStream();
             var PutObjectArgs = new PutObjectArgs()
                 .WithBucket(bucket)
                 .WithObject(objectName)

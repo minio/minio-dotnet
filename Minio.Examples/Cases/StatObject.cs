@@ -63,8 +63,7 @@ internal static class StatObject
         {
             var objectNameInfo = $"{bucketName}-{bucketObject}";
             if (!string.IsNullOrEmpty(versionID))
-                objectNameInfo = objectNameInfo +
-                                 $" (Version ID) {me.Response.VersionId} (Delete Marker) {me.Response.DeleteMarker}";
+                objectNameInfo += $" (Version ID) {me.Response.VersionId} (Delete Marker) {me.Response.DeleteMarker}";
 
             Console.WriteLine($"[StatObject] {objectNameInfo} Exception: {me}");
         }
@@ -74,7 +73,7 @@ internal static class StatObject
         }
     }
 
-    private static void PrintMetaData(Dictionary<string, string> metaData)
+    private static void PrintMetaData(IDictionary<string, string> metaData)
     {
         Console.WriteLine("Metadata:");
         foreach (var metaPair in metaData) Console.WriteLine("    " + metaPair.Key + ":\t" + metaPair.Value);

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.Collections.ObjectModel;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel;
@@ -48,7 +47,7 @@ public class NotificationConfiguration
 
     private Arn Arn { get; }
 
-    public void AddEvents(Collection<EventType> evnt)
+    public void AddEvents(IList<EventType> evnt)
     {
         Events ??= new List<EventType>();
 

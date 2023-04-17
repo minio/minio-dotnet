@@ -20,19 +20,17 @@ namespace Minio.DataModel;
 
 public class PostPolicy
 {
-    public readonly Dictionary<string, string> formData = new();
-
-    public IList<IList<(string, string, string)>> conditions = new List<IList<(string, string, string)>>();
-
-    public DateTime Expiration { get; set; }
-    public string Key { get; private set; }
-    public string Bucket { get; private set; }
+    public IList<IList<(string, string, string)>> Conditions = new List<IList<(string, string, string)>>();
 
     /// <summary>
     ///     Get the populated dictionary of policy data.
     /// </summary>
     /// <returns>Dictionary of policy data</returns>
-    public Dictionary<string, string> FormData => formData;
+    public IDictionary<string, string> FormData { get; } = new Dictionary<string, string>();
+
+    public DateTime Expiration { get; set; }
+    public string Key { get; private set; }
+    public string Bucket { get; private set; }
 
     /// <summary>
     ///     Set expiration policy.
@@ -52,7 +50,7 @@ public class PostPolicy
     {
         if (string.IsNullOrEmpty(key)) throw new ArgumentException("Object key cannot be null or empty", nameof(key));
 
-        conditions.Add(new List<(string, string, string)> { ("eq", "$key", key) });
+        Conditions.Add(new List<(string, string, string)> { ("eq", "$key", key) });
         // this.formData.Add("key", key);
         Key = key;
     }
@@ -66,7 +64,7 @@ public class PostPolicy
         if (string.IsNullOrEmpty(keyStartsWith))
             throw new ArgumentException("Object key prefix cannot be null or empty", nameof(keyStartsWith));
 
-        conditions.Add(new List<(string, string, string)> { ("starts-with", "$key", keyStartsWith) });
+        Conditions.Add(new List<(string, string, string)> { ("starts-with", "$key", keyStartsWith) });
         // this.formData.Add("key", keyStartsWith);
     }
 
@@ -79,7 +77,7 @@ public class PostPolicy
         if (string.IsNullOrEmpty(bucket))
             throw new ArgumentException("Bucket name cannot be null or empty", nameof(bucket));
 
-        conditions.Add(new List<(string, string, string)> { ("eq", "$bucket", bucket) });
+        Conditions.Add(new List<(string, string, string)> { ("eq", "$bucket", bucket) });
         // this.formData.Add("bucket", bucket);
         Bucket = bucket;
     }
@@ -93,7 +91,7 @@ public class PostPolicy
         if (string.IsNullOrEmpty(cacheControl))
             throw new ArgumentException("Cache-Control argument cannot be null or empty", nameof(cacheControl));
 
-        conditions.Add(new List<(string, string, string)> { ("eq", "$Cache-Control", cacheControl) });
+        Conditions.Add(new List<(string, string, string)> { ("eq", "$Cache-Control", cacheControl) });
         // this.formData.Add("Cache-Control", cacheControl);
     }
 
@@ -106,7 +104,7 @@ public class PostPolicy
         if (string.IsNullOrEmpty(contentType))
             throw new ArgumentException("Content-Type argument cannot be null or empty", nameof(contentType));
 
-        conditions.Add(new List<(string, string, string)> { ("eq", "$Content-Type", contentType) });
+        Conditions.Add(new List<(string, string, string)> { ("eq", "$Content-Type", contentType) });
         // this.formData.Add("Content-Type", contentType);
     }
 
@@ -120,7 +118,7 @@ public class PostPolicy
             throw new ArgumentException("Content-Encoding argument cannot be null or empty",
                 nameof(contentEncoding));
 
-        conditions.Add(new List<(string, string, string)> { ("eq", "$Content-Encoding", contentEncoding) });
+        Conditions.Add(new List<(string, string, string)> { ("eq", "$Content-Encoding", contentEncoding) });
         // this.formData.Add("Content-Encoding", contentEncoding);
     }
 
@@ -132,7 +130,7 @@ public class PostPolicy
     {
         if (contentLength <= 0) throw new ArgumentException("Negative Content length", nameof(contentLength));
 
-        conditions.Add(new List<(string, string, string)>
+        Conditions.Add(new List<(string, string, string)>
             { ("content-length-range", contentLength.ToString(), contentLength.ToString()) });
     }
 
@@ -148,7 +146,7 @@ public class PostPolicy
         if (startRange > endRange)
             throw new ArgumentException("Start range is greater than end range", nameof(startRange));
 
-        conditions.Add(new List<(string, string, string)>
+        Conditions.Add(new List<(string, string, string)>
             { ("content-length-range", startRange.ToString(), endRange.ToString()) });
     }
 
@@ -159,7 +157,7 @@ public class PostPolicy
     public void SetSessionToken(string sessionToken)
     {
         if (!string.IsNullOrEmpty(sessionToken))
-            conditions.Add(
+            Conditions.Add(
                 new List<(string, string, string)> { ("eq", "$x-amz-security-token", sessionToken) });
         // this.formData.Add("x-amz-security-token", sessionToken);
     }
@@ -172,7 +170,7 @@ public class PostPolicy
     {
         if (string.IsNullOrEmpty(status)) throw new ArgumentException("Status is Empty", nameof(status));
 
-        conditions.Add(new List<(string, string, string)> { ("eq", "$success_action_status", status) });
+        Conditions.Add(new List<(string, string, string)> { ("eq", "$success_action_status", status) });
         // this.formData.Add("success_action_status", status);
     }
 
@@ -188,8 +186,8 @@ public class PostPolicy
         if (string.IsNullOrEmpty(value)) throw new ArgumentException("Value is Empty", nameof(value));
 
         var headerName = $"x-amz-meta-{key}";
-        conditions.Add(new List<(string, string, string)> { ("eq", $"${headerName}", value) });
-        formData.Add(headerName, value);
+        Conditions.Add(new List<(string, string, string)> { ("eq", $"${headerName}", value) });
+        FormData.Add(headerName, value);
     }
 
     /// <summary>
@@ -201,7 +199,7 @@ public class PostPolicy
         if (string.IsNullOrEmpty(algorithm))
             throw new ArgumentException("Algorithm argument cannot be null or empty", nameof(algorithm));
 
-        conditions.Add(new List<(string, string, string)> { ("eq", "$x-amz-algorithm", algorithm) });
+        Conditions.Add(new List<(string, string, string)> { ("eq", "$x-amz-algorithm", algorithm) });
         // this.formData.Add("x-amz-algorithm", algorithm);
     }
 
@@ -214,7 +212,7 @@ public class PostPolicy
         if (string.IsNullOrEmpty(credential))
             throw new ArgumentException("credential argument cannot be null or empty", nameof(credential));
 
-        conditions.Add(new List<(string, string, string)> { ("eq", "$x-amz-credential", credential) });
+        Conditions.Add(new List<(string, string, string)> { ("eq", "$x-amz-credential", credential) });
         // this.formData.Add("x-amz-credential", credential);
     }
 
@@ -225,7 +223,7 @@ public class PostPolicy
     public void SetDate(DateTime date)
     {
         var dateStr = date.ToString("yyyyMMddTHHmmssZ");
-        conditions.Add(new List<(string, string, string)> { ("eq", "$x-amz-date", dateStr) });
+        Conditions.Add(new List<(string, string, string)> { ("eq", "$x-amz-date", dateStr) });
         // this.formData.Add("x-amz-date", dateStr);
     }
 
@@ -254,7 +252,7 @@ public class PostPolicy
     private ReadOnlySpan<byte> MarshalJSON()
     {
         var policyList = new List<string>();
-        foreach (var condition in conditions)
+        foreach (var condition in Conditions)
             policyList.Add("[\"" + condition[0].Item1 + "\",\"" + condition[0].Item2 + "\",\"" +
                            condition[0].Item3 + "\"]");
 
@@ -288,7 +286,7 @@ public class PostPolicy
     /// <returns>true if bucket is set</returns>
     public bool IsBucketSet()
     {
-        if (formData.TryGetValue("bucket", out var value))
+        if (FormData.TryGetValue("bucket", out var value))
             if (!string.IsNullOrEmpty(value))
                 return true;
 
@@ -301,7 +299,7 @@ public class PostPolicy
     /// <returns>true if key is set</returns>
     public bool IsKeySet()
     {
-        if (formData.TryGetValue("key", out var value))
+        if (FormData.TryGetValue("key", out var value))
             if (!string.IsNullOrEmpty(value))
                 return true;
 

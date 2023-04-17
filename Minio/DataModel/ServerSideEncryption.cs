@@ -36,7 +36,7 @@ public interface IServerSideEncryption
     EncryptionType GetEncryptionType();
 
     // Marshals the Server-side encryption headers into dictionary
-    void Marshal(Dictionary<string, string> headers);
+    void Marshal(IDictionary<string, string> headers);
 }
 
 /// <summary>
@@ -59,8 +59,10 @@ public class SSEC : IServerSideEncryption
         return EncryptionType.SSE_C;
     }
 
-    public virtual void Marshal(Dictionary<string, string> headers)
+    public virtual void Marshal(IDictionary<string, string> headers)
     {
+        if (headers is null) throw new ArgumentNullException(nameof(headers));
+
         var md5SumStr = Utils.GetMD5SumStr(key);
         headers.Add("X-Amz-Server-Side-Encryption-Customer-Algorithm", "AES256");
         headers.Add("X-Amz-Server-Side-Encryption-Customer-Key", Convert.ToBase64String(key));
@@ -77,8 +79,10 @@ public class SSECopy : SSEC
     {
     }
 
-    public override void Marshal(Dictionary<string, string> headers)
+    public override void Marshal(IDictionary<string, string> headers)
     {
+        if (headers is null) throw new ArgumentNullException(nameof(headers));
+
         var md5SumStr = Utils.GetMD5SumStr(key);
         headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Algorithm", "AES256");
         headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key", Convert.ToBase64String(key));
@@ -101,8 +105,10 @@ public class SSES3 : IServerSideEncryption
         return EncryptionType.SSE_S3;
     }
 
-    public virtual void Marshal(Dictionary<string, string> headers)
+    public virtual void Marshal(IDictionary<string, string> headers)
     {
+        if (headers is null) throw new ArgumentNullException(nameof(headers));
+
         headers.Add(Constants.SSEGenericHeader, "AES256");
     }
 }
@@ -112,12 +118,12 @@ public class SSES3 : IServerSideEncryption
 /// </summary>
 public class SSEKMS : IServerSideEncryption
 {
-    protected Dictionary<string, string> context;
+    protected IDictionary<string, string> context;
 
     // Specifies the customer master key(CMK).Cannot be null
     protected string key;
 
-    public SSEKMS(string key, Dictionary<string, string> context = null)
+    public SSEKMS(string key, IDictionary<string, string> context = null)
     {
         if (string.IsNullOrEmpty(key))
             throw new ArgumentException("KMS Key cannot be empty", nameof(key));
@@ -130,8 +136,10 @@ public class SSEKMS : IServerSideEncryption
         return EncryptionType.SSE_KMS;
     }
 
-    public void Marshal(Dictionary<string, string> headers)
+    public void Marshal(IDictionary<string, string> headers)
     {
+        if (headers is null) throw new ArgumentNullException(nameof(headers));
+
         headers.Add(Constants.SSEKMSKeyId, key);
         headers.Add(Constants.SSEGenericHeader, "aws:kms");
         if (context != null) headers.Add(Constants.SSEKMSContext, MarshalContext());

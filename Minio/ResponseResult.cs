@@ -27,6 +27,7 @@ public class ResponseResult : IDisposable
     private ReadOnlyMemory<byte> _contentBytes;
 
     private Stream _stream;
+    private bool disposedValue;
 
     public ResponseResult(HttpRequestMessage request, HttpResponseMessage response)
     {
@@ -72,7 +73,7 @@ public class ResponseResult : IDisposable
         get
         {
             if (ContentStream == null)
-                return Array.Empty<byte>();
+                return ReadOnlyMemory<byte>.Empty;
 
             if (_contentBytes.IsEmpty)
             {
@@ -99,7 +100,7 @@ public class ResponseResult : IDisposable
         }
     }
 
-    public Dictionary<string, string> Headers
+    public IDictionary<string, string> Headers
     {
         get
         {
@@ -122,8 +123,26 @@ public class ResponseResult : IDisposable
 
     public void Dispose()
     {
-        _stream?.Dispose();
-        Request?.Dispose();
-        Response?.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposedValue)
+        {
+            if (disposing)
+            {
+                _stream?.Dispose();
+                Request?.Dispose();
+                Response?.Dispose();
+
+                _content = null;
+                _contentBytes = null;
+                _stream = null;
+            }
+
+            disposedValue = true;
+        }
     }
 }

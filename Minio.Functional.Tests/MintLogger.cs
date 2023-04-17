@@ -51,7 +51,7 @@ internal sealed class MintLogger
     };
 
     public MintLogger(string testName, string function, string description, TestStatus status, TimeSpan duration,
-        string alert = null, string message = null, string error = null, Dictionary<string, string> args = null)
+        string alert = null, string message = null, string error = null, IDictionary<string, string> args = null)
     {
         this.function = function;
         this.description = description;
@@ -82,7 +82,7 @@ internal sealed class MintLogger
     /// <summary>
     ///     Key-value pair of args relevant to test
     /// </summary>
-    public Dictionary<string, string> args { get; }
+    public IDictionary<string, string> args { get; }
 
     /// <summary>
     ///     duration of the whole test

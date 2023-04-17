@@ -74,8 +74,8 @@ public interface IMinioClient : IDisposable
     IObservable<Item> ListObjectsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default);
     Task MakeBucketAsync(MakeBucketArgs args, CancellationToken cancellationToken = default);
     Task<string> PresignedGetObjectAsync(PresignedGetObjectArgs args);
-    Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PostPolicy policy);
-    Task<(Uri, Dictionary<string, string>)> PresignedPostPolicyAsync(PresignedPostPolicyArgs args);
+    Task<(Uri, IDictionary<string, string>)> PresignedPostPolicyAsync(PostPolicy policy);
+    Task<(Uri, IDictionary<string, string>)> PresignedPostPolicyAsync(PresignedPostPolicyArgs args);
     Task<string> PresignedPutObjectAsync(PresignedPutObjectArgs args);
     Task PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default);
 
@@ -186,7 +186,7 @@ public partial class MinioClient : IMinioClient
 
         var scheme = Secure ? Utils.UrlEncode("https") : Utils.UrlEncode("http");
 
-        if (!BaseUrl.StartsWith("http"))
+        if (!BaseUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             Endpoint = string.Format("{0}://{1}", scheme, host);
         else
             Endpoint = host;
@@ -211,17 +211,18 @@ public partial class MinioClient : IMinioClient
                 string.Format("{0} is the value of the endpoint. It can't be null or empty.", endpoint),
                 nameof(endpoint));
 
-        if (endpoint.EndsWith("/")) endpoint = endpoint.Substring(0, endpoint.Length - 1);
+        if (endpoint.EndsWith("/", StringComparison.OrdinalIgnoreCase))
+            endpoint = endpoint.Substring(0, endpoint.Length - 1);
         if (!BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
             throw new InvalidEndpointException(string.Format("{0} is invalid hostname.", endpoint), "endpoint");
         string conn_url;
-        if (endpoint.StartsWith("http"))
+        if (endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             throw new InvalidEndpointException(
                 string.Format("{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),
                 "endpoint");
 
         var enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
-        var scheme = enable_https?.Equals("1") == true ? "https://" : "http://";
+        var scheme = enable_https?.Equals("1", StringComparison.OrdinalIgnoreCase) == true ? "https://" : "http://";
         conn_url = scheme + endpoint;
         var url = new Uri(conn_url);
         var hostnameOfUri = url.Authority;

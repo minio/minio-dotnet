@@ -89,7 +89,7 @@ internal static class Program
 
         var runMode = Environment.GetEnvironmentVariable("MINT_MODE");
 
-        if (!string.IsNullOrEmpty(runMode) && runMode == "core")
+        if (!string.IsNullOrEmpty(runMode) && string.Equals(runMode, "core", StringComparison.OrdinalIgnoreCase))
         {
             await FunctionalTest.RunCoreTests(minioClient).ConfigureAwait(false);
             Environment.Exit(0);
@@ -230,7 +230,7 @@ internal static class Program
             await FunctionalTest.EncryptedCopyObject_Test2(minioClient).ConfigureAwait(false);
         }
 
-        if (kmsEnabled != null && kmsEnabled == "1")
+        if (kmsEnabled != null && string.Equals(kmsEnabled, "1", StringComparison.OrdinalIgnoreCase))
         {
             await FunctionalTest.PutGetStatEncryptedObject_Test3(minioClient).ConfigureAwait(false);
             await FunctionalTest.EncryptedCopyObject_Test3(minioClient).ConfigureAwait(false);

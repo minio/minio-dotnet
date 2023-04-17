@@ -30,7 +30,8 @@ internal class SelectObjectContentResponse : GenericResponse
         ReadOnlyMemory<byte> responseRawBytes)
         : base(statusCode, responseContent)
     {
-        ResponseStream = new SelectResponseStream(responseRawBytes.AsStream());
+        using var stream = responseRawBytes.AsStream();
+        ResponseStream = new SelectResponseStream(stream);
     }
 
     internal SelectResponseStream ResponseStream { get; }
@@ -39,7 +40,7 @@ internal class SelectObjectContentResponse : GenericResponse
 internal class StatObjectResponse : GenericResponse
 {
     internal StatObjectResponse(HttpStatusCode statusCode, string responseContent,
-        Dictionary<string, string> responseHeaders, StatObjectArgs args)
+        IDictionary<string, string> responseHeaders, StatObjectArgs args)
         : base(statusCode, responseContent)
     {
         // StatObjectResponse object is populated with available stats from the response.
@@ -93,7 +94,7 @@ public class PresignedPostPolicyResponse
         URIPolicyTuple = Tuple.Create(URI.AbsolutePath, args.Policy.FormData);
     }
 
-    internal Tuple<string, Dictionary<string, string>> URIPolicyTuple { get; }
+    internal Tuple<string, IDictionary<string, string>> URIPolicyTuple { get; }
 }
 
 public class GetLegalHoldResponse : GenericResponse
@@ -166,7 +167,7 @@ internal class CopyObjectResponse : GenericResponse
     public CopyObjectResponse(HttpStatusCode statusCode, string responseContent, Type reqType)
         : base(statusCode, responseContent)
     {
-        var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
         if (reqType == typeof(CopyObjectResult))
             CopyObjectRequestResult = Utils.DeserializeXml<CopyObjectResult>(stream);
         else
@@ -196,7 +197,7 @@ internal class PutObjectResponse : GenericResponse
     internal string Etag;
 
     internal PutObjectResponse(HttpStatusCode statusCode, string responseContent,
-        Dictionary<string, string> responseHeaders)
+        IDictionary<string, string> responseHeaders)
         : base(statusCode, responseContent)
     {
         if (responseHeaders.ContainsKey("Etag"))
