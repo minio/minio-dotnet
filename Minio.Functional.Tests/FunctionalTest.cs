@@ -3226,6 +3226,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var contentType = "application/octet-stream";
+        var size = 1 * MB;
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -3236,8 +3237,10 @@ public static class FunctionalTest
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
-            await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
-                rsg.GenerateStreamFromSeed(1 * MB)).ConfigureAwait(false);
+            var resp = await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
+                rsg.GenerateStreamFromSeed(size)).ConfigureAwait(false);
+            Assert.AreEqual(size, resp.Size);
+            Assert.AreEqual(objectName, objectName);
             new MintLogger(nameof(PutObject_Test1), putObjectSignature,
                 "Tests whether PutObject passes for small object", TestStatus.PASS, DateTime.Now - startTime,
                 args: args).Log();
