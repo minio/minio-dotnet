@@ -47,58 +47,84 @@ public class MinioNotification
 
 public class NotificationEvent
 {
-    public string AwsRegion { get; set; }
-    public string EventName { get; set; }
-    public string EventSource { get; set; }
-    public string EventTime { get; set; }
-    public string EventVersion { get; set; }
+    [JsonPropertyName("awsRegion")] public string AwsRegion { get; set; }
+
+    [JsonPropertyName("eventName")] public string EventName { get; set; }
+
+    [JsonPropertyName("eventSource")] public string EventSource { get; set; }
+
+    [JsonPropertyName("eventTime")] public string EventTime { get; set; }
+
+    [JsonPropertyName("eventVersion")] public string EventVersion { get; set; }
+
+    [JsonPropertyName("requestParameters")]
     public Dictionary<string, string> RequestParameters { get; set; }
-    public Dictionary<string, string> ResponseElements { get; set; }
-    public EventMeta S3 { get; set; }
-    public SourceInfo Source { get; set; }
-    public Identity UserIdentity { get; set; }
+
+    [JsonPropertyName("responseElements")] public Dictionary<string, string> ResponseElements { get; set; }
+
+    [JsonPropertyName("s3")] public EventMeta S3 { get; set; }
+
+    [JsonPropertyName("source")] public SourceInfo Source { get; set; }
+
+    [JsonPropertyName("userIdentity")] public Identity UserIdentity { get; set; }
 }
 
 [DataContract]
 public class EventMeta
 {
-    [DataMember] public BucketMeta Bucket { get; set; }
+    [DataMember]
+    [JsonPropertyName("bucket")]
+    public BucketMeta Bucket { get; set; }
 
-    [DataMember] public string ConfigurationId { get; set; }
+    [DataMember]
+    [JsonPropertyName("configurationId")]
+    public string ConfigurationId { get; set; }
 
     [DataMember(Name = "object")]
     [JsonPropertyName("object")]
     public ObjectMeta ObjectMeta { get; set; } // C# won't allow the keyword 'object' as a name
 
-    [DataMember] public string SchemaVersion { get; set; }
+    [DataMember]
+    [JsonPropertyName("schemaVersion")]
+    public string SchemaVersion { get; set; }
 }
 
 public class ObjectMeta
 {
-    public string ContentType { get; set; }
-    public string Etag { get; set; }
-    public string Key { get; set; }
-    public string Sequencer { get; set; }
-    public int Size { get; set; }
-    public Dictionary<string, string> UserMetadata { get; set; }
-    public string VersionId { get; set; }
+    [JsonPropertyName("contentType")] public string ContentType { get; set; }
+
+    [JsonPropertyName("etag")] public string Etag { get; set; }
+
+    [JsonPropertyName("key")] public string Key { get; set; }
+
+    [JsonPropertyName("sequencer")] public string Sequencer { get; set; }
+
+    [JsonPropertyName("size")] public int Size { get; set; }
+
+    [JsonPropertyName("userMetadata")] public Dictionary<string, string> UserMetadata { get; set; }
+
+    [JsonPropertyName("versionId")] public string VersionId { get; set; }
 }
 
 public class BucketMeta
 {
-    public string Arn { get; set; }
-    public string Name { get; set; }
-    public Identity OwnerIdentity { get; set; }
+    [JsonPropertyName("arn")] public string Arn { get; set; }
+
+    [JsonPropertyName("name")] public string Name { get; set; }
+
+    [JsonPropertyName("ownerIdentity")] public Identity OwnerIdentity { get; set; }
 }
 
 public class Identity
 {
-    public string PrincipalId { get; set; }
+    [JsonPropertyName("principalId")] public string PrincipalId { get; set; }
 }
 
 public class SourceInfo
 {
-    public string Host { get; set; }
-    public string Port { get; set; }
-    public string UserAgent { get; set; }
+    [JsonPropertyName("host")] public string Host { get; set; }
+
+    [JsonPropertyName("port")] public string Port { get; set; }
+
+    [JsonPropertyName("userAgent")] public string UserAgent { get; set; }
 }
