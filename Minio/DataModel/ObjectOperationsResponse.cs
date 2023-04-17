@@ -202,10 +202,6 @@ public class PutObjectResponse : GenericResponse
         IDictionary<string, string> responseHeaders, long size, string name)
         : base(statusCode, responseContent)
     {
-        if (responseHeaders.ContainsKey("Etag"))
-            if (!string.IsNullOrEmpty("Etag"))
-                Etag = responseHeaders["ETag"];
-
         foreach (var parameter in responseHeaders)
             if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
             {

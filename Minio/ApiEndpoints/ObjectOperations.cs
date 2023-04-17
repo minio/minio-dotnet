@@ -821,7 +821,9 @@ public partial class MinioClient : IObjectOperations
     {
         //Skipping validate as we need the case where stream sends 0 bytes
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken).ConfigureAwait(false);
+        using var response =
+            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
         return new PutObjectResponse(response.StatusCode, response.Content, response.Headers,
             args.ObjectSize, args.ObjectName);
     }
@@ -1058,9 +1060,10 @@ public partial class MinioClient : IObjectOperations
     {
         args?.Validate();
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using ResponseResult response = await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
-        return new PutObjectResponse(response.StatusCode, response.Content, response.Headers, response.Content.Length,
+        using var response =
+            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+        return new PutObjectResponse(response.StatusCode, response.Content, response.Headers, -1,
             args.ObjectName);
     }
 
