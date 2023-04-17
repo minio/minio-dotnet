@@ -1424,11 +1424,11 @@ public static class FunctionalTest
                     .WithBucket(bucketName)
                     .WithObject(objectName);
 
-                await minio.RemoveIncompleteUploadAsync(rmArgs, cts.Token).ConfigureAwait(false);
+                await minio.RemoveIncompleteUploadAsync(rmArgs).ConfigureAwait(false);
 
                 var listArgs = new ListIncompleteUploadsArgs()
                     .WithBucket(bucketName);
-                var observable = minio.ListIncompleteUploads(listArgs, cts.Token);
+                var observable = minio.ListIncompleteUploads(listArgs);
 
                 var subscription = observable.Subscribe(
                     item => Assert.Fail(),
@@ -5692,7 +5692,7 @@ public static class FunctionalTest
             {
                 var listArgs = new ListIncompleteUploadsArgs()
                     .WithBucket(bucketName);
-                var observable = minio.ListIncompleteUploads(listArgs, cts.Token);
+                var observable = minio.ListIncompleteUploads(listArgs);
 
                 var subscription = observable.Subscribe(
                     item => Assert.IsTrue(item.Key.Contains(objectName)),
@@ -5759,7 +5759,7 @@ public static class FunctionalTest
                     .WithBucket(bucketName)
                     .WithPrefix("minioprefix")
                     .WithRecursive(false);
-                var observable = minio.ListIncompleteUploads(listArgs, cts.Token);
+                var observable = minio.ListIncompleteUploads(listArgs);
 
                 var subscription = observable.Subscribe(
                     item => Assert.AreEqual(item.Key, objectName),
@@ -5820,7 +5820,7 @@ public static class FunctionalTest
                     .WithBucket(bucketName)
                     .WithPrefix(prefix)
                     .WithRecursive(true);
-                var observable = minio.ListIncompleteUploads(listArgs, cts.Token);
+                var observable = minio.ListIncompleteUploads(listArgs);
 
                 var subscription = observable.Subscribe(
                     item => Assert.AreEqual(item.Key, objectName),
