@@ -201,7 +201,7 @@ public interface IObjectOperations
     /// <exception cref="NotSupportedException">The file stream cannot be read from</exception>
     /// <exception cref="InvalidOperationException">The file stream is currently in a read operation</exception>
     /// <exception cref="AccessDeniedException">For encrypted PUT operation, Access is denied if the key is wrong</exception>
-    Task PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default);
+    Task<PutObjectResponse> PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Select an object's content. The object will be streamed to the callback given by the user.

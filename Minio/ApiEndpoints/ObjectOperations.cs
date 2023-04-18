@@ -555,7 +555,8 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="NotSupportedException">The file stream cannot be read from</exception>
     /// <exception cref="InvalidOperationException">The file stream is currently in a read operation</exception>
     /// <exception cref="AccessDeniedException">For encrypted PUT operation, Access is denied if the key is wrong</exception>
-    public async Task PutObjectAsync(PutObjectArgs args, CancellationToken cancellationToken = default)
+    public async Task<PutObjectResponse> PutObjectAsync(PutObjectArgs args,
+        CancellationToken cancellationToken = default)
     {
         args?.Validate();
         args.SSE?.Marshal(args.Headers);
@@ -572,8 +573,7 @@ public partial class MinioClient : IObjectOperations
             args = args.WithRequestBody(bytes)
                 .WithStreamData(null)
                 .WithObjectSize(bytesRead);
-            await PutObjectSinglePartAsync(args, cancellationToken).ConfigureAwait(false);
-            return;
+            return await PutObjectSinglePartAsync(args, cancellationToken).ConfigureAwait(false);
         }
 
         // For all sizes greater than 5MiB do multipart.
@@ -622,7 +622,10 @@ public partial class MinioClient : IObjectOperations
             .WithObject(args.ObjectName)
             .WithUploadId(uploadId)
             .WithETags(etags);
-        await CompleteMultipartUploadAsync(completeMultipartUploadArgs, cancellationToken).ConfigureAwait(false);
+        var putObjectResponse = await CompleteMultipartUploadAsync(completeMultipartUploadArgs, cancellationToken)
+            .ConfigureAwait(false);
+        putObjectResponse.Size = args.ObjectSize;
+        return putObjectResponse;
     }
 
     /// <summary>
@@ -812,7 +815,7 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="NotSupportedException">The file stream cannot be read from</exception>
     /// <exception cref="InvalidOperationException">The file stream is currently in a read operation</exception>
     /// <exception cref="AccessDeniedException">For encrypted PUT operation, Access is denied if the key is wrong</exception>
-    private async Task<string> PutObjectSinglePartAsync(PutObjectArgs args,
+    private async Task<PutObjectResponse> PutObjectSinglePartAsync(PutObjectArgs args,
         CancellationToken cancellationToken = default)
     {
         //Skipping validate as we need the case where stream sends 0 bytes
@@ -820,8 +823,8 @@ public partial class MinioClient : IObjectOperations
         using var response =
             await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
-        var putObjectResponse = new PutObjectResponse(response.StatusCode, response.Content, response.Headers);
-        return putObjectResponse.Etag;
+        return new PutObjectResponse(response.StatusCode, response.Content, response.Headers,
+            args.ObjectSize, args.ObjectName);
     }
 
     /// <summary>
@@ -861,7 +864,10 @@ public partial class MinioClient : IObjectOperations
                 .WithRequestBody(dataToCopy)
                 .WithUploadId(args.UploadId)
                 .WithPartNumber(partNumber);
-            var etag = await PutObjectSinglePartAsync(putObjectArgs, cancellationToken).ConfigureAwait(false);
+            var putObjectResponse =
+                await PutObjectSinglePartAsync(putObjectArgs, cancellationToken).ConfigureAwait(false);
+            var etag = putObjectResponse.Etag;
+
             numPartsUploaded++;
             totalParts[partNumber - 1] = new Part
                 { PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize };
@@ -1048,7 +1054,7 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
-    private async Task CompleteMultipartUploadAsync(CompleteMultipartUploadArgs args,
+    private async Task<PutObjectResponse> CompleteMultipartUploadAsync(CompleteMultipartUploadArgs args,
         CancellationToken cancellationToken)
     {
         args?.Validate();
@@ -1056,6 +1062,8 @@ public partial class MinioClient : IObjectOperations
         using var response =
             await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
+        return new PutObjectResponse(response.StatusCode, response.Content, response.Headers, -1,
+            args.ObjectName);
     }
 
     /// <summary>
