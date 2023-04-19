@@ -21,7 +21,7 @@ namespace Minio.Examples.Cases;
 internal static class ListenBucketNotifications
 {
     // Listen for notifications from a specified bucket (a Minio-only extension)
-    public static void Run(MinioClient minio,
+    public static async Task Run(MinioClient minio,
         string bucketName = "my-bucket-name",
         List<EventType> events = null,
         string prefix = "",
