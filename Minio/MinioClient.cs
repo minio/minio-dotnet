@@ -397,10 +397,7 @@ public partial class MinioClient : IMinioClient
     /// <summary>
     ///     Uses webproxy for all requests if this method is invoked on client object.
     /// </summary>
-    /// <remarks>
-    ///     This setting will be ignored when injecting an external <see cref="System.Net.Http.HttpClient" /> instance with
-    ///     <see cref="MinioClient(HttpClient)" /> <see cref="WithHttpClient(HttpClient, bool)" />.
-    /// </remarks>
+    /// <param name="proxy">Information on the proxy server in the setup.</param>
     /// <returns></returns>
     public MinioClient WithProxy(IWebProxy proxy)
     {
