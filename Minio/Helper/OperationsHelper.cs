@@ -20,7 +20,7 @@ using Minio.Helper;
 
 namespace Minio;
 
-public partial class MinioClient : IObjectOperations
+public partial class MinioClient
 {
     /// <summary>
     ///     private helper method to remove list of objects from bucket

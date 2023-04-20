@@ -334,7 +334,7 @@ public partial class MinioClient : IBucketOperations
     public IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(ListenBucketNotificationsArgs args,
         CancellationToken cancellationToken = default)
     {
-        if (s3utils.IsAmazonEndPoint(BaseUrl))
+        if (S3utils.IsAmazonEndPoint(BaseUrl))
             // Amazon AWS does not support bucket notifications
             throw new ArgumentException(
                 "Listening for bucket notification is specific only to `minio` server endpoints");

@@ -16,7 +16,7 @@
 
 using System.Net;
 
-namespace Minio;
+namespace Minio.Helper;
 
 public static class BuilderUtil
 {

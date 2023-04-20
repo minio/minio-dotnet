@@ -86,19 +86,21 @@ public partial class MinioClient : IMinioClient
     }
 
     // Save Credentials from user
-    internal string AccessKey { get; private set; }
-    internal string SecretKey { get; private set; }
-    internal string BaseUrl { get; private set; }
+    internal string AccessKey { get; set; }
+    internal string SecretKey { get; set; }
+    internal string BaseUrl { get; set; }
 
     // Reconstructed endpoint with scheme and host.In the case of Amazon, this url
     // is the virtual style path or location based endpoint
-    internal string Endpoint { get; private set; }
-    internal string SessionToken { get; private set; }
+    internal string Endpoint { get; set; }
+    internal string SessionToken { get; set; }
 
     // Indicates if we are using HTTPS or not
-    internal bool Secure { get; private set; }
+    internal bool Secure { get; set; }
 
-    internal HttpClient HttpClient { get; private set; }
+    internal HttpClient HttpClient { get; set; }
+
+    internal IWebProxy Proxy { get; private set; }
 
     private static string SystemUserAgent
     {
@@ -120,7 +122,7 @@ public partial class MinioClient : IMinioClient
     /// <summary>
     ///     Returns the User-Agent header for the request
     /// </summary>
-    private string FullUserAgent => $"{SystemUserAgent} {CustomUserAgent}";
+    internal string FullUserAgent => $"{SystemUserAgent} {CustomUserAgent}";
 
     /// <summary>
     ///     Runs httpClient's GetAsync method
@@ -330,7 +332,7 @@ public partial class MinioClient : IMinioClient
         var resource = string.Empty;
         var usePathStyle = false;
 
-        if (bucketName != null && s3utils.IsAmazonEndPoint(BaseUrl))
+        if (bucketName != null && S3utils.IsAmazonEndPoint(BaseUrl))
         {
             if (method == HttpMethod.Put && objectName == null && resourcePath == null)
                 // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
@@ -395,10 +397,7 @@ public partial class MinioClient : IMinioClient
     /// <summary>
     ///     Uses webproxy for all requests if this method is invoked on client object.
     /// </summary>
-    /// <remarks>
-    ///     This setting will be ignored when injecting an external <see cref="System.Net.Http.HttpClient" /> instance with
-    ///     <see cref="MinioClient(HttpClient)" /> <see cref="WithHttpClient(HttpClient, bool)" />.
-    /// </remarks>
+    /// <param name="proxy">Information on the proxy server in the setup.</param>
     /// <returns></returns>
     public MinioClient WithProxy(IWebProxy proxy)
     {

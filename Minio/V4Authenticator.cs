@@ -446,7 +446,7 @@ internal class V4Authenticator
 
         // Headers to sign
         foreach (var header in headersToSign.Keys)
-            canonicalStringList.AddLast(header + ":" + s3utils.TrimAll(headersToSign[header]));
+            canonicalStringList.AddLast(header + ":" + S3utils.TrimAll(headersToSign[header]));
         canonicalStringList.AddLast(string.Empty);
         canonicalStringList.AddLast(string.Join(";", headersToSign.Keys));
         if (headersToSign.TryGetValue("x-amz-content-sha256", out var value))

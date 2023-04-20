@@ -18,7 +18,7 @@ using System.Text.RegularExpressions;
 
 namespace Minio.Helper;
 
-internal static class s3utils
+internal static class S3utils
 {
     internal static readonly Regex TrimWhitespaceRegex = new("\\s+");
 

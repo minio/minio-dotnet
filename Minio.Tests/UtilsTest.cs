@@ -191,23 +191,23 @@ public class UtilsTest
     [TestMethod]
     public void TestIsAmazonEndpoint()
     {
-        Assert.IsTrue(s3utils.IsAmazonEndPoint("s3.amazonaws.com"));
-        Assert.IsTrue(s3utils.IsAmazonEndPoint("s3.cn-north-1.amazonaws.com.cn"));
-        Assert.IsFalse(s3utils.IsAmazonEndPoint("s3.us-west-1amazonaws.com"));
-        Assert.IsFalse(s3utils.IsAmazonEndPoint("play.min.io"));
-        Assert.IsFalse(s3utils.IsAmazonEndPoint("192.168.12.1"));
-        Assert.IsFalse(s3utils.IsAmazonEndPoint("storage.googleapis.com"));
+        Assert.IsTrue(S3utils.IsAmazonEndPoint("s3.amazonaws.com"));
+        Assert.IsTrue(S3utils.IsAmazonEndPoint("s3.cn-north-1.amazonaws.com.cn"));
+        Assert.IsFalse(S3utils.IsAmazonEndPoint("s3.us-west-1amazonaws.com"));
+        Assert.IsFalse(S3utils.IsAmazonEndPoint("play.min.io"));
+        Assert.IsFalse(S3utils.IsAmazonEndPoint("192.168.12.1"));
+        Assert.IsFalse(S3utils.IsAmazonEndPoint("storage.googleapis.com"));
     }
 
     [TestMethod]
     public void TestIsAmazonChinaEndpoint()
     {
-        Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("s3.amazonaws.com"));
-        Assert.IsTrue(s3utils.IsAmazonChinaEndPoint("s3.cn-north-1.amazonaws.com.cn"));
-        Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("s3.us-west-1amazonaws.com"));
-        Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("play.min.io"));
-        Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("192.168.12.1"));
-        Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("storage.googleapis.com"));
+        Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("s3.amazonaws.com"));
+        Assert.IsTrue(S3utils.IsAmazonChinaEndPoint("s3.cn-north-1.amazonaws.com.cn"));
+        Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("s3.us-west-1amazonaws.com"));
+        Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("play.min.io"));
+        Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("192.168.12.1"));
+        Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("storage.googleapis.com"));
     }
 
     [TestMethod]
