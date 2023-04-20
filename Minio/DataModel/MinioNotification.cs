@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
@@ -42,7 +43,7 @@ public class MinioNotificationRaw
 public class MinioNotification
 {
     public string Err { get; set; }
-    public List<NotificationEvent> Records { get; set; }
+    public Collection<NotificationEvent> Records { get; set; }
 }
 
 public class NotificationEvent

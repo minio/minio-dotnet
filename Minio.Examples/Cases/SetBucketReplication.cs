@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Minio.DataModel.Replication;
 
@@ -110,7 +111,7 @@ public static class SetBucketReplication
                     SseKmsEncryptedObjects.StatusEnabled)),
                 ReplicationRule.StatusEnabled
             );
-        var rules = new List<ReplicationRule>
+        var rules = new Collection<ReplicationRule>
         {
             rule
         };
