@@ -1893,11 +1893,11 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         return requestMessageBuilder;
     }
 
-    public override PutObjectArgs WithHeaders(IDictionary<string, string> metaData)
+    public override PutObjectArgs WithHeaders(IDictionary<string, string> headers)
     {
         Headers ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        if (metaData != null)
-            foreach (var p in metaData)
+        if (headers != null)
+            foreach (var p in headers)
             {
                 var key = p.Key;
                 if (!OperationsUtil.IsSupportedHeader(p.Key) &&

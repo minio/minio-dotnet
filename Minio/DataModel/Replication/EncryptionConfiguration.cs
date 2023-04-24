@@ -31,8 +31,10 @@ public class EncryptionConfiguration
 {
     public EncryptionConfiguration(string replicaKmsKeyID)
     {
-        if (string.IsNullOrEmpty(replicaKmsKeyID) || string.IsNullOrWhiteSpace(replicaKmsKeyID))
-            throw new ArgumentNullException(nameof(ReplicaKmsKeyID) + " cannot be null or empty.");
+        if (string.IsNullOrWhiteSpace(replicaKmsKeyID))
+            throw new ArgumentException($"'{nameof(replicaKmsKeyID)}' cannot be null or whitespace.",
+                nameof(replicaKmsKeyID));
+
         ReplicaKmsKeyID = replicaKmsKeyID;
     }
 

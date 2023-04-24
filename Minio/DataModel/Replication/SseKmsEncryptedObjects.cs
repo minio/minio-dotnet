@@ -40,9 +40,7 @@ public class SseKmsEncryptedObjects
     public SseKmsEncryptedObjects(string status)
     {
         if (string.IsNullOrWhiteSpace(status))
-        {
             throw new ArgumentException($"'{nameof(status)}' cannot be null or whitespace.", nameof(status));
-        }
         Status = status;
     }
 

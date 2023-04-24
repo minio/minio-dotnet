@@ -8,10 +8,7 @@ public static class MinioClientExtensions
 {
     public static MinioClient WithEndpoint(this MinioClient minioClient, string endpoint)
     {
-        if (minioClient is null)
-        {
-            throw new ArgumentNullException(nameof(minioClient));
-        }
+        if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
         minioClient.BaseUrl = endpoint;
         minioClient.SetBaseURL(GetBaseUrl(endpoint));
@@ -20,10 +17,7 @@ public static class MinioClientExtensions
 
     public static MinioClient WithEndpoint(this MinioClient minioClient, string endpoint, int port)
     {
-        if (minioClient is null)
-        {
-            throw new ArgumentNullException(nameof(minioClient));
-        }
+        if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
         if (port < 1 || port > 65535)
             throw new ArgumentException(string.Format("Port {0} is not a number between 1 and 65535", port),
@@ -33,21 +27,16 @@ public static class MinioClientExtensions
 
     public static MinioClient WithEndpoint(this MinioClient minioClient, Uri url)
     {
-        if (minioClient is null)
-        {
-            throw new ArgumentNullException(nameof(minioClient));
-        }
+        if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
-        if (url == null) throw new ArgumentException("URL is null. Can't create endpoint.");
+        if (url is null) throw new ArgumentNullException(nameof(url));
+
         return minioClient.WithEndpoint(url.AbsoluteUri);
     }
 
     public static MinioClient WithRegion(this MinioClient minioClient, string region)
     {
-        if (minioClient is null)
-        {
-            throw new ArgumentNullException(nameof(minioClient));
-        }
+        if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
         if (string.IsNullOrEmpty(region))
             throw new ArgumentException(string.Format("{0} the region value can't be null or empty.", region),
@@ -59,10 +48,7 @@ public static class MinioClientExtensions
 
     public static MinioClient WithRegion(this MinioClient minioClient)
     {
-        if (minioClient is null)
-        {
-            throw new ArgumentNullException(nameof(minioClient));
-        }
+        if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
         // Set region to its default value if empty or null
         minioClient.Region = "us-east-1";
         return minioClient;
@@ -70,10 +56,7 @@ public static class MinioClientExtensions
 
     public static MinioClient WithCredentials(this MinioClient minioClient, string accessKey, string secretKey)
     {
-        if (minioClient is null)
-        {
-            throw new ArgumentNullException(nameof(minioClient));
-        }
+        if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
         minioClient.AccessKey = accessKey;
         minioClient.SecretKey = secretKey;
@@ -82,10 +65,7 @@ public static class MinioClientExtensions
 
     public static MinioClient WithSessionToken(this MinioClient minioClient, string st)
     {
-        if (minioClient is null)
-        {
-            throw new ArgumentNullException(nameof(minioClient));
-        }
+        if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
         minioClient.SessionToken = st;
         return minioClient;
@@ -93,10 +73,7 @@ public static class MinioClientExtensions
 
     public static MinioClient Build(this MinioClient minioClient)
     {
-        if (minioClient is null)
-        {
-            throw new ArgumentNullException(nameof(minioClient));
-        }
+        if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
         // Instantiate a region cache
         minioClient.regionCache = BucketRegionCache.Instance;
         if (string.IsNullOrEmpty(minioClient.BaseUrl)) throw new MinioException("Endpoint not initialized.");

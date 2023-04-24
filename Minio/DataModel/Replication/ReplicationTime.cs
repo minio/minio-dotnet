@@ -36,9 +36,10 @@ public class ReplicationTime
 
     public ReplicationTime(ReplicationTimeValue time, string status)
     {
-        if (string.IsNullOrWhiteSpace(status))
-            throw new ArgumentNullException(nameof(status) + " cannot be null or empty.");
-        Time = time ?? throw new ArgumentNullException(nameof(Time), " object cannot be null.");
+        if (string.IsNullOrEmpty(status))
+            throw new ArgumentException($"'{nameof(status)}' cannot be null or empty.", nameof(status));
+
+        Time = time ?? throw new ArgumentNullException(nameof(time));
         Status = status;
     }
 

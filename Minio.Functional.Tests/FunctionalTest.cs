@@ -2753,7 +2753,7 @@ public static class FunctionalTest
         catch (Exception ex)
         {
             if (string.Equals(ex.Message, "Listening for bucket notification is specific" +
-                " only to `minio` server endpoints", StringComparison.OrdinalIgnoreCase))
+                                          " only to `minio` server endpoints", StringComparison.OrdinalIgnoreCase))
             {
                 // This is expected when bucket notification
                 // is requested against AWS.

@@ -31,8 +31,7 @@ public class ServerSideEncryptionConfigurationApply
         string keyId = null)
     {
         if (string.IsNullOrEmpty(algorithm))
-            throw new ArgumentNullException(
-                "The SSE Algorithm " + nameof(SSEAlgorithm) + " cannot be null or empty");
+            throw new ArgumentException($"'{nameof(algorithm)}' cannot be null or empty.", nameof(algorithm));
 
         SSEAlgorithm = algorithm;
         KMSMasterKeyId = keyId;
