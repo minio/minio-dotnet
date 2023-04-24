@@ -32,7 +32,6 @@ public class BucketNotification
     [XmlElement("TopicConfiguration")] public List<TopicConfig> TopicConfigs;
     [XmlElement("QueueConfiguration")] public List<QueueConfig> QueueConfigs;
 
-
     public BucketNotification()
     {
         LambdaConfigs = new List<LambdaConfig>();
@@ -48,7 +47,7 @@ public class BucketNotification
     /// <param name="topicConfig"></param>
     public void AddTopic(TopicConfig topicConfig)
     {
-        var isTopicFound = TopicConfigs.Any(t => t.Topic.Equals(topicConfig));
+        var isTopicFound = TopicConfigs.Exists(t => t.Topic.Equals(topicConfig));
         if (!isTopicFound) TopicConfigs.Add(topicConfig);
     }
 
@@ -58,7 +57,7 @@ public class BucketNotification
     /// <param name="queueConfig"></param>
     public void AddQueue(QueueConfig queueConfig)
     {
-        var isQueueFound = QueueConfigs.Any(t => t.Equals(queueConfig));
+        var isQueueFound = QueueConfigs.Exists(t => t.Equals(queueConfig));
         if (!isQueueFound) QueueConfigs.Add(queueConfig);
     }
 
@@ -68,7 +67,7 @@ public class BucketNotification
     /// <param name="lambdaConfig"></param>
     public void AddLambda(LambdaConfig lambdaConfig)
     {
-        var isLambdaFound = LambdaConfigs.Any(t => t.Lambda.Equals(lambdaConfig));
+        var isLambdaFound = LambdaConfigs.Exists(t => t.Lambda.Equals(lambdaConfig));
         if (!isLambdaFound) LambdaConfigs.Add(lambdaConfig);
     }
 

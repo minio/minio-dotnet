@@ -305,12 +305,9 @@ public class PresignedPostPolicyArgs : ObjectArgs<PresignedPostPolicyArgs>
             Utils.ValidateBucketName(BucketName);
             Utils.ValidateObjectName(ObjectName);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is InvalidBucketNameException || ex is InvalidObjectNameException)
         {
-            if (ex is InvalidBucketNameException || ex is InvalidObjectNameException)
-                checkPolicy = true;
-            else
-                throw;
+            checkPolicy = true;
         }
 
         if (checkPolicy)

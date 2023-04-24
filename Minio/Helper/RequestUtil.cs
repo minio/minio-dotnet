@@ -63,8 +63,7 @@ internal static class RequestUtil
 
         var scheme = secure ? "https" : "http";
         var endpointURL = string.Format("{0}://{1}", scheme, host);
-        var uri = new Uri(endpointURL, UriKind.Absolute);
-        return uri;
+        return new Uri(endpointURL, UriKind.Absolute);
     }
 
     internal static Uri TryCreateUri(string endpoint, bool secure)

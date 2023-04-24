@@ -448,7 +448,7 @@ public partial class MinioClient : IMinioClient
     {
         Provider = provider;
         AccessCredentials credentials;
-        if (Provider is IAMAWSProvider iAMAWSProvider)
+        if (Provider is IAMAWSProvider)
             // Empty object, we need the Minio client completely
             credentials = new AccessCredentials();
         else

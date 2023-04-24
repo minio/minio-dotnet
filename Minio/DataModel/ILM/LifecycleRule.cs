@@ -79,7 +79,7 @@ public class LifecycleRule
         set
         {
             // The filter must not be missing, even if it is empty.
-            if (value == null)
+            if (value is null)
                 _ruleFilter = new RuleFilter();
             else
                 _ruleFilter = value;
