@@ -49,6 +49,7 @@ public class ObjectStat
     {
         if (string.IsNullOrEmpty(objectName))
             throw new ArgumentNullException(nameof(objectName), "Name of an object cannot be empty");
+
         var objInfo = new ObjectStat
         {
             ObjectName = objectName

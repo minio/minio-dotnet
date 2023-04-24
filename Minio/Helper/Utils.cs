@@ -986,7 +986,10 @@ public static class Utils
         {
             var ns = GetNamespace<T>();
             if (!string.IsNullOrWhiteSpace(ns) && ns is "http://s3.amazonaws.com/doc/2006-03-01/")
-                return (T)new XmlSerializer(typeof(T)).Deserialize(new AmazonAwsS3XmlReader(stream));
+            {
+                using var amazonAwsS3XmlReader = new AmazonAwsS3XmlReader(stream);
+                return (T)new XmlSerializer(typeof(T)).Deserialize(amazonAwsS3XmlReader);
+            }
 
             return (T)new XmlSerializer(typeof(T)).Deserialize(stream);
         }
@@ -1002,7 +1005,8 @@ public static class Utils
         try
         {
             var serializer = new XmlSerializer(typeof(T));
-            return (T)serializer.Deserialize(new StringReader(xml));
+            using var stringReader = new StringReader(xml);
+            return (T)serializer.Deserialize(stringReader);
         }
         catch (Exception)
         {
