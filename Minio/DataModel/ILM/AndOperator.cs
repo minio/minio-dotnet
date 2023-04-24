@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.ObjectModel;
 using System.Xml.Serialization;
 using Minio.DataModel.Tags;
 
@@ -37,7 +38,7 @@ public class AndOperator
     public AndOperator(string prefix, IList<Tag> tag)
     {
         Prefix = prefix;
-        if (tag?.Count > 0) Tags = new List<Tag>(tag);
+        if (tag?.Count > 0) Tags = new Collection<Tag>(tag);
     }
 
     public AndOperator(string prefix, IDictionary<string, string> tags)
@@ -51,5 +52,5 @@ public class AndOperator
     [XmlElement("Prefix")] internal string Prefix { get; set; }
 
     [XmlElement(ElementName = "Tag", IsNullable = false)]
-    public List<Tag> Tags { get; set; }
+    public Collection<Tag> Tags { get; set; }
 }

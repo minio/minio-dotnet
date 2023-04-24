@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Xml;
 using System.Xml.Serialization;
@@ -41,10 +42,10 @@ public class LifecycleConfiguration
             throw new ArgumentNullException(nameof(rules),
                 "Rules object cannot be empty. A finite set of Lifecycle Rules are needed for LifecycleConfiguration.");
 
-        Rules = new List<LifecycleRule>(rules);
+        Rules = new Collection<LifecycleRule>(rules);
     }
 
-    [XmlElement("Rule")] public List<LifecycleRule> Rules { get; set; }
+    [XmlElement("Rule")] public Collection<LifecycleRule> Rules { get; set; }
 
     public string MarshalXML()
     {

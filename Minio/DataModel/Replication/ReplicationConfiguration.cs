@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Xml;
 using System.Xml.Serialization;
@@ -36,15 +37,15 @@ public class ReplicationConfiguration
     {
     }
 
-    public ReplicationConfiguration(string role, List<ReplicationRule> rules)
+    public ReplicationConfiguration(string role, Collection<ReplicationRule> rules)
     {
         if (string.IsNullOrEmpty(role) || string.IsNullOrWhiteSpace(role))
-            throw new ArgumentNullException(nameof(Role) + " member cannot be empty.");
+            throw new ArgumentNullException(nameof(role) + " member cannot be empty.");
         if (rules == null || rules.Count == 0)
-            throw new ArgumentNullException(nameof(Rules) + " member cannot be an empty list.");
+            throw new ArgumentNullException(nameof(rules) + " member cannot be an empty list.");
         if (rules.Count >= 1000)
             throw new ArgumentOutOfRangeException(
-                nameof(Rules) + " Count of rules cannot exceed maximum limit of 1000.");
+                nameof(rules) + " Count of rules cannot exceed maximum limit of 1000.");
 
         Role = role;
         Rules = rules;
@@ -52,7 +53,7 @@ public class ReplicationConfiguration
 
     [XmlElement("Role")] public string Role { get; set; }
 
-    [XmlElement("Rule")] public List<ReplicationRule> Rules { get; set; }
+    [XmlElement("Rule")] public Collection<ReplicationRule> Rules { get; set; }
 
     public string MarshalXML()
     {

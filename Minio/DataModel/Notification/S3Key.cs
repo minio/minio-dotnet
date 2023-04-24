@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.ObjectModel;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel;
@@ -25,14 +26,14 @@ namespace Minio.DataModel;
 [Serializable]
 public class S3Key
 {
-    private List<FilterRule> filterRules;
+    private Collection<FilterRule> filterRules;
 
     [XmlElement("FilterRule")]
-    public List<FilterRule> FilterRules
+    public Collection<FilterRule> FilterRules
     {
         get
         {
-            filterRules ??= new List<FilterRule>();
+            filterRules ??= new Collection<FilterRule>();
 
             return filterRules;
         }
