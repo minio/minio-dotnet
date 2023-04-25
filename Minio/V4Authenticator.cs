@@ -110,13 +110,13 @@ internal class V4Authenticator
         ReadOnlySpan<byte> canonicalRequestBytes = Encoding.UTF8.GetBytes(canonicalRequest);
         var hash = ComputeSha256(canonicalRequestBytes);
         var canonicalRequestHash = BytesToHex(hash);
-        var region = GetRegion(requestUri.Host);
-        var stringToSign = GetStringToSign(region, signingDate, canonicalRequestHash, isSts);
-        var signingKey = GenerateSigningKey(region, signingDate, isSts);
+        var endpointRegion = GetRegion(requestUri.Host);
+        var stringToSign = GetStringToSign(endpointRegion, signingDate, canonicalRequestHash, isSts);
+        var signingKey = GenerateSigningKey(endpointRegion, signingDate, isSts);
         ReadOnlySpan<byte> stringToSignBytes = Encoding.UTF8.GetBytes(stringToSign);
         var signatureBytes = SignHmac(signingKey, stringToSignBytes);
         var signature = BytesToHex(signatureBytes);
-        var authorization = GetAuthorizationHeader(signedHeaders, signature, signingDate, region, isSts);
+        var authorization = GetAuthorizationHeader(signedHeaders, signature, signingDate, endpointRegion, isSts);
         return authorization;
     }
 
