@@ -1170,7 +1170,11 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         if (ReplaceMetadataDirective)
         {
             if (Headers is not null)
+#if NETSTANDARD
+                foreach (var pair in SourceObjectInfo.MetaData.ToList())
+#else
                 foreach (var pair in SourceObjectInfo.MetaData)
+#endif
                 {
                     var comparer = StringComparer.OrdinalIgnoreCase;
                     var newDictionary = new Dictionary<string, string>(Headers, comparer);
@@ -1188,7 +1192,11 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         if (Headers is not null)
         {
             var newKVList = new List<Tuple<string, string>>();
+#if NETSTANDARD
+            foreach (var item in Headers.ToList())
+#else
             foreach (var item in Headers)
+#endif
             {
                 var key = item.Key;
                 if (!OperationsUtil.IsSupportedHeader(item.Key) &&
