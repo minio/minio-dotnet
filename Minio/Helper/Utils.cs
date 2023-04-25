@@ -189,9 +189,9 @@ public static class Utils
 
     internal static bool IsSupersetOf(IList<string> l1, IList<string> l2)
     {
-        if (l2 == null) return true;
+        if (l2 is null) return true;
 
-        if (l1 == null) return false;
+        if (l1 is null) return false;
 
         return !l2.Except(l1).Any();
     }
@@ -952,7 +952,7 @@ public static class Utils
 
     public static void PrintDict(IDictionary<string, string> d)
     {
-        if (d != null)
+        if (d is not null)
             foreach (var kv in d)
                 Console.WriteLine("DEBUG >>        {0} = {1}", kv.Key, kv.Value);
 

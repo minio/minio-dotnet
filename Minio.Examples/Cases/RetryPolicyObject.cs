@@ -64,7 +64,7 @@ internal static class RetryPolicyHelper
 
     public static RetryPolicyHandlingDelegate AsRetryDelegate(this AsyncPolicy<ResponseResult> policy)
     {
-        return policy == null
+        return policy is null
             ? null
             : async executeCallback => await policy.ExecuteAsync(executeCallback).ConfigureAwait(false);
     }

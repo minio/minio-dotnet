@@ -73,7 +73,7 @@ internal class GetMultipartUploadsListResponse : GenericResponse
         XNamespace ns = Utils.DetermineNamespace(root);
 
         var itemCheck = root.Root.Descendants(ns + "Upload").FirstOrDefault();
-        if (uploadsResult == null || itemCheck?.HasElements != true) return;
+        if (uploadsResult is null || itemCheck?.HasElements != true) return;
         var uploads = from c in root.Root.Descendants(ns + "Upload")
             select new Upload
             {
@@ -112,7 +112,7 @@ public class GetLegalHoldResponse : GenericResponse
         CurrentLegalHoldConfiguration =
             Utils.DeserializeXml<ObjectLegalHoldConfiguration>(stream);
 
-        if (CurrentLegalHoldConfiguration == null
+        if (CurrentLegalHoldConfiguration is null
             || string.IsNullOrEmpty(CurrentLegalHoldConfiguration.Status))
             Status = "OFF";
         else

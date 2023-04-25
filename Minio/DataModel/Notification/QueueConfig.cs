@@ -43,7 +43,7 @@ public class QueueConfig : NotificationConfiguration
     {
         var other = (QueueConfig)obj;
         // If parameter is null return false.
-        if (other == null) return false;
+        if (other is null) return false;
         return other.Queue.Equals(Queue, StringComparison.Ordinal);
     }
 

@@ -110,14 +110,14 @@ internal class HttpRequestMessageBuilder
                 }
             }
 
-            if (request.Content != null)
+            if (request.Content is not null)
             {
                 var isMultiDeleteRequest = false;
                 if (Method == HttpMethod.Post) isMultiDeleteRequest = QueryParameters.ContainsKey("delete");
                 var isSecure = RequestUri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);
 
                 if (!isSecure && !isMultiDeleteRequest &&
-                    BodyParameters.TryGetValue("Content-Md5", out var value) && value != null)
+                    BodyParameters.TryGetValue("Content-Md5", out var value) && value is not null)
                 {
                     BodyParameters.TryGetValue("Content-Md5", out var returnValue);
                     request.Content.Headers.ContentMD5 = Convert.FromBase64String(returnValue);
@@ -151,7 +151,7 @@ internal class HttpRequestMessageBuilder
 
     public void AddOrUpdateHeaderParameter(string key, string value)
     {
-        if (HeaderParameters.GetType().GetProperty(key) != null)
+        if (HeaderParameters.GetType().GetProperty(key) is not null)
             HeaderParameters.Remove(key);
         HeaderParameters[key] = value;
     }

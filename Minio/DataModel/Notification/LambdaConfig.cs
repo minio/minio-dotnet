@@ -45,7 +45,7 @@ public class LambdaConfig : NotificationConfiguration
     {
         var other = (LambdaConfig)obj;
         // If parameter is null return false.
-        if (obj == null)
+        if (obj is null)
             return false;
         return other.Lambda.Equals(Lambda, StringComparison.Ordinal);
     }

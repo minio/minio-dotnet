@@ -98,7 +98,7 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
         if (Credentials?.AreExpired() == false) return Credentials;
 
         var requestBuilder = await BuildRequest().ConfigureAwait(false);
-        if (Client != null)
+        if (Client is not null)
         {
             ResponseResult responseResult = null;
             try
@@ -113,8 +113,8 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
                     assumeRoleResp = Utils.DeserializeXml<AssumeRoleResponse>(stream);
                 }
 
-                if (Credentials == null &&
-                    assumeRoleResp?.AssumeRole != null)
+                if (Credentials is null &&
+                    assumeRoleResp?.AssumeRole is not null)
                     Credentials = assumeRoleResp.AssumeRole.Credentials;
 
                 return Credentials;
@@ -131,7 +131,7 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
     internal override async Task<HttpRequestMessageBuilder> BuildRequest()
     {
         Action = AssumeRole;
-        if (DurationInSeconds == null || DurationInSeconds.Value == 0)
+        if (DurationInSeconds is null || DurationInSeconds.Value == 0)
             DurationInSeconds = DefaultDurationInSeconds;
 
         var requestMessageBuilder = await Client.CreateRequest(HttpMethod.Post).ConfigureAwait(false);

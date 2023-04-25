@@ -27,7 +27,7 @@ internal static class RemoveObjects
         try
         {
             Console.WriteLine("Running example for API: RemoveObjectsAsync");
-            if (objectsList != null)
+            if (objectsList is not null)
             {
                 var objArgs = new RemoveObjectsArgs()
                     .WithBucket(bucketName)

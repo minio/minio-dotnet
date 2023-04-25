@@ -41,7 +41,7 @@ public class Tagging
 
     public Tagging(IDictionary<string, string> tags, bool isObjects)
     {
-        if (tags == null)
+        if (tags is null)
         {
             TaggingSet = null;
             return;
@@ -68,7 +68,7 @@ public class Tagging
     {
         get
         {
-            if (TaggingSet == null || TaggingSet.Tag.Count == 0) return null;
+            if (TaggingSet is null || TaggingSet.Tag.Count == 0) return null;
             var tagMap = new Dictionary<string, string>();
             foreach (var tag in TaggingSet.Tag) tagMap[tag.Key] = tag.Value;
             return tagMap;
@@ -88,7 +88,7 @@ public class Tagging
 
     internal bool ValidateTagValue(string value)
     {
-        if (value == null || // Empty or whitespace is allowed
+        if (value is null || // Empty or whitespace is allowed
             value.Length > MAX_TAG_VALUE_LENGTH ||
             value.Contains('&'))
             return false;
@@ -145,7 +145,7 @@ public class Tagging
 
     internal string GetTagString()
     {
-        if (TaggingSet == null || (TaggingSet.Tag == null && TaggingSet.Tag.Count == 0)) return null;
+        if (TaggingSet is null || (TaggingSet.Tag is null && TaggingSet.Tag.Count == 0)) return null;
         var tagStr = "";
         var i = 0;
         foreach (var tag in TaggingSet.Tag)

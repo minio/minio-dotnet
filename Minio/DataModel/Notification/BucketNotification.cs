@@ -119,7 +119,7 @@ public class BucketNotification
 
     public bool ShouldSerializeName()
     {
-        return Name != null;
+        return Name is not null;
     }
 
     /// <summary>

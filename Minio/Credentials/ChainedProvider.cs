@@ -45,7 +45,7 @@ public class ChainedProvider : ClientProvider
     public override AccessCredentials GetCredentials()
     {
         if (Credentials?.AreExpired() == false) return Credentials;
-        if (CurrentProvider != null && !Credentials.AreExpired())
+        if (CurrentProvider is not null && !Credentials.AreExpired())
         {
             Credentials = CurrentProvider.GetCredentials();
             return CurrentProvider.GetCredentials();

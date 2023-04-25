@@ -30,7 +30,7 @@ public static class GetBucketEncryption
                     .WithBucket(bucketName)
             ).ConfigureAwait(false);
             Console.WriteLine($"Got encryption configuration for bucket {bucketName}.");
-            if (config != null && config.Rule?.Apply != null)
+            if (config is not null && config.Rule?.Apply is not null)
                 Console.WriteLine("Server Side Encryption Algorithm: " + config.Rule.Apply.SSEAlgorithm);
             Console.WriteLine();
         }

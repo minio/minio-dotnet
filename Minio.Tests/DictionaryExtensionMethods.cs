@@ -26,7 +26,7 @@ public static class DictionaryExtensionMethods
     {
         if (first == second) return true;
 
-        if (first == null || second == null) return false;
+        if (first is null || second is null) return false;
 
         if (first.Count != second.Count) return false;
 

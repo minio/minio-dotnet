@@ -58,7 +58,7 @@ public class IAMAWSProvider : EnvironmentProvider
     {
         Validate();
         var url = CustomEndPoint;
-        if (CustomEndPoint == null)
+        if (CustomEndPoint is null)
         {
             var region = Environment.GetEnvironmentVariable("AWS_REGION");
             if (string.IsNullOrWhiteSpace(region))
@@ -83,10 +83,10 @@ public class IAMAWSProvider : EnvironmentProvider
         Validate();
         var url = CustomEndPoint;
         var urlStr = url.Authority;
-        if (url == null || string.IsNullOrWhiteSpace(urlStr))
+        if (url is null || string.IsNullOrWhiteSpace(urlStr))
         {
             var region = Environment.GetEnvironmentVariable("AWS_REGION");
-            urlStr = region == null ? "https://sts.amazonaws.com" : "https://sts." + region + ".amazonaws.com";
+            urlStr = region is null ? "https://sts.amazonaws.com" : "https://sts." + region + ".amazonaws.com";
             url = new Uri(urlStr);
         }
 
@@ -155,7 +155,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
 
         var containerRelativeUri = Environment.GetEnvironmentVariable("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI");
         var containerFullUri = Environment.GetEnvironmentVariable("AWS_CONTAINER_CREDENTIALS_FULL_URI");
-        var isURLEmpty = url == null;
+        var isURLEmpty = url is null;
         if (!string.IsNullOrWhiteSpace(containerRelativeUri) && isURLEmpty)
         {
             url = RequestUtil.MakeTargetURL("169.254.170.2" + "/" + containerRelativeUri, false);
@@ -205,7 +205,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
         Validate();
         var url = CustomEndPoint;
         string newUrlStr;
-        if (url == null || string.IsNullOrWhiteSpace(url.Authority))
+        if (url is null || string.IsNullOrWhiteSpace(url.Authority))
         {
             url = new Uri("http://169.254.169.254/latest/meta-data/iam/security-credentials/");
             newUrlStr = "http://169.254.169.254/latest/meta-data/iam/security-credentials/";
@@ -225,7 +225,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
     public IAMAWSProvider WithMinioClient(MinioClient minio)
     {
         Minio_Client = minio;
-        if (Credentials == null ||
+        if (Credentials is null ||
             string.IsNullOrWhiteSpace(Credentials.AccessKey) || string.IsNullOrWhiteSpace(Credentials.SecretKey))
             Credentials = GetCredentialsAsync().GetAwaiter().GetResult();
 
@@ -246,7 +246,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
 
     public void Validate()
     {
-        if (Minio_Client == null)
+        if (Minio_Client is null)
             throw new ArgumentNullException(nameof(Minio_Client) +
                                             " should be assigned for the operation to continue.");
     }

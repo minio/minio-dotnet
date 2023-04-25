@@ -49,7 +49,7 @@ public class ResponseResult : IDisposable
     {
         get
         {
-            if (Response == null) return 0;
+            if (Response is null) return 0;
 
             return Response.StatusCode;
         }
@@ -59,7 +59,7 @@ public class ResponseResult : IDisposable
     {
         get
         {
-            if (Response == null) return null;
+            if (Response is null) return null;
 #if NETSTANDARD
             return _stream ??= Response.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
 #else
@@ -72,7 +72,7 @@ public class ResponseResult : IDisposable
     {
         get
         {
-            if (ContentStream == null)
+            if (ContentStream is null)
                 return ReadOnlyMemory<byte>.Empty;
 
             if (_contentBytes.IsEmpty)
@@ -104,11 +104,11 @@ public class ResponseResult : IDisposable
     {
         get
         {
-            if (Response == null) return new Dictionary<string, string>();
+            if (Response is null) return new Dictionary<string, string>();
 
             if (!_headers.Any())
             {
-                if (Response.Content != null)
+                if (Response.Content is not null)
                     foreach (var item in Response.Content.Headers)
                         _headers.Add(item.Key, item.Value.FirstOrDefault());
 

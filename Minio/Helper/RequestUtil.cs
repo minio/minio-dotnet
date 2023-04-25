@@ -57,7 +57,7 @@ internal static class RequestUtil
 
         if (!usePathStyle)
         {
-            var suffix = bucketName != null ? bucketName + "/" : "";
+            var suffix = bucketName is not null ? bucketName + "/" : "";
             host = host + "/" + suffix;
         }
 

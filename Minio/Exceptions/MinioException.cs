@@ -53,15 +53,15 @@ public class MinioException : Exception
 
     private static string GetMessage(string message, ResponseResult serverResponse)
     {
-        if (serverResponse == null && string.IsNullOrEmpty(message))
+        if (serverResponse is null && string.IsNullOrEmpty(message))
             throw new ArgumentNullException(nameof(message));
 
-        if (serverResponse == null)
+        if (serverResponse is null)
             return $"MinIO API responded with message={message}";
 
         var contentString = serverResponse.Content;
 
-        if (message == null)
+        if (message is null)
             return
                 $"MinIO API responded with status code={serverResponse.StatusCode}, response={serverResponse.ErrorMessage}, content={contentString}";
 

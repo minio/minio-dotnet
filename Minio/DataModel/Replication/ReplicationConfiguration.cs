@@ -41,7 +41,7 @@ public class ReplicationConfiguration
     {
         if (string.IsNullOrEmpty(role) || string.IsNullOrWhiteSpace(role))
             throw new ArgumentNullException(nameof(role) + " member cannot be empty.");
-        if (rules == null || rules.Count == 0)
+        if (rules is null || rules.Count == 0)
             throw new ArgumentNullException(nameof(rules) + " member cannot be an empty list.");
         if (rules.Count >= 1000)
             throw new ArgumentOutOfRangeException(

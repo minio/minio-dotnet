@@ -284,7 +284,7 @@ public partial class MinioClient : IMinioClient
         bool isBucketCreationRequest = false)
     {
         var region = string.Empty;
-        if (bucketName != null)
+        if (bucketName is not null)
         {
             Utils.ValidateBucketName(bucketName);
             // Fetch correct region for bucket if this is not a bucket creation
@@ -292,9 +292,9 @@ public partial class MinioClient : IMinioClient
                 region = await GetRegion(bucketName).ConfigureAwait(false);
         }
 
-        if (objectName != null) Utils.ValidateObjectName(objectName);
+        if (objectName is not null) Utils.ValidateObjectName(objectName);
 
-        if (Provider != null)
+        if (Provider is not null)
         {
             var isAWSEnvProvider = Provider is AWSEnvironmentProvider ||
                                    (Provider is ChainedProvider ch &&
@@ -320,7 +320,7 @@ public partial class MinioClient : IMinioClient
                 creds = await Provider.GetCredentialsAsync().ConfigureAwait(false);
             }
 
-            if (creds != null)
+            if (creds is not null)
             {
                 AccessKey = creds.AccessKey;
                 SecretKey = creds.SecretKey;
@@ -332,9 +332,9 @@ public partial class MinioClient : IMinioClient
         var resource = string.Empty;
         var usePathStyle = false;
 
-        if (bucketName != null && S3utils.IsAmazonEndPoint(BaseUrl))
+        if (bucketName is not null && S3utils.IsAmazonEndPoint(BaseUrl))
         {
-            if (method == HttpMethod.Put && objectName == null && resourcePath == null)
+            if (method == HttpMethod.Put && objectName is null && resourcePath is null)
                 // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
                 usePathStyle = true;
             else if (resourcePath?.Contains("location") == true)
@@ -350,10 +350,10 @@ public partial class MinioClient : IMinioClient
         // Set Target URL
         var requestUrl = RequestUtil.MakeTargetURL(BaseUrl, Secure, bucketName, region, usePathStyle);
 
-        if (objectName != null) resource += Utils.EncodePath(objectName);
+        if (objectName is not null) resource += Utils.EncodePath(objectName);
 
         // Append query string passed in
-        if (resourcePath != null) resource += resourcePath;
+        if (resourcePath is not null) resource += resourcePath;
 
         HttpRequestMessageBuilder messageBuilder;
         if (!string.IsNullOrEmpty(resource))
@@ -366,7 +366,7 @@ public partial class MinioClient : IMinioClient
             messageBuilder.AddOrUpdateHeaderParameter("Content-Type", contentType);
         }
 
-        if (headerMap != null)
+        if (headerMap is not null)
         {
             if (headerMap.TryGetValue(messageBuilder.ContentTypeKey, out var value) && !string.IsNullOrEmpty(value))
                 headerMap[messageBuilder.ContentTypeKey] = contentType;
@@ -435,7 +435,7 @@ public partial class MinioClient : IMinioClient
     /// <returns></returns>
     public MinioClient WithHttpClient(HttpClient httpClient, bool disposeHttpClient = false)
     {
-        if (httpClient != null) HttpClient = httpClient;
+        if (httpClient is not null) HttpClient = httpClient;
         this.disposeHttpClient = disposeHttpClient;
         return this;
     }
@@ -454,7 +454,7 @@ public partial class MinioClient : IMinioClient
         else
             credentials = Provider.GetCredentials();
 
-        if (credentials == null)
+        if (credentials is null)
             // Unable to fetch credentials.
             return this;
 
@@ -527,9 +527,9 @@ public partial class MinioClient : IMinioClient
                     HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
             responseResult = new ResponseResult(request, response);
-            if (requestMessageBuilder.ResponseWriter != null)
+            if (requestMessageBuilder.ResponseWriter is not null)
                 requestMessageBuilder.ResponseWriter(responseResult.ContentStream);
-            if (requestMessageBuilder.FunctionResponseWriter != null)
+            if (requestMessageBuilder.FunctionResponseWriter is not null)
                 await requestMessageBuilder.FunctionResponseWriter(responseResult.ContentStream, cancellationToken)
                     .ConfigureAwait(false);
         }
@@ -553,7 +553,7 @@ public partial class MinioClient : IMinioClient
     /// <param name="response"></param>
     internal static void ParseError(ResponseResult response)
     {
-        if (response == null)
+        if (response is null)
             throw new ConnectionException(
                 "Response is nil. Please report this issue https://github.com/minio/minio-dotnet/issues", response);
 
@@ -756,7 +756,7 @@ public partial class MinioClient : IMinioClient
             LogRequest(response.Request, response, (now - startTime).TotalMilliseconds);
         }
 
-        if (handlers == null) throw new ArgumentNullException(nameof(handlers));
+        if (handlers is null) throw new ArgumentNullException(nameof(handlers));
 
         // Run through handlers passed to take up error handling
         foreach (var handler in handlers) handler(response);
@@ -807,7 +807,7 @@ public partial class MinioClient : IMinioClient
     private Task<ResponseResult> ExecuteWithRetry(
         Func<Task<ResponseResult>> executeRequestCallback)
     {
-        return retryPolicyHandler == null
+        return retryPolicyHandler is null
             ? executeRequestCallback()
             : retryPolicyHandler(executeRequestCallback);
     }

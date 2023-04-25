@@ -46,7 +46,7 @@ internal static class S3utils
     // would support this.
     internal static bool IsVirtualHostSupported(Uri endpointURL, string bucketName)
     {
-        if (endpointURL == null) return false;
+        if (endpointURL is null) return false;
         // bucketName can be valid but '.' in the hostname will fail SSL
         // certificate validation. So do not use host-style for such buckets.
         if (string.Equals(endpointURL.Scheme, "https", StringComparison.OrdinalIgnoreCase) &&

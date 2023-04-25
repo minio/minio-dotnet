@@ -81,7 +81,7 @@ internal static class SelectObjectContent
             Console.WriteLine("Bytes scanned:" + resp.Stats.BytesScanned);
             Console.WriteLine("Bytes returned:" + resp.Stats.BytesReturned);
             Console.WriteLine("Bytes processed:" + resp.Stats.BytesProcessed);
-            if (resp.Progress != null) Console.WriteLine("Progress :" + resp.Progress.BytesProcessed);
+            if (resp.Progress is not null) Console.WriteLine("Progress :" + resp.Progress.BytesProcessed);
         }
         catch (Exception e)
         {

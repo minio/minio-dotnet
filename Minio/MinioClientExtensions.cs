@@ -77,10 +77,10 @@ public static class MinioClientExtensions
         // Instantiate a region cache
         minioClient.regionCache = BucketRegionCache.Instance;
         if (string.IsNullOrEmpty(minioClient.BaseUrl)) throw new MinioException("Endpoint not initialized.");
-        if (minioClient.Provider != null && minioClient.Provider.GetType() != typeof(ChainedProvider) &&
-            minioClient.SessionToken == null)
+        if (minioClient.Provider is not null && minioClient.Provider.GetType() != typeof(ChainedProvider) &&
+            minioClient.SessionToken is null)
             throw new MinioException("User Access Credentials Provider not initialized correctly.");
-        if (minioClient.Provider == null &&
+        if (minioClient.Provider is null &&
             (string.IsNullOrEmpty(minioClient.AccessKey) || string.IsNullOrEmpty(minioClient.SecretKey)))
             throw new MinioException("User Access Credentials not initialized.");
 

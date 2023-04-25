@@ -35,7 +35,7 @@ public abstract class BucketArgs<T> : Args
 
     public virtual T WithHeaders(IDictionary<string, string> headers)
     {
-        if (headers == null || headers.Count <= 0) return (T)this;
+        if (headers is null || headers.Count <= 0) return (T)this;
         Headers ??= new Dictionary<string, string>();
         foreach (var key in headers.Keys)
         {

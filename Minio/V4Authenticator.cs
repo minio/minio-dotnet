@@ -396,7 +396,7 @@ internal class V4Authenticator
         canonicalStringList.AddLast(requestBuilder.Method.ToString());
 
         var queryParamsDict = new Dictionary<string, string>();
-        if (requestBuilder.QueryParameters != null)
+        if (requestBuilder.QueryParameters is not null)
             foreach (var kvp in requestBuilder.QueryParameters)
                 queryParamsDict[kvp.Key] = Uri.EscapeDataString(kvp.Value);
 
@@ -417,7 +417,7 @@ internal class V4Authenticator
         }
 
         var isFormData = false;
-        if (requestBuilder.Request.Content != null && requestBuilder.Request.Content.Headers?.ContentType != null)
+        if (requestBuilder.Request.Content is not null && requestBuilder.Request.Content.Headers?.ContentType is not null)
             isFormData = string.Equals(requestBuilder.Request.Content.Headers.ContentType.ToString(),
                 "application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase);
 
@@ -425,7 +425,7 @@ internal class V4Authenticator
         {
             // Convert stream content to byte[]
             var cntntByteData = Span<byte>.Empty;
-            if (requestBuilder.Request.Content != null)
+            if (requestBuilder.Request.Content is not null)
                 cntntByteData = requestBuilder.Request.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
 
             // UTF conversion - String from bytes

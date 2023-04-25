@@ -45,7 +45,7 @@ public partial class MinioClient
         if (args.OffsetLengthSet) statArgs.WithOffsetAndLength(args.ObjectOffset, args.ObjectLength);
         var objStat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
         args?.Validate();
-        if (args.FileName != null)
+        if (args.FileName is not null)
             await GetObjectFileAsync(args, objStat, cancellationToken).ConfigureAwait(false);
         else if (args.CallBack is not null)
             await GetObjectStreamAsync(args, objStat, args.CallBack, cancellationToken).ConfigureAwait(false);

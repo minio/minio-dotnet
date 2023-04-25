@@ -39,7 +39,7 @@ public class SelectResponseStream
     // SelectResponseStream is a struct for selectobjectcontent response.
     public SelectResponseStream(Stream stream)
     {
-        if (stream != null)
+        if (stream is not null)
         {
             var _ms = new MemoryStream();
             stream.CopyTo(_ms);
