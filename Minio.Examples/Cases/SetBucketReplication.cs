@@ -53,6 +53,8 @@ public static class SetBucketReplication
         string destBucketName = "dest-bucket-name",
         string replicationRuleID = "my-replication-ID")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         var setArgs = new SetVersioningArgs()
             .WithBucket(bucketName)
             .WithVersioningEnabled();

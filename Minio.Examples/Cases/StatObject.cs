@@ -37,6 +37,8 @@ internal static class StatObject
         string bucketObject = "my-object-name",
         string versionID = null)
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: StatObjectAsync");

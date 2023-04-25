@@ -22,6 +22,8 @@ public static class PresignedGetObject
         string bucketName = "my-bucket-name",
         string objectName = "my-object-name")
     {
+        if (client is null) throw new ArgumentNullException(nameof(client));
+
         var reqParams = new Dictionary<string, string> { { "response-content-type", "application/json" } };
         var args = new PresignedGetObjectArgs()
             .WithBucket(bucketName)

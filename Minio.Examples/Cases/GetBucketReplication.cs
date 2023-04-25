@@ -25,6 +25,8 @@ public static class GetBucketReplication
         string bucketName = "my-bucket-name",
         string replicationRuleID = "my-replication-rule-ID")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: GetBucketReplicationConfiguration");

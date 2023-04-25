@@ -27,6 +27,8 @@ public static class SetObjectTags
         IDictionary<string, string> tags = null,
         string versionId = null)
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: SetObjectTags");

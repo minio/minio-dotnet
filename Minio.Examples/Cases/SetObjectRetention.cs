@@ -28,6 +28,8 @@ public static class SetObjectRetention
         RetentionMode mode = RetentionMode.GOVERNANCE,
         DateTime retentionValidDate = default)
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             if (retentionValidDate.Equals(default))

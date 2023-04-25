@@ -28,6 +28,7 @@ public static class PresignedPostPolicy
         string bucketName = "my-bucketname",
         string objectName = "my-objectname")
     {
+        if (client is null) throw new ArgumentNullException(nameof(client));
         // default value for expiration is 2 minutes
         var expiration = DateTime.UtcNow.AddMinutes(2);
 

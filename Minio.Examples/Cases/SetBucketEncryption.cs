@@ -23,6 +23,8 @@ public static class SetBucketEncryption
         string bucketName = "my-bucket-name",
         ServerSideEncryptionConfiguration config = null)
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: SetBucketEncryptionAsync");

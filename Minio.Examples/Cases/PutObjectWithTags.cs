@@ -28,6 +28,8 @@ internal static class PutObjectWithTags
         string objectName = "my-object-name",
         string fileName = "location-of-file")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: PutObjectAsync with Tags");

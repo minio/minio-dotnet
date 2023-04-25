@@ -33,6 +33,8 @@ public class QueueConfig : NotificationConfiguration
 
     public QueueConfig(Arn arn) : base(arn)
     {
+        if (arn is null) throw new ArgumentNullException(nameof(arn));
+
         Queue = arn.ToString();
     }
 

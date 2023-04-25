@@ -82,6 +82,8 @@ internal static class RetryPolicyObject
         string bucketName = "my-bucket-name",
         string bucketObject = "my-object-name")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             var customPolicy = RetryPolicyHelper

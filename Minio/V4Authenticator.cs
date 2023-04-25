@@ -373,13 +373,9 @@ internal class V4Authenticator
 
     private static string GetCanonicalHost(Uri url)
     {
-        string canonicalHost;
         if (url.Port > 0 && url.Port != 80 && url.Port != 443)
-            canonicalHost = $"{url.Host}:{url.Port}";
-        else
-            canonicalHost = url.Host;
-
-        return canonicalHost;
+            return $"{url.Host}:{url.Port}";
+        return url.Host;
     }
 
     /// <summary>
@@ -417,7 +413,7 @@ internal class V4Authenticator
         }
 
         var isFormData = false;
-        if (requestBuilder.Request.Content is not null && requestBuilder.Request.Content.Headers?.ContentType is not null)
+        if (requestBuilder.Request.Content?.Headers?.ContentType is not null)
             isFormData = string.Equals(requestBuilder.Request.Content.Headers.ContentType.ToString(),
                 "application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase);
 

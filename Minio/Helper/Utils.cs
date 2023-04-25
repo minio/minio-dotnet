@@ -199,6 +199,8 @@ public static class Utils
     public static bool CaseInsensitiveContains(string text, string value,
         StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
     {
+        if (string.IsNullOrEmpty(text))
+            throw new ArgumentException($"'{nameof(text)}' cannot be null or empty.", nameof(text));
 #if NETSTANDARD
         return text.IndexOf(value, stringComparison) >= 0;
 #else
@@ -811,6 +813,8 @@ public static class Utils
 
     public static string MarshalXML(object obj, string nmspc)
     {
+        if (obj is null) throw new ArgumentNullException(nameof(obj));
+
         XmlWriter xw = null;
 
         var str = string.Empty;

@@ -91,6 +91,10 @@ public class PresignedPostPolicyResponse
 {
     public PresignedPostPolicyResponse(PresignedPostPolicyArgs args, Uri URI)
     {
+        if (args is null) throw new ArgumentNullException(nameof(args));
+
+        if (URI is null) throw new ArgumentNullException(nameof(URI));
+
         URIPolicyTuple = Tuple.Create(URI.AbsolutePath, args.Policy.FormData);
     }
 
@@ -202,6 +206,8 @@ public class PutObjectResponse : GenericResponse
         IDictionary<string, string> responseHeaders, long size, string name)
         : base(statusCode, responseContent)
     {
+        if (responseHeaders is null) throw new ArgumentNullException(nameof(responseHeaders));
+
         foreach (var parameter in responseHeaders)
             if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
             {

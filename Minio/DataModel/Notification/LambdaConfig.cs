@@ -35,6 +35,8 @@ public class LambdaConfig : NotificationConfiguration
 
     public LambdaConfig(Arn arn) : base(arn)
     {
+        if (arn is null) throw new ArgumentNullException(nameof(arn));
+
         Lambda = arn.ToString();
     }
 

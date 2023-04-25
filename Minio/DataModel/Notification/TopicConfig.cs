@@ -35,6 +35,8 @@ public class TopicConfig : NotificationConfiguration
 
     public TopicConfig(Arn arn) : base(arn)
     {
+        if (arn is null) throw new ArgumentNullException(nameof(arn));
+
         Topic = arn.ToString();
     }
 

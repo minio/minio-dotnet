@@ -32,6 +32,7 @@ public class BucketNotification
     [XmlElement("TopicConfiguration")] public List<TopicConfig> TopicConfigs;
     [XmlElement("QueueConfiguration")] public List<QueueConfig> QueueConfigs;
 
+
     public BucketNotification()
     {
         LambdaConfigs = new List<LambdaConfig>();

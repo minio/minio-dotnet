@@ -572,7 +572,7 @@ public static class FunctionalTest
             versioningConfig = await minio.GetVersioningAsync(new GetVersioningArgs()
                 .WithBucket(bucketName)).ConfigureAwait(false);
             if (versioningConfig is not null && (versioningConfig.Status.Contains("Enabled") ||
-                                             versioningConfig.Status.Contains("Suspended")))
+                                                 versioningConfig.Status.Contains("Suspended")))
                 getVersions = true;
 
             lockConfig = await minio.GetObjectLockConfigurationAsync(lockConfigurationArgs).ConfigureAwait(false);
@@ -4867,7 +4867,7 @@ public static class FunctionalTest
                 .WithBucket(bucketName)
                 .WithObject(objectName)
                 .WithCallbackStream(async (stream, cancellationToken) =>
-                    await callbackAsync(stream, default).ConfigureAwait(false));
+                    await callbackAsync(stream, cancellationToken).ConfigureAwait(false));
 
             await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
             var writtenInfo = new FileInfo(destFileName);

@@ -28,6 +28,8 @@ internal static class SelectObjectContent
         string objectName = "my-object-name",
         string fileName = "my-file-name")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         var newObjectName = "new" + objectName;
         try
         {
