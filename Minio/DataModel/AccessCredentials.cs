@@ -26,19 +26,24 @@ public class AccessCredentials
     public AccessCredentials(string accessKey, string secretKey,
         string sessionToken, DateTime expiration)
     {
-        if (string.IsNullOrEmpty(accessKey))
-            throw new ArgumentException($"'{nameof(accessKey)}' cannot be null or empty.", nameof(accessKey));
+        if (!string.IsNullOrEmpty(accessKey) || !string.IsNullOrEmpty(secretKey) || !string.IsNullOrEmpty(sessionToken))
+        {
+            AccessKey = accessKey;
+            SecretKey = secretKey;
+            SessionToken = sessionToken;
+            Expiration = expiration.Equals(default) ? null : Utils.To8601String(expiration);
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(secretKey))
+                throw new ArgumentException($"'{nameof(accessKey)}' cannot be null or empty.", nameof(accessKey));
 
-        if (string.IsNullOrEmpty(secretKey))
-            throw new ArgumentException($"'{nameof(secretKey)}' cannot be null or empty.", nameof(secretKey));
+            if (string.IsNullOrEmpty(secretKey))
+                throw new ArgumentException($"'{nameof(secretKey)}' cannot be null or empty.", nameof(secretKey));
 
-        if (string.IsNullOrEmpty(sessionToken))
-            throw new ArgumentException($"'{nameof(sessionToken)}' cannot be null or empty.", nameof(sessionToken));
-
-        AccessKey = accessKey;
-        SecretKey = secretKey;
-        SessionToken = sessionToken;
-        Expiration = expiration.Equals(default) ? null : Utils.To8601String(expiration);
+            if (string.IsNullOrEmpty(sessionToken))
+                throw new ArgumentException($"'{nameof(sessionToken)}' cannot be null or empty.", nameof(sessionToken));
+        }
     }
 
     public AccessCredentials()
