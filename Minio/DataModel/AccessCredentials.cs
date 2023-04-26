@@ -35,7 +35,7 @@ public class AccessCredentials
         }
         else
         {
-            if (string.IsNullOrEmpty(secretKey))
+            if (string.IsNullOrEmpty(accessKey))
                 throw new ArgumentException($"'{nameof(accessKey)}' cannot be null or empty.", nameof(accessKey));
 
             if (string.IsNullOrEmpty(secretKey))
