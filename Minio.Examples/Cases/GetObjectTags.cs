@@ -24,6 +24,8 @@ public static class GetObjectTags
         string objectName = "my-object-name",
         string versionId = null)
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: GetObjectTags");
@@ -33,7 +35,7 @@ public static class GetObjectTags
                     .WithObject(objectName)
                     .WithVersionId(versionId)
             ).ConfigureAwait(false);
-            if (tags != null && tags.Tags?.Count > 0)
+            if (tags is not null && tags.Tags?.Count > 0)
             {
                 Console.WriteLine($"Got tags set for object {bucketName}/{objectName}.");
                 foreach (var tag in tags.Tags) Console.WriteLine(tag.Key + " : " + tag.Value);

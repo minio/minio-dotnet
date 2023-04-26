@@ -110,13 +110,13 @@ internal class V4Authenticator
         ReadOnlySpan<byte> canonicalRequestBytes = Encoding.UTF8.GetBytes(canonicalRequest);
         var hash = ComputeSha256(canonicalRequestBytes);
         var canonicalRequestHash = BytesToHex(hash);
-        var region = GetRegion(requestUri.Host);
-        var stringToSign = GetStringToSign(region, signingDate, canonicalRequestHash, isSts);
-        var signingKey = GenerateSigningKey(region, signingDate, isSts);
+        var endpointRegion = GetRegion(requestUri.Host);
+        var stringToSign = GetStringToSign(endpointRegion, signingDate, canonicalRequestHash, isSts);
+        var signingKey = GenerateSigningKey(endpointRegion, signingDate, isSts);
         ReadOnlySpan<byte> stringToSignBytes = Encoding.UTF8.GetBytes(stringToSign);
         var signatureBytes = SignHmac(signingKey, stringToSignBytes);
         var signature = BytesToHex(signatureBytes);
-        var authorization = GetAuthorizationHeader(signedHeaders, signature, signingDate, region, isSts);
+        var authorization = GetAuthorizationHeader(signedHeaders, signature, signingDate, endpointRegion, isSts);
         return authorization;
     }
 
@@ -373,13 +373,9 @@ internal class V4Authenticator
 
     private static string GetCanonicalHost(Uri url)
     {
-        string canonicalHost;
         if (url.Port > 0 && url.Port != 80 && url.Port != 443)
-            canonicalHost = $"{url.Host}:{url.Port}";
-        else
-            canonicalHost = url.Host;
-
-        return canonicalHost;
+            return $"{url.Host}:{url.Port}";
+        return url.Host;
     }
 
     /// <summary>
@@ -396,7 +392,7 @@ internal class V4Authenticator
         canonicalStringList.AddLast(requestBuilder.Method.ToString());
 
         var queryParamsDict = new Dictionary<string, string>();
-        if (requestBuilder.QueryParameters != null)
+        if (requestBuilder.QueryParameters is not null)
             foreach (var kvp in requestBuilder.QueryParameters)
                 queryParamsDict[kvp.Key] = Uri.EscapeDataString(kvp.Value);
 
@@ -417,7 +413,7 @@ internal class V4Authenticator
         }
 
         var isFormData = false;
-        if (requestBuilder.Request.Content != null && requestBuilder.Request.Content.Headers?.ContentType != null)
+        if (requestBuilder.Request.Content?.Headers?.ContentType is not null)
             isFormData = string.Equals(requestBuilder.Request.Content.Headers.ContentType.ToString(),
                 "application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase);
 
@@ -425,7 +421,7 @@ internal class V4Authenticator
         {
             // Convert stream content to byte[]
             var cntntByteData = Span<byte>.Empty;
-            if (requestBuilder.Request.Content != null)
+            if (requestBuilder.Request.Content is not null)
                 cntntByteData = requestBuilder.Request.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
 
             // UTF conversion - String from bytes

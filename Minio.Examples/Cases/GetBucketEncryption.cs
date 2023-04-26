@@ -22,6 +22,8 @@ public static class GetBucketEncryption
     public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: GetBucketEncryptionAsync");
@@ -30,7 +32,7 @@ public static class GetBucketEncryption
                     .WithBucket(bucketName)
             ).ConfigureAwait(false);
             Console.WriteLine($"Got encryption configuration for bucket {bucketName}.");
-            if (config != null && config.Rule?.Apply != null)
+            if (config is not null && config.Rule?.Apply is not null)
                 Console.WriteLine("Server Side Encryption Algorithm: " + config.Rule.Apply.SSEAlgorithm);
             Console.WriteLine();
         }

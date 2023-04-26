@@ -49,7 +49,7 @@ public class SSEC : IServerSideEncryption
 
     public SSEC(byte[] key)
     {
-        if (key == null || key.Length != 32)
+        if (key is null || key.Length != 32)
             throw new ArgumentException("Secret key needs to be a 256 bit AES Key", nameof(key));
         this.key = key;
     }
@@ -142,7 +142,7 @@ public class SSEKMS : IServerSideEncryption
 
         headers.Add(Constants.SSEKMSKeyId, key);
         headers.Add(Constants.SSEGenericHeader, "aws:kms");
-        if (context != null) headers.Add(Constants.SSEKMSContext, MarshalContext());
+        if (context is not null) headers.Add(Constants.SSEKMSContext, MarshalContext());
     }
 
     /// <summary>

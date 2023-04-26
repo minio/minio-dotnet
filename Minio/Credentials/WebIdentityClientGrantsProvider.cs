@@ -33,7 +33,7 @@ public abstract class WebIdentityClientGrantsProvider<T> : AssumeRoleBaseProvide
 
     internal uint GetDurationInSeconds(uint expiry)
     {
-        if (DurationInSeconds != null && DurationInSeconds.Value > 0) expiry = DurationInSeconds.Value;
+        if (DurationInSeconds is not null && DurationInSeconds.Value > 0) expiry = DurationInSeconds.Value;
         if (expiry > MAX_DURATION_SECONDS) return MAX_DURATION_SECONDS;
         return expiry < MIN_DURATION_SECONDS ? MIN_DURATION_SECONDS : expiry;
     }
@@ -72,9 +72,9 @@ public abstract class WebIdentityClientGrantsProvider<T> : AssumeRoleBaseProvide
 
     protected void Validate()
     {
-        if (JWTSupplier == null)
+        if (JWTSupplier is null)
             throw new ArgumentNullException(nameof(JWTSupplier) + " JWT Token supplier cannot be null.");
-        if (STSEndpoint == null || string.IsNullOrWhiteSpace(STSEndpoint.AbsoluteUri))
+        if (STSEndpoint is null || string.IsNullOrWhiteSpace(STSEndpoint.AbsoluteUri))
             throw new InvalidOperationException(nameof(STSEndpoint) + " value is invalid.");
     }
 }

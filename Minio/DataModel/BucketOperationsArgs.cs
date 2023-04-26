@@ -303,7 +303,7 @@ public class SetBucketNotificationsArgs : BucketArgs<SetBucketNotificationsArgs>
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        if (BucketNotificationConfiguration == null)
+        if (BucketNotificationConfiguration is null)
             throw new UnexpectedMinioException(
                 "Cannot BuildRequest for SetBucketNotificationsArgs. BucketNotification configuration not assigned");
 
@@ -556,7 +556,7 @@ public class SetBucketTagsArgs : BucketArgs<SetBucketTagsArgs>
     internal override void Validate()
     {
         base.Validate();
-        if (BucketTags == null || BucketTags.Tags.Count == 0)
+        if (BucketTags is null || BucketTags.Tags.Count == 0)
             throw new InvalidOperationException("Unable to set empty tags.");
     }
 }
@@ -607,7 +607,7 @@ public class SetObjectLockConfigurationArgs : BucketArgs<SetObjectLockConfigurat
     internal override void Validate()
     {
         base.Validate();
-        if (LockConfiguration == null)
+        if (LockConfiguration is null)
             throw new InvalidOperationException("The lock configuration object " + nameof(LockConfiguration) +
                                                 " is not set. Please use " + nameof(WithLockConfiguration) +
                                                 " to set.");
@@ -696,7 +696,7 @@ public class SetBucketLifecycleArgs : BucketArgs<SetBucketLifecycleArgs>
     internal override void Validate()
     {
         base.Validate();
-        if (BucketLifecycle == null || BucketLifecycle.Rules.Count == 0)
+        if (BucketLifecycle is null || BucketLifecycle.Rules.Count == 0)
             throw new InvalidOperationException("Unable to set empty Lifecycle configuration.");
     }
 }

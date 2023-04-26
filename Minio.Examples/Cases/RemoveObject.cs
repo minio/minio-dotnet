@@ -24,6 +24,8 @@ internal static class RemoveObject
         string objectName = "my-object-name",
         string versionId = null)
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             var args = new RemoveObjectArgs()

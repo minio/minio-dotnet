@@ -43,11 +43,11 @@ public class FilterRule
 
     public bool ShouldSerializeName()
     {
-        return Name != null;
+        return Name is not null;
     }
 
     public bool ShouldSerializeValue()
     {
-        return Value != null;
+        return Value is not null;
     }
 }

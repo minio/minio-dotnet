@@ -22,6 +22,8 @@ public static class GetBucketTags
     public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: GetBucketTags");
@@ -29,7 +31,7 @@ public static class GetBucketTags
                 new GetBucketTagsArgs()
                     .WithBucket(bucketName)
             ).ConfigureAwait(false);
-            if (tags != null && tags.Tags?.Count > 0)
+            if (tags is not null && tags.Tags?.Count > 0)
             {
                 Console.WriteLine($"Got Bucket Tags set for bucket {bucketName}.");
                 foreach (var tag in tags.Tags) Console.WriteLine(tag.Key + " : " + tag.Value);

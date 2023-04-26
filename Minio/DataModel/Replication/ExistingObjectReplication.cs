@@ -41,7 +41,8 @@ public class ExistingObjectReplication
     public ExistingObjectReplication(string status)
     {
         if (string.IsNullOrWhiteSpace(status))
-            throw new ArgumentNullException(nameof(status) + " cannot be null or empty.");
+            throw new ArgumentException($"'{nameof(status)}' cannot be null or whitespace.", nameof(status));
+
         Status = status;
     }
 

@@ -24,6 +24,8 @@ public static class GetObjectLockConfiguration
     public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: GetObjectLockConfiguration");
@@ -31,10 +33,10 @@ public static class GetObjectLockConfiguration
                 new GetObjectLockConfigurationArgs()
                     .WithBucket(bucketName)
             ).ConfigureAwait(false);
-            if (config != null)
+            if (config is not null)
             {
                 Console.WriteLine($"Object lock configuration on bucket {bucketName} is : " + config.ObjectLockEnabled);
-                if (config.Rule?.DefaultRetention != null)
+                if (config.Rule?.DefaultRetention is not null)
                 {
                     var mode = config.Rule.DefaultRetention.Mode == RetentionMode.GOVERNANCE
                         ? "GOVERNANCE"

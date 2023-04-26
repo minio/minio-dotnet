@@ -86,8 +86,8 @@ public sealed class BucketRegionCache
     {
         string region = null;
 
-        if (!string.Equals(bucketName, null, StringComparison.OrdinalIgnoreCase) && client.AccessKey != null
-            && client.SecretKey != null && !Instance.Exists(bucketName))
+        if (!string.Equals(bucketName, null, StringComparison.OrdinalIgnoreCase) && client.AccessKey is not null
+            && client.SecretKey is not null && !Instance.Exists(bucketName))
         {
             string location = null;
             var path = Utils.UrlEncode(bucketName);
@@ -99,7 +99,7 @@ public sealed class BucketRegionCache
             using var response =
                 await client.ExecuteTaskAsync(client.NoErrorHandlers, requestBuilder).ConfigureAwait(false);
 
-            if (response != null && HttpStatusCode.OK.Equals(response.StatusCode))
+            if (response is not null && HttpStatusCode.OK.Equals(response.StatusCode))
             {
                 var root = XDocument.Parse(response.Content);
                 location = root.Root.Value;

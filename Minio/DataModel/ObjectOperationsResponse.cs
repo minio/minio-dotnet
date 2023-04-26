@@ -73,7 +73,7 @@ internal class GetMultipartUploadsListResponse : GenericResponse
         XNamespace ns = Utils.DetermineNamespace(root);
 
         var itemCheck = root.Root.Descendants(ns + "Upload").FirstOrDefault();
-        if (uploadsResult == null || itemCheck?.HasElements != true) return;
+        if (uploadsResult is null || itemCheck?.HasElements != true) return;
         var uploads = from c in root.Root.Descendants(ns + "Upload")
             select new Upload
             {
@@ -91,6 +91,10 @@ public class PresignedPostPolicyResponse
 {
     public PresignedPostPolicyResponse(PresignedPostPolicyArgs args, Uri URI)
     {
+        if (args is null) throw new ArgumentNullException(nameof(args));
+
+        if (URI is null) throw new ArgumentNullException(nameof(URI));
+
         URIPolicyTuple = Tuple.Create(URI.AbsolutePath, args.Policy.FormData);
     }
 
@@ -112,7 +116,7 @@ public class GetLegalHoldResponse : GenericResponse
         CurrentLegalHoldConfiguration =
             Utils.DeserializeXml<ObjectLegalHoldConfiguration>(stream);
 
-        if (CurrentLegalHoldConfiguration == null
+        if (CurrentLegalHoldConfiguration is null
             || string.IsNullOrEmpty(CurrentLegalHoldConfiguration.Status))
             Status = "OFF";
         else
@@ -202,6 +206,8 @@ public class PutObjectResponse : GenericResponse
         IDictionary<string, string> responseHeaders, long size, string name)
         : base(statusCode, responseContent)
     {
+        if (responseHeaders is null) throw new ArgumentNullException(nameof(responseHeaders));
+
         foreach (var parameter in responseHeaders)
             if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
             {

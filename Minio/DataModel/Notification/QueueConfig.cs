@@ -33,6 +33,8 @@ public class QueueConfig : NotificationConfiguration
 
     public QueueConfig(Arn arn) : base(arn)
     {
+        if (arn is null) throw new ArgumentNullException(nameof(arn));
+
         Queue = arn.ToString();
     }
 
@@ -43,7 +45,7 @@ public class QueueConfig : NotificationConfiguration
     {
         var other = (QueueConfig)obj;
         // If parameter is null return false.
-        if (other == null) return false;
+        if (other is null) return false;
         return other.Queue.Equals(Queue, StringComparison.Ordinal);
     }
 

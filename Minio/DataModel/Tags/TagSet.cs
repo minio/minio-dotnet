@@ -30,7 +30,7 @@ public class TagSet
 
     public TagSet(IDictionary<string, string> tags)
     {
-        if (tags == null || tags.Count == 0) return;
+        if (tags is null || tags.Count == 0) return;
         Tag = new Collection<Tag>();
         foreach (var item in tags) Tag.Add(new Tag(item.Key, item.Value));
     }

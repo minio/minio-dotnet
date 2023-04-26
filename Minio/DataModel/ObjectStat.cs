@@ -49,6 +49,8 @@ public class ObjectStat
     {
         if (string.IsNullOrEmpty(objectName))
             throw new ArgumentNullException(nameof(objectName), "Name of an object cannot be empty");
+        if (responseHeaders is null) throw new ArgumentNullException(nameof(responseHeaders));
+
         var objInfo = new ObjectStat
         {
             ObjectName = objectName
@@ -145,16 +147,16 @@ public class ObjectStat
             if (DeleteMarker) versionInfo = $"Version ID({VersionId}, deleted)";
         }
 
-        if (Expires != null) expires = "Expiry(" + Utils.To8601String(Expires.Value) + ")";
-        if (ObjectLockMode != null)
+        if (Expires is not null) expires = "Expiry(" + Utils.To8601String(Expires.Value) + ")";
+        if (ObjectLockMode is not null)
         {
             objectLockInfo = "ObjectLock Mode(" +
                              (ObjectLockMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE") + ")";
             objectLockInfo += " Retain Until Date(" + Utils.To8601String(ObjectLockRetainUntilDate.Value) + ")";
         }
 
-        if (TaggingCount != null) taggingCount = "Tagging-Count(" + TaggingCount.Value + ")";
-        if (LegalHoldEnabled != null)
+        if (TaggingCount is not null) taggingCount = "Tagging-Count(" + TaggingCount.Value + ")";
+        if (LegalHoldEnabled is not null)
             legalHold = "LegalHold(" + (LegalHoldEnabled.Value ? "Enabled" : "Disabled") + ")";
         if (!string.IsNullOrWhiteSpace(ReplicationStatus))
             replicationStatus = "Replication Status(" + ReplicationStatus + ")";

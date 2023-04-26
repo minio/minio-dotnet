@@ -58,7 +58,7 @@ public static class Program
         var isSecure = false;
         var port = 80;
 
-        if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
+        if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") is not null)
         {
             endPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");
             var posColon = endPoint.LastIndexOf(':');
@@ -70,7 +70,7 @@ public static class Program
 
             accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
             secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
-            if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") != null)
+            if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") is not null)
             {
                 isSecure = Environment.GetEnvironmentVariable("ENABLE_HTTPS")
                     .Equals("1", StringComparison.OrdinalIgnoreCase);

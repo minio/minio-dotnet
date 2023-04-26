@@ -22,6 +22,8 @@ public static class PresignedPutObject
         string bucketName = "my-bucket-name",
         string objectName = "my-object-name")
     {
+        if (client is null) throw new ArgumentNullException(nameof(client));
+
         try
         {
             var args = new PresignedPutObjectArgs()

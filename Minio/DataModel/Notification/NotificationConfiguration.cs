@@ -96,12 +96,12 @@ public class NotificationConfiguration
 
     public bool ShouldSerializeFilter()
     {
-        return Filter != null;
+        return Filter is not null;
     }
 
     public bool ShouldSerializeId()
     {
-        return Id != null;
+        return Id is not null;
     }
 
     public bool ShouldSerializeEvents()
@@ -111,6 +111,6 @@ public class NotificationConfiguration
 
     internal bool IsIdSet()
     {
-        return Id != null;
+        return Id is not null;
     }
 }

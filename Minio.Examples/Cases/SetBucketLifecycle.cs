@@ -25,6 +25,8 @@ public static class SetBucketLifecycle
         string bucketName = "my-bucket-name",
         LifecycleConfiguration lfc = null)
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: SetBucketLifecycle");

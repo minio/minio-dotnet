@@ -496,8 +496,8 @@ public static class FunctionalTest
             bucketList.ToList().Sort((x, y) =>
             {
                 if (string.Equals(x.Name, y.Name, StringComparison.Ordinal)) return 0;
-                if (x.Name == null) return -1;
-                if (y.Name == null) return 1;
+                if (x.Name is null) return -1;
+                if (y.Name is null) return 1;
                 return x.Name.CompareTo(y.Name);
             });
             var indx = 0;
@@ -571,8 +571,8 @@ public static class FunctionalTest
         {
             versioningConfig = await minio.GetVersioningAsync(new GetVersioningArgs()
                 .WithBucket(bucketName)).ConfigureAwait(false);
-            if (versioningConfig != null && (versioningConfig.Status.Contains("Enabled") ||
-                                             versioningConfig.Status.Contains("Suspended")))
+            if (versioningConfig is not null && (versioningConfig.Status.Contains("Enabled") ||
+                                                 versioningConfig.Status.Contains("Suspended")))
                 getVersions = true;
 
             lockConfig = await minio.GetObjectLockConfigurationAsync(lockConfigurationArgs).ConfigureAwait(false);
@@ -938,7 +938,7 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
 
         var filestream = mstream;
-        if (filestream == null)
+        if (filestream is null)
         {
 #if NETFRAMEWORK
             ReadOnlyMemory<byte> bs = File.ReadAllBytes(fileName);
@@ -976,7 +976,7 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
 
         var filestream = mstream;
-        if (filestream == null)
+        if (filestream is null)
         {
 #if NETFRAMEWORK
             Memory<byte> bs = File.ReadAllBytes(fileName);
@@ -1009,7 +1009,7 @@ public static class FunctionalTest
             Assert.IsTrue(statObject.ObjectName.Equals(objectName, StringComparison.Ordinal));
             Assert.AreEqual(statObject.Size, size);
 
-            if (contentType != null)
+            if (contentType is not null)
             {
                 Assert.IsNotNull(statObject.ContentType);
                 Assert.IsTrue(statObject.ContentType.Equals(contentType, StringComparison.OrdinalIgnoreCase));
@@ -1366,7 +1366,7 @@ public static class FunctionalTest
             Assert.IsNotNull(statObject);
             Assert.IsTrue(statObject.ObjectName.Equals(objectName, StringComparison.Ordinal));
             Assert.AreEqual(statObject.Size, sizeExpected);
-            Assert.IsTrue(statObject.MetaData["Content-Type"] != null);
+            Assert.IsTrue(statObject.MetaData["Content-Type"] is not null);
             Assert.IsTrue(statObject.ContentType.Equals(contentType, StringComparison.OrdinalIgnoreCase));
             Assert.IsTrue(statObject.MetaData[metadataKey].Equals(metadataValue, StringComparison.Ordinal));
 
@@ -2721,7 +2721,7 @@ public static class FunctionalTest
 
                     var notification = JsonSerializer.Deserialize<MinioNotification>(received[0].json);
 
-                    if (notification.Records != null)
+                    if (notification.Records is not null)
                     {
                         Assert.AreEqual(1, notification.Records.Count);
                         Assert.IsTrue(notification.Records[0].EventName.Contains("s3:ObjectCreated:Put"));
@@ -2752,8 +2752,8 @@ public static class FunctionalTest
         }
         catch (Exception ex)
         {
-            if (ex.Message == "Listening for bucket notification is specific" +
-                " only to `minio` server endpoints")
+            if (string.Equals(ex.Message, "Listening for bucket notification is specific" +
+                                          " only to `minio` server endpoints", StringComparison.OrdinalIgnoreCase))
             {
                 // This is expected when bucket notification
                 // is requested against AWS.
@@ -2765,7 +2765,7 @@ public static class FunctionalTest
                     return matches.Count > 0;
                 }
 
-                if (Environment.GetEnvironmentVariable("AWS_ENDPOINT") != null ||
+                if (Environment.GetEnvironmentVariable("AWS_ENDPOINT") is not null ||
                     isAWS(Environment.GetEnvironmentVariable("SERVER_ENDPOINT")))
                     // This is a PASS
                     new MintLogger(nameof(ListenBucketNotificationsAsync_Test1),
@@ -3353,8 +3353,8 @@ public static class FunctionalTest
             var statObject =
                 await PutObject_Tester(minio, bucketName, objectName, fileName, contentType, metaData: metaData)
                     .ConfigureAwait(false);
-            Assert.IsTrue(statObject != null);
-            Assert.IsTrue(statObject.MetaData != null);
+            Assert.IsTrue(statObject is not null);
+            Assert.IsTrue(statObject.MetaData is not null);
             var statMeta = new Dictionary<string, string>(statObject.MetaData, StringComparer.OrdinalIgnoreCase);
             Assert.IsTrue(statMeta.ContainsKey("Customheader"));
             Assert.IsTrue(statObject.MetaData.ContainsKey("Content-Type") &&
@@ -4103,7 +4103,7 @@ public static class FunctionalTest
                 .WithObject(objectName);
             var stats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
 
-            Assert.IsTrue(stats.MetaData["Orig"] != null);
+            Assert.IsTrue(stats.MetaData["Orig"] is not null);
 
             var copyCond = new CopyConditions();
             copyCond.SetReplaceMetadataDirective();
@@ -4131,8 +4131,8 @@ public static class FunctionalTest
                 .WithBucket(destBucketName)
                 .WithObject(destObjectName);
             var dstats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
-            Assert.IsTrue(dstats.MetaData["Content-Type"] != null);
-            Assert.IsTrue(dstats.MetaData["Mynewkey"] != null);
+            Assert.IsTrue(dstats.MetaData["Content-Type"] is not null);
+            Assert.IsTrue(dstats.MetaData["Mynewkey"] is not null);
             Assert.IsTrue(dstats.MetaData["Content-Type"].Contains("application/css"));
             Assert.IsTrue(dstats.MetaData["Mynewkey"].Contains("test   test"));
             new MintLogger("CopyObject_Test8", copyObjectSignature,
@@ -4867,7 +4867,7 @@ public static class FunctionalTest
                 .WithBucket(bucketName)
                 .WithObject(objectName)
                 .WithCallbackStream(async (stream, cancellationToken) =>
-                    await callbackAsync(stream, default).ConfigureAwait(false));
+                    await callbackAsync(stream, cancellationToken).ConfigureAwait(false));
 
             await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
             var writtenInfo = new FileInfo(destFileName);

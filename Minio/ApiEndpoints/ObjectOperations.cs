@@ -109,7 +109,7 @@ public partial class MinioClient : IObjectOperations
                         .WithKeyMarker(nextKeyMarker)
                         .WithUploadIdMarker(nextUploadIdMarker);
                     var uploads = await GetMultipartUploadsListAsync(getArgs, cancellationToken).ConfigureAwait(false);
-                    if (uploads == null)
+                    if (uploads is null)
                     {
                         isRunning = false;
                         continue;
@@ -153,7 +153,7 @@ public partial class MinioClient : IObjectOperations
             throw;
         }
 
-        if (uploads == null) return;
+        if (uploads is null) return;
         foreach (var upload in uploads)
             if (upload.Key.Equals(args.ObjectName, StringComparison.OrdinalIgnoreCase))
             {
@@ -562,7 +562,7 @@ public partial class MinioClient : IObjectOperations
         args.SSE?.Marshal(args.Headers);
 
         // Upload object in single part if size falls under restricted part size.
-        if (args.ObjectSize < Constants.MinimumPartSize && args.ObjectSize >= 0 && args.ObjectStreamData != null)
+        if (args.ObjectSize < Constants.MinimumPartSize && args.ObjectSize >= 0 && args.ObjectStreamData is not null)
         {
             var bytes = await ReadFullAsync(args.ObjectStreamData, (int)args.ObjectSize).ConfigureAwait(false);
             var bytesRead = bytes.Length;
@@ -715,7 +715,7 @@ public partial class MinioClient : IObjectOperations
                 newMeta = new Dictionary<string, string>(args.Headers);
             else
                 newMeta = new Dictionary<string, string>(args.SourceObjectInfo.MetaData);
-            if (args.SourceObject.SSE != null && args.SourceObject.SSE is SSECopy)
+            if (args.SourceObject.SSE is not null && args.SourceObject.SSE is SSECopy)
                 args.SourceObject.SSE.Marshal(newMeta);
             args.SSE?.Marshal(newMeta);
             cpReqArgs.WithHeaders(newMeta);
@@ -939,7 +939,7 @@ public partial class MinioClient : IObjectOperations
                 queryMap.Add("partNumber", partNumber.ToString());
             }
 
-            if (args.SourceObject.SSE != null && args.SourceObject.SSE is SSECopy)
+            if (args.SourceObject.SSE is not null && args.SourceObject.SSE is SSECopy)
                 args.SourceObject.SSE.Marshal(args.Headers);
             args.SSE?.Marshal(args.Headers);
             var cpPartArgs = new CopyObjectRequestArgs()
@@ -1261,14 +1261,14 @@ public partial class MinioClient : IObjectOperations
                 destObjectName,
                 customHeaders)
             .ConfigureAwait(false);
-        if (queryMap != null)
+        if (queryMap is not null)
             foreach (var query in queryMap)
                 requestMessageBuilder.AddQueryParameter(query.Key, query.Value);
         // Set the object source
         requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source", sourceObjectPath);
 
         // If no conditions available, skip addition else add the conditions to the header
-        if (copyConditions != null)
+        if (copyConditions is not null)
             foreach (var item in copyConditions.Conditions)
                 requestMessageBuilder.AddOrUpdateHeaderParameter(item.Key, item.Value);
 
@@ -1355,7 +1355,7 @@ public partial class MinioClient : IObjectOperations
                 }
             };
 
-            if (sseSrc != null && sseSrc is SSECopy) sseSrc.Marshal(customHeader);
+            if (sseSrc is not null && sseSrc is SSECopy) sseSrc.Marshal(customHeader);
             sseDest?.Marshal(customHeader);
 
             var cpPartResult = (CopyPartResult)await CopyObjectRequestAsync(bucketName, objectName,

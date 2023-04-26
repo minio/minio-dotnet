@@ -25,6 +25,8 @@ public static class SetBucketTags
         string bucketName = "my-bucket-name",
         IDictionary<string, string> tags = null)
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: SetBucketTags");

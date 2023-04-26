@@ -120,10 +120,10 @@ public class CertificateIdentityProvider : ClientProvider
         if (Credentials?.AreExpired() == false)
             return Credentials;
 
-        if (HttpClient == null)
+        if (HttpClient is null)
             throw new ArgumentException("httpClient cannot be null or empty");
 
-        if (ClientCertificate == null) throw new ArgumentException("clientCertificate cannot be null or empty");
+        if (ClientCertificate is null) throw new ArgumentException("clientCertificate cannot be null or empty");
 
         using var response = await HttpClient.PostAsync(PostEndpoint, null).ConfigureAwait(false);
 
@@ -136,7 +136,7 @@ public class CertificateIdentityProvider : ClientProvider
                 Utils.DeserializeXml<CertificateResponse>(stream);
         }
 
-        if (Credentials == null && certResponse?.Cr != null)
+        if (Credentials is null && certResponse?.Cr is not null)
             Credentials = certResponse.Cr.Credentials;
 
         return Credentials;

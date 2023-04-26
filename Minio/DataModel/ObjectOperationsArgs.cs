@@ -44,7 +44,7 @@ public class SelectObjectContentArgs : EncryptionArgs<SelectObjectContentArgs>
             throw new InvalidOperationException("The Expression " + nameof(SelectOptions.Expression) +
                                                 " for Select Object Content cannot be empty.");
 
-        if (SelectOptions.InputSerialization == null || SelectOptions.OutputSerialization == null)
+        if (SelectOptions.InputSerialization is null || SelectOptions.OutputSerialization is null)
             throw new InvalidOperationException(
                 "The Input/Output serialization members for SelectObjectContentArgs should be initialized " +
                 nameof(SelectOptions.InputSerialization) + " " + nameof(SelectOptions.OutputSerialization));
@@ -305,12 +305,9 @@ public class PresignedPostPolicyArgs : ObjectArgs<PresignedPostPolicyArgs>
             Utils.ValidateBucketName(BucketName);
             Utils.ValidateObjectName(ObjectName);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is InvalidBucketNameException || ex is InvalidObjectNameException)
         {
-            if (ex is InvalidBucketNameException || ex is InvalidObjectNameException)
-                checkPolicy = true;
-            else
-                throw;
+            checkPolicy = true;
         }
 
         if (checkPolicy)
@@ -521,7 +518,7 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
     internal override void Validate()
     {
         base.Validate();
-        if (CallBack == null && FuncCallBack == null && string.IsNullOrEmpty(FileName))
+        if (CallBack is null && FuncCallBack is null && string.IsNullOrEmpty(FileName))
             throw new MinioException("Atleast one of " + nameof(CallBack) + ", CallBack method or " + nameof(FileName) +
                                      " file path to save need to be set for GetObject operation.");
 
@@ -533,7 +530,7 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
                 throw new ArgumentException("Length should be greater than or equal to zero", nameof(ObjectLength));
         }
 
-        if (FileName != null) Utils.ValidateFile(FileName);
+        if (FileName is not null) Utils.ValidateFile(FileName);
         Populate();
     }
 
@@ -697,7 +694,7 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
                                                 "or " +
                                                 nameof(WithObjectsVersions) + " method to set objects to be deleted.");
 
-        if ((ObjectNames == null && ObjectNamesVersions == null) ||
+        if ((ObjectNames is null && ObjectNamesVersions is null) ||
             (ObjectNames.Count == 0 && ObjectNamesVersions.Count == 0))
             throw new InvalidOperationException(
                 "Please assign list of object names or object names and version IDs to remove using method(s) " +
@@ -771,7 +768,7 @@ public class SetObjectTagsArgs : ObjectVersionArgs<SetObjectTagsArgs>
     internal override void Validate()
     {
         base.Validate();
-        if (ObjectTags == null || ObjectTags.Tags.Count == 0)
+        if (ObjectTags is null || ObjectTags.Tags.Count == 0)
             throw new InvalidOperationException("Unable to set empty tags.");
     }
 }
@@ -930,7 +927,7 @@ public class CopySourceObjectArgs : ObjectConditionalQueryArgs<CopySourceObjectA
 
     public CopySourceObjectArgs WithCopyConditions(CopyConditions cp)
     {
-        CopyOperationConditions = cp != null ? cp.Clone() : new CopyConditions();
+        CopyOperationConditions = cp is not null ? cp.Clone() : new CopyConditions();
         return this;
     }
 
@@ -990,7 +987,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
 
     public CopyObjectRequestArgs WithCopyObjectSource(CopySourceObjectArgs cs)
     {
-        if (cs == null)
+        if (cs is null)
             throw new InvalidOperationException("The copy source object needed for copy operation is not initialized.");
 
         SourceObject ??= new CopySourceObjectArgs();
@@ -1022,11 +1019,11 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
         // Set the object source
         requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source", sourceObjectPath);
 
-        if (QueryMap != null)
+        if (QueryMap is not null)
             foreach (var query in QueryMap)
                 requestMessageBuilder.AddQueryParameter(query.Key, query.Value);
 
-        if (SourceObject.CopyOperationConditions != null)
+        if (SourceObject.CopyOperationConditions is not null)
             foreach (var item in SourceObject.CopyOperationConditions.Conditions)
                 requestMessageBuilder.AddOrUpdateHeaderParameter(item.Key, item.Value);
 
@@ -1093,7 +1090,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
     internal override void Validate()
     {
         Utils.ValidateBucketName(BucketName); //Object name can be same as that of source.
-        if (SourceObject == null) throw new InvalidOperationException(nameof(SourceObject) + " has not been assigned.");
+        if (SourceObject is null) throw new InvalidOperationException(nameof(SourceObject) + " has not been assigned.");
         Populate();
     }
 
@@ -1101,7 +1098,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
     {
         ObjectName = string.IsNullOrEmpty(ObjectName) ? SourceObject.ObjectName : ObjectName;
         // Opting for concat as Headers may have byte range info .etc.
-        if (!ReplaceMetadataDirective && SourceObjectInfo.MetaData != null)
+        if (!ReplaceMetadataDirective && SourceObjectInfo.MetaData is not null)
             Headers = SourceObjectInfo.MetaData.Concat(Headers).GroupBy(item => item.Key)
                 .ToDictionary(item => item.Key, item => item.First().Value);
         else if (ReplaceMetadataDirective) Headers ??= new Dictionary<string, string>();
@@ -1132,11 +1129,11 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
     internal override void Validate()
     {
         Utils.ValidateBucketName(BucketName);
-        if (SourceObject == null)
+        if (SourceObject is null)
             throw new InvalidOperationException(nameof(SourceObject) + " has not been assigned. Please use " +
                                                 nameof(WithCopyObjectSource));
 
-        if (SourceObjectInfo == null)
+        if (SourceObjectInfo is null)
             throw new InvalidOperationException(
                 "StatObject result for the copy source object needed to continue copy operation. Use " +
                 nameof(WithCopyObjectSourceStats) + " to initialize StatObject result.");
@@ -1172,8 +1169,12 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         Headers ??= new Dictionary<string, string>();
         if (ReplaceMetadataDirective)
         {
-            if (Headers != null)
+            if (Headers is not null)
+#if NETSTANDARD
+                foreach (var pair in SourceObjectInfo.MetaData.ToList())
+#else
                 foreach (var pair in SourceObjectInfo.MetaData)
+#endif
                 {
                     var comparer = StringComparer.OrdinalIgnoreCase;
                     var newDictionary = new Dictionary<string, string>(Headers, comparer);
@@ -1188,10 +1189,14 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
                     item.Last().Value);
         }
 
-        if (Headers != null)
+        if (Headers is not null)
         {
             var newKVList = new List<Tuple<string, string>>();
+#if NETSTANDARD
+            foreach (var item in Headers.ToList())
+#else
             foreach (var item in Headers)
+#endif
             {
                 var key = item.Key;
                 if (!OperationsUtil.IsSupportedHeader(item.Key) &&
@@ -1213,7 +1218,7 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
 
     public CopyObjectArgs WithCopyObjectSource(CopySourceObjectArgs cs)
     {
-        if (cs == null)
+        if (cs is null)
             throw new InvalidOperationException("The copy source object needed for copy operation is not initialized.");
 
         SourceObject.RequestMethod = HttpMethod.Put;
@@ -1262,7 +1267,7 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
     internal CopyObjectArgs WithCopyObjectSourceStats(ObjectStat info)
     {
         SourceObjectInfo = info;
-        if (info.MetaData != null && !ReplaceMetadataDirective)
+        if (info.MetaData is not null && !ReplaceMetadataDirective)
         {
             SourceObject.Headers ??= new Dictionary<string, string>();
             SourceObject.Headers = SourceObject.Headers.Concat(info.MetaData).GroupBy(item => item.Key)
@@ -1395,9 +1400,9 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
 {
     internal MultipartCopyUploadArgs(CopyObjectArgs args)
     {
-        if (args == null || args.SourceObject == null)
+        if (args is null || args.SourceObject is null)
         {
-            var message = args == null
+            var message = args is null
                 ? "The constructor of " + nameof(CopyObjectRequestArgs) +
                   "initialized with arguments of CopyObjectArgs null."
                 : "The constructor of " + nameof(CopyObjectRequestArgs) +
@@ -1431,7 +1436,7 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
         if (!args.ReplaceMetadataDirective)
             Headers = new Dictionary<string, string>(args.SourceObjectInfo.MetaData);
         else if (args.ReplaceMetadataDirective) Headers ??= new Dictionary<string, string>();
-        if (Headers != null)
+        if (Headers is not null)
         {
             var newKVList = new List<Tuple<string, string>>();
             foreach (var item in Headers)
@@ -1537,7 +1542,7 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
     internal override void Validate()
     {
         base.Validate();
-        if (SourceObjectInfo == null || SourceObject == null)
+        if (SourceObjectInfo is null || SourceObject is null)
             throw new InvalidOperationException(nameof(SourceObjectInfo) + " and " + nameof(SourceObject) +
                                                 " need to be initialized for a NewMultipartUpload operation to work.");
 
@@ -1551,7 +1556,7 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
             Headers = SourceObjectInfo.MetaData.Concat(Headers).GroupBy(item => item.Key)
                 .ToDictionary(item => item.Key, item => item.First().Value);
         else if (ReplaceMetadataDirective) Headers ??= new Dictionary<string, string>();
-        if (Headers != null)
+        if (Headers is not null)
         {
             var newKVList = new List<Tuple<string, string>>();
             foreach (var item in Headers)
@@ -1611,7 +1616,7 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
 
     public NewMultipartUploadCopyArgs WithCopyObjectSource(CopySourceObjectArgs cs)
     {
-        if (cs == null)
+        if (cs is null)
             throw new InvalidOperationException("The copy source object needed for copy operation is not initialized.");
 
         SourceObject ??= new CopySourceObjectArgs();
@@ -1687,7 +1692,7 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
         base.Validate();
         if (string.IsNullOrWhiteSpace(UploadId))
             throw new ArgumentNullException(nameof(UploadId) + " cannot be empty.");
-        if (ETags == null || ETags.Count <= 0)
+        if (ETags is null || ETags.Count <= 0)
             throw new InvalidOperationException(nameof(ETags) + " dictionary cannot be empty.");
     }
 
@@ -1819,7 +1824,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
     {
         base.Validate();
         // Check atleast one of filename or stream are initialized
-        if (string.IsNullOrWhiteSpace(FileName) && ObjectStreamData == null)
+        if (string.IsNullOrWhiteSpace(FileName) && ObjectStreamData is null)
             throw new ArgumentException("One of " + nameof(FileName) + " or " + nameof(ObjectStreamData) +
                                         " must be set.");
 
@@ -1827,13 +1832,13 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
             throw new ArgumentOutOfRangeException(nameof(PartNumber), PartNumber,
                 "Invalid Part number value. Cannot be less than 0");
         // Check if only one of filename or stream are initialized
-        if (!string.IsNullOrWhiteSpace(FileName) && ObjectStreamData != null)
+        if (!string.IsNullOrWhiteSpace(FileName) && ObjectStreamData is not null)
             throw new ArgumentException("Only one of " + nameof(FileName) + " or " + nameof(ObjectStreamData) +
                                         " should be set.");
 
         if (!string.IsNullOrWhiteSpace(FileName)) Utils.ValidateFile(FileName);
         // Check object size when using stream data
-        if (ObjectStreamData != null && ObjectSize == 0)
+        if (ObjectStreamData is not null && ObjectSize == 0)
             throw new ArgumentException($"{nameof(ObjectSize)} must be set");
         Populate();
     }
@@ -1864,7 +1869,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         if (ObjectTags?.TaggingSet?.Tag.Count > 0)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
 
-        if (Retention != null)
+        if (Retention is not null)
         {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
                 Retention.RetainUntilDate);
@@ -1873,7 +1878,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
                 Utils.GetMD5SumStr(RequestBody.Span));
         }
 
-        if (LegalHoldEnabled != null)
+        if (LegalHoldEnabled is not null)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-legal-hold",
                 LegalHoldEnabled == true ? "ON" : "OFF");
 
@@ -1893,11 +1898,11 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         return requestMessageBuilder;
     }
 
-    public override PutObjectArgs WithHeaders(IDictionary<string, string> metaData)
+    public override PutObjectArgs WithHeaders(IDictionary<string, string> headers)
     {
         Headers ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        if (metaData != null)
-            foreach (var p in metaData)
+        if (headers is not null)
+            foreach (var p in headers)
             {
                 var key = p.Key;
                 if (!OperationsUtil.IsSupportedHeader(p.Key) &&

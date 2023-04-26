@@ -166,13 +166,13 @@ public class AuthenticatorTest
     {
         var key = request.HeaderParameters.Keys.FirstOrDefault(o =>
             string.Equals(o, headername, StringComparison.OrdinalIgnoreCase));
-        if (key != null) return Tuple.Create(key, request.HeaderParameters[key]);
+        if (key is not null) return Tuple.Create(key, request.HeaderParameters[key]);
         return null;
     }
 
     private bool HasPayloadHeader(HttpRequestMessageBuilder request, string headerName)
     {
         var match = GetHeaderKV(request, headerName);
-        return match != null;
+        return match is not null;
     }
 }

@@ -28,6 +28,8 @@ internal static class SelectObjectContent
         string objectName = "my-object-name",
         string fileName = "my-file-name")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         var newObjectName = "new" + objectName;
         try
         {
@@ -77,11 +79,12 @@ internal static class SelectObjectContent
                 .WithInputSerialization(inputSerialization)
                 .WithOutputSerialization(outputSerialization);
             var resp = await minio.SelectObjectContentAsync(args).ConfigureAwait(false);
-            await resp.Payload.CopyToAsync(Console.OpenStandardOutput()).ConfigureAwait(false);
+            using var standardOutput = Console.OpenStandardOutput();
+            await resp.Payload.CopyToAsync(standardOutput).ConfigureAwait(false);
             Console.WriteLine("Bytes scanned:" + resp.Stats.BytesScanned);
             Console.WriteLine("Bytes returned:" + resp.Stats.BytesReturned);
             Console.WriteLine("Bytes processed:" + resp.Stats.BytesProcessed);
-            if (resp.Progress != null) Console.WriteLine("Progress :" + resp.Progress.BytesProcessed);
+            if (resp.Progress is not null) Console.WriteLine("Progress :" + resp.Progress.BytesProcessed);
         }
         catch (Exception e)
         {

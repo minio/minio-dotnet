@@ -71,8 +71,8 @@ public partial class MinioClient : IBucketOperations
         }
         catch (InternalClientException ice)
         {
-            if ((ice.ServerResponse != null && HttpStatusCode.NotFound.Equals(ice.ServerResponse.StatusCode))
-                || ice.ServerResponse == null)
+            if ((ice.ServerResponse is not null && HttpStatusCode.NotFound.Equals(ice.ServerResponse.StatusCode))
+                || ice.ServerResponse is null)
                 return false;
         }
         catch (Exception ex)

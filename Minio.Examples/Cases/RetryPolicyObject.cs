@@ -64,7 +64,7 @@ internal static class RetryPolicyHelper
 
     public static RetryPolicyHandlingDelegate AsRetryDelegate(this AsyncPolicy<ResponseResult> policy)
     {
-        return policy == null
+        return policy is null
             ? null
             : async executeCallback => await policy.ExecuteAsync(executeCallback).ConfigureAwait(false);
     }
@@ -82,6 +82,8 @@ internal static class RetryPolicyObject
         string bucketName = "my-bucket-name",
         string bucketObject = "my-object-name")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             var customPolicy = RetryPolicyHelper

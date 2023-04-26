@@ -80,7 +80,7 @@ public class CopyConditions
     /// <exception cref="ArgumentException">When etag is null</exception>
     public void SetMatchETag(string etag)
     {
-        if (etag == null) throw new ArgumentException("ETag cannot be empty", nameof(etag));
+        if (etag is null) throw new ArgumentException("ETag cannot be empty", nameof(etag));
         copyConditions.Add("x-amz-copy-source-if-match", etag);
     }
 
@@ -92,7 +92,7 @@ public class CopyConditions
     /// <exception cref="ArgumentException">When etag is null</exception>
     public void SetMatchETagNone(string etag)
     {
-        if (etag == null) throw new ArgumentException("ETag cannot be empty", nameof(etag));
+        if (etag is null) throw new ArgumentException("ETag cannot be empty", nameof(etag));
         copyConditions.Add("x-amz-copy-source-if-none-match", etag);
     }
 

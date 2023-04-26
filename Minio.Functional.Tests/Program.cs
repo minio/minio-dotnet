@@ -30,8 +30,8 @@ internal static class Program
         var kmsEnabled = "0";
         var port = 80;
 
-        var useAWS = Environment.GetEnvironmentVariable("AWS_ENDPOINT") != null;
-        if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
+        var useAWS = Environment.GetEnvironmentVariable("AWS_ENDPOINT") is not null;
+        if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") is not null)
         {
             endPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");
             var posColon = endPoint.LastIndexOf(':');
@@ -43,7 +43,7 @@ internal static class Program
 
             accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
             secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
-            if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") != null)
+            if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") is not null)
             {
                 isSecure = Environment.GetEnvironmentVariable("ENABLE_HTTPS")
                     .Equals("1", StringComparison.OrdinalIgnoreCase);
@@ -230,7 +230,7 @@ internal static class Program
             await FunctionalTest.EncryptedCopyObject_Test2(minioClient).ConfigureAwait(false);
         }
 
-        if (kmsEnabled != null && string.Equals(kmsEnabled, "1", StringComparison.OrdinalIgnoreCase))
+        if (kmsEnabled is not null && string.Equals(kmsEnabled, "1", StringComparison.OrdinalIgnoreCase))
         {
             await FunctionalTest.PutGetStatEncryptedObject_Test3(minioClient).ConfigureAwait(false);
             await FunctionalTest.EncryptedCopyObject_Test3(minioClient).ConfigureAwait(false);

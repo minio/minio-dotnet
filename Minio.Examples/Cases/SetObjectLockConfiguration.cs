@@ -25,6 +25,8 @@ public static class SetObjectLockConfiguration
         string bucketName = "my-bucket-name",
         ObjectLockConfiguration config = null)
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: SetObjectLockConfiguration");

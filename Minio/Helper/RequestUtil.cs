@@ -57,14 +57,13 @@ internal static class RequestUtil
 
         if (!usePathStyle)
         {
-            var suffix = bucketName != null ? bucketName + "/" : "";
+            var suffix = bucketName is not null ? bucketName + "/" : "";
             host = host + "/" + suffix;
         }
 
         var scheme = secure ? "https" : "http";
         var endpointURL = string.Format("{0}://{1}", scheme, host);
-        var uri = new Uri(endpointURL, UriKind.Absolute);
-        return uri;
+        return new Uri(endpointURL, UriKind.Absolute);
     }
 
     internal static Uri TryCreateUri(string endpoint, bool secure)

@@ -22,6 +22,8 @@ public static class GetBucketLifecycle
     public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: GetBucketLifecycle");
@@ -29,7 +31,7 @@ public static class GetBucketLifecycle
                 new GetBucketLifecycleArgs()
                     .WithBucket(bucketName)
             ).ConfigureAwait(false);
-            if (lfc != null && lfc.Rules?.Count > 0)
+            if (lfc is not null && lfc.Rules?.Count > 0)
             {
                 Console.WriteLine($"Got Bucket Lifecycle set for bucket {bucketName}.");
                 Console.WriteLine(lfc.MarshalXML());

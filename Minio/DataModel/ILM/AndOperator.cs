@@ -44,7 +44,7 @@ public class AndOperator
     public AndOperator(string prefix, IDictionary<string, string> tags)
     {
         Prefix = prefix;
-        if (tags == null || tags.Count == 0)
+        if (tags is null || tags.Count == 0)
             return;
         foreach (var item in tags) Tags.Add(new Tag(item.Key, item.Value));
     }

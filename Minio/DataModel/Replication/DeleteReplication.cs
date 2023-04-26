@@ -35,8 +35,9 @@ public class DeleteReplication
 
     public DeleteReplication(string status)
     {
-        if (string.IsNullOrWhiteSpace(status))
-            throw new ArgumentNullException(nameof(status) + " cannot be null or empty.");
+        if (string.IsNullOrEmpty(status))
+            throw new ArgumentException($"'{nameof(status)}' cannot be null or empty.", nameof(status));
+
         Status = status;
     }
 

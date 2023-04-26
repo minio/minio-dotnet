@@ -38,6 +38,8 @@ public class VersioningConfiguration
 
     public VersioningConfiguration(VersioningConfiguration vc)
     {
+        if (vc is null) throw new ArgumentNullException(nameof(vc));
+
         Status = vc.Status;
         MfaDelete = vc.MfaDelete;
     }

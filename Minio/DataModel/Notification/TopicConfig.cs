@@ -35,6 +35,8 @@ public class TopicConfig : NotificationConfiguration
 
     public TopicConfig(Arn arn) : base(arn)
     {
+        if (arn is null) throw new ArgumentNullException(nameof(arn));
+
         Topic = arn.ToString();
     }
 
@@ -49,7 +51,7 @@ public class TopicConfig : NotificationConfiguration
     {
         var other = (TopicConfig)obj;
         // If parameter is null return false.
-        if (other == null) return false;
+        if (other is null) return false;
         return other.Topic.Equals(Topic, StringComparison.OrdinalIgnoreCase);
     }
 

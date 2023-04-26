@@ -39,7 +39,7 @@ public class SelectResponseStream
     // SelectResponseStream is a struct for selectobjectcontent response.
     public SelectResponseStream(Stream stream)
     {
-        if (stream != null)
+        if (stream is not null)
         {
             var _ms = new MemoryStream();
             stream.CopyTo(_ms);
@@ -66,7 +66,9 @@ public class SelectResponseStream
         if (!_isProcessing) return read;
 
 #if NETSTANDARD
-        read = payloadStream.Read(buffer.ToArray(), 0, buffer.Length);
+        var bytes = new byte[buffer.Length];
+        read = payloadStream.Read(bytes, 0, buffer.Length);
+        bytes.CopyTo(buffer);
 #else
         read = payloadStream.Read(buffer);
 #endif

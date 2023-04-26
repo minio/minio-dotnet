@@ -23,6 +23,10 @@ public sealed class DefaultRequestLogger : IRequestLogger
 {
     public void LogRequest(RequestToLog requestToLog, ResponseToLog responseToLog, double durationMs)
     {
+        if (requestToLog is null) throw new ArgumentNullException(nameof(requestToLog));
+
+        if (responseToLog is null) throw new ArgumentNullException(nameof(responseToLog));
+
         var sb = new StringBuilder("Request completed in ");
 
         sb.Append(durationMs);

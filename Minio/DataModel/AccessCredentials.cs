@@ -26,14 +26,24 @@ public class AccessCredentials
     public AccessCredentials(string accessKey, string secretKey,
         string sessionToken, DateTime expiration)
     {
-        if (string.IsNullOrWhiteSpace(accessKey) || string.IsNullOrWhiteSpace(secretKey))
-            throw new ArgumentNullException(nameof(accessKey) + " and " + nameof(secretKey) +
-                                            " cannot be null or empty.");
+        if (!string.IsNullOrEmpty(accessKey) || !string.IsNullOrEmpty(secretKey) || !string.IsNullOrEmpty(sessionToken))
+        {
+            AccessKey = accessKey;
+            SecretKey = secretKey;
+            SessionToken = sessionToken;
+            Expiration = expiration.Equals(default) ? null : Utils.To8601String(expiration);
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(accessKey))
+                throw new ArgumentException($"'{nameof(accessKey)}' cannot be null or empty.", nameof(accessKey));
 
-        AccessKey = accessKey;
-        SecretKey = secretKey;
-        SessionToken = sessionToken;
-        Expiration = expiration.Equals(default) ? null : Utils.To8601String(expiration);
+            if (string.IsNullOrEmpty(secretKey))
+                throw new ArgumentException($"'{nameof(secretKey)}' cannot be null or empty.", nameof(secretKey));
+
+            if (string.IsNullOrEmpty(sessionToken))
+                throw new ArgumentException($"'{nameof(sessionToken)}' cannot be null or empty.", nameof(sessionToken));
+        }
     }
 
     public AccessCredentials()

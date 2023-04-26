@@ -52,6 +52,8 @@ public class AndOperator
 
     public AndOperator(string prefix, IDictionary<string, string> tags)
     {
+        if (tags is null) throw new ArgumentNullException(nameof(tags));
+
         Prefix = prefix;
         foreach (var item in tags) Tags.Add(new Tag(item.Key, item.Value));
     }

@@ -24,6 +24,8 @@ public static class CustomRequestLogger
     // Check if a bucket exists
     public static async Task Run(IMinioClient minio)
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for: set custom request logger");

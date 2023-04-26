@@ -77,14 +77,14 @@ internal class ListObjectsItemResponse
             ItemObservable.OnNext(item);
         }
 
-        if (objectList.Item1.NextMarker != null)
+        if (objectList.Item1.NextMarker is not null)
         {
             if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
                 NextMarker = HttpUtility.UrlDecode(objectList.Item1.NextMarker);
             else
                 NextMarker = objectList.Item1.NextMarker;
         }
-        else if (BucketObjectsLastItem != null)
+        else if (BucketObjectsLastItem is not null)
         {
             if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
                 NextMarker = HttpUtility.UrlDecode(BucketObjectsLastItem.Key);
@@ -113,7 +113,7 @@ internal class ListObjectVersionResponse
             ItemObservable.OnNext(item);
         }
 
-        if (objectList.Item1.NextMarker != null)
+        if (objectList.Item1.NextMarker is not null)
         {
             if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
             {
@@ -128,7 +128,7 @@ internal class ListObjectVersionResponse
                 NextVerMarker = objectList.Item1.NextVersionIdMarker;
             }
         }
-        else if (BucketObjectsLastItem != null)
+        else if (BucketObjectsLastItem is not null)
         {
             if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
             {

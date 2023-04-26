@@ -189,9 +189,9 @@ public static class Utils
 
     internal static bool IsSupersetOf(IList<string> l1, IList<string> l2)
     {
-        if (l2 == null) return true;
+        if (l2 is null) return true;
 
-        if (l1 == null) return false;
+        if (l1 is null) return false;
 
         return !l2.Except(l1).Any();
     }
@@ -199,6 +199,8 @@ public static class Utils
     public static bool CaseInsensitiveContains(string text, string value,
         StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
     {
+        if (string.IsNullOrEmpty(text))
+            throw new ArgumentException($"'{nameof(text)}' cannot be null or empty.", nameof(text));
 #if NETSTANDARD
         return text.IndexOf(value, stringComparison) >= 0;
 #else
@@ -811,6 +813,8 @@ public static class Utils
 
     public static string MarshalXML(object obj, string nmspc)
     {
+        if (obj is null) throw new ArgumentNullException(nameof(obj));
+
         XmlWriter xw = null;
 
         var str = string.Empty;
@@ -952,7 +956,7 @@ public static class Utils
 
     public static void PrintDict(IDictionary<string, string> d)
     {
-        if (d != null)
+        if (d is not null)
             foreach (var kv in d)
                 Console.WriteLine("DEBUG >>        {0} = {1}", kv.Key, kv.Value);
 
@@ -986,7 +990,10 @@ public static class Utils
         {
             var ns = GetNamespace<T>();
             if (!string.IsNullOrWhiteSpace(ns) && ns is "http://s3.amazonaws.com/doc/2006-03-01/")
-                return (T)new XmlSerializer(typeof(T)).Deserialize(new AmazonAwsS3XmlReader(stream));
+            {
+                using var amazonAwsS3XmlReader = new AmazonAwsS3XmlReader(stream);
+                return (T)new XmlSerializer(typeof(T)).Deserialize(amazonAwsS3XmlReader);
+            }
 
             return (T)new XmlSerializer(typeof(T)).Deserialize(stream);
         }
@@ -1002,7 +1009,8 @@ public static class Utils
         try
         {
             var serializer = new XmlSerializer(typeof(T));
-            return (T)serializer.Deserialize(new StringReader(xml));
+            using var stringReader = new StringReader(xml);
+            return (T)serializer.Deserialize(stringReader);
         }
         catch (Exception)
         {

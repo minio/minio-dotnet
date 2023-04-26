@@ -39,6 +39,8 @@ internal static class StatObjectQuery
         string matchEtag = null,
         DateTime modifiedSince = default)
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: StatObjectAsync [with ObjectQuery]");
