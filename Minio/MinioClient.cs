@@ -53,7 +53,7 @@ public partial class MinioClient : IMinioClient
     private string CustomUserAgent = string.Empty;
     private bool disposedValue;
 
-    private bool disposeHttpClient = true;
+    internal bool DisposeHttpClient = true;
 
     private IRequestLogger logger;
 
@@ -63,10 +63,10 @@ public partial class MinioClient : IMinioClient
     // Cache holding bucket to region mapping for buckets seen so far.
     internal BucketRegionCache regionCache;
 
-    private int requestTimeout;
+    internal int RequestTimeout;
 
     // Handler for task retry policy
-    internal RetryPolicyHandlingDelegate retryPolicyHandler;
+    internal RetryPolicyHandlingDelegate RetryPolicyHandler;
 
     // Enables HTTP tracing if set to true
     private bool trace;
@@ -100,7 +100,7 @@ public partial class MinioClient : IMinioClient
 
     internal HttpClient HttpClient { get; set; }
 
-    internal IWebProxy Proxy { get; private set; }
+    internal IWebProxy Proxy { get; set; }
 
     private static string SystemUserAgent
     {
@@ -129,8 +129,7 @@ public partial class MinioClient : IMinioClient
     /// </summary>
     public async Task<HttpResponseMessage> WrapperGetAsync(string url)
     {
-        var response = await HttpClient.GetAsync(url).ConfigureAwait(false);
-        return response;
+        return await HttpClient.GetAsync(url).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -378,100 +377,6 @@ public partial class MinioClient : IMinioClient
     }
 
     /// <summary>
-    ///     Connects to Cloud Storage with HTTPS if this method is invoked on client object
-    /// </summary>
-    /// <returns></returns>
-    public MinioClient WithSSL(bool secure = true)
-    {
-        if (secure)
-        {
-            Secure = true;
-            if (string.IsNullOrEmpty(BaseUrl))
-                return this;
-            var secureUrl = RequestUtil.MakeTargetURL(BaseUrl, Secure);
-        }
-
-        return this;
-    }
-
-    /// <summary>
-    ///     Uses webproxy for all requests if this method is invoked on client object.
-    /// </summary>
-    /// <param name="proxy">Information on the proxy server in the setup.</param>
-    /// <returns></returns>
-    public MinioClient WithProxy(IWebProxy proxy)
-    {
-        Proxy = proxy;
-        return this;
-    }
-
-    /// <summary>
-    ///     Uses the set timeout for all requests if this method is invoked on client object
-    /// </summary>
-    /// <param name="timeout">Timeout in milliseconds.</param>
-    /// <returns></returns>
-    public MinioClient WithTimeout(int timeout)
-    {
-        requestTimeout = timeout;
-        return this;
-    }
-
-    /// <summary>
-    ///     Allows to add retry policy handler
-    /// </summary>
-    /// <param name="retryPolicyHandler">Delegate that will wrap execution of http client requests.</param>
-    /// <returns></returns>
-    public MinioClient WithRetryPolicy(RetryPolicyHandlingDelegate retryPolicyHandler)
-    {
-        this.retryPolicyHandler = retryPolicyHandler;
-        return this;
-    }
-
-    /// <summary>
-    ///     Allows end user to define the Http server and pass it as a parameter
-    /// </summary>
-    /// <param name="httpClient"> Instance of HttpClient</param>
-    /// <param name="disposeHttpClient"> Dispose the HttpClient when leaving</param>
-    /// <returns></returns>
-    public MinioClient WithHttpClient(HttpClient httpClient, bool disposeHttpClient = false)
-    {
-        if (httpClient is not null) HttpClient = httpClient;
-        this.disposeHttpClient = disposeHttpClient;
-        return this;
-    }
-
-    /// <summary>
-    ///     With provider for credentials and session token if being used
-    /// </summary>
-    /// <returns></returns>
-    public MinioClient WithCredentialsProvider(ClientProvider provider)
-    {
-        Provider = provider;
-        AccessCredentials credentials;
-        if (Provider is IAMAWSProvider)
-            // Empty object, we need the Minio client completely
-            credentials = new AccessCredentials();
-        else
-            credentials = Provider.GetCredentials();
-
-        if (credentials is null)
-            // Unable to fetch credentials.
-            return this;
-
-        AccessKey = credentials.AccessKey;
-        SecretKey = credentials.SecretKey;
-        var isSessionTokenAvailable = !string.IsNullOrEmpty(credentials.SessionToken);
-        if ((Provider is AWSEnvironmentProvider ||
-             Provider is IAMAWSProvider ||
-             Provider is CertificateIdentityProvider ||
-             (Provider is ChainedProvider chainedProvider && chainedProvider.CurrentProvider is AWSEnvironmentProvider))
-            && isSessionTokenAvailable)
-            SessionToken = credentials.SessionToken;
-
-        return this;
-    }
-
-    /// <summary>
     ///     Actual doer that executes the request on the server
     /// </summary>
     /// <param name="errorHandlers">List of handlers to override default handling</param>
@@ -485,9 +390,9 @@ public partial class MinioClient : IMinioClient
         bool isSts = false,
         CancellationToken cancellationToken = default)
     {
-        if (requestTimeout > 0)
+        if (RequestTimeout > 0)
         {
-            using var internalTokenSource = new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, requestTimeout));
+            using var internalTokenSource = new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, RequestTimeout));
             using var timeoutTokenSource =
                 CancellationTokenSource.CreateLinkedTokenSource(internalTokenSource.Token, cancellationToken);
             cancellationToken = timeoutTokenSource.Token;
@@ -807,9 +712,9 @@ public partial class MinioClient : IMinioClient
     private Task<ResponseResult> ExecuteWithRetry(
         Func<Task<ResponseResult>> executeRequestCallback)
     {
-        return retryPolicyHandler is null
+        return RetryPolicyHandler is null
             ? executeRequestCallback()
-            : retryPolicyHandler(executeRequestCallback);
+            : RetryPolicyHandler(executeRequestCallback);
     }
 
     protected virtual void Dispose(bool disposing)
@@ -817,7 +722,7 @@ public partial class MinioClient : IMinioClient
         if (!disposedValue)
         {
             if (disposing)
-                if (disposeHttpClient)
+                if (DisposeHttpClient)
                     HttpClient?.Dispose();
             disposedValue = true;
         }
