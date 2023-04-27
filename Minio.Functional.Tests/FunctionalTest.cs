@@ -247,7 +247,11 @@ public static class FunctionalTest
     {
         // Server side does not allow the following characters in object names
         // '-', '_', '.', '/', '*'
+#if NET6_0_OR_GREATER
         var characters = "abcd+%$#@&{}[]()";
+#else
+        var characters = "abcdefgh+%$#@&";
+#endif
         var result = new StringBuilder(length);
 
         for (var i = 0; i < length; i++) result.Append(characters[rnd.Next(characters.Length)]);
@@ -4818,6 +4822,7 @@ public static class FunctionalTest
             }
         }
     }
+
 #if NET6_0_OR_GREATER
     internal static async Task GetObject_AsyncCallback_Test1(MinioClient minio)
     {
@@ -4874,13 +4879,13 @@ public static class FunctionalTest
             file_read_size = writtenInfo.Length;
             Assert.AreEqual(size, file_read_size);
 
-            new MintLogger("GetObject_LargeFile_Test0", getObjectSignature,
+            new MintLogger("GetObject_AsyncCallback_Test1", getObjectSignature,
                 "Tests whether GetObject as stream works",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
         }
         catch (Exception ex)
         {
-            new MintLogger("GetObject_LargeFile_Test0", getObjectSignature, "Tests whether GetObject as stream works",
+            new MintLogger("GetObject_AsyncCallback_Test1", getObjectSignature, "Tests whether GetObject as stream works",
                 TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
             throw;
         }
@@ -4894,6 +4899,7 @@ public static class FunctionalTest
         }
     }
 #endif
+
     internal static async Task FGetObject_Test1(MinioClient minio)
     {
         var startTime = DateTime.Now;

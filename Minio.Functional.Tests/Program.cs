@@ -16,6 +16,7 @@
 */
 
 using System.Net;
+using System.Reflection;
 
 namespace Minio.Functional.Tests;
 
@@ -86,6 +87,10 @@ internal static class Program
 
         // Set HTTP Tracing Off
         // minioClient.SetTraceOff();
+
+        // Print Minio version in use
+        var version = typeof(MinioClient).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+        Console.WriteLine($"\n  Minio package version is {version.Substring(0, version.IndexOf('+'))}\n");
 
         var runMode = Environment.GetEnvironmentVariable("MINT_MODE");
 
