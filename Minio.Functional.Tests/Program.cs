@@ -89,8 +89,8 @@ internal static class Program
         // minioClient.SetTraceOff();
 
         // Print Minio version in use
-        var version = typeof(MinioClient).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
-        Console.WriteLine($"\n  Minio package version is {version.Substring(0, version.IndexOf('+'))}\n");
+        // var version = typeof(MinioClient).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+        // Console.WriteLine($"\n  Minio package version is {version.Substring(0, version.IndexOf('+'))}\n");
 
         var runMode = Environment.GetEnvironmentVariable("MINT_MODE");
 
