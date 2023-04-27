@@ -4885,7 +4885,8 @@ public static class FunctionalTest
         }
         catch (Exception ex)
         {
-            new MintLogger("GetObject_AsyncCallback_Test1", getObjectSignature, "Tests whether GetObject as stream works",
+            new MintLogger("GetObject_AsyncCallback_Test1", getObjectSignature,
+                "Tests whether GetObject as stream works",
                 TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
             throw;
         }
