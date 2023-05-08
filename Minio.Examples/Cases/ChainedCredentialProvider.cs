@@ -26,7 +26,7 @@ public static class ChainedCredentialProvider
     public static async Task Run()
     {
         var provider = new ChainedProvider()
-            .AddProviders(new ClientProvider[] { new AWSEnvironmentProvider(), new MinioEnvironmentProvider() });
+            .AddProviders(new IClientProvider[] { new AWSEnvironmentProvider(), new MinioEnvironmentProvider() });
         //Chained provider definition here.
         using var minioClient = new MinioClient()
             .WithEndpoint("s3.amazonaws.com")
