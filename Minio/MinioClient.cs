@@ -127,9 +127,9 @@ public partial class MinioClient : IMinioClient
     /// <summary>
     ///     Runs httpClient's GetAsync method
     /// </summary>
-    public async Task<HttpResponseMessage> WrapperGetAsync(string url)
+    public Task<HttpResponseMessage> WrapperGetAsync(string url)
     {
-        return await HttpClient.GetAsync(url).ConfigureAwait(false);
+        return HttpClient.GetAsync(url);
     }
 
     /// <summary>
