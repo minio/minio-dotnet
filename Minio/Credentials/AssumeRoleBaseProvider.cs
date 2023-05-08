@@ -23,7 +23,7 @@ using Minio.DataModel;
 namespace Minio.Credentials;
 
 // Assume-role credential provider
-public abstract class AssumeRoleBaseProvider<T> : ClientProvider
+public abstract class AssumeRoleBaseProvider<T> : IClientProvider
     where T : AssumeRoleBaseProvider<T>
 {
     internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers =
@@ -108,7 +108,7 @@ public abstract class AssumeRoleBaseProvider<T> : ClientProvider
         return reqBuilder;
     }
 
-    public override async Task<AccessCredentials> GetCredentialsAsync()
+    public virtual async Task<AccessCredentials> GetCredentialsAsync()
     {
         if (Credentials?.AreExpired() == false) return Credentials;
 
@@ -139,7 +139,7 @@ public abstract class AssumeRoleBaseProvider<T> : ClientProvider
         return Utils.DeserializeXml<AccessCredentials>(stream);
     }
 
-    public override AccessCredentials GetCredentials()
+    public virtual AccessCredentials GetCredentials()
     {
         throw new InvalidOperationException("Please use the GetCredentialsAsync method.");
     }

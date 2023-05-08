@@ -69,7 +69,7 @@ public class CertificateResult
     public AccessCredentials Credentials { get; set; }
 }
 
-public class CertificateIdentityProvider : ClientProvider
+public class CertificateIdentityProvider : IClientProvider
 {
     private readonly int DEFAULT_DURATION_IN_SECONDS = 3600;
 
@@ -108,14 +108,14 @@ public class CertificateIdentityProvider : ClientProvider
         return this;
     }
 
-    public override AccessCredentials GetCredentials()
+    public AccessCredentials GetCredentials()
     {
         var t = Task.Run(async () => await GetCredentialsAsync().ConfigureAwait(false));
         t.Wait();
         return t.Result;
     }
 
-    public override async Task<AccessCredentials> GetCredentialsAsync()
+    public async Task<AccessCredentials> GetCredentialsAsync()
     {
         if (Credentials?.AreExpired() == false)
             return Credentials;

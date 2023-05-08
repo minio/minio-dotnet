@@ -15,10 +15,15 @@
  * limitations under the License.
  */
 
+using Minio.DataModel;
+
 namespace Minio.Credentials;
 
-public abstract class EnvironmentProvider : ClientProvider
+public abstract class EnvironmentProvider : IClientProvider
 {
+    public abstract AccessCredentials GetCredentials();
+    public abstract Task<AccessCredentials> GetCredentialsAsync();
+
     internal string GetEnvironmentVariable(string env)
     {
         return Environment.GetEnvironmentVariable(env);

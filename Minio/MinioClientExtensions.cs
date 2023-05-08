@@ -156,7 +156,7 @@ public static class MinioClientExtensions
     ///     With provider for credentials and session token if being used
     /// </summary>
     /// <returns></returns>
-    public static MinioClient WithCredentialsProvider(this MinioClient minioClient, ClientProvider provider)
+    public static MinioClient WithCredentialsProvider(this MinioClient minioClient, IClientProvider provider)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
