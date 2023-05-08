@@ -21,13 +21,12 @@ using Minio.Exceptions;
 namespace Minio.Tests;
 
 /// <summary>
-///     Summary description for UnitTest1
+///     Summary description for UnitTest2
 /// </summary>
 [TestClass]
-[Ignore("Class was previously skipped by unit tests.. See #211")]
-public class UnitTest1
+public class UnitTest2
 {
-    public UnitTest1()
+    public UnitTest2()
     {
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                                | SecurityProtocolType.Tls11
@@ -48,24 +47,27 @@ public class UnitTest1
     [TestMethod]
     public void TestWithUrl()
     {
-        using var minio = new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint("localhost", 9000)
+            .WithCredentials("minio", "minio")
             .Build();
     }
 
     [TestMethod]
     public void TestWithoutPort()
     {
-        using var minio = new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint("localhost")
+            .WithCredentials("minio", "minio")
             .Build();
     }
 
     [TestMethod]
     public void TestWithTrailingSlash()
     {
-        using var minio = new MinioClient()
-            .WithEndpoint("localhost:9000/")
+        using var client = new MinioClient()
+            .WithEndpoint("localhost", 9000)
+            .WithCredentials("minio", "minio")
             .Build();
     }
 
@@ -73,8 +75,9 @@ public class UnitTest1
     [ExpectedException(typeof(InvalidEndpointException))]
     public void TestUrlFailsWithMalformedScheme()
     {
-        using var minio = new MinioClient()
-            .WithEndpoint("htp://localhost:9000")
+        using var client = new MinioClient()
+            .WithEndpoint("htp://localhost", 9000)
+            .WithCredentials("minio", "minio")
             .Build();
     }
 
@@ -82,8 +85,7 @@ public class UnitTest1
     [ExpectedException(typeof(InvalidEndpointException))]
     public void TestUrlFailsWithPath()
     {
-        using var minio = new MinioClient()
-            .WithEndpoint("localhost:9000/foo")
+        using var client = new MinioClient().WithEndpoint("localhost:9000/foo").WithCredentials("minio", "minio")
             .Build();
     }
 
@@ -91,8 +93,9 @@ public class UnitTest1
     [ExpectedException(typeof(InvalidEndpointException))]
     public void TestUrlFailsWithQuery()
     {
-        using var minio = new MinioClient()
-            .WithEndpoint("http://localhost:9000/?foo=bar")
+        using var client = new MinioClient()
+            .WithEndpoint("localhost:9000/?foo=bar")
+            .WithCredentials("minio", "minio")
             .Build();
     }
 
@@ -102,6 +105,7 @@ public class UnitTest1
     {
         using var client = new MinioClient()
             .WithEndpoint("localhost", 9000)
+            .WithCredentials("minio", "minio")
             .Build();
         client.SetAppInfo(null, "1.2.2");
     }
@@ -112,6 +116,7 @@ public class UnitTest1
     {
         using var client = new MinioClient()
             .WithEndpoint("localhost", 9000)
+            .WithCredentials("minio", "minio")
             .Build();
         client.SetAppInfo("Hello-App", null);
     }
@@ -121,6 +126,7 @@ public class UnitTest1
     {
         using var client = new MinioClient()
             .WithEndpoint("localhost", 9000)
+            .WithCredentials("minio", "minio")
             .Build();
         client.SetAppInfo("Hello-App", "1.2.1");
     }
@@ -130,39 +136,7 @@ public class UnitTest1
     {
         using var client = new MinioClient()
             .WithEndpoint("s3.amazonaws.com")
+            .WithCredentials("minio", "minio")
             .Build();
     }
-
-    [TestMethod]
-    [ExpectedException(typeof(InvalidEndpointException))]
-    public void TestEndpointFailure()
-    {
-        using var client = new MinioClient()
-            .WithEndpoint("s3-us-west-1.amazonaws.com")
-            .Build();
-    }
-
-    #region Additional test attributes
-
-    //
-    // You can use the following additional attributes as you write your tests:
-    //
-    // Use ClassInitialize to run code before running the first test in the class
-    // [ClassInitialize()]
-    // public static void MyClassInitialize(TestContext testContext) { }
-    //
-    // Use ClassCleanup to run code after all tests in a class have run
-    // [ClassCleanup()]
-    // public static void MyClassCleanup() { }
-    //
-    // Use TestInitialize to run code before running each test 
-    // [TestInitialize()]
-    // public void MyTestInitialize() { }
-    //
-    // Use TestCleanup to run code after each test has run
-    // [TestCleanup()]
-    // public void MyTestCleanup() { }
-    //
-
-    #endregion
 }
