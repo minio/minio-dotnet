@@ -3,7 +3,6 @@
 		<AssemblyName>Minio</AssemblyName>
 		<RootNamespace>Minio</RootNamespace>
 		<TargetFrameworks>net6.0;net7.0;netstandard2.0</TargetFrameworks>
-		<DebugType>embedded</DebugType>
 		<AssemblyOriginatorKeyFile>..\Minio.snk</AssemblyOriginatorKeyFile>
 		<SignAssembly>true</SignAssembly>
 		<PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
@@ -14,7 +13,7 @@
 	<ItemGroup>
 		<PackageReference Include="System.IO.Hashing" Version="7.0.0" />
 		<PackageReference Include="System.Reactive.Linq" Version="5.0.0" />
-		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.1.0" />
+		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.0" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard2')) ">
