@@ -22,5 +22,5 @@ namespace Minio.Credentials;
 public interface IClientProvider
 {
     AccessCredentials GetCredentials();
-    Task<AccessCredentials> GetCredentialsAsync();
+    ValueTask<AccessCredentials> GetCredentialsAsync();
 }

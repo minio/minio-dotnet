@@ -110,12 +110,10 @@ public class CertificateIdentityProvider : IClientProvider
 
     public AccessCredentials GetCredentials()
     {
-        var t = Task.Run(async () => await GetCredentialsAsync().ConfigureAwait(false));
-        t.Wait();
-        return t.Result;
+        return GetCredentialsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
-    public async Task<AccessCredentials> GetCredentialsAsync()
+    public async ValueTask<AccessCredentials> GetCredentialsAsync()
     {
         if (Credentials?.AreExpired() == false)
             return Credentials;

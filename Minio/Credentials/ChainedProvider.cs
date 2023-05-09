@@ -65,10 +65,8 @@ public class ChainedProvider : IClientProvider
         throw new InvalidOperationException("None of the assigned providers were able to provide valid credentials.");
     }
 
-    public async Task<AccessCredentials> GetCredentialsAsync()
+    public ValueTask<AccessCredentials> GetCredentialsAsync()
     {
-        var credentials = GetCredentials();
-        await Task.Yield();
-        return credentials;
+        return new ValueTask<AccessCredentials>(GetCredentials());
     }
 }

@@ -141,7 +141,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
         return Credentials;
     }
 
-    public override async Task<AccessCredentials> GetCredentialsAsync()
+    public override async ValueTask<AccessCredentials> GetCredentialsAsync()
     {
         if (Credentials?.AreExpired() == false) return Credentials;
 

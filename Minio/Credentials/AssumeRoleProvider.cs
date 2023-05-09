@@ -93,7 +93,7 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
         return this;
     }
 
-    public override async Task<AccessCredentials> GetCredentialsAsync()
+    public override async ValueTask<AccessCredentials> GetCredentialsAsync()
     {
         if (Credentials?.AreExpired() == false) return Credentials;
 

@@ -108,7 +108,7 @@ public abstract class AssumeRoleBaseProvider<T> : IClientProvider
         return reqBuilder;
     }
 
-    public virtual async Task<AccessCredentials> GetCredentialsAsync()
+    public virtual async ValueTask<AccessCredentials> GetCredentialsAsync()
     {
         if (Credentials?.AreExpired() == false) return Credentials;
 

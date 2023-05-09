@@ -28,10 +28,8 @@ public class MinioEnvironmentProvider : EnvironmentProvider
         return credentials;
     }
 
-    public override async Task<AccessCredentials> GetCredentialsAsync()
+    public override ValueTask<AccessCredentials> GetCredentialsAsync()
     {
-        var credentials = GetCredentials();
-        await Task.Yield();
-        return credentials;
+        return new ValueTask<AccessCredentials>(GetCredentials());
     }
 }
