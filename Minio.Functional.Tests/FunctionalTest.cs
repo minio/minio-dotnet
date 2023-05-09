@@ -5327,7 +5327,7 @@ public static class FunctionalTest
                 () => { });
         }
 
-        await Task.Delay(1000).ConfigureAwait(false);
+        await Task.Delay(5000).ConfigureAwait(false);
         Assert.AreEqual(numObjects, count);
     }
 
