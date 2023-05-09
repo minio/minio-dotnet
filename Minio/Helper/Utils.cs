@@ -250,7 +250,7 @@ public static class Utils
         using var md5 = MD5.Create();
         var hashedBytes = md5.ComputeHash(key.ToArray());
 #else
-        var hashedBytes = MD5.HashData(key);
+        ReadOnlySpan<byte> hashedBytes = MD5.HashData(key);
 #endif
         return Convert.ToBase64String(hashedBytes);
     }

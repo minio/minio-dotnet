@@ -227,7 +227,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
         Minio_Client = minio;
         if (Credentials is null ||
             string.IsNullOrWhiteSpace(Credentials.AccessKey) || string.IsNullOrWhiteSpace(Credentials.SecretKey))
-            Credentials = GetCredentialsAsync().GetAwaiter().GetResult();
+            Credentials = GetCredentialsAsync().AsTask().GetAwaiter().GetResult();
 
         return this;
     }
