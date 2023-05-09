@@ -110,7 +110,7 @@ public class CertificateIdentityProvider : IClientProvider
 
     public AccessCredentials GetCredentials()
     {
-        return GetCredentialsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+        return GetCredentialsAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
     public async ValueTask<AccessCredentials> GetCredentialsAsync()
