@@ -19,14 +19,14 @@ using Minio.DataModel;
 
 namespace Minio.Credentials;
 
-public class AWSEnvironmentProvider : EnvironmentProvider
+public class AWSEnvironmentProvider : IClientProvider
 {
-    public override AccessCredentials GetCredentials()
+    public AccessCredentials GetCredentials()
     {
         return new AccessCredentials(GetAccessKey(), GetSecretKey(), GetSessionToken(), default);
     }
 
-    public override ValueTask<AccessCredentials> GetCredentialsAsync()
+    public ValueTask<AccessCredentials> GetCredentialsAsync()
     {
         return new ValueTask<AccessCredentials>(GetCredentials());
     }

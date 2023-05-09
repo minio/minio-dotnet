@@ -19,16 +19,16 @@ using Minio.DataModel;
 
 namespace Minio.Credentials;
 
-public class MinioEnvironmentProvider : EnvironmentProvider
+public class MinioEnvironmentProvider : IClientProvider
 {
-    public override AccessCredentials GetCredentials()
+    public AccessCredentials GetCredentials()
     {
-        var credentials = new AccessCredentials(GetEnvironmentVariable("MINIO_ACCESS_KEY"),
-            GetEnvironmentVariable("MINIO_SECRET_KEY"), null, default);
+        var credentials = new AccessCredentials(Environment.GetEnvironmentVariable("MINIO_ACCESS_KEY"),
+            Environment.GetEnvironmentVariable("MINIO_SECRET_KEY"), null, default);
         return credentials;
     }
 
-    public override ValueTask<AccessCredentials> GetCredentialsAsync()
+    public ValueTask<AccessCredentials> GetCredentialsAsync()
     {
         return new ValueTask<AccessCredentials>(GetCredentials());
     }
