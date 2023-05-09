@@ -40,7 +40,7 @@ internal static class GetPartialObject
                 .WithBucket(bucketName)
                 .WithObject(objectName)
                 .WithOffsetAndLength(1024L, 4096L)
-                .WithCallbackStream(async stream =>
+                .WithCallbackStream(async (stream, cancellationToken) =>
                 {
                     var fileStream = File.Create(fileName);
                     await stream.CopyToAsync(fileStream).ConfigureAwait(false);
