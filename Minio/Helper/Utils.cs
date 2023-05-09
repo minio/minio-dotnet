@@ -1028,12 +1028,3 @@ public static class Utils
         return null;
     }
 }
-
-public class AmazonAwsS3XmlReader : XmlTextReader
-{
-    public AmazonAwsS3XmlReader(Stream stream) : base(stream)
-    {
-    }
-
-    public override string NamespaceURI => "http://s3.amazonaws.com/doc/2006-03-01/";
-}
