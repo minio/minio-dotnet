@@ -30,18 +30,6 @@ public class ChainedProvider : IClientProvider
     internal IClientProvider CurrentProvider { get; set; }
     internal AccessCredentials Credentials { get; set; }
 
-    public ChainedProvider AddProvider(IClientProvider provider)
-    {
-        Providers.Add(provider);
-        return this;
-    }
-
-    public ChainedProvider AddProviders(IClientProvider[] providers)
-    {
-        Providers.AddRange(providers.ToList());
-        return this;
-    }
-
     public AccessCredentials GetCredentials()
     {
         if (Credentials?.AreExpired() == false) return Credentials;
@@ -68,5 +56,17 @@ public class ChainedProvider : IClientProvider
     public ValueTask<AccessCredentials> GetCredentialsAsync()
     {
         return new ValueTask<AccessCredentials>(GetCredentials());
+    }
+
+    public ChainedProvider AddProvider(IClientProvider provider)
+    {
+        Providers.Add(provider);
+        return this;
+    }
+
+    public ChainedProvider AddProviders(IClientProvider[] providers)
+    {
+        Providers.AddRange(providers.ToList());
+        return this;
     }
 }

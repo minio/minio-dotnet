@@ -49,6 +49,32 @@ public abstract class AssumeRoleBaseProvider<T> : IClientProvider
     internal string RoleARN { get; set; }
     internal string ExternalID { get; set; }
 
+    public virtual async ValueTask<AccessCredentials> GetCredentialsAsync()
+    {
+        if (Credentials?.AreExpired() == false) return Credentials;
+
+        var requestBuilder = await BuildRequest().ConfigureAwait(false);
+        if (Client is not null)
+        {
+            ResponseResult responseMessage = null;
+            try
+            {
+                responseMessage = await Client.ExecuteTaskAsync(NoErrorHandlers, requestBuilder).ConfigureAwait(false);
+            }
+            finally
+            {
+                responseMessage?.Dispose();
+            }
+        }
+
+        return null;
+    }
+
+    public virtual AccessCredentials GetCredentials()
+    {
+        throw new InvalidOperationException("Please use the GetCredentialsAsync method.");
+    }
+
     public T WithDurationInSeconds(uint? durationInSeconds)
     {
         DurationInSeconds = durationInSeconds;
@@ -108,27 +134,6 @@ public abstract class AssumeRoleBaseProvider<T> : IClientProvider
         return reqBuilder;
     }
 
-    public virtual async ValueTask<AccessCredentials> GetCredentialsAsync()
-    {
-        if (Credentials?.AreExpired() == false) return Credentials;
-
-        var requestBuilder = await BuildRequest().ConfigureAwait(false);
-        if (Client is not null)
-        {
-            ResponseResult responseMessage = null;
-            try
-            {
-                responseMessage = await Client.ExecuteTaskAsync(NoErrorHandlers, requestBuilder).ConfigureAwait(false);
-            }
-            finally
-            {
-                responseMessage?.Dispose();
-            }
-        }
-
-        return null;
-    }
-
     internal virtual AccessCredentials ParseResponse(HttpResponseMessage response)
     {
         var content = Convert.ToString(response.Content);
@@ -137,10 +142,5 @@ public abstract class AssumeRoleBaseProvider<T> : IClientProvider
 
         using var stream = Encoding.UTF8.GetBytes(content).AsMemory().AsStream();
         return Utils.DeserializeXml<AccessCredentials>(stream);
-    }
-
-    public virtual AccessCredentials GetCredentials()
-    {
-        throw new InvalidOperationException("Please use the GetCredentialsAsync method.");
     }
 }

@@ -85,29 +85,6 @@ public class CertificateIdentityProvider : IClientProvider
     internal HttpClient HttpClient { get; set; }
     internal AccessCredentials Credentials { get; set; }
 
-    public CertificateIdentityProvider WithStsEndpoint(string stsEndpoint)
-    {
-        if (string.IsNullOrEmpty(stsEndpoint))
-            throw new InvalidEndpointException("Missing mandatory argument: stsEndpoint");
-        if (!stsEndpoint.StartsWith("https", StringComparison.OrdinalIgnoreCase))
-            throw new InvalidEndpointException($"stsEndpoint {stsEndpoint} is invalid." + " The scheme must be https");
-
-        StsEndpoint = stsEndpoint;
-        return this;
-    }
-
-    public CertificateIdentityProvider WithHttpClient(HttpClient httpClient = null)
-    {
-        HttpClient = httpClient;
-        return this;
-    }
-
-    public CertificateIdentityProvider WithCertificate(X509Certificate2 cert = null)
-    {
-        ClientCertificate = cert;
-        return this;
-    }
-
     public AccessCredentials GetCredentials()
     {
         return GetCredentialsAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
@@ -138,6 +115,29 @@ public class CertificateIdentityProvider : IClientProvider
             Credentials = certResponse.Cr.Credentials;
 
         return Credentials;
+    }
+
+    public CertificateIdentityProvider WithStsEndpoint(string stsEndpoint)
+    {
+        if (string.IsNullOrEmpty(stsEndpoint))
+            throw new InvalidEndpointException("Missing mandatory argument: stsEndpoint");
+        if (!stsEndpoint.StartsWith("https", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidEndpointException($"stsEndpoint {stsEndpoint} is invalid." + " The scheme must be https");
+
+        StsEndpoint = stsEndpoint;
+        return this;
+    }
+
+    public CertificateIdentityProvider WithHttpClient(HttpClient httpClient = null)
+    {
+        HttpClient = httpClient;
+        return this;
+    }
+
+    public CertificateIdentityProvider WithCertificate(X509Certificate2 cert = null)
+    {
+        ClientCertificate = cert;
+        return this;
     }
 
     public CertificateIdentityProvider Build()
