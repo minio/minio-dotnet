@@ -22,7 +22,7 @@ namespace Minio.Credentials;
 public abstract class EnvironmentProvider : IClientProvider
 {
     public abstract AccessCredentials GetCredentials();
-    public abstract Task<AccessCredentials> GetCredentialsAsync();
+    public abstract ValueTask<AccessCredentials> GetCredentialsAsync();
 
     internal string GetEnvironmentVariable(string env)
     {
