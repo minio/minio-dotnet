@@ -248,9 +248,8 @@ internal static class Program
         {
             MaxDegreeOfParallelism = 4
         };
-        await Parallel.ForEachAsync(functionalTestTasks, parallelOptions, async (task, _) =>
-        {
-            await task.ConfigureAwait(false);
-        }).ConfigureAwait(false);
+        await Parallel
+            .ForEachAsync(functionalTestTasks, parallelOptions,
+                async (task, _) => { await task.ConfigureAwait(false); }).ConfigureAwait(false);
     }
 }
