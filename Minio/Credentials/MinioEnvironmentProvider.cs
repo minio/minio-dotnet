@@ -26,7 +26,7 @@ public class MinioEnvironmentProvider : IClientProvider
         var accessKey = Environment.GetEnvironmentVariable("MINIO_ROOT_USER");
         var secretKey = Environment.GetEnvironmentVariable("MINIO_ROOT_PASSWORD");
 
-        if(string.IsNullOrEmpty(accessKey))
+        if (string.IsNullOrEmpty(accessKey))
             accessKey = Environment.GetEnvironmentVariable("MINIO_ACCESS_KEY");
 
         if (string.IsNullOrEmpty(secretKey))
