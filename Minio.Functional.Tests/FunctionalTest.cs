@@ -680,7 +680,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var contentType = "application/octet-stream";
-        var tempFileName = "tempFileName";
+        var tempFileName = "tempFile-" + GetRandomName();
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -771,7 +771,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var contentType = "application/octet-stream";
-        var tempFileName = "tempFileName";
+        var tempFileName = "tempFile-" + GetRandomName();
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -863,7 +863,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var contentType = "application/octet-stream";
-        var tempFileName = "tempFileName";
+        var tempFileName = "tempFile-" + GetRandomName();
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -4564,7 +4564,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         string contentType = null;
-        var tempFileName = "tempFileName";
+        var tempFileName = "tempFile-" + GetRandomName();
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
