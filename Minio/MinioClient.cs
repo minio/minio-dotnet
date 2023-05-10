@@ -28,12 +28,6 @@ using Minio.Helper;
 
 namespace Minio;
 
-public class InnerItemType
-{
-    public int SortOrder { get; set; }
-    public string Value { get; set; }
-}
-
 public partial class MinioClient : IMinioClient
 {
     private const string RegistryAuthHeaderKey = "X-Registry-Auth";

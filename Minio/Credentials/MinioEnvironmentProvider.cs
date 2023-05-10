@@ -23,9 +23,16 @@ public class MinioEnvironmentProvider : IClientProvider
 {
     public AccessCredentials GetCredentials()
     {
-        var credentials = new AccessCredentials(Environment.GetEnvironmentVariable("MINIO_ACCESS_KEY"),
-            Environment.GetEnvironmentVariable("MINIO_SECRET_KEY"), null, default);
-        return credentials;
+        var accessKey = Environment.GetEnvironmentVariable("MINIO_ROOT_USER");
+        var secretKey = Environment.GetEnvironmentVariable("MINIO_ROOT_PASSWORD");
+
+        if(string.IsNullOrEmpty(accessKey))
+            accessKey = Environment.GetEnvironmentVariable("MINIO_ACCESS_KEY");
+
+        if (string.IsNullOrEmpty(secretKey))
+            secretKey = Environment.GetEnvironmentVariable("MINIO_SECRET_KEY");
+
+        return new AccessCredentials(accessKey, secretKey, null, default);
     }
 
     public ValueTask<AccessCredentials> GetCredentialsAsync()
