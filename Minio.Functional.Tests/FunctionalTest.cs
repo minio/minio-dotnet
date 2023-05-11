@@ -15,6 +15,7 @@
 * limitations under the License.
 */
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
@@ -303,30 +304,41 @@ public static class FunctionalTest
 
     internal static async Task RunCoreTests(MinioClient minioClient)
     {
-        // Check if bucket exists
-        await BucketExists_Test(minioClient).ConfigureAwait(false);
+        ConcurrentBag<Task> coreTestsTasks = new()
+        {
+            // Check if bucket exists
+            BucketExists_Test(minioClient),
 
-        // Create a new bucket
-        await MakeBucket_Test1(minioClient).ConfigureAwait(false);
-        await PutObject_Test1(minioClient).ConfigureAwait(false);
-        await PutObject_Test2(minioClient).ConfigureAwait(false);
-        await ListObjects_Test1(minioClient).ConfigureAwait(false);
-        await RemoveObject_Test1(minioClient).ConfigureAwait(false);
-        await CopyObject_Test1(minioClient).ConfigureAwait(false);
+            // Create a new bucket
+            MakeBucket_Test1(minioClient),
+            PutObject_Test1(minioClient),
+            PutObject_Test2(minioClient),
+            ListObjects_Test1(minioClient),
+            RemoveObject_Test1(minioClient),
+            CopyObject_Test1(minioClient),
 
-        // Test SetPolicyAsync function
-        await SetBucketPolicy_Test1(minioClient).ConfigureAwait(false);
+            // Test SetPolicyAsync function
+            SetBucketPolicy_Test1(minioClient),
 
-        // Test Presigned Get/Put operations
-        await PresignedGetObject_Test1(minioClient).ConfigureAwait(false);
-        await PresignedPutObject_Test1(minioClient).ConfigureAwait(false);
+            // Test Presigned Get/Put operations
+            PresignedGetObject_Test1(minioClient),
+            PresignedPutObject_Test1(minioClient),
 
-        // Test incomplete uploads
-        await ListIncompleteUpload_Test1(minioClient).ConfigureAwait(false);
-        await RemoveIncompleteUpload_Test(minioClient).ConfigureAwait(false);
+            // Test incomplete uploads
+            ListIncompleteUpload_Test1(minioClient),
+            RemoveIncompleteUpload_Test(minioClient),
 
-        // Test GetBucket policy
-        await GetBucketPolicy_Test1(minioClient).ConfigureAwait(false);
+            // Test GetBucket policy
+            GetBucketPolicy_Test1(minioClient)
+        };
+
+        ParallelOptions parallelOptions = new()
+        {
+            MaxDegreeOfParallelism = 4
+        };
+        await Parallel
+            .ForEachAsync(coreTestsTasks, parallelOptions,
+                async (task, _) => { await task.ConfigureAwait(false); }).ConfigureAwait(false);
     }
 
     internal static async Task BucketExists_Test(MinioClient minio)
@@ -680,7 +692,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var contentType = "application/octet-stream";
-        var tempFileName = "tempFileName";
+        var tempFileName = "tempFile-" + GetRandomName();
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -771,7 +783,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var contentType = "application/octet-stream";
-        var tempFileName = "tempFileName";
+        var tempFileName = "tempFile-" + GetRandomName();
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -863,7 +875,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var contentType = "application/octet-stream";
-        var tempFileName = "tempFileName";
+        var tempFileName = "tempFile-" + GetRandomName();
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -4564,7 +4576,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         string contentType = null;
-        var tempFileName = "tempFileName";
+        var tempFileName = "tempFile-" + GetRandomName();
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -5327,7 +5339,7 @@ public static class FunctionalTest
                 () => { });
         }
 
-        await Task.Delay(1000).ConfigureAwait(false);
+        await Task.Delay(5000).ConfigureAwait(false);
         Assert.AreEqual(numObjects, count);
     }
 
