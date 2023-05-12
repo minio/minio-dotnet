@@ -107,11 +107,12 @@ public static class Program
         var lockBucketName = GetRandomName();
         var progress = new Progress<ProgressReport>(progressReport =>
         {
-            Console.WriteLine($"Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
+            Console.WriteLine(
+                $"Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
         });
         var objectsList = new List<string>();
         for (var i = 0; i < 10; i++) objectsList.Add(objectName + i);
-        
+
         // Set app Info 
         minioClient.SetAppInfo("app-name", "app-version");
 
