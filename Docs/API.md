@@ -1874,7 +1874,11 @@ try
     var ssec = new SSEC(aesEncryption.Key);
     var progress = new Progress<ProgressReport>(progressReport =>
     {
-        Console.WriteLine($"Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
+        Console.WriteLine(
+                $"Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
+        if (progressReport.Percentage != 100)
+            Console.SetCursorPosition(0, Console.CursorTop - 1);
+        else Console.WriteLine();
     });
     PutObjectArgs putObjectArgs = new PutObjectArgs()
                                       .WithBucket("mybucket")

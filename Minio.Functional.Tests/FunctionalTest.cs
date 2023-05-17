@@ -3641,21 +3641,26 @@ public static class FunctionalTest
         {
             percentage = progressReport.Percentage;
             totalBytesTransferred = progressReport.TotalBytesTransferred;
+            //Console.WriteLine(
+            //    $"Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
+            //if (progressReport.Percentage != 100)
+            //    Console.SetCursorPosition(0, Console.CursorTop - 1);
+            //else Console.WriteLine();
         });
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
             { "contentType", contentType },
-            { "size", "6MB" }
+            { "size", "64MB" }
         };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
             await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
-                rsg.GenerateStreamFromSeed(6 * MB), progress).ConfigureAwait(false);
+                rsg.GenerateStreamFromSeed(64 * MB), progress).ConfigureAwait(false);
             Assert.IsTrue(percentage == 100);
-            Assert.IsTrue(totalBytesTransferred == 6 * MB);
+            Assert.IsTrue(totalBytesTransferred == 64 * MB);
             new MintLogger(nameof(PutObject_Test10), putObjectSignature,
                 "Tests whether multipart PutObject with progress passes", TestStatus.PASS, DateTime.Now - startTime,
                 args: args).Log();
