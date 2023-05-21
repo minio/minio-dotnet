@@ -5353,7 +5353,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var expiresInt = 1000;
-        var downloadFile = "downloadFileName";
+        var downloadFile = GetRandomObjectName(10);
 
         var args = new Dictionary<string, string>
         {
@@ -5481,7 +5481,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var expiresInt = 1000;
         var reqDate = DateTime.UtcNow.AddSeconds(-50);
-        var downloadFile = "downloadFileName";
+        var downloadFile = GetRandomObjectName(10);
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
