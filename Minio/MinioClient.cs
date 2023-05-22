@@ -28,12 +28,6 @@ using Minio.Helper;
 
 namespace Minio;
 
-public class InnerItemType
-{
-    public int SortOrder { get; set; }
-    public string Value { get; set; }
-}
-
 public partial class MinioClient : IMinioClient
 {
     private const string RegistryAuthHeaderKey = "X-Registry-Auth";
@@ -57,7 +51,7 @@ public partial class MinioClient : IMinioClient
 
     private IRequestLogger logger;
 
-    internal ClientProvider Provider;
+    internal IClientProvider Provider;
     internal string Region;
 
     // Cache holding bucket to region mapping for buckets seen so far.
@@ -127,9 +121,9 @@ public partial class MinioClient : IMinioClient
     /// <summary>
     ///     Runs httpClient's GetAsync method
     /// </summary>
-    public async Task<HttpResponseMessage> WrapperGetAsync(string url)
+    public Task<HttpResponseMessage> WrapperGetAsync(string url)
     {
-        return await HttpClient.GetAsync(url).ConfigureAwait(false);
+        return HttpClient.GetAsync(url);
     }
 
     /// <summary>

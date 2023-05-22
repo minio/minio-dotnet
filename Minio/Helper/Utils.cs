@@ -250,7 +250,7 @@ public static class Utils
         using var md5 = MD5.Create();
         var hashedBytes = md5.ComputeHash(key.ToArray());
 #else
-        var hashedBytes = MD5.HashData(key);
+        ReadOnlySpan<byte> hashedBytes = MD5.HashData(key);
 #endif
         return Convert.ToBase64String(hashedBytes);
     }
@@ -1027,13 +1027,4 @@ public static class Utils
 
         return null;
     }
-}
-
-public class AmazonAwsS3XmlReader : XmlTextReader
-{
-    public AmazonAwsS3XmlReader(Stream stream) : base(stream)
-    {
-    }
-
-    public override string NamespaceURI => "http://s3.amazonaws.com/doc/2006-03-01/";
 }

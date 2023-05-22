@@ -26,7 +26,7 @@
 
         <EnableNETAnalyzers>false</EnableNETAnalyzers>
         <AnalysisLevel>latest</AnalysisLevel>
-        <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+        <AnalysisMode>All</AnalysisMode>
 
         <IsTestProject>$(MSBuildProjectName.Contains('Test'))</IsTestProject>
     </PropertyGroup>
@@ -51,8 +51,6 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <DebugType>full</DebugType>
-        <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
 
     <ItemGroup>
@@ -80,7 +78,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.37">
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.48">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>

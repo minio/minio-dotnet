@@ -1,6 +1,5 @@
-/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
- * (C) 2021 MinIO, Inc.
+﻿/*
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +14,15 @@
  * limitations under the License.
  */
 
-namespace Minio.Credentials;
+using System.Xml;
 
-public abstract class EnvironmentProvider : ClientProvider
+namespace Minio;
+
+public class AmazonAwsS3XmlReader : XmlTextReader
 {
-    internal string GetEnvironmentVariable(string env)
+    public AmazonAwsS3XmlReader(Stream stream) : base(stream)
     {
-        return Environment.GetEnvironmentVariable(env);
     }
+
+    public override string NamespaceURI => "http://s3.amazonaws.com/doc/2006-03-01/";
 }

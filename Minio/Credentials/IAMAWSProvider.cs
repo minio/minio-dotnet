@@ -28,7 +28,7 @@ using Minio.Exceptions;
 
 namespace Minio.Credentials;
 
-public class IAMAWSProvider : EnvironmentProvider
+public class IAMAWSProvider : IClientProvider
 {
     public IAMAWSProvider()
     {
@@ -54,7 +54,7 @@ public class IAMAWSProvider : EnvironmentProvider
     internal AccessCredentials Credentials { get; set; }
     internal MinioClient Minio_Client { get; set; }
 
-    public override AccessCredentials GetCredentials()
+    public AccessCredentials GetCredentials()
     {
         Validate();
         var url = CustomEndPoint;
@@ -67,7 +67,7 @@ public class IAMAWSProvider : EnvironmentProvider
                 url = RequestUtil.MakeTargetURL("sts." + region + ".amazonaws.com", true);
         }
 
-        ClientProvider provider = new WebIdentityProvider()
+        IClientProvider provider = new WebIdentityProvider()
             .WithSTSEndpoint(url)
             .WithRoleAction("AssumeRoleWithWebIdentity")
             .WithDurationInSeconds(null)
@@ -75,6 +75,40 @@ public class IAMAWSProvider : EnvironmentProvider
             .WithRoleARN(Environment.GetEnvironmentVariable("AWS_ROLE_ARN"))
             .WithRoleSessionName(Environment.GetEnvironmentVariable("AWS_ROLE_SESSION_NAME"));
         Credentials = provider.GetCredentials();
+        return Credentials;
+    }
+
+    public async ValueTask<AccessCredentials> GetCredentialsAsync()
+    {
+        if (Credentials?.AreExpired() == false) return Credentials;
+
+        var url = CustomEndPoint;
+        var awsTokenFile = Environment.GetEnvironmentVariable("AWS_WEB_IDENTITY_TOKEN_FILE");
+        if (!string.IsNullOrWhiteSpace(awsTokenFile))
+        {
+            Credentials = GetAccessCredentials(awsTokenFile);
+            return Credentials;
+        }
+
+        var containerRelativeUri = Environment.GetEnvironmentVariable("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI");
+        var containerFullUri = Environment.GetEnvironmentVariable("AWS_CONTAINER_CREDENTIALS_FULL_URI");
+        var isURLEmpty = url is null;
+        if (!string.IsNullOrWhiteSpace(containerRelativeUri) && isURLEmpty)
+        {
+            url = RequestUtil.MakeTargetURL("169.254.170.2" + "/" + containerRelativeUri, false);
+        }
+        else if (!string.IsNullOrWhiteSpace(containerFullUri) && isURLEmpty)
+        {
+            var fullUri = new Uri(containerFullUri);
+            url = RequestUtil.MakeTargetURL(fullUri.AbsolutePath,
+                string.Equals(fullUri.Scheme, "https", StringComparison.OrdinalIgnoreCase));
+        }
+        else
+        {
+            url = await GetIamRoleNamedURL().ConfigureAwait(false);
+        }
+
+        Credentials = await GetAccessCredentials(url).ConfigureAwait(false);
         return Credentials;
     }
 
@@ -90,7 +124,7 @@ public class IAMAWSProvider : EnvironmentProvider
             url = new Uri(urlStr);
         }
 
-        ClientProvider provider = new WebIdentityProvider()
+        IClientProvider provider = new WebIdentityProvider()
             .WithJWTSupplier(() =>
             {
                 var tokenContents = File.ReadAllText(tokenFile);
@@ -138,40 +172,6 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
                 credentials.Message);
 
         Credentials = credentials.GetAccessCredentials();
-        return Credentials;
-    }
-
-    public override async Task<AccessCredentials> GetCredentialsAsync()
-    {
-        if (Credentials?.AreExpired() == false) return Credentials;
-
-        var url = CustomEndPoint;
-        var awsTokenFile = Environment.GetEnvironmentVariable("AWS_WEB_IDENTITY_TOKEN_FILE");
-        if (!string.IsNullOrWhiteSpace(awsTokenFile))
-        {
-            Credentials = GetAccessCredentials(awsTokenFile);
-            return Credentials;
-        }
-
-        var containerRelativeUri = Environment.GetEnvironmentVariable("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI");
-        var containerFullUri = Environment.GetEnvironmentVariable("AWS_CONTAINER_CREDENTIALS_FULL_URI");
-        var isURLEmpty = url is null;
-        if (!string.IsNullOrWhiteSpace(containerRelativeUri) && isURLEmpty)
-        {
-            url = RequestUtil.MakeTargetURL("169.254.170.2" + "/" + containerRelativeUri, false);
-        }
-        else if (!string.IsNullOrWhiteSpace(containerFullUri) && isURLEmpty)
-        {
-            var fullUri = new Uri(containerFullUri);
-            url = RequestUtil.MakeTargetURL(fullUri.AbsolutePath,
-                string.Equals(fullUri.Scheme, "https", StringComparison.OrdinalIgnoreCase));
-        }
-        else
-        {
-            url = await GetIamRoleNamedURL().ConfigureAwait(false);
-        }
-
-        Credentials = await GetAccessCredentials(url).ConfigureAwait(false);
         return Credentials;
     }
 
@@ -227,7 +227,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
         Minio_Client = minio;
         if (Credentials is null ||
             string.IsNullOrWhiteSpace(Credentials.AccessKey) || string.IsNullOrWhiteSpace(Credentials.SecretKey))
-            Credentials = GetCredentialsAsync().GetAwaiter().GetResult();
+            Credentials = GetCredentialsAsync().AsTask().GetAwaiter().GetResult();
 
         return this;
     }

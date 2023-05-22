@@ -69,7 +69,7 @@ public class CertificateResult
     public AccessCredentials Credentials { get; set; }
 }
 
-public class CertificateIdentityProvider : ClientProvider
+public class CertificateIdentityProvider : IClientProvider
 {
     private readonly int DEFAULT_DURATION_IN_SECONDS = 3600;
 
@@ -85,37 +85,12 @@ public class CertificateIdentityProvider : ClientProvider
     internal HttpClient HttpClient { get; set; }
     internal AccessCredentials Credentials { get; set; }
 
-    public CertificateIdentityProvider WithStsEndpoint(string stsEndpoint)
+    public AccessCredentials GetCredentials()
     {
-        if (string.IsNullOrEmpty(stsEndpoint))
-            throw new InvalidEndpointException("Missing mandatory argument: stsEndpoint");
-        if (!stsEndpoint.StartsWith("https", StringComparison.OrdinalIgnoreCase))
-            throw new InvalidEndpointException($"stsEndpoint {stsEndpoint} is invalid." + " The scheme must be https");
-
-        StsEndpoint = stsEndpoint;
-        return this;
+        return GetCredentialsAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
-    public CertificateIdentityProvider WithHttpClient(HttpClient httpClient = null)
-    {
-        HttpClient = httpClient;
-        return this;
-    }
-
-    public CertificateIdentityProvider WithCertificate(X509Certificate2 cert = null)
-    {
-        ClientCertificate = cert;
-        return this;
-    }
-
-    public override AccessCredentials GetCredentials()
-    {
-        var t = Task.Run(async () => await GetCredentialsAsync().ConfigureAwait(false));
-        t.Wait();
-        return t.Result;
-    }
-
-    public override async Task<AccessCredentials> GetCredentialsAsync()
+    public async ValueTask<AccessCredentials> GetCredentialsAsync()
     {
         if (Credentials?.AreExpired() == false)
             return Credentials;
@@ -140,6 +115,29 @@ public class CertificateIdentityProvider : ClientProvider
             Credentials = certResponse.Cr.Credentials;
 
         return Credentials;
+    }
+
+    public CertificateIdentityProvider WithStsEndpoint(string stsEndpoint)
+    {
+        if (string.IsNullOrEmpty(stsEndpoint))
+            throw new InvalidEndpointException("Missing mandatory argument: stsEndpoint");
+        if (!stsEndpoint.StartsWith("https", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidEndpointException($"stsEndpoint {stsEndpoint} is invalid." + " The scheme must be https");
+
+        StsEndpoint = stsEndpoint;
+        return this;
+    }
+
+    public CertificateIdentityProvider WithHttpClient(HttpClient httpClient = null)
+    {
+        HttpClient = httpClient;
+        return this;
+    }
+
+    public CertificateIdentityProvider WithCertificate(X509Certificate2 cert = null)
+    {
+        ClientCertificate = cert;
+        return this;
     }
 
     public CertificateIdentityProvider Build()

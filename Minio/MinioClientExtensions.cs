@@ -95,6 +95,7 @@ public static class MinioClientExtensions
     /// <summary>
     ///     Uses webproxy for all requests if this method is invoked on client object.
     /// </summary>
+    /// <param name="minioClient">The MinioClient instance used</param>
     /// <param name="proxy">Information on the proxy server in the setup.</param>
     /// <returns></returns>
     public static MinioClient WithProxy(this MinioClient minioClient, IWebProxy proxy)
@@ -108,6 +109,7 @@ public static class MinioClientExtensions
     /// <summary>
     ///     Uses the set timeout for all requests if this method is invoked on client object
     /// </summary>
+    /// <param name="minioClient">The MinioClient instance used</param>
     /// <param name="timeout">Timeout in milliseconds.</param>
     /// <returns></returns>
     public static MinioClient WithTimeout(this MinioClient minioClient, int timeout)
@@ -121,6 +123,7 @@ public static class MinioClientExtensions
     /// <summary>
     ///     Allows to add retry policy handler
     /// </summary>
+    /// <param name="minioClient">The MinioClient instance used</param>
     /// <param name="retryPolicyHandler">Delegate that will wrap execution of http client requests.</param>
     /// <returns></returns>
     public static MinioClient WithRetryPolicy(this MinioClient minioClient,
@@ -135,6 +138,7 @@ public static class MinioClientExtensions
     /// <summary>
     ///     Allows end user to define the Http server and pass it as a parameter
     /// </summary>
+    /// <param name="minioClient">The MinioClient instance used</param>
     /// <param name="httpClient"> Instance of HttpClient</param>
     /// <param name="disposeHttpClient"> Dispose the HttpClient when leaving</param>
     /// <returns></returns>
@@ -152,7 +156,7 @@ public static class MinioClientExtensions
     ///     With provider for credentials and session token if being used
     /// </summary>
     /// <returns></returns>
-    public static MinioClient WithCredentialsProvider(this MinioClient minioClient, ClientProvider provider)
+    public static MinioClient WithCredentialsProvider(this MinioClient minioClient, IClientProvider provider)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 

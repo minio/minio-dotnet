@@ -45,7 +45,7 @@ public class WebIdentityProvider : WebIdentityClientGrantsProvider<WebIdentityPr
         return base.GetCredentials();
     }
 
-    public override Task<AccessCredentials> GetCredentialsAsync()
+    public override ValueTask<AccessCredentials> GetCredentialsAsync()
     {
         Validate();
         return base.GetCredentialsAsync();

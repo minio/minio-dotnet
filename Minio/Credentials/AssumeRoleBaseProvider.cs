@@ -23,7 +23,7 @@ using Minio.DataModel;
 namespace Minio.Credentials;
 
 // Assume-role credential provider
-public abstract class AssumeRoleBaseProvider<T> : ClientProvider
+public abstract class AssumeRoleBaseProvider<T> : IClientProvider
     where T : AssumeRoleBaseProvider<T>
 {
     internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers =
@@ -48,6 +48,32 @@ public abstract class AssumeRoleBaseProvider<T> : ClientProvider
     internal string Policy { get; set; }
     internal string RoleARN { get; set; }
     internal string ExternalID { get; set; }
+
+    public virtual async ValueTask<AccessCredentials> GetCredentialsAsync()
+    {
+        if (Credentials?.AreExpired() == false) return Credentials;
+
+        var requestBuilder = await BuildRequest().ConfigureAwait(false);
+        if (Client is not null)
+        {
+            ResponseResult responseMessage = null;
+            try
+            {
+                responseMessage = await Client.ExecuteTaskAsync(NoErrorHandlers, requestBuilder).ConfigureAwait(false);
+            }
+            finally
+            {
+                responseMessage?.Dispose();
+            }
+        }
+
+        return null;
+    }
+
+    public virtual AccessCredentials GetCredentials()
+    {
+        throw new InvalidOperationException("Please use the GetCredentialsAsync method.");
+    }
 
     public T WithDurationInSeconds(uint? durationInSeconds)
     {
@@ -108,27 +134,6 @@ public abstract class AssumeRoleBaseProvider<T> : ClientProvider
         return reqBuilder;
     }
 
-    public override async Task<AccessCredentials> GetCredentialsAsync()
-    {
-        if (Credentials?.AreExpired() == false) return Credentials;
-
-        var requestBuilder = await BuildRequest().ConfigureAwait(false);
-        if (Client is not null)
-        {
-            ResponseResult responseMessage = null;
-            try
-            {
-                responseMessage = await Client.ExecuteTaskAsync(NoErrorHandlers, requestBuilder).ConfigureAwait(false);
-            }
-            finally
-            {
-                responseMessage?.Dispose();
-            }
-        }
-
-        return null;
-    }
-
     internal virtual AccessCredentials ParseResponse(HttpResponseMessage response)
     {
         var content = Convert.ToString(response.Content);
@@ -137,10 +142,5 @@ public abstract class AssumeRoleBaseProvider<T> : ClientProvider
 
         using var stream = Encoding.UTF8.GetBytes(content).AsMemory().AsStream();
         return Utils.DeserializeXml<AccessCredentials>(stream);
-    }
-
-    public override AccessCredentials GetCredentials()
-    {
-        throw new InvalidOperationException("Please use the GetCredentialsAsync method.");
     }
 }

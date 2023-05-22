@@ -16,7 +16,6 @@
 
 using Minio.DataModel;
 using Minio.Exceptions;
-using Minio.Helper;
 
 namespace Minio;
 
@@ -313,36 +312,5 @@ public partial class MinioClient
             fullErrorsList = await CallRemoveObjects(args, iterObjects, fullErrorsList.ToList(), cancellationToken)
                 .ConfigureAwait(false);
         return fullErrorsList;
-    }
-}
-
-public static class OperationsUtil
-{
-    private static readonly List<string> SupportedHeaders = new()
-    {
-        "cache-control", "content-encoding", "content-type",
-        "x-amz-acl", "content-disposition", "x-minio-extract"
-    };
-
-    private static readonly List<string> SSEHeaders = new()
-    {
-        "X-Amz-Server-Side-Encryption-Customer-Algorithm",
-        "X-Amz-Server-Side-Encryption-Customer-Key",
-        "X-Amz-Server-Side-Encryption-Customer-Key-Md5",
-        Constants.SSEGenericHeader,
-        Constants.SSEKMSKeyId,
-        Constants.SSEKMSContext
-    };
-
-    internal static bool IsSupportedHeader(string hdr, IEqualityComparer<string> comparer = null)
-    {
-        comparer ??= StringComparer.OrdinalIgnoreCase;
-        return SupportedHeaders.Contains(hdr, comparer);
-    }
-
-    internal static bool IsSSEHeader(string hdr, IEqualityComparer<string> comparer = null)
-    {
-        comparer ??= StringComparer.OrdinalIgnoreCase;
-        return SSEHeaders.Contains(hdr, comparer);
     }
 }

@@ -19,30 +19,18 @@ using Minio.DataModel;
 
 namespace Minio.Credentials;
 
-public class ChainedProvider : ClientProvider
+public class ChainedProvider : IClientProvider
 {
     public ChainedProvider()
     {
-        Providers = new List<ClientProvider>();
+        Providers = new List<IClientProvider>();
     }
 
-    internal List<ClientProvider> Providers { get; set; }
-    internal ClientProvider CurrentProvider { get; set; }
+    internal List<IClientProvider> Providers { get; set; }
+    internal IClientProvider CurrentProvider { get; set; }
     internal AccessCredentials Credentials { get; set; }
 
-    public ChainedProvider AddProvider(ClientProvider provider)
-    {
-        Providers.Add(provider);
-        return this;
-    }
-
-    public ChainedProvider AddProviders(ClientProvider[] providers)
-    {
-        Providers.AddRange(providers.ToList());
-        return this;
-    }
-
-    public override AccessCredentials GetCredentials()
+    public AccessCredentials GetCredentials()
     {
         if (Credentials?.AreExpired() == false) return Credentials;
         if (CurrentProvider is not null && !Credentials.AreExpired())
@@ -65,10 +53,20 @@ public class ChainedProvider : ClientProvider
         throw new InvalidOperationException("None of the assigned providers were able to provide valid credentials.");
     }
 
-    public override async Task<AccessCredentials> GetCredentialsAsync()
+    public ValueTask<AccessCredentials> GetCredentialsAsync()
     {
-        var credentials = GetCredentials();
-        await Task.Yield();
-        return credentials;
+        return new ValueTask<AccessCredentials>(GetCredentials());
+    }
+
+    public ChainedProvider AddProvider(IClientProvider provider)
+    {
+        Providers.Add(provider);
+        return this;
+    }
+
+    public ChainedProvider AddProviders(IClientProvider[] providers)
+    {
+        Providers.AddRange(providers.ToList());
+        return this;
     }
 }

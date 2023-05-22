@@ -61,8 +61,7 @@ internal static class S3utils
         {
             var combination = Path.Combine(p1, p2);
             // combination = Uri.EscapeUriString(combination);
-            combination = Utils.EncodePath(combination);
-            return combination;
+            return Utils.EncodePath(combination);
         }
         catch (Exception ex)
         {

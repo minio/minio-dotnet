@@ -116,8 +116,7 @@ internal class V4Authenticator
         ReadOnlySpan<byte> stringToSignBytes = Encoding.UTF8.GetBytes(stringToSign);
         var signatureBytes = SignHmac(signingKey, stringToSignBytes);
         var signature = BytesToHex(signatureBytes);
-        var authorization = GetAuthorizationHeader(signedHeaders, signature, signingDate, endpointRegion, isSts);
-        return authorization;
+        return GetAuthorizationHeader(signedHeaders, signature, signingDate, endpointRegion, isSts);
     }
 
     /// <summary>
