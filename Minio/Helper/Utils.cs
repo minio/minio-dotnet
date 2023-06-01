@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Dynamic;
 using System.Globalization;
@@ -194,6 +195,20 @@ public static class Utils
         if (l1 is null) return false;
 
         return !l2.Except(l1).Any();
+    }
+
+    public static Task ForEachAsync<T>(this IEnumerable<T> source, int dop, Func<T, Task> body)
+    {
+        return Task.WhenAll(
+            from partition in Partitioner.Create(source).GetPartitions(dop)
+            select Task.Run(async delegate
+            {
+                using (partition)
+                {
+                    while (partition.MoveNext())
+                        await body(partition.Current);
+                }
+            }));
     }
 
     public static bool CaseInsensitiveContains(string text, string value,

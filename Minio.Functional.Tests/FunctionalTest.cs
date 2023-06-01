@@ -332,13 +332,9 @@ public static class FunctionalTest
             GetBucketPolicy_Test1(minioClient)
         };
 
-        ParallelOptions parallelOptions = new()
-        {
-            MaxDegreeOfParallelism = 4
-        };
-        await Parallel
-            .ForEachAsync(coreTestsTasks, parallelOptions,
-                async (task, _) => { await task.ConfigureAwait(false); }).ConfigureAwait(false);
+        var MaxNoOfParallelProcesses = 4;
+        await Utils.ForEachAsync(coreTestsTasks, MaxNoOfParallelProcesses,
+            async task => { await task.ConfigureAwait(false); }).ConfigureAwait(false);
     }
 
     internal static async Task BucketExists_Test(MinioClient minio)
@@ -1859,7 +1855,7 @@ public static class FunctionalTest
             Assert.IsNotNull(tagObj);
             Assert.IsNotNull(tagObj.Tags);
             var tagsRes = tagObj.Tags;
-            Assert.AreEqual(tagsRes.Count, tags.Count);
+            Assert.AreEqual(tagObj.Tags.Count, tags.Count);
 
             new MintLogger(nameof(BucketTagsAsync_Test1), getBucketTagsSignature,
                 "Tests whether GetBucketTagsAsync passes", TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
@@ -2861,10 +2857,10 @@ public static class FunctionalTest
             var sleepTime = 1000; // Milliseconds
             await Task.Delay(sleepTime).ConfigureAwait(false);
 
-            var modelJson = "{\"test\": \"test\"}";
+            var modelJson = "{\"test2\": \"test2\"}";
             using var stream = Encoding.UTF8.GetBytes(modelJson).AsMemory().AsStream();
             var putObjectArgs = new PutObjectArgs()
-                .WithObject("test.json")
+                .WithObject("test2.json")
                 .WithBucket(bucketName)
                 .WithContentType(contentType)
                 .WithStreamData(stream)
@@ -2942,11 +2938,11 @@ public static class FunctionalTest
                 .WithSuffix(suffix)
                 .WithEvents(events);
 
-            var modelJson = "{\"test\": \"test\"}";
+            var modelJson = "{\"test3\": \"test3\"}";
 
             using var stream = Encoding.UTF8.GetBytes(modelJson).AsMemory().AsStream();
             var putObjectArgs = new PutObjectArgs()
-                .WithObject("test.json")
+                .WithObject("test3.json")
                 .WithBucket(bucketName)
                 .WithContentType(contentType)
                 .WithStreamData(stream)
