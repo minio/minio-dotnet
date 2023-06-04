@@ -245,7 +245,7 @@ internal static class Program
         }
 
         var MaxNoOfParallelProcesses = 4;
-        await Utils.ForEachAsync(functionalTestTasks, MaxNoOfParallelProcesses,
+        await functionalTestTasks.ForEachAsync(MaxNoOfParallelProcesses,
             async task => { await task.ConfigureAwait(false); }).ConfigureAwait(false);
     }
 }
