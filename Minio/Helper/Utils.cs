@@ -197,10 +197,11 @@ public static class Utils
         return !l2.Except(l1).Any();
     }
 
-    public static Task ForEachAsync<T>(this IEnumerable<T> source, int dop, Func<T, Task> body)
+    public static Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> body)
     {
+        var MaxNoOfParallelProcesses = 4;
         return Task.WhenAll(
-            from partition in Partitioner.Create(source).GetPartitions(dop)
+            from partition in Partitioner.Create(source).GetPartitions(MaxNoOfParallelProcesses)
             select Task.Run(async delegate
             {
                 using (partition)

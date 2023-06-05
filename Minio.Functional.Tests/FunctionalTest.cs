@@ -332,9 +332,20 @@ public static class FunctionalTest
             GetBucketPolicy_Test1(minioClient)
         };
 
-        var MaxNoOfParallelProcesses = 4;
-        await coreTestsTasks.ForEachAsync(MaxNoOfParallelProcesses,
-            async task => { await task.ConfigureAwait(false); }).ConfigureAwait(false);
+#if NET6_0_OR_GREATER
+        ParallelOptions parallelOptions = new()
+        {
+            MaxDegreeOfParallelism = 4
+        };
+        await Parallel
+            .ForEachAsync(coreTestsTasks, parallelOptions,
+                async (task, _) => { await task.ConfigureAwait(false); }).ConfigureAwait(false);
+#else
+        await coreTestsTasks.ForEachAsync(async task =>
+        {
+            await task.ConfigureAwait(false);
+        }).ConfigureAwait(false);
+#endif
     }
 
     internal static async Task BucketExists_Test(MinioClient minio)
