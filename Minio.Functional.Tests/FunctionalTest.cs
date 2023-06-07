@@ -332,10 +332,8 @@ public static class FunctionalTest
             GetBucketPolicy_Test1(minioClient)
         };
 
-        await Utils.RunInParallel(coreTestsTasks, async (task, _) =>
-        {
-            await task.ConfigureAwait(false);
-        }).ConfigureAwait(false);
+        await Utils.RunInParallel(coreTestsTasks, async (task, _) => { await task.ConfigureAwait(false); })
+            .ConfigureAwait(false);
     }
 
     internal static async Task BucketExists_Test(MinioClient minio)

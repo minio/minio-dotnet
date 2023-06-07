@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Dynamic;
 using System.Globalization;
@@ -197,7 +196,8 @@ public static class Utils
         return !l2.Except(l1).Any();
     }
 
-    public static async Task RunInParallel<TSource>(IEnumerable<TSource> source, Func<TSource, CancellationToken, ValueTask> body)
+    public static async Task RunInParallel<TSource>(IEnumerable<TSource> source,
+        Func<TSource, CancellationToken, ValueTask> body)
     {
         var maxNoOfParallelProcesses = 4;
 #if NET6_0_OR_GREATER
@@ -209,14 +209,14 @@ public static class Utils
 #else
         await Task.WhenAll(Partitioner.Create(source).GetPartitions(maxNoOfParallelProcesses)
             .Select(partition => Task.Run(async delegate
-            {
-                using (partition)
                 {
-                    while (partition.MoveNext())
-                        await body(partition.Current, new CancellationToken());
+                    using (partition)
+                    {
+                        while (partition.MoveNext())
+                            await body(partition.Current, new CancellationToken());
+                    }
                 }
-            }
-        )));
+            )));
 #endif
     }
 
