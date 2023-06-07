@@ -15,7 +15,6 @@
  */
 
 using System.ComponentModel;
-using System.Collections.Concurrent;
 using System.Dynamic;
 using System.Globalization;
 using System.Reflection;
@@ -28,6 +27,9 @@ using System.Xml.Linq;
 using System.Xml.Serialization;
 using Minio.Exceptions;
 using Minio.Helper;
+#if !NET6_0_OR_GREATER
+using System.Collections.Concurrent;
+#endif
 
 namespace Minio;
 
