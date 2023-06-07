@@ -197,19 +197,27 @@ public static class Utils
         return !l2.Except(l1).Any();
     }
 
-    public static Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> body)
+    public static async Task RunInParallel<TSource>(IEnumerable<TSource> source, Func<TSource, CancellationToken, ValueTask> body)
     {
-        var MaxNoOfParallelProcesses = 4;
-        return Task.WhenAll(
-            from partition in Partitioner.Create(source).GetPartitions(MaxNoOfParallelProcesses)
-            select Task.Run(async delegate
+        var maxNoOfParallelProcesses = 4;
+#if NET6_0_OR_GREATER
+        ParallelOptions parallelOptions = new()
+        {
+            MaxDegreeOfParallelism = maxNoOfParallelProcesses
+        };
+        await Parallel.ForEachAsync(source, parallelOptions, body);
+#else
+        await Task.WhenAll(Partitioner.Create(source).GetPartitions(maxNoOfParallelProcesses)
+            .Select(partition => Task.Run(async delegate
             {
                 using (partition)
                 {
                     while (partition.MoveNext())
-                        await body(partition.Current);
+                        await body(partition.Current, new CancellationToken());
                 }
-            }));
+            }
+        )));
+#endif
     }
 
     public static bool CaseInsensitiveContains(string text, string value,
