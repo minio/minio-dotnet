@@ -244,12 +244,7 @@ internal static class Program
             functionalTestTasks.Add(FunctionalTest.EncryptedCopyObject_Test4(minioClient));
         }
 
-        ParallelOptions parallelOptions = new()
-        {
-            MaxDegreeOfParallelism = 4
-        };
-        await Parallel
-            .ForEachAsync(functionalTestTasks, parallelOptions,
-                async (task, _) => { await task.ConfigureAwait(false); }).ConfigureAwait(false);
+        await Utils.RunInParallel(functionalTestTasks, async (task, _) => { await task.ConfigureAwait(false); })
+            .ConfigureAwait(false);
     }
 }

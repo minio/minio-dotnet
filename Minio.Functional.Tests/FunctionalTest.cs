@@ -332,13 +332,8 @@ public static class FunctionalTest
             GetBucketPolicy_Test1(minioClient)
         };
 
-        ParallelOptions parallelOptions = new()
-        {
-            MaxDegreeOfParallelism = 4
-        };
-        await Parallel
-            .ForEachAsync(coreTestsTasks, parallelOptions,
-                async (task, _) => { await task.ConfigureAwait(false); }).ConfigureAwait(false);
+        await Utils.RunInParallel(coreTestsTasks, async (task, _) => { await task.ConfigureAwait(false); })
+            .ConfigureAwait(false);
     }
 
     internal static async Task BucketExists_Test(MinioClient minio)
@@ -482,14 +477,20 @@ public static class FunctionalTest
     internal static async Task ListBuckets_Test(MinioClient minio)
     {
         var startTime = DateTime.Now;
-        var args = new Dictionary<string, string>();
         IList<Bucket> bucketList = new List<Bucket>();
-        var bucketName = "buucketnaame";
+        var bucketNameSuffix = "listbucketstest";
         var noOfBuckets = 5;
+
+        var args = new Dictionary<string, string>
+        {
+            { "bucketNameSuffix", bucketNameSuffix },
+            { "noOfBuckets", noOfBuckets.ToString() }
+        };
+
         try
         {
             foreach (var indx in Enumerable.Range(1, noOfBuckets))
-                await Setup_Test(minio, bucketName + indx).ConfigureAwait(false);
+                await Setup_Test(minio, "bucket" + indx + bucketNameSuffix).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -507,7 +508,7 @@ public static class FunctionalTest
         {
             var list = await minio.ListBucketsAsync().ConfigureAwait(false);
             bucketList = list.Buckets;
-            bucketList = bucketList.Where(x => x.Name.StartsWith(bucketName)).ToList();
+            bucketList = bucketList.Where(x => x.Name.EndsWith(bucketNameSuffix)).ToList();
             Assert.AreEqual(noOfBuckets, bucketList.Count);
             bucketList.ToList().Sort((x, y) =>
             {
@@ -520,7 +521,7 @@ public static class FunctionalTest
             foreach (var bucket in bucketList)
             {
                 indx++;
-                Assert.AreEqual(bucketName + indx, bucket.Name);
+                Assert.AreEqual("bucket" + indx + bucketNameSuffix, bucket.Name);
             }
 
             new MintLogger(nameof(ListBuckets_Test), listBucketsSignature, "Tests whether ListBucket passes",
@@ -1476,7 +1477,7 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
-        var outFileName = "outFileName";
+        var outFileName = "outFileName-SelectObjectContent_Test";
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -2861,10 +2862,10 @@ public static class FunctionalTest
             var sleepTime = 1000; // Milliseconds
             await Task.Delay(sleepTime).ConfigureAwait(false);
 
-            var modelJson = "{\"test\": \"test\"}";
+            var modelJson = "{\"test2\": \"test2\"}";
             using var stream = Encoding.UTF8.GetBytes(modelJson).AsMemory().AsStream();
             var putObjectArgs = new PutObjectArgs()
-                .WithObject("test.json")
+                .WithObject("test2.json")
                 .WithBucket(bucketName)
                 .WithContentType(contentType)
                 .WithStreamData(stream)
@@ -2942,11 +2943,11 @@ public static class FunctionalTest
                 .WithSuffix(suffix)
                 .WithEvents(events);
 
-            var modelJson = "{\"test\": \"test\"}";
+            var modelJson = "{\"test3\": \"test3\"}";
 
             using var stream = Encoding.UTF8.GetBytes(modelJson).AsMemory().AsStream();
             var putObjectArgs = new PutObjectArgs()
-                .WithObject("test.json")
+                .WithObject("test3.json")
                 .WithBucket(bucketName)
                 .WithContentType(contentType)
                 .WithStreamData(stream)
@@ -3545,7 +3546,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var destBucketName = GetRandomName(15);
         var destObjectName = GetRandomName(10);
-        var outFileName = "outFileName";
+        var outFileName = "outFileName-CopyObject_Test1";
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -3703,7 +3704,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var destBucketName = GetRandomName(15);
         var destObjectName = GetRandomName(10);
-        var outFileName = "outFileName";
+        var outFileName = "outFileName-CopyObject_Test3";
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -3780,7 +3781,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var destBucketName = GetRandomName(15);
         var destObjectName = GetRandomName(10);
-        var outFileName = "outFileName";
+        var outFileName = "outFileName-CopyObject_Test4";
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -3854,7 +3855,6 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var destBucketName = GetRandomName(15);
         var destObjectName = GetRandomName(10);
-        // string outFileName = "outFileName";
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -3931,7 +3931,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var destBucketName = GetRandomName(15);
         var destObjectName = GetRandomName(10);
-        var outFileName = "outFileName";
+        var outFileName = "outFileName-CopyObject_Test6";
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -4176,7 +4176,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var destBucketName = GetRandomName(15);
         var destObjectName = GetRandomName(10);
-        var outFileName = "outFileName";
+        var outFileName = "outFileName-CopyObject_Test9";
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -4264,7 +4264,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var destBucketName = GetRandomName(15);
         var destObjectName = GetRandomName(10);
-        var outFileName = "outFileName";
+        var outFileName = "outFileName-EncryptedCopyObject_Test1";
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -4347,7 +4347,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var destBucketName = GetRandomName(15);
         var destObjectName = GetRandomName(10);
-        var outFileName = "outFileName";
+        var outFileName = "outFileName-EncryptedCopyObject_Test2";
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -4428,7 +4428,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var destBucketName = GetRandomName(15);
         var destObjectName = GetRandomName(10);
-        var outFileName = "outFileName";
+        var outFileName = "outFileName-EncryptedCopyObject_Test3";
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -4502,7 +4502,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var destBucketName = GetRandomName(15);
         var destObjectName = GetRandomName(10);
-        var outFileName = "outFileName";
+        var outFileName = "outFileName-EncryptedCopyObject_Test4";
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
@@ -4918,7 +4918,7 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
-        var outFileName = "outFileName";
+        var outFileName = "outFileName-FGetObject_Test1";
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },

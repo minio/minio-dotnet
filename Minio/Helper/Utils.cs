@@ -27,6 +27,9 @@ using System.Xml.Linq;
 using System.Xml.Serialization;
 using Minio.Exceptions;
 using Minio.Helper;
+#if !NET6_0_OR_GREATER
+using System.Collections.Concurrent;
+#endif
 
 namespace Minio;
 
@@ -194,6 +197,30 @@ public static class Utils
         if (l1 is null) return false;
 
         return !l2.Except(l1).Any();
+    }
+
+    public static async Task RunInParallel<TSource>(IEnumerable<TSource> source,
+        Func<TSource, CancellationToken, ValueTask> body)
+    {
+        var maxNoOfParallelProcesses = 4;
+#if NET6_0_OR_GREATER
+        ParallelOptions parallelOptions = new()
+        {
+            MaxDegreeOfParallelism = maxNoOfParallelProcesses
+        };
+        await Parallel.ForEachAsync(source, parallelOptions, body);
+#else
+        await Task.WhenAll(Partitioner.Create(source).GetPartitions(maxNoOfParallelProcesses)
+            .Select(partition => Task.Run(async delegate
+                {
+                    using (partition)
+                    {
+                        while (partition.MoveNext())
+                            await body(partition.Current, new CancellationToken());
+                    }
+                }
+            )));
+#endif
     }
 
     public static bool CaseInsensitiveContains(string text, string value,
