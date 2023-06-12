@@ -695,7 +695,8 @@ public partial class MinioClient : IMinioClient
         {
             StatusCode = response.StatusCode,
             Content = response.Content,
-            Headers = response.Headers.ToDictionary(o => o.Key, o => string.Join(Environment.NewLine, o.Value), StringComparer.Ordinal),
+            Headers = response.Headers.ToDictionary(o => o.Key, o => string.Join(Environment.NewLine, o.Value),
+                StringComparer.Ordinal),
             // The Uri that actually responded (could be different from the requestUri if a redirection occurred)
             ResponseUri = response.Request.RequestUri,
             ErrorMessage = response.ErrorMessage,

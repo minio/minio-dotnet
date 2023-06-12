@@ -74,7 +74,8 @@ public class WebIdentityProvider : WebIdentityClientGrantsProvider<WebIdentityPr
     {
         Validate();
         var credentials = base.ParseResponse(response);
-        using var stream = Encoding.UTF8.GetBytes(Convert.ToString(response.Content, CultureInfo.InvariantCulture)).AsMemory().AsStream();
+        using var stream = Encoding.UTF8.GetBytes(Convert.ToString(response.Content, CultureInfo.InvariantCulture))
+            .AsMemory().AsStream();
         return Utils.DeserializeXml<AccessCredentials>(stream);
     }
 }

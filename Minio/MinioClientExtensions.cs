@@ -23,7 +23,8 @@ public static class MinioClientExtensions
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
         if (port < 1 || port > 65535)
-            throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "Port {0} is not a number between 1 and 65535", port),
+            throw new ArgumentException(
+                string.Format(CultureInfo.InvariantCulture, "Port {0} is not a number between 1 and 65535", port),
                 nameof(port));
         return minioClient.WithEndpoint(endpoint + ":" + port);
     }
@@ -42,7 +43,8 @@ public static class MinioClientExtensions
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
         if (string.IsNullOrEmpty(region))
-            throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "{0} the region value can't be null or empty.", region),
+            throw new ArgumentException(
+                string.Format(CultureInfo.InvariantCulture, "{0} the region value can't be null or empty.", region),
                 nameof(region));
 
         minioClient.Region = region;
@@ -221,17 +223,20 @@ public static class MinioClientExtensions
     {
         if (string.IsNullOrEmpty(endpoint))
             throw new ArgumentException(
-                string.Format(CultureInfo.InvariantCulture, "{0} is the value of the endpoint. It can't be null or empty.", endpoint),
+                string.Format(CultureInfo.InvariantCulture,
+                    "{0} is the value of the endpoint. It can't be null or empty.", endpoint),
                 nameof(endpoint));
 
         if (endpoint.EndsWith("/", StringComparison.OrdinalIgnoreCase))
             endpoint = endpoint.Substring(0, endpoint.Length - 1);
         if (!BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
-            throw new InvalidEndpointException(string.Format(CultureInfo.InvariantCulture, "{0} is invalid hostname.", endpoint), "endpoint");
+            throw new InvalidEndpointException(
+                string.Format(CultureInfo.InvariantCulture, "{0} is invalid hostname.", endpoint), "endpoint");
         string conn_url;
         if (endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             throw new InvalidEndpointException(
-                string.Format(CultureInfo.InvariantCulture, "{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),
+                string.Format(CultureInfo.InvariantCulture,
+                    "{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),
                 "endpoint");
 
         var enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
@@ -240,7 +245,8 @@ public static class MinioClientExtensions
         var url = new Uri(conn_url);
         var hostnameOfUri = url.Authority;
         if (!string.IsNullOrEmpty(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
-            throw new InvalidEndpointException(string.Format(CultureInfo.InvariantCulture, "{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),
+            throw new InvalidEndpointException(
+                string.Format(CultureInfo.InvariantCulture, "{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),
                 "endpoint");
 
         return url;

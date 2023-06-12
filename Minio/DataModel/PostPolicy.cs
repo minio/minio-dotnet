@@ -132,7 +132,10 @@ public class PostPolicy
         if (contentLength <= 0) throw new ArgumentException("Negative Content length", nameof(contentLength));
 
         Conditions.Add(new List<(string, string, string)>
-            { ("content-length-range", contentLength.ToString(CultureInfo.InvariantCulture), contentLength.ToString(CultureInfo.InvariantCulture)) });
+        {
+            ("content-length-range", contentLength.ToString(CultureInfo.InvariantCulture),
+                contentLength.ToString(CultureInfo.InvariantCulture))
+        });
     }
 
     /// <summary>
@@ -148,7 +151,10 @@ public class PostPolicy
             throw new ArgumentException("Start range is greater than end range", nameof(startRange));
 
         Conditions.Add(new List<(string, string, string)>
-            { ("content-length-range", startRange.ToString(CultureInfo.InvariantCulture), endRange.ToString(CultureInfo.InvariantCulture)) });
+        {
+            ("content-length-range", startRange.ToString(CultureInfo.InvariantCulture),
+                endRange.ToString(CultureInfo.InvariantCulture))
+        });
     }
 
     /// <summary>

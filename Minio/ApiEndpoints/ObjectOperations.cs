@@ -1348,13 +1348,13 @@ public partial class MinioClient : IObjectOperations
             }
 
             var customHeader = new Dictionary<string, string>
-(StringComparer.Ordinal)
-            {
+                (StringComparer.Ordinal)
                 {
-                    "x-amz-copy-source-range",
-                    "bytes=" + partCondition.byteRangeStart + "-" + partCondition.byteRangeEnd
-                }
-            };
+                    {
+                        "x-amz-copy-source-range",
+                        "bytes=" + partCondition.byteRangeStart + "-" + partCondition.byteRangeEnd
+                    }
+                };
 
             if (sseSrc is not null && sseSrc is SSECopy) sseSrc.Marshal(customHeader);
             sseDest?.Marshal(customHeader);

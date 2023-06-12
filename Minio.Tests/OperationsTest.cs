@@ -97,10 +97,10 @@ public class OperationsTest
         var objectName = "object-name";
 
         var reqParams = new Dictionary<string, string>
-(StringComparer.Ordinal)
-        {
-            { "Response-Content-Disposition", "attachment; filename=\"filename.jpg\"" }
-        };
+            (StringComparer.Ordinal)
+            {
+                { "Response-Content-Disposition", "attachment; filename=\"filename.jpg\"" }
+            };
 
         var bktExistArgs = new BucketExistsArgs()
             .WithBucket(bucket);

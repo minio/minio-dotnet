@@ -120,7 +120,8 @@ public static class BuilderUtil
         {
             try
             {
-                var port = int.Parse(host.Substring(posColon + 1, host.Length - posColon - 1), CultureInfo.InvariantCulture);
+                var port = int.Parse(host.Substring(posColon + 1, host.Length - posColon - 1),
+                    CultureInfo.InvariantCulture);
             }
             catch (FormatException)
             {

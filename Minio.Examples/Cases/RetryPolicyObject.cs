@@ -43,7 +43,8 @@ internal static class RetryPolicyHelper
     {
         return Policy<ResponseResult>
             .Handle<ConnectionException>()
-            .Or<InternalClientException>(ex => ex.Message.StartsWith("Unsuccessful response from server", StringComparison.InvariantCulture));
+            .Or<InternalClientException>(ex =>
+                ex.Message.StartsWith("Unsuccessful response from server", StringComparison.InvariantCulture));
     }
 
     public static AsyncPolicy<ResponseResult> GetDefaultRetryPolicy()

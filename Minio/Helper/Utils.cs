@@ -37,7 +37,8 @@ public static class Utils
 {
     // We support '.' with bucket names but we fallback to using path
     // style requests instead for such buckets.
-    private static readonly Regex validBucketName = new("^[a-z0-9][a-z0-9\\.\\-]{1,61}[a-z0-9]$", RegexOptions.None, TimeSpan.FromHours(1));
+    private static readonly Regex validBucketName =
+        new("^[a-z0-9][a-z0-9\\.\\-]{1,61}[a-z0-9]$", RegexOptions.None, TimeSpan.FromHours(1));
 
     // Invalid bucket name with double dot.
     private static readonly Regex invalidDotBucketName = new("`/./.", RegexOptions.None, TimeSpan.FromHours(1));
@@ -908,18 +909,21 @@ public static class Utils
     {
         if (string.IsNullOrEmpty(endpoint))
             throw new ArgumentException(
-                string.Format(CultureInfo.InvariantCulture, "{0} is the value of the endpoint. It can't be null or empty.", endpoint),
+                string.Format(CultureInfo.InvariantCulture,
+                    "{0} is the value of the endpoint. It can't be null or empty.", endpoint),
                 nameof(endpoint));
 
         if (endpoint.EndsWith("/", StringComparison.OrdinalIgnoreCase))
             endpoint = endpoint.Substring(0, endpoint.Length - 1);
         if (!endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
             !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
-            throw new InvalidEndpointException(string.Format(CultureInfo.InvariantCulture, "{0} is invalid hostname.", endpoint), "endpoint");
+            throw new InvalidEndpointException(
+                string.Format(CultureInfo.InvariantCulture, "{0} is invalid hostname.", endpoint), "endpoint");
         string conn_url;
         if (endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             throw new InvalidEndpointException(
-                string.Format(CultureInfo.InvariantCulture, "{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),
+                string.Format(CultureInfo.InvariantCulture,
+                    "{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),
                 "endpoint");
 
         var enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
@@ -928,7 +932,8 @@ public static class Utils
         var url = new Uri(conn_url);
         var hostnameOfUri = url.Authority;
         if (!string.IsNullOrWhiteSpace(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
-            throw new InvalidEndpointException(string.Format(CultureInfo.InvariantCulture, "{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),
+            throw new InvalidEndpointException(
+                string.Format(CultureInfo.InvariantCulture, "{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),
                 "endpoint");
 
         return url;

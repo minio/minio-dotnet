@@ -731,7 +731,8 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
         }
 
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(Convert.ToString(deleteObjectsRequest, CultureInfo.InvariantCulture))));
+            Utils.GetMD5SumStr(
+                Encoding.UTF8.GetBytes(Convert.ToString(deleteObjectsRequest, CultureInfo.InvariantCulture))));
 
         return requestMessageBuilder;
     }
@@ -1270,7 +1271,8 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         if (info.MetaData is not null && !ReplaceMetadataDirective)
         {
             SourceObject.Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
-            SourceObject.Headers = SourceObject.Headers.Concat(info.MetaData).GroupBy(item => item.Key, StringComparer.Ordinal)
+            SourceObject.Headers = SourceObject.Headers.Concat(info.MetaData)
+                .GroupBy(item => item.Key, StringComparer.Ordinal)
                 .ToDictionary(item => item.Key, item => item.First().Value, StringComparer.Ordinal);
         }
 
