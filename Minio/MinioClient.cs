@@ -121,17 +121,17 @@ public partial class MinioClient : IMinioClient
     /// <summary>
     ///     Runs httpClient's GetAsync method
     /// </summary>
-    public Task<HttpResponseMessage> WrapperGetAsync(string url)
+    public Task<HttpResponseMessage> WrapperGetAsync(Uri uri)
     {
-        return HttpClient.GetAsync(url);
+        return HttpClient.GetAsync(uri);
     }
 
     /// <summary>
     ///     Runs httpClient's PutObjectAsync method
     /// </summary>
-    public Task WrapperPutAsync(string url, StreamContent strm)
+    public Task WrapperPutAsync(Uri uri, StreamContent strm)
     {
-        return Task.Run(async () => await HttpClient.PutAsync(url, strm).ConfigureAwait(false));
+        return Task.Run(async () => await HttpClient.PutAsync(uri, strm).ConfigureAwait(false));
     }
 
     /// <summary>

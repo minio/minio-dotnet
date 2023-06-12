@@ -219,6 +219,25 @@ public static class MinioClientExtensions
         return minioClient;
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "This is done in the interface. String is provided here for convenience")]
+    public static Task<HttpResponseMessage> WrapperGetAsync(this IMinioClient minioClient, string url)
+    {
+        if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
+
+        return minioClient.WrapperGetAsync(new Uri(url));
+    }
+
+    /// <summary>
+    ///     Runs httpClient's PutObjectAsync method
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "This is done in the interface. String is provided here for convenience")]
+    public static Task WrapperPutAsync(this IMinioClient minioClient, string url, StreamContent strm)
+    {
+        if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
+
+        return minioClient.WrapperPutAsync(new Uri(url), strm);
+    }
+
     internal static Uri GetBaseUrl(string endpoint)
     {
         if (string.IsNullOrEmpty(endpoint))
