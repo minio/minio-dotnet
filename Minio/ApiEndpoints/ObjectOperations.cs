@@ -712,9 +712,9 @@ public partial class MinioClient : IObjectOperations
             cpReqArgs.Validate();
             Dictionary<string, string> newMeta;
             if (args.ReplaceMetadataDirective)
-                newMeta = new Dictionary<string, string>(args.Headers);
+                newMeta = new Dictionary<string, string>(args.Headers, StringComparer.Ordinal);
             else
-                newMeta = new Dictionary<string, string>(args.SourceObjectInfo.MetaData);
+                newMeta = new Dictionary<string, string>(args.SourceObjectInfo.MetaData, StringComparer.Ordinal);
             if (args.SourceObject.SSE is not null && args.SourceObject.SSE is SSECopy)
                 args.SourceObject.SSE.Marshal(newMeta);
             args.SSE?.Marshal(newMeta);
@@ -756,7 +756,7 @@ public partial class MinioClient : IObjectOperations
         using var response =
             await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
-        var responseHeaders = new Dictionary<string, string>();
+        var responseHeaders = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var param in response.Headers.ToList()) responseHeaders.Add(param.Key, param.Value);
         var statResponse = new StatObjectResponse(response.StatusCode, response.Content, response.Headers, args);
 
@@ -932,7 +932,7 @@ public partial class MinioClient : IObjectOperations
                 partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)partSize - 1;
             else
                 partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)lastPartSize - 1;
-            var queryMap = new Dictionary<string, string>();
+            var queryMap = new Dictionary<string, string>(StringComparer.Ordinal);
             if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
             {
                 queryMap.Add("uploadId", uploadId);
@@ -1320,7 +1320,7 @@ public partial class MinioClient : IObjectOperations
         double lastPartSize = multiPartInfo.lastPartSize;
         var totalParts = new Part[(int)partCount];
 
-        var sseHeaders = new Dictionary<string, string>();
+        var sseHeaders = new Dictionary<string, string>(StringComparer.Ordinal);
         sseDest?.Marshal(sseHeaders);
 
         // No need to resume upload since this is a Server-side copy. Just initiate a new upload.
@@ -1340,7 +1340,7 @@ public partial class MinioClient : IObjectOperations
             else
                 partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)lastPartSize - 1;
 
-            var queryMap = new Dictionary<string, string>();
+            var queryMap = new Dictionary<string, string>(StringComparer.Ordinal);
             if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
             {
                 queryMap.Add("uploadId", uploadId);
@@ -1348,6 +1348,7 @@ public partial class MinioClient : IObjectOperations
             }
 
             var customHeader = new Dictionary<string, string>
+(StringComparer.Ordinal)
             {
                 {
                     "x-amz-copy-source-range",

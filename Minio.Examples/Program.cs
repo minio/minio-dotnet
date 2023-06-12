@@ -182,7 +182,7 @@ public static class Program
         var sses3 = new SSES3();
 
         // Uncomment to specify SSE-KMS encryption option
-        var sseKms = new SSEKMS("kms-key", new Dictionary<string, string> { { "kms-context", "somevalue" } });
+        var sseKms = new SSEKMS("kms-key", new Dictionary<string, string>(StringComparer.Ordinal) { { "kms-context", "somevalue" } });
 
         // Upload encrypted object
         var putFileName1 = CreateFile(1 * UNIT_MB);

@@ -20,7 +20,7 @@ namespace Minio.Helper;
 
 internal static class S3utils
 {
-    internal static readonly Regex TrimWhitespaceRegex = new("\\s+");
+    internal static readonly Regex TrimWhitespaceRegex = new("\\s+", RegexOptions.None, TimeSpan.FromHours(1));
 
     internal static bool IsAmazonEndPoint(string endpoint)
     {

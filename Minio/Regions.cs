@@ -22,9 +22,9 @@ namespace Minio;
 public static class Regions
 {
     private static readonly Regex endpointRegex = new(@"s3[.\-](.*?)\.amazonaws\.com$",
-        RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.RightToLeft);
+        RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.RightToLeft, TimeSpan.FromHours(1));
 
-    private static readonly ConcurrentDictionary<string, string> cache = new();
+    private static readonly ConcurrentDictionary<string, string> cache = new(StringComparer.Ordinal);
 
     /// <summary>
     ///     Get corresponding region for input host.

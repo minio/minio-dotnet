@@ -120,7 +120,7 @@ internal static class RequestUtil
         {
             if (label.Length < 1 || label.Length > 63) return false;
 
-            var validLabel = new Regex("^[a-zA-Z0-9]([A-Za-z0-9-_]*[a-zA-Z0-9])?$");
+            var validLabel = new Regex("^[a-zA-Z0-9]([A-Za-z0-9-_]*[a-zA-Z0-9])?$", RegexOptions.None, TimeSpan.FromHours(1));
 
             if (!validLabel.IsMatch(label)) return false;
         }

@@ -195,6 +195,7 @@ public static class FunctionalTest
     private static string Bash(string cmd)
     {
         var Replacements = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "$", "\\$" }, { "(", "\\(" },
             { ")", "\\)" }, { "{", "\\{" },
@@ -347,6 +348,7 @@ public static class FunctionalTest
         var rbArgs = new RemoveBucketArgs()
             .WithBucket(bucketName);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName }
         };
@@ -387,6 +389,7 @@ public static class FunctionalTest
         var rbArgs = new RemoveBucketArgs()
             .WithBucket(bucketName);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName }
         };
@@ -422,6 +425,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(20);
         var objectName = GetRandomName(20);
         var forceFlagHeader = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "x-minio-force-delete", "true" }
         };
@@ -444,6 +448,7 @@ public static class FunctionalTest
         await Task.Delay(1000).ConfigureAwait(false);
 
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "x-minio-force-delete", "true" }
@@ -482,6 +487,7 @@ public static class FunctionalTest
         var noOfBuckets = 5;
 
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketNameSuffix", bucketNameSuffix },
             { "noOfBuckets", noOfBuckets.ToString() }
@@ -695,6 +701,7 @@ public static class FunctionalTest
         var contentType = "application/octet-stream";
         var tempFileName = "tempFile-" + GetRandomName();
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -786,6 +793,7 @@ public static class FunctionalTest
         var contentType = "application/octet-stream";
         var tempFileName = "tempFile-" + GetRandomName();
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -878,6 +886,7 @@ public static class FunctionalTest
         var contentType = "application/octet-stream";
         var tempFileName = "tempFile-" + GetRandomName();
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -1049,6 +1058,7 @@ public static class FunctionalTest
         var contentType = "gzip";
 
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -1084,6 +1094,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var fileName = CreateFile(6 * MB, dataFile6MB);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -1122,6 +1133,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var fileName = CreateFile(10 * KB, dataFile10KB);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -1162,6 +1174,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName }
@@ -1204,6 +1217,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(6);
         var objectsList = new List<string>();
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectNames", "[" + objectName + "0..." + objectName + "50]" }
@@ -1245,6 +1259,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(6);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectNames", "[" + objectName + "0..." + objectName + "50]" }
@@ -1344,6 +1359,7 @@ public static class FunctionalTest
         formPolicy.SetUserMetadata(metadataKey, metadataValue);
 
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -1413,6 +1429,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var contentType = "csv";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName }
@@ -1479,6 +1496,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var outFileName = "outFileName-SelectObjectContent_Test";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -1533,8 +1551,8 @@ public static class FunctionalTest
             var resp = await minio.SelectObjectContentAsync(selArgs).ConfigureAwait(false);
             using var streamReader = new StreamReader(resp.Payload);
             var output = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-            var csvStringNoWS = Regex.Replace(csvString.ToString(), @"\s+", "");
-            var outputNoWS = Regex.Replace(output, @"\s+", "");
+            var csvStringNoWS = Regex.Replace(csvString.ToString(), @"\s+", "", RegexOptions.None, TimeSpan.FromHours(1));
+            var outputNoWS = Regex.Replace(output, @"\s+", "", RegexOptions.None, TimeSpan.FromHours(1));
 
 #if NETFRAMEWORK
             using var md5 = MD5.Create();
@@ -1582,6 +1600,7 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName }
         };
@@ -1699,6 +1718,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName }
@@ -1807,10 +1827,12 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName }
         };
         var tags = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "key1", "value1" },
             { "key2", "value2" },
@@ -1933,12 +1955,14 @@ public static class FunctionalTest
             var bucketName = GetRandomName(15);
             var objectName = GetRandomName(10);
             var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
             {
                 { "bucketName", bucketName },
                 { "objectName", objectName },
                 { "fileSize", size.ToString() }
             };
             var tags = new Dictionary<string, string>
+(StringComparer.Ordinal)
             {
                 { "key1", "value1" },
                 { "key2", "value2" },
@@ -2088,6 +2112,7 @@ public static class FunctionalTest
             var bucketName = GetRandomName(15);
             var objectName = GetRandomName(10);
             var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
             {
                 { "bucketName", bucketName },
                 { "objectName", objectName },
@@ -2193,6 +2218,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomName(10);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName }
         };
@@ -2360,6 +2386,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName }
@@ -2564,6 +2591,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(15) + ".zip";
 
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName }
@@ -2582,6 +2610,7 @@ public static class FunctionalTest
             await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
 
             var extractHeader = new Dictionary<string, string>
+(StringComparer.Ordinal)
             {
                 { "x-minio-extract", "true" }
             };
@@ -2672,6 +2701,7 @@ public static class FunctionalTest
         var objectName = GetRandomName(10);
         var contentType = "application/octet-stream";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -2777,7 +2807,7 @@ public static class FunctionalTest
                 // Check if endPoint is AWS
                 static bool isAWS(string endPoint)
                 {
-                    var rgx = new Regex("^s3\\.?.*\\.amazonaws\\.com", RegexOptions.IgnoreCase);
+                    var rgx = new Regex("^s3\\.?.*\\.amazonaws\\.com", RegexOptions.IgnoreCase, TimeSpan.FromHours(1));
                     var matches = rgx.Matches(endPoint);
                     return matches.Count > 0;
                 }
@@ -2818,6 +2848,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var contentType = "application/json";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "contentType", contentType },
@@ -2920,6 +2951,7 @@ public static class FunctionalTest
         var suffix = ".json";
         var contentType = "application/json";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "contentType", contentType },
@@ -3026,6 +3058,7 @@ public static class FunctionalTest
         var rbArgs = new RemoveBucketArgs()
             .WithBucket(bucketName);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "region", "us-east-1" }
@@ -3064,6 +3097,7 @@ public static class FunctionalTest
         var rbArgs = new RemoveBucketArgs()
             .WithBucket(bucketName);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "region", "us-east-1" }
@@ -3104,6 +3138,7 @@ public static class FunctionalTest
         var rbArgs = new RemoveBucketArgs()
             .WithBucket(bucketName);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "region", "eu-central-1" }
@@ -3142,6 +3177,7 @@ public static class FunctionalTest
         var rbArgs = new RemoveBucketArgs()
             .WithBucket(bucketName);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "region", "us-west-2" }
@@ -3173,6 +3209,7 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         string bucketName = null;
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "region", "us-east-1" }
@@ -3208,6 +3245,7 @@ public static class FunctionalTest
         var rbArgs = new RemoveBucketArgs()
             .WithBucket(bucketName);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "region", "us-east-1" }
@@ -3245,6 +3283,7 @@ public static class FunctionalTest
         var contentType = "application/octet-stream";
         var size = 1 * MB;
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -3282,6 +3321,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var contentType = "binary/octet-stream";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -3315,6 +3355,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var contentType = "custom-contenttype";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -3352,10 +3393,12 @@ public static class FunctionalTest
         var fileName = CreateFile(1, dataFile1B);
         var contentType = "custom/contenttype";
         var metaData = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "customheader", "minio   dotnet" }
         };
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -3401,6 +3444,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -3436,6 +3480,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var contentType = "application/octet-stream";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -3489,6 +3534,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var contentType = "application/octet-stream";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -3548,6 +3594,7 @@ public static class FunctionalTest
         var destObjectName = GetRandomName(10);
         var outFileName = "outFileName-CopyObject_Test1";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -3618,6 +3665,7 @@ public static class FunctionalTest
         var destBucketName = GetRandomName(15);
         var destObjectName = GetRandomName(10);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -3706,6 +3754,7 @@ public static class FunctionalTest
         var destObjectName = GetRandomName(10);
         var outFileName = "outFileName-CopyObject_Test3";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -3783,6 +3832,7 @@ public static class FunctionalTest
         var destObjectName = GetRandomName(10);
         var outFileName = "outFileName-CopyObject_Test4";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -3856,6 +3906,7 @@ public static class FunctionalTest
         var destBucketName = GetRandomName(15);
         var destObjectName = GetRandomName(10);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -3933,6 +3984,7 @@ public static class FunctionalTest
         var destObjectName = GetRandomName(10);
         var outFileName = "outFileName-CopyObject_Test6";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -4012,6 +4064,7 @@ public static class FunctionalTest
         var destBucketName = GetRandomName(15);
         var destObjectName = GetRandomName(10);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -4090,6 +4143,7 @@ public static class FunctionalTest
         var destBucketName = GetRandomName(15);
         var destObjectName = GetRandomName(10);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -4110,7 +4164,7 @@ public static class FunctionalTest
                     .WithObject(objectName)
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length)
-                    .WithHeaders(new Dictionary<string, string> { { "Orig", "orig-val with  spaces" } });
+                    .WithHeaders(new Dictionary<string, string>(StringComparer.Ordinal) { { "Orig", "orig-val with  spaces" } });
                 await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
             }
 
@@ -4126,6 +4180,7 @@ public static class FunctionalTest
 
             // set custom metadata
             var customMetadata = new Dictionary<string, string>
+(StringComparer.Ordinal)
             {
                 { "Content-Type", "application/css" },
                 { "Mynewkey", "test   test" },
@@ -4178,6 +4233,7 @@ public static class FunctionalTest
         var destObjectName = GetRandomName(10);
         var outFileName = "outFileName-CopyObject_Test9";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -4199,6 +4255,7 @@ public static class FunctionalTest
 
                 await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
                 var putTags = new Dictionary<string, string>
+(StringComparer.Ordinal)
                 {
                     { "key1", "PutObjectTags" }
                 };
@@ -4210,6 +4267,7 @@ public static class FunctionalTest
             }
 
             var copyTags = new Dictionary<string, string>
+(StringComparer.Ordinal)
             {
                 { "key1", "CopyObjectTags" }
             };
@@ -4266,6 +4324,7 @@ public static class FunctionalTest
         var destObjectName = GetRandomName(10);
         var outFileName = "outFileName-EncryptedCopyObject_Test1";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -4349,6 +4408,7 @@ public static class FunctionalTest
         var destObjectName = GetRandomName(10);
         var outFileName = "outFileName-EncryptedCopyObject_Test2";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -4429,7 +4489,7 @@ public static class FunctionalTest
         var destBucketName = GetRandomName(15);
         var destObjectName = GetRandomName(10);
         var outFileName = "outFileName-EncryptedCopyObject_Test3";
-        var args = new Dictionary<string, string>
+        var args = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -4504,6 +4564,7 @@ public static class FunctionalTest
         var destObjectName = GetRandomName(10);
         var outFileName = "outFileName-EncryptedCopyObject_Test4";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -4578,6 +4639,7 @@ public static class FunctionalTest
         string contentType = null;
         var tempFileName = "tempFile-" + GetRandomName();
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -4646,6 +4708,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var fileName = GetRandomName(10);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -4722,6 +4785,7 @@ public static class FunctionalTest
         var tempFileName = "tempFile-" + GetRandomName();
         var tempSource = "tempSourceFile-" + GetRandomName();
         var offsetLengthTests = new Dictionary<string, List<int>>
+(StringComparer.Ordinal)
         {
             // list is {offset, length} values
             { "GetObject_Test3", new List<int> { 14, 20 } },
@@ -4734,6 +4798,7 @@ public static class FunctionalTest
             var offsetToStartFrom = test.Value[0];
             var lengthToBeRead = test.Value[1];
             var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
             {
                 { "bucketName", bucketName },
                 { "objectName", objectName },
@@ -4845,6 +4910,7 @@ public static class FunctionalTest
         var fileName = GetRandomName(10);
         var destFileName = GetRandomName(10);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -4920,6 +4986,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var outFileName = "outFileName-FGetObject_Test1";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -4970,6 +5037,7 @@ public static class FunctionalTest
         var prefix = "minix";
         var objectName = prefix + GetRandomName(10);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -5010,6 +5078,7 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName }
         };
@@ -5043,6 +5112,7 @@ public static class FunctionalTest
         var prefix = "minix";
         var objectName = prefix + "/" + GetRandomName(10) + "/suffix";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -5084,6 +5154,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -5125,6 +5196,7 @@ public static class FunctionalTest
         var objectNamePrefix = GetRandomName(10);
         var numObjects = 100;
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectNamePrefix },
@@ -5174,12 +5246,13 @@ public static class FunctionalTest
         var objectNamePrefix = GetRandomName(10);
         var numObjects = 1015;
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectNamePrefix },
             { "recursive", "false" }
         };
-        var objectNamesSet = new HashSet<string>();
+        var objectNamesSet = new HashSet<string>(StringComparer.Ordinal);
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -5241,6 +5314,7 @@ public static class FunctionalTest
         var prefix = "minix";
         var objectName = prefix + GetRandomName(10);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -5356,6 +5430,7 @@ public static class FunctionalTest
         var downloadFile = GetRandomObjectName(10);
 
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -5417,6 +5492,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var expiresInt = 0;
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -5483,6 +5559,7 @@ public static class FunctionalTest
         var reqDate = DateTime.UtcNow.AddSeconds(-50);
         var downloadFile = GetRandomObjectName(10);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -5512,6 +5589,7 @@ public static class FunctionalTest
                 .WithObject(objectName);
             var stats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
             var reqParams = new Dictionary<string, string>
+(StringComparer.Ordinal)
             {
                 ["response-content-type"] = "application/json",
                 ["response-content-disposition"] = "attachment;filename=  MyDoc u m  e   nt.json ;"
@@ -5529,10 +5607,10 @@ public static class FunctionalTest
                 throw new ArgumentNullException(nameof(response.Content), "Unable to download via presigned URL");
 
             Assert.IsTrue(response.Content.Headers.GetValues("Content-Type")
-                .Contains(reqParams["response-content-type"]));
+                .Contains(reqParams["response-content-type"], StringComparer.Ordinal));
             Assert.IsTrue(response.Content.Headers.GetValues("Content-Disposition")
-                .Contains(reqParams["response-content-disposition"]));
-            Assert.IsTrue(response.Content.Headers.GetValues("Content-Length").Contains(stats.Size.ToString()));
+                .Contains(reqParams["response-content-disposition"], StringComparer.Ordinal));
+            Assert.IsTrue(response.Content.Headers.GetValues("Content-Length").Contains(stats.Size.ToString(), StringComparer.Ordinal));
 
             using (var fs = new FileStream(downloadFile, FileMode.CreateNew))
             {
@@ -5576,6 +5654,7 @@ public static class FunctionalTest
         var fileName = CreateFile(10 * KB, dataFile10KB);
 
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -5626,6 +5705,7 @@ public static class FunctionalTest
         var expiresInt = 0;
 
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -5688,6 +5768,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var contentType = "gzip";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "recursive", "true" }
@@ -5752,6 +5833,7 @@ public static class FunctionalTest
         var objectName = prefix + GetRandomName(10);
         var contentType = "gzip";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "prefix", prefix },
@@ -5813,6 +5895,7 @@ public static class FunctionalTest
         var objectName = prefix + "/" + GetRandomName(10) + "/suffix";
         var contentType = "gzip";
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "prefix", prefix },
@@ -5881,6 +5964,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectPrefix", objectName.Substring(5) },
@@ -5937,6 +6021,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName }
         };
@@ -5994,6 +6079,7 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName }
         };
@@ -6120,6 +6206,7 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName }
         };

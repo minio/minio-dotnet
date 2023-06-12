@@ -23,7 +23,7 @@ namespace Minio.DataModel;
 /// </summary>
 public class CopyConditions
 {
-    private readonly Dictionary<string, string> copyConditions = new();
+    private readonly Dictionary<string, string> copyConditions = new(StringComparer.Ordinal);
     internal long byteRangeEnd = -1;
     internal long byteRangeStart;
 

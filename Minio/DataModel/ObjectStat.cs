@@ -91,7 +91,7 @@ public class ObjectStat
                     var expirationResponse = paramValue.Trim();
                     var expiryDatePattern =
                         @"(Sun|Mon|Tue|Wed|Thu|Fri|Sat), \d{2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} [A-Z]+";
-                    var expiryMatch = Regex.Match(expirationResponse, expiryDatePattern);
+                    var expiryMatch = Regex.Match(expirationResponse, expiryDatePattern, RegexOptions.None, TimeSpan.FromHours(1));
                     if (expiryMatch.Success)
                         objInfo.Expires = DateTime.SpecifyKind(
                             DateTime.Parse(expiryMatch.Value),

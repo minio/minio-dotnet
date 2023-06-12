@@ -203,7 +203,7 @@ public class SelectResponseStream
 
     protected IDictionary<string, string> ExtractHeaders(Span<byte> data)
     {
-        var headerMap = new Dictionary<string, string>();
+        var headerMap = new Dictionary<string, string>(StringComparer.Ordinal);
         var offset = 0;
 
         while (offset < data.Length)

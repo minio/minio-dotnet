@@ -97,6 +97,7 @@ public class OperationsTest
         var objectName = "object-name";
 
         var reqParams = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "Response-Content-Disposition", "attachment; filename=\"filename.jpg\"" }
         };

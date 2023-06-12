@@ -390,7 +390,7 @@ internal class V4Authenticator
         // METHOD
         canonicalStringList.AddLast(requestBuilder.Method.ToString());
 
-        var queryParamsDict = new Dictionary<string, string>();
+        var queryParamsDict = new Dictionary<string, string>(StringComparer.Ordinal);
         if (requestBuilder.QueryParameters is not null)
             foreach (var kvp in requestBuilder.QueryParameters)
                 queryParamsDict[kvp.Key] = Uri.EscapeDataString(kvp.Value);

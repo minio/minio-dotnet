@@ -615,7 +615,7 @@ public partial class MinioClient : IMinioClient
         if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
             && errResponse.Code.Equals("InvalidRequest", StringComparison.OrdinalIgnoreCase))
         {
-            var legalHold = new Dictionary<string, string> { { "legal-hold", "" } };
+            var legalHold = new Dictionary<string, string>(StringComparer.Ordinal) { { "legal-hold", "" } };
             if (response.Request.RequestUri.Query.Contains("legalHold"))
                 throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
         }
@@ -693,7 +693,7 @@ public partial class MinioClient : IMinioClient
         {
             StatusCode = response.StatusCode,
             Content = response.Content,
-            Headers = response.Headers.ToDictionary(o => o.Key, o => string.Join(Environment.NewLine, o.Value)),
+            Headers = response.Headers.ToDictionary(o => o.Key, o => string.Join(Environment.NewLine, o.Value), StringComparer.Ordinal),
             // The Uri that actually responded (could be different from the requestUri if a redirection occurred)
             ResponseUri = response.Request.RequestUri,
             ErrorMessage = response.ErrorMessage,

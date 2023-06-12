@@ -26,7 +26,7 @@ public class PostPolicy
     ///     Get the populated dictionary of policy data.
     /// </summary>
     /// <returns>Dictionary of policy data</returns>
-    public IDictionary<string, string> FormData { get; } = new Dictionary<string, string>();
+    public IDictionary<string, string> FormData { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
 
     public DateTime Expiration { get; set; }
     public string Key { get; private set; }
@@ -312,8 +312,6 @@ public class PostPolicy
     /// <returns>true if expiration is set</returns>
     public bool IsExpirationSet()
     {
-        if (!string.IsNullOrEmpty(Expiration.ToString())) return true;
-
-        return false;
+        return !string.IsNullOrEmpty(Expiration.ToString());
     }
 }

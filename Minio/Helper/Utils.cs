@@ -37,10 +37,10 @@ public static class Utils
 {
     // We support '.' with bucket names but we fallback to using path
     // style requests instead for such buckets.
-    private static readonly Regex validBucketName = new("^[a-z0-9][a-z0-9\\.\\-]{1,61}[a-z0-9]$");
+    private static readonly Regex validBucketName = new("^[a-z0-9][a-z0-9\\.\\-]{1,61}[a-z0-9]$", RegexOptions.None, TimeSpan.FromHours(1));
 
     // Invalid bucket name with double dot.
-    private static readonly Regex invalidDotBucketName = new("`/./.");
+    private static readonly Regex invalidDotBucketName = new("`/./.", RegexOptions.None, TimeSpan.FromHours(1));
 
     private static readonly Lazy<IDictionary<string, string>> _contentTypeMap = new(AddContentTypeMappings);
 
@@ -196,10 +196,10 @@ public static class Utils
 
         if (l1 is null) return false;
 
-        return !l2.Except(l1).Any();
+        return !l2.Except(l1, StringComparer.Ordinal).Any();
     }
 
-    public static async Task RunInParallel<TSource>(IEnumerable<TSource> source,
+    public static Task RunInParallel<TSource>(IEnumerable<TSource> source,
         Func<TSource, CancellationToken, ValueTask> body)
     {
         var maxNoOfParallelProcesses = 4;
@@ -208,15 +208,15 @@ public static class Utils
         {
             MaxDegreeOfParallelism = maxNoOfParallelProcesses
         };
-        await Parallel.ForEachAsync(source, parallelOptions, body);
+        return Parallel.ForEachAsync(source, parallelOptions, body);
 #else
-        await Task.WhenAll(Partitioner.Create(source).GetPartitions(maxNoOfParallelProcesses)
+        return Task.WhenAll(Partitioner.Create(source).GetPartitions(maxNoOfParallelProcesses)
             .Select(partition => Task.Run(async delegate
                 {
                     using (partition)
                     {
                         while (partition.MoveNext())
-                            await body(partition.Current, new CancellationToken());
+                            await body(partition.Current, new CancellationToken()).ConfigureAwait(false);
                     }
                 }
             )));
@@ -888,7 +888,7 @@ public static class Utils
         var patternToReplace =
             @"<\w+\s+\w+:nil=""true""(\s+xmlns:\w+=""http://www.w3.org/2001/XMLSchema-instance"")?\s*/>";
         var patternToMatch = @"<\w+\s+xmlns=""http://s3.amazonaws.com/doc/2006-03-01/""\s*>";
-        if (Regex.Match(config, patternToMatch, regexOptions).Success)
+        if (Regex.Match(config, patternToMatch, regexOptions, TimeSpan.FromHours(1)).Success)
             patternToReplace = @"xmlns=""http://s3.amazonaws.com/doc/2006-03-01/""\s*";
         return Regex.Replace(
             config,

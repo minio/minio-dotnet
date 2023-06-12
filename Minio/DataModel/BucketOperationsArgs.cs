@@ -250,7 +250,7 @@ public class SetPolicyArgs : BucketArgs<SetPolicyArgs>
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
         if (string.IsNullOrEmpty(PolicyJsonString))
-            new MinioException("SetPolicyArgs needs the policy to be set to the right JSON contents.");
+            throw new MinioException("SetPolicyArgs needs the policy to be set to the right JSON contents.");
 
         requestMessageBuilder.AddQueryParameter("policy", "");
         requestMessageBuilder.AddJsonBody(PolicyJsonString);

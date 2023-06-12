@@ -127,6 +127,7 @@ public class EndpointTest
     public void TestIfIPIsValid()
     {
         var testIPDict = new Dictionary<string, bool>
+(StringComparer.Ordinal)
         {
             { "192.168.1", false },
             { "192.168.1.1", true },
@@ -142,6 +143,7 @@ public class EndpointTest
     public void TestIfDomainIsValid()
     {
         var testDomainDict = new Dictionary<string, bool>
+(StringComparer.Ordinal)
         {
             { "%$$$", false },
             { "s3.amazonaws.com", true },
@@ -164,6 +166,7 @@ public class EndpointTest
     public void TestIsAmazonEndpoint()
     {
         var testAmazonDict = new Dictionary<string, bool>
+(StringComparer.Ordinal)
         {
             { "192.168.1.1", false },
             { "storage.googleapis.com", false },
@@ -186,6 +189,7 @@ public class EndpointTest
     public void TestIsAmazonChinaEndpoint()
     {
         var testAmazonDict = new Dictionary<string, bool>
+(StringComparer.Ordinal)
         {
             { "192.168.1.1", false },
             { "storage.googleapis.com", false },

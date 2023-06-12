@@ -69,7 +69,7 @@ public class Tagging
         get
         {
             if (TaggingSet is null || TaggingSet.Tag.Count == 0) return null;
-            var tagMap = new Dictionary<string, string>();
+            var tagMap = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var tag in TaggingSet.Tag) tagMap[tag.Key] = tag.Value;
             return tagMap;
         }
