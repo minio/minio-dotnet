@@ -25,8 +25,6 @@ public sealed class JSONType
     public static readonly JSONType Document = new("DOCUMENT");
     public static readonly JSONType Lines = new("LINES");
 
-    [XmlText] public string Type;
-
     public JSONType()
     {
     }
@@ -35,4 +33,6 @@ public sealed class JSONType
     {
         Type = value;
     }
+
+    [XmlText] public string Type { get; set; }
 }

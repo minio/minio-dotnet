@@ -35,14 +35,14 @@ public partial class MinioClient : IMinioClient
     /// <summary>
     ///     Default error handling delegate
     /// </summary>
-    private readonly ApiResponseErrorHandlingDelegate _defaultErrorHandlingDelegate = response =>
+    private readonly ApiResponseErrorHandler _defaultErrorHandlingDelegate = response =>
     {
         if (response.StatusCode < HttpStatusCode.OK || response.StatusCode >= HttpStatusCode.BadRequest)
             ParseError(response);
     };
 
-    internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers =
-        Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
+    internal readonly IEnumerable<ApiResponseErrorHandler> NoErrorHandlers =
+        Enumerable.Empty<ApiResponseErrorHandler>();
 
     private string CustomUserAgent = string.Empty;
     private bool disposedValue;
@@ -60,7 +60,7 @@ public partial class MinioClient : IMinioClient
     internal int RequestTimeout;
 
     // Handler for task retry policy
-    internal RetryPolicyHandlingDelegate RetryPolicyHandler;
+    internal RetryPolicyHandler RetryPolicyHandler;
 
     // Enables HTTP tracing if set to true
     private bool trace;
@@ -379,7 +379,7 @@ public partial class MinioClient : IMinioClient
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns>ResponseResult</returns>
     internal Task<ResponseResult> ExecuteTaskAsync(
-        IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
+        IEnumerable<ApiResponseErrorHandler> errorHandlers,
         HttpRequestMessageBuilder requestMessageBuilder,
         bool isSts = false,
         CancellationToken cancellationToken = default)
@@ -398,7 +398,7 @@ public partial class MinioClient : IMinioClient
     }
 
     private async Task<ResponseResult> ExecuteTaskCoreAsync(
-        IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
+        IEnumerable<ApiResponseErrorHandler> errorHandlers,
         HttpRequestMessageBuilder requestMessageBuilder,
         bool isSts = false,
         CancellationToken cancellationToken = default)
@@ -647,7 +647,7 @@ public partial class MinioClient : IMinioClient
     /// <param name="response"></param>
     /// <param name="handlers"></param>
     /// <param name="startTime"></param>
-    private void HandleIfErrorResponse(ResponseResult response, IEnumerable<ApiResponseErrorHandlingDelegate> handlers,
+    private void HandleIfErrorResponse(ResponseResult response, IEnumerable<ApiResponseErrorHandler> handlers,
         DateTime startTime)
     {
         // Logs Response if HTTP tracing is enabled
@@ -726,7 +726,7 @@ public partial class MinioClient : IMinioClient
     }
 }
 
-internal delegate void ApiResponseErrorHandlingDelegate(ResponseResult response);
+internal delegate void ApiResponseErrorHandler(ResponseResult response);
 
-public delegate Task<ResponseResult> RetryPolicyHandlingDelegate(
+public delegate Task<ResponseResult> RetryPolicyHandler(
     Func<Task<ResponseResult>> executeRequestCallback);

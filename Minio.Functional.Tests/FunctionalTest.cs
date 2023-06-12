@@ -303,7 +303,7 @@ public static class FunctionalTest
         return $"{path}/{fileName}";
     }
 
-    internal static async Task RunCoreTests(MinioClient minioClient)
+    internal static Task RunCoreTests(MinioClient minioClient)
     {
         ConcurrentBag<Task> coreTestsTasks = new()
         {
@@ -333,8 +333,7 @@ public static class FunctionalTest
             GetBucketPolicy_Test1(minioClient)
         };
 
-        await Utils.RunInParallel(coreTestsTasks, async (task, _) => { await task.ConfigureAwait(false); })
-            .ConfigureAwait(false);
+        return Utils.RunInParallel(coreTestsTasks, async (task, _) => { await task.ConfigureAwait(false); });
     }
 
     internal static async Task BucketExists_Test(MinioClient minio)

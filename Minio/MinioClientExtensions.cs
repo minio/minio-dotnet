@@ -130,7 +130,7 @@ public static class MinioClientExtensions
     /// <param name="retryPolicyHandler">Delegate that will wrap execution of http client requests.</param>
     /// <returns></returns>
     public static MinioClient WithRetryPolicy(this MinioClient minioClient,
-        RetryPolicyHandlingDelegate retryPolicyHandler)
+        RetryPolicyHandler retryPolicyHandler)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 

@@ -43,8 +43,6 @@ public sealed class EventType
     public static readonly EventType ObjectRemovedDeleteMarkerCreated = new("s3:ObjectRemoved:DeleteMarkerCreated");
     public static readonly EventType ReducedRedundancyLostObject = new("s3:ReducedRedundancyLostObject");
 
-    [XmlText] public string Value { get; set; }
-
     private EventType()
     {
         Value = null;
@@ -54,6 +52,8 @@ public sealed class EventType
     {
         Value = value;
     }
+
+    [XmlText] public string Value { get; set; }
 
     public override string ToString()
     {

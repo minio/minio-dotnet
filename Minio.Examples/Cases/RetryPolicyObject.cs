@@ -63,7 +63,7 @@ internal static class RetryPolicyHelper
                 i => CalcBackoff(i, retryInterval, maxRetryInterval));
     }
 
-    public static RetryPolicyHandlingDelegate AsRetryDelegate(this AsyncPolicy<ResponseResult> policy)
+    public static RetryPolicyHandler AsRetryDelegate(this AsyncPolicy<ResponseResult> policy)
     {
         return policy is null
             ? null

@@ -25,14 +25,6 @@ namespace Minio.DataModel;
 /// </summary>
 public class NotificationConfiguration
 {
-    [XmlElement] public string Id { get; set; }
-
-    [XmlElement("Event")]
-    [SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "Using Range functions in code")]
-    public List<EventType> Events { get; set; }
-
-    [XmlElement("Filter")] public Filter Filter;
-
     public NotificationConfiguration()
     {
         Arn = null;
@@ -48,6 +40,14 @@ public class NotificationConfiguration
     {
         Arn = arn;
     }
+
+    [XmlElement] public string Id { get; set; }
+
+    [XmlElement("Event")]
+    [SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "Using Range functions in code")]
+    public List<EventType> Events { get; set; }
+
+    [XmlElement("Filter")] public Filter Filter { get; set; }
 
     private Arn Arn { get; }
 

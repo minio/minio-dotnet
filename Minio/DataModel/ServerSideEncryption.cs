@@ -47,13 +47,13 @@ public interface IServerSideEncryption
 public class SSEC : IServerSideEncryption
 {
     // secret AES-256 Key
-    protected byte[] key;
+    protected byte[] Key;
 
     public SSEC(byte[] key)
     {
         if (key is null || key.Length != 32)
             throw new ArgumentException("Secret key needs to be a 256 bit AES Key", nameof(key));
-        this.key = key;
+        Key = key;
     }
 
     public EncryptionType GetEncryptionType()
@@ -65,9 +65,9 @@ public class SSEC : IServerSideEncryption
     {
         if (headers is null) throw new ArgumentNullException(nameof(headers));
 
-        var md5SumStr = Utils.GetMD5SumStr(key);
+        var md5SumStr = Utils.GetMD5SumStr(Key);
         headers.Add("X-Amz-Server-Side-Encryption-Customer-Algorithm", "AES256");
-        headers.Add("X-Amz-Server-Side-Encryption-Customer-Key", Convert.ToBase64String(key));
+        headers.Add("X-Amz-Server-Side-Encryption-Customer-Key", Convert.ToBase64String(Key));
         headers.Add("X-Amz-Server-Side-Encryption-Customer-Key-Md5", md5SumStr);
     }
 }
@@ -85,15 +85,15 @@ public class SSECopy : SSEC
     {
         if (headers is null) throw new ArgumentNullException(nameof(headers));
 
-        var md5SumStr = Utils.GetMD5SumStr(key);
+        var md5SumStr = Utils.GetMD5SumStr(Key);
         headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Algorithm", "AES256");
-        headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key", Convert.ToBase64String(key));
+        headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key", Convert.ToBase64String(Key));
         headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key-Md5", md5SumStr);
     }
 
     public SSEC CloneToSSEC()
     {
-        return new SSEC(key);
+        return new SSEC(Key);
     }
 }
 
@@ -120,17 +120,17 @@ public class SSES3 : IServerSideEncryption
 /// </summary>
 public class SSEKMS : IServerSideEncryption
 {
-    protected IDictionary<string, string> context;
+    protected IDictionary<string, string> Context { get; set; }
 
     // Specifies the customer master key(CMK).Cannot be null
-    protected string key;
+    protected string Key { get; set; }
 
     public SSEKMS(string key, IDictionary<string, string> context = null)
     {
         if (string.IsNullOrEmpty(key))
             throw new ArgumentException("KMS Key cannot be empty", nameof(key));
-        this.key = key;
-        this.context = context;
+        Key = key;
+        Context = context;
     }
 
     public EncryptionType GetEncryptionType()
@@ -142,9 +142,9 @@ public class SSEKMS : IServerSideEncryption
     {
         if (headers is null) throw new ArgumentNullException(nameof(headers));
 
-        headers.Add(Constants.SSEKMSKeyId, key);
+        headers.Add(Constants.SSEKMSKeyId, Key);
         headers.Add(Constants.SSEGenericHeader, "aws:kms");
-        if (context is not null) headers.Add(Constants.SSEKMSContext, MarshalContext());
+        if (Context is not null) headers.Add(Constants.SSEKMSContext, MarshalContext());
     }
 
     /// <summary>
@@ -157,8 +157,8 @@ public class SSEKMS : IServerSideEncryption
 
         sb.Append('{');
         var i = 0;
-        var len = context.Count;
-        foreach (var pair in context)
+        var len = Context.Count;
+        foreach (var pair in Context)
         {
             sb.Append('"').Append(pair.Key).Append('"');
             sb.Append(':');
