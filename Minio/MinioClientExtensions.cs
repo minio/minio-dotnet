@@ -212,9 +212,10 @@ public static class MinioClientExtensions
         else
             minioClient.Endpoint = host;
 
+        var httpClientHandler = new HttpClientHandler { Proxy = minioClient.Proxy };
         minioClient.HttpClient ??= minioClient.Proxy is null
             ? new HttpClient()
-            : new HttpClient(new HttpClientHandler { Proxy = minioClient.Proxy });
+            : new HttpClient(httpClientHandler);
         minioClient.HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", minioClient.FullUserAgent);
         return minioClient;
     }

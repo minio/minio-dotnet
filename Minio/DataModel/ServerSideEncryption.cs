@@ -22,9 +22,11 @@ namespace Minio.DataModel;
 // Type of Server-side encryption
 public enum EncryptionType
 {
+#pragma warning disable CA1707 // Identifiers should not contain underscores
     SSE_C,
     SSE_S3,
     SSE_KMS
+#pragma warning restore CA1707 // Identifiers should not contain underscores
 }
 
 /// <summary>

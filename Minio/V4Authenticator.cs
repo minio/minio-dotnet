@@ -557,7 +557,9 @@ internal class V4Authenticator
             ReadOnlySpan<byte> bytes = Encoding.UTF8.GetBytes(requestBuilder.Content.ToString());
 
 #if NETSTANDARD
+#pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
             using var md5 = MD5.Create();
+#pragma warning restore CA5351 // Do Not Use Broken Cryptographic Algorithms
             var hash = md5.ComputeHash(bytes.ToArray());
 #else
             ReadOnlySpan<byte> hash = MD5.HashData(bytes);

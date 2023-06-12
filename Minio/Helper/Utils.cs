@@ -275,7 +275,9 @@ public static class Utils
     internal static string GetMD5SumStr(ReadOnlySpan<byte> key)
     {
 #if NETSTANDARD
+#pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
         using var md5 = MD5.Create();
+#pragma warning restore CA5351 // Do Not Use Broken Cryptographic Algorithms
         var hashedBytes = md5.ComputeHash(key.ToArray());
 #else
         ReadOnlySpan<byte> hashedBytes = MD5.HashData(key);
@@ -869,7 +871,7 @@ public static class Utils
         }
         finally
         {
-            xw?.Close();
+            xw.Close();
         }
 
         return str;

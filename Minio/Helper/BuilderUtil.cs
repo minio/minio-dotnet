@@ -86,7 +86,7 @@ public static class BuilderUtil
     private static bool IsValidOctetVal(string val)
     {
         const byte uLimit = 255;
-        return byte.Parse(val) <= uLimit;
+        return byte.Parse(val, NumberStyles.Integer, CultureInfo.InvariantCulture) <= uLimit;
     }
 
     private static bool IsValidIPv4(string ip)
@@ -97,8 +97,7 @@ public static class BuilderUtil
         if (octetsStr.Length != 4) return false;
         var isValidSmallInt = Array.TrueForAll(octetsStr, IsValidSmallInt);
         if (!isValidSmallInt) return false;
-        var isValidOctet = Array.TrueForAll(octetsStr, IsValidOctetVal);
-        return isValidOctet;
+        return Array.TrueForAll(octetsStr, IsValidOctetVal);
     }
 
     private static bool IsValidIP(string host)

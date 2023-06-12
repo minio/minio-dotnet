@@ -43,6 +43,7 @@ public class MinioNotificationRaw
 public class MinioNotification
 {
     public string Err { get; set; }
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation", Justification = "Needs to be concrete type for XML deserialization")]
     public Collection<NotificationEvent> Records { get; set; }
 }
 
@@ -59,9 +60,12 @@ public class NotificationEvent
     [JsonPropertyName("eventVersion")] public string EventVersion { get; set; }
 
     [JsonPropertyName("requestParameters")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation", Justification = "Needs to be concrete type for XML deserialization")]
     public Dictionary<string, string> RequestParameters { get; set; }
 
-    [JsonPropertyName("responseElements")] public Dictionary<string, string> ResponseElements { get; set; }
+    [JsonPropertyName("responseElements")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation", Justification = "Needs to be concrete type for XML deserialization")]
+    public Dictionary<string, string> ResponseElements { get; set; }
 
     [JsonPropertyName("s3")] public EventMeta S3 { get; set; }
 
@@ -102,7 +106,9 @@ public class ObjectMeta
 
     [JsonPropertyName("size")] public int Size { get; set; }
 
-    [JsonPropertyName("userMetadata")] public Dictionary<string, string> UserMetadata { get; set; }
+    [JsonPropertyName("userMetadata")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation", Justification = "Needs to be concrete type for XML deserialization")]
+    public Dictionary<string, string> UserMetadata { get; set; }
 
     [JsonPropertyName("versionId")] public string VersionId { get; set; }
 }

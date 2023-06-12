@@ -375,7 +375,7 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
         {
             if (!string.IsNullOrEmpty(eventsAsStr))
                 eventsAsStr += ", ";
-            eventsAsStr += eventType.value;
+            eventsAsStr += eventType.Value;
         }
 
         return string.Join("\n", str, string.Format("Events= [{0}]", eventsAsStr), string.Format("Prefix= {0}", Prefix),
@@ -391,7 +391,7 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
 
     {
-        foreach (var eventType in Events) requestMessageBuilder.AddQueryParameter("events", eventType.value);
+        foreach (var eventType in Events) requestMessageBuilder.AddQueryParameter("events", eventType.Value);
         requestMessageBuilder.AddQueryParameter("prefix", Prefix);
         requestMessageBuilder.AddQueryParameter("suffix", Suffix);
 

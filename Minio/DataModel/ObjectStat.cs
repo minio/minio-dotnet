@@ -33,9 +33,11 @@ public class ObjectStat
     public DateTime LastModified { get; private set; }
     public string ETag { get; private set; }
     public string ContentType { get; private set; }
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation", Justification = "Needs to be concrete type for XML deserialization")]
     public Dictionary<string, string> MetaData { get; }
     public string VersionId { get; private set; }
     public bool DeleteMarker { get; private set; }
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation", Justification = "Needs to be concrete type for XML deserialization")]
     public Dictionary<string, string> ExtraHeaders { get; }
     public uint? TaggingCount { get; private set; }
     public string ArchiveStatus { get; private set; }
@@ -96,7 +98,7 @@ public class ObjectStat
                         TimeSpan.FromHours(1));
                     if (expiryMatch.Success)
                         objInfo.Expires = DateTime.SpecifyKind(
-                            DateTime.Parse(expiryMatch.Value),
+                            DateTime.Parse(expiryMatch.Value, CultureInfo.CurrentCulture),
                             DateTimeKind.Utc);
 
                     break;
@@ -111,7 +113,7 @@ public class ObjectStat
                     var lockUntilDate = paramValue;
                     if (!string.IsNullOrWhiteSpace(lockUntilDate))
                         objInfo.ObjectLockRetainUntilDate = DateTime.SpecifyKind(
-                            DateTime.Parse(lockUntilDate),
+                            DateTime.Parse(lockUntilDate, CultureInfo.CurrentCulture),
                             DateTimeKind.Utc);
 
                     break;

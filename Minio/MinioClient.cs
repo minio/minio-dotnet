@@ -325,7 +325,7 @@ public partial class MinioClient : IMinioClient
         var resource = string.Empty;
         var usePathStyle = false;
 
-        if (bucketName is not null && S3utils.IsAmazonEndPoint(BaseUrl))
+        if (!string.IsNullOrEmpty(bucketName) && S3utils.IsAmazonEndPoint(BaseUrl))
         {
             if (method == HttpMethod.Put && objectName is null && resourcePath is null)
                 // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
@@ -333,7 +333,7 @@ public partial class MinioClient : IMinioClient
             else if (resourcePath?.Contains("location") == true)
                 // use path style for location query
                 usePathStyle = true;
-            else if (bucketName?.Contains('.') == true && Secure)
+            else if (bucketName.Contains('.') && Secure)
                 // use path style where '.' in bucketName causes SSL certificate validation error
                 usePathStyle = true;
 
@@ -683,7 +683,7 @@ public partial class MinioClient : IMinioClient
             {
                 Name = parameter.Key,
                 Value = parameter.Value,
-                Type = parameter.GetType().ToString()
+                Type = typeof(KeyValuePair<string, IEnumerable<string>>).ToString()
             }),
             // ToString() here to have the method as a nice string otherwise it will just show the enum value
             Method = request.Method.ToString(),

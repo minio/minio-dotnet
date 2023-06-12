@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Globalization;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel;
@@ -42,20 +43,20 @@ public sealed class EventType
     public static readonly EventType ObjectRemovedDeleteMarkerCreated = new("s3:ObjectRemoved:DeleteMarkerCreated");
     public static readonly EventType ReducedRedundancyLostObject = new("s3:ReducedRedundancyLostObject");
 
-    [XmlText] public string value;
+    [XmlText] public string Value { get; set; }
 
     private EventType()
     {
-        value = null;
+        Value = null;
     }
 
     public EventType(string value)
     {
-        this.value = value;
+        Value = value;
     }
 
     public override string ToString()
     {
-        return string.Format("EventType= {0}", value);
+        return string.Format(CultureInfo.InvariantCulture, "EventType= {0}", Value);
     }
 }
