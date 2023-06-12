@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+using System.Globalization;
 using System.Net;
 using System.Text;
 using CommunityToolkit.HighPerformance;
@@ -136,7 +137,7 @@ public abstract class AssumeRoleBaseProvider<T> : IClientProvider
 
     internal virtual AccessCredentials ParseResponse(HttpResponseMessage response)
     {
-        var content = Convert.ToString(response.Content);
+        var content = Convert.ToString(response.Content, CultureInfo.InvariantCulture);
         if (string.IsNullOrEmpty(content) || !HttpStatusCode.OK.Equals(response.StatusCode))
             throw new ArgumentNullException(nameof(response), "Unable to generate credentials. Response error.");
 

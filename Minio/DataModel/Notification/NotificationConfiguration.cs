@@ -25,7 +25,7 @@ namespace Minio.DataModel;
 public class NotificationConfiguration
 {
     [XmlElement] public string Id { get; set; }
-    [XmlElement("Event")] public List<EventType> Events { get; set; }
+    [XmlElement("Event")][System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "Using Range functions in code")] public List<EventType> Events { get; set; }
     [XmlElement("Filter")] public Filter Filter;
 
     public NotificationConfiguration()

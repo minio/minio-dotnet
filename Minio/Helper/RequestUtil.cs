@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Web;
 using Minio.Exceptions;
@@ -62,7 +63,7 @@ internal static class RequestUtil
         }
 
         var scheme = secure ? "https" : "http";
-        var endpointURL = string.Format("{0}://{1}", scheme, host);
+        var endpointURL = string.Format(CultureInfo.InvariantCulture, "{0}://{1}", scheme, host);
         return new Uri(endpointURL, UriKind.Absolute);
     }
 
@@ -71,7 +72,7 @@ internal static class RequestUtil
         var scheme = secure ? HttpUtility.UrlEncode("https") : HttpUtility.UrlEncode("http");
 
         // This is the actual url pointed to for all HTTP requests
-        var endpointURL = string.Format("{0}://{1}", scheme, endpoint);
+        var endpointURL = string.Format(CultureInfo.InvariantCulture, "{0}://{1}", scheme, endpoint);
         Uri uri;
         try
         {
@@ -120,7 +121,7 @@ internal static class RequestUtil
         {
             if (label.Length < 1 || label.Length > 63) return false;
 
-            var validLabel = new Regex("^[a-zA-Z0-9]([A-Za-z0-9-_]*[a-zA-Z0-9])?$", RegexOptions.None, TimeSpan.FromHours(1));
+            var validLabel = new Regex("^[a-zA-Z0-9]([A-Za-z0-9-_]*[a-zA-Z0-9])?$", RegexOptions.ExplicitCapture, TimeSpan.FromHours(1));
 
             if (!validLabel.IsMatch(label)) return false;
         }

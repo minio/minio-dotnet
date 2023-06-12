@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -332,7 +333,7 @@ internal class V4Authenticator
         // Return presigned url.
         var signedUri = new UriBuilder(presignUri) { Query = $"{requestQuery}{headers}&X-Amz-Signature={signature}" };
         if (signedUri.Uri.IsDefaultPort) signedUri.Port = -1;
-        return Convert.ToString(signedUri);
+        return Convert.ToString(signedUri, CultureInfo.InvariantCulture);
     }
 
     /// <summary>
@@ -405,7 +406,7 @@ internal class V4Authenticator
             {
                 if (sb1.Length > 0)
                     sb1.Append('&');
-                sb1.AppendFormat("{0}={1}", p, queryParamsDict[p]);
+                sb1.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}", p, queryParamsDict[p]);
             }
 
             queryParams = sb1.ToString();

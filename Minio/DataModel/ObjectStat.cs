@@ -61,7 +61,7 @@ public class ObjectStat
             switch (paramName.ToLowerInvariant())
             {
                 case "content-length":
-                    objInfo.Size = long.Parse(paramValue);
+                    objInfo.Size = long.Parse(paramValue, NumberStyles.Number, CultureInfo.InvariantCulture);
                     break;
                 case "last-modified":
                     objInfo.LastModified = DateTime.Parse(paramValue, CultureInfo.InvariantCulture);
@@ -83,7 +83,7 @@ public class ObjectStat
                     objInfo.ArchiveStatus = paramValue;
                     break;
                 case "x-amz-tagging-count":
-                    if (int.TryParse(paramValue, out var tagCount) && tagCount >= 0)
+                    if (int.TryParse(paramValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var tagCount) && tagCount >= 0)
                         objInfo.TaggingCount = (uint)tagCount;
                     break;
                 case "x-amz-expiration":

@@ -175,7 +175,7 @@ public class GetMultipartUploadsListArgs : BucketArgs<GetMultipartUploadsListArg
         requestMessageBuilder.AddQueryParameter("delimiter", Delimiter);
         requestMessageBuilder.AddQueryParameter("key-marker", KeyMarker);
         requestMessageBuilder.AddQueryParameter("upload-id-marker", UploadIdMarker);
-        requestMessageBuilder.AddQueryParameter("max-uploads", MAX_UPLOAD_COUNT.ToString());
+        requestMessageBuilder.AddQueryParameter("max-uploads", MAX_UPLOAD_COUNT.ToString(CultureInfo.InvariantCulture));
         return requestMessageBuilder;
     }
 }
@@ -324,7 +324,7 @@ public class PresignedPostPolicyArgs : ObjectArgs<PresignedPostPolicyArgs>
             ObjectName = Policy.Key;
         }
 
-        if (string.IsNullOrEmpty(Expiration.ToString()))
+        if (string.IsNullOrEmpty(Expiration.ToString(CultureInfo.InvariantCulture)))
             throw new InvalidOperationException("For the " + nameof(Policy) + " expiration should be set");
     }
 
@@ -716,7 +716,7 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
 
             deleteObjectsRequest = new XElement("Delete", objects,
                 new XElement("Quiet", true));
-            requestMessageBuilder.AddXmlBody(Convert.ToString(deleteObjectsRequest));
+            requestMessageBuilder.AddXmlBody(Convert.ToString(deleteObjectsRequest, CultureInfo.InvariantCulture));
         }
         else
         {
@@ -727,11 +727,11 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
 
             deleteObjectsRequest = new XElement("Delete", objects,
                 new XElement("Quiet", true));
-            requestMessageBuilder.AddXmlBody(Convert.ToString(deleteObjectsRequest));
+            requestMessageBuilder.AddXmlBody(Convert.ToString(deleteObjectsRequest, CultureInfo.InvariantCulture));
         }
 
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(Convert.ToString(deleteObjectsRequest))));
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(Convert.ToString(deleteObjectsRequest, CultureInfo.InvariantCulture))));
 
         return requestMessageBuilder;
     }

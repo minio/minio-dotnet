@@ -263,7 +263,7 @@ public partial class MinioClient : IObjectOperations
         var requestMessageBuilder = await CreateRequest(HttpMethod.Put, args.BucketName,
             args.ObjectName,
             args.Headers, // contentType
-            Convert.ToString(args.GetType()), // metaData
+            Convert.ToString(args.GetType(), CultureInfo.InvariantCulture), // metaData
             Utils.ObjectToByteArray(args.RequestBody)).ConfigureAwait(false);
         var authenticator = new V4Authenticator(Secure, AccessKey, SecretKey, Region,
             SessionToken);
@@ -936,7 +936,7 @@ public partial class MinioClient : IObjectOperations
             if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
             {
                 queryMap.Add("uploadId", uploadId);
-                queryMap.Add("partNumber", partNumber.ToString());
+                queryMap.Add("partNumber", partNumber.ToString(CultureInfo.InvariantCulture));
             }
 
             if (args.SourceObject.SSE is not null && args.SourceObject.SSE is SSECopy)
@@ -1344,7 +1344,7 @@ public partial class MinioClient : IObjectOperations
             if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
             {
                 queryMap.Add("uploadId", uploadId);
-                queryMap.Add("partNumber", partNumber.ToString());
+                queryMap.Add("partNumber", partNumber.ToString(CultureInfo.InvariantCulture));
             }
 
             var customHeader = new Dictionary<string, string>

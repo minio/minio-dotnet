@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Globalization;
 using System.Net;
 
 namespace Minio.Helper;
@@ -119,7 +120,7 @@ public static class BuilderUtil
         {
             try
             {
-                var port = int.Parse(host.Substring(posColon + 1, host.Length - posColon - 1));
+                var port = int.Parse(host.Substring(posColon + 1, host.Length - posColon - 1), CultureInfo.InvariantCulture);
             }
             catch (FormatException)
             {

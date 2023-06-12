@@ -54,6 +54,6 @@ public class LambdaConfig : NotificationConfiguration
 
     public override int GetHashCode()
     {
-        return Lambda.GetHashCode();
+        return StringComparer.Ordinal.GetHashCode(Lambda);
     }
 }

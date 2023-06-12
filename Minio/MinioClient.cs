@@ -610,7 +610,9 @@ public partial class MinioClient : IMinioClient
 
         if (response.StatusCode.Equals(HttpStatusCode.NotImplemented)
             && errResponse.Code.Equals("NotImplemented", StringComparison.OrdinalIgnoreCase))
+#pragma warning disable MA0025 // Implement the functionality instead of throwing NotImplementedException
             throw new NotImplementedException(errResponse.Message);
+#pragma warning restore MA0025 // Implement the functionality instead of throwing NotImplementedException
 
         if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
             && errResponse.Code.Equals("InvalidRequest", StringComparison.OrdinalIgnoreCase))

@@ -15,6 +15,7 @@
 * limitations under the License.
 */
 
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Web;
@@ -98,7 +99,7 @@ internal class HttpRequestMessageBuilder
 
                             break;
                         case "content-length":
-                            request.Content.Headers.ContentLength = Convert.ToInt32(val);
+                            request.Content.Headers.ContentLength = Convert.ToInt32(val, CultureInfo.InvariantCulture);
                             break;
                         case "content-md5":
                             request.Content.Headers.ContentMD5 = Convert.FromBase64String(val);
