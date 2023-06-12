@@ -22,7 +22,7 @@ namespace Minio;
 public static class Regions
 {
     private static readonly Regex endpointRegex = new(@"s3[.\-](.*?)\.amazonaws\.com$",
-        RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.RightToLeft | RegexOptions.ExplicitCapture,
+        RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.RightToLeft,
         TimeSpan.FromHours(1));
 
     private static readonly ConcurrentDictionary<string, string> cache = new(StringComparer.Ordinal);

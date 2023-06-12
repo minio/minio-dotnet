@@ -49,7 +49,6 @@ public class NotificationConfiguration
         Arn = arn;
     }
 
-
     private Arn Arn { get; }
 
     public void AddEvents(IList<EventType> evnt)
