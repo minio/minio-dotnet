@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Minio.DataModel.ObjectLock;
@@ -33,12 +34,18 @@ public class ObjectStat
     public DateTime LastModified { get; private set; }
     public string ETag { get; private set; }
     public string ContentType { get; private set; }
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation", Justification = "Needs to be concrete type for XML deserialization")]
+
+    [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
+        Justification = "Needs to be concrete type for XML deserialization")]
     public Dictionary<string, string> MetaData { get; }
+
     public string VersionId { get; private set; }
     public bool DeleteMarker { get; private set; }
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation", Justification = "Needs to be concrete type for XML deserialization")]
+
+    [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
+        Justification = "Needs to be concrete type for XML deserialization")]
     public Dictionary<string, string> ExtraHeaders { get; }
+
     public uint? TaggingCount { get; private set; }
     public string ArchiveStatus { get; private set; }
     public DateTime? Expires { get; private set; }

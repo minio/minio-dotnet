@@ -120,11 +120,6 @@ public class SSES3 : IServerSideEncryption
 /// </summary>
 public class SSEKMS : IServerSideEncryption
 {
-    protected IDictionary<string, string> Context { get; set; }
-
-    // Specifies the customer master key(CMK).Cannot be null
-    protected string Key { get; set; }
-
     public SSEKMS(string key, IDictionary<string, string> context = null)
     {
         if (string.IsNullOrEmpty(key))
@@ -132,6 +127,11 @@ public class SSEKMS : IServerSideEncryption
         Key = key;
         Context = context;
     }
+
+    protected IDictionary<string, string> Context { get; set; }
+
+    // Specifies the customer master key(CMK).Cannot be null
+    protected string Key { get; set; }
 
     public EncryptionType GetEncryptionType()
     {

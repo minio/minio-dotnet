@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Net;
 using Minio.Credentials;
 using Minio.DataModel;
@@ -220,7 +221,8 @@ public static class MinioClientExtensions
         return minioClient;
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "This is done in the interface. String is provided here for convenience")]
+    [SuppressMessage("Design", "CA1054:URI-like parameters should not be strings",
+        Justification = "This is done in the interface. String is provided here for convenience")]
     public static Task<HttpResponseMessage> WrapperGetAsync(this IMinioClient minioClient, string url)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
@@ -231,7 +233,8 @@ public static class MinioClientExtensions
     /// <summary>
     ///     Runs httpClient's PutObjectAsync method
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "This is done in the interface. String is provided here for convenience")]
+    [SuppressMessage("Design", "CA1054:URI-like parameters should not be strings",
+        Justification = "This is done in the interface. String is provided here for convenience")]
     public static Task WrapperPutAsync(this IMinioClient minioClient, string url, StreamContent strm)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
