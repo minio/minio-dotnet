@@ -272,10 +272,10 @@ public static class FunctionalTest
         return "minio-dotnet-example-" + result;
     }
 
-    internal static void GenerateRandomFile(string fileName)
+    internal static void GenerateRandom500MB_File(string fileName)
     {
         using var fs = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true);
-        var fileSize = 3L * 1024 * 1024 * 1024;
+        var fileSize = 500L * 1024 * 1024;
         var segments = fileSize / 10000;
         var last_seg = fileSize % 10000;
         using var br = new BinaryWriter(fs);
@@ -4920,9 +4920,8 @@ public static class FunctionalTest
 
         try
         {
-            // Create a large local file
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) GenerateRandomFile(fileName);
-            else Bash("truncate -s 2G " + fileName);
+            // Create a local 500MB file
+            GenerateRandom500MB_File(fileName);
 
             // Create the bucket
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
