@@ -218,6 +218,7 @@ public static class MinioClientExtensions
             ? new HttpClient()
             : new HttpClient(httpClientHandler);
         minioClient.HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", minioClient.FullUserAgent);
+        minioClient.HttpClient.Timeout = TimeSpan.FromMinutes(30);
         return minioClient;
     }
 
