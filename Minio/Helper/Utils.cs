@@ -201,9 +201,8 @@ public static class Utils
     }
 
     public static Task RunInParallel<TSource>(IEnumerable<TSource> source,
-        Func<TSource, CancellationToken, ValueTask> body)
+        Func<TSource, CancellationToken, ValueTask> body, int maxNoOfParallelProcesses = 4)
     {
-        var maxNoOfParallelProcesses = 4;
 #if NET6_0_OR_GREATER
         ParallelOptions parallelOptions = new()
         {

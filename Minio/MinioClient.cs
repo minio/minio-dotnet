@@ -30,8 +30,6 @@ namespace Minio;
 
 public partial class MinioClient : IMinioClient
 {
-    private const string RegistryAuthHeaderKey = "X-Registry-Auth";
-
     /// <summary>
     ///     Default error handling delegate
     /// </summary>
@@ -632,7 +630,7 @@ public partial class MinioClient : IMinioClient
 
         if (response.StatusCode.Equals(HttpStatusCode.Conflict)
             && errResponse.Code.Equals("BucketAlreadyOwnedByYou", StringComparison.OrdinalIgnoreCase))
-            throw new ArgumentException("Bucket already owned by you: " + errResponse.BucketName);
+            throw new ArgumentException("Bucket already owned by you: " + errResponse.BucketName, nameof(errResponse.BucketName));
 
         throw new UnexpectedMinioException(errResponse.Message)
         {

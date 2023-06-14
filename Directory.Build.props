@@ -24,9 +24,9 @@
         <NoWarn>$(NoWarn);CS1591</NoWarn>
         <Platform>AnyCPU</Platform>
 
-        <EnableNETAnalyzers>false</EnableNETAnalyzers>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <AnalysisLevel>latest</AnalysisLevel>
-        <AnalysisMode>All</AnalysisMode>
+        <AnalysisMode>Default</AnalysisMode>
 
         <IsTestProject>$(MSBuildProjectName.Contains('Test'))</IsTestProject>
     </PropertyGroup>
@@ -61,7 +61,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-        <!--
+        
         <PackageReference Include="Roslynator.Analyzers" Version="4.3.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -82,7 +82,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
-        -->
+        
     </ItemGroup>
 
 </Project>

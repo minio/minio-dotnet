@@ -248,11 +248,11 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
         {
             if (ObjectOffset < 0 || ObjectLength < 0)
                 throw new ArgumentException(nameof(ObjectOffset) + " and " + nameof(ObjectLength) +
-                                            "cannot be less than 0.");
+                                            "cannot be less than 0.", nameof(ObjectOffset));
 
             if (ObjectOffset == 0 && ObjectLength == 0)
                 throw new ArgumentException("Either " + nameof(ObjectOffset) + " or " + nameof(ObjectLength) +
-                                            " must be greater than 0.");
+                                            " must be greater than 0.", nameof(ObjectOffset));
         }
 
         Populate();
@@ -1693,7 +1693,7 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
     {
         base.Validate();
         if (string.IsNullOrWhiteSpace(UploadId))
-            throw new ArgumentNullException(nameof(UploadId) + " cannot be empty.");
+            throw new ArgumentNullException(nameof(UploadId) + " cannot be empty.", nameof(UploadId));
         if (ETags is null || ETags.Count <= 0)
             throw new InvalidOperationException(nameof(ETags) + " dictionary cannot be empty.");
     }
@@ -1742,7 +1742,7 @@ internal class PutObjectPartArgs : PutObjectArgs
     {
         base.Validate();
         if (string.IsNullOrWhiteSpace(UploadId))
-            throw new ArgumentNullException(nameof(UploadId) + " not assigned for PutObjectPart operation.");
+            throw new ArgumentNullException(nameof(UploadId) + " not assigned for PutObjectPart operation.", nameof(UploadId));
     }
 
     public new PutObjectPartArgs WithBucket(string bkt)
@@ -1834,7 +1834,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         // Check atleast one of filename or stream are initialized
         if (string.IsNullOrWhiteSpace(FileName) && ObjectStreamData is null)
             throw new ArgumentException("One of " + nameof(FileName) + " or " + nameof(ObjectStreamData) +
-                                        " must be set.");
+                                        " must be set.", nameof(FileName));
 
         if (PartNumber < 0)
             throw new ArgumentOutOfRangeException(nameof(PartNumber), PartNumber,
@@ -1842,12 +1842,12 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         // Check if only one of filename or stream are initialized
         if (!string.IsNullOrWhiteSpace(FileName) && ObjectStreamData is not null)
             throw new ArgumentException("Only one of " + nameof(FileName) + " or " + nameof(ObjectStreamData) +
-                                        " should be set.");
+                                        " should be set.", nameof(FileName));
 
         if (!string.IsNullOrWhiteSpace(FileName)) Utils.ValidateFile(FileName);
         // Check object size when using stream data
         if (ObjectStreamData is not null && ObjectSize == 0)
-            throw new ArgumentException($"{nameof(ObjectSize)} must be set");
+            throw new ArgumentException($"{nameof(ObjectSize)} must be set", nameof(ObjectSize));
         Populate();
     }
 

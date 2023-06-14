@@ -3597,6 +3597,7 @@ public static class FunctionalTest
             totalBytesTransferred = progressReport.TotalBytesTransferred;
         });
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -3648,6 +3649,7 @@ public static class FunctionalTest
             //else Console.WriteLine();
         });
         var args = new Dictionary<string, string>
+(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
@@ -5041,7 +5043,7 @@ public static class FunctionalTest
             {
                 var dest = new FileStream(destFileName, FileMode.Create, FileAccess.Write);
                 await stream.CopyToAsync(dest, cancellationToken).ConfigureAwait(false);
-                await dest.DisposeAsync();
+                await dest.DisposeAsync().ConfigureAwait(false);
             };
 
             var getObjectArgs = new GetObjectArgs()

@@ -23,42 +23,6 @@ using Minio.DataModel;
 
 namespace Minio.Credentials;
 
-[Serializable]
-[XmlRoot(ElementName = "AssumeRoleResponse", Namespace = "https://sts.amazonaws.com/doc/2011-06-15/")]
-public class AssumeRoleResponse
-{
-    [XmlElement(ElementName = "AssumeRoleResult")]
-    public AssumeRoleResult AssumeRole { get; set; }
-
-    public string ToXML()
-    {
-        var settings = new XmlWriterSettings
-        {
-            OmitXmlDeclaration = true
-        };
-        using var ms = new MemoryStream();
-        using var xmlWriter = XmlWriter.Create(ms, settings);
-        var names = new XmlSerializerNamespaces();
-        names.Add(string.Empty, "https://sts.amazonaws.com/doc/2011-06-15/");
-
-        var cs = new XmlSerializer(typeof(CertificateResponse));
-        cs.Serialize(xmlWriter, this, names);
-
-        ms.Flush();
-        ms.Seek(0, SeekOrigin.Begin);
-        using var streamReader = new StreamReader(ms);
-        return streamReader.ReadToEnd();
-    }
-}
-
-[Serializable]
-[XmlRoot(ElementName = "AssumeRoleResult")]
-public class AssumeRoleResult
-{
-    [XmlElement(ElementName = "Credentials")]
-    public AccessCredentials Credentials { get; set; }
-}
-
 public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
 {
     private readonly string AssumeRole = "AssumeRole";

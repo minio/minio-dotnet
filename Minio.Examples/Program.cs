@@ -14,6 +14,7 @@
 * limitations under the License.
 */
 
+using System.Globalization;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -64,7 +65,7 @@ public static class Program
             var posColon = endPoint.LastIndexOf(':');
             if (posColon != -1)
             {
-                port = int.Parse(endPoint.Substring(posColon + 1, endPoint.Length - posColon - 1));
+                port = int.Parse(endPoint.Substring(posColon + 1, endPoint.Length - posColon - 1), NumberStyles.Integer, CultureInfo.InvariantCulture);
                 endPoint = endPoint.Substring(0, posColon);
             }
 

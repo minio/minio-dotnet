@@ -28,13 +28,6 @@ using Minio.DataModel;
 
 namespace Minio.Credentials;
 
-[Serializable]
-[XmlRoot(ElementName = "AssumeRoleWithWebIdentityResponse")]
-public class WebIdentityResponse
-{
-    [XmlElement("Credentials")] public AccessCredentials Credentials { get; set; }
-}
-
 public class WebIdentityProvider : WebIdentityClientGrantsProvider<WebIdentityProvider>
 {
     internal int ExpiryInSeconds { get; set; }
