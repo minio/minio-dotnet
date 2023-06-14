@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel;
@@ -36,6 +35,8 @@ public class LambdaConfig : NotificationConfiguration
 
     public LambdaConfig(Arn arn) : base(arn)
     {
+        if (arn is null) throw new ArgumentNullException(nameof(arn));
+
         Lambda = arn.ToString();
     }
 
@@ -46,12 +47,13 @@ public class LambdaConfig : NotificationConfiguration
     {
         var other = (LambdaConfig)obj;
         // If parameter is null return false.
-        if (obj == null || (LambdaConfig)obj == null) return false;
-        return other.Lambda.Equals(Lambda);
+        if (obj is null)
+            return false;
+        return other.Lambda.Equals(Lambda, StringComparison.Ordinal);
     }
 
     public override int GetHashCode()
     {
-        return Lambda.GetHashCode();
+        return StringComparer.Ordinal.GetHashCode(Lambda);
     }
 }

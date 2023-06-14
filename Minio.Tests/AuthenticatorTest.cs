@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Minio.Tests;
@@ -30,16 +26,16 @@ public class AuthenticatorTest
     {
         //test anonymous insecure request headers
         var authenticator = new V4Authenticator(false, "", "");
-        Assert.IsTrue(authenticator.isAnonymous);
+        Assert.IsTrue(authenticator.IsAnonymous);
 
         var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
         request.AddJsonBody("[]");
 
         var authenticatorInsecure = new V4Authenticator(false, "a", "b");
-        Assert.IsFalse(authenticatorInsecure.isAnonymous);
+        Assert.IsFalse(authenticatorInsecure.IsAnonymous);
 
         authenticatorInsecure.Authenticate(request);
-        Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
+        Assert.IsTrue(HasPayloadHeader(request, "x-amz-content-sha256"));
     }
 
     [TestMethod]
@@ -47,16 +43,16 @@ public class AuthenticatorTest
     {
         //test anonymous secure request headers
         var authenticator = new V4Authenticator(true, "", "");
-        Assert.IsTrue(authenticator.isAnonymous);
+        Assert.IsTrue(authenticator.IsAnonymous);
 
         var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
         request.AddJsonBody("[]");
 
         var authenticatorSecure = new V4Authenticator(true, "a", "b");
-        Assert.IsFalse(authenticatorSecure.isAnonymous);
+        Assert.IsFalse(authenticatorSecure.IsAnonymous);
 
         authenticatorSecure.Authenticate(request);
-        Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
+        Assert.IsTrue(HasPayloadHeader(request, "x-amz-content-sha256"));
     }
 
     [TestMethod]
@@ -64,15 +60,15 @@ public class AuthenticatorTest
     {
         // secure authenticated requests
         var authenticator = new V4Authenticator(true, "accesskey", "secretkey");
-        Assert.IsTrue(authenticator.isSecure);
-        Assert.IsFalse(authenticator.isAnonymous);
+        Assert.IsTrue(authenticator.IsSecure);
+        Assert.IsFalse(authenticator.IsAnonymous);
 
         var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
         request.AddJsonBody("[]");
         authenticator.Authenticate(request);
-        Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
+        Assert.IsTrue(HasPayloadHeader(request, "x-amz-content-sha256"));
         var match = GetHeaderKV(request, "x-amz-content-sha256");
-        Assert.IsTrue(match != null && match.Item2.Equals("UNSIGNED-PAYLOAD"));
+        Assert.IsTrue(match?.Item2.Equals("UNSIGNED-PAYLOAD", StringComparison.Ordinal) == true);
     }
 
     [TestMethod]
@@ -80,13 +76,13 @@ public class AuthenticatorTest
     {
         // insecure authenticated requests
         var authenticator = new V4Authenticator(false, "accesskey", "secretkey");
-        Assert.IsFalse(authenticator.isSecure);
-        Assert.IsFalse(authenticator.isAnonymous);
+        Assert.IsFalse(authenticator.IsSecure);
+        Assert.IsFalse(authenticator.IsAnonymous);
         var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
         request.AddJsonBody("[]");
         authenticator.Authenticate(request);
-        Assert.IsTrue(hasPayloadHeader(request, "x-amz-content-sha256"));
-        Assert.IsFalse(hasPayloadHeader(request, "Content-Md5"));
+        Assert.IsTrue(HasPayloadHeader(request, "x-amz-content-sha256"));
+        Assert.IsFalse(HasPayloadHeader(request, "Content-Md5"));
     }
 
     // [TestMethod]
@@ -168,14 +164,15 @@ public class AuthenticatorTest
 
     private Tuple<string, string> GetHeaderKV(HttpRequestMessageBuilder request, string headername)
     {
-        var key = request.HeaderParameters.Keys.FirstOrDefault(o => o.ToLower() == headername.ToLower());
-        if (key != null) return Tuple.Create(key, request.HeaderParameters[key]);
+        var key = request.HeaderParameters.Keys.FirstOrDefault(o =>
+            string.Equals(o, headername, StringComparison.OrdinalIgnoreCase));
+        if (key is not null) return Tuple.Create(key, request.HeaderParameters[key]);
         return null;
     }
 
-    private bool hasPayloadHeader(HttpRequestMessageBuilder request, string headerName)
+    private bool HasPayloadHeader(HttpRequestMessageBuilder request, string headerName)
     {
         var match = GetHeaderKV(request, headerName);
-        return match != null;
+        return match is not null;
     }
 }

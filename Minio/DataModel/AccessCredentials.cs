@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel;
@@ -27,13 +26,24 @@ public class AccessCredentials
     public AccessCredentials(string accessKey, string secretKey,
         string sessionToken, DateTime expiration)
     {
-        if (string.IsNullOrWhiteSpace(accessKey) || string.IsNullOrWhiteSpace(secretKey))
-            throw new ArgumentNullException(nameof(AccessKey) + " and " + nameof(SecretKey) +
-                                            " cannot be null or empty.");
-        AccessKey = accessKey;
-        SecretKey = secretKey;
-        SessionToken = sessionToken;
-        Expiration = expiration.Equals(default) ? null : utils.To8601String(expiration);
+        if (!string.IsNullOrEmpty(accessKey) || !string.IsNullOrEmpty(secretKey) || !string.IsNullOrEmpty(sessionToken))
+        {
+            AccessKey = accessKey;
+            SecretKey = secretKey;
+            SessionToken = sessionToken;
+            Expiration = expiration.Equals(default) ? null : Utils.To8601String(expiration);
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(accessKey))
+                throw new ArgumentException($"'{nameof(accessKey)}' cannot be null or empty.", nameof(accessKey));
+
+            if (string.IsNullOrEmpty(secretKey))
+                throw new ArgumentException($"'{nameof(secretKey)}' cannot be null or empty.", nameof(secretKey));
+
+            if (string.IsNullOrEmpty(sessionToken))
+                throw new ArgumentException($"'{nameof(sessionToken)}' cannot be null or empty.", nameof(sessionToken));
+        }
     }
 
     public AccessCredentials()
@@ -56,7 +66,7 @@ public class AccessCredentials
     public bool AreExpired()
     {
         if (string.IsNullOrWhiteSpace(Expiration)) return false;
-        var expiry = utils.From8601String(Expiration);
+        var expiry = Utils.From8601String(Expiration);
         return DateTime.Now.CompareTo(expiry) > 0;
     }
 }

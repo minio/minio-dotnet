@@ -15,9 +15,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Xml.Serialization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
@@ -59,7 +56,7 @@ public class UtilsTest
             var expectedException = pair.Value;
             try
             {
-                utils.ValidateBucketName(bucketName);
+                Utils.ValidateBucketName(bucketName);
             }
             catch (InvalidBucketNameException ex)
             {
@@ -75,7 +72,7 @@ public class UtilsTest
     {
         try
         {
-            utils.ValidateObjectName("");
+            Utils.ValidateObjectName("");
         }
         catch (InvalidObjectNameException ex)
         {
@@ -90,7 +87,7 @@ public class UtilsTest
         try
         {
             var objName = TestHelper.GetRandomName(1025);
-            utils.ValidateObjectName(objName);
+            Utils.ValidateObjectName(objName);
         }
         catch (InvalidObjectNameException ex)
         {
@@ -102,26 +99,26 @@ public class UtilsTest
     public void TestObjectName()
     {
         var objName = TestHelper.GetRandomName(15);
-        utils.ValidateObjectName(objName);
+        Utils.ValidateObjectName(objName);
     }
 
     [TestMethod]
     [ExpectedException(typeof(ArgumentException))]
     public void TestEmptyFile()
     {
-        utils.ValidateFile("");
+        Utils.ValidateFile("");
     }
 
     [TestMethod]
     public void TestFileWithoutExtension()
     {
-        utils.ValidateFile("xxxx");
+        Utils.ValidateFile("xxxx");
     }
 
     [TestMethod]
     public void TestFileWithExtension()
     {
-        utils.ValidateFile("xxxx.xml");
+        Utils.ValidateFile("xxxx.xml");
     }
 
     [TestMethod]
@@ -130,7 +127,7 @@ public class UtilsTest
     {
         try
         {
-            var multiparts = utils.CalculateMultiPartSize(5000000000000000000);
+            var multiparts = Utils.CalculateMultiPartSize(5000000000000000000);
         }
         catch (EntityTooLargeException ex)
         {
@@ -147,7 +144,7 @@ public class UtilsTest
     {
         try
         {
-            var multiparts = utils.CalculateMultiPartSize(5000000000000000000, true);
+            var multiparts = Utils.CalculateMultiPartSize(5000000000000000000, true);
         }
         catch (EntityTooLargeException ex)
         {
@@ -162,7 +159,7 @@ public class UtilsTest
     public void TestValidPartSize1()
     {
         // { partSize = 550502400, partCount = 9987, lastPartSize = 241172480 }
-        dynamic partSizeObject = utils.CalculateMultiPartSize(5497558138880);
+        dynamic partSizeObject = Utils.CalculateMultiPartSize(5497558138880);
         double partSize = partSizeObject.partSize;
         double partCount = partSizeObject.partCount;
         double lastPartSize = partSizeObject.lastPartSize;
@@ -174,7 +171,7 @@ public class UtilsTest
     [TestMethod]
     public void TestValidPartSize2()
     {
-        dynamic partSizeObject = utils.CalculateMultiPartSize(500000000000, true);
+        dynamic partSizeObject = Utils.CalculateMultiPartSize(500000000000, true);
         double partSize = partSizeObject.partSize;
         double partCount = partSizeObject.partCount;
         double lastPartSize = partSizeObject.lastPartSize;
@@ -186,31 +183,31 @@ public class UtilsTest
     [TestMethod]
     public void TestCaseInsensitiveContains()
     {
-        Assert.IsTrue(utils.CaseInsensitiveContains("ef", ""));
-        Assert.IsTrue(utils.CaseInsensitiveContains("abcdef", "ef"));
-        Assert.IsFalse(utils.CaseInsensitiveContains("abc", "xyz"));
+        Assert.IsTrue(Utils.CaseInsensitiveContains("ef", ""));
+        Assert.IsTrue(Utils.CaseInsensitiveContains("abcdef", "ef"));
+        Assert.IsFalse(Utils.CaseInsensitiveContains("abc", "xyz"));
     }
 
     [TestMethod]
     public void TestIsAmazonEndpoint()
     {
-        Assert.IsTrue(s3utils.IsAmazonEndPoint("s3.amazonaws.com"));
-        Assert.IsTrue(s3utils.IsAmazonEndPoint("s3.cn-north-1.amazonaws.com.cn"));
-        Assert.IsFalse(s3utils.IsAmazonEndPoint("s3.us-west-1amazonaws.com"));
-        Assert.IsFalse(s3utils.IsAmazonEndPoint("play.min.io"));
-        Assert.IsFalse(s3utils.IsAmazonEndPoint("192.168.12.1"));
-        Assert.IsFalse(s3utils.IsAmazonEndPoint("storage.googleapis.com"));
+        Assert.IsTrue(S3utils.IsAmazonEndPoint("s3.amazonaws.com"));
+        Assert.IsTrue(S3utils.IsAmazonEndPoint("s3.cn-north-1.amazonaws.com.cn"));
+        Assert.IsFalse(S3utils.IsAmazonEndPoint("s3.us-west-1amazonaws.com"));
+        Assert.IsFalse(S3utils.IsAmazonEndPoint("play.min.io"));
+        Assert.IsFalse(S3utils.IsAmazonEndPoint("192.168.12.1"));
+        Assert.IsFalse(S3utils.IsAmazonEndPoint("storage.googleapis.com"));
     }
 
     [TestMethod]
     public void TestIsAmazonChinaEndpoint()
     {
-        Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("s3.amazonaws.com"));
-        Assert.IsTrue(s3utils.IsAmazonChinaEndPoint("s3.cn-north-1.amazonaws.com.cn"));
-        Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("s3.us-west-1amazonaws.com"));
-        Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("play.min.io"));
-        Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("192.168.12.1"));
-        Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("storage.googleapis.com"));
+        Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("s3.amazonaws.com"));
+        Assert.IsTrue(S3utils.IsAmazonChinaEndPoint("s3.cn-north-1.amazonaws.com.cn"));
+        Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("s3.us-west-1amazonaws.com"));
+        Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("play.min.io"));
+        Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("192.168.12.1"));
+        Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("storage.googleapis.com"));
     }
 
     [TestMethod]
@@ -218,7 +215,7 @@ public class UtilsTest
     {
         var config = new CreateBucketConfiguration("us-west-1");
         var xs = new XmlSerializer(typeof(CreateBucketConfiguration));
-        var writer = new StringWriter();
+        using var writer = new StringWriter();
         xs.Serialize(writer, config);
         Console.WriteLine(writer.ToString());
     }

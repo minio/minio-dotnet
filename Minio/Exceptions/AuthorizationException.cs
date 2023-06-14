@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Minio.Exceptions;
 
 [Serializable]
@@ -40,5 +38,9 @@ public class AuthorizationException : Exception
         this.resource = resource;
         this.bucketName = bucketName;
         accessKey = accesskey;
+    }
+
+    public AuthorizationException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 }

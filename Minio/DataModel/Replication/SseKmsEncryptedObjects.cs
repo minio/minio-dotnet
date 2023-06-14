@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 /*
@@ -40,8 +39,8 @@ public class SseKmsEncryptedObjects
 
     public SseKmsEncryptedObjects(string status)
     {
-        if (string.IsNullOrEmpty(status) || string.IsNullOrWhiteSpace(status))
-            throw new ArgumentNullException(nameof(Status) + " cannot be null or empty.");
+        if (string.IsNullOrWhiteSpace(status))
+            throw new ArgumentException($"'{nameof(status)}' cannot be null or whitespace.", nameof(status));
         Status = status;
     }
 

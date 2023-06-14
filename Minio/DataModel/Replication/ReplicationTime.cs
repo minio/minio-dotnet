@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 /*
@@ -37,10 +36,10 @@ public class ReplicationTime
 
     public ReplicationTime(ReplicationTimeValue time, string status)
     {
-        if (time == null) throw new ArgumentNullException(nameof(Time), " object cannot be null.");
-        if (string.IsNullOrEmpty(status) || string.IsNullOrWhiteSpace(status))
-            throw new ArgumentNullException(nameof(Status) + " cannot be null or empty.");
-        Time = time;
+        if (string.IsNullOrEmpty(status))
+            throw new ArgumentException($"'{nameof(status)}' cannot be null or empty.", nameof(status));
+
+        Time = time ?? throw new ArgumentNullException(nameof(time));
         Status = status;
     }
 

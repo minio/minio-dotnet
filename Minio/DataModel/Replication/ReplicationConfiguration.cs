@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
-using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -39,49 +37,49 @@ public class ReplicationConfiguration
     {
     }
 
-    public ReplicationConfiguration(string role, List<ReplicationRule> rules)
+    public ReplicationConfiguration(string role, Collection<ReplicationRule> rules)
     {
         if (string.IsNullOrEmpty(role) || string.IsNullOrWhiteSpace(role))
-            throw new ArgumentNullException(nameof(Role) + " member cannot be empty.");
-        if (rules == null || rules.Count == 0)
-            throw new ArgumentNullException(nameof(Rules) + " member cannot be an empty list.");
+            throw new ArgumentNullException(nameof(role) + " member cannot be empty.");
+        if (rules is null || rules.Count == 0)
+            throw new ArgumentNullException(nameof(rules) + " member cannot be an empty list.");
         if (rules.Count >= 1000)
             throw new ArgumentOutOfRangeException(
-                nameof(Rules) + " Count of rules cannot exceed maximum limit of 1000.");
+                nameof(rules) + " Count of rules cannot exceed maximum limit of 1000.");
+
         Role = role;
         Rules = rules;
     }
 
     [XmlElement("Role")] public string Role { get; set; }
 
-    [XmlElement("Rule")] public List<ReplicationRule> Rules { get; set; }
+    [XmlElement("Rule")] public Collection<ReplicationRule> Rules { get; set; }
 
     public string MarshalXML()
     {
-        XmlSerializer xs = null;
-        XmlWriterSettings settings = null;
-        XmlSerializerNamespaces ns = null;
-
         XmlWriter xw = null;
 
         var str = string.Empty;
 
         try
         {
-            settings = new XmlWriterSettings();
-            settings.OmitXmlDeclaration = true;
-
-            ns = new XmlSerializerNamespaces();
+            var settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true
+            };
+            var ns = new XmlSerializerNamespaces();
             ns.Add(string.Empty, string.Empty);
 
-            var sw = new StringWriter(CultureInfo.InvariantCulture);
+            using var sw = new StringWriter(CultureInfo.InvariantCulture);
 
-            xs = new XmlSerializer(typeof(ReplicationConfiguration), "");
-            xw = XmlWriter.Create(sw, settings);
-            xs.Serialize(xw, this, ns);
-            xw.Flush();
+            var xs = new XmlSerializer(typeof(ReplicationConfiguration), "");
+            using (xw = XmlWriter.Create(sw, settings))
+            {
+                xs.Serialize(xw, this, ns);
+                xw.Flush();
 
-            str = utils.RemoveNamespaceInXML(sw.ToString()).Replace("\r", "").Replace("\n", "");
+                str = Utils.RemoveNamespaceInXML(sw.ToString()).Replace("\r", "").Replace("\n", "");
+            }
         }
         catch (Exception ex)
         {
@@ -90,7 +88,7 @@ public class ReplicationConfiguration
         }
         finally
         {
-            if (xw != null) xw.Close();
+            xw?.Close();
         }
 
         return str;

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System.Net.Http;
-
 namespace Minio;
 
 public abstract class Args

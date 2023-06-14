@@ -15,22 +15,20 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
 using Minio.Credentials;
 using Minio.Exceptions;
 
 namespace Minio.Examples.Cases;
 
-public class ChainedCredentialProvider
+public static class ChainedCredentialProvider
 {
     // Establish Credentials with AWS Session token
     public static async Task Run()
     {
         var provider = new ChainedProvider()
-            .AddProviders(new ClientProvider[] { new AWSEnvironmentProvider(), new MinioEnvironmentProvider() });
+            .AddProviders(new IClientProvider[] { new AWSEnvironmentProvider(), new MinioEnvironmentProvider() });
         //Chained provider definition here.
-        var minioClient = new MinioClient()
+        using var minioClient = new MinioClient()
             .WithEndpoint("s3.amazonaws.com")
             .WithSSL()
             .WithCredentialsProvider(provider)
@@ -40,7 +38,7 @@ public class ChainedCredentialProvider
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket("my-bucket-name")
                 .WithObject("my-object-name");
-            var result = await minioClient.StatObjectAsync(statObjectArgs);
+            var result = await minioClient.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
         }
         catch (MinioException me)
         {

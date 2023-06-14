@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Minio.DataModel.Tags;
 
 namespace Minio.Examples.Cases;
 
-public class SetBucketTags
+public static class SetBucketTags
 {
     // Set Tags to the bucket
     public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name",
-        Dictionary<string, string> tags = null)
+        IDictionary<string, string> tags = null)
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: SetBucketTags");
@@ -35,7 +34,7 @@ public class SetBucketTags
                 new SetBucketTagsArgs()
                     .WithBucket(bucketName)
                     .WithTagging(Tagging.GetBucketTags(tags))
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Bucket Tags set for bucket {bucketName}.");
             Console.WriteLine();
         }

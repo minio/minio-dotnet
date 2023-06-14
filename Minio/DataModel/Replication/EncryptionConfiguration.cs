@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 /*
@@ -27,12 +26,15 @@ using System.Xml.Serialization;
 
 namespace Minio.DataModel.Replication;
 
+[Serializable]
 public class EncryptionConfiguration
 {
     public EncryptionConfiguration(string replicaKmsKeyID)
     {
-        if (string.IsNullOrEmpty(replicaKmsKeyID) || string.IsNullOrWhiteSpace(replicaKmsKeyID))
-            throw new ArgumentNullException(nameof(ReplicaKmsKeyID) + " cannot be null or empty.");
+        if (string.IsNullOrWhiteSpace(replicaKmsKeyID))
+            throw new ArgumentException($"'{nameof(replicaKmsKeyID)}' cannot be null or whitespace.",
+                nameof(replicaKmsKeyID));
+
         ReplicaKmsKeyID = replicaKmsKeyID;
     }
 

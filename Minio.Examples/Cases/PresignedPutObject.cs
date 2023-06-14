@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-public class PresignedPutObject
+public static class PresignedPutObject
 {
     public static async Task Run(IMinioClient client,
         string bucketName = "my-bucket-name",
         string objectName = "my-object-name")
     {
+        if (client is null) throw new ArgumentNullException(nameof(client));
+
         try
         {
             var args = new PresignedPutObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName)
                 .WithExpiry(1000);
-            var presignedUrl = await client.PresignedPutObjectAsync(args);
+            var presignedUrl = await client.PresignedPutObjectAsync(args).ConfigureAwait(false);
             Console.WriteLine(presignedUrl);
         }
         catch (Exception e)

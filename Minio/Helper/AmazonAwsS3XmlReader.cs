@@ -1,5 +1,5 @@
 ﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
+using System.Xml;
+
 namespace Minio;
 
-public class Enum
+public class AmazonAwsS3XmlReader : XmlTextReader
 {
-    /// <summary>
-    ///     HTTP method to use when making requests
-    /// </summary>
-    internal enum Method
+    public AmazonAwsS3XmlReader(Stream stream) : base(stream)
     {
-        GET,
-        POST,
-        PUT,
-        DELETE,
-        HEAD,
-        OPTIONS,
-        PATCH,
-        MERGE
     }
+
+    public override string NamespaceURI => "http://s3.amazonaws.com/doc/2006-03-01/";
 }

@@ -16,9 +16,26 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class InvalidExpiryRangeException : MinioException
 {
     public InvalidExpiryRangeException(string message) : base(message)
+    {
+    }
+
+    public InvalidExpiryRangeException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public InvalidExpiryRangeException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
+
+    public InvalidExpiryRangeException()
+    {
+    }
+
+    public InvalidExpiryRangeException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }

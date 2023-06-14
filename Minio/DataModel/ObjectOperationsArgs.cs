@@ -14,16 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using Minio.DataModel;
@@ -50,7 +43,8 @@ public class SelectObjectContentArgs : EncryptionArgs<SelectObjectContentArgs>
         if (string.IsNullOrEmpty(SelectOptions.Expression))
             throw new InvalidOperationException("The Expression " + nameof(SelectOptions.Expression) +
                                                 " for Select Object Content cannot be empty.");
-        if (SelectOptions.InputSerialization == null || SelectOptions.OutputSerialization == null)
+
+        if (SelectOptions.InputSerialization is null || SelectOptions.OutputSerialization is null)
             throw new InvalidOperationException(
                 "The Input/Output serialization members for SelectObjectContentArgs should be initialized " +
                 nameof(SelectOptions.InputSerialization) + " " + nameof(SelectOptions.OutputSerialization));
@@ -61,14 +55,14 @@ public class SelectObjectContentArgs : EncryptionArgs<SelectObjectContentArgs>
         requestMessageBuilder.AddQueryParameter("select", "");
         requestMessageBuilder.AddQueryParameter("select-type", "2");
 
-        if (RequestBody == null)
+        if (RequestBody.IsEmpty)
         {
             RequestBody = Encoding.UTF8.GetBytes(SelectOptions.MarshalXML());
             requestMessageBuilder.SetBody(RequestBody);
         }
 
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            utils.getMD5SumStr(RequestBody));
+            Utils.GetMD5SumStr(RequestBody.Span));
 
         return requestMessageBuilder;
     }
@@ -181,7 +175,7 @@ public class GetMultipartUploadsListArgs : BucketArgs<GetMultipartUploadsListArg
         requestMessageBuilder.AddQueryParameter("delimiter", Delimiter);
         requestMessageBuilder.AddQueryParameter("key-marker", KeyMarker);
         requestMessageBuilder.AddQueryParameter("upload-id-marker", UploadIdMarker);
-        requestMessageBuilder.AddQueryParameter("max-uploads", MAX_UPLOAD_COUNT.ToString());
+        requestMessageBuilder.AddQueryParameter("max-uploads", MAX_UPLOAD_COUNT.ToString(CultureInfo.InvariantCulture));
         return requestMessageBuilder;
     }
 }
@@ -199,7 +193,7 @@ public class PresignedGetObjectArgs : ObjectArgs<PresignedGetObjectArgs>
     internal override void Validate()
     {
         base.Validate();
-        if (!utils.IsValidExpiry(Expiry))
+        if (!Utils.IsValidExpiry(Expiry))
             throw new InvalidExpiryRangeException("expiry range should be between 1 and " +
                                                   Constants.DefaultExpiryTime);
     }
@@ -232,8 +226,8 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
     {
         if (!string.IsNullOrEmpty(VersionId))
             requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
-        if (Headers.ContainsKey(S3ZipExtractKey))
-            requestMessageBuilder.AddQueryParameter(S3ZipExtractKey, Headers[S3ZipExtractKey]);
+        if (Headers.TryGetValue(S3ZipExtractKey, out var value))
+            requestMessageBuilder.AddQueryParameter(S3ZipExtractKey, value);
 
         return requestMessageBuilder;
     }
@@ -244,15 +238,18 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
         if (!string.IsNullOrEmpty(NotMatchETag) && !string.IsNullOrEmpty(MatchETag))
             throw new InvalidOperationException("Invalid to set both Etag match conditions " + nameof(NotMatchETag) +
                                                 " and " + nameof(MatchETag));
+
         if (!ModifiedSince.Equals(default) &&
             !UnModifiedSince.Equals(default))
             throw new InvalidOperationException("Invalid to set both modified date match conditions " +
                                                 nameof(ModifiedSince) + " and " + nameof(UnModifiedSince));
+
         if (OffsetLengthSet)
         {
             if (ObjectOffset < 0 || ObjectLength < 0)
                 throw new ArgumentException(nameof(ObjectOffset) + " and " + nameof(ObjectLength) +
                                             "cannot be less than 0.");
+
             if (ObjectOffset == 0 && ObjectLength == 0)
                 throw new ArgumentException("Either " + nameof(ObjectOffset) + " or " + nameof(ObjectLength) +
                                             " must be greater than 0.");
@@ -263,8 +260,8 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
 
     private void Populate()
     {
-        Headers = Headers ?? new Dictionary<string, string>();
-        if (SSE != null && SSE.GetType().Equals(EncryptionType.SSE_C)) SSE.Marshal(Headers);
+        Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
+        if (SSE?.GetEncryptionType().Equals(EncryptionType.SSE_C) == true) SSE.Marshal(Headers);
         if (OffsetLengthSet)
         {
             // "Range" header accepts byte start index and end index
@@ -305,15 +302,12 @@ public class PresignedPostPolicyArgs : ObjectArgs<PresignedPostPolicyArgs>
         var checkPolicy = false;
         try
         {
-            utils.ValidateBucketName(BucketName);
-            utils.ValidateObjectName(ObjectName);
+            Utils.ValidateBucketName(BucketName);
+            Utils.ValidateObjectName(ObjectName);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is InvalidBucketNameException || ex is InvalidObjectNameException)
         {
-            if (ex is InvalidBucketNameException || ex is InvalidObjectNameException)
-                checkPolicy = true;
-            else
-                throw;
+            checkPolicy = true;
         }
 
         if (checkPolicy)
@@ -330,7 +324,7 @@ public class PresignedPostPolicyArgs : ObjectArgs<PresignedPostPolicyArgs>
             ObjectName = Policy.Key;
         }
 
-        if (string.IsNullOrEmpty(Expiration.ToString()))
+        if (string.IsNullOrEmpty(Expiration.ToString(CultureInfo.InvariantCulture)))
             throw new InvalidOperationException("For the " + nameof(Policy) + " expiration should be set");
     }
 
@@ -383,10 +377,14 @@ public class PresignedPostPolicyArgs : ObjectArgs<PresignedPostPolicyArgs>
 
     public PresignedPostPolicyArgs WithPolicy(PostPolicy policy)
     {
+        if (policy is null)
+            throw new ArgumentNullException(nameof(policy));
+
         Policy = policy;
-        if (policy.expiration != DateTime.MinValue)
+        if (policy.Expiration != DateTime.MinValue)
             // policy.expiration has an assigned value
-            Expiration = policy.expiration;
+            Expiration = policy.Expiration;
+
         return this;
     }
 }
@@ -403,7 +401,7 @@ public class PresignedPutObjectArgs : ObjectArgs<PresignedPutObjectArgs>
     protected new void Validate()
     {
         base.Validate();
-        if (!utils.IsValidExpiry(Expiry))
+        if (!Utils.IsValidExpiry(Expiry))
             throw new InvalidExpiryRangeException("Expiry range should be between 1 seconds and " +
                                                   Constants.DefaultExpiryTime + " seconds");
     }
@@ -494,10 +492,10 @@ public class SetObjectLegalHoldArgs : ObjectVersionArgs<SetObjectLegalHoldArgs>
         requestMessageBuilder.AddQueryParameter("legal-hold", "");
         if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", VersionId);
         var config = new ObjectLegalHoldConfiguration(LegalHoldON);
-        var body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+        var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
         requestMessageBuilder.AddXmlBody(body);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
         return requestMessageBuilder;
     }
 }
@@ -520,9 +518,10 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
     internal override void Validate()
     {
         base.Validate();
-        if (CallBack == null && FuncCallBack == null && string.IsNullOrEmpty(FileName))
+        if (CallBack is null && FuncCallBack is null && string.IsNullOrEmpty(FileName))
             throw new MinioException("Atleast one of " + nameof(CallBack) + ", CallBack method or " + nameof(FileName) +
                                      " file path to save need to be set for GetObject operation.");
+
         if (OffsetLengthSet)
         {
             if (ObjectOffset < 0) throw new ArgumentException("Offset should be zero or greater", nameof(ObjectOffset));
@@ -531,14 +530,14 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
                 throw new ArgumentException("Length should be greater than or equal to zero", nameof(ObjectLength));
         }
 
-        if (FileName != null) utils.ValidateFile(FileName);
+        if (FileName is not null) Utils.ValidateFile(FileName);
         Populate();
     }
 
     private void Populate()
     {
-        Headers = Headers ?? new Dictionary<string, string>();
-        if (SSE != null && SSE.GetType().Equals(EncryptionType.SSE_C)) SSE.Marshal(Headers);
+        Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
+        if (SSE?.GetEncryptionType().Equals(EncryptionType.SSE_C) == true) SSE.Marshal(Headers);
 
         if (OffsetLengthSet)
         {
@@ -558,12 +557,11 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
         if (CallBack is not null) requestMessageBuilder.ResponseWriter = CallBack;
         else requestMessageBuilder.FunctionResponseWriter = FuncCallBack;
 
-        if (Headers.ContainsKey(S3ZipExtractKey))
-            requestMessageBuilder.AddQueryParameter(S3ZipExtractKey, Headers[S3ZipExtractKey]);
+        if (Headers.TryGetValue(S3ZipExtractKey, out var value))
+            requestMessageBuilder.AddQueryParameter(S3ZipExtractKey, value);
 
         return requestMessageBuilder;
     }
-
 
     public GetObjectArgs WithCallbackStream(Action<Stream> cb)
     {
@@ -616,7 +614,7 @@ public class RemoveObjectArgs : ObjectArgs<RemoveObjectArgs>
         if (!string.IsNullOrEmpty(VersionId))
         {
             requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
-            if (BypassGovernanceMode != null && BypassGovernanceMode.Value)
+            if (BypassGovernanceMode == true)
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-bypass-governance-retention",
                     BypassGovernanceMode.Value.ToString());
         }
@@ -647,33 +645,41 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
         RequestMethod = HttpMethod.Post;
     }
 
-    internal List<string> ObjectNames { get; private set; }
+    internal IList<string> ObjectNames { get; private set; }
 
     // Each element in the list is a Tuple. Each Tuple has an Object name & the version ID.
     internal List<Tuple<string, string>> ObjectNamesVersions { get; }
 
-    public RemoveObjectsArgs WithObjectAndVersions(string objectName, List<string> versions)
+    public RemoveObjectsArgs WithObjectAndVersions(string objectName, IList<string> versions)
     {
-        foreach (var vid in versions) ObjectNamesVersions.Add(new Tuple<string, string>(objectName, vid));
+        if (versions is null)
+            throw new ArgumentNullException(nameof(versions));
+
+        foreach (var vid in versions)
+            ObjectNamesVersions.Add(new Tuple<string, string>(objectName, vid));
         return this;
     }
 
     // Tuple<string, List<string>>. Tuple object name -> List of Version IDs.
-    public RemoveObjectsArgs WithObjectsVersions(List<Tuple<string, List<string>>> objectsVersionsList)
+    public RemoveObjectsArgs WithObjectsVersions(IList<Tuple<string, List<string>>> objectsVersionsList)
     {
+        if (objectsVersionsList is null)
+            throw new ArgumentNullException(nameof(objectsVersionsList));
+
         foreach (var objVersions in objectsVersionsList)
         foreach (var vid in objVersions.Item2)
             ObjectNamesVersions.Add(new Tuple<string, string>(objVersions.Item1, vid));
+
         return this;
     }
 
-    public RemoveObjectsArgs WithObjectsVersions(List<Tuple<string, string>> objectVersions)
+    public RemoveObjectsArgs WithObjectsVersions(IList<Tuple<string, string>> objectVersions)
     {
         ObjectNamesVersions.AddRange(objectVersions);
         return this;
     }
 
-    public RemoveObjectsArgs WithObjects(List<string> names)
+    public RemoveObjectsArgs WithObjects(IList<string> names)
     {
         ObjectNames = names;
         return this;
@@ -682,24 +688,24 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
     internal override void Validate()
     {
         // Skip object name validation.
-        utils.ValidateBucketName(BucketName);
+        Utils.ValidateBucketName(BucketName);
         if (!string.IsNullOrEmpty(ObjectName))
             throw new InvalidOperationException(nameof(ObjectName) + " is set. Please use " + nameof(WithObjects) +
                                                 "or " +
                                                 nameof(WithObjectsVersions) + " method to set objects to be deleted.");
-        if ((ObjectNames == null && ObjectNamesVersions == null) ||
+
+        if ((ObjectNames is null && ObjectNamesVersions is null) ||
             (ObjectNames.Count == 0 && ObjectNamesVersions.Count == 0))
             throw new InvalidOperationException(
                 "Please assign list of object names or object names and version IDs to remove using method(s) " +
                 nameof(WithObjects) + " " + nameof(WithObjectsVersions));
     }
 
-
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        XElement deleteObjectsRequest = null;
         var objects = new List<XElement>();
         requestMessageBuilder.AddQueryParameter("delete", "");
+        XElement deleteObjectsRequest;
         if (ObjectNamesVersions.Count > 0)
         {
             // Object(s) & multiple versions
@@ -707,9 +713,10 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
                 objects.Add(new XElement("Object",
                     new XElement("Key", objTuple.Item1),
                     new XElement("VersionId", objTuple.Item2)));
+
             deleteObjectsRequest = new XElement("Delete", objects,
                 new XElement("Quiet", true));
-            requestMessageBuilder.AddXmlBody(Convert.ToString(deleteObjectsRequest));
+            requestMessageBuilder.AddXmlBody(Convert.ToString(deleteObjectsRequest, CultureInfo.InvariantCulture));
         }
         else
         {
@@ -717,13 +724,15 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
             foreach (var obj in ObjectNames)
                 objects.Add(new XElement("Object",
                     new XElement("Key", obj)));
+
             deleteObjectsRequest = new XElement("Delete", objects,
                 new XElement("Quiet", true));
-            requestMessageBuilder.AddXmlBody(Convert.ToString(deleteObjectsRequest));
+            requestMessageBuilder.AddXmlBody(Convert.ToString(deleteObjectsRequest, CultureInfo.InvariantCulture));
         }
 
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            utils.getMD5SumStr(Encoding.UTF8.GetBytes(Convert.ToString(deleteObjectsRequest))));
+            Utils.GetMD5SumStr(
+                Encoding.UTF8.GetBytes(Convert.ToString(deleteObjectsRequest, CultureInfo.InvariantCulture))));
 
         return requestMessageBuilder;
     }
@@ -738,10 +747,12 @@ public class SetObjectTagsArgs : ObjectVersionArgs<SetObjectTagsArgs>
 
     internal Tagging ObjectTags { get; private set; }
 
-
     public SetObjectTagsArgs WithTagging(Tagging tags)
     {
-        ObjectTags = Tagging.GetObjectTags(tags.GetTags());
+        if (tags is null)
+            throw new ArgumentNullException(nameof(tags));
+
+        ObjectTags = Tagging.GetObjectTags(tags.Tags);
         return this;
     }
 
@@ -758,7 +769,7 @@ public class SetObjectTagsArgs : ObjectVersionArgs<SetObjectTagsArgs>
     internal override void Validate()
     {
         base.Validate();
-        if (ObjectTags == null || ObjectTags.GetTags().Count == 0)
+        if (ObjectTags is null || ObjectTags.Tags.Count == 0)
             throw new InvalidOperationException("Unable to set empty tags.");
     }
 }
@@ -812,6 +823,7 @@ public class SetObjectRetentionArgs : ObjectVersionArgs<SetObjectRetentionArgs>
         if (RetentionUntilDate.Equals(default))
             throw new InvalidOperationException("Retention Period is not set. Please set using " +
                                                 nameof(WithRetentionUntilDate) + ".");
+
         if (DateTime.Compare(RetentionUntilDate, DateTime.Now) <= 0)
             throw new InvalidOperationException("Retention until date set using " + nameof(WithRetentionUntilDate) +
                                                 " needs to be in the future.");
@@ -842,10 +854,10 @@ public class SetObjectRetentionArgs : ObjectVersionArgs<SetObjectRetentionArgs>
         if (BypassGovernanceMode)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-bypass-governance-retention", "true");
         var config = new ObjectRetentionConfiguration(RetentionUntilDate, Mode);
-        var body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+        var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
         requestMessageBuilder.AddXmlBody(body);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
         return requestMessageBuilder;
     }
 }
@@ -874,11 +886,13 @@ public class ClearObjectRetentionArgs : ObjectVersionArgs<ClearObjectRetentionAr
 
     public static string EmptyRetentionConfigXML()
     {
-        var sw = new StringWriter(CultureInfo.InvariantCulture);
-        var settings = new XmlWriterSettings();
-        settings.OmitXmlDeclaration = true;
-        settings.Indent = true;
-        var xw = XmlWriter.Create(sw, settings);
+        using var sw = new StringWriter(CultureInfo.InvariantCulture);
+        var settings = new XmlWriterSettings
+        {
+            OmitXmlDeclaration = true,
+            Indent = true
+        };
+        using var xw = XmlWriter.Create(sw, settings);
         xw.WriteStartElement("Retention");
         xw.WriteString("");
         xw.WriteFullEndElement();
@@ -895,7 +909,7 @@ public class ClearObjectRetentionArgs : ObjectVersionArgs<ClearObjectRetentionAr
         var body = EmptyRetentionConfigXML();
         requestMessageBuilder.AddXmlBody(body);
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            utils.getMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
         return requestMessageBuilder;
     }
 }
@@ -906,20 +920,15 @@ public class CopySourceObjectArgs : ObjectConditionalQueryArgs<CopySourceObjectA
     {
         RequestMethod = HttpMethod.Put;
         CopyOperationConditions = new CopyConditions();
-        Headers = new Dictionary<string, string>();
+        Headers = new Dictionary<string, string>(StringComparer.Ordinal);
     }
 
     internal string CopySourceObjectPath { get; set; }
     internal CopyConditions CopyOperationConditions { get; set; }
 
-    internal override void Validate()
-    {
-        base.Validate();
-    }
-
     public CopySourceObjectArgs WithCopyConditions(CopyConditions cp)
     {
-        CopyOperationConditions = cp != null ? cp.Clone() : new CopyConditions();
+        CopyOperationConditions = cp is not null ? cp.Clone() : new CopyConditions();
         return this;
     }
 
@@ -934,7 +943,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
     internal CopyObjectRequestArgs()
     {
         RequestMethod = HttpMethod.Put;
-        Headers = new Dictionary<string, string>();
+        Headers = new Dictionary<string, string>(StringComparer.Ordinal);
         CopyOperationObjectType = typeof(CopyObjectResult);
     }
 
@@ -950,16 +959,16 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
     internal DateTime RetentionUntilDate { get; set; }
     internal bool ObjectLockSet { get; set; }
 
-    internal CopyObjectRequestArgs WithQueryMap(Dictionary<string, string> queryMap)
+    internal CopyObjectRequestArgs WithQueryMap(IDictionary<string, string> queryMap)
     {
-        QueryMap = new Dictionary<string, string>(queryMap);
+        QueryMap = new Dictionary<string, string>(queryMap, StringComparer.Ordinal);
         return this;
     }
 
     internal CopyObjectRequestArgs WithPartCondition(CopyConditions partCondition)
     {
         CopyCondition = partCondition.Clone();
-        Headers = Headers ?? new Dictionary<string, string>();
+        Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
         Headers["x-amz-copy-source-range"] = "bytes=" + partCondition.byteRangeStart + "-" + partCondition.byteRangeEnd;
 
         return this;
@@ -979,21 +988,21 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
 
     public CopyObjectRequestArgs WithCopyObjectSource(CopySourceObjectArgs cs)
     {
-        if (cs == null)
+        if (cs is null)
             throw new InvalidOperationException("The copy source object needed for copy operation is not initialized.");
 
-        SourceObject = SourceObject ?? new CopySourceObjectArgs();
+        SourceObject ??= new CopySourceObjectArgs();
         SourceObject.RequestMethod = HttpMethod.Put;
         SourceObject.BucketName = cs.BucketName;
         SourceObject.ObjectName = cs.ObjectName;
         SourceObject.VersionId = cs.VersionId;
         SourceObject.SSE = cs.SSE;
-        SourceObject.Headers = new Dictionary<string, string>(cs.Headers);
+        SourceObject.Headers = new Dictionary<string, string>(cs.Headers, StringComparer.Ordinal);
         SourceObject.MatchETag = cs.MatchETag;
         SourceObject.ModifiedSince = cs.ModifiedSince;
         SourceObject.NotMatchETag = cs.NotMatchETag;
         SourceObject.UnModifiedSince = cs.UnModifiedSince;
-        SourceObject.CopySourceObjectPath = $"{cs.BucketName}/{utils.UrlEncode(cs.ObjectName)}";
+        SourceObject.CopySourceObjectPath = $"{cs.BucketName}/{Utils.UrlEncode(cs.ObjectName)}";
         SourceObject.CopyOperationConditions = cs.CopyOperationConditions?.Clone();
         return this;
     }
@@ -1006,30 +1015,32 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        var sourceObjectPath = SourceObject.BucketName + "/" + utils.UrlEncode(SourceObject.ObjectName);
+        var sourceObjectPath = SourceObject.BucketName + "/" + Utils.UrlEncode(SourceObject.ObjectName);
         if (!string.IsNullOrEmpty(SourceObject.VersionId)) sourceObjectPath += "?versionId=" + SourceObject.VersionId;
         // Set the object source
         requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source", sourceObjectPath);
 
-        if (QueryMap != null)
+        if (QueryMap is not null)
             foreach (var query in QueryMap)
                 requestMessageBuilder.AddQueryParameter(query.Key, query.Value);
 
-        if (SourceObject.CopyOperationConditions != null)
-            foreach (var item in SourceObject.CopyOperationConditions.GetConditions())
+        if (SourceObject.CopyOperationConditions is not null)
+            foreach (var item in SourceObject.CopyOperationConditions.Conditions)
                 requestMessageBuilder.AddOrUpdateHeaderParameter(item.Key, item.Value);
+
         if (!string.IsNullOrEmpty(MatchETag))
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-match", MatchETag);
         if (!string.IsNullOrEmpty(NotMatchETag))
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-none-match", NotMatchETag);
         if (ModifiedSince != default)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-unmodified-since",
-                utils.To8601String(ModifiedSince));
+                Utils.To8601String(ModifiedSince));
+
         if (UnModifiedSince != default)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-modified-since",
-                utils.To8601String(UnModifiedSince));
-        if (ObjectTags != null && ObjectTags.TaggingSet != null
-                               && ObjectTags.TaggingSet.Tag.Count > 0)
+                Utils.To8601String(UnModifiedSince));
+
+        if (ObjectTags?.TaggingSet?.Tag.Count > 0)
         {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
@@ -1046,12 +1057,13 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
         {
             if (!RetentionUntilDate.Equals(default))
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
-                    utils.To8601String(RetentionUntilDate));
+                    Utils.To8601String(RetentionUntilDate));
+
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
                 ObjectLockRetentionMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
         }
 
-        if (RequestBody != null) requestMessageBuilder.SetBody(RequestBody);
+        if (!RequestBody.IsEmpty) requestMessageBuilder.SetBody(RequestBody);
         return requestMessageBuilder;
     }
 
@@ -1078,8 +1090,8 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
 
     internal override void Validate()
     {
-        utils.ValidateBucketName(BucketName); //Object name can be same as that of source.
-        if (SourceObject == null) throw new InvalidOperationException(nameof(SourceObject) + " has not been assigned.");
+        Utils.ValidateBucketName(BucketName); //Object name can be same as that of source.
+        if (SourceObject is null) throw new InvalidOperationException(nameof(SourceObject) + " has not been assigned.");
         Populate();
     }
 
@@ -1087,10 +1099,10 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
     {
         ObjectName = string.IsNullOrEmpty(ObjectName) ? SourceObject.ObjectName : ObjectName;
         // Opting for concat as Headers may have byte range info .etc.
-        if (!ReplaceMetadataDirective && SourceObjectInfo.MetaData != null)
-            Headers = SourceObjectInfo.MetaData.Concat(Headers).GroupBy(item => item.Key)
-                .ToDictionary(item => item.Key, item => item.First().Value);
-        else if (ReplaceMetadataDirective) Headers = Headers ?? new Dictionary<string, string>();
+        if (!ReplaceMetadataDirective && SourceObjectInfo.MetaData is not null)
+            Headers = SourceObjectInfo.MetaData.Concat(Headers).GroupBy(item => item.Key, StringComparer.Ordinal)
+                .ToDictionary(item => item.Key, item => item.First().Value, StringComparer.Ordinal);
+        else if (ReplaceMetadataDirective) Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
     }
 }
 
@@ -1117,65 +1129,75 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
 
     internal override void Validate()
     {
-        utils.ValidateBucketName(BucketName);
-        if (SourceObject == null)
+        Utils.ValidateBucketName(BucketName);
+        if (SourceObject is null)
             throw new InvalidOperationException(nameof(SourceObject) + " has not been assigned. Please use " +
                                                 nameof(WithCopyObjectSource));
-        if (SourceObjectInfo == null)
+
+        if (SourceObjectInfo is null)
             throw new InvalidOperationException(
                 "StatObject result for the copy source object needed to continue copy operation. Use " +
                 nameof(WithCopyObjectSourceStats) + " to initialize StatObject result.");
+
         if (!string.IsNullOrEmpty(NotMatchETag) && !string.IsNullOrEmpty(MatchETag))
             throw new InvalidOperationException("Invalid to set both Etag match conditions " + nameof(NotMatchETag) +
                                                 " and " + nameof(MatchETag));
+
         if (!ModifiedSince.Equals(default) &&
             !UnModifiedSince.Equals(default))
             throw new InvalidOperationException("Invalid to set both modified date match conditions " +
                                                 nameof(ModifiedSince) + " and " + nameof(UnModifiedSince));
+
         Populate();
     }
 
     private void Populate()
     {
         if (string.IsNullOrEmpty(ObjectName)) ObjectName = SourceObject.ObjectName;
-        if (SSE != null && SSE.GetType().Equals(EncryptionType.SSE_C))
+        if (SSE?.GetEncryptionType().Equals(EncryptionType.SSE_C) == true)
         {
-            Headers = new Dictionary<string, string>();
+            Headers = new Dictionary<string, string>(StringComparer.Ordinal);
             SSE.Marshal(Headers);
         }
 
         if (!ReplaceMetadataDirective)
         {
             // Check in copy conditions if replace metadata has been set
-            var copyReplaceMeta = SourceObject.CopyOperationConditions != null
-                ? SourceObject.CopyOperationConditions.HasReplaceMetadataDirective()
-                : false;
+            var copyReplaceMeta = SourceObject.CopyOperationConditions?.HasReplaceMetadataDirective() == true;
             WithReplaceMetadataDirective(copyReplaceMeta);
         }
 
-        Headers = Headers ?? new Dictionary<string, string>();
+        Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
         if (ReplaceMetadataDirective)
         {
-            if (Headers != null)
+            if (Headers is not null)
+#if NETSTANDARD
+                foreach (var pair in SourceObjectInfo.MetaData.ToList())
+#else
                 foreach (var pair in SourceObjectInfo.MetaData)
+#endif
                 {
                     var comparer = StringComparer.OrdinalIgnoreCase;
                     var newDictionary = new Dictionary<string, string>(Headers, comparer);
 
-                    if (newDictionary.ContainsKey(pair.Key)) SourceObjectInfo.MetaData.Remove(pair.Key);
+                    SourceObjectInfo.MetaData.Remove(pair.Key);
                 }
 
             Headers = Headers
                 .Concat(SourceObjectInfo.MetaData)
-                .GroupBy(item => item.Key)
+                .GroupBy(item => item.Key, StringComparer.Ordinal)
                 .ToDictionary(item => item.Key, item =>
-                    item.Last().Value);
+                    item.Last().Value, StringComparer.Ordinal);
         }
 
-        if (Headers != null)
+        if (Headers is not null)
         {
             var newKVList = new List<Tuple<string, string>>();
+#if NETSTANDARD
+            foreach (var item in Headers.ToList())
+#else
             foreach (var item in Headers)
+#endif
             {
                 var key = item.Key;
                 if (!OperationsUtil.IsSupportedHeader(item.Key) &&
@@ -1197,11 +1219,11 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
 
     public CopyObjectArgs WithCopyObjectSource(CopySourceObjectArgs cs)
     {
-        if (cs == null)
+        if (cs is null)
             throw new InvalidOperationException("The copy source object needed for copy operation is not initialized.");
 
         SourceObject.RequestMethod = HttpMethod.Put;
-        SourceObject = SourceObject ?? new CopySourceObjectArgs();
+        SourceObject ??= new CopySourceObjectArgs();
         SourceObject.BucketName = cs.BucketName;
         SourceObject.ObjectName = cs.ObjectName;
         SourceObject.VersionId = cs.VersionId;
@@ -1211,7 +1233,7 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         SourceObject.ModifiedSince = cs.ModifiedSince;
         SourceObject.NotMatchETag = cs.NotMatchETag;
         SourceObject.UnModifiedSince = cs.UnModifiedSince;
-        SourceObject.CopySourceObjectPath = $"{cs.BucketName}/{utils.UrlEncode(cs.ObjectName)}";
+        SourceObject.CopySourceObjectPath = $"{cs.BucketName}/{Utils.UrlEncode(cs.ObjectName)}";
         SourceObject.CopyOperationConditions = cs.CopyOperationConditions?.Clone();
         return this;
     }
@@ -1246,11 +1268,12 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
     internal CopyObjectArgs WithCopyObjectSourceStats(ObjectStat info)
     {
         SourceObjectInfo = info;
-        if (info.MetaData != null && !ReplaceMetadataDirective)
+        if (info.MetaData is not null && !ReplaceMetadataDirective)
         {
-            SourceObject.Headers = SourceObject.Headers ?? new Dictionary<string, string>();
-            SourceObject.Headers = SourceObject.Headers.Concat(info.MetaData).GroupBy(item => item.Key)
-                .ToDictionary(item => item.Key, item => item.First().Value);
+            SourceObject.Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
+            SourceObject.Headers = SourceObject.Headers.Concat(info.MetaData)
+                .GroupBy(item => item.Key, StringComparer.Ordinal)
+                .ToDictionary(item => item.Key, item => item.First().Value, StringComparer.Ordinal);
         }
 
         return this;
@@ -1277,13 +1300,17 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-none-match", NotMatchETag);
         if (ModifiedSince != default)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-unmodified-since",
-                utils.To8601String(ModifiedSince));
+                Utils.To8601String(ModifiedSince));
+
         if (UnModifiedSince != default)
-            requestMessageBuilder.Request.Headers.Add("x-amz-copy-source-if-modified-since",
-                utils.To8601String(UnModifiedSince));
+        {
+            using var request = requestMessageBuilder.Request;
+            request.Headers.Add("x-amz-copy-source-if-modified-since",
+                Utils.To8601String(UnModifiedSince));
+        }
+
         if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", VersionId);
-        if (ObjectTags != null && ObjectTags.TaggingSet != null
-                               && ObjectTags.TaggingSet.Tag.Count > 0)
+        if (ObjectTags?.TaggingSet?.Tag.Count > 0)
         {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
@@ -1294,13 +1321,14 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-metadata-directive", "REPLACE");
         if (!string.IsNullOrEmpty(StorageClass))
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-storage-class", StorageClass);
-        if (LegalHoldEnabled != null && LegalHoldEnabled.Value)
+        if (LegalHoldEnabled == true)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-legal-hold", "ON");
         if (ObjectLockSet)
         {
             if (!RetentionUntilDate.Equals(default))
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
-                    utils.To8601String(RetentionUntilDate));
+                    Utils.To8601String(RetentionUntilDate));
+
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
                 ObjectLockRetentionMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
         }
@@ -1343,7 +1371,8 @@ internal class NewMultipartUploadArgs<T> : ObjectWriteArgs<T>
         {
             if (!RetentionUntilDate.Equals(default))
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
-                    utils.To8601String(RetentionUntilDate));
+                    Utils.To8601String(RetentionUntilDate));
+
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
                 ObjectLockRetentionMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
         }
@@ -1360,8 +1389,7 @@ internal class NewMultipartUploadPutArgs : NewMultipartUploadArgs<NewMultipartUp
     {
         requestMessageBuilder.AddQueryParameter("uploads", "");
 
-        if (ObjectTags != null && ObjectTags.TaggingSet != null
-                               && ObjectTags.TaggingSet.Tag.Count > 0)
+        if (ObjectTags?.TaggingSet?.Tag.Count > 0)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
 
         requestMessageBuilder.AddOrUpdateHeaderParameter("content-type", ContentType);
@@ -1374,9 +1402,9 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
 {
     internal MultipartCopyUploadArgs(CopyObjectArgs args)
     {
-        if (args == null || args.SourceObject == null)
+        if (args is null || args.SourceObject is null)
         {
-            var message = args == null
+            var message = args is null
                 ? "The constructor of " + nameof(CopyObjectRequestArgs) +
                   "initialized with arguments of CopyObjectArgs null."
                 : "The constructor of " + nameof(CopyObjectRequestArgs) +
@@ -1387,15 +1415,17 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
 
         RequestMethod = HttpMethod.Put;
 
-        SourceObject = new CopySourceObjectArgs();
-        SourceObject.BucketName = args.SourceObject.BucketName;
-        SourceObject.ObjectName = args.SourceObject.ObjectName;
-        SourceObject.VersionId = args.SourceObject.VersionId;
-        SourceObject.CopyOperationConditions = args.SourceObject.CopyOperationConditions.Clone();
-        SourceObject.MatchETag = args.SourceObject.MatchETag;
-        SourceObject.ModifiedSince = args.SourceObject.ModifiedSince;
-        SourceObject.NotMatchETag = args.SourceObject.NotMatchETag;
-        SourceObject.UnModifiedSince = args.SourceObject.UnModifiedSince;
+        SourceObject = new CopySourceObjectArgs
+        {
+            BucketName = args.SourceObject.BucketName,
+            ObjectName = args.SourceObject.ObjectName,
+            VersionId = args.SourceObject.VersionId,
+            CopyOperationConditions = args.SourceObject.CopyOperationConditions.Clone(),
+            MatchETag = args.SourceObject.MatchETag,
+            ModifiedSince = args.SourceObject.ModifiedSince,
+            NotMatchETag = args.SourceObject.NotMatchETag,
+            UnModifiedSince = args.SourceObject.UnModifiedSince
+        };
 
         // Destination part.
         BucketName = args.BucketName;
@@ -1406,9 +1436,9 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
         SourceObjectInfo = args.SourceObjectInfo;
         // Header part
         if (!args.ReplaceMetadataDirective)
-            Headers = new Dictionary<string, string>(args.SourceObjectInfo.MetaData);
-        else if (args.ReplaceMetadataDirective) Headers = Headers ?? new Dictionary<string, string>();
-        if (Headers != null)
+            Headers = new Dictionary<string, string>(args.SourceObjectInfo.MetaData, StringComparer.Ordinal);
+        else if (args.ReplaceMetadataDirective) Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
+        if (Headers is not null)
         {
             var newKVList = new List<Tuple<string, string>>();
             foreach (var item in Headers)
@@ -1424,9 +1454,8 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
         }
 
         ReplaceTagsDirective = args.ReplaceTagsDirective;
-        if (args.ReplaceTagsDirective && args.ObjectTags != null &&
-            args.ObjectTags.TaggingSet.Tag.Count > 0) // Tags of Source object
-            ObjectTags = Tagging.GetObjectTags(args.ObjectTags.GetTags());
+        if (args.ReplaceTagsDirective && args.ObjectTags?.TaggingSet.Tag.Count > 0) // Tags of Source object
+            ObjectTags = Tagging.GetObjectTags(args.ObjectTags.Tags);
     }
 
     internal MultipartCopyUploadArgs()
@@ -1458,8 +1487,7 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        if (ObjectTags != null && ObjectTags.TaggingSet != null
-                               && ObjectTags.TaggingSet.Tag.Count > 0)
+        if (ObjectTags?.TaggingSet?.Tag.Count > 0)
         {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
@@ -1474,7 +1502,8 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
         {
             if (!RetentionUntilDate.Equals(default))
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
-                    utils.To8601String(RetentionUntilDate));
+                    Utils.To8601String(RetentionUntilDate));
+
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
                 ObjectLockRetentionMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
         }
@@ -1515,20 +1544,21 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
     internal override void Validate()
     {
         base.Validate();
-        if (SourceObjectInfo == null || SourceObject == null)
+        if (SourceObjectInfo is null || SourceObject is null)
             throw new InvalidOperationException(nameof(SourceObjectInfo) + " and " + nameof(SourceObject) +
                                                 " need to be initialized for a NewMultipartUpload operation to work.");
+
         Populate();
     }
 
     private void Populate()
     {
         //Concat as Headers may have byte range info .etc.
-        if (!ReplaceMetadataDirective && SourceObjectInfo.MetaData != null && SourceObjectInfo.MetaData.Count > 0)
-            Headers = SourceObjectInfo.MetaData.Concat(Headers).GroupBy(item => item.Key)
-                .ToDictionary(item => item.Key, item => item.First().Value);
-        else if (ReplaceMetadataDirective) Headers = Headers ?? new Dictionary<string, string>();
-        if (Headers != null)
+        if (!ReplaceMetadataDirective && SourceObjectInfo.MetaData?.Count > 0)
+            Headers = SourceObjectInfo.MetaData.Concat(Headers).GroupBy(item => item.Key, StringComparer.Ordinal)
+                .ToDictionary(item => item.Key, item => item.First().Value, StringComparer.Ordinal);
+        else if (ReplaceMetadataDirective) Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
+        if (Headers is not null)
         {
             var newKVList = new List<Tuple<string, string>>();
             foreach (var item in Headers)
@@ -1550,7 +1580,7 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
         return this;
     }
 
-    public new NewMultipartUploadCopyArgs WithHeaders(Dictionary<string, string> headers)
+    public new NewMultipartUploadCopyArgs WithHeaders(IDictionary<string, string> headers)
     {
         base.WithHeaders(headers);
         return this;
@@ -1588,10 +1618,10 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
 
     public NewMultipartUploadCopyArgs WithCopyObjectSource(CopySourceObjectArgs cs)
     {
-        if (cs == null)
+        if (cs is null)
             throw new InvalidOperationException("The copy source object needed for copy operation is not initialized.");
 
-        SourceObject = SourceObject ?? new CopySourceObjectArgs();
+        SourceObject ??= new CopySourceObjectArgs();
         SourceObject.RequestMethod = HttpMethod.Put;
         SourceObject.BucketName = cs.BucketName;
         SourceObject.ObjectName = cs.ObjectName;
@@ -1602,7 +1632,7 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
         SourceObject.ModifiedSince = cs.ModifiedSince;
         SourceObject.NotMatchETag = cs.NotMatchETag;
         SourceObject.UnModifiedSince = cs.UnModifiedSince;
-        SourceObject.CopySourceObjectPath = $"{cs.BucketName}/{utils.UrlEncode(cs.ObjectName)}";
+        SourceObject.CopySourceObjectPath = $"{cs.BucketName}/{Utils.UrlEncode(cs.ObjectName)}";
         SourceObject.CopyOperationConditions = cs.CopyOperationConditions?.Clone();
         return this;
     }
@@ -1610,8 +1640,7 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
         requestMessageBuilder.AddQueryParameter("uploads", "");
-        if (ObjectTags != null && ObjectTags.TaggingSet != null
-                               && ObjectTags.TaggingSet.Tag.Count > 0)
+        if (ObjectTags?.TaggingSet?.Tag.Count > 0)
         {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
@@ -1626,7 +1655,8 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
         {
             if (!RetentionUntilDate.Equals(default))
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
-                    utils.To8601String(RetentionUntilDate));
+                    Utils.To8601String(RetentionUntilDate));
+
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
                 ObjectLockRetentionMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
         }
@@ -1648,12 +1678,12 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
         RequestMethod = HttpMethod.Post;
         BucketName = args.BucketName;
         ObjectName = args.ObjectName ?? args.SourceObject.ObjectName;
-        Headers = new Dictionary<string, string>();
+        Headers = new Dictionary<string, string>(StringComparer.Ordinal);
         SSE = args.SSE;
         SSE?.Marshal(args.Headers);
-        if (args.Headers != null && args.Headers.Count > 0)
-            Headers = Headers.Concat(args.Headers).GroupBy(item => item.Key)
-                .ToDictionary(item => item.Key, item => item.First().Value);
+        if (args.Headers?.Count > 0)
+            Headers = Headers.Concat(args.Headers).GroupBy(item => item.Key, StringComparer.Ordinal)
+                .ToDictionary(item => item.Key, item => item.First().Value, StringComparer.Ordinal);
     }
 
     internal string UploadId { get; set; }
@@ -1664,7 +1694,7 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
         base.Validate();
         if (string.IsNullOrWhiteSpace(UploadId))
             throw new ArgumentNullException(nameof(UploadId) + " cannot be empty.");
-        if (ETags == null || ETags.Count <= 0)
+        if (ETags is null || ETags.Count <= 0)
             throw new InvalidOperationException(nameof(ETags) + " dictionary cannot be empty.");
     }
 
@@ -1674,9 +1704,9 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
         return this;
     }
 
-    internal CompleteMultipartUploadArgs WithETags(Dictionary<int, string> etags)
+    internal CompleteMultipartUploadArgs WithETags(IDictionary<int, string> etags)
     {
-        if (etags != null && etags.Count > 0) ETags = new Dictionary<int, string>(etags);
+        if (etags?.Count > 0) ETags = new Dictionary<int, string>(etags);
         return this;
     }
 
@@ -1689,10 +1719,10 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
             parts.Add(new XElement("Part",
                 new XElement("PartNumber", i),
                 new XElement("ETag", ETags[i])));
+
         var completeMultipartUploadXml = new XElement("CompleteMultipartUpload", parts);
         var bodyString = completeMultipartUploadXml.ToString();
-        var body = Encoding.UTF8.GetBytes(bodyString);
-        var bodyInBytes = Encoding.UTF8.GetBytes(bodyString);
+        ReadOnlyMemory<byte> bodyInBytes = Encoding.UTF8.GetBytes(bodyString);
         requestMessageBuilder.BodyParameters.Add("content-type", "application/xml");
         requestMessageBuilder.SetBody(bodyInBytes);
         // var bodyInCharArr = Encoding.UTF8.GetString(requestMessageBuilder.Content).ToCharArray();
@@ -1730,14 +1760,14 @@ internal class PutObjectPartArgs : PutObjectArgs
         return (PutObjectPartArgs)base.WithObjectSize(size);
     }
 
-    public new PutObjectPartArgs WithHeaders(Dictionary<string, string> hdr)
+    public new PutObjectPartArgs WithHeaders(IDictionary<string, string> hdr)
     {
         return (PutObjectPartArgs)base.WithHeaders(hdr);
     }
 
     public PutObjectPartArgs WithRequestBody(object data)
     {
-        return (PutObjectPartArgs)base.WithRequestBody(utils.ObjectToByteArray(data));
+        return (PutObjectPartArgs)base.WithRequestBody(Utils.ObjectToByteArray(data));
     }
 
     public new PutObjectPartArgs WithStreamData(Stream data)
@@ -1753,6 +1783,11 @@ internal class PutObjectPartArgs : PutObjectArgs
     public new PutObjectPartArgs WithUploadId(string id)
     {
         return (PutObjectPartArgs)base.WithUploadId(id);
+    }
+
+    public new PutObjectPartArgs WithProgress(IProgress<ProgressReport> progress)
+    {
+        return (PutObjectPartArgs)base.WithProgress(progress);
     }
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
@@ -1791,24 +1826,27 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
     internal string FileName { get; set; }
     internal long ObjectSize { get; set; }
     internal Stream ObjectStreamData { get; set; }
+    internal IProgress<ProgressReport> Progress { get; set; }
 
     internal override void Validate()
     {
         base.Validate();
         // Check atleast one of filename or stream are initialized
-        if (string.IsNullOrWhiteSpace(FileName) && ObjectStreamData == null)
+        if (string.IsNullOrWhiteSpace(FileName) && ObjectStreamData is null)
             throw new ArgumentException("One of " + nameof(FileName) + " or " + nameof(ObjectStreamData) +
                                         " must be set.");
+
         if (PartNumber < 0)
             throw new ArgumentOutOfRangeException(nameof(PartNumber), PartNumber,
                 "Invalid Part number value. Cannot be less than 0");
         // Check if only one of filename or stream are initialized
-        if (!string.IsNullOrWhiteSpace(FileName) && ObjectStreamData != null)
+        if (!string.IsNullOrWhiteSpace(FileName) && ObjectStreamData is not null)
             throw new ArgumentException("Only one of " + nameof(FileName) + " or " + nameof(ObjectStreamData) +
                                         " should be set.");
-        if (!string.IsNullOrWhiteSpace(FileName)) utils.ValidateFile(FileName);
+
+        if (!string.IsNullOrWhiteSpace(FileName)) Utils.ValidateFile(FileName);
         // Check object size when using stream data
-        if (ObjectStreamData != null && ObjectSize == 0)
+        if (ObjectStreamData is not null && ObjectSize == 0)
             throw new ArgumentException($"{nameof(ObjectSize)} must be set");
         Populate();
     }
@@ -1836,26 +1874,31 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
             requestMessageBuilder.AddQueryParameter("partNumber", $"{PartNumber}");
         }
 
-        if (ObjectTags != null && ObjectTags.TaggingSet != null
-                               && ObjectTags.TaggingSet.Tag.Count > 0)
+        if (ObjectTags?.TaggingSet?.Tag.Count > 0)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
-        if (Retention != null)
+
+        if (Retention is not null)
         {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
                 Retention.RetainUntilDate);
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode", Retention.Mode.ToString());
             requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-                utils.getMD5SumStr(RequestBody));
+                Utils.GetMD5SumStr(RequestBody.Span));
         }
 
-        if (LegalHoldEnabled != null)
+        if (LegalHoldEnabled is not null)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-legal-hold",
                 LegalHoldEnabled == true ? "ON" : "OFF");
-        if (RequestBody != null)
+
+        if (!RequestBody.IsEmpty)
         {
-            var sha256 = SHA256.Create();
-            var hash = sha256.ComputeHash(RequestBody);
-            var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
+#if NETSTANDARD
+            using var sha = SHA256.Create();
+            var hash = sha.ComputeHash(RequestBody.ToArray());
+#else
+            var hash = SHA256.HashData(RequestBody.Span);
+#endif
+            var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
             requestMessageBuilder.SetBody(RequestBody);
         }
@@ -1863,12 +1906,11 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         return requestMessageBuilder;
     }
 
-    public new PutObjectArgs WithHeaders(Dictionary<string, string> metaData)
+    public override PutObjectArgs WithHeaders(IDictionary<string, string> headers)
     {
-        var sseHeaders = new Dictionary<string, string>();
-        Headers = Headers ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        if (metaData != null)
-            foreach (var p in metaData)
+        Headers ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (headers is not null)
+            foreach (var p in headers)
             {
                 var key = p.Key;
                 if (!OperationsUtil.IsSupportedHeader(p.Key) &&
@@ -1880,7 +1922,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
                 }
 
                 Headers[key] = p.Value;
-                if (key == "Content-Type")
+                if (string.Equals(key, "Content-Type", StringComparison.OrdinalIgnoreCase))
                     ContentType = p.Value;
             }
 
@@ -1919,9 +1961,15 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         return this;
     }
 
+    public PutObjectArgs WithProgress(IProgress<ProgressReport> progress)
+    {
+        Progress = progress;
+        return this;
+    }
+
     ~PutObjectArgs()
     {
-        if (!string.IsNullOrWhiteSpace(FileName) && ObjectStreamData != null)
-            ObjectStreamData.Close();
+        if (!string.IsNullOrWhiteSpace(FileName))
+            ObjectStreamData?.Close();
     }
 }

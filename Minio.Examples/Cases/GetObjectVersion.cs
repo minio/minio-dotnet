@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-internal class GetObjectVersion
+internal static class GetObjectVersion
 {
     // Get object in a bucket
     public static async Task Run(IMinioClient minio,
@@ -42,7 +39,7 @@ internal class GetObjectVersion
                 .WithObject(objectName)
                 .WithVersionId(versionId)
                 .WithFile(fileName);
-            await minio.GetObjectAsync(args);
+            await minio.GetObjectAsync(args).ConfigureAwait(false);
             Console.WriteLine(
                 $"Downloaded the file {fileName} for object {objectName} with version {versionId} in bucket {bucketName}");
             Console.WriteLine();

@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-internal class GetVersioning
+internal static class GetVersioning
 {
     // Check if Versioning is Enabled on a bucket
     public static async Task Run(IMinioClient minio,
@@ -31,8 +28,8 @@ internal class GetVersioning
         try
         {
             Console.WriteLine("Running example for API: GetVersioning, ");
-            var config = await minio.GetVersioningAsync(args);
-            if (config == null)
+            var config = await minio.GetVersioningAsync(args).ConfigureAwait(false);
+            if (config is null)
             {
                 Console.WriteLine("Versioning Configuration not available for bucket " + bucketName);
                 Console.WriteLine();

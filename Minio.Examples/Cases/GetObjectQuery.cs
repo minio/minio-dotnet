@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-internal class GetObjectQuery
+internal static class GetObjectQuery
 {
     // Get object in a bucket
     public static async Task Run(IMinioClient minio,
@@ -41,7 +38,7 @@ internal class GetObjectQuery
                 .WithFile(fileName)
                 .WithMatchETag(matchEtag)
                 .WithModifiedSince(modifiedSince);
-            await minio.GetObjectAsync(args);
+            await minio.GetObjectAsync(args).ConfigureAwait(false);
             Console.WriteLine(
                 $"Downloaded the file {fileName} for object {objectName} with given query parameters in bucket {bucketName}");
             Console.WriteLine();

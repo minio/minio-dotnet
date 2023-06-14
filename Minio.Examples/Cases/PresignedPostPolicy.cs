@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
 using Minio.DataModel;
 
 namespace Minio.Examples.Cases;
@@ -24,12 +22,13 @@ public delegate PostPolicy DefaultPolicy(string bucketName,
     string objectName,
     DateTime expiration);
 
-public class PresignedPostPolicy
+public static class PresignedPostPolicy
 {
     public static async Task Run(IMinioClient client,
         string bucketName = "my-bucketname",
         string objectName = "my-objectname")
     {
+        if (client is null) throw new ArgumentNullException(nameof(client));
         // default value for expiration is 2 minutes
         var expiration = DateTime.UtcNow.AddMinutes(2);
 
@@ -43,9 +42,9 @@ public class PresignedPostPolicy
             .WithObject(objectName)
             .WithPolicy(form);
 
-        var tuple = await client.PresignedPostPolicyAsync(form);
+        var tuple = await client.PresignedPostPolicyAsync(form).ConfigureAwait(false);
         var curlCommand = "curl -k --insecure -X POST";
-        foreach (var pair in tuple.Item2) curlCommand = curlCommand + $" -F {pair.Key}={pair.Value}";
+        foreach (var pair in tuple.Item2) curlCommand += $" -F {pair.Key}={pair.Value}";
         curlCommand = curlCommand + " -F file=@/etc/issue " + tuple.Item1 + bucketName + "/";
     }
 }

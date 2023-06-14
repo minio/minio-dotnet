@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-internal class SetBucketPolicy
+internal static class SetBucketPolicy
 {
     // Set bucket policy
     public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: SetPolicyAsync");
@@ -34,7 +33,7 @@ internal class SetBucketPolicy
             var args = new SetPolicyArgs()
                 .WithBucket(bucketName)
                 .WithPolicy(policyJson);
-            await minio.SetPolicyAsync(args);
+            await minio.SetPolicyAsync(args).ConfigureAwait(false);
             Console.WriteLine($"Policy {policyJson} set for the bucket {bucketName} successfully");
             Console.WriteLine();
         }

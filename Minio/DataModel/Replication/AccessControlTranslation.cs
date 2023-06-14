@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 /*
@@ -33,8 +32,9 @@ public class AccessControlTranslation
 {
     public AccessControlTranslation(string owner)
     {
-        if (string.IsNullOrEmpty(owner) || string.IsNullOrWhiteSpace(owner))
-            throw new ArgumentNullException(nameof(Owner) + " cannot be empty.");
+        if (string.IsNullOrWhiteSpace(owner))
+            throw new ArgumentException($"'{nameof(owner)}' cannot be null or whitespace.", nameof(owner));
+
         Owner = owner;
     }
 

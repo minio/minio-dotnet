@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-public class ClearObjectRetention
+public static class ClearObjectRetention
 {
     // Put Empty Retention Configuration for the bucket
     public static async Task Run(IMinioClient minio,
@@ -27,6 +24,8 @@ public class ClearObjectRetention
         string objectName = "my-object-name",
         string versionId = null)
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: ClearObjectRetention");
@@ -35,7 +34,7 @@ public class ClearObjectRetention
                     .WithBucket(bucketName)
                     .WithObject(objectName)
                     .WithVersionId(versionId)
-            );
+            ).ConfigureAwait(false);
             var versionInfo = string.IsNullOrEmpty(versionId) ? "" : " Version ID: " + versionId;
             Console.WriteLine($"Cleared retention configuration to object {bucketName}/{objectName} " +
                               versionInfo);

@@ -34,7 +34,7 @@ public class Item
         get => etag;
         set
         {
-            if (value != null)
+            if (value is not null)
                 etag = value.Replace("\"", string.Empty);
             else
                 etag = null;

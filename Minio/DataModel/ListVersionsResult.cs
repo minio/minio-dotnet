@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel;
@@ -33,7 +32,7 @@ public class ListVersionsResult
     public bool IsTruncated { get; set; }
     public string EncodingType { get; set; }
 
-    [XmlElement("Version")] public List<Item> Versions { get; set; }
+    [XmlElement("Version")] public Collection<Item> Versions { get; set; }
 
     public string NextKeyMarker { get; set; }
     public string NextVersionIdMarker { get; set; }

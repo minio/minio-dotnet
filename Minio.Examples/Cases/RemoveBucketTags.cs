@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-public class RemoveBucketTags
+public static class RemoveBucketTags
 {
     // Remove Tags set for the bucket
     public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: RemoveBucketTags");
             await minio.RemoveBucketTagsAsync(
                 new RemoveBucketTagsArgs()
                     .WithBucket(bucketName)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Bucket Tags removed for bucket {bucketName}.");
             Console.WriteLine();
         }

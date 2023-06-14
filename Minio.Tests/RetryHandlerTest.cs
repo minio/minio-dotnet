@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Exceptions;
 
@@ -27,10 +25,9 @@ public class RetryHandlerTest
     [TestMethod]
     public async Task TestRetryPolicyOnSuccess()
     {
-        var client = new MinioClient()
-            .WithEndpoint("play.min.io")
-            .WithCredentials("Q3AM3UQ867SPQQA43P2F",
-                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+        using var client = new MinioClient()
+            .WithEndpoint(TestHelper.Endpoint)
+            .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
             .WithSSL()
             .Build();
 
@@ -39,12 +36,12 @@ public class RetryHandlerTest
             async callback =>
             {
                 invokeCount++;
-                return await callback();
+                return await callback().ConfigureAwait(false);
             });
 
         var bktArgs = new BucketExistsArgs()
             .WithBucket(Guid.NewGuid().ToString());
-        var result = await client.BucketExistsAsync(bktArgs);
+        var result = await client.BucketExistsAsync(bktArgs).ConfigureAwait(false);
         Assert.IsFalse(result);
         Assert.AreEqual(invokeCount, 1);
     }
@@ -52,10 +49,9 @@ public class RetryHandlerTest
     [TestMethod]
     public async Task TestRetryPolicyOnFailure()
     {
-        var client = new MinioClient()
-            .WithEndpoint("play.min.io")
-            .WithCredentials("Q3AM3UQ867SPQQA43P2F",
-                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+        using var client = new MinioClient()
+            .WithEndpoint(TestHelper.Endpoint)
+            .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
             .WithSSL()
             .Build();
 
@@ -70,7 +66,7 @@ public class RetryHandlerTest
                     invokeCount++;
                     try
                     {
-                        return await callback();
+                        return await callback().ConfigureAwait(false);
                     }
                     catch (BucketNotFoundException ex)
                     {
@@ -86,7 +82,7 @@ public class RetryHandlerTest
             .WithObject("aa")
             .WithCallbackStream(s => { });
         await Assert.ThrowsExceptionAsync<BucketNotFoundException>(
-            () => client.GetObjectAsync(getObjectArgs));
+            () => client.GetObjectAsync(getObjectArgs)).ConfigureAwait(false);
         Assert.AreEqual(invokeCount, retryCount);
     }
 }

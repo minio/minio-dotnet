@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
+using CommunityToolkit.HighPerformance;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Exceptions;
 
@@ -17,10 +14,9 @@ public class OperationsTest
     {
         // todo how to test this with mock client.
         var resource = httpRequest.RequestUri.LocalPath;
-        return resource.Contains("?") == false &&
+        return !resource.Contains('?') &&
                httpRequest.QueryParameters.ContainsKey("location");
     }
-
 
     private async Task<bool> ObjectExistsAsync(IMinioClient client, string bucket, string objectName)
     {
@@ -30,7 +26,7 @@ public class OperationsTest
                 .WithBucket(bucket)
                 .WithObject(objectName)
                 .WithCallbackStream(stream => { });
-            await client.GetObjectAsync(getObjectArgs);
+            await client.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
 
             return true;
         }
@@ -44,10 +40,10 @@ public class OperationsTest
     public async Task PresignedGetObject()
     {
         // todo how to test this with mock client.
-        var client = new MinioClient()
-            .WithEndpoint("play.min.io")
-            .WithCredentials("Q3AM3UQ867SPQQA43P2F",
-                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+        using var client = new MinioClient()
+            .WithEndpoint(TestHelper.Endpoint)
+            .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
+            .WithSSL()
             .Build();
 
         var bucket = "bucket";
@@ -55,26 +51,24 @@ public class OperationsTest
 
         var bktExistArgs = new BucketExistsArgs()
             .WithBucket(bucket);
-        var found = await client.BucketExistsAsync(bktExistArgs);
+        var found = await client.BucketExistsAsync(bktExistArgs).ConfigureAwait(false);
         if (!found)
         {
             var mkBktArgs = new MakeBucketArgs()
                 .WithBucket(bucket);
-            await client.MakeBucketAsync(mkBktArgs);
+            await client.MakeBucketAsync(mkBktArgs).ConfigureAwait(false);
         }
 
-        if (!await ObjectExistsAsync(client, bucket, objectName))
+        if (!await ObjectExistsAsync(client, bucket, objectName).ConfigureAwait(false))
         {
-            var helloData = Encoding.UTF8.GetBytes("hello world");
-            var helloStream = new MemoryStream();
-            helloStream.Write(helloData);
-            helloStream.Seek(0, SeekOrigin.Begin);
+            ReadOnlyMemory<byte> helloData = Encoding.UTF8.GetBytes("hello world");
+            using var helloStream = helloData.AsStream();
             var PutObjectArgs = new PutObjectArgs()
                 .WithBucket(bucket)
                 .WithObject(objectName)
                 .WithStreamData(helloStream)
                 .WithObjectSize(helloData.Length);
-            await client.PutObjectAsync(PutObjectArgs);
+            await client.PutObjectAsync(PutObjectArgs).ConfigureAwait(false);
         }
 
         var presignedGetObjectArgs = new PresignedGetObjectArgs()
@@ -83,9 +77,9 @@ public class OperationsTest
             .WithExpiry(3600)
             .WithRequestDate(_requestDate);
 
-        var signedUrl = await client.PresignedGetObjectAsync(presignedGetObjectArgs);
+        var signedUrl = await client.PresignedGetObjectAsync(presignedGetObjectArgs).ConfigureAwait(false);
         Assert.AreEqual(
-            "http://play.min.io/bucket/object-name?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=Q3AM3UQ867SPQQA43P2F%2F20200501%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200501T154533Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=d4202da690618f77142d6f0557c97839f0773b2c718082e745cd9b199aa6b28f",
+            "https://play.min.io/bucket/object-name?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=Q3AM3UQ867SPQQA43P2F%2F20200501%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200501T154533Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=d4202da690618f77142d6f0557c97839f0773b2c718082e745cd9b199aa6b28f",
             signedUrl);
     }
 
@@ -93,41 +87,41 @@ public class OperationsTest
     public async Task PresignedGetObjectWithHeaders()
     {
         // todo how to test this with mock client.
-        var client = new MinioClient()
-            .WithEndpoint("play.min.io")
-            .WithCredentials("Q3AM3UQ867SPQQA43P2F",
-                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+        using var client = new MinioClient()
+            .WithEndpoint(TestHelper.Endpoint)
+            .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
+            .WithSSL()
             .Build();
 
         var bucket = "bucket";
         var objectName = "object-name";
 
         var reqParams = new Dictionary<string, string>
-        {
-            { "Response-Content-Disposition", "attachment; filename=\"filename.jpg\"" }
-        };
+            (StringComparer.Ordinal)
+            {
+                { "Response-Content-Disposition", "attachment; filename=\"filename.jpg\"" }
+            };
 
         var bktExistArgs = new BucketExistsArgs()
             .WithBucket(bucket);
-        var found = await client.BucketExistsAsync(bktExistArgs);
+        var found = await client.BucketExistsAsync(bktExistArgs).ConfigureAwait(false);
         if (!found)
         {
             var mkBktArgs = new MakeBucketArgs()
                 .WithBucket(bucket);
-            await client.MakeBucketAsync(mkBktArgs);
+            await client.MakeBucketAsync(mkBktArgs).ConfigureAwait(false);
         }
 
-        if (!await ObjectExistsAsync(client, bucket, objectName))
+        if (!await ObjectExistsAsync(client, bucket, objectName).ConfigureAwait(false))
         {
-            var helloData = Encoding.UTF8.GetBytes("hello world");
-            var helloStream = new MemoryStream();
-            helloStream.Write(helloData);
+            ReadOnlyMemory<byte> helloData = Encoding.UTF8.GetBytes("hello world");
+            using var helloStream = helloData.AsStream();
             var PutObjectArgs = new PutObjectArgs()
                 .WithBucket(bucket)
                 .WithObject(objectName)
                 .WithStreamData(helloStream)
                 .WithObjectSize(helloData.Length);
-            await client.PutObjectAsync(PutObjectArgs);
+            await client.PutObjectAsync(PutObjectArgs).ConfigureAwait(false);
         }
 
         var presignedGetObjectArgs = new PresignedGetObjectArgs()
@@ -137,10 +131,10 @@ public class OperationsTest
             .WithHeaders(reqParams)
             .WithRequestDate(_requestDate);
 
-        var signedUrl = await client.PresignedGetObjectAsync(presignedGetObjectArgs);
+        var signedUrl = await client.PresignedGetObjectAsync(presignedGetObjectArgs).ConfigureAwait(false);
 
         Assert.AreEqual(
-            "http://play.min.io/bucket/object-name?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=Q3AM3UQ867SPQQA43P2F%2F20200501%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200501T154533Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&response-content-disposition=attachment%3B%20filename%3D%22filename.jpg%22&X-Amz-Signature=de66f04dd4ac35838b9e83d669f7b5a70b452c6468e2b4a9e9c29f42e7fa102d",
+            "https://play.min.io/bucket/object-name?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=Q3AM3UQ867SPQQA43P2F%2F20200501%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200501T154533Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&response-content-disposition=attachment%3B%20filename%3D%22filename.jpg%22&X-Amz-Signature=de66f04dd4ac35838b9e83d669f7b5a70b452c6468e2b4a9e9c29f42e7fa102d",
             signedUrl);
     }
 }

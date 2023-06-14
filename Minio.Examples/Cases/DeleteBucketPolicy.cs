@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
 using Minio.Exceptions;
 
 namespace Minio.Examples.Cases;
 
-internal class DeleteBucketPolicy
+internal static class DeleteBucketPolicy
 {
     // Set bucket policy
     public static async Task Run(IMinioClient minio,
@@ -31,13 +29,13 @@ internal class DeleteBucketPolicy
             Console.WriteLine("Running example for API: DeletePolicyAsync");
             var args = new RemovePolicyArgs()
                 .WithBucket(bucketName);
-            await minio.RemovePolicyAsync(args);
+            await minio.RemovePolicyAsync(args).ConfigureAwait(false);
             Console.WriteLine($"Policy previously set for the bucket {bucketName} removed.");
             try
             {
                 var getArgs = new GetPolicyArgs()
                     .WithBucket(bucketName);
-                var policy = await minio.GetPolicyAsync(getArgs);
+                var policy = await minio.GetPolicyAsync(getArgs).ConfigureAwait(false);
             }
             catch (UnexpectedMinioException e)
             {

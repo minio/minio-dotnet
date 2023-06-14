@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
+using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 
 namespace Minio.Examples.Cases;
 
-internal class PutObject
+internal static class PutObject
 {
     private const int MB = 1024 * 1024;
 
@@ -31,29 +28,31 @@ internal class PutObject
         string bucketName = "my-bucket-name",
         string objectName = "my-object-name",
         string fileName = "location-of-file",
-        ServerSideEncryption sse = null)
+        IProgress<ProgressReport> progress = null,
+        IServerSideEncryption sse = null)
     {
         try
         {
-            var bs = File.ReadAllBytes(fileName);
+            ReadOnlyMemory<byte> bs = await File.ReadAllBytesAsync(fileName).ConfigureAwait(false);
             Console.WriteLine("Running example for API: PutObjectAsync");
-            using (var filestream = new MemoryStream(bs))
-            {
-                var fileInfo = new FileInfo(fileName);
-                var metaData = new Dictionary<string, string>
+            using var filestream = bs.AsStream();
+
+            var fileInfo = new FileInfo(fileName);
+            var metaData = new Dictionary<string, string>
+                (StringComparer.Ordinal)
                 {
                     { "Test-Metadata", "Test  Test" }
                 };
-                var args = new PutObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(objectName)
-                    .WithStreamData(filestream)
-                    .WithObjectSize(filestream.Length)
-                    .WithContentType("application/octet-stream")
-                    .WithHeaders(metaData)
-                    .WithServerSideEncryption(sse);
-                await minio.PutObjectAsync(args);
-            }
+            var args = new PutObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithStreamData(filestream)
+                .WithObjectSize(filestream.Length)
+                .WithContentType("application/octet-stream")
+                .WithHeaders(metaData)
+                .WithProgress(progress)
+                .WithServerSideEncryption(sse);
+            await minio.PutObjectAsync(args).ConfigureAwait(false);
 
             Console.WriteLine($"Uploaded object {objectName} to bucket {bucketName}");
             Console.WriteLine();

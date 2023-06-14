@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-public class GetObjectTags
+public static class GetObjectTags
 {
     // Get Tags set for the object
     public static async Task Run(IMinioClient minio,
@@ -27,6 +24,8 @@ public class GetObjectTags
         string objectName = "my-object-name",
         string versionId = null)
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: GetObjectTags");
@@ -35,11 +34,11 @@ public class GetObjectTags
                     .WithBucket(bucketName)
                     .WithObject(objectName)
                     .WithVersionId(versionId)
-            );
-            if (tags != null && tags.GetTags() != null && tags.GetTags().Count > 0)
+            ).ConfigureAwait(false);
+            if (tags is not null && tags.Tags?.Count > 0)
             {
                 Console.WriteLine($"Got tags set for object {bucketName}/{objectName}.");
-                foreach (var tag in tags.GetTags()) Console.WriteLine(tag.Key + " : " + tag.Value);
+                foreach (var tag in tags.Tags) Console.WriteLine(tag.Key + " : " + tag.Value);
                 Console.WriteLine();
                 return;
             }

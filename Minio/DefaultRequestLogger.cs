@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Linq;
 using System.Text;
 using Minio.DataModel.Tracing;
 
@@ -25,6 +23,10 @@ public sealed class DefaultRequestLogger : IRequestLogger
 {
     public void LogRequest(RequestToLog requestToLog, ResponseToLog responseToLog, double durationMs)
     {
+        if (requestToLog is null) throw new ArgumentNullException(nameof(requestToLog));
+
+        if (responseToLog is null) throw new ArgumentNullException(nameof(responseToLog));
+
         var sb = new StringBuilder("Request completed in ");
 
         sb.Append(durationMs);
@@ -33,19 +35,20 @@ public sealed class DefaultRequestLogger : IRequestLogger
         sb.AppendLine();
         sb.AppendLine("- - - - - - - - - - BEGIN REQUEST - - - - - - - - - -");
         sb.AppendLine();
-        sb.Append(requestToLog.method);
+        sb.Append(requestToLog.Method);
         sb.Append(' ');
-        sb.Append(requestToLog.uri);
+        sb.Append(requestToLog.Uri);
         sb.AppendLine(" HTTP/1.1");
 
-        var requestHeaders = requestToLog.parameters;
-        requestHeaders = requestHeaders.OrderByDescending(p => p.name == "Host");
+        var requestHeaders = requestToLog.Parameters;
+        requestHeaders =
+            requestHeaders.OrderByDescending(p => string.Equals(p.Name, "Host", StringComparison.OrdinalIgnoreCase));
 
         foreach (var item in requestHeaders)
         {
-            sb.Append(item.name);
+            sb.Append(item.Name);
             sb.Append(": ");
-            sb.AppendLine(item.value.ToString());
+            sb.AppendLine(item.Value.ToString());
         }
 
         sb.AppendLine();
@@ -58,11 +61,11 @@ public sealed class DefaultRequestLogger : IRequestLogger
         sb.AppendLine();
 
         sb.Append("HTTP/1.1 ");
-        sb.Append((int)responseToLog.statusCode);
+        sb.Append((int)responseToLog.StatusCode);
         sb.Append(' ');
-        sb.AppendLine(responseToLog.statusCode.ToString());
+        sb.AppendLine(responseToLog.StatusCode.ToString());
 
-        var responseHeaders = responseToLog.headers;
+        var responseHeaders = responseToLog.Headers;
 
         foreach (var item in responseHeaders)
         {
@@ -74,8 +77,8 @@ public sealed class DefaultRequestLogger : IRequestLogger
         sb.AppendLine();
         sb.AppendLine();
 
-        sb.AppendLine(responseToLog.content);
-        sb.AppendLine(responseToLog.errorMessage);
+        sb.AppendLine(responseToLog.Content);
+        sb.AppendLine(responseToLog.ErrorMessage);
 
         sb.AppendLine("- - - - - - - - - - END RESPONSE - - - - - - - - - -");
 

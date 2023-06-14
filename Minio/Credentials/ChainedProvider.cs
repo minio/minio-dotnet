@@ -15,41 +15,25 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Minio.DataModel;
 
 namespace Minio.Credentials;
 
-public class ChainedProvider : ClientProvider
+public class ChainedProvider : IClientProvider
 {
     public ChainedProvider()
     {
-        Providers = new List<ClientProvider>();
+        Providers = new List<IClientProvider>();
     }
 
-    internal List<ClientProvider> Providers { get; set; }
-    internal ClientProvider CurrentProvider { get; set; }
+    internal List<IClientProvider> Providers { get; set; }
+    internal IClientProvider CurrentProvider { get; set; }
     internal AccessCredentials Credentials { get; set; }
 
-    public ChainedProvider AddProvider(ClientProvider provider)
+    public AccessCredentials GetCredentials()
     {
-        Providers.Add(provider);
-        return this;
-    }
-
-    public ChainedProvider AddProviders(ClientProvider[] providers)
-    {
-        Providers.AddRange(providers.ToList());
-        return this;
-    }
-
-    public override AccessCredentials GetCredentials()
-    {
-        if (Credentials != null && !Credentials.AreExpired()) return Credentials;
-        if (CurrentProvider != null && !Credentials.AreExpired())
+        if (Credentials?.AreExpired() == false) return Credentials;
+        if (CurrentProvider is not null && !Credentials.AreExpired())
         {
             Credentials = CurrentProvider.GetCredentials();
             return CurrentProvider.GetCredentials();
@@ -58,7 +42,7 @@ public class ChainedProvider : ClientProvider
         foreach (var provider in Providers)
         {
             var credentials = provider.GetCredentials();
-            if (credentials != null && !credentials.AreExpired())
+            if (credentials?.AreExpired() == false)
             {
                 CurrentProvider = provider;
                 Credentials = credentials;
@@ -69,10 +53,20 @@ public class ChainedProvider : ClientProvider
         throw new InvalidOperationException("None of the assigned providers were able to provide valid credentials.");
     }
 
-    public override async Task<AccessCredentials> GetCredentialsAsync()
+    public ValueTask<AccessCredentials> GetCredentialsAsync()
     {
-        var credentials = GetCredentials();
-        await Task.Yield();
-        return credentials;
+        return new ValueTask<AccessCredentials>(GetCredentials());
+    }
+
+    public ChainedProvider AddProvider(IClientProvider provider)
+    {
+        Providers.Add(provider);
+        return this;
+    }
+
+    public ChainedProvider AddProviders(IClientProvider[] providers)
+    {
+        Providers.AddRange(providers.ToList());
+        return this;
     }
 }

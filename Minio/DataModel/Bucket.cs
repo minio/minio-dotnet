@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Globalization;
 
 namespace Minio.DataModel;

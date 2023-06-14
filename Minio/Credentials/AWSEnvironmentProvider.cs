@@ -15,25 +15,20 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
 using Minio.DataModel;
 
 namespace Minio.Credentials;
 
-public class AWSEnvironmentProvider : EnvironmentProvider
+public class AWSEnvironmentProvider : IClientProvider
 {
-    public override AccessCredentials GetCredentials()
+    public AccessCredentials GetCredentials()
     {
-        var credentials = new AccessCredentials(GetAccessKey(), GetSecretKey(), GetSessionToken(), default);
-        return credentials;
+        return new AccessCredentials(GetAccessKey(), GetSecretKey(), GetSessionToken(), default);
     }
 
-    public override async Task<AccessCredentials> GetCredentialsAsync()
+    public ValueTask<AccessCredentials> GetCredentialsAsync()
     {
-        var creds = GetCredentials();
-        await Task.Yield();
-        return creds;
+        return new ValueTask<AccessCredentials>(GetCredentials());
     }
 
     internal string GetAccessKey()

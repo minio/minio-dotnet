@@ -1,6 +1,5 @@
-/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
- * (C) 2021 MinIO, Inc.
+﻿/*
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +14,10 @@
  * limitations under the License.
  */
 
-using System;
+namespace Minio.DataModel;
 
-namespace Minio.Credentials;
-
-public abstract class EnvironmentProvider : ClientProvider
+public class ProgressReport
 {
-    internal string GetEnvironmentVariable(string env)
-    {
-        return Environment.GetEnvironmentVariable(env);
-    }
+    public int Percentage { get; set; }
+    public long TotalBytesTransferred { get; set; }
 }

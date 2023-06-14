@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Minio.Helper;
 
-internal class s3utils
+internal static class S3utils
 {
-    internal static readonly Regex TrimWhitespaceRegex = new("\\s+");
+    internal static readonly Regex TrimWhitespaceRegex = new("\\s+", RegexOptions.None, TimeSpan.FromHours(1));
 
     internal static bool IsAmazonEndPoint(string endpoint)
     {
         if (IsAmazonChinaEndPoint(endpoint)) return true;
-        var rgx = new Regex("^s3[.-]?(.*?)\\.amazonaws\\.com$", RegexOptions.IgnoreCase);
+        var rgx = new Regex("^s3[.-]?(.*?)\\.amazonaws\\.com$", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
+            TimeSpan.FromHours(1));
         var matches = rgx.Matches(endpoint);
         return matches.Count > 0;
     }
@@ -41,7 +39,7 @@ internal class s3utils
     // For more info https://aws.amazon.com/about-aws/whats-new/2013/12/18/announcing-the-aws-china-beijing-region/
     internal static bool IsAmazonChinaEndPoint(string endpoint)
     {
-        return endpoint == "s3.cn-north-1.amazonaws.com.cn";
+        return string.Equals(endpoint, "s3.cn-north-1.amazonaws.com.cn", StringComparison.OrdinalIgnoreCase);
     }
 
     // IsVirtualHostSupported - verifies if bucketName can be part of
@@ -49,10 +47,11 @@ internal class s3utils
     // would support this.
     internal static bool IsVirtualHostSupported(Uri endpointURL, string bucketName)
     {
-        if (endpointURL == null) return false;
+        if (endpointURL is null) return false;
         // bucketName can be valid but '.' in the hostname will fail SSL
         // certificate validation. So do not use host-style for such buckets.
-        if (endpointURL.Scheme == "https" && bucketName.Contains(".")) return false;
+        if (string.Equals(endpointURL.Scheme, "https", StringComparison.OrdinalIgnoreCase) &&
+            bucketName.Contains('.')) return false;
         // Return true for all other cases
         return IsAmazonEndPoint(endpointURL.Host);
     }
@@ -63,8 +62,7 @@ internal class s3utils
         {
             var combination = Path.Combine(p1, p2);
             // combination = Uri.EscapeUriString(combination);
-            combination = utils.EncodePath(combination);
-            return combination;
+            return Utils.EncodePath(combination);
         }
         catch (Exception ex)
         {

@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel;
@@ -24,7 +23,7 @@ namespace Minio.DataModel;
 [XmlType(TypeName = "Delete")]
 public class DeleteObjectsRequest
 {
-    public DeleteObjectsRequest(List<DeleteObject> objectsList, bool quiet = true)
+    public DeleteObjectsRequest(Collection<DeleteObject> objectsList, bool quiet = true)
     {
         Quiet = quiet;
         Objects = objectsList;
@@ -33,10 +32,10 @@ public class DeleteObjectsRequest
     public DeleteObjectsRequest()
     {
         Quiet = true;
-        Objects = new List<DeleteObject>();
+        Objects = new Collection<DeleteObject>();
     }
 
     [XmlElement("Quiet")] public bool Quiet { get; set; }
 
-    [XmlElement("Object")] public List<DeleteObject> Objects { get; set; }
+    [XmlElement("Object")] public Collection<DeleteObject> Objects { get; set; }
 }

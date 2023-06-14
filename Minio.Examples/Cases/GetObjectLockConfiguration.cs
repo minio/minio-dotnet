@@ -14,29 +14,29 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
 using Minio.DataModel.ObjectLock;
 
 namespace Minio.Examples.Cases;
 
-public class GetObjectLockConfiguration
+public static class GetObjectLockConfiguration
 {
     // Get the Object Lock Configuration on the bucket
     public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: GetObjectLockConfiguration");
             var config = await minio.GetObjectLockConfigurationAsync(
                 new GetObjectLockConfigurationArgs()
                     .WithBucket(bucketName)
-            );
-            if (config != null)
+            ).ConfigureAwait(false);
+            if (config is not null)
             {
                 Console.WriteLine($"Object lock configuration on bucket {bucketName} is : " + config.ObjectLockEnabled);
-                if (config.Rule != null && config.Rule.DefaultRetention != null)
+                if (config.Rule?.DefaultRetention is not null)
                 {
                     var mode = config.Rule.DefaultRetention.Mode == RetentionMode.GOVERNANCE
                         ? "GOVERNANCE"

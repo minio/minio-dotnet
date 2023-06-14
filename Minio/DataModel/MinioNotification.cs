@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Minio.DataModel;
 
@@ -42,62 +43,101 @@ public class MinioNotificationRaw
 [Serializable]
 public class MinioNotification
 {
-    public string Err;
-    public NotificationEvent[] Records;
+    public string Err { get; set; }
+
+    [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
+        Justification = "Needs to be concrete type for XML deserialization")]
+    public Collection<NotificationEvent> Records { get; set; }
 }
 
 public class NotificationEvent
 {
-    public string awsRegion;
-    public string eventName;
-    public string eventSource;
-    public string eventTime;
-    public string eventVersion;
-    public Dictionary<string, string> requestParameters;
-    public Dictionary<string, string> responseElements;
-    public EventMeta s3;
-    public SourceInfo source;
-    public Identity userIdentity;
+    [JsonPropertyName("awsRegion")] public string AwsRegion { get; set; }
+
+    [JsonPropertyName("eventName")] public string EventName { get; set; }
+
+    [JsonPropertyName("eventSource")] public string EventSource { get; set; }
+
+    [JsonPropertyName("eventTime")] public string EventTime { get; set; }
+
+    [JsonPropertyName("eventVersion")] public string EventVersion { get; set; }
+
+    [JsonPropertyName("requestParameters")]
+    [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
+        Justification = "Needs to be concrete type for XML deserialization")]
+    public Dictionary<string, string> RequestParameters { get; set; }
+
+    [JsonPropertyName("responseElements")]
+    [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
+        Justification = "Needs to be concrete type for XML deserialization")]
+    public Dictionary<string, string> ResponseElements { get; set; }
+
+    [JsonPropertyName("s3")] public EventMeta S3 { get; set; }
+
+    [JsonPropertyName("source")] public SourceInfo Source { get; set; }
+
+    [JsonPropertyName("userIdentity")] public Identity UserIdentity { get; set; }
 }
 
 [DataContract]
 public class EventMeta
 {
-    [DataMember] public BucketMeta bucket;
+    [DataMember]
+    [JsonPropertyName("bucket")]
+    public BucketMeta Bucket { get; set; }
 
-    [DataMember] public string configurationId;
+    [DataMember]
+    [JsonPropertyName("configurationId")]
+    public string ConfigurationId { get; set; }
 
-    [DataMember(Name = "object")] public ObjectMeta objectMeta; // C# won't allow the keyword 'object' as a name
+    [DataMember(Name = "object")]
+    [JsonPropertyName("object")]
+    public ObjectMeta ObjectMeta { get; set; } // C# won't allow the keyword 'object' as a name
 
-    [DataMember] public string schemaVersion;
+    [DataMember]
+    [JsonPropertyName("schemaVersion")]
+    public string SchemaVersion { get; set; }
 }
 
 public class ObjectMeta
 {
-    public string contentType;
-    public string etag;
-    public string key;
-    public string sequencer;
-    public int size;
-    public Dictionary<string, string> userMetadata;
-    public string versionId;
+    [JsonPropertyName("contentType")] public string ContentType { get; set; }
+
+    [JsonPropertyName("etag")] public string Etag { get; set; }
+
+    [JsonPropertyName("key")] public string Key { get; set; }
+
+    [JsonPropertyName("sequencer")] public string Sequencer { get; set; }
+
+    [JsonPropertyName("size")] public int Size { get; set; }
+
+    [JsonPropertyName("userMetadata")]
+    [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
+        Justification = "Needs to be concrete type for XML deserialization")]
+    public Dictionary<string, string> UserMetadata { get; set; }
+
+    [JsonPropertyName("versionId")] public string VersionId { get; set; }
 }
 
 public class BucketMeta
 {
-    public string arn;
-    public string name;
-    public Identity ownerIdentity;
+    [JsonPropertyName("arn")] public string Arn { get; set; }
+
+    [JsonPropertyName("name")] public string Name { get; set; }
+
+    [JsonPropertyName("ownerIdentity")] public Identity OwnerIdentity { get; set; }
 }
 
 public class Identity
 {
-    public string principalId;
+    [JsonPropertyName("principalId")] public string PrincipalId { get; set; }
 }
 
 public class SourceInfo
 {
-    public string host;
-    public string port;
-    public string userAgent;
+    [JsonPropertyName("host")] public string Host { get; set; }
+
+    [JsonPropertyName("port")] public string Port { get; set; }
+
+    [JsonPropertyName("userAgent")] public string UserAgent { get; set; }
 }

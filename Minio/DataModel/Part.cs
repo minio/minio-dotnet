@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Minio.DataModel;
 
 [Serializable]
@@ -32,7 +30,7 @@ public class Part
         get => etag;
         set
         {
-            if (value != null)
+            if (value is not null)
                 etag = value.Replace("\"", string.Empty);
             else
                 etag = null;

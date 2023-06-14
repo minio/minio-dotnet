@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel;
@@ -27,8 +26,6 @@ public sealed class SelectCompressionType
     public static readonly SelectCompressionType GZIP = new("GZIP");
     public static readonly SelectCompressionType BZIP = new("BZIP2");
 
-    [XmlText] public string CompressionType;
-
     public SelectCompressionType()
     {
     }
@@ -37,4 +34,6 @@ public sealed class SelectCompressionType
     {
         CompressionType = value;
     }
+
+    [XmlText] public string CompressionType { get; set; }
 }

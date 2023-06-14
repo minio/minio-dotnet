@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel;
@@ -36,6 +35,8 @@ public class TopicConfig : NotificationConfiguration
 
     public TopicConfig(Arn arn) : base(arn)
     {
+        if (arn is null) throw new ArgumentNullException(nameof(arn));
+
         Topic = arn.ToString();
     }
 
@@ -50,12 +51,12 @@ public class TopicConfig : NotificationConfiguration
     {
         var other = (TopicConfig)obj;
         // If parameter is null return false.
-        if (other == null) return false;
-        return other.Topic.Equals(Topic);
+        if (other is null) return false;
+        return other.Topic.Equals(Topic, StringComparison.OrdinalIgnoreCase);
     }
 
     public override int GetHashCode()
     {
-        return Topic.GetHashCode();
+        return StringComparer.Ordinal.GetHashCode(Topic);
     }
 }

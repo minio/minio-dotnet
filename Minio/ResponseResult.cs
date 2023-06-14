@@ -15,23 +15,19 @@
 * limitations under the License.
 */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text;
 
 namespace Minio;
 
 public class ResponseResult : IDisposable
 {
-    private readonly Dictionary<string, string> _headers = new();
+    private readonly Dictionary<string, string> _headers = new(StringComparer.Ordinal);
     private string _content;
-    private byte[] _contentBytes;
+    private ReadOnlyMemory<byte> _contentBytes;
 
     private Stream _stream;
+    private bool disposedValue;
 
     public ResponseResult(HttpRequestMessage request, HttpResponseMessage response)
     {
@@ -53,7 +49,7 @@ public class ResponseResult : IDisposable
     {
         get
         {
-            if (Response == null) return 0;
+            if (Response is null) return 0;
 
             return Response.StatusCode;
         }
@@ -63,24 +59,28 @@ public class ResponseResult : IDisposable
     {
         get
         {
-            if (Response == null) return null;
-
-            return _stream ?? (_stream = Response.Content.ReadAsStreamAsync().Result);
+            if (Response is null) return null;
+#if NETSTANDARD
+            return _stream ??= Response.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
+#else
+            return _stream ??= Response.Content.ReadAsStream();
+#endif
         }
     }
 
-    public byte[] ContentBytes
+    public ReadOnlyMemory<byte> ContentBytes
     {
         get
         {
-            if (ContentStream == null) return new byte[0];
+            if (ContentStream is null)
+                return ReadOnlyMemory<byte>.Empty;
 
-            if (_contentBytes == null)
-                using (var memoryStream = new MemoryStream())
-                {
-                    ContentStream.CopyTo(memoryStream);
-                    _contentBytes = memoryStream.ToArray();
-                }
+            if (_contentBytes.IsEmpty)
+            {
+                using var memoryStream = new MemoryStream();
+                ContentStream.CopyTo(memoryStream);
+                _contentBytes = new ReadOnlyMemory<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
+            }
 
             return _contentBytes;
         }
@@ -91,22 +91,24 @@ public class ResponseResult : IDisposable
         get
         {
             if (ContentBytes.Length == 0) return "";
-
-            if (_content == null) _content = Encoding.UTF8.GetString(ContentBytes);
-
+#if NETSTANDARD
+            _content ??= Encoding.UTF8.GetString(ContentBytes.ToArray());
+#else
+            _content ??= Encoding.UTF8.GetString(ContentBytes.Span);
+#endif
             return _content;
         }
     }
 
-    public Dictionary<string, string> Headers
+    public IDictionary<string, string> Headers
     {
         get
         {
-            if (Response == null) return new Dictionary<string, string>();
+            if (Response is null) return new Dictionary<string, string>(StringComparer.Ordinal);
 
             if (!_headers.Any())
             {
-                if (Response.Content != null)
+                if (Response.Content is not null)
                     foreach (var item in Response.Content.Headers)
                         _headers.Add(item.Key, item.Value.FirstOrDefault());
 
@@ -121,8 +123,26 @@ public class ResponseResult : IDisposable
 
     public void Dispose()
     {
-        _stream?.Dispose();
-        Request?.Dispose();
-        Response?.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposedValue)
+        {
+            if (disposing)
+            {
+                _stream?.Dispose();
+                Request?.Dispose();
+                Response?.Dispose();
+
+                _content = null;
+                _contentBytes = null;
+                _stream = null;
+            }
+
+            disposedValue = true;
+        }
     }
 }

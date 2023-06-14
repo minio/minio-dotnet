@@ -14,9 +14,9 @@
 * limitations under the License.
 */
 
-using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Minio.Functional.Tests;
 
@@ -31,21 +31,30 @@ internal static class TestStatusExtender
 {
     public static string AsText(this TestStatus status)
     {
-        switch (status)
+        return status switch
         {
-            case TestStatus.PASS: return "PASS";
-            case TestStatus.FAIL: return "FAIL";
-            default: return "NA";
-        }
+            TestStatus.PASS => "PASS",
+            TestStatus.FAIL => "FAIL",
+            TestStatus.NA => "NA",
+            _ => "NA"
+        };
     }
 }
 
-internal class MintLogger
+internal sealed class MintLogger
 {
+    private readonly JsonSerializerOptions jsonSerializerOptions = new()
+    {
+        WriteIndented = false,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
     public MintLogger(string testName, string function, string description, TestStatus status, TimeSpan duration,
-        string alert = null, string message = null, string error = null, Dictionary<string, string> args = null)
+        string alert = null, string message = null, string error = null, IDictionary<string, string> args = null)
     {
         this.function = function;
+        this.description = description;
         this.duration = (int)duration.TotalMilliseconds;
         name = $"{name} : {testName}";
         this.alert = alert;
@@ -68,12 +77,12 @@ internal class MintLogger
     /// <summary>
     ///     Test function description
     /// </summary>
-    public string description { get; private set; }
+    public string description { get; }
 
     /// <summary>
     ///     Key-value pair of args relevant to test
     /// </summary>
-    public Dictionary<string, string> args { get; }
+    public IDictionary<string, string> args { get; }
 
     /// <summary>
     ///     duration of the whole test
@@ -102,7 +111,6 @@ internal class MintLogger
 
     public void Log()
     {
-        Console.WriteLine(JsonConvert.SerializeObject(this, Formatting.None,
-            new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
+        Console.WriteLine(JsonSerializer.Serialize(this, jsonSerializerOptions));
     }
 }

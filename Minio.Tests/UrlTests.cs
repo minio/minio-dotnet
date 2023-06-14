@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Exceptions;
@@ -32,9 +31,10 @@ public class UrlTests
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                                | SecurityProtocolType.Tls11
                                                | SecurityProtocolType.Tls12;
-        var minio = new MinioClient()
-            .WithEndpoint("play.min.io")
-            .WithCredentials("Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+        using var minio = new MinioClient()
+            .WithEndpoint(TestHelper.Endpoint)
+            .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
+            .WithSSL()
             .Build();
     }
 
@@ -47,7 +47,7 @@ public class UrlTests
     [TestMethod]
     public void TestWithUrl()
     {
-        new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint("localhost", 9000)
             .WithCredentials("minio", "minio")
             .Build();
@@ -56,7 +56,7 @@ public class UrlTests
     [TestMethod]
     public void TestWithoutPort()
     {
-        new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint("localhost")
             .WithCredentials("minio", "minio")
             .Build();
@@ -65,7 +65,7 @@ public class UrlTests
     [TestMethod]
     public void TestWithTrailingSlash()
     {
-        new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint("localhost:9000/")
             .WithCredentials("minio", "minio")
             .Build();
@@ -75,7 +75,7 @@ public class UrlTests
     [ExpectedException(typeof(InvalidEndpointException))]
     public void TestUrlFailsWithMalformedScheme()
     {
-        new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint("http://localhost:9000")
             .WithCredentials("minio", "minio")
             .Build();
@@ -85,7 +85,7 @@ public class UrlTests
     [ExpectedException(typeof(InvalidEndpointException))]
     public void TestUrlFailsWithPath()
     {
-        new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint("localhost:9000/foo")
             .WithCredentials("minio", "minio")
             .Build();
@@ -95,7 +95,7 @@ public class UrlTests
     [ExpectedException(typeof(InvalidEndpointException))]
     public void TestUrlFailsWithQuery()
     {
-        new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint("localhost:9000/?foo=bar")
             .WithCredentials("minio", "minio")
             .Build();
@@ -105,7 +105,7 @@ public class UrlTests
     [ExpectedException(typeof(ArgumentException))]
     public void TestSetAppInfoFailsNullApp()
     {
-        var client = new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint("localhost:9000")
             .WithCredentials("minio", "minio")
             .Build();
@@ -116,7 +116,7 @@ public class UrlTests
     [ExpectedException(typeof(ArgumentException))]
     public void TestSetAppInfoFailsNullVersion()
     {
-        var client = new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint("localhost:9000")
             .WithCredentials("minio", "minio")
             .Build();
@@ -126,7 +126,7 @@ public class UrlTests
     [TestMethod]
     public void TestSetAppInfoSuccess()
     {
-        var client = new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint("localhost:9000")
             .WithCredentials("minio", "minio")
             .Build();
@@ -136,7 +136,7 @@ public class UrlTests
     [TestMethod]
     public void TestEndpointSuccess()
     {
-        new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint("s3.amazonaws.com")
             .WithCredentials("minio", "minio")
             .Build();
@@ -145,7 +145,7 @@ public class UrlTests
     [TestMethod]
     public void TestEndpointSuccess2()
     {
-        new MinioClient()
+        using var client = new MinioClient()
             .WithEndpoint("s3-us-west-1.amazonaws.com")
             .WithCredentials("minio", "minio")
             .Build();

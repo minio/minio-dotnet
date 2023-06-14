@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace Minio.DataModel;
@@ -25,9 +23,21 @@ namespace Minio.DataModel;
 /// </summary>
 public class CopyConditions
 {
-    private readonly Dictionary<string, string> copyConditions = new();
+    private readonly Dictionary<string, string> copyConditions = new(StringComparer.Ordinal);
     internal long byteRangeEnd = -1;
     internal long byteRangeStart;
+
+    /// <summary>
+    ///     Get range size
+    /// </summary>
+    /// <returns></returns>
+    public long ByteRange => byteRangeStart == -1 ? 0 : byteRangeEnd - byteRangeStart + 1;
+
+    /// <summary>
+    ///     Get all the set copy conditions map.
+    /// </summary>
+    /// <returns></returns>
+    public ReadOnlyDictionary<string, string> Conditions => new(copyConditions);
 
     /// <summary>
     ///     Clone CopyConditions object
@@ -70,7 +80,7 @@ public class CopyConditions
     /// <exception cref="ArgumentException">When etag is null</exception>
     public void SetMatchETag(string etag)
     {
-        if (etag == null) throw new ArgumentException("ETag cannot be empty", nameof(etag));
+        if (etag is null) throw new ArgumentException("ETag cannot be empty", nameof(etag));
         copyConditions.Add("x-amz-copy-source-if-match", etag);
     }
 
@@ -82,7 +92,7 @@ public class CopyConditions
     /// <exception cref="ArgumentException">When etag is null</exception>
     public void SetMatchETagNone(string etag)
     {
-        if (etag == null) throw new ArgumentException("ETag cannot be empty", nameof(etag));
+        if (etag is null) throw new ArgumentException("ETag cannot be empty", nameof(etag));
         copyConditions.Add("x-amz-copy-source-if-none-match", etag);
     }
 
@@ -103,8 +113,9 @@ public class CopyConditions
     {
         foreach (var item in copyConditions)
             if (item.Key.Equals("x-amz-metadata-directive", StringComparison.OrdinalIgnoreCase) &&
-                item.Value.ToUpper().Equals("REPLACE"))
+                item.Value.ToUpperInvariant().Equals("REPLACE", StringComparison.Ordinal))
                 return true;
+
         return false;
     }
 
@@ -122,23 +133,5 @@ public class CopyConditions
 
         byteRangeStart = firstByte;
         byteRangeEnd = lastByte;
-    }
-
-    /// <summary>
-    ///     Get range size
-    /// </summary>
-    /// <returns></returns>
-    public long GetByteRange()
-    {
-        return byteRangeStart == -1 ? 0 : byteRangeEnd - byteRangeStart + 1;
-    }
-
-    /// <summary>
-    ///     Get all the set copy conditions map.
-    /// </summary>
-    /// <returns></returns>
-    public ReadOnlyDictionary<string, string> GetConditions()
-    {
-        return new ReadOnlyDictionary<string, string>(copyConditions);
     }
 }

@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-internal class RemoveObjects
+internal static class RemoveObjects
 {
     // Remove a list of objects from a bucket
     public static async Task Run(IMinioClient minio,
@@ -31,7 +27,7 @@ internal class RemoveObjects
         try
         {
             Console.WriteLine("Running example for API: RemoveObjectsAsync");
-            if (objectsList != null)
+            if (objectsList is not null)
             {
                 var objArgs = new RemoveObjectsArgs()
                     .WithBucket(bucketName)
@@ -40,7 +36,7 @@ internal class RemoveObjects
                 var objectsSubscription = objectsOservable.Subscribe(
                     objDeleteError => Console.WriteLine($"Object: {objDeleteError.Key}"),
                     ex => Console.WriteLine($"OnError: {ex}"),
-                    () => { Console.WriteLine($"Removed objects in list from {bucketName}\n"); });
+                    () => Console.WriteLine($"Removed objects in list from {bucketName}\n"));
                 return;
             }
 
@@ -52,7 +48,7 @@ internal class RemoveObjects
                 objVerDeleteError => Console.WriteLine($"Object: {objVerDeleteError.Key} " +
                                                        $"Object Version: {objVerDeleteError.VersionId}"),
                 ex => Console.WriteLine($"OnError: {ex}"),
-                () => { Console.WriteLine($"Removed objects versions from {bucketName}\n"); });
+                () => Console.WriteLine($"Removed objects versions from {bucketName}\n"));
         }
         catch (Exception e)
         {

@@ -14,28 +14,27 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-public class GetBucketTags
+public static class GetBucketTags
 {
     // Get Tags assigned to the bucket
     public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: GetBucketTags");
             var tags = await minio.GetBucketTagsAsync(
                 new GetBucketTagsArgs()
                     .WithBucket(bucketName)
-            );
-            if (tags != null && tags.GetTags() != null && tags.GetTags().Count > 0)
+            ).ConfigureAwait(false);
+            if (tags is not null && tags.Tags?.Count > 0)
             {
                 Console.WriteLine($"Got Bucket Tags set for bucket {bucketName}.");
-                foreach (var tag in tags.GetTags()) Console.WriteLine(tag.Key + " : " + tag.Value);
+                foreach (var tag in tags.Tags) Console.WriteLine(tag.Key + " : " + tag.Value);
                 Console.WriteLine();
                 return;
             }

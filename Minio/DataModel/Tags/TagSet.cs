@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel.Tags;
@@ -29,12 +28,12 @@ public class TagSet
         Tag = null;
     }
 
-    public TagSet(IReadOnlyDictionary<string, string> tags)
+    public TagSet(IDictionary<string, string> tags)
     {
-        if (tags == null || tags.Count == 0) return;
-        Tag = new List<Tag>();
+        if (tags is null || tags.Count == 0) return;
+        Tag = new Collection<Tag>();
         foreach (var item in tags) Tag.Add(new Tag(item.Key, item.Value));
     }
 
-    [XmlElement("Tag")] public List<Tag> Tag { get; set; }
+    [XmlElement("Tag")] public Collection<Tag> Tag { get; set; }
 }

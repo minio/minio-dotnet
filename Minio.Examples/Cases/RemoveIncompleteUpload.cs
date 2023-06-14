@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-internal class RemoveIncompleteUpload
+internal static class RemoveIncompleteUpload
 {
     // Remove incomplete upload object from a bucket
     public static async Task Run(IMinioClient minio,
@@ -32,7 +29,7 @@ internal class RemoveIncompleteUpload
             var args = new RemoveIncompleteUploadArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            await minio.RemoveIncompleteUploadAsync(args);
+            await minio.RemoveIncompleteUploadAsync(args).ConfigureAwait(false);
             Console.WriteLine($"Removed object {objectName} from bucket {bucketName} successfully");
             Console.WriteLine();
         }

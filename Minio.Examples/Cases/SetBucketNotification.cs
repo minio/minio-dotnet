@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
 using Minio.DataModel;
 
 namespace Minio.Examples.Cases;
 
-internal class SetBucketNotification
+internal static class SetBucketNotification
 {
     // Set bucket notifications. The resource ARN needs to exist on AWS with correct permissions.
     // For further info: see http://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html
     public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: SetBucketNotificationAsync");
@@ -55,7 +55,7 @@ internal class SetBucketNotification
             queueConfiguration.AddEvents(new List<EventType>() { EventType.ObjectCreatedCompleteMultipartUpload });
             notification.AddQueue(queueConfiguration);
             */
-            await minio.SetBucketNotificationsAsync(args);
+            await minio.SetBucketNotificationsAsync(args).ConfigureAwait(false);
 
             Console.WriteLine("Notifications set for the bucket {bucketName} were set successfully");
             Console.WriteLine();

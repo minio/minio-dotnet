@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
 using Minio.DataModel.ObjectLock;
 
 namespace Minio.Examples.Cases;
 
-public class GetObjectRetention
+public static class GetObjectRetention
 {
     // Get Object Retention Configuration for the bucket
     public static async Task Run(IMinioClient minio,
@@ -28,6 +26,8 @@ public class GetObjectRetention
         string objectName = "my-object-name",
         string versionId = null)
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: GetObjectRetentionAsync");
@@ -36,7 +36,7 @@ public class GetObjectRetention
                     .WithBucket(bucketName)
                     .WithObject(objectName)
                     .WithVersionId(versionId)
-            );
+            ).ConfigureAwait(false);
             var versionInfo = string.IsNullOrEmpty(versionId) ? "" : " Version ID: " + versionId;
             var retentionModeStr = config.Mode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE";
             Console.WriteLine($"Retention configuration to object {bucketName}/{objectName} " +

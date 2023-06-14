@@ -16,6 +16,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class InvalidObjectPrefixException : MinioException
 {
     private readonly string objectPrefix;
@@ -23,6 +24,26 @@ public class InvalidObjectPrefixException : MinioException
     public InvalidObjectPrefixException(string objectPrefix, string message) : base(message)
     {
         this.objectPrefix = objectPrefix;
+    }
+
+    public InvalidObjectPrefixException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public InvalidObjectPrefixException(string message) : base(message)
+    {
+    }
+
+    public InvalidObjectPrefixException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
+
+    public InvalidObjectPrefixException()
+    {
+    }
+
+    public InvalidObjectPrefixException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 
     public override string ToString()

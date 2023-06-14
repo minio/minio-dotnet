@@ -19,7 +19,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Minio.Tests;
 
 [TestClass]
-public class TestRegion
+public class RegionTest
 {
     [DataTestMethod]
     [DataRow("s3.us-east-2.amazonaws.com", "us-east-2")]

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Minio.DataModel;
 
 /// <summary>
@@ -35,6 +33,8 @@ public class QueueConfig : NotificationConfiguration
 
     public QueueConfig(Arn arn) : base(arn)
     {
+        if (arn is null) throw new ArgumentNullException(nameof(arn));
+
         Queue = arn.ToString();
     }
 
@@ -45,12 +45,12 @@ public class QueueConfig : NotificationConfiguration
     {
         var other = (QueueConfig)obj;
         // If parameter is null return false.
-        if (other == null) return false;
-        return other.Queue.Equals(Queue);
+        if (other is null) return false;
+        return other.Queue.Equals(Queue, StringComparison.Ordinal);
     }
 
     public override int GetHashCode()
     {
-        return Queue.GetHashCode();
+        return StringComparer.Ordinal.GetHashCode(Queue);
     }
 }

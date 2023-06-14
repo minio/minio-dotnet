@@ -23,7 +23,7 @@ public class GenericResponse
     internal GenericResponse(HttpStatusCode statusCode, string responseContent)
     {
         ResponseContent = responseContent;
-        ResponseStatusCode = ResponseStatusCode;
+        ResponseStatusCode = statusCode;
     }
 
     internal string ResponseContent { get; }

@@ -14,32 +14,32 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
 using Minio.Exceptions;
 
 namespace Minio.Examples.Cases;
 
-public class GetBucketReplication
+public static class GetBucketReplication
 {
     // Get Replication configuration assigned to the bucket
     public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name",
         string replicationRuleID = "my-replication-rule-ID")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: GetBucketReplicationConfiguration");
             var repl = await minio.GetBucketReplicationAsync(
                 new GetBucketReplicationArgs()
                     .WithBucket(bucketName)
-            );
-            if (repl != null && repl.Rules != null && repl.Rules.Count > 0)
+            ).ConfigureAwait(false);
+            if (repl is not null && repl.Rules?.Count > 0)
             {
                 Console.WriteLine($"Got Bucket Replication Configuration set for bucket {bucketName}.");
                 foreach (var rule in repl.Rules)
                 {
-                    if (rule.ID != replicationRuleID)
+                    if (!string.Equals(rule.ID, replicationRuleID, StringComparison.OrdinalIgnoreCase))
                     {
                         // failed test due to replication rule id mismatch
                         var errMessage = "Unexpected replication rule ID: " +

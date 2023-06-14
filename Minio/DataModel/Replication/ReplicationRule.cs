@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 /*
@@ -42,19 +41,17 @@ public class ReplicationRule
         ExistingObjectReplication existingObjectReplication, RuleFilter filter, DeleteReplication deleteReplication,
         uint priority, string id, string prefix, SourceSelectionCriteria sourceSelectionCriteria, string status)
     {
-        if (string.IsNullOrEmpty(status) || string.IsNullOrWhiteSpace(status))
-            throw new ArgumentNullException(nameof(Status) + " cannot be null or empty.");
+        if (string.IsNullOrWhiteSpace(status))
+            throw new ArgumentNullException(nameof(status) + " cannot be null or empty.");
         if (string.IsNullOrEmpty(id) || string.IsNullOrWhiteSpace(id))
-            throw new ArgumentNullException(nameof(ID) + " cannot be null or empty.");
-        if (deleteReplication == null)
-            throw new ArgumentNullException(nameof(DeleteReplication) + " cannot be null or empty.");
-        if (destination == null) throw new ArgumentNullException(nameof(Destination) + " cannot be null or empty.");
+            throw new ArgumentNullException(nameof(id) + " cannot be null or empty.");
         DeleteMarkerReplication = deleteMarkerReplication;
-        Destination = destination;
+        Destination = destination ?? throw new ArgumentNullException(nameof(destination) + " cannot be null or empty.");
         ExistingObjectReplication = existingObjectReplication;
         Filter = filter;
         Priority = priority;
-        DeleteReplication = deleteReplication;
+        DeleteReplication = deleteReplication ??
+                            throw new ArgumentNullException(nameof(deleteReplication) + " cannot be null or empty.");
         ID = id;
         Prefix = prefix;
         SourceSelectionCriteria = sourceSelectionCriteria;

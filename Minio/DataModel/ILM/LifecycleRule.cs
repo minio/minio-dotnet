@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 /*
@@ -46,7 +45,11 @@ public class LifecycleRule
         NoncurrentVersionTransition noncurrentVersionTransition,
         string status)
     {
-        if (!status.Equals(LIFECYCLE_RULE_STATUS_ENABLED) && !status.Equals(LIFECYCLE_RULE_STATUS_DISABLED))
+        if (string.IsNullOrEmpty(status))
+            throw new ArgumentException($"'{nameof(status)}' cannot be null or empty.", nameof(status));
+
+        if (!status.Equals(LIFECYCLE_RULE_STATUS_ENABLED, StringComparison.Ordinal) &&
+            !status.Equals(LIFECYCLE_RULE_STATUS_DISABLED, StringComparison.Ordinal))
             throw new ArgumentException("Wrong value assignment for " + nameof(Status));
         AbortIncompleteMultipartUploadObject = abortIncompleteMultipartUpload;
         ID = id;
@@ -76,7 +79,7 @@ public class LifecycleRule
         set
         {
             // The filter must not be missing, even if it is empty.
-            if (value == null)
+            if (value is null)
                 _ruleFilter = new RuleFilter();
             else
                 _ruleFilter = value;

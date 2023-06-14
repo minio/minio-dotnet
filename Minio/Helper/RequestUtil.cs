@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-using System;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Web;
 using Minio.Exceptions;
@@ -22,22 +22,22 @@ using Minio.Helper;
 
 namespace Minio;
 
-internal class RequestUtil
+internal static class RequestUtil
 {
     internal static Uri GetEndpointURL(string endPoint, bool secure)
     {
-        if (endPoint.Contains(":"))
+        if (endPoint.Contains(':'))
         {
             var parts = endPoint.Split(':');
             var host = parts[0];
             var port = parts[1];
-            if (!s3utils.IsValidIP(host) && !IsValidEndpoint(host))
+            if (!S3utils.IsValidIP(host) && !IsValidEndpoint(host))
                 throw new InvalidEndpointException("Endpoint: " + endPoint +
                                                    " does not follow ip address or domain name standards.");
         }
         else
         {
-            if (!s3utils.IsValidIP(endPoint) && !IsValidEndpoint(endPoint))
+            if (!S3utils.IsValidIP(endPoint) && !IsValidEndpoint(endPoint))
                 throw new InvalidEndpointException("Endpoint: " + endPoint +
                                                    " does not follow ip address or domain name standards.");
         }
@@ -52,19 +52,19 @@ internal class RequestUtil
     {
         // For Amazon S3 endpoint, try to fetch location based endpoint.
         var host = endPoint;
-        if (s3utils.IsAmazonEndPoint(endPoint))
+        if (S3utils.IsAmazonEndPoint(endPoint))
             // Fetch new host based on the bucket location.
-            host = AWSS3Endpoints.Instance.Endpoint(region);
+            host = AWSS3Endpoints.Endpoint(region);
+
         if (!usePathStyle)
         {
-            var suffix = bucketName != null ? bucketName + "/" : "";
+            var suffix = bucketName is not null ? bucketName + "/" : "";
             host = host + "/" + suffix;
         }
 
         var scheme = secure ? "https" : "http";
-        var endpointURL = string.Format("{0}://{1}", scheme, host);
-        var uri = new Uri(endpointURL, UriKind.Absolute);
-        return uri;
+        var endpointURL = string.Format(CultureInfo.InvariantCulture, "{0}://{1}", scheme, host);
+        return new Uri(endpointURL, UriKind.Absolute);
     }
 
     internal static Uri TryCreateUri(string endpoint, bool secure)
@@ -72,8 +72,8 @@ internal class RequestUtil
         var scheme = secure ? HttpUtility.UrlEncode("https") : HttpUtility.UrlEncode("http");
 
         // This is the actual url pointed to for all HTTP requests
-        var endpointURL = string.Format("{0}://{1}", scheme, endpoint);
-        Uri uri = null;
+        var endpointURL = string.Format(CultureInfo.InvariantCulture, "{0}://{1}", scheme, endpoint);
+        Uri uri;
         try
         {
             uri = new Uri(endpointURL);
@@ -95,12 +95,13 @@ internal class RequestUtil
         var host = uri.Host;
 
         if (!IsValidEndpoint(uri.Host)) throw new InvalidEndpointException(endpoint, "Invalid endpoint.");
-        if (!uri.AbsolutePath.Equals("/", StringComparison.CurrentCultureIgnoreCase))
+        if (!uri.AbsolutePath.Equals("/", StringComparison.OrdinalIgnoreCase))
             throw new InvalidEndpointException(endpoint, "No path allowed in endpoint.");
 
         if (!string.IsNullOrEmpty(uri.Query))
             throw new InvalidEndpointException(endpoint, "No query parameter allowed in endpoint.");
-        if (!uri.Scheme.ToLowerInvariant().Equals("https") && !uri.Scheme.ToLowerInvariant().Equals("http"))
+        if (!uri.Scheme.ToUpperInvariant().Equals("https", StringComparison.OrdinalIgnoreCase) &&
+            !uri.Scheme.ToUpperInvariant().Equals("http", StringComparison.OrdinalIgnoreCase))
             throw new InvalidEndpointException(endpoint, "Invalid scheme detected in endpoint.");
     }
 
@@ -120,7 +121,8 @@ internal class RequestUtil
         {
             if (label.Length < 1 || label.Length > 63) return false;
 
-            var validLabel = new Regex("^[a-zA-Z0-9]([A-Za-z0-9-_]*[a-zA-Z0-9])?$");
+            var validLabel = new Regex("^[a-zA-Z0-9]([A-Za-z0-9-_]*[a-zA-Z0-9])?$", RegexOptions.ExplicitCapture,
+                TimeSpan.FromHours(1));
 
             if (!validLabel.IsMatch(label)) return false;
         }

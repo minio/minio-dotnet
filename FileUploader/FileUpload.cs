@@ -14,10 +14,8 @@
 * limitations under the License.
 */
 
-using System;
 using System.Net;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Minio;
 
 namespace FileUploader;
@@ -29,14 +27,14 @@ namespace FileUploader;
 ///     Either create a file with this name or change it with your own file,
 ///     where it is defined down below.
 /// </summary>
-public class FileUpload
+public static class FileUpload
 {
     private static bool IsWindows()
     {
         return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
     }
 
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                                | SecurityProtocolType.Tls11
@@ -47,12 +45,12 @@ public class FileUpload
 
         try
         {
-            var minio = new MinioClient()
+            using var minio = new MinioClient()
                 .WithEndpoint(endpoint)
                 .WithCredentials(accessKey, secretKey)
                 .WithSSL()
                 .Build();
-            Run(minio).Wait();
+            await Run(minio).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -83,13 +81,13 @@ public class FileUpload
         {
             var bktExistArgs = new BucketExistsArgs()
                 .WithBucket(bucketName);
-            var found = await minio.BucketExistsAsync(bktExistArgs);
+            var found = await minio.BucketExistsAsync(bktExistArgs).ConfigureAwait(false);
             if (!found)
             {
                 var mkBktArgs = new MakeBucketArgs()
                     .WithBucket(bucketName)
                     .WithLocation(location);
-                await minio.MakeBucketAsync(mkBktArgs);
+                await minio.MakeBucketAsync(mkBktArgs).ConfigureAwait(false);
             }
 
             var putObjectArgs = new PutObjectArgs()

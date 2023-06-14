@@ -16,6 +16,7 @@
 
 namespace Minio.Exceptions;
 
+[Serializable]
 public class MissingBucketReplicationConfigurationException : MinioException
 {
     private readonly string bucketName;
@@ -23,6 +24,28 @@ public class MissingBucketReplicationConfigurationException : MinioException
     public MissingBucketReplicationConfigurationException(string bucketName, string message) : base(message)
     {
         this.bucketName = bucketName;
+    }
+
+    public MissingBucketReplicationConfigurationException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
+
+    public MissingBucketReplicationConfigurationException(string message) : base(message)
+    {
+    }
+
+    public MissingBucketReplicationConfigurationException(string message, ResponseResult serverResponse) : base(message,
+        serverResponse)
+    {
+    }
+
+    public MissingBucketReplicationConfigurationException()
+    {
+    }
+
+    public MissingBucketReplicationConfigurationException(string message, Exception innerException) : base(message,
+        innerException)
+    {
     }
 
     public override string ToString()

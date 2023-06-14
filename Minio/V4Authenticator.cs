@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Minio.Helper;
-using Newtonsoft.Json;
 
 namespace Minio;
 
@@ -67,23 +64,23 @@ internal class V4Authenticator
     public V4Authenticator(bool secure, string accessKey, string secretKey, string region = "",
         string sessionToken = "")
     {
-        isSecure = secure;
+        IsSecure = secure;
         this.accessKey = accessKey;
         this.secretKey = secretKey;
-        isAnonymous = utils.IsAnonymousClient(accessKey, secretKey);
+        IsAnonymous = Utils.IsAnonymousClient(accessKey, secretKey);
         this.region = region;
         this.sessionToken = sessionToken;
     }
 
-    internal bool isAnonymous { get; }
-    internal bool isSecure { get; }
+    internal bool IsAnonymous { get; }
+    internal bool IsSecure { get; }
 
     private string GetRegion(string endpoint)
     {
-        if (!string.IsNullOrEmpty(this.region)) return this.region;
+        if (!string.IsNullOrEmpty(region)) return region;
 
-        var region = Regions.GetRegionFromEndpoint(endpoint);
-        return region == string.Empty ? "us-east-1" : region;
+        var endpointRegion = Regions.GetRegionFromEndpoint(endpoint);
+        return string.IsNullOrEmpty(endpointRegion) ? "us-east-1" : endpointRegion;
     }
 
     /// <summary>
@@ -111,17 +108,16 @@ internal class V4Authenticator
         var signedHeaders = GetSignedHeaders(headersToSign);
 
         var canonicalRequest = GetCanonicalRequest(requestBuilder, headersToSign);
-        var canonicalRequestBytes = Encoding.UTF8.GetBytes(canonicalRequest);
+        ReadOnlySpan<byte> canonicalRequestBytes = Encoding.UTF8.GetBytes(canonicalRequest);
         var hash = ComputeSha256(canonicalRequestBytes);
         var canonicalRequestHash = BytesToHex(hash);
-        var region = GetRegion(requestUri.Host);
-        var stringToSign = GetStringToSign(region, signingDate, canonicalRequestHash, isSts);
-        var signingKey = GenerateSigningKey(region, signingDate, isSts);
-        var stringToSignBytes = Encoding.UTF8.GetBytes(stringToSign);
+        var endpointRegion = GetRegion(requestUri.Host);
+        var stringToSign = GetStringToSign(endpointRegion, signingDate, canonicalRequestHash, isSts);
+        var signingKey = GenerateSigningKey(endpointRegion, signingDate, isSts);
+        ReadOnlySpan<byte> stringToSignBytes = Encoding.UTF8.GetBytes(stringToSign);
         var signatureBytes = SignHmac(signingKey, stringToSignBytes);
         var signature = BytesToHex(signatureBytes);
-        var authorization = GetAuthorizationHeader(signedHeaders, signature, signingDate, region, isSts);
-        return authorization;
+        return GetAuthorizationHeader(signedHeaders, signature, signingDate, endpointRegion, isSts);
     }
 
     /// <summary>
@@ -168,7 +164,7 @@ internal class V4Authenticator
     /// </summary>
     /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
     /// <returns>returns the kind of service as a string</returns>
-    private string getService(bool isSts)
+    private string GetService(bool isSts)
     {
         return isSts ? "sts" : "s3";
     }
@@ -180,20 +176,25 @@ internal class V4Authenticator
     /// <param name="signingDate">Date for signature to be signed</param>
     /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
     /// <returns>bytes of computed hmac</returns>
-    private byte[] GenerateSigningKey(string region, DateTime signingDate, bool isSts = false)
+    private ReadOnlySpan<byte> GenerateSigningKey(string region, DateTime signingDate, bool isSts = false)
     {
-        byte[] dateRegionServiceKey;
-        byte[] requestBytes;
+        ReadOnlySpan<byte> dateRegionServiceKey;
+        ReadOnlySpan<byte> requestBytes;
 
-        var serviceBytes = Encoding.UTF8.GetBytes(getService(isSts));
-        var formattedDateBytes = Encoding.UTF8.GetBytes(signingDate.ToString("yyyyMMdd"));
-        var formattedKeyBytes = Encoding.UTF8.GetBytes($"AWS4{secretKey}");
+        ReadOnlySpan<byte> serviceBytes = Encoding.UTF8.GetBytes(GetService(isSts));
+        ReadOnlySpan<byte> formattedDateBytes = Encoding.UTF8.GetBytes(signingDate.ToString("yyyyMMdd"));
+        ReadOnlySpan<byte> formattedKeyBytes = Encoding.UTF8.GetBytes($"AWS4{secretKey}");
         var dateKey = SignHmac(formattedKeyBytes, formattedDateBytes);
-        var regionBytes = Encoding.UTF8.GetBytes(region);
+        ReadOnlySpan<byte> regionBytes = Encoding.UTF8.GetBytes(region);
         var dateRegionKey = SignHmac(dateKey, regionBytes);
         dateRegionServiceKey = SignHmac(dateRegionKey, serviceBytes);
         requestBytes = Encoding.UTF8.GetBytes("aws4_request");
-        var signingKey = Encoding.UTF8.GetString(SignHmac(dateRegionServiceKey, requestBytes));
+        var hmac = SignHmac(dateRegionServiceKey, requestBytes);
+#if NETSTANDARD
+        var signingKey = Encoding.UTF8.GetString(hmac.ToArray());
+#else
+        var signingKey = Encoding.UTF8.GetString(hmac);
+#endif
         return SignHmac(dateRegionServiceKey, requestBytes);
     }
 
@@ -203,11 +204,15 @@ internal class V4Authenticator
     /// <param name="key">Hmac key</param>
     /// <param name="content">Bytes to be hmac computed</param>
     /// <returns>Computed hmac of input content</returns>
-    private byte[] SignHmac(byte[] key, byte[] content)
+    private ReadOnlySpan<byte> SignHmac(ReadOnlySpan<byte> key, ReadOnlySpan<byte> content)
     {
-        var hmac = new HMACSHA256(key);
+#if NETSTANDARD
+        using var hmac = new HMACSHA256(key.ToArray());
         hmac.Initialize();
-        return hmac.ComputeHash(content);
+        return hmac.ComputeHash(content.ToArray());
+#else
+        return HMACSHA256.HashData(key, content);
+#endif
     }
 
     /// <summary>
@@ -234,7 +239,7 @@ internal class V4Authenticator
     /// <returns>Scope string</returns>
     private string GetScope(string region, DateTime signingDate, bool isSts = false)
     {
-        return $"{signingDate:yyyyMMdd}/{region}/{getService(isSts)}/aws4_request";
+        return $"{signingDate:yyyyMMdd}/{region}/{GetService(isSts)}/aws4_request";
     }
 
     /// <summary>
@@ -242,10 +247,15 @@ internal class V4Authenticator
     /// </summary>
     /// <param name="body">Bytes body</param>
     /// <returns>Bytes of sha256 checksum</returns>
-    private byte[] ComputeSha256(byte[] body)
+    private ReadOnlySpan<byte> ComputeSha256(ReadOnlySpan<byte> body)
     {
-        var sha256 = SHA256.Create();
-        return sha256.ComputeHash(body);
+#if NETSTANDARD
+        using var sha = SHA256.Create();
+        ReadOnlySpan<byte> hash = sha.ComputeHash(body.ToArray());
+#else
+        ReadOnlySpan<byte> hash = SHA256.HashData(body);
+#endif
+        return hash;
     }
 
     /// <summary>
@@ -253,9 +263,9 @@ internal class V4Authenticator
     /// </summary>
     /// <param name="checkSum">Bytes of any checksum</param>
     /// <returns>Hexlified string of input bytes</returns>
-    private string BytesToHex(byte[] checkSum)
+    private string BytesToHex(ReadOnlySpan<byte> checkSum)
     {
-        return BitConverter.ToString(checkSum).Replace("-", string.Empty).ToLower();
+        return BitConverter.ToString(checkSum.ToArray()).Replace("-", string.Empty).ToLowerInvariant();
     }
 
     /// <summary>
@@ -268,7 +278,7 @@ internal class V4Authenticator
     public string PresignPostSignature(string region, DateTime signingDate, string policyBase64)
     {
         var signingKey = GenerateSigningKey(region, signingDate);
-        var stringToSignBytes = Encoding.UTF8.GetBytes(policyBase64);
+        ReadOnlySpan<byte> stringToSignBytes = Encoding.UTF8.GetBytes(policyBase64);
         var signatureBytes = SignHmac(signingKey, stringToSignBytes);
         var signature = BytesToHex(signatureBytes);
         return signature;
@@ -311,19 +321,19 @@ internal class V4Authenticator
 
         var presignUri = new UriBuilder(requestUri) { Query = requestQuery }.Uri;
         var canonicalRequest = GetPresignCanonicalRequest(requestBuilder.Method, presignUri, headersToSign);
-        var headers = string.Concat(headersToSign.Select(p => $"&{p.Key}={utils.UrlEncode(p.Value)}"));
-        var canonicalRequestBytes = Encoding.UTF8.GetBytes(canonicalRequest);
+        var headers = string.Concat(headersToSign.Select(p => $"&{p.Key}={Utils.UrlEncode(p.Value)}"));
+        ReadOnlySpan<byte> canonicalRequestBytes = Encoding.UTF8.GetBytes(canonicalRequest);
         var canonicalRequestHash = BytesToHex(ComputeSha256(canonicalRequestBytes));
         var stringToSign = GetStringToSign(region, signingDate, canonicalRequestHash);
         var signingKey = GenerateSigningKey(region, signingDate);
-        var stringToSignBytes = Encoding.UTF8.GetBytes(stringToSign);
+        ReadOnlySpan<byte> stringToSignBytes = Encoding.UTF8.GetBytes(stringToSign);
         var signatureBytes = SignHmac(signingKey, stringToSignBytes);
         var signature = BytesToHex(signatureBytes);
 
         // Return presigned url.
         var signedUri = new UriBuilder(presignUri) { Query = $"{requestQuery}{headers}&X-Amz-Signature={signature}" };
         if (signedUri.Uri.IsDefaultPort) signedUri.Port = -1;
-        return Convert.ToString(signedUri);
+        return Convert.ToString(signedUri, CultureInfo.InvariantCulture);
     }
 
     /// <summary>
@@ -347,7 +357,7 @@ internal class V4Authenticator
         canonicalStringList.AddLast(path);
         var queryParams = uri.Query.TrimStart('?').Split('&').ToList();
         queryParams.AddRange(headersToSign.Select(cv =>
-            $"{utils.UrlEncode(cv.Key)}={utils.UrlEncode(cv.Value.Trim())}"));
+            $"{Utils.UrlEncode(cv.Key)}={Utils.UrlEncode(cv.Value.Trim())}"));
         queryParams.Sort(StringComparer.Ordinal);
         var query = string.Join("&", queryParams);
         canonicalStringList.AddLast(query);
@@ -363,13 +373,9 @@ internal class V4Authenticator
 
     private static string GetCanonicalHost(Uri url)
     {
-        string canonicalHost;
         if (url.Port > 0 && url.Port != 80 && url.Port != 443)
-            canonicalHost = $"{url.Host}:{url.Port}";
-        else
-            canonicalHost = url.Host;
-
-        return canonicalHost;
+            return $"{url.Host}:{url.Port}";
+        return url.Host;
     }
 
     /// <summary>
@@ -385,8 +391,8 @@ internal class V4Authenticator
         // METHOD
         canonicalStringList.AddLast(requestBuilder.Method.ToString());
 
-        var queryParamsDict = new Dictionary<string, string>();
-        if (requestBuilder.QueryParameters != null)
+        var queryParamsDict = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (requestBuilder.QueryParameters is not null)
             foreach (var kvp in requestBuilder.QueryParameters)
                 queryParamsDict[kvp.Key] = Uri.EscapeDataString(kvp.Value);
 
@@ -399,33 +405,36 @@ internal class V4Authenticator
             foreach (var p in queryKeys)
             {
                 if (sb1.Length > 0)
-                    sb1.Append("&");
-                sb1.AppendFormat("{0}={1}", p, queryParamsDict[p]);
+                    sb1.Append('&');
+                sb1.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}", p, queryParamsDict[p]);
             }
 
             queryParams = sb1.ToString();
         }
 
         var isFormData = false;
-        if (requestBuilder.Request.Content != null && requestBuilder.Request.Content.Headers != null &&
-            requestBuilder.Request.Content.Headers.ContentType != null)
-            isFormData = requestBuilder.Request.Content.Headers.ContentType.ToString() ==
-                         "application/x-www-form-urlencoded";
+        if (requestBuilder.Request.Content?.Headers?.ContentType is not null)
+            isFormData = string.Equals(requestBuilder.Request.Content.Headers.ContentType.ToString(),
+                "application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase);
 
         if (string.IsNullOrEmpty(queryParams) && isFormData)
         {
             // Convert stream content to byte[]
-            var cntntByteData = new byte[] { };
-            if (requestBuilder.Request.Content != null)
-                cntntByteData = requestBuilder.Request.Content.ReadAsByteArrayAsync().Result;
+            var cntntByteData = Span<byte>.Empty;
+            if (requestBuilder.Request.Content is not null)
+                cntntByteData = requestBuilder.Request.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
 
             // UTF conversion - String from bytes
-            queryParams = Encoding.UTF8.GetString(cntntByteData, 0, cntntByteData.Length);
+#if NETSTANDARD
+            queryParams = Encoding.UTF8.GetString(cntntByteData.ToArray(), 0, cntntByteData.Length);
+#else
+            queryParams = Encoding.UTF8.GetString(cntntByteData);
+#endif
         }
 
         if (!string.IsNullOrEmpty(queryParams) &&
             !isFormData &&
-            requestBuilder.RequestUri.Query != "?location=")
+            !string.Equals(requestBuilder.RequestUri.Query, "?location=", StringComparison.OrdinalIgnoreCase))
             requestBuilder.RequestUri = new Uri(requestBuilder.RequestUri + "?" + queryParams);
 
         canonicalStringList.AddLast(requestBuilder.RequestUri.AbsolutePath);
@@ -433,20 +442,20 @@ internal class V4Authenticator
 
         // Headers to sign
         foreach (var header in headersToSign.Keys)
-            canonicalStringList.AddLast(header + ":" + s3utils.TrimAll(headersToSign[header]));
+            canonicalStringList.AddLast(header + ":" + S3utils.TrimAll(headersToSign[header]));
         canonicalStringList.AddLast(string.Empty);
         canonicalStringList.AddLast(string.Join(";", headersToSign.Keys));
-        if (headersToSign.Keys.Contains("x-amz-content-sha256"))
-            canonicalStringList.AddLast(headersToSign["x-amz-content-sha256"]);
+        if (headersToSign.TryGetValue("x-amz-content-sha256", out var value))
+            canonicalStringList.AddLast(value);
         else
             canonicalStringList.AddLast(sha256EmptyFileHash);
         return string.Join("\n", canonicalStringList);
     }
 
-    public static Dictionary<string, TValue> ToDictionary<TValue>(object obj)
+    public static IDictionary<string, TValue> ToDictionary<TValue>(object obj)
     {
-        var json = JsonConvert.SerializeObject(obj);
-        var dictionary = JsonConvert.DeserializeObject<Dictionary<string, TValue>>(json);
+        var json = JsonSerializer.Serialize(obj);
+        var dictionary = JsonSerializer.Deserialize<Dictionary<string, TValue>>(json);
         return dictionary;
     }
 
@@ -462,7 +471,7 @@ internal class V4Authenticator
 
         foreach (var header in headers)
         {
-            var headerName = header.Key.ToLower();
+            var headerName = header.Key.ToLowerInvariant();
             var headerValue = header.Value;
 
             if (!ignoredHeaders.Contains(headerName)) sortedHeaders.Add(headerName, headerValue);
@@ -505,11 +514,11 @@ internal class V4Authenticator
     /// <summary>
     ///     Set 'x-amz-content-sha256' http header.
     /// </summary>
-    /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
     /// <param name="requestBuilder">Instantiated requestBuilder object</param>
+    /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
     private void SetContentSha256(HttpRequestMessageBuilder requestBuilder, bool isSts = false)
     {
-        if (isAnonymous)
+        if (IsAnonymous)
             return;
         // No need to compute SHA256 if the endpoint scheme is https
         // or the command method is not a Post to delete multiple files
@@ -517,7 +526,8 @@ internal class V4Authenticator
         if (requestBuilder.Method == HttpMethod.Post)
             isMultiDeleteRequest =
                 requestBuilder.QueryParameters.Any(p => p.Key.Equals("delete", StringComparison.OrdinalIgnoreCase));
-        if ((isSecure && !isSts) || isMultiDeleteRequest)
+
+        if ((IsSecure && !isSts) || isMultiDeleteRequest)
         {
             requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", "UNSIGNED-PAYLOAD");
             return;
@@ -528,22 +538,32 @@ internal class V4Authenticator
             requestBuilder.Method.Equals(HttpMethod.Post))
         {
             var body = requestBuilder.Content;
-            if (body == null)
+            if (body.IsEmpty)
             {
                 requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", sha256EmptyFileHash);
                 return;
             }
-
-            var sha256 = SHA256.Create();
-            var hash = sha256.ComputeHash(body);
-            var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
+#if NETSTANDARD
+            using var sha = SHA256.Create();
+            var hash = sha.ComputeHash(body.ToArray());
+#else
+            var hash = SHA256.HashData(body.Span);
+#endif
+            var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
             requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
         }
-        else if (!isSecure && requestBuilder.Content != null)
+        else if (!IsSecure && !requestBuilder.Content.IsEmpty)
         {
-            var md5 = MD5.Create();
-            var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(requestBuilder.Content.ToString()));
+            ReadOnlySpan<byte> bytes = Encoding.UTF8.GetBytes(requestBuilder.Content.ToString());
 
+#if NETSTANDARD
+#pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
+            using var md5 = MD5.Create();
+#pragma warning restore CA5351 // Do Not Use Broken Cryptographic Algorithms
+            var hash = md5.ComputeHash(bytes.ToArray());
+#else
+            ReadOnlySpan<byte> hash = MD5.HashData(bytes);
+#endif
             var base64 = Convert.ToBase64String(hash);
             requestBuilder.AddHeaderParameter("Content-Md5", base64);
         }

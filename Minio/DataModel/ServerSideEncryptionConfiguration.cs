@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Xml.Serialization;
 
 namespace Minio;
@@ -35,7 +34,9 @@ public class ServerSideEncryptionConfiguration
 
     [XmlElement("Rule")] public ServerSideEncryptionConfigurationRule Rule { get; set; }
 
+#pragma warning disable CA1024 // Use properties where appropriate
     public static ServerSideEncryptionConfiguration GetSSEConfigurationWithS3Rule()
+#pragma warning restore CA1024 // Use properties where appropriate
     {
         return new ServerSideEncryptionConfiguration(
             new ServerSideEncryptionConfigurationRule(ServerSideEncryptionConfigurationRule.SSE_AES256));

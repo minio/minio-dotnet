@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-internal class ListBuckets
+internal static class ListBuckets
 {
     // List all buckets on host
     public static async Task Run(IMinioClient minio)
@@ -27,7 +24,7 @@ internal class ListBuckets
         try
         {
             Console.WriteLine("Running example for API: ListBucketsAsync");
-            var list = await minio.ListBucketsAsync();
+            var list = await minio.ListBucketsAsync().ConfigureAwait(false);
             foreach (var bucket in list.Buckets) Console.WriteLine($"{bucket.Name} {bucket.CreationDateDateTime}");
             Console.WriteLine();
         }

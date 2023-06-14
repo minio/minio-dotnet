@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-public class RemoveBucketEncryption
+public static class RemoveBucketEncryption
 {
     // Remove Encryption Configuration for the bucket
     public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: RemoveBucketEncryptionAsync");
             await minio.RemoveBucketEncryptionAsync(
                 new RemoveBucketEncryptionArgs()
                     .WithBucket(bucketName)
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Removed encryption configuration for bucket {bucketName}.");
             Console.WriteLine();
         }

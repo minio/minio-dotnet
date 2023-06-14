@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading.Tasks;
-
 namespace Minio.Examples.Cases;
 
-public class MakeBucketWithLock
+public static class MakeBucketWithLock
 {
     // Make a bucket
     public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name", string loc = "us-east-1")
     {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
         try
         {
             Console.WriteLine("Running example for API: MakeBucketAsync");
@@ -33,7 +32,7 @@ public class MakeBucketWithLock
                     .WithBucket(bucketName)
                     .WithLocation(loc)
                     .WithObjectLock()
-            );
+            ).ConfigureAwait(false);
             Console.WriteLine($"Created bucket {bucketName} with lock.");
             Console.WriteLine();
         }

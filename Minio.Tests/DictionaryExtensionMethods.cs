@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-
 namespace Minio.Tests;
 
 /// <summary>
@@ -23,12 +21,12 @@ namespace Minio.Tests;
 /// </summary>
 public static class DictionaryExtensionMethods
 {
-    public static bool PoliciesEqual<String, PolicyType>(this IDictionary<String, PolicyType> first,
-        IDictionary<String, PolicyType> second)
+    public static bool PoliciesEqual<TString, TPolicyType>(this IDictionary<TString, TPolicyType> first,
+        IDictionary<TString, TPolicyType> second)
     {
         if (first == second) return true;
 
-        if (first == null || second == null) return false;
+        if (first is null || second is null) return false;
 
         if (first.Count != second.Count) return false;
 
