@@ -227,47 +227,17 @@ public partial class MinioClient : IBucketOperations
                     }
                     else
                     {
-                        var goArgs = new GetObjectListArgs()
-                            .WithBucket(args.BucketName)
-                            .WithPrefix(args.Prefix)
-                            .WithDelimiter(delimiter)
-                            .WithVersions(args.Versions)
-                            .WithContinuationToken(nextContinuationToken)
-                            .WithMarker(marker)
-                            .WithListObjectsV1(!args.UseV2)
-                            .WithHeaders(args.Headers)
-                            .WithVersionIdMarker(versionIdMarker)
-                            .WithUserMetadata(args.IncludeUserMetadata);
+                        var objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
+                        if (objectList.Item2.Count == 0 && objectList.Item1.KeyCount.Equals("0") && count == 0)
+                            return;
 
-                        if (args.Versions)
-                        {
-                            var objectList = await GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
-                            var listObjectsItemResponse = new ListObjectVersionResponse(args, objectList, obs);
-                            if (objectList.Item2.Count == 0 && count == 0) return;
-
-                            obs = listObjectsItemResponse.ItemObservable;
-                            marker = listObjectsItemResponse.NextKeyMarker;
-                            versionIdMarker = listObjectsItemResponse.NextVerMarker;
-                            isRunning = objectList.Item1.IsTruncated;
-                        }
-                        else
-                        {
-                            var objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
-                            if (objectList.Item2.Count == 0 && objectList.Item1.KeyCount.Equals("0") && count == 0)
-                                return;
-
-                            var listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);
-                            marker = listObjectsItemResponse.NextMarker;
-                            isRunning = objectList.Item1.IsTruncated;
-                            nextContinuationToken = objectList.Item1.IsTruncated
-                                ? objectList.Item1.NextContinuationToken
-                                : string.Empty;
-                        }
-
-                        cts.Token.ThrowIfCancellationRequested();
-                        count++;
+                        var listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);
+                        marker = listObjectsItemResponse.NextMarker;
+                        isRunning = objectList.Item1.IsTruncated;
+                        nextContinuationToken = objectList.Item1.IsTruncated
+                            ? objectList.Item1.NextContinuationToken
+                            : string.Empty;
                     }
-
                     cts.Token.ThrowIfCancellationRequested();
                     count++;
                 }
