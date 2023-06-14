@@ -27,7 +27,6 @@ using Minio.DataModel.ILM;
 using Minio.DataModel.Notification;
 using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Replication;
-using Minio.DataModel.Response;
 using Minio.DataModel.Result;
 using Minio.DataModel.Tags;
 using Minio.Exceptions;
@@ -228,23 +227,9 @@ public partial class MinioClient : IBucketOperations
                         .WithVersionIdMarker(versionIdMarker);
                     if (args.Versions)
                     {
-                        var goArgs = new GetObjectListArgs()
-                            .WithBucket(args.BucketName)
-                            .WithPrefix(args.Prefix)
-                            .WithDelimiter(delimiter)
-                            .WithVersions(args.Versions)
-                            .WithContinuationToken(nextContinuationToken)
-                            .WithMarker(marker)
-                            .WithListObjectsV1(!args.UseV2)
-                            .WithHeaders(args.Headers)
-                            .WithVersionIdMarker(versionIdMarker)
-                            .WithUserMetadata(args.IncludeUserMetadata);
-
-                        if (args.Versions)
-                        {
-                            var objectList = await GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
-                            var listObjectsItemResponse = new ListObjectVersionResponse(args, objectList, obs);
-                            if (objectList.Item2.Count == 0 && count == 0) return;
+                        var objectList = await GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
+                        var listObjectsItemResponse = new ListObjectVersionResponse(args, objectList, obs);
+                        if (objectList.Item2.Count == 0 && count == 0) return;
 
                         obs = listObjectsItemResponse.ItemObservable;
                         marker = listObjectsItemResponse.NextKeyMarker;
@@ -254,8 +239,7 @@ public partial class MinioClient : IBucketOperations
                     else
                     {
                         var objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
-                        if (objectList.Item2.Count == 0 &&
-                            objectList.Item1.KeyCount.Equals("0", StringComparison.OrdinalIgnoreCase) && count == 0)
+                        if (objectList.Item2.Count == 0 && objectList.Item1.KeyCount.Equals("0") && count == 0)
                             return;
 
                         var listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);
@@ -265,7 +249,6 @@ public partial class MinioClient : IBucketOperations
                             ? objectList.Item1.NextContinuationToken
                             : string.Empty;
                     }
-
                     cts.Token.ThrowIfCancellationRequested();
                     count++;
                 }
