@@ -25,8 +25,6 @@ public sealed class CSVQuoteFields
     public static readonly CSVQuoteFields Always = new("Always");
     public static readonly CSVQuoteFields AsNeeded = new("AsNeeded");
 
-    [XmlText] public string QuoteFields;
-
     public CSVQuoteFields(string value)
     {
         QuoteFields = value;
@@ -35,4 +33,6 @@ public sealed class CSVQuoteFields
     public CSVQuoteFields()
     {
     }
+
+    [XmlText] public string QuoteFields { get; set; }
 }

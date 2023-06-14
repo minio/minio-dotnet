@@ -23,14 +23,14 @@ public sealed class SelectObjectType
     public static readonly SelectObjectType JSON = new("JSON");
     public static readonly SelectObjectType Parquet = new("Parquet");
 
-    public string Type;
-
     public SelectObjectType()
     {
     }
 
-    public SelectObjectType(string value)
+    public SelectObjectType(string type)
     {
-        Type = value;
+        Type = type;
     }
+
+    public string Type { get; set; }
 }

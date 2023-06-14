@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -332,7 +333,7 @@ internal class V4Authenticator
         // Return presigned url.
         var signedUri = new UriBuilder(presignUri) { Query = $"{requestQuery}{headers}&X-Amz-Signature={signature}" };
         if (signedUri.Uri.IsDefaultPort) signedUri.Port = -1;
-        return Convert.ToString(signedUri);
+        return Convert.ToString(signedUri, CultureInfo.InvariantCulture);
     }
 
     /// <summary>
@@ -390,7 +391,7 @@ internal class V4Authenticator
         // METHOD
         canonicalStringList.AddLast(requestBuilder.Method.ToString());
 
-        var queryParamsDict = new Dictionary<string, string>();
+        var queryParamsDict = new Dictionary<string, string>(StringComparer.Ordinal);
         if (requestBuilder.QueryParameters is not null)
             foreach (var kvp in requestBuilder.QueryParameters)
                 queryParamsDict[kvp.Key] = Uri.EscapeDataString(kvp.Value);
@@ -405,7 +406,7 @@ internal class V4Authenticator
             {
                 if (sb1.Length > 0)
                     sb1.Append('&');
-                sb1.AppendFormat("{0}={1}", p, queryParamsDict[p]);
+                sb1.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}", p, queryParamsDict[p]);
             }
 
             queryParams = sb1.ToString();
@@ -556,7 +557,9 @@ internal class V4Authenticator
             ReadOnlySpan<byte> bytes = Encoding.UTF8.GetBytes(requestBuilder.Content.ToString());
 
 #if NETSTANDARD
+#pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
             using var md5 = MD5.Create();
+#pragma warning restore CA5351 // Do Not Use Broken Cryptographic Algorithms
             var hash = md5.ComputeHash(bytes.ToArray());
 #else
             ReadOnlySpan<byte> hash = MD5.HashData(bytes);

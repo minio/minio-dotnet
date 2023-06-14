@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+using System.Globalization;
 using System.Net;
 using System.Text;
 using CommunityToolkit.HighPerformance;
@@ -61,7 +62,7 @@ public abstract class WebIdentityClientGrantsProvider<T> : AssumeRoleBaseProvide
         // Stream receiveStream = response.Content.ReadAsStreamAsync();
         // StreamReader readStream = new StreamReader (receiveStream, Encoding.UTF8);
         // txtBlock.Text = readStream.ReadToEnd();
-        var content = Convert.ToString(response.Content);
+        var content = Convert.ToString(response.Content, CultureInfo.InvariantCulture);
         if (string.IsNullOrWhiteSpace(content) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))
             throw new ArgumentNullException(nameof(response), "Unable to get credentials. Response error.");

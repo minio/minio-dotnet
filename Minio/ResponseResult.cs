@@ -22,7 +22,7 @@ namespace Minio;
 
 public class ResponseResult : IDisposable
 {
-    private readonly Dictionary<string, string> _headers = new();
+    private readonly Dictionary<string, string> _headers = new(StringComparer.Ordinal);
     private string _content;
     private ReadOnlyMemory<byte> _contentBytes;
 
@@ -104,7 +104,7 @@ public class ResponseResult : IDisposable
     {
         get
         {
-            if (Response is null) return new Dictionary<string, string>();
+            if (Response is null) return new Dictionary<string, string>(StringComparer.Ordinal);
 
             if (!_headers.Any())
             {

@@ -34,9 +34,10 @@ internal static class PutObjectWithTags
         {
             Console.WriteLine("Running example for API: PutObjectAsync with Tags");
             var tags = new Dictionary<string, string>
-            {
-                { "Test-TagKey", "Test-TagValue" }
-            };
+                (StringComparer.Ordinal)
+                {
+                    { "Test-TagKey", "Test-TagValue" }
+                };
             var args = new PutObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName)

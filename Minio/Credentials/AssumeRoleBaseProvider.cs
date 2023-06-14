@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+using System.Globalization;
 using System.Net;
 using System.Text;
 using CommunityToolkit.HighPerformance;
@@ -26,8 +27,8 @@ namespace Minio.Credentials;
 public abstract class AssumeRoleBaseProvider<T> : IClientProvider
     where T : AssumeRoleBaseProvider<T>
 {
-    internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers =
-        Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
+    internal readonly IEnumerable<ApiResponseErrorHandler> NoErrorHandlers =
+        Enumerable.Empty<ApiResponseErrorHandler>();
 
     protected AssumeRoleBaseProvider(MinioClient client)
     {
@@ -136,7 +137,7 @@ public abstract class AssumeRoleBaseProvider<T> : IClientProvider
 
     internal virtual AccessCredentials ParseResponse(HttpResponseMessage response)
     {
-        var content = Convert.ToString(response.Content);
+        var content = Convert.ToString(response.Content, CultureInfo.InvariantCulture);
         if (string.IsNullOrEmpty(content) || !HttpStatusCode.OK.Equals(response.StatusCode))
             throw new ArgumentNullException(nameof(response), "Unable to generate credentials. Response error.");
 

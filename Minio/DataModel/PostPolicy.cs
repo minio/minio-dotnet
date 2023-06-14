@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Globalization;
 using System.Text;
 
 namespace Minio.DataModel;
@@ -26,7 +27,7 @@ public class PostPolicy
     ///     Get the populated dictionary of policy data.
     /// </summary>
     /// <returns>Dictionary of policy data</returns>
-    public IDictionary<string, string> FormData { get; } = new Dictionary<string, string>();
+    public IDictionary<string, string> FormData { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
 
     public DateTime Expiration { get; set; }
     public string Key { get; private set; }
@@ -131,7 +132,10 @@ public class PostPolicy
         if (contentLength <= 0) throw new ArgumentException("Negative Content length", nameof(contentLength));
 
         Conditions.Add(new List<(string, string, string)>
-            { ("content-length-range", contentLength.ToString(), contentLength.ToString()) });
+        {
+            ("content-length-range", contentLength.ToString(CultureInfo.InvariantCulture),
+                contentLength.ToString(CultureInfo.InvariantCulture))
+        });
     }
 
     /// <summary>
@@ -147,7 +151,10 @@ public class PostPolicy
             throw new ArgumentException("Start range is greater than end range", nameof(startRange));
 
         Conditions.Add(new List<(string, string, string)>
-            { ("content-length-range", startRange.ToString(), endRange.ToString()) });
+        {
+            ("content-length-range", startRange.ToString(CultureInfo.InvariantCulture),
+                endRange.ToString(CultureInfo.InvariantCulture))
+        });
     }
 
     /// <summary>
@@ -312,8 +319,6 @@ public class PostPolicy
     /// <returns>true if expiration is set</returns>
     public bool IsExpirationSet()
     {
-        if (!string.IsNullOrEmpty(Expiration.ToString())) return true;
-
-        return false;
+        return !string.IsNullOrEmpty(Expiration.ToString(CultureInfo.InvariantCulture));
     }
 }

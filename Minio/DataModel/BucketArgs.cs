@@ -25,7 +25,7 @@ public abstract class BucketArgs<T> : Args
 
     internal string BucketName { get; set; }
 
-    internal IDictionary<string, string> Headers { get; set; } = new Dictionary<string, string>();
+    internal IDictionary<string, string> Headers { get; set; } = new Dictionary<string, string>(StringComparer.Ordinal);
 
     public T WithBucket(string bucket)
     {
@@ -36,7 +36,7 @@ public abstract class BucketArgs<T> : Args
     public virtual T WithHeaders(IDictionary<string, string> headers)
     {
         if (headers is null || headers.Count <= 0) return (T)this;
-        Headers ??= new Dictionary<string, string>();
+        Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var key in headers.Keys)
         {
             Headers.Remove(key);

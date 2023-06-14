@@ -31,9 +31,10 @@ internal static class CopyObjectReplaceTags
         {
             Console.WriteLine("Running example for API: CopyObjectAsync with Tags");
             var tags = new Dictionary<string, string>
-            {
-                { "Test-TagKey", "Test-TagValue" }
-            };
+                (StringComparer.Ordinal)
+                {
+                    { "Test-TagKey", "Test-TagValue" }
+                };
             var tagObj = Tagging.GetObjectTags(tags);
             var cpSrcArgs = new CopySourceObjectArgs()
                 .WithBucket(fromBucketName)

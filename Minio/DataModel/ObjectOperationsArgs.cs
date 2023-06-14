@@ -175,7 +175,7 @@ public class GetMultipartUploadsListArgs : BucketArgs<GetMultipartUploadsListArg
         requestMessageBuilder.AddQueryParameter("delimiter", Delimiter);
         requestMessageBuilder.AddQueryParameter("key-marker", KeyMarker);
         requestMessageBuilder.AddQueryParameter("upload-id-marker", UploadIdMarker);
-        requestMessageBuilder.AddQueryParameter("max-uploads", MAX_UPLOAD_COUNT.ToString());
+        requestMessageBuilder.AddQueryParameter("max-uploads", MAX_UPLOAD_COUNT.ToString(CultureInfo.InvariantCulture));
         return requestMessageBuilder;
     }
 }
@@ -260,7 +260,7 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
 
     private void Populate()
     {
-        Headers ??= new Dictionary<string, string>();
+        Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
         if (SSE?.GetEncryptionType().Equals(EncryptionType.SSE_C) == true) SSE.Marshal(Headers);
         if (OffsetLengthSet)
         {
@@ -324,7 +324,7 @@ public class PresignedPostPolicyArgs : ObjectArgs<PresignedPostPolicyArgs>
             ObjectName = Policy.Key;
         }
 
-        if (string.IsNullOrEmpty(Expiration.ToString()))
+        if (string.IsNullOrEmpty(Expiration.ToString(CultureInfo.InvariantCulture)))
             throw new InvalidOperationException("For the " + nameof(Policy) + " expiration should be set");
     }
 
@@ -536,7 +536,7 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
 
     private void Populate()
     {
-        Headers ??= new Dictionary<string, string>();
+        Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
         if (SSE?.GetEncryptionType().Equals(EncryptionType.SSE_C) == true) SSE.Marshal(Headers);
 
         if (OffsetLengthSet)
@@ -716,7 +716,7 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
 
             deleteObjectsRequest = new XElement("Delete", objects,
                 new XElement("Quiet", true));
-            requestMessageBuilder.AddXmlBody(Convert.ToString(deleteObjectsRequest));
+            requestMessageBuilder.AddXmlBody(Convert.ToString(deleteObjectsRequest, CultureInfo.InvariantCulture));
         }
         else
         {
@@ -727,11 +727,12 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
 
             deleteObjectsRequest = new XElement("Delete", objects,
                 new XElement("Quiet", true));
-            requestMessageBuilder.AddXmlBody(Convert.ToString(deleteObjectsRequest));
+            requestMessageBuilder.AddXmlBody(Convert.ToString(deleteObjectsRequest, CultureInfo.InvariantCulture));
         }
 
         requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(Convert.ToString(deleteObjectsRequest))));
+            Utils.GetMD5SumStr(
+                Encoding.UTF8.GetBytes(Convert.ToString(deleteObjectsRequest, CultureInfo.InvariantCulture))));
 
         return requestMessageBuilder;
     }
@@ -919,7 +920,7 @@ public class CopySourceObjectArgs : ObjectConditionalQueryArgs<CopySourceObjectA
     {
         RequestMethod = HttpMethod.Put;
         CopyOperationConditions = new CopyConditions();
-        Headers = new Dictionary<string, string>();
+        Headers = new Dictionary<string, string>(StringComparer.Ordinal);
     }
 
     internal string CopySourceObjectPath { get; set; }
@@ -942,7 +943,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
     internal CopyObjectRequestArgs()
     {
         RequestMethod = HttpMethod.Put;
-        Headers = new Dictionary<string, string>();
+        Headers = new Dictionary<string, string>(StringComparer.Ordinal);
         CopyOperationObjectType = typeof(CopyObjectResult);
     }
 
@@ -960,14 +961,14 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
 
     internal CopyObjectRequestArgs WithQueryMap(IDictionary<string, string> queryMap)
     {
-        QueryMap = new Dictionary<string, string>(queryMap);
+        QueryMap = new Dictionary<string, string>(queryMap, StringComparer.Ordinal);
         return this;
     }
 
     internal CopyObjectRequestArgs WithPartCondition(CopyConditions partCondition)
     {
         CopyCondition = partCondition.Clone();
-        Headers ??= new Dictionary<string, string>();
+        Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
         Headers["x-amz-copy-source-range"] = "bytes=" + partCondition.byteRangeStart + "-" + partCondition.byteRangeEnd;
 
         return this;
@@ -996,7 +997,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
         SourceObject.ObjectName = cs.ObjectName;
         SourceObject.VersionId = cs.VersionId;
         SourceObject.SSE = cs.SSE;
-        SourceObject.Headers = new Dictionary<string, string>(cs.Headers);
+        SourceObject.Headers = new Dictionary<string, string>(cs.Headers, StringComparer.Ordinal);
         SourceObject.MatchETag = cs.MatchETag;
         SourceObject.ModifiedSince = cs.ModifiedSince;
         SourceObject.NotMatchETag = cs.NotMatchETag;
@@ -1099,9 +1100,9 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
         ObjectName = string.IsNullOrEmpty(ObjectName) ? SourceObject.ObjectName : ObjectName;
         // Opting for concat as Headers may have byte range info .etc.
         if (!ReplaceMetadataDirective && SourceObjectInfo.MetaData is not null)
-            Headers = SourceObjectInfo.MetaData.Concat(Headers).GroupBy(item => item.Key)
-                .ToDictionary(item => item.Key, item => item.First().Value);
-        else if (ReplaceMetadataDirective) Headers ??= new Dictionary<string, string>();
+            Headers = SourceObjectInfo.MetaData.Concat(Headers).GroupBy(item => item.Key, StringComparer.Ordinal)
+                .ToDictionary(item => item.Key, item => item.First().Value, StringComparer.Ordinal);
+        else if (ReplaceMetadataDirective) Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
     }
 }
 
@@ -1155,7 +1156,7 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         if (string.IsNullOrEmpty(ObjectName)) ObjectName = SourceObject.ObjectName;
         if (SSE?.GetEncryptionType().Equals(EncryptionType.SSE_C) == true)
         {
-            Headers = new Dictionary<string, string>();
+            Headers = new Dictionary<string, string>(StringComparer.Ordinal);
             SSE.Marshal(Headers);
         }
 
@@ -1166,7 +1167,7 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
             WithReplaceMetadataDirective(copyReplaceMeta);
         }
 
-        Headers ??= new Dictionary<string, string>();
+        Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
         if (ReplaceMetadataDirective)
         {
             if (Headers is not null)
@@ -1184,9 +1185,9 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
 
             Headers = Headers
                 .Concat(SourceObjectInfo.MetaData)
-                .GroupBy(item => item.Key)
+                .GroupBy(item => item.Key, StringComparer.Ordinal)
                 .ToDictionary(item => item.Key, item =>
-                    item.Last().Value);
+                    item.Last().Value, StringComparer.Ordinal);
         }
 
         if (Headers is not null)
@@ -1269,9 +1270,10 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         SourceObjectInfo = info;
         if (info.MetaData is not null && !ReplaceMetadataDirective)
         {
-            SourceObject.Headers ??= new Dictionary<string, string>();
-            SourceObject.Headers = SourceObject.Headers.Concat(info.MetaData).GroupBy(item => item.Key)
-                .ToDictionary(item => item.Key, item => item.First().Value);
+            SourceObject.Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
+            SourceObject.Headers = SourceObject.Headers.Concat(info.MetaData)
+                .GroupBy(item => item.Key, StringComparer.Ordinal)
+                .ToDictionary(item => item.Key, item => item.First().Value, StringComparer.Ordinal);
         }
 
         return this;
@@ -1434,8 +1436,8 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
         SourceObjectInfo = args.SourceObjectInfo;
         // Header part
         if (!args.ReplaceMetadataDirective)
-            Headers = new Dictionary<string, string>(args.SourceObjectInfo.MetaData);
-        else if (args.ReplaceMetadataDirective) Headers ??= new Dictionary<string, string>();
+            Headers = new Dictionary<string, string>(args.SourceObjectInfo.MetaData, StringComparer.Ordinal);
+        else if (args.ReplaceMetadataDirective) Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
         if (Headers is not null)
         {
             var newKVList = new List<Tuple<string, string>>();
@@ -1553,9 +1555,9 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
     {
         //Concat as Headers may have byte range info .etc.
         if (!ReplaceMetadataDirective && SourceObjectInfo.MetaData?.Count > 0)
-            Headers = SourceObjectInfo.MetaData.Concat(Headers).GroupBy(item => item.Key)
-                .ToDictionary(item => item.Key, item => item.First().Value);
-        else if (ReplaceMetadataDirective) Headers ??= new Dictionary<string, string>();
+            Headers = SourceObjectInfo.MetaData.Concat(Headers).GroupBy(item => item.Key, StringComparer.Ordinal)
+                .ToDictionary(item => item.Key, item => item.First().Value, StringComparer.Ordinal);
+        else if (ReplaceMetadataDirective) Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
         if (Headers is not null)
         {
             var newKVList = new List<Tuple<string, string>>();
@@ -1676,12 +1678,12 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
         RequestMethod = HttpMethod.Post;
         BucketName = args.BucketName;
         ObjectName = args.ObjectName ?? args.SourceObject.ObjectName;
-        Headers = new Dictionary<string, string>();
+        Headers = new Dictionary<string, string>(StringComparer.Ordinal);
         SSE = args.SSE;
         SSE?.Marshal(args.Headers);
         if (args.Headers?.Count > 0)
-            Headers = Headers.Concat(args.Headers).GroupBy(item => item.Key)
-                .ToDictionary(item => item.Key, item => item.First().Value);
+            Headers = Headers.Concat(args.Headers).GroupBy(item => item.Key, StringComparer.Ordinal)
+                .ToDictionary(item => item.Key, item => item.First().Value, StringComparer.Ordinal);
     }
 
     internal string UploadId { get; set; }

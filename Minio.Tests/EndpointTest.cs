@@ -127,13 +127,14 @@ public class EndpointTest
     public void TestIfIPIsValid()
     {
         var testIPDict = new Dictionary<string, bool>
-        {
-            { "192.168.1", false },
-            { "192.168.1.1", true },
-            { "192.168.1.1.1", false },
-            { "-192.168.1.1", false },
-            { "260.192.1.1", false }
-        };
+            (StringComparer.Ordinal)
+            {
+                { "192.168.1", false },
+                { "192.168.1.1", true },
+                { "192.168.1.1.1", false },
+                { "-192.168.1.1", false },
+                { "260.192.1.1", false }
+            };
 
         foreach (var testCase in testIPDict) Assert.AreEqual(S3utils.IsValidIP(testCase.Key), testCase.Value);
     }
@@ -142,19 +143,20 @@ public class EndpointTest
     public void TestIfDomainIsValid()
     {
         var testDomainDict = new Dictionary<string, bool>
-        {
-            { "%$$$", false },
-            { "s3.amazonaws.com", true },
-            { "s3.cn-north-1.amazonaws.com.cn", true },
-            { "s3.amazonaws.com_", false },
-            { "s3.amz.test.com", true },
-            { "s3.%%", false },
-            { "localhost", true },
-            { "-localhost", false },
-            { "", false },
-            { "\n \t", false },
-            { "   ", false }
-        };
+            (StringComparer.Ordinal)
+            {
+                { "%$$$", false },
+                { "s3.amazonaws.com", true },
+                { "s3.cn-north-1.amazonaws.com.cn", true },
+                { "s3.amazonaws.com_", false },
+                { "s3.amz.test.com", true },
+                { "s3.%%", false },
+                { "localhost", true },
+                { "-localhost", false },
+                { "", false },
+                { "\n \t", false },
+                { "   ", false }
+            };
 
         foreach (var testCase in testDomainDict)
             Assert.AreEqual(RequestUtil.IsValidEndpoint(testCase.Key), testCase.Value);
@@ -164,16 +166,17 @@ public class EndpointTest
     public void TestIsAmazonEndpoint()
     {
         var testAmazonDict = new Dictionary<string, bool>
-        {
-            { "192.168.1.1", false },
-            { "storage.googleapis.com", false },
-            { "s3.amazonaws.com", true },
-            { "amazons3.amazonaws.com", false },
-            { "-192.168.1.1", false },
-            { "260.192.1.1", false },
-            { "https://s3.amazonaws.com", false },
-            { "s3.cn-north-1.amazonaws.com.cn", true }
-        };
+            (StringComparer.Ordinal)
+            {
+                { "192.168.1.1", false },
+                { "storage.googleapis.com", false },
+                { "s3.amazonaws.com", true },
+                { "amazons3.amazonaws.com", false },
+                { "-192.168.1.1", false },
+                { "260.192.1.1", false },
+                { "https://s3.amazonaws.com", false },
+                { "s3.cn-north-1.amazonaws.com.cn", true }
+            };
 
         foreach (var testCase in testAmazonDict)
         {
@@ -186,16 +189,17 @@ public class EndpointTest
     public void TestIsAmazonChinaEndpoint()
     {
         var testAmazonDict = new Dictionary<string, bool>
-        {
-            { "192.168.1.1", false },
-            { "storage.googleapis.com", false },
-            { "s3.amazonaws.com", false },
-            { "amazons3.amazonaws.com", false },
-            { "-192.168.1.1", false },
-            { "260.192.1.1", false },
-            { "https://s3.amazonaws.com", false },
-            { "s3.cn-north-1.amazonaws.com.cn", true }
-        };
+            (StringComparer.Ordinal)
+            {
+                { "192.168.1.1", false },
+                { "storage.googleapis.com", false },
+                { "s3.amazonaws.com", false },
+                { "amazons3.amazonaws.com", false },
+                { "-192.168.1.1", false },
+                { "260.192.1.1", false },
+                { "https://s3.amazonaws.com", false },
+                { "s3.cn-north-1.amazonaws.com.cn", true }
+            };
 
         foreach (var testCase in testAmazonDict)
         {

@@ -53,7 +53,7 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     </PropertyGroup>
 
-    <ItemGroup>
+    <ItemGroup Condition=" '$(IsTestProject)' != 'true'">
         <None Include="$(MSBuildThisFileDirectory)\LICENSE" Pack="true" PackagePath="\" />
         <None Include="$(MSBuildThisFileDirectory)\icon.png" Pack="true" PackagePath="\" />
         <None Include="$(MSBuildThisFileDirectory)\readme.md" Pack="true" PackagePath="\" />
@@ -78,7 +78,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.48">
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.60">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>

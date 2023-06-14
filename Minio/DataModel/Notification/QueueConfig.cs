@@ -51,6 +51,6 @@ public class QueueConfig : NotificationConfiguration
 
     public override int GetHashCode()
     {
-        return Queue.GetHashCode();
+        return StringComparer.Ordinal.GetHashCode(Queue);
     }
 }

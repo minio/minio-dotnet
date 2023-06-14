@@ -118,6 +118,6 @@ public interface IMinioClient : IDisposable
     void SetTraceOn(IRequestLogger logger = null);
     Task SetVersioningAsync(SetVersioningArgs args, CancellationToken cancellationToken = default);
     Task<ObjectStat> StatObjectAsync(StatObjectArgs args, CancellationToken cancellationToken = default);
-    Task<HttpResponseMessage> WrapperGetAsync(string url);
-    Task WrapperPutAsync(string url, StreamContent strm);
+    Task<HttpResponseMessage> WrapperGetAsync(Uri uri);
+    Task WrapperPutAsync(Uri uri, StreamContent strm);
 }

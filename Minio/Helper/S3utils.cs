@@ -20,12 +20,13 @@ namespace Minio.Helper;
 
 internal static class S3utils
 {
-    internal static readonly Regex TrimWhitespaceRegex = new("\\s+");
+    internal static readonly Regex TrimWhitespaceRegex = new("\\s+", RegexOptions.None, TimeSpan.FromHours(1));
 
     internal static bool IsAmazonEndPoint(string endpoint)
     {
         if (IsAmazonChinaEndPoint(endpoint)) return true;
-        var rgx = new Regex("^s3[.-]?(.*?)\\.amazonaws\\.com$", RegexOptions.IgnoreCase);
+        var rgx = new Regex("^s3[.-]?(.*?)\\.amazonaws\\.com$", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
+            TimeSpan.FromHours(1));
         var matches = rgx.Matches(endpoint);
         return matches.Count > 0;
     }

@@ -250,7 +250,7 @@ public class SetPolicyArgs : BucketArgs<SetPolicyArgs>
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
         if (string.IsNullOrEmpty(PolicyJsonString))
-            new MinioException("SetPolicyArgs needs the policy to be set to the right JSON contents.");
+            throw new MinioException("SetPolicyArgs needs the policy to be set to the right JSON contents.");
 
         requestMessageBuilder.AddQueryParameter("policy", "");
         requestMessageBuilder.AddJsonBody(PolicyJsonString);
@@ -347,8 +347,8 @@ public class RemoveAllBucketNotificationsArgs : BucketArgs<RemoveAllBucketNotifi
 
 public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotificationsArgs>
 {
-    internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers =
-        Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
+    internal readonly IEnumerable<ApiResponseErrorHandler> NoErrorHandlers =
+        Enumerable.Empty<ApiResponseErrorHandler>();
 
     public ListenBucketNotificationsArgs()
     {
@@ -375,7 +375,7 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
         {
             if (!string.IsNullOrEmpty(eventsAsStr))
                 eventsAsStr += ", ";
-            eventsAsStr += eventType.value;
+            eventsAsStr += eventType.Value;
         }
 
         return string.Join("\n", str, string.Format("Events= [{0}]", eventsAsStr), string.Format("Prefix= {0}", Prefix),
@@ -391,7 +391,7 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
 
     {
-        foreach (var eventType in Events) requestMessageBuilder.AddQueryParameter("events", eventType.value);
+        foreach (var eventType in Events) requestMessageBuilder.AddQueryParameter("events", eventType.Value);
         requestMessageBuilder.AddQueryParameter("prefix", Prefix);
         requestMessageBuilder.AddQueryParameter("suffix", Suffix);
 

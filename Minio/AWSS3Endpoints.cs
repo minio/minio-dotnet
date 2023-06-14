@@ -29,7 +29,7 @@ public sealed class AWSS3Endpoints
 
     private AWSS3Endpoints()
     {
-        endpoints = new ConcurrentDictionary<string, string>();
+        endpoints = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
         // ap-northeast-1
         endpoints.TryAdd("ap-northeast-1", "s3-ap-northeast-1.amazonaws.com");
         // ap-northeast-2

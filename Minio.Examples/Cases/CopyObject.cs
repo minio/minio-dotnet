@@ -33,9 +33,10 @@ internal static class CopyObject
         {
             Console.WriteLine("Running example for API: CopyObjectAsync");
             var metaData = new Dictionary<string, string>
-            {
-                { "Test-Metadata", "Test  Test" }
-            };
+                (StringComparer.Ordinal)
+                {
+                    { "Test-Metadata", "Test  Test" }
+                };
             // Optionally pass copy conditions
             var cpSrcArgs = new CopySourceObjectArgs()
                 .WithBucket(fromBucketName)

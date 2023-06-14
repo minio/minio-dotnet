@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Minio.DataModel.ObjectLock;
@@ -33,10 +34,18 @@ public class ObjectStat
     public DateTime LastModified { get; private set; }
     public string ETag { get; private set; }
     public string ContentType { get; private set; }
+
+    [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
+        Justification = "Needs to be concrete type for XML deserialization")]
     public Dictionary<string, string> MetaData { get; }
+
     public string VersionId { get; private set; }
     public bool DeleteMarker { get; private set; }
+
+    [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
+        Justification = "Needs to be concrete type for XML deserialization")]
     public Dictionary<string, string> ExtraHeaders { get; }
+
     public uint? TaggingCount { get; private set; }
     public string ArchiveStatus { get; private set; }
     public DateTime? Expires { get; private set; }
@@ -61,7 +70,7 @@ public class ObjectStat
             switch (paramName.ToLowerInvariant())
             {
                 case "content-length":
-                    objInfo.Size = long.Parse(paramValue);
+                    objInfo.Size = long.Parse(paramValue, NumberStyles.Number, CultureInfo.InvariantCulture);
                     break;
                 case "last-modified":
                     objInfo.LastModified = DateTime.Parse(paramValue, CultureInfo.InvariantCulture);
@@ -83,7 +92,8 @@ public class ObjectStat
                     objInfo.ArchiveStatus = paramValue;
                     break;
                 case "x-amz-tagging-count":
-                    if (int.TryParse(paramValue, out var tagCount) && tagCount >= 0)
+                    if (int.TryParse(paramValue, NumberStyles.Integer, CultureInfo.InvariantCulture,
+                            out var tagCount) && tagCount >= 0)
                         objInfo.TaggingCount = (uint)tagCount;
                     break;
                 case "x-amz-expiration":
@@ -91,10 +101,11 @@ public class ObjectStat
                     var expirationResponse = paramValue.Trim();
                     var expiryDatePattern =
                         @"(Sun|Mon|Tue|Wed|Thu|Fri|Sat), \d{2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} [A-Z]+";
-                    var expiryMatch = Regex.Match(expirationResponse, expiryDatePattern);
+                    var expiryMatch = Regex.Match(expirationResponse, expiryDatePattern, RegexOptions.None,
+                        TimeSpan.FromHours(1));
                     if (expiryMatch.Success)
                         objInfo.Expires = DateTime.SpecifyKind(
-                            DateTime.Parse(expiryMatch.Value),
+                            DateTime.Parse(expiryMatch.Value, CultureInfo.CurrentCulture),
                             DateTimeKind.Utc);
 
                     break;
@@ -109,7 +120,7 @@ public class ObjectStat
                     var lockUntilDate = paramValue;
                     if (!string.IsNullOrWhiteSpace(lockUntilDate))
                         objInfo.ObjectLockRetainUntilDate = DateTime.SpecifyKind(
-                            DateTime.Parse(lockUntilDate),
+                            DateTime.Parse(lockUntilDate, CultureInfo.CurrentCulture),
                             DateTimeKind.Utc);
 
                     break;

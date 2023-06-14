@@ -35,14 +35,14 @@ public partial class MinioClient : IMinioClient
     /// <summary>
     ///     Default error handling delegate
     /// </summary>
-    private readonly ApiResponseErrorHandlingDelegate _defaultErrorHandlingDelegate = response =>
+    private readonly ApiResponseErrorHandler _defaultErrorHandlingDelegate = response =>
     {
         if (response.StatusCode < HttpStatusCode.OK || response.StatusCode >= HttpStatusCode.BadRequest)
             ParseError(response);
     };
 
-    internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers =
-        Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
+    internal readonly IEnumerable<ApiResponseErrorHandler> NoErrorHandlers =
+        Enumerable.Empty<ApiResponseErrorHandler>();
 
     private string CustomUserAgent = string.Empty;
     private bool disposedValue;
@@ -60,7 +60,7 @@ public partial class MinioClient : IMinioClient
     internal int RequestTimeout;
 
     // Handler for task retry policy
-    internal RetryPolicyHandlingDelegate RetryPolicyHandler;
+    internal RetryPolicyHandler RetryPolicyHandler;
 
     // Enables HTTP tracing if set to true
     private bool trace;
@@ -121,17 +121,17 @@ public partial class MinioClient : IMinioClient
     /// <summary>
     ///     Runs httpClient's GetAsync method
     /// </summary>
-    public Task<HttpResponseMessage> WrapperGetAsync(string url)
+    public Task<HttpResponseMessage> WrapperGetAsync(Uri uri)
     {
-        return HttpClient.GetAsync(url);
+        return HttpClient.GetAsync(uri);
     }
 
     /// <summary>
     ///     Runs httpClient's PutObjectAsync method
     /// </summary>
-    public Task WrapperPutAsync(string url, StreamContent strm)
+    public Task WrapperPutAsync(Uri uri, StreamContent strm)
     {
-        return Task.Run(async () => await HttpClient.PutAsync(url, strm).ConfigureAwait(false));
+        return Task.Run(async () => await HttpClient.PutAsync(uri, strm).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -325,7 +325,7 @@ public partial class MinioClient : IMinioClient
         var resource = string.Empty;
         var usePathStyle = false;
 
-        if (bucketName is not null && S3utils.IsAmazonEndPoint(BaseUrl))
+        if (!string.IsNullOrEmpty(bucketName) && S3utils.IsAmazonEndPoint(BaseUrl))
         {
             if (method == HttpMethod.Put && objectName is null && resourcePath is null)
                 // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
@@ -333,7 +333,7 @@ public partial class MinioClient : IMinioClient
             else if (resourcePath?.Contains("location") == true)
                 // use path style for location query
                 usePathStyle = true;
-            else if (bucketName?.Contains('.') == true && Secure)
+            else if (bucketName.Contains('.') && Secure)
                 // use path style where '.' in bucketName causes SSL certificate validation error
                 usePathStyle = true;
 
@@ -379,7 +379,7 @@ public partial class MinioClient : IMinioClient
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns>ResponseResult</returns>
     internal Task<ResponseResult> ExecuteTaskAsync(
-        IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
+        IEnumerable<ApiResponseErrorHandler> errorHandlers,
         HttpRequestMessageBuilder requestMessageBuilder,
         bool isSts = false,
         CancellationToken cancellationToken = default)
@@ -398,7 +398,7 @@ public partial class MinioClient : IMinioClient
     }
 
     private async Task<ResponseResult> ExecuteTaskCoreAsync(
-        IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
+        IEnumerable<ApiResponseErrorHandler> errorHandlers,
         HttpRequestMessageBuilder requestMessageBuilder,
         bool isSts = false,
         CancellationToken cancellationToken = default)
@@ -610,12 +610,14 @@ public partial class MinioClient : IMinioClient
 
         if (response.StatusCode.Equals(HttpStatusCode.NotImplemented)
             && errResponse.Code.Equals("NotImplemented", StringComparison.OrdinalIgnoreCase))
+#pragma warning disable MA0025 // Implement the functionality instead of throwing NotImplementedException
             throw new NotImplementedException(errResponse.Message);
+#pragma warning restore MA0025 // Implement the functionality instead of throwing NotImplementedException
 
         if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
             && errResponse.Code.Equals("InvalidRequest", StringComparison.OrdinalIgnoreCase))
         {
-            var legalHold = new Dictionary<string, string> { { "legal-hold", "" } };
+            var legalHold = new Dictionary<string, string>(StringComparer.Ordinal) { { "legal-hold", "" } };
             if (response.Request.RequestUri.Query.Contains("legalHold"))
                 throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
         }
@@ -645,7 +647,7 @@ public partial class MinioClient : IMinioClient
     /// <param name="response"></param>
     /// <param name="handlers"></param>
     /// <param name="startTime"></param>
-    private void HandleIfErrorResponse(ResponseResult response, IEnumerable<ApiResponseErrorHandlingDelegate> handlers,
+    private void HandleIfErrorResponse(ResponseResult response, IEnumerable<ApiResponseErrorHandler> handlers,
         DateTime startTime)
     {
         // Logs Response if HTTP tracing is enabled
@@ -681,7 +683,7 @@ public partial class MinioClient : IMinioClient
             {
                 Name = parameter.Key,
                 Value = parameter.Value,
-                Type = parameter.GetType().ToString()
+                Type = typeof(KeyValuePair<string, IEnumerable<string>>).ToString()
             }),
             // ToString() here to have the method as a nice string otherwise it will just show the enum value
             Method = request.Method.ToString(),
@@ -693,7 +695,8 @@ public partial class MinioClient : IMinioClient
         {
             StatusCode = response.StatusCode,
             Content = response.Content,
-            Headers = response.Headers.ToDictionary(o => o.Key, o => string.Join(Environment.NewLine, o.Value)),
+            Headers = response.Headers.ToDictionary(o => o.Key, o => string.Join(Environment.NewLine, o.Value),
+                StringComparer.Ordinal),
             // The Uri that actually responded (could be different from the requestUri if a redirection occurred)
             ResponseUri = response.Request.RequestUri,
             ErrorMessage = response.ErrorMessage,
@@ -723,7 +726,7 @@ public partial class MinioClient : IMinioClient
     }
 }
 
-internal delegate void ApiResponseErrorHandlingDelegate(ResponseResult response);
+internal delegate void ApiResponseErrorHandler(ResponseResult response);
 
-public delegate Task<ResponseResult> RetryPolicyHandlingDelegate(
+public delegate Task<ResponseResult> RetryPolicyHandler(
     Func<Task<ResponseResult>> executeRequestCallback);

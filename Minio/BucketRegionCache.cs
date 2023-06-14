@@ -31,7 +31,7 @@ public sealed class BucketRegionCache
 
     private BucketRegionCache()
     {
-        regionMap = new ConcurrentDictionary<string, string>();
+        regionMap = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
     }
 
     public static BucketRegionCache Instance => lazy.Value;

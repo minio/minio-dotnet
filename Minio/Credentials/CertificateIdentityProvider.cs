@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+using System.Globalization;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -142,14 +143,14 @@ public class CertificateIdentityProvider : IClientProvider
 
     public CertificateIdentityProvider Build()
     {
-        if (string.IsNullOrEmpty(DurationInSeconds.ToString()))
+        if (string.IsNullOrEmpty(DurationInSeconds.ToString(CultureInfo.InvariantCulture)))
             DurationInSeconds = DEFAULT_DURATION_IN_SECONDS;
 
         var builder = new UriBuilder(StsEndpoint);
         var query = HttpUtility.ParseQueryString(builder.Query);
         query["Action"] = "AssumeRoleWithCertificate";
         query["Version"] = "2011-06-15";
-        query["DurationInSeconds"] = DurationInSeconds.ToString();
+        query["DurationInSeconds"] = DurationInSeconds.ToString(CultureInfo.InvariantCulture);
         builder.Query = query.ToString();
         PostEndpoint = builder.ToString();
 
