@@ -4942,8 +4942,9 @@ public static class FunctionalTest
 
             var callbackAsync = async (Stream stream, CancellationToken cancellationToken) =>
             {
-                using var dest = new FileStream(destFileName, FileMode.Create, FileAccess.Write);
+                var dest = new FileStream(destFileName, FileMode.Create, FileAccess.Write);
                 await stream.CopyToAsync(dest, cancellationToken).ConfigureAwait(false);
+                await dest.DisposeAsync();
             };
 
             var getObjectArgs = new GetObjectArgs()
