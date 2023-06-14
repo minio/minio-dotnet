@@ -105,8 +105,17 @@ public static class Program
         var destBucketName = GetRandomName();
         var destObjectName = GetRandomName();
         var lockBucketName = GetRandomName();
+        var progress = new Progress<ProgressReport>(progressReport =>
+        {
+            Console.WriteLine(
+                $"Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
+            if (progressReport.Percentage != 100)
+                Console.SetCursorPosition(0, Console.CursorTop - 1);
+            else Console.WriteLine();
+        });
         var objectsList = new List<string>();
         for (var i = 0; i < 10; i++) objectsList.Add(objectName + i);
+
         // Set app Info 
         minioClient.SetAppInfo("app-name", "app-version");
 
@@ -138,7 +147,7 @@ public static class Program
         ListenBucketNotifications.Run(minioClient, bucketName, new List<EventType> { EventType.ObjectCreatedAll });
 
         // Put an object to the new bucket
-        await PutObject.Run(minioClient, bucketName, objectName, smallFileName).ConfigureAwait(false);
+        await PutObject.Run(minioClient, bucketName, objectName, smallFileName, progress).ConfigureAwait(false);
 
         // Get object metadata
         await StatObject.Run(minioClient, bucketName, objectName).ConfigureAwait(false);
@@ -167,7 +176,7 @@ public static class Program
         await FGetObject.Run(minioClient, bucketName, objectName, smallFileName).ConfigureAwait(false);
 
         // Automatic Multipart Upload with object more than 5Mb
-        await PutObject.Run(minioClient, bucketName, objectName, bigFileName).ConfigureAwait(false);
+        await PutObject.Run(minioClient, bucketName, objectName, bigFileName, progress).ConfigureAwait(false);
 
         // Specify SSE-C encryption options
         using var aesEncryption = Aes.Create();
@@ -187,7 +196,7 @@ public static class Program
 
         // Upload encrypted object
         var putFileName1 = CreateFile(1 * UNIT_MB);
-        await PutObject.Run(minioClient, bucketName, objectName, putFileName1, ssec).ConfigureAwait(false);
+        await PutObject.Run(minioClient, bucketName, objectName, putFileName1, progress, ssec).ConfigureAwait(false);
         // Copy SSE-C encrypted object to unencrypted object
         await CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName, sseCpy, ssec)
             .ConfigureAwait(false);

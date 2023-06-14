@@ -995,7 +995,8 @@ public static class FunctionalTest
     internal static async Task<ObjectStat> PutObject_Tester(MinioClient minio,
         string bucketName, string objectName, string fileName = null,
         string contentType = "application/octet-stream", long size = 0,
-        Dictionary<string, string> metaData = null, Stream mstream = null)
+        Dictionary<string, string> metaData = null, Stream mstream = null,
+        IProgress<ProgressReport> progress = null)
     {
         ObjectStat statObject = null;
         var startTime = DateTime.Now;
@@ -1021,6 +1022,7 @@ public static class FunctionalTest
                 .WithObject(objectName)
                 .WithStreamData(filestream)
                 .WithObjectSize(size)
+                .WithProgress(progress)
                 .WithContentType(contentType)
                 .WithHeaders(metaData);
             await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
@@ -3572,6 +3574,101 @@ public static class FunctionalTest
         {
             new MintLogger(nameof(PutObject_Test8), putObjectSignature,
                 "Tests PutObject where unknown stream sends 0 bytes", TestStatus.FAIL, DateTime.Now - startTime, "",
+                ex.Message, ex.ToString(), args).Log();
+            throw;
+        }
+        finally
+        {
+            await TearDown(minio, bucketName).ConfigureAwait(false);
+        }
+    }
+
+    internal static async Task PutObject_Test9(MinioClient minio)
+    {
+        var startTime = DateTime.Now;
+        var bucketName = GetRandomName(15);
+        var objectName = GetRandomObjectName(10);
+        var contentType = "application/octet-stream";
+        var percentage = 0;
+        var totalBytesTransferred = 0L;
+        var progress = new Progress<ProgressReport>(progressReport =>
+        {
+            percentage = progressReport.Percentage;
+            totalBytesTransferred = progressReport.TotalBytesTransferred;
+        });
+        var args = new Dictionary<string, string>
+        {
+            { "bucketName", bucketName },
+            { "objectName", objectName },
+            { "contentType", contentType },
+            { "size", "1MB" }
+        };
+        try
+        {
+            await Setup_Test(minio, bucketName).ConfigureAwait(false);
+            await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
+                rsg.GenerateStreamFromSeed(1 * MB), progress).ConfigureAwait(false);
+            Assert.IsTrue(percentage == 100);
+            Assert.IsTrue(totalBytesTransferred == 1 * MB);
+            new MintLogger(nameof(PutObject_Test9), putObjectSignature,
+                "Tests whether PutObject with progress passes for small object", TestStatus.PASS,
+                DateTime.Now - startTime,
+                args: args).Log();
+        }
+        catch (Exception ex)
+        {
+            new MintLogger(nameof(PutObject_Test9), putObjectSignature,
+                "Tests whether PutObject with progress passes for small object", TestStatus.FAIL,
+                DateTime.Now - startTime, "",
+                ex.Message, ex.ToString(), args).Log();
+            throw;
+        }
+        finally
+        {
+            await TearDown(minio, bucketName).ConfigureAwait(false);
+        }
+    }
+
+    internal static async Task PutObject_Test10(MinioClient minio)
+    {
+        var startTime = DateTime.Now;
+        var bucketName = GetRandomName(15);
+        var objectName = GetRandomObjectName(10);
+        var contentType = "binary/octet-stream";
+        var percentage = 0;
+        var totalBytesTransferred = 0L;
+        var progress = new Progress<ProgressReport>(progressReport =>
+        {
+            percentage = progressReport.Percentage;
+            totalBytesTransferred = progressReport.TotalBytesTransferred;
+            //Console.WriteLine(
+            //    $"Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
+            //if (progressReport.Percentage != 100)
+            //    Console.SetCursorPosition(0, Console.CursorTop - 1);
+            //else Console.WriteLine();
+        });
+        var args = new Dictionary<string, string>
+        {
+            { "bucketName", bucketName },
+            { "objectName", objectName },
+            { "contentType", contentType },
+            { "size", "64MB" }
+        };
+        try
+        {
+            await Setup_Test(minio, bucketName).ConfigureAwait(false);
+            await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
+                rsg.GenerateStreamFromSeed(64 * MB), progress).ConfigureAwait(false);
+            Assert.IsTrue(percentage == 100);
+            Assert.IsTrue(totalBytesTransferred == 64 * MB);
+            new MintLogger(nameof(PutObject_Test10), putObjectSignature,
+                "Tests whether multipart PutObject with progress passes", TestStatus.PASS, DateTime.Now - startTime,
+                args: args).Log();
+        }
+        catch (Exception ex)
+        {
+            new MintLogger(nameof(PutObject_Test10), putObjectSignature,
+                "Tests whether multipart PutObject with progress passes", TestStatus.FAIL, DateTime.Now - startTime, "",
                 ex.Message, ex.ToString(), args).Log();
             throw;
         }

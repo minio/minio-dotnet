@@ -137,6 +137,8 @@ internal static class Program
         functionalTestTasks.Add(FunctionalTest.PutObject_Test5(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test7(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test8(minioClient));
+        functionalTestTasks.Add(FunctionalTest.PutObject_Test9(minioClient));
+        functionalTestTasks.Add(FunctionalTest.PutObject_Test10(minioClient));
 
         // Test StatObject function
         functionalTestTasks.Add(FunctionalTest.StatObject_Test1(minioClient));

@@ -1842,7 +1842,7 @@ __Parameters__
 
 | Param                 | Type                                 | Description                                                                                                                       |
 |:----------------------|:-------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------|
-| ``args``              | _PutObjectArgs_                      | Arguments object - bucket name, object name, file name, object data stream, object size, content type, object metadata, SSE. etc. |
+| ``args``              | _PutObjectArgs_                      | Arguments object - bucket name, object name, file name, object data stream, object size, content type, object metadata, operation executing progress, SSE. etc. |
 | ``cancellationToken`` | _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken)                                                                        |
 
 
@@ -1872,12 +1872,21 @@ try
     aesEncryption.KeySize = 256;
     aesEncryption.GenerateKey();
     var ssec = new SSEC(aesEncryption.Key);
+    var progress = new Progress<ProgressReport>(progressReport =>
+    {
+        Console.WriteLine(
+                $"Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
+        if (progressReport.Percentage != 100)
+            Console.SetCursorPosition(0, Console.CursorTop - 1);
+        else Console.WriteLine();
+    });
     PutObjectArgs putObjectArgs = new PutObjectArgs()
                                       .WithBucket("mybucket")
                                       .WithObject("island.jpg")
                                       .WithFilename("/mnt/photos/island.jpg")
                                       .WithContentType("application/octet-stream")
-                                      .WithServerSideEncryption(ssec);
+                                      .WithServerSideEncryption(ssec)
+                                      .WithProgress(progress);
     await minio.PutObjectAsync(putObjectArgs);
     Console.WriteLine("island.jpg is uploaded successfully");
 }

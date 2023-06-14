@@ -598,6 +598,7 @@ public partial class MinioClient : IObjectOperations
             .WithContentType(args.ContentType)
             .WithUploadId(uploadId)
             .WithStreamData(args.ObjectStreamData)
+            .WithProgress(args.Progress)
             .WithRequestBody(args.RequestBody)
             .WithHeaders(args.Headers);
         IDictionary<int, string> etags = null;
@@ -819,10 +820,16 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken = default)
     {
         //Skipping validate as we need the case where stream sends 0 bytes
+        var progressReport = new ProgressReport();
+        args.Progress?.Report(progressReport);
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response =
             await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
+
+        progressReport.Percentage = 100;
+        progressReport.TotalBytesTransferred = args.ObjectSize;
+        args.Progress?.Report(progressReport);
         return new PutObjectResponse(response.StatusCode, response.Content, response.Headers,
             args.ObjectSize, args.ObjectName);
     }
@@ -855,6 +862,8 @@ public partial class MinioClient : IObjectOperations
         int partNumber;
         var numPartsUploaded = 0;
         var etags = new Dictionary<int, string>();
+        var progressReport = new ProgressReport();
+        args.Progress?.Report(progressReport);
         for (partNumber = 1; partNumber <= partCount; partNumber++)
         {
             var dataToCopy = await ReadFullAsync(args.ObjectStreamData, (int)partSize).ConfigureAwait(false);
@@ -872,6 +881,9 @@ public partial class MinioClient : IObjectOperations
             totalParts[partNumber - 1] = new Part
                 { PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize };
             etags[partNumber] = etag;
+            if (!dataToCopy.IsEmpty) progressReport.TotalBytesTransferred += dataToCopy.Length;
+            if (args.ObjectSize != -1) progressReport.Percentage = (int)(100 * partNumber / partCount);
+            args.Progress?.Report(progressReport);
         }
 
         // This shouldn't happen where stream size is known.
@@ -883,6 +895,12 @@ public partial class MinioClient : IObjectOperations
                 .WithUploadId(args.UploadId);
             await RemoveUploadAsync(removeUploadArgs, cancellationToken).ConfigureAwait(false);
             return null;
+        }
+
+        if (args.ObjectSize == -1)
+        {
+            progressReport.Percentage = 100;
+            args.Progress?.Report(progressReport);
         }
 
         return etags;
