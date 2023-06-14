@@ -25,6 +25,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using Minio.DataModel;
 using Minio.Exceptions;
 using Minio.Helper;
 #if !NET6_0_OR_GREATER
@@ -242,7 +243,7 @@ public static class Utils
     /// <param name="size"></param>
     /// <param name="copy"> If true, use COPY part size, else use PUT part size</param>
     /// <returns></returns>
-    public static object CalculateMultiPartSize(long size, bool copy = false)
+    public static MultiPartInfo CalculateMultiPartSize(long size, bool copy = false)
     {
         if (size == -1) size = Constants.MaximumStreamObjectSize;
 
@@ -255,11 +256,13 @@ public static class Utils
         partSize = (double)Math.Ceiling((decimal)partSize / minPartSize) * minPartSize;
         var partCount = Math.Ceiling(size / partSize);
         var lastPartSize = size - (partCount - 1) * partSize;
-        dynamic obj = new ExpandoObject();
-        obj.partSize = partSize;
-        obj.partCount = partCount;
-        obj.lastPartSize = lastPartSize;
-        return obj;
+        
+        return  new MultiPartInfo
+        {
+            PartSize = partSize,
+            PartCount = partCount,
+            LastPartSize = lastPartSize
+        };
     }
 
     /// <summary>
