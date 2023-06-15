@@ -19,7 +19,7 @@ using Minio.Exceptions;
 
 namespace Minio;
 
-public partial class MinioClient
+public partial class MinioClient : IMinioClient
 {
     /// <summary>
     ///     private helper method to remove list of objects from bucket
