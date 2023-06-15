@@ -15,12 +15,9 @@
  */
 
 using Minio.DataModel;
+using Minio.DataModel.Args;
 
 namespace Minio.Examples.Cases;
-
-public delegate PostPolicy DefaultPolicy(string bucketName,
-    string objectName,
-    DateTime expiration);
 
 public static class PresignedPostPolicy
 {

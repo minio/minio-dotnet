@@ -21,6 +21,7 @@ using System.Text;
 using System.Xml.Linq;
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
+using Minio.DataModel.Args;
 using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Tags;
 using Minio.Exceptions;

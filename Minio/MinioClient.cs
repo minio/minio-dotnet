@@ -22,6 +22,7 @@ using System.Text;
 using CommunityToolkit.HighPerformance;
 using Minio.Credentials;
 using Minio.DataModel;
+using Minio.DataModel.Args;
 using Minio.DataModel.Tracing;
 using Minio.Exceptions;
 using Minio.Helper;

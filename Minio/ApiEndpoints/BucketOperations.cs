@@ -19,6 +19,7 @@ using System.Net;
 using System.Reactive.Linq;
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
+using Minio.DataModel.Args;
 using Minio.DataModel.ILM;
 using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Replication;

@@ -16,6 +16,7 @@
  */
 
 using Minio.DataModel;
+using Minio.DataModel.Args;
 using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Tags;
 using Minio.Exceptions;
