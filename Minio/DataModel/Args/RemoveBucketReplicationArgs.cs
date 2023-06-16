@@ -14,14 +14,6 @@
  * limitations under the License.
  */
 
-using System.Text;
-using Minio.DataModel;
-using Minio.DataModel.ILM;
-using Minio.DataModel.ObjectLock;
-using Minio.DataModel.Replication;
-using Minio.DataModel.Tags;
-using Minio.Exceptions;
-
 namespace Minio.DataModel.Args;
 
 public class RemoveBucketReplicationArgs : BucketArgs<RemoveBucketReplicationArgs>

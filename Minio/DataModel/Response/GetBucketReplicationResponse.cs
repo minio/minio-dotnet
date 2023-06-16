@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-using System.Globalization;
 using System.Net;
 using System.Text;
-using System.Web;
-using System.Xml.Linq;
 using CommunityToolkit.HighPerformance;
-using Minio.DataModel;
-using Minio.DataModel.ILM;
-using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Replication;
-using Minio.DataModel.Tags;
 using Minio.Helper;
 
 namespace Minio.DataModel.Response;

@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 
-using Minio.Helper;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Net;
+using Minio.Helper;
 
 namespace Minio.Functional.Tests;
 
@@ -40,7 +40,8 @@ internal static class Program
             var posColon = endPoint.LastIndexOf(':');
             if (posColon != -1)
             {
-                port = int.Parse(endPoint.Substring(posColon + 1, endPoint.Length - posColon - 1), NumberStyles.Integer, CultureInfo.InvariantCulture);
+                port = int.Parse(endPoint.Substring(posColon + 1, endPoint.Length - posColon - 1), NumberStyles.Integer,
+                    CultureInfo.InvariantCulture);
                 endPoint = endPoint.Substring(0, posColon);
             }
 

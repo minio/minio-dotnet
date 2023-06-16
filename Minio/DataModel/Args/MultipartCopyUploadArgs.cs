@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
 using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Tags;
 using Minio.Helper;

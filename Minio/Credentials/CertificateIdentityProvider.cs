@@ -20,8 +20,6 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Web;
-using System.Xml;
-using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 using Minio.Exceptions;
@@ -64,7 +62,7 @@ public class CertificateIdentityProvider : IClientProvider
         if (HttpClient is null)
             throw new ArgumentException("HttpClient cannot be null or empty", nameof(HttpClient));
 
-        if (ClientCertificate is null) 
+        if (ClientCertificate is null)
             throw new ArgumentException("ClientCertificate cannot be null or empty", nameof(ClientCertificate));
 
         using var response = await HttpClient.PostAsync(PostEndpoint, null).ConfigureAwait(false);

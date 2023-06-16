@@ -15,7 +15,6 @@
  */
 
 using System.Net;
-using Minio.DataModel;
 using Minio.DataModel.Args;
 
 namespace Minio.DataModel.Response;

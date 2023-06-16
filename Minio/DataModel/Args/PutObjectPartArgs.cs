@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
 using Minio.Helper;
 
 namespace Minio.DataModel.Args;
@@ -30,7 +29,8 @@ internal class PutObjectPartArgs : PutObjectArgs
     {
         base.Validate();
         if (string.IsNullOrWhiteSpace(UploadId))
-            throw new ArgumentNullException(nameof(UploadId) + " not assigned for PutObjectPart operation.", nameof(UploadId));
+            throw new ArgumentNullException(nameof(UploadId) + " not assigned for PutObjectPart operation.",
+                nameof(UploadId));
     }
 
     public new PutObjectPartArgs WithBucket(string bkt)

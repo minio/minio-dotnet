@@ -3601,13 +3601,13 @@ public static class FunctionalTest
             totalBytesTransferred = progressReport.TotalBytesTransferred;
         });
         var args = new Dictionary<string, string>
-(StringComparer.Ordinal)
-        {
-            { "bucketName", bucketName },
-            { "objectName", objectName },
-            { "contentType", contentType },
-            { "size", "1MB" }
-        };
+            (StringComparer.Ordinal)
+            {
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
+                { "size", "1MB" }
+            };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -3653,13 +3653,13 @@ public static class FunctionalTest
             //else Console.WriteLine();
         });
         var args = new Dictionary<string, string>
-(StringComparer.Ordinal)
-        {
-            { "bucketName", bucketName },
-            { "objectName", objectName },
-            { "contentType", contentType },
-            { "size", "64MB" }
-        };
+            (StringComparer.Ordinal)
+            {
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
+                { "size", "64MB" }
+            };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);

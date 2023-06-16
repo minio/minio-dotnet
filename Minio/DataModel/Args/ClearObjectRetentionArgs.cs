@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-using Minio.Helper;
 using System.Globalization;
 using System.Text;
 using System.Xml;
+using Minio.Helper;
 
 namespace Minio.DataModel.Args;
 

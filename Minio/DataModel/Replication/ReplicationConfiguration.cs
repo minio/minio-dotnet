@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-using Minio.Helper;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Xml;
 using System.Xml.Serialization;
+using Minio.Helper;
 
 /*
  * ReplicationConfiguration class used as a container for replication rules. Max number of rules is 100. Size of configuration allowed is 2MB.

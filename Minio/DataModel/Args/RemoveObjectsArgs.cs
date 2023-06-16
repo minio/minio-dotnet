@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-using Minio.Helper;
 using System.Globalization;
 using System.Text;
 using System.Xml.Linq;
+using Minio.Helper;
 
 namespace Minio.DataModel.Args;
 
@@ -53,8 +53,8 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
             throw new ArgumentNullException(nameof(objectsVersionsList));
 
         foreach (var objVersions in objectsVersionsList)
-            foreach (var vid in objVersions.Item2)
-                ObjectNamesVersions.Add(new Tuple<string, string>(objVersions.Item1, vid));
+        foreach (var vid in objVersions.Item2)
+            ObjectNamesVersions.Add(new Tuple<string, string>(objVersions.Item1, vid));
 
         return this;
     }
@@ -80,8 +80,8 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
                                                 "or " +
                                                 nameof(WithObjectsVersions) + " method to set objects to be deleted.");
 
-        if (ObjectNames is null && ObjectNamesVersions is null ||
-            ObjectNames.Count == 0 && ObjectNamesVersions.Count == 0)
+        if ((ObjectNames is null && ObjectNamesVersions is null) ||
+            (ObjectNames.Count == 0 && ObjectNamesVersions.Count == 0))
             throw new InvalidOperationException(
                 "Please assign list of object names or object names and version IDs to remove using method(s) " +
                 nameof(WithObjects) + " " + nameof(WithObjectsVersions));

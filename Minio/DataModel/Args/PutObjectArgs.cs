@@ -14,15 +14,7 @@
  * limitations under the License.
  */
 
-using System.Globalization;
 using System.Security.Cryptography;
-using System.Text;
-using System.Xml;
-using System.Xml.Linq;
-using Minio.DataModel;
-using Minio.DataModel.ObjectLock;
-using Minio.DataModel.Tags;
-using Minio.Exceptions;
 using Minio.Helper;
 
 namespace Minio.DataModel.Args;

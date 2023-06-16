@@ -43,22 +43,22 @@ internal class GetObjectsVersionsListResponse : GenericResponse
         XNamespace ns = Utils.DetermineNamespace(root);
 
         var items = from c in root.Root.Descendants(ns + "Version")
-                    select new Item
-                    {
-                        Key = c.Element(ns + "Key").Value,
-                        LastModified = c.Element(ns + "LastModified").Value,
-                        ETag = c.Element(ns + "ETag").Value,
-                        VersionId = c.Element(ns + "VersionId").Value,
-                        Size = ulong.Parse(c.Element(ns + "Size").Value,
-                            CultureInfo.CurrentCulture),
-                        IsDir = false
-                    };
+            select new Item
+            {
+                Key = c.Element(ns + "Key").Value,
+                LastModified = c.Element(ns + "LastModified").Value,
+                ETag = c.Element(ns + "ETag").Value,
+                VersionId = c.Element(ns + "VersionId").Value,
+                Size = ulong.Parse(c.Element(ns + "Size").Value,
+                    CultureInfo.CurrentCulture),
+                IsDir = false
+            };
         var prefixes = from c in root.Root.Descendants(ns + "CommonPrefixes")
-                       select new Item
-                       {
-                           Key = c.Element(ns + "Prefix").Value,
-                           IsDir = true
-                       };
+            select new Item
+            {
+                Key = c.Element(ns + "Prefix").Value,
+                IsDir = true
+            };
         items = items.Concat(prefixes);
         ObjectsTuple = Tuple.Create(BucketResult, items.ToList());
     }

@@ -76,7 +76,8 @@ public class ReuseTcpConnectionTest
             // sequential execution, produce one tcp connection, check by netstat -an | grep 9000
             await GetObjectLength(bucket, objectName).ConfigureAwait(false);
 
-        await Utils.RunInParallel(Enumerable.Range(0, 500), async (task, _) => await GetObjectLength(bucket, objectName).ConfigureAwait(false), 8)
+        await Utils.RunInParallel(Enumerable.Range(0, 500),
+                async (task, _) => await GetObjectLength(bucket, objectName).ConfigureAwait(false), 8)
             .ConfigureAwait(false);
     }
 

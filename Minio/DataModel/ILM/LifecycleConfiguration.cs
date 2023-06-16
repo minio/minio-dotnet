@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-using Minio.Helper;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Xml;
 using System.Xml.Serialization;
+using Minio.Helper;
 
 /*
  * Object representation of request XML used in these calls - PutBucketLifecycleConfiguration, GetBucketLifecycleConfiguration.

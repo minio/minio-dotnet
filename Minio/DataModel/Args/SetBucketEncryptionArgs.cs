@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-using Minio.Helper;
 using System.Text;
+using Minio.Helper;
 
 namespace Minio.DataModel.Args;
 

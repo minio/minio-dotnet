@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-using Minio.DataModel.Notification;
 using System.Xml;
 using System.Xml.Serialization;
+using Minio.DataModel.Notification;
 
 namespace Minio.DataModel;
 
