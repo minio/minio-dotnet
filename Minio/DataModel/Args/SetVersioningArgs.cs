@@ -20,20 +20,6 @@ using Minio.Helper;
 
 namespace Minio.DataModel.Args;
 
-public class GetVersioningArgs : BucketArgs<GetVersioningArgs>
-{
-    public GetVersioningArgs()
-    {
-        RequestMethod = HttpMethod.Get;
-    }
-
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-    {
-        requestMessageBuilder.AddQueryParameter("versioning", "");
-        return requestMessageBuilder;
-    }
-}
-
 public class SetVersioningArgs : BucketArgs<SetVersioningArgs>
 {
     internal VersioningStatus CurrentVersioningStatus;

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,23 +14,27 @@
  * limitations under the License.
  */
 
-using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
 namespace Minio.DataModel.Notification;
 
-/// <summary>
-///     Helper class to deserialize notifications generated
-///     from MinioNotificaitonRaw by ListenBucketNotifications
-/// </summary>
-[Serializable]
-public class MinioNotification
+[DataContract]
+public class EventMeta
 {
-    public string Err { get; set; }
+    [DataMember]
+    [JsonPropertyName("bucket")]
+    public BucketMeta Bucket { get; set; }
 
-    [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
-        Justification = "Needs to be concrete type for XML deserialization")]
-    public Collection<NotificationEvent> Records { get; set; }
+    [DataMember]
+    [JsonPropertyName("configurationId")]
+    public string ConfigurationId { get; set; }
+
+    [DataMember(Name = "object")]
+    [JsonPropertyName("object")]
+    public ObjectMeta ObjectMeta { get; set; } // C# won't allow the keyword 'object' as a name
+
+    [DataMember]
+    [JsonPropertyName("schemaVersion")]
+    public string SchemaVersion { get; set; }
 }
