@@ -206,7 +206,7 @@ public partial class MinioClient : IMinioClient
     ///     Expected to be called from CreateRequest
     /// </summary>
     /// <param name="args">The child object of Args class</param>
-    private void ArgsCheck(Args args)
+    private void ArgsCheck(RequestArgs args)
     {
         if (args is null)
             throw new ArgumentNullException(nameof(args),

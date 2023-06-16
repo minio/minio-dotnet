@@ -18,10 +18,12 @@
 using Minio.DataModel;
 using Minio.DataModel.Args;
 using Minio.DataModel.ObjectLock;
+using Minio.DataModel.Response;
+using Minio.DataModel.Select;
 using Minio.DataModel.Tags;
 using Minio.Exceptions;
 
-namespace Minio;
+namespace Minio.ApiEndpoints;
 
 public interface IObjectOperations
 {

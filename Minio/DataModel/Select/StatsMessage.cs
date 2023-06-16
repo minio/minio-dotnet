@@ -17,7 +17,7 @@
 using System.Xml.Serialization;
 
 // StatsMessage is a struct for stat xml message.
-namespace Minio.DataModel;
+namespace Minio.DataModel.Select;
 
 [Serializable]
 [XmlRoot(ElementName = "Stats")]

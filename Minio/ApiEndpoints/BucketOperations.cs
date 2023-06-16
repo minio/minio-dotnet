@@ -18,11 +18,15 @@
 using System.Net;
 using System.Reactive.Linq;
 using CommunityToolkit.HighPerformance;
+using Minio.ApiEndpoints;
 using Minio.DataModel;
 using Minio.DataModel.Args;
 using Minio.DataModel.ILM;
+using Minio.DataModel.Notification;
 using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Replication;
+using Minio.DataModel.Response;
+using Minio.DataModel.Result;
 using Minio.DataModel.Tags;
 using Minio.Exceptions;
 using Minio.Helper;

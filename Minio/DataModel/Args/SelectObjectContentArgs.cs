@@ -15,7 +15,8 @@
  */
 
 using System.Text;
-using Minio.DataModel;
+using Minio.DataModel.Select;
+using Minio.Helper;
 
 namespace Minio.DataModel.Args;
 

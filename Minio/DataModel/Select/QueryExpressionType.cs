@@ -16,7 +16,7 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel;
+namespace Minio.DataModel.Select;
 
 [Serializable]
 public sealed class QueryExpressionType

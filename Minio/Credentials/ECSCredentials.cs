@@ -17,6 +17,7 @@
 
 using System.Text.Json.Serialization;
 using Minio.DataModel;
+using Minio.Helper;
 
 namespace Minio.Credentials;
 

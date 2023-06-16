@@ -16,6 +16,7 @@
 //
 
 using Minio.Credentials;
+using Minio.DataModel.Args;
 
 namespace Minio.Examples.Cases;
 

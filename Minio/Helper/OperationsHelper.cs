@@ -16,7 +16,9 @@
 
 using Minio.DataModel;
 using Minio.DataModel.Args;
+using Minio.DataModel.Response;
 using Minio.Exceptions;
+using Minio.Helper;
 
 namespace Minio;
 

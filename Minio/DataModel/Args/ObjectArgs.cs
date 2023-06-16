@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using Minio.Helper;
+
 namespace Minio.DataModel.Args;
 
 public abstract class ObjectArgs<T> : BucketArgs<T>

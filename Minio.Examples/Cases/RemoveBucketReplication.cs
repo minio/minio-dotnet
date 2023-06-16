@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using Minio.DataModel.Args;
+
 namespace Minio.Examples.Cases;
 
 public static class RemoveBucketReplication

@@ -17,6 +17,7 @@
 
 using System.Security.Cryptography.X509Certificates;
 using Minio.Credentials;
+using Minio.DataModel.Args;
 
 namespace Minio.Examples.Cases;
 

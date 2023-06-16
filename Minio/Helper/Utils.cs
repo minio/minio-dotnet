@@ -26,12 +26,11 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Minio.Exceptions;
-using Minio.Helper;
 #if !NET6_0_OR_GREATER
 using System.Collections.Concurrent;
 #endif
 
-namespace Minio;
+namespace Minio.Helper;
 
 public static class Utils
 {

@@ -15,6 +15,7 @@
  */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Minio.DataModel.Args;
 using Minio.Exceptions;
 
 namespace Minio.Tests;

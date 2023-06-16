@@ -16,7 +16,7 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel;
+namespace Minio.DataModel.Notification;
 
 /// <summary>
 ///     TopicConfig carries one single topic notification configuration

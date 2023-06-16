@@ -16,6 +16,7 @@
 
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
+using Minio.DataModel.Args;
 
 namespace Minio.Examples.Cases;
 

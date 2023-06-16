@@ -25,6 +25,7 @@ using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 using Minio.Exceptions;
+using Minio.Helper;
 
 /*
  * Certificate Identity Credential provider.

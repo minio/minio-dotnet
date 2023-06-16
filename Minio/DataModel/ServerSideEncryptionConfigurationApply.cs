@@ -16,7 +16,7 @@
 
 using System.Xml.Serialization;
 
-namespace Minio;
+namespace Minio.DataModel;
 
 [Serializable]
 public class ServerSideEncryptionConfigurationApply

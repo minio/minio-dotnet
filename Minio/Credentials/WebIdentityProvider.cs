@@ -20,6 +20,7 @@ using System.Text;
 using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
+using Minio.Helper;
 
 /*
  * Web Identity Credential provider

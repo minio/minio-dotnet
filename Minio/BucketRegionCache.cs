@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using Minio.Helper;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Xml.Linq;

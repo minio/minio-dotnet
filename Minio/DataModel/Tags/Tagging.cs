@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using Minio.Helper;
 using System.Globalization;
 using System.Xml;
 using System.Xml.Serialization;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
+using Minio.DataModel.Notification;
 
 namespace Minio.DataModel.Args;
 

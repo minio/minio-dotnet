@@ -18,9 +18,8 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Web;
 using Minio.Exceptions;
-using Minio.Helper;
 
-namespace Minio;
+namespace Minio.Helper;
 
 internal static class RequestUtil
 {

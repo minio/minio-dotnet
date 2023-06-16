@@ -27,7 +27,6 @@
 
 	<ItemGroup>
 	  <Folder Include="DataModel\Enums\" />
-	  <Folder Include="DataModel\Response\" />
 	</ItemGroup>
 
 </Project>

@@ -15,8 +15,9 @@
  */
 
 using System.Text;
-using Minio.DataModel;
+using Minio.DataModel.Notification;
 using Minio.Exceptions;
+using Minio.Helper;
 
 namespace Minio.DataModel.Args;
 

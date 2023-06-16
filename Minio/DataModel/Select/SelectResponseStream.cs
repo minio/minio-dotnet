@@ -19,8 +19,9 @@ using System.Text;
 using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
 using Minio.Exceptions;
+using Minio.Helper;
 
-namespace Minio.DataModel;
+namespace Minio.DataModel.Select;
 
 [Serializable]
 public class SelectResponseStream

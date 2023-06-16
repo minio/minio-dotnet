@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel;
+namespace Minio.DataModel.Select;
 
 // JSONOutputOptions - json output specific options
 [Serializable]

@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+using Minio.DataModel;
+using Minio.DataModel.Args;
+
 namespace Minio.Examples.Cases;
 
 public static class SetBucketEncryption

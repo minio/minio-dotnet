@@ -17,7 +17,7 @@
 using System.Globalization;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel;
+namespace Minio.DataModel.Notification;
 
 /// <summary>
 ///     EventType is a S3 notification event associated to the bucket notification configuration

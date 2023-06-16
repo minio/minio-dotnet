@@ -19,6 +19,7 @@ using System.Net;
 using System.Text.Json;
 using Minio.DataModel;
 using Minio.Exceptions;
+using Minio.Helper;
 
 /*
  * IAM roles for Amazon EC2

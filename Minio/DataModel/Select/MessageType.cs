@@ -16,7 +16,7 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel;
+namespace Minio.DataModel.Select;
 
 public sealed class MessageType
 {

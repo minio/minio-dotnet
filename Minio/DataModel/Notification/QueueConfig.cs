@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel;
+namespace Minio.DataModel.Notification;
 
 /// <summary>
 ///     QueueConfig carries one single queue notification configuration

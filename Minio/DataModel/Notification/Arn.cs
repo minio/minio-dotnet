@@ -16,7 +16,7 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel;
+namespace Minio.DataModel.Notification;
 
 /// <summary>
 ///     Arn holds ARN information that will be sent to the web service,

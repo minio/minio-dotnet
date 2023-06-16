@@ -18,6 +18,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Minio.DataModel.ObjectLock;
+using Minio.Helper;
 
 namespace Minio.DataModel;
 

@@ -18,12 +18,14 @@
 using Minio.DataModel;
 using Minio.DataModel.Args;
 using Minio.DataModel.ILM;
+using Minio.DataModel.Notification;
 using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Replication;
+using Minio.DataModel.Result;
 using Minio.DataModel.Tags;
 using Minio.Exceptions;
 
-namespace Minio;
+namespace Minio.ApiEndpoints;
 
 public interface IBucketOperations
 {

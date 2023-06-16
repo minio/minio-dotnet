@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
+using Minio.Helper;
+
 namespace Minio.DataModel.Args;
 
-public abstract class BucketArgs<T> : Args
+public abstract class BucketArgs<T> : RequestArgs
     where T : BucketArgs<T>
 {
     protected const string BucketForceDeleteKey = "X-Minio-Force-Delete";

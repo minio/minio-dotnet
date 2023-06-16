@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
+using Minio.Helper;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel;
+namespace Minio.DataModel.ILM;
 
 [Serializable]
 public abstract class Duration

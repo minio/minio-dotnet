@@ -32,10 +32,14 @@ using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
+using Minio.DataModel.Args;
 using Minio.DataModel.ILM;
+using Minio.DataModel.Notification;
 using Minio.DataModel.ObjectLock;
+using Minio.DataModel.Select;
 using Minio.DataModel.Tags;
 using Minio.Exceptions;
+using Minio.Helper;
 
 namespace Minio.Functional.Tests;
 

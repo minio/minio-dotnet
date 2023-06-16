@@ -16,6 +16,8 @@
 
 using System.Text;
 using Minio.DataModel;
+using Minio.DataModel.Notification;
+using Minio.Helper;
 
 namespace Minio.DataModel.Args;
 

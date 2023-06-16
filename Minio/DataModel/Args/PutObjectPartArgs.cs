@@ -15,6 +15,7 @@
  */
 
 using Minio.DataModel;
+using Minio.Helper;
 
 namespace Minio.DataModel.Args;
 

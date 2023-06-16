@@ -18,7 +18,7 @@ using System.Globalization;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel;
+namespace Minio.DataModel.Select;
 
 [Serializable]
 [XmlRoot(ElementName = "SelectObjectContentRequest")]
