@@ -20,6 +20,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using Minio.DataModel;
+using Minio.DataModel.Encryption;
 using Minio.DataModel.Notification;
 using Minio.DataModel.ObjectLock;
 using Minio.Examples.Cases;
@@ -229,7 +230,7 @@ public static class Program
         // Object Lock Configuration operations
         lockBucketName = GetRandomName();
         await MakeBucketWithLock.Run(minioClient, lockBucketName).ConfigureAwait(false);
-        var configuration = new ObjectLockConfiguration(RetentionMode.GOVERNANCE, 35);
+        var configuration = new ObjectLockConfiguration(ObjectRetentionMode.GOVERNANCE, 35);
         await SetObjectLockConfiguration.Run(minioClient, lockBucketName, configuration).ConfigureAwait(false);
         await GetObjectLockConfiguration.Run(minioClient, lockBucketName).ConfigureAwait(false);
         await RemoveObjectLockConfiguration.Run(minioClient, lockBucketName).ConfigureAwait(false);

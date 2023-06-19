@@ -17,6 +17,7 @@
 using System.Globalization;
 using System.Xml;
 using System.Xml.Serialization;
+using Minio.DataModel.Encryption;
 
 namespace Minio.DataModel.Select;
 

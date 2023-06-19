@@ -23,6 +23,7 @@ using CommunityToolkit.HighPerformance;
 using Minio.ApiEndpoints;
 using Minio.DataModel;
 using Minio.DataModel.Args;
+using Minio.DataModel.Encryption;
 using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Response;
 using Minio.DataModel.Result;

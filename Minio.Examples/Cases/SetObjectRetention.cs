@@ -26,7 +26,7 @@ public static class SetObjectRetention
         string bucketName = "my-bucket-name",
         string objectName = "my-object-name",
         string versionId = null,
-        RetentionMode mode = RetentionMode.GOVERNANCE,
+        ObjectRetentionMode mode = ObjectRetentionMode.GOVERNANCE,
         DateTime retentionValidDate = default)
     {
         if (minio is null) throw new ArgumentNullException(nameof(minio));

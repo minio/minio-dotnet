@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-using Minio.DataModel;
 using Minio.DataModel.Args;
+using Minio.DataModel.Encryption;
 
 namespace Minio.Examples.Cases;
 

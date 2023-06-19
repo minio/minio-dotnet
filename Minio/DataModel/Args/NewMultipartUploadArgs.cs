@@ -27,11 +27,11 @@ internal class NewMultipartUploadArgs<T> : ObjectWriteArgs<T>
         RequestMethod = HttpMethod.Post;
     }
 
-    internal RetentionMode ObjectLockRetentionMode { get; set; }
+    internal ObjectRetentionMode ObjectLockRetentionMode { get; set; }
     internal DateTime RetentionUntilDate { get; set; }
     internal bool ObjectLockSet { get; set; }
 
-    public NewMultipartUploadArgs<T> WithObjectLockMode(RetentionMode mode)
+    public NewMultipartUploadArgs<T> WithObjectLockMode(ObjectRetentionMode mode)
     {
         ObjectLockSet = true;
         ObjectLockRetentionMode = mode;
@@ -56,7 +56,7 @@ internal class NewMultipartUploadArgs<T> : ObjectWriteArgs<T>
                     Utils.To8601String(RetentionUntilDate));
 
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
-                ObjectLockRetentionMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
+                ObjectLockRetentionMode == ObjectRetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
         }
 
         requestMessageBuilder.AddOrUpdateHeaderParameter("content-type", ContentType);

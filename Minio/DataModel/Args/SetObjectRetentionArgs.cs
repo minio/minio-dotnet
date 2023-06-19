@@ -26,11 +26,11 @@ public class SetObjectRetentionArgs : ObjectVersionArgs<SetObjectRetentionArgs>
     {
         RequestMethod = HttpMethod.Put;
         RetentionUntilDate = default;
-        Mode = RetentionMode.GOVERNANCE;
+        Mode = ObjectRetentionMode.GOVERNANCE;
     }
 
     internal bool BypassGovernanceMode { get; set; }
-    internal RetentionMode Mode { get; set; }
+    internal ObjectRetentionMode Mode { get; set; }
     internal DateTime RetentionUntilDate { get; set; }
 
     internal override void Validate()
@@ -51,7 +51,7 @@ public class SetObjectRetentionArgs : ObjectVersionArgs<SetObjectRetentionArgs>
         return this;
     }
 
-    public SetObjectRetentionArgs WithRetentionMode(RetentionMode mode)
+    public SetObjectRetentionArgs WithRetentionMode(ObjectRetentionMode mode)
     {
         Mode = mode;
         return this;

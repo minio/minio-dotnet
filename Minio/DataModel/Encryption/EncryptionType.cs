@@ -1,5 +1,5 @@
-/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2021 MinIO, Inc.
+﻿/*
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2019 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-using Minio.DataModel.Encryption;
+namespace Minio.DataModel.Encryption;
 
-namespace Minio.DataModel.Args;
-
-public abstract class EncryptionArgs<T> : ObjectArgs<T>
-    where T : EncryptionArgs<T>
+// Type of Server-side encryption
+public enum EncryptionType
 {
-    internal IServerSideEncryption SSE { get; set; }
-
-    public T WithServerSideEncryption(IServerSideEncryption sse)
-    {
-        SSE = sse;
-        return (T)this;
-    }
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+    SSE_C,
+    SSE_S3,
+    SSE_KMS
+#pragma warning restore CA1707 // Identifiers should not contain underscores
 }

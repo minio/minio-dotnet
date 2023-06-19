@@ -37,7 +37,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
     internal string StorageClass { get; set; }
     internal Dictionary<string, string> QueryMap { get; set; }
     internal CopyConditions CopyCondition { get; set; }
-    internal RetentionMode ObjectLockRetentionMode { get; set; }
+    internal ObjectRetentionMode ObjectLockRetentionMode { get; set; }
     internal DateTime RetentionUntilDate { get; set; }
     internal bool ObjectLockSet { get; set; }
 
@@ -142,7 +142,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
                     Utils.To8601String(RetentionUntilDate));
 
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
-                ObjectLockRetentionMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
+                ObjectLockRetentionMode == ObjectRetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
         }
 
         if (!RequestBody.IsEmpty) requestMessageBuilder.SetBody(RequestBody);
@@ -155,7 +155,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
         return this;
     }
 
-    public CopyObjectRequestArgs WithObjectLockMode(RetentionMode mode)
+    public CopyObjectRequestArgs WithObjectLockMode(ObjectRetentionMode mode)
     {
         ObjectLockSet = true;
         ObjectLockRetentionMode = mode;

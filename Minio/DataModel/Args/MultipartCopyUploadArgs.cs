@@ -91,7 +91,7 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
     internal bool ReplaceMetadataDirective { get; set; }
     internal bool ReplaceTagsDirective { get; set; }
     internal string StorageClass { get; set; }
-    internal RetentionMode ObjectLockRetentionMode { get; set; }
+    internal ObjectRetentionMode ObjectLockRetentionMode { get; set; }
     internal DateTime RetentionUntilDate { get; set; }
     internal bool ObjectLockSet { get; set; }
 
@@ -127,7 +127,7 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
                     Utils.To8601String(RetentionUntilDate));
 
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
-                ObjectLockRetentionMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
+                ObjectLockRetentionMode == ObjectRetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
         }
 
         return requestMessageBuilder;
@@ -139,7 +139,7 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
         return this;
     }
 
-    internal MultipartCopyUploadArgs WithObjectLockMode(RetentionMode mode)
+    internal MultipartCopyUploadArgs WithObjectLockMode(ObjectRetentionMode mode)
     {
         ObjectLockSet = true;
         ObjectLockRetentionMode = mode;

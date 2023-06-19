@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using Minio.DataModel.Encryption;
 using Minio.Exceptions;
 using Minio.Helper;
 

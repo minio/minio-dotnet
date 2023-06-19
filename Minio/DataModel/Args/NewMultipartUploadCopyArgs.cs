@@ -60,7 +60,7 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
         }
     }
 
-    public new NewMultipartUploadCopyArgs WithObjectLockMode(RetentionMode mode)
+    public new NewMultipartUploadCopyArgs WithObjectLockMode(ObjectRetentionMode mode)
     {
         base.WithObjectLockMode(mode);
         return this;
@@ -144,7 +144,7 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
                     Utils.To8601String(RetentionUntilDate));
 
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
-                ObjectLockRetentionMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
+                ObjectLockRetentionMode == ObjectRetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
         }
 
         return requestMessageBuilder;

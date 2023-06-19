@@ -17,6 +17,7 @@
 
 using Minio.DataModel;
 using Minio.DataModel.Args;
+using Minio.DataModel.Encryption;
 using Minio.DataModel.ILM;
 using Minio.DataModel.Notification;
 using Minio.DataModel.ObjectLock;

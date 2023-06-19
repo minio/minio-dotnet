@@ -15,6 +15,7 @@
  */
 
 using System.Text;
+using Minio.DataModel.Encryption;
 using Minio.Helper;
 
 namespace Minio.DataModel.Args;

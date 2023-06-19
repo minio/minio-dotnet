@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using Minio.DataModel.Encryption;
 using Minio.DataModel.ObjectLock;
 using Minio.Helper;
 
@@ -36,7 +37,7 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
     internal bool ReplaceTagsDirective { get; set; }
     internal bool ReplaceMetadataDirective { get; set; }
     internal string StorageClass { get; set; }
-    internal RetentionMode ObjectLockRetentionMode { get; set; }
+    internal ObjectRetentionMode ObjectLockRetentionMode { get; set; }
     internal DateTime RetentionUntilDate { get; set; }
     internal bool ObjectLockSet { get; set; }
 
@@ -163,7 +164,7 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         return this;
     }
 
-    public CopyObjectArgs WithObjectLockMode(RetentionMode mode)
+    public CopyObjectArgs WithObjectLockMode(ObjectRetentionMode mode)
     {
         ObjectLockSet = true;
         ObjectLockRetentionMode = mode;
@@ -243,7 +244,7 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
                     Utils.To8601String(RetentionUntilDate));
 
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
-                ObjectLockRetentionMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
+                ObjectLockRetentionMode == ObjectRetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
         }
 
         return requestMessageBuilder;

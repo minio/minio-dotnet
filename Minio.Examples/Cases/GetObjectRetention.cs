@@ -39,7 +39,7 @@ public static class GetObjectRetention
                     .WithVersionId(versionId)
             ).ConfigureAwait(false);
             var versionInfo = string.IsNullOrEmpty(versionId) ? "" : " Version ID: " + versionId;
-            var retentionModeStr = config.Mode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE";
+            var retentionModeStr = config.Mode == ObjectRetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE";
             Console.WriteLine($"Retention configuration to object {bucketName}/{objectName} " +
                               versionInfo +
                               " Retention Mode: " + retentionModeStr +

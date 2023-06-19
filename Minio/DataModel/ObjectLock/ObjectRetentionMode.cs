@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,28 +14,10 @@
  * limitations under the License.
  */
 
-using System.Xml.Serialization;
-
 namespace Minio.DataModel.ObjectLock;
 
-[Serializable]
-[XmlRoot(ElementName = "ObjectLockConfiguration", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-public class ObjectLockConfiguration
+public enum ObjectRetentionMode
 {
-    public const string LockEnabled = "Enabled";
-
-    public ObjectLockConfiguration()
-    {
-        ObjectLockEnabled = LockEnabled;
-    }
-
-    public ObjectLockConfiguration(ObjectRetentionMode mode, int numOfDays)
-    {
-        ObjectLockEnabled = LockEnabled;
-        Rule = new ObjectLockRule(mode, numOfDays);
-    }
-
-    [XmlElement("ObjectLockEnabled")] public string ObjectLockEnabled { get; set; }
-
-    [XmlElement("Rule")] public ObjectLockRule Rule { get; set; }
+    GOVERNANCE,
+    COMPLIANCE
 }

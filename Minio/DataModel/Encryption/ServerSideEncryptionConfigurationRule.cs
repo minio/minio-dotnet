@@ -16,7 +16,7 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel;
+namespace Minio.DataModel.Encryption;
 
 [Serializable]
 [XmlRoot(ElementName = "Rule", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]

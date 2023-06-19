@@ -33,6 +33,7 @@ using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
 using Minio.DataModel.Args;
+using Minio.DataModel.Encryption;
 using Minio.DataModel.ILM;
 using Minio.DataModel.Notification;
 using Minio.DataModel.ObjectLock;
@@ -645,7 +646,7 @@ public static class FunctionalTest
                     .WithObject(item.Item1)
                     .WithVersionId(item.Item2);
                 var retentionConfig = await minio.GetObjectRetentionAsync(objectRetentionArgs).ConfigureAwait(false);
-                var bypassGovMode = retentionConfig.Mode == RetentionMode.GOVERNANCE;
+                var bypassGovMode = retentionConfig.Mode == ObjectRetentionMode.GOVERNANCE;
                 var removeObjectArgs = new RemoveObjectArgs()
                     .WithBucket(bucketName)
                     .WithObject(item.Item1)
@@ -2285,7 +2286,7 @@ public static class FunctionalTest
             var objectLockArgs = new SetObjectLockConfigurationArgs()
                 .WithBucket(bucketName)
                 .WithLockConfiguration(
-                    new ObjectLockConfiguration(RetentionMode.GOVERNANCE, 33)
+                    new ObjectLockConfiguration(ObjectRetentionMode.GOVERNANCE, 33)
                 );
             await minio.SetObjectLockConfigurationAsync(objectLockArgs).ConfigureAwait(false);
             new MintLogger(nameof(ObjectLockConfigurationAsync_Test1), setObjectLockConfigurationSignature,
@@ -2437,7 +2438,7 @@ public static class FunctionalTest
             var setRetentionArgs = new SetObjectRetentionArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName)
-                .WithRetentionMode(RetentionMode.GOVERNANCE)
+                .WithRetentionMode(ObjectRetentionMode.GOVERNANCE)
                 .WithRetentionUntilDate(untilDate);
             await minio.SetObjectRetentionAsync(setRetentionArgs).ConfigureAwait(false);
             new MintLogger(nameof(ObjectRetentionAsync_Test1), setObjectRetentionSignature,
@@ -2468,7 +2469,7 @@ public static class FunctionalTest
             var config = await minio.GetObjectRetentionAsync(getRetentionArgs).ConfigureAwait(false);
             var plusDays = 10.0;
             Assert.IsNotNull(config);
-            Assert.AreEqual(config.Mode, RetentionMode.GOVERNANCE);
+            Assert.AreEqual(config.Mode, ObjectRetentionMode.GOVERNANCE);
             var untilDate = DateTime.Parse(config.RetainUntilDate, null, DateTimeStyles.RoundtripKind);
             Assert.AreEqual(Math.Ceiling((untilDate - DateTime.Now).TotalDays), plusDays);
             new MintLogger(nameof(ObjectRetentionAsync_Test1), getObjectRetentionSignature,

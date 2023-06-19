@@ -17,6 +17,7 @@
 using System.Net;
 using System.Text;
 using CommunityToolkit.HighPerformance;
+using Minio.DataModel.Encryption;
 using Minio.Helper;
 
 namespace Minio.DataModel.Response;

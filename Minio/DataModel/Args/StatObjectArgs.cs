@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using Minio.DataModel.Encryption;
+
 namespace Minio.DataModel.Args;
 
 public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
