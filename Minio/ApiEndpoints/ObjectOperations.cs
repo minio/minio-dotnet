@@ -561,8 +561,13 @@ public partial class MinioClient : IObjectOperations
         args?.Validate();
         args.SSE?.Marshal(args.Headers);
 
-        // Upload object in single part if size falls under restricted part size.
-        if (args.ObjectSize < Constants.MinimumPartSize && args.ObjectSize >= 0 && args.ObjectStreamData is not null)
+        var isSnowball = args.Headers.ContainsKey("X-Amz-Meta-Snowball-Auto-Extract") &&
+                         Convert.ToBoolean(args.Headers["X-Amz-Meta-Snowball-Auto-Extract"]);
+
+        // Upload object in single part if size falls under restricted part size
+        // or the request has snowball objects
+        if ((args.ObjectSize < Constants.MinimumPartSize || isSnowball) && args.ObjectSize >= 0 &&
+            args.ObjectStreamData is not null)
         {
             var bytes = await ReadFullAsync(args.ObjectStreamData, (int)args.ObjectSize).ConfigureAwait(false);
             var bytesRead = bytes.Length;
