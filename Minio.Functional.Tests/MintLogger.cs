@@ -20,27 +20,6 @@ using System.Text.Json.Serialization;
 
 namespace Minio.Functional.Tests;
 
-internal enum TestStatus
-{
-    PASS,
-    FAIL,
-    NA
-}
-
-internal static class TestStatusExtender
-{
-    public static string AsText(this TestStatus status)
-    {
-        return status switch
-        {
-            TestStatus.PASS => "PASS",
-            TestStatus.FAIL => "FAIL",
-            TestStatus.NA => "NA",
-            _ => "NA"
-        };
-    }
-}
-
 internal sealed class MintLogger
 {
     private readonly JsonSerializerOptions jsonSerializerOptions = new()
@@ -53,61 +32,61 @@ internal sealed class MintLogger
     public MintLogger(string testName, string function, string description, TestStatus status, TimeSpan duration,
         string alert = null, string message = null, string error = null, IDictionary<string, string> args = null)
     {
-        this.function = function;
-        this.description = description;
-        this.duration = (int)duration.TotalMilliseconds;
-        name = $"{name} : {testName}";
-        this.alert = alert;
-        this.message = message;
-        this.error = error;
-        this.args = args;
-        this.status = status.AsText();
+        this.Function = function;
+        this.Description = description;
+        this.Duration = (int)duration.TotalMilliseconds;
+        Name = $"{Name} : {testName}";
+        this.Alert = alert;
+        this.Message = message;
+        this.Error = error;
+        this.Args = args;
+        this.Status = status.AsText();
     }
 
     /// <summary>
     ///     SDK Name
     /// </summary>
-    public string name { get; } = "minio-dotnet";
+    public string Name { get; } = "minio-dotnet";
 
     /// <summary>
     ///     Test function name
     /// </summary>
-    public string function { get; }
+    public string Function { get; }
 
     /// <summary>
     ///     Test function description
     /// </summary>
-    public string description { get; }
+    public string Description { get; }
 
     /// <summary>
     ///     Key-value pair of args relevant to test
     /// </summary>
-    public IDictionary<string, string> args { get; }
+    public IDictionary<string, string> Args { get; }
 
     /// <summary>
     ///     duration of the whole test
     /// </summary>
-    public int duration { get; }
+    public int Duration { get; }
 
     /// <summary>
     ///     test status : can be PASS, FAIL, NA
     /// </summary>
-    public string status { get; }
+    public string Status { get; }
 
     /// <summary>
     ///     alert message Information like whether this is a Blocker/ Gateway, Server etc can go here
     /// </summary>
-    public string alert { get; }
+    public string Alert { get; }
 
     /// <summary>
     ///     descriptive error message
     /// </summary>
-    public string message { get; }
+    public string Message { get; }
 
     /// <summary>
     ///     actual low level exception/error thrown by the program
     /// </summary>
-    public string error { get; }
+    public string Error { get; }
 
     public void Log()
     {
