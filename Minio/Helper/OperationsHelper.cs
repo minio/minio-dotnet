@@ -22,6 +22,7 @@ using Minio.Helper;
 
 namespace Minio;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0048:File name must match type name", Justification = "Split up in partial classes")]
 public partial class MinioClient : IMinioClient
 {
     /// <summary>

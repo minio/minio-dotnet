@@ -494,7 +494,7 @@ public static class FunctionalTest
             (StringComparer.Ordinal)
             {
                 { "bucketNameSuffix", bucketNameSuffix },
-                { "noOfBuckets", noOfBuckets.ToString() }
+                { "noOfBuckets", noOfBuckets.ToString(CultureInfo.InvariantCulture) }
             };
 
         try
@@ -1966,7 +1966,7 @@ public static class FunctionalTest
                 {
                     { "bucketName", bucketName },
                     { "objectName", objectName },
-                    { "fileSize", size.ToString() }
+                    { "fileSize", size.ToString(CultureInfo.InvariantCulture) }
                 };
             var tags = new Dictionary<string, string>
                 (StringComparer.Ordinal)
@@ -2123,7 +2123,7 @@ public static class FunctionalTest
                 {
                     { "bucketName", bucketName },
                     { "objectName", objectName },
-                    { "fileSize", size.ToString() }
+                    { "fileSize", size.ToString(CultureInfo.InvariantCulture) }
                 };
             try
             {
@@ -2637,7 +2637,7 @@ public static class FunctionalTest
 
             var resp = await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
             // Verify the size of the file from the returned info
-            Assert.AreEqual(expectedFileSize, resp.Size.ToString());
+            Assert.AreEqual(expectedFileSize, resp.Size.ToString(CultureInfo.InvariantCulture));
 
             // HeadObject api test
             var statArgs = new StatObjectArgs()
@@ -2646,7 +2646,7 @@ public static class FunctionalTest
                 .WithHeaders(extractHeader);
             var stat = await minio.StatObjectAsync(statArgs).ConfigureAwait(false);
             // Verify the size of the file from the returned info
-            Assert.AreEqual(expectedFileSize, resp.Size.ToString());
+            Assert.AreEqual(expectedFileSize, resp.Size.ToString(CultureInfo.InvariantCulture));
 
             // ListObject api test with different prefix values
             // prefix value="", expected number of files listed=1
@@ -4908,8 +4908,8 @@ public static class FunctionalTest
                     { "bucketName", bucketName },
                     { "objectName", objectName },
                     { "contentType", contentType },
-                    { "offset", offsetToStartFrom.ToString() },
-                    { "length", lengthToBeRead.ToString() }
+                    { "offset", offsetToStartFrom.ToString(CultureInfo.InvariantCulture) },
+                    { "length", lengthToBeRead.ToString(CultureInfo.InvariantCulture) }
                 };
             try
             {
@@ -5539,7 +5539,7 @@ public static class FunctionalTest
             {
                 { "bucketName", bucketName },
                 { "objectName", objectName },
-                { "expiresInt", expiresInt.ToString() }
+                { "expiresInt", expiresInt.ToString(CultureInfo.InvariantCulture) }
             };
         try
         {
@@ -5601,7 +5601,7 @@ public static class FunctionalTest
             {
                 { "bucketName", bucketName },
                 { "objectName", objectName },
-                { "expiresInt", expiresInt.ToString() }
+                { "expiresInt", expiresInt.ToString(CultureInfo.InvariantCulture) }
             };
         try
         {
@@ -5668,7 +5668,7 @@ public static class FunctionalTest
             {
                 { "bucketName", bucketName },
                 { "objectName", objectName },
-                { "expiresInt", expiresInt.ToString() },
+                { "expiresInt", expiresInt.ToString(CultureInfo.InvariantCulture) },
                 {
                     "reqParams",
                     "response-content-type:application/json,response-content-disposition:attachment;filename=  MyDoc u m  e   nt.json ;"
@@ -5716,7 +5716,7 @@ public static class FunctionalTest
             Assert.IsTrue(response.Content.Headers.GetValues("Content-Disposition")
                 .Contains(reqParams["response-content-disposition"], StringComparer.Ordinal));
             Assert.IsTrue(response.Content.Headers.GetValues("Content-Length")
-                .Contains(stats.Size.ToString(), StringComparer.Ordinal));
+                .Contains(stats.Size.ToString(CultureInfo.InvariantCulture), StringComparer.Ordinal));
 
             using (var fs = new FileStream(downloadFile, FileMode.CreateNew))
             {
@@ -5764,7 +5764,7 @@ public static class FunctionalTest
             {
                 { "bucketName", bucketName },
                 { "objectName", objectName },
-                { "expiresInt", expiresInt.ToString() }
+                { "expiresInt", expiresInt.ToString(CultureInfo.InvariantCulture) }
             };
         try
         {
@@ -5815,7 +5815,7 @@ public static class FunctionalTest
             {
                 { "bucketName", bucketName },
                 { "objectName", objectName },
-                { "expiresInt", expiresInt.ToString() }
+                { "expiresInt", expiresInt.ToString(CultureInfo.InvariantCulture) }
             };
         try
         {
