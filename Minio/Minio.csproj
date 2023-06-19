@@ -12,7 +12,10 @@
 
 	<ItemGroup>
 		<PackageReference Include="System.IO.Hashing" Version="7.0.0" />
-		<PackageReference Include="System.Reactive.Linq" Version="6.0.0" />
+		<PackageReference Include="System.Reactive" Version="6.0.0" />
+		<!--
+		<PackageReference Include="System.Reactive.Async" Version="6.0.0-alpha.18" />
+		-->
 		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.0" />
 	</ItemGroup>
 
