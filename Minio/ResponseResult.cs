@@ -49,7 +49,9 @@ public class ResponseResult : IDisposable
     {
         get
         {
+#pragma warning disable MA0099 // Use Explicit enum value instead of 0
             if (Response is null) return 0;
+#pragma warning restore MA0099 // Use Explicit enum value instead of 0
 
             return Response.StatusCode;
         }

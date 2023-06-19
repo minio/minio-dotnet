@@ -479,8 +479,10 @@ public partial class MinioClient : IMinioClient
             || HttpStatusCode.NotImplemented.Equals(response.StatusCode))
             ParseWellKnownErrorNoContent(response);
 
+#pragma warning disable MA0099 // Use Explicit enum value instead of 0
         if (response.StatusCode == 0)
             throw new ConnectionException("Connection error:" + response.ErrorMessage, response);
+#pragma warning restore MA0099 // Use Explicit enum value instead of 0
         throw new InternalClientException(
             "Unsuccessful response from server without XML:" + response.ErrorMessage, response);
     }
