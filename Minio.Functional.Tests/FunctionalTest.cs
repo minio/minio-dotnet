@@ -6209,7 +6209,7 @@ public static class FunctionalTest
 
         var rule1 = new LifecycleRule(null, "txt", exp, null,
             new RuleFilter(null, "txt/", null),
-            null, null, LifecycleRule.LIFECYCLE_RULE_STATUS_ENABLED
+            null, null, LifecycleRule.LifecycleRuleStatusEnabled
         );
         rules.Add(rule1);
         var lfc = new LifecycleConfiguration(rules);
@@ -6337,7 +6337,7 @@ public static class FunctionalTest
 
         var rule1 = new LifecycleRule(null, "txt", exp, null,
             new RuleFilter(null, "txt/", null),
-            null, null, LifecycleRule.LIFECYCLE_RULE_STATUS_ENABLED
+            null, null, LifecycleRule.LifecycleRuleStatusEnabled
         );
         rules.Add(rule1);
         var lfc = new LifecycleConfiguration(rules);
