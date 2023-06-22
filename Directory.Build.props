@@ -27,6 +27,7 @@
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <AnalysisLevel>latest</AnalysisLevel>
         <AnalysisMode>Default</AnalysisMode>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
         <IsTestProject>$(MSBuildProjectName.Contains('Test'))</IsTestProject>
     </PropertyGroup>
