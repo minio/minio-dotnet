@@ -14,11 +14,12 @@
 * limitations under the License.
 */
 
-namespace Minio.Functional.Tests;
-
-internal enum TestStatus
+namespace Minio.Functional.Tests
 {
-    PASS,
-    FAIL,
-    NA
+    internal enum TestStatus
+    {
+        PASS,
+        FAIL,
+        NA
+    }
 }

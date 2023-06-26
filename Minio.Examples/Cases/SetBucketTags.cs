@@ -17,31 +17,35 @@
 using Minio.DataModel.Args;
 using Minio.DataModel.Tags;
 
-namespace Minio.Examples.Cases;
-
-public static class SetBucketTags
+namespace Minio.Examples.Cases
 {
-    // Set Tags to the bucket
-    public static async Task Run(IMinioClient minio,
-        string bucketName = "my-bucket-name",
-        IDictionary<string, string> tags = null)
+    public static class SetBucketTags
     {
-        if (minio is null) throw new ArgumentNullException(nameof(minio));
+        // Set Tags to the bucket
+        public static async Task Run(IMinioClient minio,
+            string bucketName = "my-bucket-name",
+            IDictionary<string, string> tags = null)
+        {
+            if (minio is null)
+            {
+                throw new ArgumentNullException(nameof(minio));
+            }
 
-        try
-        {
-            Console.WriteLine("Running example for API: SetBucketTags");
-            await minio.SetBucketTagsAsync(
-                new SetBucketTagsArgs()
-                    .WithBucket(bucketName)
-                    .WithTagging(Tagging.GetBucketTags(tags))
-            ).ConfigureAwait(false);
-            Console.WriteLine($"Bucket Tags set for bucket {bucketName}.");
-            Console.WriteLine();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"[Bucket]  Exception: {e}");
+            try
+            {
+                Console.WriteLine("Running example for API: SetBucketTags");
+                await minio.SetBucketTagsAsync(
+                    new SetBucketTagsArgs()
+                        .WithBucket(bucketName)
+                        .WithTagging(Tagging.GetBucketTags(tags))
+                ).ConfigureAwait(false);
+                Console.WriteLine($"Bucket Tags set for bucket {bucketName}.");
+                Console.WriteLine();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Bucket]  Exception: {e}");
+            }
         }
     }
 }

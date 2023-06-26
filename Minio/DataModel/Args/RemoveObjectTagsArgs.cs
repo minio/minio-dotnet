@@ -14,19 +14,24 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args;
-
-public class RemoveObjectTagsArgs : ObjectVersionArgs<RemoveObjectTagsArgs>
+namespace Minio.DataModel.Args
 {
-    public RemoveObjectTagsArgs()
+    public class RemoveObjectTagsArgs : ObjectVersionArgs<RemoveObjectTagsArgs>
     {
-        RequestMethod = HttpMethod.Delete;
-    }
+        public RemoveObjectTagsArgs()
+        {
+            RequestMethod = HttpMethod.Delete;
+        }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-    {
-        requestMessageBuilder.AddQueryParameter("tagging", "");
-        if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", VersionId);
-        return requestMessageBuilder;
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+            requestMessageBuilder.AddQueryParameter("tagging", "");
+            if (!string.IsNullOrEmpty(VersionId))
+            {
+                requestMessageBuilder.AddQueryParameter("versionId", VersionId);
+            }
+
+            return requestMessageBuilder;
+        }
     }
 }

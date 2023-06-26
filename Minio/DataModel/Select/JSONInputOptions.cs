@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Select;
-
-// JSONInputOptions json input specific options
-[Serializable]
-public class JSONInputOptions
+namespace Minio.DataModel.Select
 {
-    public JSONType Type { get; set; }
+    // JSONInputOptions json input specific options
+    [Serializable]
+    public class JSONInputOptions
+    {
+        public JSONType Type { get; set; }
+    }
 }

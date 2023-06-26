@@ -16,47 +16,55 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Notification;
-
-/// <summary>
-///     TopicConfig carries one single topic notification configuration
-/// </summary>
-[Serializable]
-public class TopicConfig : NotificationConfiguration
+namespace Minio.DataModel.Notification
 {
-    public TopicConfig()
-    {
-    }
-
-    public TopicConfig(string arn) : base(arn)
-    {
-        Topic = arn;
-    }
-
-    public TopicConfig(Arn arn) : base(arn)
-    {
-        if (arn is null) throw new ArgumentNullException(nameof(arn));
-
-        Topic = arn.ToString();
-    }
-
-    [XmlElement] public string Topic { get; set; }
-
     /// <summary>
-    ///     Implement equality for this object
+    ///     TopicConfig carries one single topic notification configuration
     /// </summary>
-    /// <param name="obj"></param>
-    /// <returns></returns>
-    public override bool Equals(object obj)
+    [Serializable]
+    public class TopicConfig : NotificationConfiguration
     {
-        var other = (TopicConfig)obj;
-        // If parameter is null return false.
-        if (other is null) return false;
-        return other.Topic.Equals(Topic, StringComparison.OrdinalIgnoreCase);
-    }
+        public TopicConfig()
+        {
+        }
 
-    public override int GetHashCode()
-    {
-        return StringComparer.Ordinal.GetHashCode(Topic);
+        public TopicConfig(string arn) : base(arn)
+        {
+            Topic = arn;
+        }
+
+        public TopicConfig(Arn arn) : base(arn)
+        {
+            if (arn is null)
+            {
+                throw new ArgumentNullException(nameof(arn));
+            }
+
+            Topic = arn.ToString();
+        }
+
+        [XmlElement] public string Topic { get; set; }
+
+        /// <summary>
+        ///     Implement equality for this object
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            var other = (TopicConfig)obj;
+            // If parameter is null return false.
+            if (other is null)
+            {
+                return false;
+            }
+
+            return other.Topic.Equals(Topic, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public override int GetHashCode()
+        {
+            return StringComparer.Ordinal.GetHashCode(Topic);
+        }
     }
 }

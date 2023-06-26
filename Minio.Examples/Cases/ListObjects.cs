@@ -16,33 +16,34 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases;
-
-internal static class ListObjects
+namespace Minio.Examples.Cases
 {
-    // List objects matching optional prefix in a specified bucket.
-    public static void Run(MinioClient minio,
-        string bucketName = "my-bucket-name",
-        string prefix = null,
-        bool recursive = true,
-        bool versions = false)
+    internal static class ListObjects
     {
-        try
+        // List objects matching optional prefix in a specified bucket.
+        public static void Run(MinioClient minio,
+            string bucketName = "my-bucket-name",
+            string prefix = null,
+            bool recursive = true,
+            bool versions = false)
         {
-            Console.WriteLine("Running example for API: ListObjectsAsync");
-            var listArgs = new ListObjectsArgs()
-                .WithBucket(bucketName)
-                .WithPrefix(prefix)
-                .WithRecursive(recursive);
-            var observable = minio.ListObjectsAsync(listArgs);
-            var subscription = observable.Subscribe(
-                item => Console.WriteLine($"Object: {item.Key}"),
-                ex => Console.WriteLine($"OnError: {ex}"),
-                () => Console.WriteLine($"Listed all objects in bucket {bucketName}\n"));
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"[Bucket]  Exception: {e}");
+            try
+            {
+                Console.WriteLine("Running example for API: ListObjectsAsync");
+                var listArgs = new ListObjectsArgs()
+                    .WithBucket(bucketName)
+                    .WithPrefix(prefix)
+                    .WithRecursive(recursive);
+                var observable = minio.ListObjectsAsync(listArgs);
+                var subscription = observable.Subscribe(
+                    item => Console.WriteLine($"Object: {item.Key}"),
+                    ex => Console.WriteLine($"OnError: {ex}"),
+                    () => Console.WriteLine($"Listed all objects in bucket {bucketName}\n"));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Bucket]  Exception: {e}");
+            }
         }
     }
 }

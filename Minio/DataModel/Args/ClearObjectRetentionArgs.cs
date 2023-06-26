@@ -19,41 +19,46 @@ using System.Text;
 using System.Xml;
 using Minio.Helper;
 
-namespace Minio.DataModel.Args;
-
-public class ClearObjectRetentionArgs : ObjectVersionArgs<ClearObjectRetentionArgs>
+namespace Minio.DataModel.Args
 {
-    public ClearObjectRetentionArgs()
+    public class ClearObjectRetentionArgs : ObjectVersionArgs<ClearObjectRetentionArgs>
     {
-        RequestMethod = HttpMethod.Put;
-    }
-
-    public static string EmptyRetentionConfigXML()
-    {
-        using var sw = new StringWriter(CultureInfo.InvariantCulture);
-        var settings = new XmlWriterSettings
+        public ClearObjectRetentionArgs()
         {
-            OmitXmlDeclaration = true,
-            Indent = true
-        };
-        using var xw = XmlWriter.Create(sw, settings);
-        xw.WriteStartElement("Retention");
-        xw.WriteString("");
-        xw.WriteFullEndElement();
-        xw.Flush();
-        return sw.ToString();
-    }
+            RequestMethod = HttpMethod.Put;
+        }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-    {
-        requestMessageBuilder.AddQueryParameter("retention", "");
-        if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", VersionId);
-        // Required for Clear Object Retention.
-        requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-bypass-governance-retention", "true");
-        var body = EmptyRetentionConfigXML();
-        requestMessageBuilder.AddXmlBody(body);
-        requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
-        return requestMessageBuilder;
+        public static string EmptyRetentionConfigXML()
+        {
+            using var sw = new StringWriter(CultureInfo.InvariantCulture);
+            var settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true,
+                Indent = true
+            };
+            using var xw = XmlWriter.Create(sw, settings);
+            xw.WriteStartElement("Retention");
+            xw.WriteString("");
+            xw.WriteFullEndElement();
+            xw.Flush();
+            return sw.ToString();
+        }
+
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+            requestMessageBuilder.AddQueryParameter("retention", "");
+            if (!string.IsNullOrEmpty(VersionId))
+            {
+                requestMessageBuilder.AddQueryParameter("versionId", VersionId);
+            }
+
+            // Required for Clear Object Retention.
+            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-bypass-governance-retention", "true");
+            var body = EmptyRetentionConfigXML();
+            requestMessageBuilder.AddXmlBody(body);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+                Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            return requestMessageBuilder;
+        }
     }
 }

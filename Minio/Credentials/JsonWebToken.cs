@@ -17,17 +17,18 @@
 
 using System.Text.Json.Serialization;
 
-namespace Minio.Credentials;
-
-public class JsonWebToken
+namespace Minio.Credentials
 {
-    public JsonWebToken(string token, uint expiry)
+    public class JsonWebToken
     {
-        AccessToken = token;
-        Expiry = expiry;
+        public JsonWebToken(string token, uint expiry)
+        {
+            AccessToken = token;
+            Expiry = expiry;
+        }
+
+        [JsonPropertyName("access_token")] public string AccessToken { get; set; }
+
+        [JsonPropertyName("expires_in")] public uint Expiry { get; set; }
     }
-
-    [JsonPropertyName("access_token")] public string AccessToken { get; set; }
-
-    [JsonPropertyName("expires_in")] public uint Expiry { get; set; }
 }

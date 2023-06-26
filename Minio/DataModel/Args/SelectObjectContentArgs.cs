@@ -18,75 +18,80 @@ using System.Text;
 using Minio.DataModel.Select;
 using Minio.Helper;
 
-namespace Minio.DataModel.Args;
-
-public class SelectObjectContentArgs : EncryptionArgs<SelectObjectContentArgs>
+namespace Minio.DataModel.Args
 {
-    private readonly SelectObjectOptions SelectOptions;
-
-    public SelectObjectContentArgs()
+    public class SelectObjectContentArgs : EncryptionArgs<SelectObjectContentArgs>
     {
-        RequestMethod = HttpMethod.Post;
-        SelectOptions = new SelectObjectOptions();
-    }
+        private readonly SelectObjectOptions SelectOptions;
 
-    internal override void Validate()
-    {
-        base.Validate();
-        if (string.IsNullOrEmpty(SelectOptions.Expression))
-            throw new InvalidOperationException("The Expression " + nameof(SelectOptions.Expression) +
-                                                " for Select Object Content cannot be empty.");
-
-        if (SelectOptions.InputSerialization is null || SelectOptions.OutputSerialization is null)
-            throw new InvalidOperationException(
-                "The Input/Output serialization members for SelectObjectContentArgs should be initialized " +
-                nameof(SelectOptions.InputSerialization) + " " + nameof(SelectOptions.OutputSerialization));
-    }
-
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-    {
-        requestMessageBuilder.AddQueryParameter("select", "");
-        requestMessageBuilder.AddQueryParameter("select-type", "2");
-
-        if (RequestBody.IsEmpty)
+        public SelectObjectContentArgs()
         {
-            RequestBody = Encoding.UTF8.GetBytes(SelectOptions.MarshalXML());
-            requestMessageBuilder.SetBody(RequestBody);
+            RequestMethod = HttpMethod.Post;
+            SelectOptions = new SelectObjectOptions();
         }
 
-        requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.GetMD5SumStr(RequestBody.Span));
+        internal override void Validate()
+        {
+            base.Validate();
+            if (string.IsNullOrEmpty(SelectOptions.Expression))
+            {
+                throw new InvalidOperationException("The Expression " + nameof(SelectOptions.Expression) +
+                                                    " for Select Object Content cannot be empty.");
+            }
 
-        return requestMessageBuilder;
-    }
+            if (SelectOptions.InputSerialization is null || SelectOptions.OutputSerialization is null)
+            {
+                throw new InvalidOperationException(
+                    "The Input/Output serialization members for SelectObjectContentArgs should be initialized " +
+                    nameof(SelectOptions.InputSerialization) + " " + nameof(SelectOptions.OutputSerialization));
+            }
+        }
 
-    public SelectObjectContentArgs WithExpressionType(QueryExpressionType e)
-    {
-        SelectOptions.ExpressionType = e;
-        return this;
-    }
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+            requestMessageBuilder.AddQueryParameter("select", "");
+            requestMessageBuilder.AddQueryParameter("select-type", "2");
 
-    public SelectObjectContentArgs WithQueryExpression(string expr)
-    {
-        SelectOptions.Expression = expr;
-        return this;
-    }
+            if (RequestBody.IsEmpty)
+            {
+                RequestBody = Encoding.UTF8.GetBytes(SelectOptions.MarshalXML());
+                requestMessageBuilder.SetBody(RequestBody);
+            }
 
-    public SelectObjectContentArgs WithInputSerialization(SelectObjectInputSerialization serialization)
-    {
-        SelectOptions.InputSerialization = serialization;
-        return this;
-    }
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+                Utils.GetMD5SumStr(RequestBody.Span));
 
-    public SelectObjectContentArgs WithOutputSerialization(SelectObjectOutputSerialization serialization)
-    {
-        SelectOptions.OutputSerialization = serialization;
-        return this;
-    }
+            return requestMessageBuilder;
+        }
 
-    public SelectObjectContentArgs WithRequestProgress(RequestProgress requestProgress)
-    {
-        SelectOptions.RequestProgress = requestProgress;
-        return this;
+        public SelectObjectContentArgs WithExpressionType(QueryExpressionType e)
+        {
+            SelectOptions.ExpressionType = e;
+            return this;
+        }
+
+        public SelectObjectContentArgs WithQueryExpression(string expr)
+        {
+            SelectOptions.Expression = expr;
+            return this;
+        }
+
+        public SelectObjectContentArgs WithInputSerialization(SelectObjectInputSerialization serialization)
+        {
+            SelectOptions.InputSerialization = serialization;
+            return this;
+        }
+
+        public SelectObjectContentArgs WithOutputSerialization(SelectObjectOutputSerialization serialization)
+        {
+            SelectOptions.OutputSerialization = serialization;
+            return this;
+        }
+
+        public SelectObjectContentArgs WithRequestProgress(RequestProgress requestProgress)
+        {
+            SelectOptions.RequestProgress = requestProgress;
+            return this;
+        }
     }
 }

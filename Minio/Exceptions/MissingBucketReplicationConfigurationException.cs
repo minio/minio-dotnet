@@ -14,42 +14,44 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions;
-
-[Serializable]
-public class MissingBucketReplicationConfigurationException : MinioException
+namespace Minio.Exceptions
 {
-    private readonly string bucketName;
-
-    public MissingBucketReplicationConfigurationException(string bucketName, string message) : base(message)
+    [Serializable]
+    public class MissingBucketReplicationConfigurationException : MinioException
     {
-        this.bucketName = bucketName;
-    }
+        private readonly string bucketName;
 
-    public MissingBucketReplicationConfigurationException(ResponseResult serverResponse) : base(serverResponse)
-    {
-    }
+        public MissingBucketReplicationConfigurationException(string bucketName, string message) : base(message)
+        {
+            this.bucketName = bucketName;
+        }
 
-    public MissingBucketReplicationConfigurationException(string message) : base(message)
-    {
-    }
+        public MissingBucketReplicationConfigurationException(ResponseResult serverResponse) : base(serverResponse)
+        {
+        }
 
-    public MissingBucketReplicationConfigurationException(string message, ResponseResult serverResponse) : base(message,
-        serverResponse)
-    {
-    }
+        public MissingBucketReplicationConfigurationException(string message) : base(message)
+        {
+        }
 
-    public MissingBucketReplicationConfigurationException()
-    {
-    }
+        public MissingBucketReplicationConfigurationException(string message, ResponseResult serverResponse) : base(
+            message,
+            serverResponse)
+        {
+        }
 
-    public MissingBucketReplicationConfigurationException(string message, Exception innerException) : base(message,
-        innerException)
-    {
-    }
+        public MissingBucketReplicationConfigurationException()
+        {
+        }
 
-    public override string ToString()
-    {
-        return $"{bucketName}: {base.ToString()}";
+        public MissingBucketReplicationConfigurationException(string message, Exception innerException) : base(message,
+            innerException)
+        {
+        }
+
+        public override string ToString()
+        {
+            return $"{bucketName}: {base.ToString()}";
+        }
     }
 }

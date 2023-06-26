@@ -20,19 +20,22 @@ using CommunityToolkit.HighPerformance;
 using Minio.DataModel.Result;
 using Minio.Helper;
 
-namespace Minio.DataModel.Response;
-
-internal class ListBucketsResponse : GenericResponse
+namespace Minio.DataModel.Response
 {
-    internal ListAllMyBucketsResult BucketsResult;
-
-    internal ListBucketsResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
+    internal class ListBucketsResponse : GenericResponse
     {
-        if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
-            return;
+        internal ListAllMyBucketsResult BucketsResult;
 
-        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-        BucketsResult = Utils.DeserializeXml<ListAllMyBucketsResult>(stream);
+        internal ListBucketsResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
+            {
+                return;
+            }
+
+            using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+            BucketsResult = Utils.DeserializeXml<ListAllMyBucketsResult>(stream);
+        }
     }
 }

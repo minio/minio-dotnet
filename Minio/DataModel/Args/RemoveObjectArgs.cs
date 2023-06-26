@@ -14,41 +14,44 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args;
-
-public class RemoveObjectArgs : ObjectArgs<RemoveObjectArgs>
+namespace Minio.DataModel.Args
 {
-    public RemoveObjectArgs()
+    public class RemoveObjectArgs : ObjectArgs<RemoveObjectArgs>
     {
-        RequestMethod = HttpMethod.Delete;
-        BypassGovernanceMode = null;
-    }
-
-    internal string VersionId { get; private set; }
-    internal bool? BypassGovernanceMode { get; private set; }
-
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-    {
-        if (!string.IsNullOrEmpty(VersionId))
+        public RemoveObjectArgs()
         {
-            requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
-            if (BypassGovernanceMode == true)
-                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-bypass-governance-retention",
-                    BypassGovernanceMode.Value.ToString());
+            RequestMethod = HttpMethod.Delete;
+            BypassGovernanceMode = null;
         }
 
-        return requestMessageBuilder;
-    }
+        internal string VersionId { get; private set; }
+        internal bool? BypassGovernanceMode { get; private set; }
 
-    public RemoveObjectArgs WithVersionId(string ver)
-    {
-        VersionId = ver;
-        return this;
-    }
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+            if (!string.IsNullOrEmpty(VersionId))
+            {
+                requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
+                if (BypassGovernanceMode == true)
+                {
+                    requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-bypass-governance-retention",
+                        BypassGovernanceMode.Value.ToString());
+                }
+            }
 
-    public RemoveObjectArgs WithBypassGovernanceMode(bool? mode)
-    {
-        BypassGovernanceMode = mode;
-        return this;
+            return requestMessageBuilder;
+        }
+
+        public RemoveObjectArgs WithVersionId(string ver)
+        {
+            VersionId = ver;
+            return this;
+        }
+
+        public RemoveObjectArgs WithBypassGovernanceMode(bool? mode)
+        {
+            BypassGovernanceMode = mode;
+            return this;
+        }
     }
 }

@@ -18,62 +18,74 @@ using System.Text;
 using Minio.DataModel.ObjectLock;
 using Minio.Helper;
 
-namespace Minio.DataModel.Args;
-
-public class SetObjectRetentionArgs : ObjectVersionArgs<SetObjectRetentionArgs>
+namespace Minio.DataModel.Args
 {
-    public SetObjectRetentionArgs()
+    public class SetObjectRetentionArgs : ObjectVersionArgs<SetObjectRetentionArgs>
     {
-        RequestMethod = HttpMethod.Put;
-        RetentionUntilDate = default;
-        Mode = ObjectRetentionMode.GOVERNANCE;
-    }
+        public SetObjectRetentionArgs()
+        {
+            RequestMethod = HttpMethod.Put;
+            RetentionUntilDate = default;
+            Mode = ObjectRetentionMode.GOVERNANCE;
+        }
 
-    internal bool BypassGovernanceMode { get; set; }
-    internal ObjectRetentionMode Mode { get; set; }
-    internal DateTime RetentionUntilDate { get; set; }
+        internal bool BypassGovernanceMode { get; set; }
+        internal ObjectRetentionMode Mode { get; set; }
+        internal DateTime RetentionUntilDate { get; set; }
 
-    internal override void Validate()
-    {
-        base.Validate();
-        if (RetentionUntilDate.Equals(default))
-            throw new InvalidOperationException("Retention Period is not set. Please set using " +
-                                                nameof(WithRetentionUntilDate) + ".");
+        internal override void Validate()
+        {
+            base.Validate();
+            if (RetentionUntilDate.Equals(default))
+            {
+                throw new InvalidOperationException("Retention Period is not set. Please set using " +
+                                                    nameof(WithRetentionUntilDate) + ".");
+            }
 
-        if (DateTime.Compare(RetentionUntilDate, DateTime.Now) <= 0)
-            throw new InvalidOperationException("Retention until date set using " + nameof(WithRetentionUntilDate) +
-                                                " needs to be in the future.");
-    }
+            if (DateTime.Compare(RetentionUntilDate, DateTime.Now) <= 0)
+            {
+                throw new InvalidOperationException("Retention until date set using " + nameof(WithRetentionUntilDate) +
+                                                    " needs to be in the future.");
+            }
+        }
 
-    public SetObjectRetentionArgs WithBypassGovernanceMode(bool bypass = true)
-    {
-        BypassGovernanceMode = bypass;
-        return this;
-    }
+        public SetObjectRetentionArgs WithBypassGovernanceMode(bool bypass = true)
+        {
+            BypassGovernanceMode = bypass;
+            return this;
+        }
 
-    public SetObjectRetentionArgs WithRetentionMode(ObjectRetentionMode mode)
-    {
-        Mode = mode;
-        return this;
-    }
+        public SetObjectRetentionArgs WithRetentionMode(ObjectRetentionMode mode)
+        {
+            Mode = mode;
+            return this;
+        }
 
-    public SetObjectRetentionArgs WithRetentionUntilDate(DateTime date)
-    {
-        RetentionUntilDate = date;
-        return this;
-    }
+        public SetObjectRetentionArgs WithRetentionUntilDate(DateTime date)
+        {
+            RetentionUntilDate = date;
+            return this;
+        }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-    {
-        requestMessageBuilder.AddQueryParameter("retention", "");
-        if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", VersionId);
-        if (BypassGovernanceMode)
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-bypass-governance-retention", "true");
-        var config = new ObjectRetentionConfiguration(RetentionUntilDate, Mode);
-        var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
-        requestMessageBuilder.AddXmlBody(body);
-        requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
-        return requestMessageBuilder;
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+            requestMessageBuilder.AddQueryParameter("retention", "");
+            if (!string.IsNullOrEmpty(VersionId))
+            {
+                requestMessageBuilder.AddQueryParameter("versionId", VersionId);
+            }
+
+            if (BypassGovernanceMode)
+            {
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-bypass-governance-retention", "true");
+            }
+
+            var config = new ObjectRetentionConfiguration(RetentionUntilDate, Mode);
+            var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+            requestMessageBuilder.AddXmlBody(body);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+                Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            return requestMessageBuilder;
+        }
     }
 }

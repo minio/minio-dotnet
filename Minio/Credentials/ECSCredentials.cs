@@ -19,29 +19,30 @@ using System.Text.Json.Serialization;
 using Minio.DataModel;
 using Minio.Helper;
 
-namespace Minio.Credentials;
-
-public class ECSCredentials
+namespace Minio.Credentials
 {
-    [JsonPropertyName("AccessKeyId")] public string AccessKeyId { get; set; }
-
-    [JsonPropertyName("SecretAccessKey")] public string SecretAccessKey { get; set; }
-
-    [JsonPropertyName("Token")] public string SessionToken { get; set; }
-
-    [JsonPropertyName("Expiration")] public string ExpirationDate { get; set; }
-
-    [JsonPropertyName("Code")] public string Code { get; set; }
-
-    [JsonPropertyName("Message")] public string Message { get; set; }
-
-    [JsonPropertyName("Type")] public string Type { get; set; }
-
-    [JsonPropertyName("LastUpdated")] public string LastUpdated { get; set; }
-
-    public AccessCredentials GetAccessCredentials()
+    public class ECSCredentials
     {
-        return new AccessCredentials(AccessKeyId, SecretAccessKey, SessionToken,
-            Utils.From8601String(ExpirationDate));
+        [JsonPropertyName("AccessKeyId")] public string AccessKeyId { get; set; }
+
+        [JsonPropertyName("SecretAccessKey")] public string SecretAccessKey { get; set; }
+
+        [JsonPropertyName("Token")] public string SessionToken { get; set; }
+
+        [JsonPropertyName("Expiration")] public string ExpirationDate { get; set; }
+
+        [JsonPropertyName("Code")] public string Code { get; set; }
+
+        [JsonPropertyName("Message")] public string Message { get; set; }
+
+        [JsonPropertyName("Type")] public string Type { get; set; }
+
+        [JsonPropertyName("LastUpdated")] public string LastUpdated { get; set; }
+
+        public AccessCredentials GetAccessCredentials()
+        {
+            return new AccessCredentials(AccessKeyId, SecretAccessKey, SessionToken,
+                Utils.From8601String(ExpirationDate));
+        }
     }
 }

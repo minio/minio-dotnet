@@ -14,40 +14,41 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions;
-
-[Serializable]
-public class VersionDeletedException : MinioException
+namespace Minio.Exceptions
 {
-    private readonly string versionId;
-
-    public VersionDeletedException(string vid, string message) : base(message)
+    [Serializable]
+    public class VersionDeletedException : MinioException
     {
-        versionId = vid;
-    }
+        private readonly string versionId;
 
-    public VersionDeletedException(ResponseResult serverResponse) : base(serverResponse)
-    {
-    }
+        public VersionDeletedException(string vid, string message) : base(message)
+        {
+            versionId = vid;
+        }
 
-    public VersionDeletedException(string message) : base(message)
-    {
-    }
+        public VersionDeletedException(ResponseResult serverResponse) : base(serverResponse)
+        {
+        }
 
-    public VersionDeletedException(string message, ResponseResult serverResponse) : base(message, serverResponse)
-    {
-    }
+        public VersionDeletedException(string message) : base(message)
+        {
+        }
 
-    public VersionDeletedException()
-    {
-    }
+        public VersionDeletedException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+        {
+        }
 
-    public VersionDeletedException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
+        public VersionDeletedException()
+        {
+        }
 
-    public override string ToString()
-    {
-        return $"{versionId}: {base.ToString()}";
+        public VersionDeletedException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        public override string ToString()
+        {
+            return $"{versionId}: {base.ToString()}";
+        }
     }
 }

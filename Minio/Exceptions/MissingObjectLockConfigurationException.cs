@@ -14,42 +14,43 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions;
-
-[Serializable]
-public class MissingObjectLockConfigurationException : MinioException
+namespace Minio.Exceptions
 {
-    private readonly string bucketName;
-
-    public MissingObjectLockConfigurationException(string bucketName, string message) : base(message)
+    [Serializable]
+    public class MissingObjectLockConfigurationException : MinioException
     {
-        this.bucketName = bucketName;
-    }
+        private readonly string bucketName;
 
-    public MissingObjectLockConfigurationException(ResponseResult serverResponse) : base(serverResponse)
-    {
-    }
+        public MissingObjectLockConfigurationException(string bucketName, string message) : base(message)
+        {
+            this.bucketName = bucketName;
+        }
 
-    public MissingObjectLockConfigurationException(string message) : base(message)
-    {
-    }
+        public MissingObjectLockConfigurationException(ResponseResult serverResponse) : base(serverResponse)
+        {
+        }
 
-    public MissingObjectLockConfigurationException(string message, ResponseResult serverResponse) : base(message,
-        serverResponse)
-    {
-    }
+        public MissingObjectLockConfigurationException(string message) : base(message)
+        {
+        }
 
-    public MissingObjectLockConfigurationException()
-    {
-    }
+        public MissingObjectLockConfigurationException(string message, ResponseResult serverResponse) : base(message,
+            serverResponse)
+        {
+        }
 
-    public MissingObjectLockConfigurationException(string message, Exception innerException) : base(message,
-        innerException)
-    {
-    }
+        public MissingObjectLockConfigurationException()
+        {
+        }
 
-    public override string ToString()
-    {
-        return $"{bucketName}: {base.ToString()}";
+        public MissingObjectLockConfigurationException(string message, Exception innerException) : base(message,
+            innerException)
+        {
+        }
+
+        public override string ToString()
+        {
+            return $"{bucketName}: {base.ToString()}";
+        }
     }
 }

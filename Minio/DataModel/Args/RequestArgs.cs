@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args;
-
-public abstract class RequestArgs
-
+namespace Minio.DataModel.Args
 {
-    // RequestMethod will be the HTTP Method for request variable,
-    // which is of type HttpRequestMessage.
-    // Will be one of the types: - HEAD, GET, PUT, DELETE. etc.
-    internal HttpMethod RequestMethod { get; set; }
+    public abstract class RequestArgs
 
-    internal virtual HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        return requestMessageBuilder;
+        // RequestMethod will be the HTTP Method for request variable,
+        // which is of type HttpRequestMessage.
+        // Will be one of the types: - HEAD, GET, PUT, DELETE. etc.
+        internal HttpMethod RequestMethod { get; set; }
+
+        internal virtual HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+            return requestMessageBuilder;
+        }
     }
 }

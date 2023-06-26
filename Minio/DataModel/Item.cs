@@ -16,42 +16,51 @@
 
 using System.Globalization;
 
-namespace Minio.DataModel;
-
-[Serializable]
-public class Item
+namespace Minio.DataModel
 {
-    private string etag;
-
-    public string Key { get; set; }
-    public string LastModified { get; set; }
-
-    public string ETag
+    [Serializable]
+    public class Item
     {
-        get => etag;
-        set
+        private string etag;
+
+        public string Key { get; set; }
+        public string LastModified { get; set; }
+
+        public string ETag
         {
-            if (value is not null)
-                etag = value.Replace("\"", string.Empty);
-            else
-                etag = null;
+            get => etag;
+            set
+            {
+                if (value is not null)
+                {
+                    etag = value.Replace("\"", string.Empty);
+                }
+                else
+                {
+                    etag = null;
+                }
+            }
         }
-    }
 
-    public ulong Size { get; set; }
+        public ulong Size { get; set; }
 
-    public bool IsDir { get; set; }
+        public bool IsDir { get; set; }
 
-    public string VersionId { get; set; }
-    public bool IsLatest { get; set; }
+        public string VersionId { get; set; }
+        public bool IsLatest { get; set; }
 
-    public DateTime? LastModifiedDateTime
-    {
-        get
+        public DateTime? LastModifiedDateTime
         {
-            DateTime? dt = null;
-            if (!string.IsNullOrEmpty(LastModified)) dt = DateTime.Parse(LastModified, CultureInfo.InvariantCulture);
-            return dt;
+            get
+            {
+                DateTime? dt = null;
+                if (!string.IsNullOrEmpty(LastModified))
+                {
+                    dt = DateTime.Parse(LastModified, CultureInfo.InvariantCulture);
+                }
+
+                return dt;
+            }
         }
     }
 }

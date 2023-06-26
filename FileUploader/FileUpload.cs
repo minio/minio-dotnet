@@ -19,93 +19,100 @@ using System.Runtime.InteropServices;
 using Minio;
 using Minio.DataModel.Args;
 
-namespace FileUploader;
-
-/// <summary>
-///     This example creates a new bucket if it does not already exist, and
-///     uploads a file to the bucket. The file name is chosen to be
-///     "C:\\Users\\vagrant\\Downloads\\golden_oldies.mp3"
-///     Either create a file with this name or change it with your own file,
-///     where it is defined down below.
-/// </summary>
-public static class FileUpload
+namespace FileUploader
 {
-    private static bool IsWindows()
-    {
-        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-    }
-
-    private static async Task Main(string[] args)
-    {
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
-                                               | SecurityProtocolType.Tls11
-                                               | SecurityProtocolType.Tls12;
-        var endpoint = "play.min.io";
-        var accessKey = "Q3AM3UQ867SPQQA43P2F";
-        var secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
-
-        try
-        {
-            using var minio = new MinioClient()
-                .WithEndpoint(endpoint)
-                .WithCredentials(accessKey, secretKey)
-                .WithSSL()
-                .Build();
-            await Run(minio).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
-
-        if (IsWindows()) Console.ReadLine();
-    }
-
     /// <summary>
-    ///     Task that uploads a file to a bucket
+    ///     This example creates a new bucket if it does not already exist, and
+    ///     uploads a file to the bucket. The file name is chosen to be
+    ///     "C:\\Users\\vagrant\\Downloads\\golden_oldies.mp3"
+    ///     Either create a file with this name or change it with your own file,
+    ///     where it is defined down below.
     /// </summary>
-    /// <param name="minio"></param>
-    /// <returns></returns>
-    private static async Task Run(IMinioClient minio)
+    public static class FileUpload
     {
-        // Make a new bucket called mymusic.
-        var bucketName = "mymusic-folder"; //<==== change this
-        var location = "us-east-1";
-        // Upload the zip file
-        var objectName = "my-golden-oldies.mp3";
-        // The following is a source file that needs to be created in
-        // your local filesystem.
-        var filePath = "C:\\Users\\vagrant\\Downloads\\golden_oldies.mp3";
-        var contentType = "application/zip";
-
-        try
+        private static bool IsWindows()
         {
-            var bktExistArgs = new BucketExistsArgs()
-                .WithBucket(bucketName);
-            var found = await minio.BucketExistsAsync(bktExistArgs).ConfigureAwait(false);
-            if (!found)
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        }
+
+        private static async Task Main(string[] args)
+        {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+                                                   | SecurityProtocolType.Tls11
+                                                   | SecurityProtocolType.Tls12;
+            var endpoint = "play.min.io";
+            var accessKey = "Q3AM3UQ867SPQQA43P2F";
+            var secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
+
+            try
             {
-                var mkBktArgs = new MakeBucketArgs()
-                    .WithBucket(bucketName)
-                    .WithLocation(location);
-                await minio.MakeBucketAsync(mkBktArgs).ConfigureAwait(false);
+                using var minio = new MinioClient()
+                    .WithEndpoint(endpoint)
+                    .WithCredentials(accessKey, secretKey)
+                    .WithSSL()
+                    .Build();
+                await Run(minio).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
 
-            var putObjectArgs = new PutObjectArgs()
-                .WithBucket(bucketName)
-                .WithObject(objectName)
-                .WithFileName(filePath)
-                .WithContentType(contentType);
-            await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
-            Console.WriteLine($"\nSuccessfully uploaded {objectName}\n");
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
+            if (IsWindows())
+            {
+                Console.ReadLine();
+            }
         }
 
-        // Added for Windows folks. Without it, the window, tests
-        // run in, dissappears as soon as the test code completes.
-        if (IsWindows()) Console.ReadLine();
+        /// <summary>
+        ///     Task that uploads a file to a bucket
+        /// </summary>
+        /// <param name="minio"></param>
+        /// <returns></returns>
+        private static async Task Run(IMinioClient minio)
+        {
+            // Make a new bucket called mymusic.
+            var bucketName = "mymusic-folder"; //<==== change this
+            var location = "us-east-1";
+            // Upload the zip file
+            var objectName = "my-golden-oldies.mp3";
+            // The following is a source file that needs to be created in
+            // your local filesystem.
+            var filePath = "C:\\Users\\vagrant\\Downloads\\golden_oldies.mp3";
+            var contentType = "application/zip";
+
+            try
+            {
+                var bktExistArgs = new BucketExistsArgs()
+                    .WithBucket(bucketName);
+                var found = await minio.BucketExistsAsync(bktExistArgs).ConfigureAwait(false);
+                if (!found)
+                {
+                    var mkBktArgs = new MakeBucketArgs()
+                        .WithBucket(bucketName)
+                        .WithLocation(location);
+                    await minio.MakeBucketAsync(mkBktArgs).ConfigureAwait(false);
+                }
+
+                var putObjectArgs = new PutObjectArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    .WithFileName(filePath)
+                    .WithContentType(contentType);
+                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                Console.WriteLine($"\nSuccessfully uploaded {objectName}\n");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+
+            // Added for Windows folks. Without it, the window, tests
+            // run in, dissappears as soon as the test code completes.
+            if (IsWindows())
+            {
+                Console.ReadLine();
+            }
+        }
     }
 }

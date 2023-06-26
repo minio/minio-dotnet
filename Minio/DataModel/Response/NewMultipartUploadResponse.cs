@@ -20,18 +20,19 @@ using CommunityToolkit.HighPerformance;
 using Minio.DataModel.Result;
 using Minio.Helper;
 
-namespace Minio.DataModel.Response;
-
-internal class NewMultipartUploadResponse : GenericResponse
+namespace Minio.DataModel.Response
 {
-    internal NewMultipartUploadResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
+    internal class NewMultipartUploadResponse : GenericResponse
     {
-        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-        var newUpload = Utils.DeserializeXml<InitiateMultipartUploadResult>(stream);
+        internal NewMultipartUploadResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
+        {
+            using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+            var newUpload = Utils.DeserializeXml<InitiateMultipartUploadResult>(stream);
 
-        UploadId = newUpload.UploadId;
+            UploadId = newUpload.UploadId;
+        }
+
+        internal string UploadId { get; }
     }
-
-    internal string UploadId { get; }
 }

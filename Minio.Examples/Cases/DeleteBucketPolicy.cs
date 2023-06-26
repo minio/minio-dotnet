@@ -17,37 +17,38 @@
 using Minio.DataModel.Args;
 using Minio.Exceptions;
 
-namespace Minio.Examples.Cases;
-
-internal static class DeleteBucketPolicy
+namespace Minio.Examples.Cases
 {
-    // Set bucket policy
-    public static async Task Run(IMinioClient minio,
-        string bucketName = "my-bucket-name")
+    internal static class DeleteBucketPolicy
     {
-        try
+        // Set bucket policy
+        public static async Task Run(IMinioClient minio,
+            string bucketName = "my-bucket-name")
         {
-            Console.WriteLine("Running example for API: DeletePolicyAsync");
-            var args = new RemovePolicyArgs()
-                .WithBucket(bucketName);
-            await minio.RemovePolicyAsync(args).ConfigureAwait(false);
-            Console.WriteLine($"Policy previously set for the bucket {bucketName} removed.");
             try
             {
-                var getArgs = new GetPolicyArgs()
+                Console.WriteLine("Running example for API: DeletePolicyAsync");
+                var args = new RemovePolicyArgs()
                     .WithBucket(bucketName);
-                var policy = await minio.GetPolicyAsync(getArgs).ConfigureAwait(false);
-            }
-            catch (UnexpectedMinioException e)
-            {
-                Console.WriteLine($"GetPolicy operation for {bucketName} result: {e.ServerMessage}");
-            }
+                await minio.RemovePolicyAsync(args).ConfigureAwait(false);
+                Console.WriteLine($"Policy previously set for the bucket {bucketName} removed.");
+                try
+                {
+                    var getArgs = new GetPolicyArgs()
+                        .WithBucket(bucketName);
+                    var policy = await minio.GetPolicyAsync(getArgs).ConfigureAwait(false);
+                }
+                catch (UnexpectedMinioException e)
+                {
+                    Console.WriteLine($"GetPolicy operation for {bucketName} result: {e.ServerMessage}");
+                }
 
-            Console.WriteLine();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"[Bucket]  Exception: {e}");
+                Console.WriteLine();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Bucket]  Exception: {e}");
+            }
         }
     }
 }

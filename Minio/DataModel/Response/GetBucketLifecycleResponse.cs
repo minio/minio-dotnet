@@ -20,25 +20,26 @@ using CommunityToolkit.HighPerformance;
 using Minio.DataModel.ILM;
 using Minio.Helper;
 
-namespace Minio.DataModel.Response;
-
-internal class GetBucketLifecycleResponse : GenericResponse
+namespace Minio.DataModel.Response
 {
-    internal GetBucketLifecycleResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
+    internal class GetBucketLifecycleResponse : GenericResponse
     {
-        if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
+        internal GetBucketLifecycleResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
         {
-            BucketLifecycle = null;
-            return;
+            if (string.IsNullOrEmpty(responseContent) ||
+                !HttpStatusCode.OK.Equals(statusCode))
+            {
+                BucketLifecycle = null;
+                return;
+            }
+
+            //Remove xmlns content for config serialization
+            responseContent = Utils.RemoveNamespaceInXML(responseContent);
+            using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+            BucketLifecycle = Utils.DeserializeXml<LifecycleConfiguration>(stream);
         }
 
-        //Remove xmlns content for config serialization
-        responseContent = Utils.RemoveNamespaceInXML(responseContent);
-        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-        BucketLifecycle = Utils.DeserializeXml<LifecycleConfiguration>(stream);
+        internal LifecycleConfiguration BucketLifecycle { set; get; }
     }
-
-    internal LifecycleConfiguration BucketLifecycle { set; get; }
 }

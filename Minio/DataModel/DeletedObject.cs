@@ -16,16 +16,17 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel;
-
-[Serializable]
-public class DeletedObject
+namespace Minio.DataModel
 {
-    [XmlElement("Key")] public string Key { get; set; }
+    [Serializable]
+    public class DeletedObject
+    {
+        [XmlElement("Key")] public string Key { get; set; }
 
-    [XmlElement("VersionId")] public string VersionId { get; set; }
+        [XmlElement("VersionId")] public string VersionId { get; set; }
 
-    [XmlElement("DeleteMarker")] public string DeleteMarker { get; set; }
+        [XmlElement("DeleteMarker")] public string DeleteMarker { get; set; }
 
-    [XmlElement("DeleteMarkerVersionId")] public string DeleteMarkerVersionId { get; set; }
+        [XmlElement("DeleteMarkerVersionId")] public string DeleteMarkerVersionId { get; set; }
+    }
 }

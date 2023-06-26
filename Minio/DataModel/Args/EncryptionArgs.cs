@@ -16,16 +16,17 @@
 
 using Minio.DataModel.Encryption;
 
-namespace Minio.DataModel.Args;
-
-public abstract class EncryptionArgs<T> : ObjectArgs<T>
-    where T : EncryptionArgs<T>
+namespace Minio.DataModel.Args
 {
-    internal IServerSideEncryption SSE { get; set; }
-
-    public T WithServerSideEncryption(IServerSideEncryption sse)
+    public abstract class EncryptionArgs<T> : ObjectArgs<T>
+        where T : EncryptionArgs<T>
     {
-        SSE = sse;
-        return (T)this;
+        internal IServerSideEncryption SSE { get; set; }
+
+        public T WithServerSideEncryption(IServerSideEncryption sse)
+        {
+            SSE = sse;
+            return (T)this;
+        }
     }
 }

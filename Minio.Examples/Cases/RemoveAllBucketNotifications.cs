@@ -16,30 +16,34 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases;
-
-internal static class RemoveAllBucketNotifications
+namespace Minio.Examples.Cases
 {
-    // Removes all bucket notifications
-    public static async Task Run(IMinioClient minio,
-        string bucketName = "my-bucket-name")
+    internal static class RemoveAllBucketNotifications
     {
-        if (minio is null) throw new ArgumentNullException(nameof(minio));
-
-        try
+        // Removes all bucket notifications
+        public static async Task Run(IMinioClient minio,
+            string bucketName = "my-bucket-name")
         {
-            Console.WriteLine("Running example for API: RemoveAllBucketNotificationAsync");
+            if (minio is null)
+            {
+                throw new ArgumentNullException(nameof(minio));
+            }
 
-            var args = new RemoveAllBucketNotificationsArgs()
-                .WithBucket(bucketName);
-            await minio.RemoveAllBucketNotificationsAsync(args).ConfigureAwait(false);
+            try
+            {
+                Console.WriteLine("Running example for API: RemoveAllBucketNotificationAsync");
 
-            Console.WriteLine($"Notifications successfully removed from the bucket {bucketName}");
-            Console.WriteLine();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"[Bucket]  Exception: {e}");
+                var args = new RemoveAllBucketNotificationsArgs()
+                    .WithBucket(bucketName);
+                await minio.RemoveAllBucketNotificationsAsync(args).ConfigureAwait(false);
+
+                Console.WriteLine($"Notifications successfully removed from the bucket {bucketName}");
+                Console.WriteLine();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Bucket]  Exception: {e}");
+            }
         }
     }
 }

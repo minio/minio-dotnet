@@ -20,30 +20,35 @@ using CommunityToolkit.HighPerformance;
 using Minio.DataModel.ObjectLock;
 using Minio.Helper;
 
-namespace Minio.DataModel.Response;
-
-public class GetLegalHoldResponse : GenericResponse
+namespace Minio.DataModel.Response
 {
-    public GetLegalHoldResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
+    public class GetLegalHoldResponse : GenericResponse
     {
-        if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
+        public GetLegalHoldResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
         {
-            CurrentLegalHoldConfiguration = null;
-            return;
+            if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
+            {
+                CurrentLegalHoldConfiguration = null;
+                return;
+            }
+
+            using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+            CurrentLegalHoldConfiguration =
+                Utils.DeserializeXml<ObjectLegalHoldConfiguration>(stream);
+
+            if (CurrentLegalHoldConfiguration is null
+                || string.IsNullOrEmpty(CurrentLegalHoldConfiguration.Status))
+            {
+                Status = "OFF";
+            }
+            else
+            {
+                Status = CurrentLegalHoldConfiguration.Status;
+            }
         }
 
-        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-        CurrentLegalHoldConfiguration =
-            Utils.DeserializeXml<ObjectLegalHoldConfiguration>(stream);
-
-        if (CurrentLegalHoldConfiguration is null
-            || string.IsNullOrEmpty(CurrentLegalHoldConfiguration.Status))
-            Status = "OFF";
-        else
-            Status = CurrentLegalHoldConfiguration.Status;
+        internal ObjectLegalHoldConfiguration CurrentLegalHoldConfiguration { get; }
+        internal string Status { get; }
     }
-
-    internal ObjectLegalHoldConfiguration CurrentLegalHoldConfiguration { get; }
-    internal string Status { get; }
 }

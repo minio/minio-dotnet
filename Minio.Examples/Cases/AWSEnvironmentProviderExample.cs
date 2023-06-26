@@ -19,34 +19,35 @@ using Minio.Credentials;
 using Minio.DataModel.Args;
 using Minio.Exceptions;
 
-namespace Minio.Examples.Cases;
-
-public static class AWSEnvironmentProviderExample
+namespace Minio.Examples.Cases
 {
-    // Establish Credentials with AWS IAM Credentials in Environmental variables
-    public static async Task Run()
+    public static class AWSEnvironmentProviderExample
     {
-        var provider = new AWSEnvironmentProvider();
-        using var minioClient = new MinioClient()
-            .WithEndpoint("s3.amazonaws.com")
-            .WithSSL()
-            .WithCredentialsProvider(provider)
-            .Build();
-        try
+        // Establish Credentials with AWS IAM Credentials in Environmental variables
+        public static async Task Run()
         {
-            var statObjectArgs = new StatObjectArgs()
-                .WithBucket("my-bucket-name")
-                .WithObject("my-object-name");
-            var result = await minioClient.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
-            Console.WriteLine("Object Stat: \n" + result);
-        }
-        catch (MinioException me)
-        {
-            Console.WriteLine($"[Bucket] IAMAWSProviderExample example case encountered Exception: {me}");
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"[Bucket] IAMAWSProviderExample example case encountered Exception: {e}");
+            var provider = new AWSEnvironmentProvider();
+            using var minioClient = new MinioClient()
+                .WithEndpoint("s3.amazonaws.com")
+                .WithSSL()
+                .WithCredentialsProvider(provider)
+                .Build();
+            try
+            {
+                var statObjectArgs = new StatObjectArgs()
+                    .WithBucket("my-bucket-name")
+                    .WithObject("my-object-name");
+                var result = await minioClient.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+                Console.WriteLine("Object Stat: \n" + result);
+            }
+            catch (MinioException me)
+            {
+                Console.WriteLine($"[Bucket] IAMAWSProviderExample example case encountered Exception: {me}");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Bucket] IAMAWSProviderExample example case encountered Exception: {e}");
+            }
         }
     }
 }

@@ -17,10 +17,11 @@
 
 using Minio.DataModel;
 
-namespace Minio.Credentials;
-
-public interface IClientProvider
+namespace Minio.Credentials
 {
-    AccessCredentials GetCredentials();
-    ValueTask<AccessCredentials> GetCredentialsAsync();
+    public interface IClientProvider
+    {
+        AccessCredentials GetCredentials();
+        ValueTask<AccessCredentials> GetCredentialsAsync();
+    }
 }

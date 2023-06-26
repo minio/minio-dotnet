@@ -17,31 +17,35 @@
 using Minio.DataModel.Args;
 using Minio.DataModel.Encryption;
 
-namespace Minio.Examples.Cases;
-
-public static class SetBucketEncryption
+namespace Minio.Examples.Cases
 {
-    // Put Encryption Configuration for the bucket
-    public static async Task Run(IMinioClient minio,
-        string bucketName = "my-bucket-name",
-        ServerSideEncryptionConfiguration config = null)
+    public static class SetBucketEncryption
     {
-        if (minio is null) throw new ArgumentNullException(nameof(minio));
+        // Put Encryption Configuration for the bucket
+        public static async Task Run(IMinioClient minio,
+            string bucketName = "my-bucket-name",
+            ServerSideEncryptionConfiguration config = null)
+        {
+            if (minio is null)
+            {
+                throw new ArgumentNullException(nameof(minio));
+            }
 
-        try
-        {
-            Console.WriteLine("Running example for API: SetBucketEncryptionAsync");
-            await minio.SetBucketEncryptionAsync(
-                new SetBucketEncryptionArgs()
-                    .WithBucket(bucketName)
-                    .WithEncryptionConfig(config)
-            ).ConfigureAwait(false);
-            Console.WriteLine($"Assigned encryption configuration to bucket {bucketName}");
-            Console.WriteLine();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"[Bucket]  Exception: {e}");
+            try
+            {
+                Console.WriteLine("Running example for API: SetBucketEncryptionAsync");
+                await minio.SetBucketEncryptionAsync(
+                    new SetBucketEncryptionArgs()
+                        .WithBucket(bucketName)
+                        .WithEncryptionConfig(config)
+                ).ConfigureAwait(false);
+                Console.WriteLine($"Assigned encryption configuration to bucket {bucketName}");
+                Console.WriteLine();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Bucket]  Exception: {e}");
+            }
         }
     }
 }

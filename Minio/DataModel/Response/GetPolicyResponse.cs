@@ -18,27 +18,30 @@ using System.Net;
 using System.Text;
 using CommunityToolkit.HighPerformance;
 
-namespace Minio.DataModel.Response;
-
-internal class GetPolicyResponse : GenericResponse
+namespace Minio.DataModel.Response
 {
-    internal GetPolicyResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
+    internal class GetPolicyResponse : GenericResponse
     {
-        if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
-            return;
+        internal GetPolicyResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) ||
+                !HttpStatusCode.OK.Equals(statusCode))
+            {
+                return;
+            }
 
-        Initialize().Wait();
-    }
+            Initialize().Wait();
+        }
 
-    internal string PolicyJsonString { get; private set; }
+        internal string PolicyJsonString { get; private set; }
 
-    private async Task Initialize()
-    {
-        using var stream = Encoding.UTF8.GetBytes(ResponseContent).AsMemory().AsStream();
-        using var streamReader = new StreamReader(stream);
-        PolicyJsonString = await streamReader.ReadToEndAsync()
-            .ConfigureAwait(false);
+        private async Task Initialize()
+        {
+            using var stream = Encoding.UTF8.GetBytes(ResponseContent).AsMemory().AsStream();
+            using var streamReader = new StreamReader(stream);
+            PolicyJsonString = await streamReader.ReadToEndAsync()
+                .ConfigureAwait(false);
+        }
     }
 }

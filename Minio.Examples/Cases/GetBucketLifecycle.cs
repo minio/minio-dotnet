@@ -16,37 +16,41 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases;
-
-public static class GetBucketLifecycle
+namespace Minio.Examples.Cases
 {
-    // Get Lifecycle configuration assigned to the bucket
-    public static async Task Run(IMinioClient minio,
-        string bucketName = "my-bucket-name")
+    public static class GetBucketLifecycle
     {
-        if (minio is null) throw new ArgumentNullException(nameof(minio));
-
-        try
+        // Get Lifecycle configuration assigned to the bucket
+        public static async Task Run(IMinioClient minio,
+            string bucketName = "my-bucket-name")
         {
-            Console.WriteLine("Running example for API: GetBucketLifecycle");
-            var lfc = await minio.GetBucketLifecycleAsync(
-                new GetBucketLifecycleArgs()
-                    .WithBucket(bucketName)
-            ).ConfigureAwait(false);
-            if (lfc is not null && lfc.Rules?.Count > 0)
+            if (minio is null)
             {
-                Console.WriteLine($"Got Bucket Lifecycle set for bucket {bucketName}.");
-                Console.WriteLine(lfc.MarshalXML());
-                Console.WriteLine();
-                return;
+                throw new ArgumentNullException(nameof(minio));
             }
 
-            Console.WriteLine($"Bucket Lifecycle not set for bucket {bucketName}.");
-            Console.WriteLine();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"[Bucket]  Exception: {e}");
+            try
+            {
+                Console.WriteLine("Running example for API: GetBucketLifecycle");
+                var lfc = await minio.GetBucketLifecycleAsync(
+                    new GetBucketLifecycleArgs()
+                        .WithBucket(bucketName)
+                ).ConfigureAwait(false);
+                if (lfc is not null && lfc.Rules?.Count > 0)
+                {
+                    Console.WriteLine($"Got Bucket Lifecycle set for bucket {bucketName}.");
+                    Console.WriteLine(lfc.MarshalXML());
+                    Console.WriteLine();
+                    return;
+                }
+
+                Console.WriteLine($"Bucket Lifecycle not set for bucket {bucketName}.");
+                Console.WriteLine();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Bucket]  Exception: {e}");
+            }
         }
     }
 }

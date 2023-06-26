@@ -24,46 +24,47 @@ using System.Xml.Serialization;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
  */
 
-namespace Minio.DataModel.Replication;
-
-[Serializable]
-[XmlRoot(ElementName = "Destination")]
-public class ReplicationDestination
+namespace Minio.DataModel.Replication
 {
-    public ReplicationDestination(AccessControlTranslation accessControlTranslation, string account,
-        string bucketARN, EncryptionConfiguration encryptionConfiguration,
-        Metrics metrics, ReplicationTime replicationTime, string storageClass)
+    [Serializable]
+    [XmlRoot(ElementName = "Destination")]
+    public class ReplicationDestination
     {
-        AccessControlTranslation = accessControlTranslation;
-        Account = account;
-        BucketARN = bucketARN;
-        EncryptionConfiguration = encryptionConfiguration;
-        Metrics = metrics;
-        ReplicationTime = replicationTime;
-        StorageClass = storageClass;
+        public ReplicationDestination(AccessControlTranslation accessControlTranslation, string account,
+            string bucketARN, EncryptionConfiguration encryptionConfiguration,
+            Metrics metrics, ReplicationTime replicationTime, string storageClass)
+        {
+            AccessControlTranslation = accessControlTranslation;
+            Account = account;
+            BucketARN = bucketARN;
+            EncryptionConfiguration = encryptionConfiguration;
+            Metrics = metrics;
+            ReplicationTime = replicationTime;
+            StorageClass = storageClass;
+        }
+
+        public ReplicationDestination()
+        {
+        }
+
+        [XmlElement(ElementName = "AccessControlTranslation", IsNullable = true)]
+        public AccessControlTranslation AccessControlTranslation { get; set; }
+
+        [XmlElement(ElementName = "Account", IsNullable = true)]
+        public string Account { get; set; }
+
+        [XmlElement("Bucket")] public string BucketARN { get; set; }
+
+        [XmlElement(ElementName = "EncryptionConfiguration", IsNullable = true)]
+        public EncryptionConfiguration EncryptionConfiguration { get; set; }
+
+        [XmlElement(ElementName = "Metrics", IsNullable = true)]
+        public Metrics Metrics { get; set; }
+
+        [XmlElement(ElementName = "ReplicationTime", IsNullable = true)]
+        public ReplicationTime ReplicationTime { get; set; }
+
+        [XmlElement(ElementName = "StorageClass", IsNullable = true)]
+        public string StorageClass { get; set; }
     }
-
-    public ReplicationDestination()
-    {
-    }
-
-    [XmlElement(ElementName = "AccessControlTranslation", IsNullable = true)]
-    public AccessControlTranslation AccessControlTranslation { get; set; }
-
-    [XmlElement(ElementName = "Account", IsNullable = true)]
-    public string Account { get; set; }
-
-    [XmlElement("Bucket")] public string BucketARN { get; set; }
-
-    [XmlElement(ElementName = "EncryptionConfiguration", IsNullable = true)]
-    public EncryptionConfiguration EncryptionConfiguration { get; set; }
-
-    [XmlElement(ElementName = "Metrics", IsNullable = true)]
-    public Metrics Metrics { get; set; }
-
-    [XmlElement(ElementName = "ReplicationTime", IsNullable = true)]
-    public ReplicationTime ReplicationTime { get; set; }
-
-    [XmlElement(ElementName = "StorageClass", IsNullable = true)]
-    public string StorageClass { get; set; }
 }

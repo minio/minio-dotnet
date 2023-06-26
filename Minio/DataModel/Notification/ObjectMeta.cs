@@ -17,24 +17,25 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Minio.DataModel.Notification;
-
-public class ObjectMeta
+namespace Minio.DataModel.Notification
 {
-    [JsonPropertyName("contentType")] public string ContentType { get; set; }
+    public class ObjectMeta
+    {
+        [JsonPropertyName("contentType")] public string ContentType { get; set; }
 
-    [JsonPropertyName("etag")] public string Etag { get; set; }
+        [JsonPropertyName("etag")] public string Etag { get; set; }
 
-    [JsonPropertyName("key")] public string Key { get; set; }
+        [JsonPropertyName("key")] public string Key { get; set; }
 
-    [JsonPropertyName("sequencer")] public string Sequencer { get; set; }
+        [JsonPropertyName("sequencer")] public string Sequencer { get; set; }
 
-    [JsonPropertyName("size")] public int Size { get; set; }
+        [JsonPropertyName("size")] public int Size { get; set; }
 
-    [JsonPropertyName("userMetadata")]
-    [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
-        Justification = "Needs to be concrete type for XML deserialization")]
-    public Dictionary<string, string> UserMetadata { get; set; }
+        [JsonPropertyName("userMetadata")]
+        [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
+            Justification = "Needs to be concrete type for XML deserialization")]
+        public Dictionary<string, string> UserMetadata { get; set; }
 
-    [JsonPropertyName("versionId")] public string VersionId { get; set; }
+        [JsonPropertyName("versionId")] public string VersionId { get; set; }
+    }
 }

@@ -14,28 +14,29 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions;
-
-[Serializable]
-public class DeleteObjectException : MinioException
+namespace Minio.Exceptions
 {
-    public DeleteObjectException(string message) : base(message)
+    [Serializable]
+    public class DeleteObjectException : MinioException
     {
-    }
+        public DeleteObjectException(string message) : base(message)
+        {
+        }
 
-    public DeleteObjectException(ResponseResult serverResponse) : base(serverResponse)
-    {
-    }
+        public DeleteObjectException(ResponseResult serverResponse) : base(serverResponse)
+        {
+        }
 
-    public DeleteObjectException(string message, ResponseResult serverResponse) : base(message, serverResponse)
-    {
-    }
+        public DeleteObjectException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+        {
+        }
 
-    public DeleteObjectException()
-    {
-    }
+        public DeleteObjectException()
+        {
+        }
 
-    public DeleteObjectException(string message, Exception innerException) : base(message, innerException)
-    {
+        public DeleteObjectException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }

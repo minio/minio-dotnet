@@ -16,83 +16,109 @@
 
 using Minio.DataModel.Encryption;
 
-namespace Minio.DataModel.Args;
-
-public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
+namespace Minio.DataModel.Args
 {
-    public StatObjectArgs()
+    public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
     {
-        RequestMethod = HttpMethod.Head;
-    }
-
-    internal long ObjectOffset { get; private set; }
-    internal long ObjectLength { get; private set; }
-    internal bool OffsetLengthSet { get; set; }
-
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-    {
-        if (!string.IsNullOrEmpty(VersionId))
-            requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
-        if (Headers.TryGetValue(S3ZipExtractKey, out var value))
-            requestMessageBuilder.AddQueryParameter(S3ZipExtractKey, value);
-
-        return requestMessageBuilder;
-    }
-
-    internal override void Validate()
-    {
-        base.Validate();
-        if (!string.IsNullOrEmpty(NotMatchETag) && !string.IsNullOrEmpty(MatchETag))
-            throw new InvalidOperationException("Invalid to set both Etag match conditions " + nameof(NotMatchETag) +
-                                                " and " + nameof(MatchETag));
-
-        if (!ModifiedSince.Equals(default) &&
-            !UnModifiedSince.Equals(default))
-            throw new InvalidOperationException("Invalid to set both modified date match conditions " +
-                                                nameof(ModifiedSince) + " and " + nameof(UnModifiedSince));
-
-        if (OffsetLengthSet)
+        public StatObjectArgs()
         {
-            if (ObjectOffset < 0 || ObjectLength < 0)
-                throw new ArgumentException(nameof(ObjectOffset) + " and " + nameof(ObjectLength) +
-                                            "cannot be less than 0.", nameof(ObjectOffset));
-
-            if (ObjectOffset == 0 && ObjectLength == 0)
-                throw new ArgumentException("Either " + nameof(ObjectOffset) + " or " + nameof(ObjectLength) +
-                                            " must be greater than 0.", nameof(ObjectOffset));
+            RequestMethod = HttpMethod.Head;
         }
 
-        Populate();
-    }
+        internal long ObjectOffset { get; private set; }
+        internal long ObjectLength { get; private set; }
+        internal bool OffsetLengthSet { get; set; }
 
-    private void Populate()
-    {
-        Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
-        if (SSE?.GetEncryptionType().Equals(EncryptionType.SSE_C) == true) SSE.Marshal(Headers);
-        if (OffsetLengthSet)
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
         {
-            // "Range" header accepts byte start index and end index
-            if (ObjectLength > 0 && ObjectOffset > 0)
-                Headers["Range"] = "bytes=" + ObjectOffset + "-" + (ObjectOffset + ObjectLength - 1);
-            else if (ObjectLength == 0 && ObjectOffset > 0)
-                Headers["Range"] = "bytes=" + ObjectOffset + "-";
-            else if (ObjectLength > 0 && ObjectOffset == 0) Headers["Range"] = "bytes=0-" + (ObjectLength - 1);
+            if (!string.IsNullOrEmpty(VersionId))
+            {
+                requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
+            }
+
+            if (Headers.TryGetValue(S3ZipExtractKey, out var value))
+            {
+                requestMessageBuilder.AddQueryParameter(S3ZipExtractKey, value);
+            }
+
+            return requestMessageBuilder;
         }
-    }
 
-    public StatObjectArgs WithOffsetAndLength(long offset, long length)
-    {
-        OffsetLengthSet = true;
-        ObjectOffset = offset < 0 ? 0 : offset;
-        ObjectLength = length < 0 ? 0 : length;
-        return this;
-    }
+        internal override void Validate()
+        {
+            base.Validate();
+            if (!string.IsNullOrEmpty(NotMatchETag) && !string.IsNullOrEmpty(MatchETag))
+            {
+                throw new InvalidOperationException("Invalid to set both Etag match conditions " +
+                                                    nameof(NotMatchETag) +
+                                                    " and " + nameof(MatchETag));
+            }
 
-    public StatObjectArgs WithLength(long length)
-    {
-        OffsetLengthSet = true;
-        ObjectOffset = 0;
-        ObjectLength = length < 0 ? 0 : length;
-        return this;
+            if (!ModifiedSince.Equals(default) &&
+                !UnModifiedSince.Equals(default))
+            {
+                throw new InvalidOperationException("Invalid to set both modified date match conditions " +
+                                                    nameof(ModifiedSince) + " and " + nameof(UnModifiedSince));
+            }
+
+            if (OffsetLengthSet)
+            {
+                if (ObjectOffset < 0 || ObjectLength < 0)
+                {
+                    throw new ArgumentException(nameof(ObjectOffset) + " and " + nameof(ObjectLength) +
+                                                "cannot be less than 0.", nameof(ObjectOffset));
+                }
+
+                if (ObjectOffset == 0 && ObjectLength == 0)
+                {
+                    throw new ArgumentException("Either " + nameof(ObjectOffset) + " or " + nameof(ObjectLength) +
+                                                " must be greater than 0.", nameof(ObjectOffset));
+                }
+            }
+
+            Populate();
+        }
+
+        private void Populate()
+        {
+            Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
+            if (SSE?.GetEncryptionType().Equals(EncryptionType.SSE_C) == true)
+            {
+                SSE.Marshal(Headers);
+            }
+
+            if (OffsetLengthSet)
+            {
+                // "Range" header accepts byte start index and end index
+                if (ObjectLength > 0 && ObjectOffset > 0)
+                {
+                    Headers["Range"] = "bytes=" + ObjectOffset + "-" + (ObjectOffset + ObjectLength - 1);
+                }
+                else if (ObjectLength == 0 && ObjectOffset > 0)
+                {
+                    Headers["Range"] = "bytes=" + ObjectOffset + "-";
+                }
+                else if (ObjectLength > 0 && ObjectOffset == 0)
+                {
+                    Headers["Range"] = "bytes=0-" + (ObjectLength - 1);
+                }
+            }
+        }
+
+        public StatObjectArgs WithOffsetAndLength(long offset, long length)
+        {
+            OffsetLengthSet = true;
+            ObjectOffset = offset < 0 ? 0 : offset;
+            ObjectLength = length < 0 ? 0 : length;
+            return this;
+        }
+
+        public StatObjectArgs WithLength(long length)
+        {
+            OffsetLengthSet = true;
+            ObjectOffset = 0;
+            ObjectLength = length < 0 ? 0 : length;
+            return this;
+        }
     }
 }

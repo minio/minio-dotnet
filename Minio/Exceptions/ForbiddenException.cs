@@ -14,28 +14,29 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions;
-
-[Serializable]
-public class ForbiddenException : MinioException
+namespace Minio.Exceptions
 {
-    public ForbiddenException(string message) : base(message)
+    [Serializable]
+    public class ForbiddenException : MinioException
     {
-    }
+        public ForbiddenException(string message) : base(message)
+        {
+        }
 
-    public ForbiddenException(ResponseResult serverResponse) : base(serverResponse)
-    {
-    }
+        public ForbiddenException(ResponseResult serverResponse) : base(serverResponse)
+        {
+        }
 
-    public ForbiddenException(string message, ResponseResult serverResponse) : base(message, serverResponse)
-    {
-    }
+        public ForbiddenException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+        {
+        }
 
-    public ForbiddenException()
-    {
-    }
+        public ForbiddenException()
+        {
+        }
 
-    public ForbiddenException(string message, Exception innerException) : base(message, innerException)
-    {
+        public ForbiddenException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }

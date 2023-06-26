@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Select;
-
-// JSONOutputOptions - json output specific options
-[Serializable]
-public class JSONOutputOptions
+namespace Minio.DataModel.Select
 {
-    public string RecordDelimiter { get; set; }
+    // JSONOutputOptions - json output specific options
+    [Serializable]
+    public class JSONOutputOptions
+    {
+        public string RecordDelimiter { get; set; }
+    }
 }

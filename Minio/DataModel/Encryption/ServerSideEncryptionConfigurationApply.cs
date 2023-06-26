@@ -16,28 +16,32 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Encryption;
-
-[Serializable]
-public class ServerSideEncryptionConfigurationApply
+namespace Minio.DataModel.Encryption
 {
-    public ServerSideEncryptionConfigurationApply()
+    [Serializable]
+    public class ServerSideEncryptionConfigurationApply
     {
-        SSEAlgorithm = ServerSideEncryptionConfigurationRule.SSE_AES256;
-        KMSMasterKeyId = null;
+        public ServerSideEncryptionConfigurationApply()
+        {
+            SSEAlgorithm = ServerSideEncryptionConfigurationRule.SSE_AES256;
+            KMSMasterKeyId = null;
+        }
+
+        public ServerSideEncryptionConfigurationApply(
+            string algorithm = ServerSideEncryptionConfigurationRule.SSE_AES256,
+            string keyId = null)
+        {
+            if (string.IsNullOrEmpty(algorithm))
+            {
+                throw new ArgumentException($"'{nameof(algorithm)}' cannot be null or empty.", nameof(algorithm));
+            }
+
+            SSEAlgorithm = algorithm;
+            KMSMasterKeyId = keyId;
+        }
+
+        [XmlElement("KMSMasterKeyID")] public string KMSMasterKeyId { get; set; }
+
+        [XmlElement("SSEAlgorithm")] public string SSEAlgorithm { get; set; }
     }
-
-    public ServerSideEncryptionConfigurationApply(string algorithm = ServerSideEncryptionConfigurationRule.SSE_AES256,
-        string keyId = null)
-    {
-        if (string.IsNullOrEmpty(algorithm))
-            throw new ArgumentException($"'{nameof(algorithm)}' cannot be null or empty.", nameof(algorithm));
-
-        SSEAlgorithm = algorithm;
-        KMSMasterKeyId = keyId;
-    }
-
-    [XmlElement("KMSMasterKeyID")] public string KMSMasterKeyId { get; set; }
-
-    [XmlElement("SSEAlgorithm")] public string SSEAlgorithm { get; set; }
 }

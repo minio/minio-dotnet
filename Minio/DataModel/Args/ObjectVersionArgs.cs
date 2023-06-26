@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args;
-
-public abstract class ObjectVersionArgs<T> : EncryptionArgs<T>
-    where T : ObjectVersionArgs<T>
+namespace Minio.DataModel.Args
 {
-    internal string VersionId { get; set; }
-
-    public T WithVersionId(string vid)
+    public abstract class ObjectVersionArgs<T> : EncryptionArgs<T>
+        where T : ObjectVersionArgs<T>
     {
-        VersionId = vid;
-        return (T)this;
+        internal string VersionId { get; set; }
+
+        public T WithVersionId(string vid)
+        {
+            VersionId = vid;
+            return (T)this;
+        }
     }
 }

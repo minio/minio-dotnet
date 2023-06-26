@@ -14,19 +14,23 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args;
-
-public class RemoveBucketArgs : BucketArgs<RemoveBucketArgs>
+namespace Minio.DataModel.Args
 {
-    public RemoveBucketArgs()
+    public class RemoveBucketArgs : BucketArgs<RemoveBucketArgs>
     {
-        RequestMethod = HttpMethod.Delete;
-    }
+        public RemoveBucketArgs()
+        {
+            RequestMethod = HttpMethod.Delete;
+        }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-    {
-        if (Headers.TryGetValue(BucketForceDeleteKey, out var value))
-            requestMessageBuilder.AddHeaderParameter(BucketForceDeleteKey, value);
-        return requestMessageBuilder;
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+            if (Headers.TryGetValue(BucketForceDeleteKey, out var value))
+            {
+                requestMessageBuilder.AddHeaderParameter(BucketForceDeleteKey, value);
+            }
+
+            return requestMessageBuilder;
+        }
     }
 }

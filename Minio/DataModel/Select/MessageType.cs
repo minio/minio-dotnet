@@ -16,22 +16,23 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Select;
-
-public sealed class MessageType
+namespace Minio.DataModel.Select
 {
-    // Constants for JSONTypes.
-    public static readonly MessageType Error = new("error");
-    public static readonly MessageType Event = new("event");
-
-    [XmlText] public string Type;
-
-    public MessageType()
+    public sealed class MessageType
     {
-    }
+        // Constants for JSONTypes.
+        public static readonly MessageType Error = new("error");
+        public static readonly MessageType Event = new("event");
 
-    public MessageType(string value)
-    {
-        Type = value;
+        [XmlText] public string Type;
+
+        public MessageType()
+        {
+        }
+
+        public MessageType(string value)
+        {
+            Type = value;
+        }
     }
 }

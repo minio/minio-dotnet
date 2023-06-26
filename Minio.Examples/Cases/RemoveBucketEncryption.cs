@@ -16,29 +16,33 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases;
-
-public static class RemoveBucketEncryption
+namespace Minio.Examples.Cases
 {
-    // Remove Encryption Configuration for the bucket
-    public static async Task Run(IMinioClient minio,
-        string bucketName = "my-bucket-name")
+    public static class RemoveBucketEncryption
     {
-        if (minio is null) throw new ArgumentNullException(nameof(minio));
+        // Remove Encryption Configuration for the bucket
+        public static async Task Run(IMinioClient minio,
+            string bucketName = "my-bucket-name")
+        {
+            if (minio is null)
+            {
+                throw new ArgumentNullException(nameof(minio));
+            }
 
-        try
-        {
-            Console.WriteLine("Running example for API: RemoveBucketEncryptionAsync");
-            await minio.RemoveBucketEncryptionAsync(
-                new RemoveBucketEncryptionArgs()
-                    .WithBucket(bucketName)
-            ).ConfigureAwait(false);
-            Console.WriteLine($"Removed encryption configuration for bucket {bucketName}.");
-            Console.WriteLine();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"[Bucket]  Exception: {e}");
+            try
+            {
+                Console.WriteLine("Running example for API: RemoveBucketEncryptionAsync");
+                await minio.RemoveBucketEncryptionAsync(
+                    new RemoveBucketEncryptionArgs()
+                        .WithBucket(bucketName)
+                ).ConfigureAwait(false);
+                Console.WriteLine($"Removed encryption configuration for bucket {bucketName}.");
+                Console.WriteLine();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Bucket]  Exception: {e}");
+            }
         }
     }
 }

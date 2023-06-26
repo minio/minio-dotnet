@@ -17,31 +17,40 @@
 using Minio.DataModel;
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases;
-
-public static class PresignedPostPolicy
+namespace Minio.Examples.Cases
 {
-    public static async Task Run(IMinioClient client,
-        string bucketName = "my-bucketname",
-        string objectName = "my-objectname")
+    public static class PresignedPostPolicy
     {
-        if (client is null) throw new ArgumentNullException(nameof(client));
-        // default value for expiration is 2 minutes
-        var expiration = DateTime.UtcNow.AddMinutes(2);
+        public static async Task Run(IMinioClient client,
+            string bucketName = "my-bucketname",
+            string objectName = "my-objectname")
+        {
+            if (client is null)
+            {
+                throw new ArgumentNullException(nameof(client));
+            }
 
-        var form = new PostPolicy();
-        form.SetKey(objectName);
-        form.SetBucket(bucketName);
-        form.SetExpires(expiration);
+            // default value for expiration is 2 minutes
+            var expiration = DateTime.UtcNow.AddMinutes(2);
 
-        var args = new PresignedPostPolicyArgs()
-            .WithBucket(bucketName)
-            .WithObject(objectName)
-            .WithPolicy(form);
+            var form = new PostPolicy();
+            form.SetKey(objectName);
+            form.SetBucket(bucketName);
+            form.SetExpires(expiration);
 
-        var tuple = await client.PresignedPostPolicyAsync(form).ConfigureAwait(false);
-        var curlCommand = "curl -k --insecure -X POST";
-        foreach (var pair in tuple.Item2) curlCommand += $" -F {pair.Key}={pair.Value}";
-        curlCommand = curlCommand + " -F file=@/etc/issue " + tuple.Item1 + bucketName + "/";
+            var args = new PresignedPostPolicyArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithPolicy(form);
+
+            var tuple = await client.PresignedPostPolicyAsync(form).ConfigureAwait(false);
+            var curlCommand = "curl -k --insecure -X POST";
+            foreach (var pair in tuple.Item2)
+            {
+                curlCommand += $" -F {pair.Key}={pair.Value}";
+            }
+
+            curlCommand = curlCommand + " -F file=@/etc/issue " + tuple.Item1 + bucketName + "/";
+        }
     }
 }

@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args;
-
-internal class NewMultipartUploadPutArgs : NewMultipartUploadArgs<NewMultipartUploadPutArgs>
+namespace Minio.DataModel.Args
 {
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    internal class NewMultipartUploadPutArgs : NewMultipartUploadArgs<NewMultipartUploadPutArgs>
     {
-        requestMessageBuilder.AddQueryParameter("uploads", "");
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+            requestMessageBuilder.AddQueryParameter("uploads", "");
 
-        if (ObjectTags?.TaggingSet?.Tag.Count > 0)
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
+            if (ObjectTags?.TaggingSet?.Tag.Count > 0)
+            {
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
+            }
 
-        requestMessageBuilder.AddOrUpdateHeaderParameter("content-type", ContentType);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("content-type", ContentType);
 
-        return requestMessageBuilder;
+            return requestMessageBuilder;
+        }
     }
 }

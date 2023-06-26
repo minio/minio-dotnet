@@ -16,26 +16,27 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases;
-
-internal static class BucketExists
+namespace Minio.Examples.Cases
 {
-    // Check if a bucket exists
-    public static async Task Run(IMinioClient minio,
-        string bucketName = "my-bucket-name")
+    internal static class BucketExists
     {
-        try
+        // Check if a bucket exists
+        public static async Task Run(IMinioClient minio,
+            string bucketName = "my-bucket-name")
         {
-            Console.WriteLine("Running example for API: BucketExistsAsync");
-            var args = new BucketExistsArgs()
-                .WithBucket(bucketName);
-            var found = await minio.BucketExistsAsync(args).ConfigureAwait(false);
-            Console.WriteLine((found ? "Found" : "Couldn't find ") + "bucket " + bucketName);
-            Console.WriteLine();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"[Bucket]  Exception: {e}");
+            try
+            {
+                Console.WriteLine("Running example for API: BucketExistsAsync");
+                var args = new BucketExistsArgs()
+                    .WithBucket(bucketName);
+                var found = await minio.BucketExistsAsync(args).ConfigureAwait(false);
+                Console.WriteLine((found ? "Found" : "Couldn't find ") + "bucket " + bucketName);
+                Console.WriteLine();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Bucket]  Exception: {e}");
+            }
         }
     }
 }

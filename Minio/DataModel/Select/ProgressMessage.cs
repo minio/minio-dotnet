@@ -16,10 +16,11 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Select;
-
-[Serializable]
-[XmlRoot(ElementName = "Progress")]
-public sealed class ProgressMessage : StatsMessage
+namespace Minio.DataModel.Select
 {
+    [Serializable]
+    [XmlRoot(ElementName = "Progress")]
+    public sealed class ProgressMessage : StatsMessage
+    {
+    }
 }

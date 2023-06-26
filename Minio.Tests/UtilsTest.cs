@@ -21,218 +21,222 @@ using Minio.DataModel;
 using Minio.Exceptions;
 using Minio.Helper;
 
-namespace Minio.Tests;
-
-[TestClass]
-public class UtilsTest
+namespace Minio.Tests
 {
-    [TestMethod]
-    [ExpectedException(typeof(InvalidBucketNameException))]
-    public void TestValidBucketName()
+    [TestClass]
+    public class UtilsTest
     {
-        var testCases = new List<KeyValuePair<string, InvalidBucketNameException>>
+        [TestMethod]
+        [ExpectedException(typeof(InvalidBucketNameException))]
+        public void TestValidBucketName()
         {
-            new(".mybucket",
-                new InvalidBucketNameException(".mybucket", "Bucket name cannot start or end with a '.' dot.")),
-            new("mybucket.",
-                new InvalidBucketNameException(".mybucket", "Bucket name cannot start or end with a '.' dot.")),
-            new("", new InvalidBucketNameException("", "Bucket name cannot be empty.")),
-            new("mk", new InvalidBucketNameException("mk", "Bucket name cannot be smaller than 3 characters.")),
-            new("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz123456789012345",
-                new InvalidBucketNameException("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz123456789012345",
-                    "Bucket name cannot be greater than 63 characters.")),
-            new("my..bucket",
-                new InvalidBucketNameException("my..bucket", "Bucket name cannot have successive periods.")),
-            new("MyBucket",
-                new InvalidBucketNameException("MyBucket", "Bucket name cannot have upper case characters")),
-            new("my!bucket", new InvalidBucketNameException("my!bucket", "Bucket name contains invalid characters.")),
-            new("mybucket", null),
-            new("mybucket1234dhdjkshdkshdkshdjkshdkjshfkjsfhjkshsjkhjkhfkjd", null)
-        };
+            var testCases = new List<KeyValuePair<string, InvalidBucketNameException>>
+            {
+                new(".mybucket",
+                    new InvalidBucketNameException(".mybucket", "Bucket name cannot start or end with a '.' dot.")),
+                new("mybucket.",
+                    new InvalidBucketNameException(".mybucket", "Bucket name cannot start or end with a '.' dot.")),
+                new("", new InvalidBucketNameException("", "Bucket name cannot be empty.")),
+                new("mk", new InvalidBucketNameException("mk", "Bucket name cannot be smaller than 3 characters.")),
+                new("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz123456789012345",
+                    new InvalidBucketNameException(
+                        "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz123456789012345",
+                        "Bucket name cannot be greater than 63 characters.")),
+                new("my..bucket",
+                    new InvalidBucketNameException("my..bucket", "Bucket name cannot have successive periods.")),
+                new("MyBucket",
+                    new InvalidBucketNameException("MyBucket", "Bucket name cannot have upper case characters")),
+                new("my!bucket",
+                    new InvalidBucketNameException("my!bucket", "Bucket name contains invalid characters.")),
+                new("mybucket", null),
+                new("mybucket1234dhdjkshdkshdkshdjkshdkjshfkjsfhjkshsjkhjkhfkjd", null)
+            };
 
-        foreach (var pair in testCases)
+            foreach (var pair in testCases)
+            {
+                var bucketName = pair.Key;
+                var expectedException = pair.Value;
+                try
+                {
+                    Utils.ValidateBucketName(bucketName);
+                }
+                catch (InvalidBucketNameException ex)
+                {
+                    Assert.AreEqual(ex.Message, expectedException.Message);
+                    throw;
+                }
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidObjectNameException))]
+        public void TestEmptyObjectName()
         {
-            var bucketName = pair.Key;
-            var expectedException = pair.Value;
             try
             {
-                Utils.ValidateBucketName(bucketName);
+                Utils.ValidateObjectName("");
             }
-            catch (InvalidBucketNameException ex)
+            catch (InvalidObjectNameException ex)
             {
-                Assert.AreEqual(ex.Message, expectedException.Message);
+                Assert.AreEqual(ex.ServerMessage, "Object name cannot be empty.");
                 throw;
             }
         }
-    }
 
-    [TestMethod]
-    [ExpectedException(typeof(InvalidObjectNameException))]
-    public void TestEmptyObjectName()
-    {
-        try
+        [TestMethod]
+        public void TestVeryLongObjectName()
         {
-            Utils.ValidateObjectName("");
+            try
+            {
+                var objName = TestHelper.GetRandomName(1025);
+                Utils.ValidateObjectName(objName);
+            }
+            catch (InvalidObjectNameException ex)
+            {
+                Assert.AreEqual(ex.ServerMessage, "Object name cannot be greater than 1024 characters.");
+            }
         }
-        catch (InvalidObjectNameException ex)
-        {
-            Assert.AreEqual(ex.ServerMessage, "Object name cannot be empty.");
-            throw;
-        }
-    }
 
-    [TestMethod]
-    public void TestVeryLongObjectName()
-    {
-        try
+        [TestMethod]
+        public void TestObjectName()
         {
-            var objName = TestHelper.GetRandomName(1025);
+            var objName = TestHelper.GetRandomName(15);
             Utils.ValidateObjectName(objName);
         }
-        catch (InvalidObjectNameException ex)
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void TestEmptyFile()
         {
-            Assert.AreEqual(ex.ServerMessage, "Object name cannot be greater than 1024 characters.");
+            Utils.ValidateFile("");
         }
-    }
 
-    [TestMethod]
-    public void TestObjectName()
-    {
-        var objName = TestHelper.GetRandomName(15);
-        Utils.ValidateObjectName(objName);
-    }
-
-    [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
-    public void TestEmptyFile()
-    {
-        Utils.ValidateFile("");
-    }
-
-    [TestMethod]
-    public void TestFileWithoutExtension()
-    {
-        Utils.ValidateFile("xxxx");
-    }
-
-    [TestMethod]
-    public void TestFileWithExtension()
-    {
-        Utils.ValidateFile("xxxx.xml");
-    }
-
-    [TestMethod]
-    [ExpectedException(typeof(EntityTooLargeException))]
-    public void TestInvalidPUTPartSize()
-    {
-        try
+        [TestMethod]
+        public void TestFileWithoutExtension()
         {
-            var multiparts = Utils.CalculateMultiPartSize(5000000000000000000);
+            Utils.ValidateFile("xxxx");
         }
-        catch (EntityTooLargeException ex)
+
+        [TestMethod]
+        public void TestFileWithExtension()
         {
-            Assert.AreEqual(ex.ServerMessage,
-                "Your proposed upload size 5000000000000000000 exceeds the maximum allowed object size " +
-                Constants.MaxMultipartPutObjectSize);
-            throw;
+            Utils.ValidateFile("xxxx.xml");
         }
-    }
 
-    [TestMethod]
-    [ExpectedException(typeof(EntityTooLargeException))]
-    public void TestInvalidCOPYPartSize()
-    {
-        try
+        [TestMethod]
+        [ExpectedException(typeof(EntityTooLargeException))]
+        public void TestInvalidPUTPartSize()
         {
-            var multiparts = Utils.CalculateMultiPartSize(5000000000000000000, true);
+            try
+            {
+                var multiparts = Utils.CalculateMultiPartSize(5000000000000000000);
+            }
+            catch (EntityTooLargeException ex)
+            {
+                Assert.AreEqual(ex.ServerMessage,
+                    "Your proposed upload size 5000000000000000000 exceeds the maximum allowed object size " +
+                    Constants.MaxMultipartPutObjectSize);
+                throw;
+            }
         }
-        catch (EntityTooLargeException ex)
+
+        [TestMethod]
+        [ExpectedException(typeof(EntityTooLargeException))]
+        public void TestInvalidCOPYPartSize()
         {
-            Assert.AreEqual(ex.ServerMessage,
-                "Your proposed upload size 5000000000000000000 exceeds the maximum allowed object size " +
-                Constants.MaxMultipartPutObjectSize);
-            throw;
+            try
+            {
+                var multiparts = Utils.CalculateMultiPartSize(5000000000000000000, true);
+            }
+            catch (EntityTooLargeException ex)
+            {
+                Assert.AreEqual(ex.ServerMessage,
+                    "Your proposed upload size 5000000000000000000 exceeds the maximum allowed object size " +
+                    Constants.MaxMultipartPutObjectSize);
+                throw;
+            }
         }
-    }
 
-    [TestMethod]
-    public void TestValidPartSize1()
-    {
-        // { partSize = 550502400, partCount = 9987, lastPartSize = 241172480 }
-        dynamic partSizeObject = Utils.CalculateMultiPartSize(5497558138880);
-        double partSize = partSizeObject.partSize;
-        double partCount = partSizeObject.partCount;
-        double lastPartSize = partSizeObject.lastPartSize;
-        Assert.AreEqual(partSize, 553648128);
-        Assert.AreEqual(partCount, 9930);
-        Assert.AreEqual(lastPartSize, 385875968);
-    }
+        [TestMethod]
+        public void TestValidPartSize1()
+        {
+            // { partSize = 550502400, partCount = 9987, lastPartSize = 241172480 }
+            dynamic partSizeObject = Utils.CalculateMultiPartSize(5497558138880);
+            double partSize = partSizeObject.partSize;
+            double partCount = partSizeObject.partCount;
+            double lastPartSize = partSizeObject.lastPartSize;
+            Assert.AreEqual(partSize, 553648128);
+            Assert.AreEqual(partCount, 9930);
+            Assert.AreEqual(lastPartSize, 385875968);
+        }
 
-    [TestMethod]
-    public void TestValidPartSize2()
-    {
-        dynamic partSizeObject = Utils.CalculateMultiPartSize(500000000000, true);
-        double partSize = partSizeObject.partSize;
-        double partCount = partSizeObject.partCount;
-        double lastPartSize = partSizeObject.lastPartSize;
-        Assert.AreEqual(partSize, 536870912);
-        Assert.AreEqual(partCount, 932);
-        Assert.AreEqual(lastPartSize, 173180928);
-    }
+        [TestMethod]
+        public void TestValidPartSize2()
+        {
+            dynamic partSizeObject = Utils.CalculateMultiPartSize(500000000000, true);
+            double partSize = partSizeObject.partSize;
+            double partCount = partSizeObject.partCount;
+            double lastPartSize = partSizeObject.lastPartSize;
+            Assert.AreEqual(partSize, 536870912);
+            Assert.AreEqual(partCount, 932);
+            Assert.AreEqual(lastPartSize, 173180928);
+        }
 
-    [TestMethod]
-    public void TestCaseInsensitiveContains()
-    {
-        Assert.IsTrue(Utils.CaseInsensitiveContains("ef", ""));
-        Assert.IsTrue(Utils.CaseInsensitiveContains("abcdef", "ef"));
-        Assert.IsFalse(Utils.CaseInsensitiveContains("abc", "xyz"));
-    }
+        [TestMethod]
+        public void TestCaseInsensitiveContains()
+        {
+            Assert.IsTrue(Utils.CaseInsensitiveContains("ef", ""));
+            Assert.IsTrue(Utils.CaseInsensitiveContains("abcdef", "ef"));
+            Assert.IsFalse(Utils.CaseInsensitiveContains("abc", "xyz"));
+        }
 
-    [TestMethod]
-    public void TestIsAmazonEndpoint()
-    {
-        Assert.IsTrue(S3utils.IsAmazonEndPoint("s3.amazonaws.com"));
-        Assert.IsTrue(S3utils.IsAmazonEndPoint("s3.cn-north-1.amazonaws.com.cn"));
-        Assert.IsFalse(S3utils.IsAmazonEndPoint("s3.us-west-1amazonaws.com"));
-        Assert.IsFalse(S3utils.IsAmazonEndPoint("play.min.io"));
-        Assert.IsFalse(S3utils.IsAmazonEndPoint("192.168.12.1"));
-        Assert.IsFalse(S3utils.IsAmazonEndPoint("storage.googleapis.com"));
-    }
+        [TestMethod]
+        public void TestIsAmazonEndpoint()
+        {
+            Assert.IsTrue(S3utils.IsAmazonEndPoint("s3.amazonaws.com"));
+            Assert.IsTrue(S3utils.IsAmazonEndPoint("s3.cn-north-1.amazonaws.com.cn"));
+            Assert.IsFalse(S3utils.IsAmazonEndPoint("s3.us-west-1amazonaws.com"));
+            Assert.IsFalse(S3utils.IsAmazonEndPoint("play.min.io"));
+            Assert.IsFalse(S3utils.IsAmazonEndPoint("192.168.12.1"));
+            Assert.IsFalse(S3utils.IsAmazonEndPoint("storage.googleapis.com"));
+        }
 
-    [TestMethod]
-    public void TestIsAmazonChinaEndpoint()
-    {
-        Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("s3.amazonaws.com"));
-        Assert.IsTrue(S3utils.IsAmazonChinaEndPoint("s3.cn-north-1.amazonaws.com.cn"));
-        Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("s3.us-west-1amazonaws.com"));
-        Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("play.min.io"));
-        Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("192.168.12.1"));
-        Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("storage.googleapis.com"));
-    }
+        [TestMethod]
+        public void TestIsAmazonChinaEndpoint()
+        {
+            Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("s3.amazonaws.com"));
+            Assert.IsTrue(S3utils.IsAmazonChinaEndPoint("s3.cn-north-1.amazonaws.com.cn"));
+            Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("s3.us-west-1amazonaws.com"));
+            Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("play.min.io"));
+            Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("192.168.12.1"));
+            Assert.IsFalse(S3utils.IsAmazonChinaEndPoint("storage.googleapis.com"));
+        }
 
-    [TestMethod]
-    public void TestBucketConfiguration()
-    {
-        var config = new CreateBucketConfiguration("us-west-1");
-        var xs = new XmlSerializer(typeof(CreateBucketConfiguration));
-        using var writer = new StringWriter();
-        xs.Serialize(writer, config);
-        Console.WriteLine(writer.ToString());
-    }
+        [TestMethod]
+        public void TestBucketConfiguration()
+        {
+            var config = new CreateBucketConfiguration("us-west-1");
+            var xs = new XmlSerializer(typeof(CreateBucketConfiguration));
+            using var writer = new StringWriter();
+            xs.Serialize(writer, config);
+            Console.WriteLine(writer.ToString());
+        }
 
-    [TestMethod]
-    public void TestisValidEndpoint()
-    {
-        Assert.IsTrue(RequestUtil.IsValidEndpoint("a.b.c"));
-        Assert.IsTrue(RequestUtil.IsValidEndpoint("a_b_c"));
-        Assert.IsTrue(RequestUtil.IsValidEndpoint("a_b.c"));
-        Assert.IsFalse(RequestUtil.IsValidEndpoint("_a.b.c"));
-        Assert.IsFalse(RequestUtil.IsValidEndpoint("a.b_.c"));
-        Assert.IsFalse(RequestUtil.IsValidEndpoint("a.b.c."));
-        Assert.IsFalse(
-            RequestUtil.IsValidEndpoint("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz12345678901234.b.com"));
-        Assert.IsTrue(RequestUtil.IsValidEndpoint("0some.domain.com"));
-        Assert.IsTrue(RequestUtil.IsValidEndpoint("A.domain.com"));
-        Assert.IsTrue(RequestUtil.IsValidEndpoint("A.domain1.com"));
+        [TestMethod]
+        public void TestisValidEndpoint()
+        {
+            Assert.IsTrue(RequestUtil.IsValidEndpoint("a.b.c"));
+            Assert.IsTrue(RequestUtil.IsValidEndpoint("a_b_c"));
+            Assert.IsTrue(RequestUtil.IsValidEndpoint("a_b.c"));
+            Assert.IsFalse(RequestUtil.IsValidEndpoint("_a.b.c"));
+            Assert.IsFalse(RequestUtil.IsValidEndpoint("a.b_.c"));
+            Assert.IsFalse(RequestUtil.IsValidEndpoint("a.b.c."));
+            Assert.IsFalse(
+                RequestUtil.IsValidEndpoint(
+                    "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz12345678901234.b.com"));
+            Assert.IsTrue(RequestUtil.IsValidEndpoint("0some.domain.com"));
+            Assert.IsTrue(RequestUtil.IsValidEndpoint("A.domain.com"));
+            Assert.IsTrue(RequestUtil.IsValidEndpoint("A.domain1.com"));
+        }
     }
 }

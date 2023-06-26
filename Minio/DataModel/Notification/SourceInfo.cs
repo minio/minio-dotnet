@@ -16,13 +16,14 @@
 
 using System.Text.Json.Serialization;
 
-namespace Minio.DataModel.Notification;
-
-public class SourceInfo
+namespace Minio.DataModel.Notification
 {
-    [JsonPropertyName("host")] public string Host { get; set; }
+    public class SourceInfo
+    {
+        [JsonPropertyName("host")] public string Host { get; set; }
 
-    [JsonPropertyName("port")] public string Port { get; set; }
+        [JsonPropertyName("port")] public string Port { get; set; }
 
-    [JsonPropertyName("userAgent")] public string UserAgent { get; set; }
+        [JsonPropertyName("userAgent")] public string UserAgent { get; set; }
+    }
 }

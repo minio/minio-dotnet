@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Tracing;
-
-public sealed class RequestParameter
+namespace Minio.DataModel.Tracing
 {
-    public string Name { get; internal set; }
-    public object Value { get; internal set; }
-    public string Type { get; internal set; }
+    public sealed class RequestParameter
+    {
+        public string Name { get; internal set; }
+        public object Value { get; internal set; }
+        public string Type { get; internal set; }
+    }
 }

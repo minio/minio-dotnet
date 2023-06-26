@@ -16,29 +16,33 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases;
-
-public static class RemoveBucketLifecycle
+namespace Minio.Examples.Cases
 {
-    // Remove Lifecycle configuration set for the bucket
-    public static async Task Run(IMinioClient minio,
-        string bucketName = "my-bucket-name")
+    public static class RemoveBucketLifecycle
     {
-        if (minio is null) throw new ArgumentNullException(nameof(minio));
+        // Remove Lifecycle configuration set for the bucket
+        public static async Task Run(IMinioClient minio,
+            string bucketName = "my-bucket-name")
+        {
+            if (minio is null)
+            {
+                throw new ArgumentNullException(nameof(minio));
+            }
 
-        try
-        {
-            Console.WriteLine("Running example for API: RemoveBucketLifecycle");
-            await minio.RemoveBucketLifecycleAsync(
-                new RemoveBucketLifecycleArgs()
-                    .WithBucket(bucketName)
-            ).ConfigureAwait(false);
-            Console.WriteLine($"Bucket Lifecycle removed for bucket {bucketName}.");
-            Console.WriteLine();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"[Bucket]  Exception: {e}");
+            try
+            {
+                Console.WriteLine("Running example for API: RemoveBucketLifecycle");
+                await minio.RemoveBucketLifecycleAsync(
+                    new RemoveBucketLifecycleArgs()
+                        .WithBucket(bucketName)
+                ).ConfigureAwait(false);
+                Console.WriteLine($"Bucket Lifecycle removed for bucket {bucketName}.");
+                Console.WriteLine();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Bucket]  Exception: {e}");
+            }
         }
     }
 }

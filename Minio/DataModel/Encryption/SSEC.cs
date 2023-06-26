@@ -16,35 +16,42 @@
 
 using Minio.Helper;
 
-namespace Minio.DataModel.Encryption;
-
-/// <summary>
-///     Server-side encryption with customer provided keys (SSE-C)
-/// </summary>
-public class SSEC : IServerSideEncryption
+namespace Minio.DataModel.Encryption
 {
-    // secret AES-256 Key
-    protected byte[] Key;
-
-    public SSEC(byte[] key)
+    /// <summary>
+    ///     Server-side encryption with customer provided keys (SSE-C)
+    /// </summary>
+    public class SSEC : IServerSideEncryption
     {
-        if (key is null || key.Length != 32)
-            throw new ArgumentException("Secret key needs to be a 256 bit AES Key", nameof(key));
-        Key = key;
-    }
+        // secret AES-256 Key
+        protected byte[] Key;
 
-    public EncryptionType GetEncryptionType()
-    {
-        return EncryptionType.SSE_C;
-    }
+        public SSEC(byte[] key)
+        {
+            if (key is null || key.Length != 32)
+            {
+                throw new ArgumentException("Secret key needs to be a 256 bit AES Key", nameof(key));
+            }
 
-    public virtual void Marshal(IDictionary<string, string> headers)
-    {
-        if (headers is null) throw new ArgumentNullException(nameof(headers));
+            Key = key;
+        }
 
-        var md5SumStr = Utils.GetMD5SumStr(Key);
-        headers.Add("X-Amz-Server-Side-Encryption-Customer-Algorithm", "AES256");
-        headers.Add("X-Amz-Server-Side-Encryption-Customer-Key", Convert.ToBase64String(Key));
-        headers.Add("X-Amz-Server-Side-Encryption-Customer-Key-Md5", md5SumStr);
+        public EncryptionType GetEncryptionType()
+        {
+            return EncryptionType.SSE_C;
+        }
+
+        public virtual void Marshal(IDictionary<string, string> headers)
+        {
+            if (headers is null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
+            var md5SumStr = Utils.GetMD5SumStr(Key);
+            headers.Add("X-Amz-Server-Side-Encryption-Customer-Algorithm", "AES256");
+            headers.Add("X-Amz-Server-Side-Encryption-Customer-Key", Convert.ToBase64String(Key));
+            headers.Add("X-Amz-Server-Side-Encryption-Customer-Key-Md5", md5SumStr);
+        }
     }
 }

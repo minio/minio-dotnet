@@ -14,42 +14,46 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions;
-
-[Serializable]
-public class InvalidEndpointException : MinioException
+namespace Minio.Exceptions
 {
-    private readonly string endpoint;
-
-    public InvalidEndpointException(string endpoint, string message) : base(message)
+    [Serializable]
+    public class InvalidEndpointException : MinioException
     {
-        this.endpoint = endpoint;
-    }
+        private readonly string endpoint;
 
-    public InvalidEndpointException(string message) : base(message)
-    {
-    }
+        public InvalidEndpointException(string endpoint, string message) : base(message)
+        {
+            this.endpoint = endpoint;
+        }
 
-    public InvalidEndpointException(ResponseResult serverResponse) : base(serverResponse)
-    {
-    }
+        public InvalidEndpointException(string message) : base(message)
+        {
+        }
 
-    public InvalidEndpointException(string message, ResponseResult serverResponse) : base(message, serverResponse)
-    {
-    }
+        public InvalidEndpointException(ResponseResult serverResponse) : base(serverResponse)
+        {
+        }
 
-    public InvalidEndpointException()
-    {
-    }
+        public InvalidEndpointException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+        {
+        }
 
-    public InvalidEndpointException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
+        public InvalidEndpointException()
+        {
+        }
 
-    public override string ToString()
-    {
-        if (string.IsNullOrEmpty(endpoint))
-            return base.ToString();
-        return $"{endpoint}: {base.ToString()}";
+        public InvalidEndpointException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        public override string ToString()
+        {
+            if (string.IsNullOrEmpty(endpoint))
+            {
+                return base.ToString();
+            }
+
+            return $"{endpoint}: {base.ToString()}";
+        }
     }
 }

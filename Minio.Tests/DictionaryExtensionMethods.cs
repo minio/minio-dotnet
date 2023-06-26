@@ -14,30 +14,46 @@
  * limitations under the License.
  */
 
-namespace Minio.Tests;
-
-/// <summary>
-///     Deep compares two dictionaries for equality
-/// </summary>
-public static class DictionaryExtensionMethods
+namespace Minio.Tests
 {
-    public static bool PoliciesEqual<TString, TPolicyType>(this IDictionary<TString, TPolicyType> first,
-        IDictionary<TString, TPolicyType> second)
+    /// <summary>
+    ///     Deep compares two dictionaries for equality
+    /// </summary>
+    public static class DictionaryExtensionMethods
     {
-        if (first == second) return true;
-
-        if (first is null || second is null) return false;
-
-        if (first.Count != second.Count) return false;
-
-        foreach (var kvp in first)
+        public static bool PoliciesEqual<TString, TPolicyType>(this IDictionary<TString, TPolicyType> first,
+            IDictionary<TString, TPolicyType> second)
         {
-            var firstValue = kvp.Value;
-            if (!second.TryGetValue(kvp.Key, out var secondValue)) return false;
+            if (first == second)
+            {
+                return true;
+            }
 
-            if (!firstValue.Equals(secondValue)) return false;
+            if (first is null || second is null)
+            {
+                return false;
+            }
+
+            if (first.Count != second.Count)
+            {
+                return false;
+            }
+
+            foreach (var kvp in first)
+            {
+                var firstValue = kvp.Value;
+                if (!second.TryGetValue(kvp.Key, out var secondValue))
+                {
+                    return false;
+                }
+
+                if (!firstValue.Equals(secondValue))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
-
-        return true;
     }
 }

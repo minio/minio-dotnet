@@ -18,47 +18,50 @@ using System.Text;
 using Minio.DataModel.ObjectLock;
 using Minio.Helper;
 
-namespace Minio.DataModel.Args;
-
-public class SetObjectLockConfigurationArgs : BucketArgs<SetObjectLockConfigurationArgs>
+namespace Minio.DataModel.Args
 {
-    public SetObjectLockConfigurationArgs()
+    public class SetObjectLockConfigurationArgs : BucketArgs<SetObjectLockConfigurationArgs>
     {
-        RequestMethod = HttpMethod.Put;
-    }
+        public SetObjectLockConfigurationArgs()
+        {
+            RequestMethod = HttpMethod.Put;
+        }
 
-    internal ObjectLockConfiguration LockConfiguration { set; get; }
+        internal ObjectLockConfiguration LockConfiguration { set; get; }
 
-    public SetObjectLockConfigurationArgs WithLockConfiguration(ObjectLockConfiguration config)
-    {
-        LockConfiguration = config;
-        return this;
-    }
+        public SetObjectLockConfigurationArgs WithLockConfiguration(ObjectLockConfiguration config)
+        {
+            LockConfiguration = config;
+            return this;
+        }
 
-    internal override void Validate()
-    {
-        base.Validate();
-        if (LockConfiguration is null)
-            throw new InvalidOperationException("The lock configuration object " + nameof(LockConfiguration) +
-                                                " is not set. Please use " + nameof(WithLockConfiguration) +
-                                                " to set.");
-    }
+        internal override void Validate()
+        {
+            base.Validate();
+            if (LockConfiguration is null)
+            {
+                throw new InvalidOperationException("The lock configuration object " + nameof(LockConfiguration) +
+                                                    " is not set. Please use " + nameof(WithLockConfiguration) +
+                                                    " to set.");
+            }
+        }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-    {
-        requestMessageBuilder.AddQueryParameter("object-lock", "");
-        var body = Utils.MarshalXML(LockConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
-        // Convert string to a byte array
-        // byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+            requestMessageBuilder.AddQueryParameter("object-lock", "");
+            var body = Utils.MarshalXML(LockConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
+            // Convert string to a byte array
+            // byte[] bodyInBytes = Encoding.ASCII.GetBytes(body);
 
-        // requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
-        // requestMessageBuilder.SetBody(bodyInBytes);
-        //
-        // string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
-        requestMessageBuilder.AddXmlBody(body);
-        requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
-        //
-        return requestMessageBuilder;
+            // requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
+            // requestMessageBuilder.SetBody(bodyInBytes);
+            //
+            // string body = utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+            requestMessageBuilder.AddXmlBody(body);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+                Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
+            //
+            return requestMessageBuilder;
+        }
     }
 }

@@ -14,40 +14,42 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions;
-
-[Serializable]
-public class CredentialsProviderException : MinioException
+namespace Minio.Exceptions
 {
-    private readonly string CredentialProviderType;
-
-    public CredentialsProviderException(string credentialProviderType, string message) : base(message)
+    [Serializable]
+    public class CredentialsProviderException : MinioException
     {
-        CredentialProviderType = credentialProviderType;
-    }
+        private readonly string CredentialProviderType;
 
-    public CredentialsProviderException(ResponseResult serverResponse) : base(serverResponse)
-    {
-    }
+        public CredentialsProviderException(string credentialProviderType, string message) : base(message)
+        {
+            CredentialProviderType = credentialProviderType;
+        }
 
-    public CredentialsProviderException(string message) : base(message)
-    {
-    }
+        public CredentialsProviderException(ResponseResult serverResponse) : base(serverResponse)
+        {
+        }
 
-    public CredentialsProviderException(string message, ResponseResult serverResponse) : base(message, serverResponse)
-    {
-    }
+        public CredentialsProviderException(string message) : base(message)
+        {
+        }
 
-    public CredentialsProviderException()
-    {
-    }
+        public CredentialsProviderException(string message, ResponseResult serverResponse) : base(message,
+            serverResponse)
+        {
+        }
 
-    public CredentialsProviderException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
+        public CredentialsProviderException()
+        {
+        }
 
-    public override string ToString()
-    {
-        return $"{CredentialProviderType}: {base.ToString()}";
+        public CredentialsProviderException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        public override string ToString()
+        {
+            return $"{CredentialProviderType}: {base.ToString()}";
+        }
     }
 }

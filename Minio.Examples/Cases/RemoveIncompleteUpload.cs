@@ -16,28 +16,29 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases;
-
-internal static class RemoveIncompleteUpload
+namespace Minio.Examples.Cases
 {
-    // Remove incomplete upload object from a bucket
-    public static async Task Run(IMinioClient minio,
-        string bucketName = "my-bucket-name",
-        string objectName = "my-object-name")
+    internal static class RemoveIncompleteUpload
     {
-        try
+        // Remove incomplete upload object from a bucket
+        public static async Task Run(IMinioClient minio,
+            string bucketName = "my-bucket-name",
+            string objectName = "my-object-name")
         {
-            Console.WriteLine("Running example for API: RemoveIncompleteUploadAsync");
-            var args = new RemoveIncompleteUploadArgs()
-                .WithBucket(bucketName)
-                .WithObject(objectName);
-            await minio.RemoveIncompleteUploadAsync(args).ConfigureAwait(false);
-            Console.WriteLine($"Removed object {objectName} from bucket {bucketName} successfully");
-            Console.WriteLine();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"[Bucket-Object]  Exception: {e}");
+            try
+            {
+                Console.WriteLine("Running example for API: RemoveIncompleteUploadAsync");
+                var args = new RemoveIncompleteUploadArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName);
+                await minio.RemoveIncompleteUploadAsync(args).ConfigureAwait(false);
+                Console.WriteLine($"Removed object {objectName} from bucket {bucketName} successfully");
+                Console.WriteLine();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Bucket-Object]  Exception: {e}");
+            }
         }
     }
 }

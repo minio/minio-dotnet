@@ -14,19 +14,24 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args;
-
-public class GetObjectRetentionArgs : ObjectVersionArgs<GetObjectRetentionArgs>
+namespace Minio.DataModel.Args
 {
-    public GetObjectRetentionArgs()
+    public class GetObjectRetentionArgs : ObjectVersionArgs<GetObjectRetentionArgs>
     {
-        RequestMethod = HttpMethod.Get;
-    }
+        public GetObjectRetentionArgs()
+        {
+            RequestMethod = HttpMethod.Get;
+        }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-    {
-        requestMessageBuilder.AddQueryParameter("retention", "");
-        if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", VersionId);
-        return requestMessageBuilder;
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+            requestMessageBuilder.AddQueryParameter("retention", "");
+            if (!string.IsNullOrEmpty(VersionId))
+            {
+                requestMessageBuilder.AddQueryParameter("versionId", VersionId);
+            }
+
+            return requestMessageBuilder;
+        }
     }
 }

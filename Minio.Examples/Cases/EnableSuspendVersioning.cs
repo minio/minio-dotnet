@@ -16,31 +16,32 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases;
-
-internal static class EnableSuspendVersioning
+namespace Minio.Examples.Cases
 {
-    // Enable Versioning on a bucket
-    public static async Task Run(IMinioClient minio,
-        string bucketName = "my-bucket-name")
+    internal static class EnableSuspendVersioning
     {
-        try
+        // Enable Versioning on a bucket
+        public static async Task Run(IMinioClient minio,
+            string bucketName = "my-bucket-name")
         {
-            Console.WriteLine("Running example for API: EnableSuspendVersioning, ");
-            // First Enable the Versioning.
-            var setArgs = new SetVersioningArgs()
-                .WithBucket(bucketName)
-                .WithVersioningEnabled();
-            await minio.SetVersioningAsync(setArgs).ConfigureAwait(false);
-            Console.WriteLine("Versioning Enable operation called for bucket " + bucketName);
-            // Next Suspend the Versioning.
-            setArgs = setArgs.WithVersioningSuspended();
-            await minio.SetVersioningAsync(setArgs).ConfigureAwait(false);
-            Console.WriteLine("Versioning Suspend operation called for bucket " + bucketName);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"[Bucket]  Exception: {e}");
+            try
+            {
+                Console.WriteLine("Running example for API: EnableSuspendVersioning, ");
+                // First Enable the Versioning.
+                var setArgs = new SetVersioningArgs()
+                    .WithBucket(bucketName)
+                    .WithVersioningEnabled();
+                await minio.SetVersioningAsync(setArgs).ConfigureAwait(false);
+                Console.WriteLine("Versioning Enable operation called for bucket " + bucketName);
+                // Next Suspend the Versioning.
+                setArgs = setArgs.WithVersioningSuspended();
+                await minio.SetVersioningAsync(setArgs).ConfigureAwait(false);
+                Console.WriteLine("Versioning Suspend operation called for bucket " + bucketName);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Bucket]  Exception: {e}");
+            }
         }
     }
 }

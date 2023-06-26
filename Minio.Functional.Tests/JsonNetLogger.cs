@@ -17,14 +17,15 @@
 using System.Text.Json;
 using Minio.DataModel.Tracing;
 
-namespace Minio.Functional.Tests;
-
-internal sealed class JsonNetLogger : IRequestLogger
+namespace Minio.Functional.Tests
 {
-    public void LogRequest(RequestToLog requestToLog, ResponseToLog responseToLog, double durationMs)
+    internal sealed class JsonNetLogger : IRequestLogger
     {
-        Console.WriteLine("Request completed in {0} ms\nRequest:\n{1}\nResponse:\n{2}", durationMs,
-            JsonSerializer.Serialize(requestToLog, new JsonSerializerOptions { WriteIndented = true }),
-            JsonSerializer.Serialize(responseToLog, new JsonSerializerOptions { WriteIndented = true }));
+        public void LogRequest(RequestToLog requestToLog, ResponseToLog responseToLog, double durationMs)
+        {
+            Console.WriteLine("Request completed in {0} ms\nRequest:\n{1}\nResponse:\n{2}", durationMs,
+                JsonSerializer.Serialize(requestToLog, new JsonSerializerOptions { WriteIndented = true }),
+                JsonSerializer.Serialize(responseToLog, new JsonSerializerOptions { WriteIndented = true }));
+        }
     }
 }

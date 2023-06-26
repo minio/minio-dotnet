@@ -16,16 +16,17 @@
 
 using System.Net;
 
-namespace Minio.DataModel.Response;
-
-public class GenericResponse
+namespace Minio.DataModel.Response
 {
-    internal GenericResponse(HttpStatusCode statusCode, string responseContent)
+    public class GenericResponse
     {
-        ResponseContent = responseContent;
-        ResponseStatusCode = statusCode;
-    }
+        internal GenericResponse(HttpStatusCode statusCode, string responseContent)
+        {
+            ResponseContent = responseContent;
+            ResponseStatusCode = statusCode;
+        }
 
-    internal string ResponseContent { get; }
-    internal HttpStatusCode ResponseStatusCode { get; }
+        internal string ResponseContent { get; }
+        internal HttpStatusCode ResponseStatusCode { get; }
+    }
 }

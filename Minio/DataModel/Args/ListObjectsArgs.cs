@@ -14,42 +14,43 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args;
-
-public class ListObjectsArgs : BucketArgs<ListObjectsArgs>
+namespace Minio.DataModel.Args
 {
-    public ListObjectsArgs()
+    public class ListObjectsArgs : BucketArgs<ListObjectsArgs>
     {
-        UseV2 = true;
-        Versions = false;
-    }
+        public ListObjectsArgs()
+        {
+            UseV2 = true;
+            Versions = false;
+        }
 
-    internal string Prefix { get; private set; }
-    internal bool Recursive { get; private set; }
-    internal bool Versions { get; private set; }
-    internal bool UseV2 { get; private set; }
+        internal string Prefix { get; private set; }
+        internal bool Recursive { get; private set; }
+        internal bool Versions { get; private set; }
+        internal bool UseV2 { get; private set; }
 
-    public ListObjectsArgs WithPrefix(string prefix)
-    {
-        Prefix = prefix;
-        return this;
-    }
+        public ListObjectsArgs WithPrefix(string prefix)
+        {
+            Prefix = prefix;
+            return this;
+        }
 
-    public ListObjectsArgs WithRecursive(bool rec)
-    {
-        Recursive = rec;
-        return this;
-    }
+        public ListObjectsArgs WithRecursive(bool rec)
+        {
+            Recursive = rec;
+            return this;
+        }
 
-    public ListObjectsArgs WithVersions(bool ver)
-    {
-        Versions = ver;
-        return this;
-    }
+        public ListObjectsArgs WithVersions(bool ver)
+        {
+            Versions = ver;
+            return this;
+        }
 
-    public ListObjectsArgs WithListObjectsV1(bool useV1)
-    {
-        UseV2 = !useV1;
-        return this;
+        public ListObjectsArgs WithListObjectsV1(bool useV1)
+        {
+            UseV2 = !useV1;
+            return this;
+        }
     }
 }

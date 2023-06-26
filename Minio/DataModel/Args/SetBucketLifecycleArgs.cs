@@ -18,41 +18,44 @@ using System.Text;
 using Minio.DataModel.ILM;
 using Minio.Helper;
 
-namespace Minio.DataModel.Args;
-
-public class SetBucketLifecycleArgs : BucketArgs<SetBucketLifecycleArgs>
+namespace Minio.DataModel.Args
 {
-    public SetBucketLifecycleArgs()
+    public class SetBucketLifecycleArgs : BucketArgs<SetBucketLifecycleArgs>
     {
-        RequestMethod = HttpMethod.Put;
-    }
+        public SetBucketLifecycleArgs()
+        {
+            RequestMethod = HttpMethod.Put;
+        }
 
-    internal LifecycleConfiguration BucketLifecycle { get; private set; }
+        internal LifecycleConfiguration BucketLifecycle { get; private set; }
 
-    public SetBucketLifecycleArgs WithLifecycleConfiguration(LifecycleConfiguration lc)
-    {
-        BucketLifecycle = lc;
-        return this;
-    }
+        public SetBucketLifecycleArgs WithLifecycleConfiguration(LifecycleConfiguration lc)
+        {
+            BucketLifecycle = lc;
+            return this;
+        }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-    {
-        requestMessageBuilder.AddQueryParameter("lifecycle", "");
-        var body = BucketLifecycle.MarshalXML();
-        // Convert string to a byte array
-        ReadOnlyMemory<byte> bodyInBytes = Encoding.ASCII.GetBytes(body);
-        requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
-        requestMessageBuilder.SetBody(bodyInBytes);
-        requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.GetMD5SumStr(bodyInBytes.Span));
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+            requestMessageBuilder.AddQueryParameter("lifecycle", "");
+            var body = BucketLifecycle.MarshalXML();
+            // Convert string to a byte array
+            ReadOnlyMemory<byte> bodyInBytes = Encoding.ASCII.GetBytes(body);
+            requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
+            requestMessageBuilder.SetBody(bodyInBytes);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+                Utils.GetMD5SumStr(bodyInBytes.Span));
 
-        return requestMessageBuilder;
-    }
+            return requestMessageBuilder;
+        }
 
-    internal override void Validate()
-    {
-        base.Validate();
-        if (BucketLifecycle is null || BucketLifecycle.Rules.Count == 0)
-            throw new InvalidOperationException("Unable to set empty Lifecycle configuration.");
+        internal override void Validate()
+        {
+            base.Validate();
+            if (BucketLifecycle is null || BucketLifecycle.Rules.Count == 0)
+            {
+                throw new InvalidOperationException("Unable to set empty Lifecycle configuration.");
+            }
+        }
     }
 }

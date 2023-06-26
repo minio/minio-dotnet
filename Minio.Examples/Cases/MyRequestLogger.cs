@@ -17,22 +17,23 @@
 using System.Text;
 using Minio.DataModel.Tracing;
 
-namespace Minio.Examples.Cases;
-
-internal sealed class MyRequestLogger : IRequestLogger
+namespace Minio.Examples.Cases
 {
-    public void LogRequest(RequestToLog requestToLog, ResponseToLog responseToLog, double durationMs)
+    internal sealed class MyRequestLogger : IRequestLogger
     {
-        var sb = new StringBuilder();
+        public void LogRequest(RequestToLog requestToLog, ResponseToLog responseToLog, double durationMs)
+        {
+            var sb = new StringBuilder();
 
-        sb.AppendLine("My logger says:");
-        sb.Append("statusCode: ");
-        sb.AppendLine(responseToLog.StatusCode.ToString());
-        sb.AppendLine();
+            sb.AppendLine("My logger says:");
+            sb.Append("statusCode: ");
+            sb.AppendLine(responseToLog.StatusCode.ToString());
+            sb.AppendLine();
 
-        sb.AppendLine("Response: ");
-        sb.Append(responseToLog.Content);
+            sb.AppendLine("Response: ");
+            sb.Append(responseToLog.Content);
 
-        Console.WriteLine(sb.ToString());
+            Console.WriteLine(sb.ToString());
+        }
     }
 }

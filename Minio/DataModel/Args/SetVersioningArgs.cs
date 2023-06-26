@@ -18,54 +18,57 @@ using System.Text;
 using Minio.Exceptions;
 using Minio.Helper;
 
-namespace Minio.DataModel.Args;
-
-public class SetVersioningArgs : BucketArgs<SetVersioningArgs>
+namespace Minio.DataModel.Args
 {
-    internal VersioningStatus CurrentVersioningStatus;
-
-    public SetVersioningArgs()
+    public class SetVersioningArgs : BucketArgs<SetVersioningArgs>
     {
-        RequestMethod = HttpMethod.Put;
-        CurrentVersioningStatus = VersioningStatus.Off;
-    }
+        internal VersioningStatus CurrentVersioningStatus;
 
-    internal override void Validate()
-    {
-        Utils.ValidateBucketName(BucketName);
-        if (CurrentVersioningStatus > VersioningStatus.Suspended)
-            throw new UnexpectedMinioException("CurrentVersioningStatus invalid value .");
-    }
+        public SetVersioningArgs()
+        {
+            RequestMethod = HttpMethod.Put;
+            CurrentVersioningStatus = VersioningStatus.Off;
+        }
 
-    public SetVersioningArgs WithVersioningEnabled()
-    {
-        CurrentVersioningStatus = VersioningStatus.Enabled;
-        return this;
-    }
+        internal override void Validate()
+        {
+            Utils.ValidateBucketName(BucketName);
+            if (CurrentVersioningStatus > VersioningStatus.Suspended)
+            {
+                throw new UnexpectedMinioException("CurrentVersioningStatus invalid value .");
+            }
+        }
 
-    public SetVersioningArgs WithVersioningSuspended()
-    {
-        CurrentVersioningStatus = VersioningStatus.Suspended;
-        return this;
-    }
+        public SetVersioningArgs WithVersioningEnabled()
+        {
+            CurrentVersioningStatus = VersioningStatus.Enabled;
+            return this;
+        }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-    {
-        var config = new VersioningConfiguration(CurrentVersioningStatus == VersioningStatus.Enabled);
+        public SetVersioningArgs WithVersioningSuspended()
+        {
+            CurrentVersioningStatus = VersioningStatus.Suspended;
+            return this;
+        }
 
-        var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
-        requestMessageBuilder.AddXmlBody(body);
-        requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+            var config = new VersioningConfiguration(CurrentVersioningStatus == VersioningStatus.Enabled);
 
-        requestMessageBuilder.AddQueryParameter("versioning", "");
-        return requestMessageBuilder;
-    }
+            var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+            requestMessageBuilder.AddXmlBody(body);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+                Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
 
-    internal enum VersioningStatus : ushort
-    {
-        Off = 0,
-        Enabled = 1,
-        Suspended = 2
+            requestMessageBuilder.AddQueryParameter("versioning", "");
+            return requestMessageBuilder;
+        }
+
+        internal enum VersioningStatus : ushort
+        {
+            Off = 0,
+            Enabled = 1,
+            Suspended = 2
+        }
     }
 }

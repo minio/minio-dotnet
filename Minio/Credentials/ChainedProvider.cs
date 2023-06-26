@@ -17,56 +17,62 @@
 
 using Minio.DataModel;
 
-namespace Minio.Credentials;
-
-public class ChainedProvider : IClientProvider
+namespace Minio.Credentials
 {
-    public ChainedProvider()
+    public class ChainedProvider : IClientProvider
     {
-        Providers = new List<IClientProvider>();
-    }
-
-    internal List<IClientProvider> Providers { get; set; }
-    internal IClientProvider CurrentProvider { get; set; }
-    internal AccessCredentials Credentials { get; set; }
-
-    public AccessCredentials GetCredentials()
-    {
-        if (Credentials?.AreExpired() == false) return Credentials;
-        if (CurrentProvider is not null && !Credentials.AreExpired())
+        public ChainedProvider()
         {
-            Credentials = CurrentProvider.GetCredentials();
-            return CurrentProvider.GetCredentials();
+            Providers = new List<IClientProvider>();
         }
 
-        foreach (var provider in Providers)
+        internal List<IClientProvider> Providers { get; set; }
+        internal IClientProvider CurrentProvider { get; set; }
+        internal AccessCredentials Credentials { get; set; }
+
+        public AccessCredentials GetCredentials()
         {
-            var credentials = provider.GetCredentials();
-            if (credentials?.AreExpired() == false)
+            if (Credentials?.AreExpired() == false)
             {
-                CurrentProvider = provider;
-                Credentials = credentials;
-                return credentials;
+                return Credentials;
             }
+
+            if (CurrentProvider is not null && !Credentials.AreExpired())
+            {
+                Credentials = CurrentProvider.GetCredentials();
+                return CurrentProvider.GetCredentials();
+            }
+
+            foreach (var provider in Providers)
+            {
+                var credentials = provider.GetCredentials();
+                if (credentials?.AreExpired() == false)
+                {
+                    CurrentProvider = provider;
+                    Credentials = credentials;
+                    return credentials;
+                }
+            }
+
+            throw new InvalidOperationException(
+                "None of the assigned providers were able to provide valid credentials.");
         }
 
-        throw new InvalidOperationException("None of the assigned providers were able to provide valid credentials.");
-    }
+        public ValueTask<AccessCredentials> GetCredentialsAsync()
+        {
+            return new ValueTask<AccessCredentials>(GetCredentials());
+        }
 
-    public ValueTask<AccessCredentials> GetCredentialsAsync()
-    {
-        return new ValueTask<AccessCredentials>(GetCredentials());
-    }
+        public ChainedProvider AddProvider(IClientProvider provider)
+        {
+            Providers.Add(provider);
+            return this;
+        }
 
-    public ChainedProvider AddProvider(IClientProvider provider)
-    {
-        Providers.Add(provider);
-        return this;
-    }
-
-    public ChainedProvider AddProviders(IClientProvider[] providers)
-    {
-        Providers.AddRange(providers.ToList());
-        return this;
+        public ChainedProvider AddProviders(IClientProvider[] providers)
+        {
+            Providers.AddRange(providers.ToList());
+            return this;
+        }
     }
 }

@@ -17,40 +17,41 @@
 using Minio.DataModel.Args;
 using Minio.DataModel.Tags;
 
-namespace Minio.Examples.Cases;
-
-internal static class CopyObjectReplaceTags
+namespace Minio.Examples.Cases
 {
-    // Copy object from one bucket to another, replace tags in the copied object
-    public static async Task Run(IMinioClient minio,
-        string fromBucketName = "from-bucket-name",
-        string fromObjectName = "from-object-name",
-        string destBucketName = "dest-bucket",
-        string destObjectName = " to-object-name")
+    internal static class CopyObjectReplaceTags
     {
-        try
+        // Copy object from one bucket to another, replace tags in the copied object
+        public static async Task Run(IMinioClient minio,
+            string fromBucketName = "from-bucket-name",
+            string fromObjectName = "from-object-name",
+            string destBucketName = "dest-bucket",
+            string destObjectName = " to-object-name")
         {
-            Console.WriteLine("Running example for API: CopyObjectAsync with Tags");
-            var tags = new Dictionary<string, string>
-                (StringComparer.Ordinal)
-                {
-                    { "Test-TagKey", "Test-TagValue" }
-                };
-            var tagObj = Tagging.GetObjectTags(tags);
-            var cpSrcArgs = new CopySourceObjectArgs()
-                .WithBucket(fromBucketName)
-                .WithObject(fromObjectName);
-            var args = new CopyObjectArgs()
-                .WithBucket(destBucketName)
-                .WithObject(destObjectName)
-                .WithTagging(tagObj)
-                .WithReplaceTagsDirective(true)
-                .WithCopyObjectSource(cpSrcArgs);
-            await minio.CopyObjectAsync(args).ConfigureAwait(false);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine("[Bucket]  Exception: {0}", e);
+            try
+            {
+                Console.WriteLine("Running example for API: CopyObjectAsync with Tags");
+                var tags = new Dictionary<string, string>
+                    (StringComparer.Ordinal)
+                    {
+                        { "Test-TagKey", "Test-TagValue" }
+                    };
+                var tagObj = Tagging.GetObjectTags(tags);
+                var cpSrcArgs = new CopySourceObjectArgs()
+                    .WithBucket(fromBucketName)
+                    .WithObject(fromObjectName);
+                var args = new CopyObjectArgs()
+                    .WithBucket(destBucketName)
+                    .WithObject(destObjectName)
+                    .WithTagging(tagObj)
+                    .WithReplaceTagsDirective(true)
+                    .WithCopyObjectSource(cpSrcArgs);
+                await minio.CopyObjectAsync(args).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[Bucket]  Exception: {0}", e);
+            }
         }
     }
 }

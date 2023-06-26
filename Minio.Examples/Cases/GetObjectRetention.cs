@@ -17,38 +17,42 @@
 using Minio.DataModel.Args;
 using Minio.DataModel.ObjectLock;
 
-namespace Minio.Examples.Cases;
-
-public static class GetObjectRetention
+namespace Minio.Examples.Cases
 {
-    // Get Object Retention Configuration for the bucket
-    public static async Task Run(IMinioClient minio,
-        string bucketName = "my-bucket-name",
-        string objectName = "my-object-name",
-        string versionId = null)
+    public static class GetObjectRetention
     {
-        if (minio is null) throw new ArgumentNullException(nameof(minio));
+        // Get Object Retention Configuration for the bucket
+        public static async Task Run(IMinioClient minio,
+            string bucketName = "my-bucket-name",
+            string objectName = "my-object-name",
+            string versionId = null)
+        {
+            if (minio is null)
+            {
+                throw new ArgumentNullException(nameof(minio));
+            }
 
-        try
-        {
-            Console.WriteLine("Running example for API: GetObjectRetentionAsync");
-            var config = await minio.GetObjectRetentionAsync(
-                new GetObjectRetentionArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(objectName)
-                    .WithVersionId(versionId)
-            ).ConfigureAwait(false);
-            var versionInfo = string.IsNullOrEmpty(versionId) ? "" : " Version ID: " + versionId;
-            var retentionModeStr = config.Mode == ObjectRetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE";
-            Console.WriteLine($"Retention configuration to object {bucketName}/{objectName} " +
-                              versionInfo +
-                              " Retention Mode: " + retentionModeStr +
-                              " Retention Date: " + config.RetainUntilDate);
-            Console.WriteLine();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"[Object]  Exception: {e}");
+            try
+            {
+                Console.WriteLine("Running example for API: GetObjectRetentionAsync");
+                var config = await minio.GetObjectRetentionAsync(
+                    new GetObjectRetentionArgs()
+                        .WithBucket(bucketName)
+                        .WithObject(objectName)
+                        .WithVersionId(versionId)
+                ).ConfigureAwait(false);
+                var versionInfo = string.IsNullOrEmpty(versionId) ? "" : " Version ID: " + versionId;
+                var retentionModeStr = config.Mode == ObjectRetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE";
+                Console.WriteLine($"Retention configuration to object {bucketName}/{objectName} " +
+                                  versionInfo +
+                                  " Retention Mode: " + retentionModeStr +
+                                  " Retention Date: " + config.RetainUntilDate);
+                Console.WriteLine();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Object]  Exception: {e}");
+            }
         }
     }
 }

@@ -24,62 +24,71 @@ using System.Xml.Serialization;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
  */
 
-namespace Minio.DataModel.Replication;
-
-[Serializable]
-[XmlRoot(ElementName = "Rule")]
-public class ReplicationRule
+namespace Minio.DataModel.Replication
 {
-    public const string StatusEnabled = "Enabled";
-    public const string StatusDisabled = "Disabled";
-
-    public ReplicationRule()
+    [Serializable]
+    [XmlRoot(ElementName = "Rule")]
+    public class ReplicationRule
     {
+        public const string StatusEnabled = "Enabled";
+        public const string StatusDisabled = "Disabled";
+
+        public ReplicationRule()
+        {
+        }
+
+        public ReplicationRule(DeleteMarkerReplication deleteMarkerReplication, ReplicationDestination destination,
+            ExistingObjectReplication existingObjectReplication, RuleFilter filter, DeleteReplication deleteReplication,
+            uint priority, string id, string prefix, SourceSelectionCriteria sourceSelectionCriteria, string status)
+        {
+            if (string.IsNullOrWhiteSpace(status))
+            {
+                throw new ArgumentNullException(nameof(status) + " cannot be null or empty.");
+            }
+
+            if (string.IsNullOrEmpty(id) || string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentNullException(nameof(id) + " cannot be null or empty.");
+            }
+
+            DeleteMarkerReplication = deleteMarkerReplication;
+            Destination = destination ??
+                          throw new ArgumentNullException(nameof(destination) + " cannot be null or empty.");
+            ExistingObjectReplication = existingObjectReplication;
+            Filter = filter;
+            Priority = priority;
+            DeleteReplication = deleteReplication ??
+                                throw new ArgumentNullException(nameof(deleteReplication) +
+                                                                " cannot be null or empty.");
+            ID = id;
+            Prefix = prefix;
+            SourceSelectionCriteria = sourceSelectionCriteria;
+            Status = status;
+        }
+
+        [XmlElement(ElementName = "DeleteMarkerReplication", IsNullable = true)]
+        public DeleteMarkerReplication DeleteMarkerReplication { get; set; }
+
+        [XmlElement("Destination")] public ReplicationDestination Destination { get; set; }
+
+        [XmlElement(ElementName = "ExistingObjectReplication", IsNullable = true)]
+        public ExistingObjectReplication ExistingObjectReplication { get; set; }
+
+        [XmlElement(ElementName = "Filter", IsNullable = true)]
+        public RuleFilter Filter { get; set; }
+
+        [XmlElement("Priority")] public uint Priority { get; set; }
+
+        [XmlElement("ID")] public string ID { get; set; }
+
+        [XmlElement(ElementName = "Prefix", IsNullable = true)]
+        public string Prefix { get; set; }
+
+        [XmlElement("DeleteReplication")] public DeleteReplication DeleteReplication { get; set; }
+
+        [XmlElement(ElementName = "SourceSelectionCriteria", IsNullable = true)]
+        public SourceSelectionCriteria SourceSelectionCriteria { get; set; }
+
+        [XmlElement("Status")] public string Status { get; set; }
     }
-
-    public ReplicationRule(DeleteMarkerReplication deleteMarkerReplication, ReplicationDestination destination,
-        ExistingObjectReplication existingObjectReplication, RuleFilter filter, DeleteReplication deleteReplication,
-        uint priority, string id, string prefix, SourceSelectionCriteria sourceSelectionCriteria, string status)
-    {
-        if (string.IsNullOrWhiteSpace(status))
-            throw new ArgumentNullException(nameof(status) + " cannot be null or empty.");
-        if (string.IsNullOrEmpty(id) || string.IsNullOrWhiteSpace(id))
-            throw new ArgumentNullException(nameof(id) + " cannot be null or empty.");
-        DeleteMarkerReplication = deleteMarkerReplication;
-        Destination = destination ?? throw new ArgumentNullException(nameof(destination) + " cannot be null or empty.");
-        ExistingObjectReplication = existingObjectReplication;
-        Filter = filter;
-        Priority = priority;
-        DeleteReplication = deleteReplication ??
-                            throw new ArgumentNullException(nameof(deleteReplication) + " cannot be null or empty.");
-        ID = id;
-        Prefix = prefix;
-        SourceSelectionCriteria = sourceSelectionCriteria;
-        Status = status;
-    }
-
-    [XmlElement(ElementName = "DeleteMarkerReplication", IsNullable = true)]
-    public DeleteMarkerReplication DeleteMarkerReplication { get; set; }
-
-    [XmlElement("Destination")] public ReplicationDestination Destination { get; set; }
-
-    [XmlElement(ElementName = "ExistingObjectReplication", IsNullable = true)]
-    public ExistingObjectReplication ExistingObjectReplication { get; set; }
-
-    [XmlElement(ElementName = "Filter", IsNullable = true)]
-    public RuleFilter Filter { get; set; }
-
-    [XmlElement("Priority")] public uint Priority { get; set; }
-
-    [XmlElement("ID")] public string ID { get; set; }
-
-    [XmlElement(ElementName = "Prefix", IsNullable = true)]
-    public string Prefix { get; set; }
-
-    [XmlElement("DeleteReplication")] public DeleteReplication DeleteReplication { get; set; }
-
-    [XmlElement(ElementName = "SourceSelectionCriteria", IsNullable = true)]
-    public SourceSelectionCriteria SourceSelectionCriteria { get; set; }
-
-    [XmlElement("Status")] public string Status { get; set; }
 }

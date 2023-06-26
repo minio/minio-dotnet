@@ -20,23 +20,24 @@ using CommunityToolkit.HighPerformance;
 using Minio.DataModel.ObjectLock;
 using Minio.Helper;
 
-namespace Minio.DataModel.Response;
-
-internal class GetRetentionResponse : GenericResponse
+namespace Minio.DataModel.Response
 {
-    public GetRetentionResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
+    internal class GetRetentionResponse : GenericResponse
     {
-        if (string.IsNullOrEmpty(responseContent) && !HttpStatusCode.OK.Equals(statusCode))
+        public GetRetentionResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
         {
-            CurrentRetentionConfiguration = null;
-            return;
+            if (string.IsNullOrEmpty(responseContent) && !HttpStatusCode.OK.Equals(statusCode))
+            {
+                CurrentRetentionConfiguration = null;
+                return;
+            }
+
+            using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+            CurrentRetentionConfiguration =
+                Utils.DeserializeXml<ObjectRetentionConfiguration>(stream);
         }
 
-        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-        CurrentRetentionConfiguration =
-            Utils.DeserializeXml<ObjectRetentionConfiguration>(stream);
+        internal ObjectRetentionConfiguration CurrentRetentionConfiguration { get; }
     }
-
-    internal ObjectRetentionConfiguration CurrentRetentionConfiguration { get; }
 }

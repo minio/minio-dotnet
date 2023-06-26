@@ -17,17 +17,18 @@
 using System.Net;
 using Minio.DataModel.Args;
 
-namespace Minio.DataModel.Response;
-
-internal class StatObjectResponse : GenericResponse
+namespace Minio.DataModel.Response
 {
-    internal StatObjectResponse(HttpStatusCode statusCode, string responseContent,
-        IDictionary<string, string> responseHeaders, StatObjectArgs args)
-        : base(statusCode, responseContent)
+    internal class StatObjectResponse : GenericResponse
     {
-        // StatObjectResponse object is populated with available stats from the response.
-        ObjectInfo = ObjectStat.FromResponseHeaders(args.ObjectName, responseHeaders);
-    }
+        internal StatObjectResponse(HttpStatusCode statusCode, string responseContent,
+            IDictionary<string, string> responseHeaders, StatObjectArgs args)
+            : base(statusCode, responseContent)
+        {
+            // StatObjectResponse object is populated with available stats from the response.
+            ObjectInfo = ObjectStat.FromResponseHeaders(args.ObjectName, responseHeaders);
+        }
 
-    internal ObjectStat ObjectInfo { get; set; }
+        internal ObjectStat ObjectInfo { get; set; }
+    }
 }

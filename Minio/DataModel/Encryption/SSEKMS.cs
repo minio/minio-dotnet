@@ -17,66 +17,79 @@
 using System.Text;
 using Minio.Helper;
 
-namespace Minio.DataModel.Encryption;
-
-/// <summary>
-///     Server-side encryption with AWS KMS managed keys
-/// </summary>
-public class SSEKMS : IServerSideEncryption
+namespace Minio.DataModel.Encryption
 {
-    public SSEKMS(string key, IDictionary<string, string> context = null)
-    {
-        if (string.IsNullOrEmpty(key))
-            throw new ArgumentException("KMS Key cannot be empty", nameof(key));
-        Key = key;
-        Context = context;
-    }
-
-    protected IDictionary<string, string> Context { get; set; }
-
-    // Specifies the customer master key(CMK).Cannot be null
-    protected string Key { get; set; }
-
-    public EncryptionType GetEncryptionType()
-    {
-        return EncryptionType.SSE_KMS;
-    }
-
-    public void Marshal(IDictionary<string, string> headers)
-    {
-        if (headers is null) throw new ArgumentNullException(nameof(headers));
-
-        headers.Add(Constants.SSEKMSKeyId, Key);
-        headers.Add(Constants.SSEGenericHeader, "aws:kms");
-        if (Context is not null) headers.Add(Constants.SSEKMSContext, MarshalContext());
-    }
-
     /// <summary>
-    ///     Serialize context into JSON string.
+    ///     Server-side encryption with AWS KMS managed keys
     /// </summary>
-    /// <returns>Serialized JSON context</returns>
-    private string MarshalContext()
+    public class SSEKMS : IServerSideEncryption
     {
-        var sb = new StringBuilder();
-
-        sb.Append('{');
-        var i = 0;
-        var len = Context.Count;
-        foreach (var pair in Context)
+        public SSEKMS(string key, IDictionary<string, string> context = null)
         {
-            sb.Append('"').Append(pair.Key).Append('"');
-            sb.Append(':');
-            sb.Append('"').Append(pair.Value).Append('"');
-            i++;
-            if (i != len) sb.Append(':');
+            if (string.IsNullOrEmpty(key))
+            {
+                throw new ArgumentException("KMS Key cannot be empty", nameof(key));
+            }
+
+            Key = key;
+            Context = context;
         }
 
-        sb.Append('}');
-        ReadOnlySpan<byte> contextBytes = Encoding.UTF8.GetBytes(sb.ToString());
+        protected IDictionary<string, string> Context { get; set; }
+
+        // Specifies the customer master key(CMK).Cannot be null
+        protected string Key { get; set; }
+
+        public EncryptionType GetEncryptionType()
+        {
+            return EncryptionType.SSE_KMS;
+        }
+
+        public void Marshal(IDictionary<string, string> headers)
+        {
+            if (headers is null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
+            headers.Add(Constants.SSEKMSKeyId, Key);
+            headers.Add(Constants.SSEGenericHeader, "aws:kms");
+            if (Context is not null)
+            {
+                headers.Add(Constants.SSEKMSContext, MarshalContext());
+            }
+        }
+
+        /// <summary>
+        ///     Serialize context into JSON string.
+        /// </summary>
+        /// <returns>Serialized JSON context</returns>
+        private string MarshalContext()
+        {
+            var sb = new StringBuilder();
+
+            sb.Append('{');
+            var i = 0;
+            var len = Context.Count;
+            foreach (var pair in Context)
+            {
+                sb.Append('"').Append(pair.Key).Append('"');
+                sb.Append(':');
+                sb.Append('"').Append(pair.Value).Append('"');
+                i++;
+                if (i != len)
+                {
+                    sb.Append(':');
+                }
+            }
+
+            sb.Append('}');
+            ReadOnlySpan<byte> contextBytes = Encoding.UTF8.GetBytes(sb.ToString());
 #if NETSTANDARD
-        return Convert.ToBase64String(contextBytes.ToArray());
+            return Convert.ToBase64String(contextBytes.ToArray());
 #else
-        return Convert.ToBase64String(contextBytes);
+            return Convert.ToBase64String(contextBytes);
 #endif
+        }
     }
 }

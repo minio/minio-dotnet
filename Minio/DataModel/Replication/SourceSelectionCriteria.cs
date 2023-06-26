@@ -24,21 +24,22 @@ using System.Xml.Serialization;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
  */
 
-namespace Minio.DataModel.Replication;
-
-[Serializable]
-[XmlRoot(ElementName = "SourceSelectionCriteria")]
-public class SourceSelectionCriteria
+namespace Minio.DataModel.Replication
 {
-    public SourceSelectionCriteria()
+    [Serializable]
+    [XmlRoot(ElementName = "SourceSelectionCriteria")]
+    public class SourceSelectionCriteria
     {
-    }
+        public SourceSelectionCriteria()
+        {
+        }
 
-    public SourceSelectionCriteria(SseKmsEncryptedObjects sseKmsEncryptedObjects)
-    {
-        SSEKmsEncryptedObjects = sseKmsEncryptedObjects;
-    }
+        public SourceSelectionCriteria(SseKmsEncryptedObjects sseKmsEncryptedObjects)
+        {
+            SSEKmsEncryptedObjects = sseKmsEncryptedObjects;
+        }
 
-    [XmlElement(ElementName = "SseKmsEncryptedObjects", IsNullable = true)]
-    public SseKmsEncryptedObjects SSEKmsEncryptedObjects { get; set; }
+        [XmlElement(ElementName = "SseKmsEncryptedObjects", IsNullable = true)]
+        public SseKmsEncryptedObjects SSEKmsEncryptedObjects { get; set; }
+    }
 }

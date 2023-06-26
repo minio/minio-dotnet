@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args;
-
-public class BucketExistsArgs : BucketArgs<BucketExistsArgs>
+namespace Minio.DataModel.Args
 {
-    public BucketExistsArgs()
+    public class BucketExistsArgs : BucketArgs<BucketExistsArgs>
     {
-        RequestMethod = HttpMethod.Head;
+        public BucketExistsArgs()
+        {
+            RequestMethod = HttpMethod.Head;
+        }
     }
 }

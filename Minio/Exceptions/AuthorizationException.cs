@@ -15,32 +15,33 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions;
-
-[Serializable]
-public class AuthorizationException : Exception
+namespace Minio.Exceptions
 {
-    internal readonly string accessKey;
-    internal readonly string bucketName;
-    internal readonly string resource;
-
-    public AuthorizationException()
+    [Serializable]
+    public class AuthorizationException : Exception
     {
-    }
+        internal readonly string accessKey;
+        internal readonly string bucketName;
+        internal readonly string resource;
 
-    public AuthorizationException(string message) : base(message)
-    {
-    }
+        public AuthorizationException()
+        {
+        }
 
-    public AuthorizationException(string resource, string bucketName, string message, string accesskey = null) :
-        base(message)
-    {
-        this.resource = resource;
-        this.bucketName = bucketName;
-        accessKey = accesskey;
-    }
+        public AuthorizationException(string message) : base(message)
+        {
+        }
 
-    public AuthorizationException(string message, Exception innerException) : base(message, innerException)
-    {
+        public AuthorizationException(string resource, string bucketName, string message, string accesskey = null) :
+            base(message)
+        {
+            this.resource = resource;
+            this.bucketName = bucketName;
+            accessKey = accesskey;
+        }
+
+        public AuthorizationException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }

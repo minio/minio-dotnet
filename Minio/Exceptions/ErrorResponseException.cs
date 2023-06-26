@@ -15,34 +15,35 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions;
-
-[Serializable]
-public class ErrorResponseException : MinioException
+namespace Minio.Exceptions
 {
-    public ErrorResponseException(ErrorResponse errorResponse, ResponseResult serverResponse) :
-        base(serverResponse)
+    [Serializable]
+    public class ErrorResponseException : MinioException
     {
-        Response = errorResponse;
-    }
+        public ErrorResponseException(ErrorResponse errorResponse, ResponseResult serverResponse) :
+            base(serverResponse)
+        {
+            Response = errorResponse;
+        }
 
-    public ErrorResponseException(ResponseResult serverResponse) : base(serverResponse)
-    {
-    }
+        public ErrorResponseException(ResponseResult serverResponse) : base(serverResponse)
+        {
+        }
 
-    public ErrorResponseException(string message) : base(message)
-    {
-    }
+        public ErrorResponseException(string message) : base(message)
+        {
+        }
 
-    public ErrorResponseException(string message, ResponseResult serverResponse) : base(message, serverResponse)
-    {
-    }
+        public ErrorResponseException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+        {
+        }
 
-    public ErrorResponseException()
-    {
-    }
+        public ErrorResponseException()
+        {
+        }
 
-    public ErrorResponseException(string message, Exception innerException) : base(message, innerException)
-    {
+        public ErrorResponseException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }

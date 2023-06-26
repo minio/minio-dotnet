@@ -19,36 +19,39 @@ using Minio.DataModel.Notification;
 using Minio.Exceptions;
 using Minio.Helper;
 
-namespace Minio.DataModel.Args;
-
-public class SetBucketNotificationsArgs : BucketArgs<SetBucketNotificationsArgs>
+namespace Minio.DataModel.Args
 {
-    public SetBucketNotificationsArgs()
+    public class SetBucketNotificationsArgs : BucketArgs<SetBucketNotificationsArgs>
     {
-        RequestMethod = HttpMethod.Put;
-    }
+        public SetBucketNotificationsArgs()
+        {
+            RequestMethod = HttpMethod.Put;
+        }
 
-    internal BucketNotification BucketNotificationConfiguration { private set; get; }
+        internal BucketNotification BucketNotificationConfiguration { private set; get; }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-    {
-        if (BucketNotificationConfiguration is null)
-            throw new UnexpectedMinioException(
-                "Cannot BuildRequest for SetBucketNotificationsArgs. BucketNotification configuration not assigned");
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+            if (BucketNotificationConfiguration is null)
+            {
+                throw new UnexpectedMinioException(
+                    "Cannot BuildRequest for SetBucketNotificationsArgs. BucketNotification configuration not assigned");
+            }
 
-        requestMessageBuilder.AddQueryParameter("notification", "");
-        var body = Utils.MarshalXML(BucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
-        // Convert string to a byte array
-        ReadOnlyMemory<byte> bodyInBytes = Encoding.ASCII.GetBytes(body);
-        requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
-        requestMessageBuilder.SetBody(bodyInBytes);
+            requestMessageBuilder.AddQueryParameter("notification", "");
+            var body = Utils.MarshalXML(BucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
+            // Convert string to a byte array
+            ReadOnlyMemory<byte> bodyInBytes = Encoding.ASCII.GetBytes(body);
+            requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
+            requestMessageBuilder.SetBody(bodyInBytes);
 
-        return requestMessageBuilder;
-    }
+            return requestMessageBuilder;
+        }
 
-    public SetBucketNotificationsArgs WithBucketNotificationConfiguration(BucketNotification config)
-    {
-        BucketNotificationConfiguration = config;
-        return this;
+        public SetBucketNotificationsArgs WithBucketNotificationConfiguration(BucketNotification config)
+        {
+            BucketNotificationConfiguration = config;
+            return this;
+        }
     }
 }

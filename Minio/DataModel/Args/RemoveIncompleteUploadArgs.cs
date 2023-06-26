@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args;
-
-public class RemoveIncompleteUploadArgs : EncryptionArgs<RemoveIncompleteUploadArgs>
+namespace Minio.DataModel.Args
 {
-    public RemoveIncompleteUploadArgs()
+    public class RemoveIncompleteUploadArgs : EncryptionArgs<RemoveIncompleteUploadArgs>
     {
-        RequestMethod = HttpMethod.Delete;
+        public RemoveIncompleteUploadArgs()
+        {
+            RequestMethod = HttpMethod.Delete;
+        }
     }
 }

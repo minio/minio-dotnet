@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.ObjectLock;
-
-public enum ObjectRetentionMode
+namespace Minio.DataModel.ObjectLock
 {
-    GOVERNANCE,
-    COMPLIANCE
+    public enum ObjectRetentionMode
+    {
+        GOVERNANCE,
+        COMPLIANCE
+    }
 }

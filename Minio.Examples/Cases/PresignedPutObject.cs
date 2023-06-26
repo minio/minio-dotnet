@@ -16,28 +16,32 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases;
-
-public static class PresignedPutObject
+namespace Minio.Examples.Cases
 {
-    public static async Task Run(IMinioClient client,
-        string bucketName = "my-bucket-name",
-        string objectName = "my-object-name")
+    public static class PresignedPutObject
     {
-        if (client is null) throw new ArgumentNullException(nameof(client));
+        public static async Task Run(IMinioClient client,
+            string bucketName = "my-bucket-name",
+            string objectName = "my-object-name")
+        {
+            if (client is null)
+            {
+                throw new ArgumentNullException(nameof(client));
+            }
 
-        try
-        {
-            var args = new PresignedPutObjectArgs()
-                .WithBucket(bucketName)
-                .WithObject(objectName)
-                .WithExpiry(1000);
-            var presignedUrl = await client.PresignedPutObjectAsync(args).ConfigureAwait(false);
-            Console.WriteLine(presignedUrl);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"Exception {e.Message}");
+            try
+            {
+                var args = new PresignedPutObjectArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    .WithExpiry(1000);
+                var presignedUrl = await client.PresignedPutObjectAsync(args).ConfigureAwait(false);
+                Console.WriteLine(presignedUrl);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception {e.Message}");
+            }
         }
     }
 }

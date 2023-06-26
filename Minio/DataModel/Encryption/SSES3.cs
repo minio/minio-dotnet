@@ -16,22 +16,26 @@
 
 using Minio.Helper;
 
-namespace Minio.DataModel.Encryption;
-
-/// <summary>
-///     Server-side encryption with S3 managed encryption keys (SSE-S3)
-/// </summary>
-public class SSES3 : IServerSideEncryption
+namespace Minio.DataModel.Encryption
 {
-    public EncryptionType GetEncryptionType()
+    /// <summary>
+    ///     Server-side encryption with S3 managed encryption keys (SSE-S3)
+    /// </summary>
+    public class SSES3 : IServerSideEncryption
     {
-        return EncryptionType.SSE_S3;
-    }
+        public EncryptionType GetEncryptionType()
+        {
+            return EncryptionType.SSE_S3;
+        }
 
-    public virtual void Marshal(IDictionary<string, string> headers)
-    {
-        if (headers is null) throw new ArgumentNullException(nameof(headers));
+        public virtual void Marshal(IDictionary<string, string> headers)
+        {
+            if (headers is null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
 
-        headers.Add(Constants.SSEGenericHeader, "AES256");
+            headers.Add(Constants.SSEGenericHeader, "AES256");
+        }
     }
 }

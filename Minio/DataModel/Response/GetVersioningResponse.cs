@@ -19,20 +19,23 @@ using System.Text;
 using CommunityToolkit.HighPerformance;
 using Minio.Helper;
 
-namespace Minio.DataModel.Response;
-
-internal class GetVersioningResponse : GenericResponse
+namespace Minio.DataModel.Response
 {
-    internal GetVersioningResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
+    internal class GetVersioningResponse : GenericResponse
     {
-        if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
-            return;
+        internal GetVersioningResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
+        {
+            if (string.IsNullOrEmpty(responseContent) ||
+                !HttpStatusCode.OK.Equals(statusCode))
+            {
+                return;
+            }
 
-        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-        VersioningConfig = Utils.DeserializeXml<VersioningConfiguration>(stream);
+            using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+            VersioningConfig = Utils.DeserializeXml<VersioningConfiguration>(stream);
+        }
+
+        internal VersioningConfiguration VersioningConfig { get; set; }
     }
-
-    internal VersioningConfiguration VersioningConfig { get; set; }
 }

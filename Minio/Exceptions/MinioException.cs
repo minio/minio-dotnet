@@ -15,57 +15,64 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions;
-
-[Serializable]
-public class MinioException : Exception
+namespace Minio.Exceptions
 {
-    public MinioException()
+    [Serializable]
+    public class MinioException : Exception
     {
-    }
+        public MinioException()
+        {
+        }
 
-    public MinioException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
+        public MinioException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
 
-    public MinioException(ResponseResult serverResponse) : this(null, serverResponse)
-    {
-    }
+        public MinioException(ResponseResult serverResponse) : this(null, serverResponse)
+        {
+        }
 
-    public MinioException(string message) : this(message, serverResponse: null)
-    {
-    }
+        public MinioException(string message) : this(message, serverResponse: null)
+        {
+        }
 
-    public MinioException(string message, ResponseResult serverResponse)
-        : base(GetMessage(message, serverResponse))
-    {
-        ServerMessage = message;
-        ServerResponse = serverResponse;
-    }
+        public MinioException(string message, ResponseResult serverResponse)
+            : base(GetMessage(message, serverResponse))
+        {
+            ServerMessage = message;
+            ServerResponse = serverResponse;
+        }
 
-    public string ServerMessage { get; }
+        public string ServerMessage { get; }
 
-    public ResponseResult ServerResponse { get; }
+        public ResponseResult ServerResponse { get; }
 
-    public ErrorResponse Response { get; internal set; }
+        public ErrorResponse Response { get; internal set; }
 
-    public string XmlError { get; internal set; }
+        public string XmlError { get; internal set; }
 
-    private static string GetMessage(string message, ResponseResult serverResponse)
-    {
-        if (serverResponse is null && string.IsNullOrEmpty(message))
-            throw new ArgumentNullException(nameof(message));
+        private static string GetMessage(string message, ResponseResult serverResponse)
+        {
+            if (serverResponse is null && string.IsNullOrEmpty(message))
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
 
-        if (serverResponse is null)
-            return $"MinIO API responded with message={message}";
+            if (serverResponse is null)
+            {
+                return $"MinIO API responded with message={message}";
+            }
 
-        var contentString = serverResponse.Content;
+            var contentString = serverResponse.Content;
 
-        if (message is null)
+            if (message is null)
+            {
+                return
+                    $"MinIO API responded with status code={serverResponse.StatusCode}, response={serverResponse.ErrorMessage}, content={contentString}";
+            }
+
             return
-                $"MinIO API responded with status code={serverResponse.StatusCode}, response={serverResponse.ErrorMessage}, content={contentString}";
-
-        return
-            $"MinIO API responded with message={message}. Status code={serverResponse.StatusCode}, response={serverResponse.ErrorMessage}, content={contentString}";
+                $"MinIO API responded with message={message}. Status code={serverResponse.StatusCode}, response={serverResponse.ErrorMessage}, content={contentString}";
+        }
     }
 }

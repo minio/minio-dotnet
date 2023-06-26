@@ -14,28 +14,30 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions;
-
-[Serializable]
-public class UnexpectedShortReadException : MinioException
+namespace Minio.Exceptions
 {
-    public UnexpectedShortReadException(string message) : base(message)
+    [Serializable]
+    public class UnexpectedShortReadException : MinioException
     {
-    }
+        public UnexpectedShortReadException(string message) : base(message)
+        {
+        }
 
-    public UnexpectedShortReadException(ResponseResult serverResponse) : base(serverResponse)
-    {
-    }
+        public UnexpectedShortReadException(ResponseResult serverResponse) : base(serverResponse)
+        {
+        }
 
-    public UnexpectedShortReadException(string message, ResponseResult serverResponse) : base(message, serverResponse)
-    {
-    }
+        public UnexpectedShortReadException(string message, ResponseResult serverResponse) : base(message,
+            serverResponse)
+        {
+        }
 
-    public UnexpectedShortReadException()
-    {
-    }
+        public UnexpectedShortReadException()
+        {
+        }
 
-    public UnexpectedShortReadException(string message, Exception innerException) : base(message, innerException)
-    {
+        public UnexpectedShortReadException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }

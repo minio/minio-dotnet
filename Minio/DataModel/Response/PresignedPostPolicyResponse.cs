@@ -16,18 +16,25 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.DataModel.Response;
-
-public class PresignedPostPolicyResponse
+namespace Minio.DataModel.Response
 {
-    public PresignedPostPolicyResponse(PresignedPostPolicyArgs args, Uri URI)
+    public class PresignedPostPolicyResponse
     {
-        if (args is null) throw new ArgumentNullException(nameof(args));
+        public PresignedPostPolicyResponse(PresignedPostPolicyArgs args, Uri URI)
+        {
+            if (args is null)
+            {
+                throw new ArgumentNullException(nameof(args));
+            }
 
-        if (URI is null) throw new ArgumentNullException(nameof(URI));
+            if (URI is null)
+            {
+                throw new ArgumentNullException(nameof(URI));
+            }
 
-        URIPolicyTuple = Tuple.Create(URI.AbsolutePath, args.Policy.FormData);
+            URIPolicyTuple = Tuple.Create(URI.AbsolutePath, args.Policy.FormData);
+        }
+
+        internal Tuple<string, IDictionary<string, string>> URIPolicyTuple { get; }
     }
-
-    internal Tuple<string, IDictionary<string, string>> URIPolicyTuple { get; }
 }

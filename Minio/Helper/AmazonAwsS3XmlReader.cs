@@ -16,13 +16,14 @@
 
 using System.Xml;
 
-namespace Minio.Helper;
-
-public class AmazonAwsS3XmlReader : XmlTextReader
+namespace Minio.Helper
 {
-    public AmazonAwsS3XmlReader(Stream stream) : base(stream)
+    public class AmazonAwsS3XmlReader : XmlTextReader
     {
-    }
+        public AmazonAwsS3XmlReader(Stream stream) : base(stream)
+        {
+        }
 
-    public override string NamespaceURI => "http://s3.amazonaws.com/doc/2006-03-01/";
+        public override string NamespaceURI => "http://s3.amazonaws.com/doc/2006-03-01/";
+    }
 }

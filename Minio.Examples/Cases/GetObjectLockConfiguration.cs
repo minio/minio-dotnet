@@ -17,45 +17,50 @@
 using Minio.DataModel.Args;
 using Minio.DataModel.ObjectLock;
 
-namespace Minio.Examples.Cases;
-
-public static class GetObjectLockConfiguration
+namespace Minio.Examples.Cases
 {
-    // Get the Object Lock Configuration on the bucket
-    public static async Task Run(IMinioClient minio,
-        string bucketName = "my-bucket-name")
+    public static class GetObjectLockConfiguration
     {
-        if (minio is null) throw new ArgumentNullException(nameof(minio));
-
-        try
+        // Get the Object Lock Configuration on the bucket
+        public static async Task Run(IMinioClient minio,
+            string bucketName = "my-bucket-name")
         {
-            Console.WriteLine("Running example for API: GetObjectLockConfiguration");
-            var config = await minio.GetObjectLockConfigurationAsync(
-                new GetObjectLockConfigurationArgs()
-                    .WithBucket(bucketName)
-            ).ConfigureAwait(false);
-            if (config is not null)
+            if (minio is null)
             {
-                Console.WriteLine($"Object lock configuration on bucket {bucketName} is : " + config.ObjectLockEnabled);
-                if (config.Rule?.DefaultRetention is not null)
-                {
-                    var mode = config.Rule.DefaultRetention.Mode == ObjectRetentionMode.GOVERNANCE
-                        ? "GOVERNANCE"
-                        : "COMPLIANCE";
-                    Console.WriteLine("Object Lock Configuration Rule Mode: " + mode + " Duration: " +
-                                      config.Rule.DefaultRetention.Days + " days.");
-                }
-
-                Console.WriteLine();
-                return;
+                throw new ArgumentNullException(nameof(minio));
             }
 
-            Console.WriteLine($"Object lock configuration unavailable on bucket {bucketName}.");
-            Console.WriteLine();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"[Bucket]  Exception: {e}");
+            try
+            {
+                Console.WriteLine("Running example for API: GetObjectLockConfiguration");
+                var config = await minio.GetObjectLockConfigurationAsync(
+                    new GetObjectLockConfigurationArgs()
+                        .WithBucket(bucketName)
+                ).ConfigureAwait(false);
+                if (config is not null)
+                {
+                    Console.WriteLine($"Object lock configuration on bucket {bucketName} is : " +
+                                      config.ObjectLockEnabled);
+                    if (config.Rule?.DefaultRetention is not null)
+                    {
+                        var mode = config.Rule.DefaultRetention.Mode == ObjectRetentionMode.GOVERNANCE
+                            ? "GOVERNANCE"
+                            : "COMPLIANCE";
+                        Console.WriteLine("Object Lock Configuration Rule Mode: " + mode + " Duration: " +
+                                          config.Rule.DefaultRetention.Days + " days.");
+                    }
+
+                    Console.WriteLine();
+                    return;
+                }
+
+                Console.WriteLine($"Object lock configuration unavailable on bucket {bucketName}.");
+                Console.WriteLine();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Bucket]  Exception: {e}");
+            }
         }
     }
 }

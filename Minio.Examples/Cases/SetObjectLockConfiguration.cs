@@ -17,31 +17,35 @@
 using Minio.DataModel.Args;
 using Minio.DataModel.ObjectLock;
 
-namespace Minio.Examples.Cases;
-
-public static class SetObjectLockConfiguration
+namespace Minio.Examples.Cases
 {
-    // Set Object Lock Configuration on the bucket
-    public static async Task Run(IMinioClient minio,
-        string bucketName = "my-bucket-name",
-        ObjectLockConfiguration config = null)
+    public static class SetObjectLockConfiguration
     {
-        if (minio is null) throw new ArgumentNullException(nameof(minio));
+        // Set Object Lock Configuration on the bucket
+        public static async Task Run(IMinioClient minio,
+            string bucketName = "my-bucket-name",
+            ObjectLockConfiguration config = null)
+        {
+            if (minio is null)
+            {
+                throw new ArgumentNullException(nameof(minio));
+            }
 
-        try
-        {
-            Console.WriteLine("Running example for API: SetObjectLockConfiguration");
-            await minio.SetObjectLockConfigurationAsync(
-                new SetObjectLockConfigurationArgs()
-                    .WithBucket(bucketName)
-                    .WithLockConfiguration(config)
-            ).ConfigureAwait(false);
-            Console.WriteLine($"Set object lock configuration on bucket {bucketName}");
-            Console.WriteLine();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"[Bucket]  Exception: {e}");
+            try
+            {
+                Console.WriteLine("Running example for API: SetObjectLockConfiguration");
+                await minio.SetObjectLockConfigurationAsync(
+                    new SetObjectLockConfigurationArgs()
+                        .WithBucket(bucketName)
+                        .WithLockConfiguration(config)
+                ).ConfigureAwait(false);
+                Console.WriteLine($"Set object lock configuration on bucket {bucketName}");
+                Console.WriteLine();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Bucket]  Exception: {e}");
+            }
         }
     }
 }

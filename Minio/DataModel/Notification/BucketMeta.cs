@@ -16,13 +16,14 @@
 
 using System.Text.Json.Serialization;
 
-namespace Minio.DataModel.Notification;
-
-public class BucketMeta
+namespace Minio.DataModel.Notification
 {
-    [JsonPropertyName("arn")] public string Arn { get; set; }
+    public class BucketMeta
+    {
+        [JsonPropertyName("arn")] public string Arn { get; set; }
 
-    [JsonPropertyName("name")] public string Name { get; set; }
+        [JsonPropertyName("name")] public string Name { get; set; }
 
-    [JsonPropertyName("ownerIdentity")] public Identity OwnerIdentity { get; set; }
+        [JsonPropertyName("ownerIdentity")] public Identity OwnerIdentity { get; set; }
+    }
 }

@@ -18,25 +18,26 @@ using System.Text;
 using Minio.DataModel.Notification;
 using Minio.Helper;
 
-namespace Minio.DataModel.Args;
-
-public class RemoveAllBucketNotificationsArgs : BucketArgs<RemoveAllBucketNotificationsArgs>
+namespace Minio.DataModel.Args
 {
-    public RemoveAllBucketNotificationsArgs()
+    public class RemoveAllBucketNotificationsArgs : BucketArgs<RemoveAllBucketNotificationsArgs>
     {
-        RequestMethod = HttpMethod.Put;
-    }
+        public RemoveAllBucketNotificationsArgs()
+        {
+            RequestMethod = HttpMethod.Put;
+        }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-    {
-        requestMessageBuilder.AddQueryParameter("notification", "");
-        var bucketNotificationConfiguration = new BucketNotification();
-        var body = Utils.MarshalXML(bucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
-        // Convert string to a byte array
-        ReadOnlyMemory<byte> bodyInBytes = Encoding.ASCII.GetBytes(body);
-        requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
-        requestMessageBuilder.SetBody(bodyInBytes);
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+            requestMessageBuilder.AddQueryParameter("notification", "");
+            var bucketNotificationConfiguration = new BucketNotification();
+            var body = Utils.MarshalXML(bucketNotificationConfiguration, "http://s3.amazonaws.com/doc/2006-03-01/");
+            // Convert string to a byte array
+            ReadOnlyMemory<byte> bodyInBytes = Encoding.ASCII.GetBytes(body);
+            requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
+            requestMessageBuilder.SetBody(bodyInBytes);
 
-        return requestMessageBuilder;
+            return requestMessageBuilder;
+        }
     }
 }

@@ -16,23 +16,27 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases;
-
-public static class PresignedGetObject
+namespace Minio.Examples.Cases
 {
-    public static async Task Run(IMinioClient client,
-        string bucketName = "my-bucket-name",
-        string objectName = "my-object-name")
+    public static class PresignedGetObject
     {
-        if (client is null) throw new ArgumentNullException(nameof(client));
+        public static async Task Run(IMinioClient client,
+            string bucketName = "my-bucket-name",
+            string objectName = "my-object-name")
+        {
+            if (client is null)
+            {
+                throw new ArgumentNullException(nameof(client));
+            }
 
-        var reqParams = new Dictionary<string, string>(StringComparer.Ordinal)
-            { { "response-content-type", "application/json" } };
-        var args = new PresignedGetObjectArgs()
-            .WithBucket(bucketName)
-            .WithObject(objectName)
-            .WithExpiry(1000)
-            .WithHeaders(reqParams);
-        var presignedUrl = await client.PresignedGetObjectAsync(args).ConfigureAwait(false);
+            var reqParams = new Dictionary<string, string>(StringComparer.Ordinal)
+                { { "response-content-type", "application/json" } };
+            var args = new PresignedGetObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithExpiry(1000)
+                .WithHeaders(reqParams);
+            var presignedUrl = await client.PresignedGetObjectAsync(args).ConfigureAwait(false);
+        }
     }
 }

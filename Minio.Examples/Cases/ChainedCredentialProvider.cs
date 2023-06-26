@@ -19,35 +19,36 @@ using Minio.Credentials;
 using Minio.DataModel.Args;
 using Minio.Exceptions;
 
-namespace Minio.Examples.Cases;
-
-public static class ChainedCredentialProvider
+namespace Minio.Examples.Cases
 {
-    // Establish Credentials with AWS Session token
-    public static async Task Run()
+    public static class ChainedCredentialProvider
     {
-        var provider = new ChainedProvider()
-            .AddProviders(new IClientProvider[] { new AWSEnvironmentProvider(), new MinioEnvironmentProvider() });
-        //Chained provider definition here.
-        using var minioClient = new MinioClient()
-            .WithEndpoint("s3.amazonaws.com")
-            .WithSSL()
-            .WithCredentialsProvider(provider)
-            .Build();
-        try
+        // Establish Credentials with AWS Session token
+        public static async Task Run()
         {
-            var statObjectArgs = new StatObjectArgs()
-                .WithBucket("my-bucket-name")
-                .WithObject("my-object-name");
-            var result = await minioClient.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
-        }
-        catch (MinioException me)
-        {
-            Console.WriteLine($"[Bucket] ChainedCredentialProvider example case encountered Exception: {me}");
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"[Bucket] ChainedCredentialProvider example case encountered Exception: {e}");
+            var provider = new ChainedProvider()
+                .AddProviders(new IClientProvider[] { new AWSEnvironmentProvider(), new MinioEnvironmentProvider() });
+            //Chained provider definition here.
+            using var minioClient = new MinioClient()
+                .WithEndpoint("s3.amazonaws.com")
+                .WithSSL()
+                .WithCredentialsProvider(provider)
+                .Build();
+            try
+            {
+                var statObjectArgs = new StatObjectArgs()
+                    .WithBucket("my-bucket-name")
+                    .WithObject("my-object-name");
+                var result = await minioClient.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+            }
+            catch (MinioException me)
+            {
+                Console.WriteLine($"[Bucket] ChainedCredentialProvider example case encountered Exception: {me}");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Bucket] ChainedCredentialProvider example case encountered Exception: {e}");
+            }
         }
     }
 }

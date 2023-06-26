@@ -20,23 +20,24 @@ using CommunityToolkit.HighPerformance;
 using Minio.DataModel.Notification;
 using Minio.Helper;
 
-namespace Minio.DataModel.Response;
-
-internal class GetBucketNotificationsResponse : GenericResponse
+namespace Minio.DataModel.Response
 {
-    internal GetBucketNotificationsResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
+    internal class GetBucketNotificationsResponse : GenericResponse
     {
-        if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
+        internal GetBucketNotificationsResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
         {
-            BucketNotificationConfiguration = new BucketNotification();
-            return;
+            if (string.IsNullOrEmpty(responseContent) ||
+                !HttpStatusCode.OK.Equals(statusCode))
+            {
+                BucketNotificationConfiguration = new BucketNotification();
+                return;
+            }
+
+            using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+            BucketNotificationConfiguration = Utils.DeserializeXml<BucketNotification>(stream);
         }
 
-        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-        BucketNotificationConfiguration = Utils.DeserializeXml<BucketNotification>(stream);
+        internal BucketNotification BucketNotificationConfiguration { set; get; }
     }
-
-    internal BucketNotification BucketNotificationConfiguration { set; get; }
 }

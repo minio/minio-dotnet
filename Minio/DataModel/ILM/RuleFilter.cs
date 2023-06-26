@@ -24,35 +24,45 @@ using Minio.DataModel.Tags;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html
  */
 
-namespace Minio.DataModel.ILM;
-
-[Serializable]
-[XmlRoot(ElementName = "Filter")]
-public class RuleFilter
+namespace Minio.DataModel.ILM
 {
-    public RuleFilter()
+    [Serializable]
+    [XmlRoot(ElementName = "Filter")]
+    public class RuleFilter
     {
+        public RuleFilter()
+        {
+        }
+
+        public RuleFilter(AndOperator theAndOperator, string prefix, Tagging tag)
+        {
+            TheAndOperator = theAndOperator;
+            if (string.IsNullOrWhiteSpace(prefix) || string.IsNullOrEmpty(prefix))
+            {
+                Prefix = null;
+            }
+            else
+            {
+                Prefix = prefix;
+            }
+
+            if (tag?.TaggingSet.Tag.Count == 0)
+            {
+                tag = null;
+            }
+            else
+            {
+                Tag = tag;
+            }
+        }
+
+        [XmlElement(ElementName = "And", IsNullable = true)]
+        public AndOperator TheAndOperator { get; set; }
+
+        [XmlElement(ElementName = "Prefix", IsNullable = true)]
+        public string Prefix { get; set; }
+
+        [XmlElement(ElementName = "Tag", IsNullable = true)]
+        public Tagging Tag { get; set; }
     }
-
-    public RuleFilter(AndOperator theAndOperator, string prefix, Tagging tag)
-    {
-        TheAndOperator = theAndOperator;
-        if (string.IsNullOrWhiteSpace(prefix) || string.IsNullOrEmpty(prefix))
-            Prefix = null;
-        else
-            Prefix = prefix;
-        if (tag?.TaggingSet.Tag.Count == 0)
-            tag = null;
-        else
-            Tag = tag;
-    }
-
-    [XmlElement(ElementName = "And", IsNullable = true)]
-    public AndOperator TheAndOperator { get; set; }
-
-    [XmlElement(ElementName = "Prefix", IsNullable = true)]
-    public string Prefix { get; set; }
-
-    [XmlElement(ElementName = "Tag", IsNullable = true)]
-    public Tagging Tag { get; set; }
 }

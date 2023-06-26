@@ -14,40 +14,41 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions;
-
-[Serializable]
-public class InvalidBucketNameException : MinioException
+namespace Minio.Exceptions
 {
-    private readonly string bucketName;
-
-    public InvalidBucketNameException(string bucketName, string message) : base(message)
+    [Serializable]
+    public class InvalidBucketNameException : MinioException
     {
-        this.bucketName = bucketName;
-    }
+        private readonly string bucketName;
 
-    public InvalidBucketNameException(ResponseResult serverResponse) : base(serverResponse)
-    {
-    }
+        public InvalidBucketNameException(string bucketName, string message) : base(message)
+        {
+            this.bucketName = bucketName;
+        }
 
-    public InvalidBucketNameException(string message) : base(message)
-    {
-    }
+        public InvalidBucketNameException(ResponseResult serverResponse) : base(serverResponse)
+        {
+        }
 
-    public InvalidBucketNameException(string message, ResponseResult serverResponse) : base(message, serverResponse)
-    {
-    }
+        public InvalidBucketNameException(string message) : base(message)
+        {
+        }
 
-    public InvalidBucketNameException()
-    {
-    }
+        public InvalidBucketNameException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+        {
+        }
 
-    public InvalidBucketNameException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
+        public InvalidBucketNameException()
+        {
+        }
 
-    public override string ToString()
-    {
-        return $"{bucketName}: {base.ToString()}";
+        public InvalidBucketNameException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        public override string ToString()
+        {
+            return $"{bucketName}: {base.ToString()}";
+        }
     }
 }

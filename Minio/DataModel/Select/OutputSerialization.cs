@@ -16,12 +16,13 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Select;
-
-[Serializable]
-public class OutputSerialization
+namespace Minio.DataModel.Select
 {
-    [XmlAttribute("CSV")] public CSVOutputOptions CSV { get; set; }
+    [Serializable]
+    public class OutputSerialization
+    {
+        [XmlAttribute("CSV")] public CSVOutputOptions CSV { get; set; }
 
-    [XmlAttribute("JSON")] public JSONOutputOptions JSON { get; set; }
+        [XmlAttribute("JSON")] public JSONOutputOptions JSON { get; set; }
+    }
 }

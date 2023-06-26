@@ -17,38 +17,43 @@
 using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Tags;
 
-namespace Minio.DataModel.Args;
-
-public abstract class ObjectWriteArgs<T> : ObjectConditionalQueryArgs<T>
-    where T : ObjectWriteArgs<T>
+namespace Minio.DataModel.Args
 {
-    internal Tagging ObjectTags { get; set; }
-    internal ObjectRetentionConfiguration Retention { get; set; }
-    internal bool? LegalHoldEnabled { get; set; }
-    internal string ContentType { get; set; }
-
-    public T WithTagging(Tagging tagging)
+    public abstract class ObjectWriteArgs<T> : ObjectConditionalQueryArgs<T>
+        where T : ObjectWriteArgs<T>
     {
-        ObjectTags = tagging;
-        return (T)this;
-    }
+        internal Tagging ObjectTags { get; set; }
+        internal ObjectRetentionConfiguration Retention { get; set; }
+        internal bool? LegalHoldEnabled { get; set; }
+        internal string ContentType { get; set; }
 
-    public T WithContentType(string type)
-    {
-        ContentType = string.IsNullOrWhiteSpace(type) ? "application/octet-stream" : type;
-        if (!Headers.ContainsKey("Content-Type")) Headers["Content-Type"] = type;
-        return (T)this;
-    }
+        public T WithTagging(Tagging tagging)
+        {
+            ObjectTags = tagging;
+            return (T)this;
+        }
 
-    public T WithRetentionConfiguration(ObjectRetentionConfiguration retentionConfiguration)
-    {
-        Retention = retentionConfiguration;
-        return (T)this;
-    }
+        public T WithContentType(string type)
+        {
+            ContentType = string.IsNullOrWhiteSpace(type) ? "application/octet-stream" : type;
+            if (!Headers.ContainsKey("Content-Type"))
+            {
+                Headers["Content-Type"] = type;
+            }
 
-    public T WithLegalHold(bool? legalHold)
-    {
-        LegalHoldEnabled = legalHold;
-        return (T)this;
+            return (T)this;
+        }
+
+        public T WithRetentionConfiguration(ObjectRetentionConfiguration retentionConfiguration)
+        {
+            Retention = retentionConfiguration;
+            return (T)this;
+        }
+
+        public T WithLegalHold(bool? legalHold)
+        {
+            LegalHoldEnabled = legalHold;
+            return (T)this;
+        }
     }
 }

@@ -17,35 +17,38 @@
 using Minio.Exceptions;
 using Minio.Helper;
 
-namespace Minio.DataModel.Args;
-
-public class PresignedGetObjectArgs : ObjectArgs<PresignedGetObjectArgs>
+namespace Minio.DataModel.Args
 {
-    public PresignedGetObjectArgs()
+    public class PresignedGetObjectArgs : ObjectArgs<PresignedGetObjectArgs>
     {
-        RequestMethod = HttpMethod.Get;
-    }
+        public PresignedGetObjectArgs()
+        {
+            RequestMethod = HttpMethod.Get;
+        }
 
-    internal int Expiry { get; set; }
-    internal DateTime? RequestDate { get; set; }
+        internal int Expiry { get; set; }
+        internal DateTime? RequestDate { get; set; }
 
-    internal override void Validate()
-    {
-        base.Validate();
-        if (!Utils.IsValidExpiry(Expiry))
-            throw new InvalidExpiryRangeException("expiry range should be between 1 and " +
-                                                  Constants.DefaultExpiryTime);
-    }
+        internal override void Validate()
+        {
+            base.Validate();
+            if (!Utils.IsValidExpiry(Expiry))
+            {
+                throw new InvalidExpiryRangeException("expiry range should be between 1 and " +
+                                                      Constants.DefaultExpiryTime);
+            }
+        }
 
-    public PresignedGetObjectArgs WithExpiry(int expiry)
-    {
-        Expiry = expiry;
-        return this;
-    }
+        public PresignedGetObjectArgs WithExpiry(int expiry)
+        {
+            Expiry = expiry;
+            return this;
+        }
 
-    public PresignedGetObjectArgs WithRequestDate(DateTime? d)
-    {
-        RequestDate = d;
-        return this;
+        public PresignedGetObjectArgs WithRequestDate(DateTime? d)
+        {
+            RequestDate = d;
+            return this;
+        }
     }
 }

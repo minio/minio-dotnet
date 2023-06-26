@@ -18,41 +18,42 @@ using System.Xml;
 using System.Xml.Serialization;
 using Minio.DataModel.Notification;
 
-namespace Minio.DataModel;
-
-[XmlRoot(ElementName = "CreateBucketConfiguration", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-public class CreateBucketConfiguration
+namespace Minio.DataModel
 {
-    public CreateBucketConfiguration()
+    [XmlRoot(ElementName = "CreateBucketConfiguration", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+    public class CreateBucketConfiguration
     {
-        LocationConstraint = null;
-    }
-
-    public CreateBucketConfiguration(string location = null)
-    {
-        LocationConstraint = location;
-    }
-
-    [XmlElement(ElementName = "LocationConstraint", IsNullable = true)]
-    public string LocationConstraint { get; set; }
-
-    public string ToXml()
-    {
-        var settings = new XmlWriterSettings
+        public CreateBucketConfiguration()
         {
-            OmitXmlDeclaration = true
-        };
-        using var ms = new MemoryStream();
-        using var writer = XmlWriter.Create(ms, settings);
-        var names = new XmlSerializerNamespaces();
-        names.Add(string.Empty, "http://s3.amazonaws.com/doc/2006-03-01/");
+            LocationConstraint = null;
+        }
 
-        var cs = new XmlSerializer(typeof(BucketNotification));
-        cs.Serialize(writer, this, names);
+        public CreateBucketConfiguration(string location = null)
+        {
+            LocationConstraint = location;
+        }
 
-        ms.Flush();
-        ms.Seek(0, SeekOrigin.Begin);
-        using var sr = new StreamReader(ms);
-        return sr.ReadToEnd();
+        [XmlElement(ElementName = "LocationConstraint", IsNullable = true)]
+        public string LocationConstraint { get; set; }
+
+        public string ToXml()
+        {
+            var settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true
+            };
+            using var ms = new MemoryStream();
+            using var writer = XmlWriter.Create(ms, settings);
+            var names = new XmlSerializerNamespaces();
+            names.Add(string.Empty, "http://s3.amazonaws.com/doc/2006-03-01/");
+
+            var cs = new XmlSerializer(typeof(BucketNotification));
+            cs.Serialize(writer, this, names);
+
+            ms.Flush();
+            ms.Seek(0, SeekOrigin.Begin);
+            using var sr = new StreamReader(ms);
+            return sr.ReadToEnd();
+        }
     }
 }

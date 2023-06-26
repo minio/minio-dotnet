@@ -16,32 +16,33 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases;
-
-internal static class FPutObject
+namespace Minio.Examples.Cases
 {
-    // Upload object to bucket from file
-    public static async Task Run(IMinioClient minio,
-        string bucketName = "my-bucket-name",
-        string objectName = "my-object-name",
-        string fileName = "from where")
+    internal static class FPutObject
     {
-        try
+        // Upload object to bucket from file
+        public static async Task Run(IMinioClient minio,
+            string bucketName = "my-bucket-name",
+            string objectName = "my-object-name",
+            string fileName = "from where")
         {
-            Console.WriteLine("Running example for API: PutObjectAsync with FileName");
-            var args = new PutObjectArgs()
-                .WithBucket(bucketName)
-                .WithObject(objectName)
-                .WithContentType("application/octet-stream")
-                .WithFileName(fileName);
-            await minio.PutObjectAsync(args).ConfigureAwait(false);
+            try
+            {
+                Console.WriteLine("Running example for API: PutObjectAsync with FileName");
+                var args = new PutObjectArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    .WithContentType("application/octet-stream")
+                    .WithFileName(fileName);
+                await minio.PutObjectAsync(args).ConfigureAwait(false);
 
-            Console.WriteLine($"Uploaded object {objectName} to bucket {bucketName}");
-            Console.WriteLine();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"[Bucket]  Exception: {e}");
+                Console.WriteLine($"Uploaded object {objectName} to bucket {bucketName}");
+                Console.WriteLine();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Bucket]  Exception: {e}");
+            }
         }
     }
 }

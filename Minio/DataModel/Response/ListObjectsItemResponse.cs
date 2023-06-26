@@ -18,41 +18,53 @@ using System.Web;
 using Minio.DataModel.Args;
 using Minio.DataModel.Result;
 
-namespace Minio.DataModel.Response;
-
-internal class ListObjectsItemResponse
+namespace Minio.DataModel.Response
 {
-    internal Item BucketObjectsLastItem;
-    internal IObserver<Item> ItemObservable;
-
-    internal ListObjectsItemResponse(ListObjectsArgs args, Tuple<ListBucketResult, List<Item>> objectList,
-        IObserver<Item> obs)
+    internal class ListObjectsItemResponse
     {
-        ItemObservable = obs;
-        NextMarker = string.Empty;
-        foreach (var item in objectList.Item2)
+        internal Item BucketObjectsLastItem;
+        internal IObserver<Item> ItemObservable;
+
+        internal ListObjectsItemResponse(ListObjectsArgs args, Tuple<ListBucketResult, List<Item>> objectList,
+            IObserver<Item> obs)
         {
-            BucketObjectsLastItem = item;
-            if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
-                item.Key = HttpUtility.UrlDecode(item.Key);
-            ItemObservable.OnNext(item);
+            ItemObservable = obs;
+            NextMarker = string.Empty;
+            foreach (var item in objectList.Item2)
+            {
+                BucketObjectsLastItem = item;
+                if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
+                {
+                    item.Key = HttpUtility.UrlDecode(item.Key);
+                }
+
+                ItemObservable.OnNext(item);
+            }
+
+            if (objectList.Item1.NextMarker is not null)
+            {
+                if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
+                {
+                    NextMarker = HttpUtility.UrlDecode(objectList.Item1.NextMarker);
+                }
+                else
+                {
+                    NextMarker = objectList.Item1.NextMarker;
+                }
+            }
+            else if (BucketObjectsLastItem is not null)
+            {
+                if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
+                {
+                    NextMarker = HttpUtility.UrlDecode(BucketObjectsLastItem.Key);
+                }
+                else
+                {
+                    NextMarker = BucketObjectsLastItem.Key;
+                }
+            }
         }
 
-        if (objectList.Item1.NextMarker is not null)
-        {
-            if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
-                NextMarker = HttpUtility.UrlDecode(objectList.Item1.NextMarker);
-            else
-                NextMarker = objectList.Item1.NextMarker;
-        }
-        else if (BucketObjectsLastItem is not null)
-        {
-            if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
-                NextMarker = HttpUtility.UrlDecode(BucketObjectsLastItem.Key);
-            else
-                NextMarker = BucketObjectsLastItem.Key;
-        }
+        internal string NextMarker { get; }
     }
-
-    internal string NextMarker { get; }
 }

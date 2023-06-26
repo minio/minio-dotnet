@@ -17,23 +17,31 @@
 using System.Collections.ObjectModel;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Tags;
-
-[Serializable]
-[XmlRoot(ElementName = "TagSet")]
-public class TagSet
+namespace Minio.DataModel.Tags
 {
-    public TagSet()
+    [Serializable]
+    [XmlRoot(ElementName = "TagSet")]
+    public class TagSet
     {
-        Tag = null;
-    }
+        public TagSet()
+        {
+            Tag = null;
+        }
 
-    public TagSet(IDictionary<string, string> tags)
-    {
-        if (tags is null || tags.Count == 0) return;
-        Tag = new Collection<Tag>();
-        foreach (var item in tags) Tag.Add(new Tag(item.Key, item.Value));
-    }
+        public TagSet(IDictionary<string, string> tags)
+        {
+            if (tags is null || tags.Count == 0)
+            {
+                return;
+            }
 
-    [XmlElement("Tag")] public Collection<Tag> Tag { get; set; }
+            Tag = new Collection<Tag>();
+            foreach (var item in tags)
+            {
+                Tag.Add(new Tag(item.Key, item.Value));
+            }
+        }
+
+        [XmlElement("Tag")] public Collection<Tag> Tag { get; set; }
+    }
 }

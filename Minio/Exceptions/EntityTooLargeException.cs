@@ -14,28 +14,29 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions;
-
-[Serializable]
-public class EntityTooLargeException : MinioException
+namespace Minio.Exceptions
 {
-    public EntityTooLargeException(string message) : base(message)
+    [Serializable]
+    public class EntityTooLargeException : MinioException
     {
-    }
+        public EntityTooLargeException(string message) : base(message)
+        {
+        }
 
-    public EntityTooLargeException(ResponseResult serverResponse) : base(serverResponse)
-    {
-    }
+        public EntityTooLargeException(ResponseResult serverResponse) : base(serverResponse)
+        {
+        }
 
-    public EntityTooLargeException(string message, ResponseResult serverResponse) : base(message, serverResponse)
-    {
-    }
+        public EntityTooLargeException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+        {
+        }
 
-    public EntityTooLargeException()
-    {
-    }
+        public EntityTooLargeException()
+        {
+        }
 
-    public EntityTooLargeException(string message, Exception innerException) : base(message, innerException)
-    {
+        public EntityTooLargeException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }

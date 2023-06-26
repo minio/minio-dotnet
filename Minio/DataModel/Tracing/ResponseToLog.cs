@@ -17,18 +17,19 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
-namespace Minio.DataModel.Tracing;
-
-public sealed class ResponseToLog
+namespace Minio.DataModel.Tracing
 {
-    public string Content { get; internal set; }
+    public sealed class ResponseToLog
+    {
+        public string Content { get; internal set; }
 
-    [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
-        Justification = "Needs to be concrete type for XML deserialization")]
-    public Dictionary<string, string> Headers { get; internal set; }
+        [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
+            Justification = "Needs to be concrete type for XML deserialization")]
+        public Dictionary<string, string> Headers { get; internal set; }
 
-    public HttpStatusCode StatusCode { get; internal set; }
-    public Uri ResponseUri { get; internal set; }
-    public double DurationMs { get; internal set; }
-    public string ErrorMessage { get; set; }
+        public HttpStatusCode StatusCode { get; internal set; }
+        public Uri ResponseUri { get; internal set; }
+        public double DurationMs { get; internal set; }
+        public string ErrorMessage { get; set; }
+    }
 }

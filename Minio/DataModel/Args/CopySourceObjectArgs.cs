@@ -14,28 +14,29 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args;
-
-public class CopySourceObjectArgs : ObjectConditionalQueryArgs<CopySourceObjectArgs>
+namespace Minio.DataModel.Args
 {
-    public CopySourceObjectArgs()
+    public class CopySourceObjectArgs : ObjectConditionalQueryArgs<CopySourceObjectArgs>
     {
-        RequestMethod = HttpMethod.Put;
-        CopyOperationConditions = new CopyConditions();
-        Headers = new Dictionary<string, string>(StringComparer.Ordinal);
+        public CopySourceObjectArgs()
+        {
+            RequestMethod = HttpMethod.Put;
+            CopyOperationConditions = new CopyConditions();
+            Headers = new Dictionary<string, string>(StringComparer.Ordinal);
+        }
+
+        internal string CopySourceObjectPath { get; set; }
+        internal CopyConditions CopyOperationConditions { get; set; }
+
+        public CopySourceObjectArgs WithCopyConditions(CopyConditions cp)
+        {
+            CopyOperationConditions = cp is not null ? cp.Clone() : new CopyConditions();
+            return this;
+        }
+
+        // internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        // {
+        //     return requestMessageBuilder;
+        // }
     }
-
-    internal string CopySourceObjectPath { get; set; }
-    internal CopyConditions CopyOperationConditions { get; set; }
-
-    public CopySourceObjectArgs WithCopyConditions(CopyConditions cp)
-    {
-        CopyOperationConditions = cp is not null ? cp.Clone() : new CopyConditions();
-        return this;
-    }
-
-    // internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-    // {
-    //     return requestMessageBuilder;
-    // }
 }

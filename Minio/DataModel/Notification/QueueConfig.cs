@@ -14,43 +14,51 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Notification;
-
-/// <summary>
-///     QueueConfig carries one single queue notification configuration
-/// </summary>
-[Serializable]
-public class QueueConfig : NotificationConfiguration
+namespace Minio.DataModel.Notification
 {
-    public QueueConfig()
+    /// <summary>
+    ///     QueueConfig carries one single queue notification configuration
+    /// </summary>
+    [Serializable]
+    public class QueueConfig : NotificationConfiguration
     {
-    }
+        public QueueConfig()
+        {
+        }
 
-    public QueueConfig(string arn) : base(arn)
-    {
-        Queue = arn;
-    }
+        public QueueConfig(string arn) : base(arn)
+        {
+            Queue = arn;
+        }
 
-    public QueueConfig(Arn arn) : base(arn)
-    {
-        if (arn is null) throw new ArgumentNullException(nameof(arn));
+        public QueueConfig(Arn arn) : base(arn)
+        {
+            if (arn is null)
+            {
+                throw new ArgumentNullException(nameof(arn));
+            }
 
-        Queue = arn.ToString();
-    }
+            Queue = arn.ToString();
+        }
 
-    public string Queue { get; set; }
+        public string Queue { get; set; }
 
-    // Implement equality for this object
-    public override bool Equals(object obj)
-    {
-        var other = (QueueConfig)obj;
-        // If parameter is null return false.
-        if (other is null) return false;
-        return other.Queue.Equals(Queue, StringComparison.Ordinal);
-    }
+        // Implement equality for this object
+        public override bool Equals(object obj)
+        {
+            var other = (QueueConfig)obj;
+            // If parameter is null return false.
+            if (other is null)
+            {
+                return false;
+            }
 
-    public override int GetHashCode()
-    {
-        return StringComparer.Ordinal.GetHashCode(Queue);
+            return other.Queue.Equals(Queue, StringComparison.Ordinal);
+        }
+
+        public override int GetHashCode()
+        {
+            return StringComparer.Ordinal.GetHashCode(Queue);
+        }
     }
 }

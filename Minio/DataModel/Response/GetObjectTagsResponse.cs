@@ -20,24 +20,25 @@ using CommunityToolkit.HighPerformance;
 using Minio.DataModel.Tags;
 using Minio.Helper;
 
-namespace Minio.DataModel.Response;
-
-internal class GetObjectTagsResponse : GenericResponse
+namespace Minio.DataModel.Response
 {
-    public GetObjectTagsResponse(HttpStatusCode statusCode, string responseContent)
-        : base(statusCode, responseContent)
+    internal class GetObjectTagsResponse : GenericResponse
     {
-        if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
+        public GetObjectTagsResponse(HttpStatusCode statusCode, string responseContent)
+            : base(statusCode, responseContent)
         {
-            ObjectTags = null;
-            return;
+            if (string.IsNullOrEmpty(responseContent) ||
+                !HttpStatusCode.OK.Equals(statusCode))
+            {
+                ObjectTags = null;
+                return;
+            }
+
+            responseContent = Utils.RemoveNamespaceInXML(responseContent);
+            using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+            ObjectTags = Utils.DeserializeXml<Tagging>(stream);
         }
 
-        responseContent = Utils.RemoveNamespaceInXML(responseContent);
-        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-        ObjectTags = Utils.DeserializeXml<Tagging>(stream);
+        public Tagging ObjectTags { get; set; }
     }
-
-    public Tagging ObjectTags { get; set; }
 }

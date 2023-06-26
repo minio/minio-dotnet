@@ -16,36 +16,37 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases;
-
-internal static class ListIncompleteUploads
+namespace Minio.Examples.Cases
 {
-    // List incomplete uploads on the bucket matching specified prefix
-    public static void Run(MinioClient minio,
-        string bucketName = "my-bucket-name",
-        string prefix = "my-object-name",
-        bool recursive = true)
+    internal static class ListIncompleteUploads
     {
-        try
+        // List incomplete uploads on the bucket matching specified prefix
+        public static void Run(MinioClient minio,
+            string bucketName = "my-bucket-name",
+            string prefix = "my-object-name",
+            bool recursive = true)
         {
-            Console.WriteLine("Running example for API: ListIncompleteUploads");
+            try
+            {
+                Console.WriteLine("Running example for API: ListIncompleteUploads");
 
-            var args = new ListIncompleteUploadsArgs()
-                .WithBucket(bucketName)
-                .WithPrefix(prefix)
-                .WithRecursive(recursive);
-            var observable = minio.ListIncompleteUploads(args);
+                var args = new ListIncompleteUploadsArgs()
+                    .WithBucket(bucketName)
+                    .WithPrefix(prefix)
+                    .WithRecursive(recursive);
+                var observable = minio.ListIncompleteUploads(args);
 
-            var subscription = observable.Subscribe(
-                item => Console.WriteLine($"OnNext: {item.Key}"),
-                ex => Console.WriteLine($"OnError: {ex.Message}"),
-                () => Console.WriteLine($"Listed the pending uploads to bucket {bucketName}"));
+                var subscription = observable.Subscribe(
+                    item => Console.WriteLine($"OnNext: {item.Key}"),
+                    ex => Console.WriteLine($"OnError: {ex.Message}"),
+                    () => Console.WriteLine($"Listed the pending uploads to bucket {bucketName}"));
 
-            Console.WriteLine();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"Exception: {e}");
+                Console.WriteLine();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception: {e}");
+            }
         }
     }
 }

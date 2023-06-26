@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args;
-
-public class GetBucketTagsArgs : BucketArgs<GetBucketTagsArgs>
+namespace Minio.DataModel.Args
 {
-    public GetBucketTagsArgs()
+    public class GetBucketTagsArgs : BucketArgs<GetBucketTagsArgs>
     {
-        RequestMethod = HttpMethod.Get;
-    }
+        public GetBucketTagsArgs()
+        {
+            RequestMethod = HttpMethod.Get;
+        }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-    {
-        requestMessageBuilder.AddQueryParameter("tagging", "");
-        return requestMessageBuilder;
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+            requestMessageBuilder.AddQueryParameter("tagging", "");
+            return requestMessageBuilder;
+        }
     }
 }

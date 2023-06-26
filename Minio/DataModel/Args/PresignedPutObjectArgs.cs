@@ -17,33 +17,36 @@
 using Minio.Exceptions;
 using Minio.Helper;
 
-namespace Minio.DataModel.Args;
-
-public class PresignedPutObjectArgs : ObjectArgs<PresignedPutObjectArgs>
+namespace Minio.DataModel.Args
 {
-    public PresignedPutObjectArgs()
+    public class PresignedPutObjectArgs : ObjectArgs<PresignedPutObjectArgs>
     {
-        RequestMethod = HttpMethod.Put;
-    }
+        public PresignedPutObjectArgs()
+        {
+            RequestMethod = HttpMethod.Put;
+        }
 
-    internal int Expiry { get; set; }
+        internal int Expiry { get; set; }
 
-    protected new void Validate()
-    {
-        base.Validate();
-        if (!Utils.IsValidExpiry(Expiry))
-            throw new InvalidExpiryRangeException("Expiry range should be between 1 seconds and " +
-                                                  Constants.DefaultExpiryTime + " seconds");
-    }
+        protected new void Validate()
+        {
+            base.Validate();
+            if (!Utils.IsValidExpiry(Expiry))
+            {
+                throw new InvalidExpiryRangeException("Expiry range should be between 1 seconds and " +
+                                                      Constants.DefaultExpiryTime + " seconds");
+            }
+        }
 
-    public PresignedPutObjectArgs WithExpiry(int ex)
-    {
-        Expiry = ex;
-        return this;
-    }
+        public PresignedPutObjectArgs WithExpiry(int ex)
+        {
+            Expiry = ex;
+            return this;
+        }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-    {
-        return requestMessageBuilder;
+        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+        {
+            return requestMessageBuilder;
+        }
     }
 }

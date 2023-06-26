@@ -17,24 +17,25 @@
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
-namespace Minio.DataModel.Notification;
-
-[DataContract]
-public class EventMeta
+namespace Minio.DataModel.Notification
 {
-    [DataMember]
-    [JsonPropertyName("bucket")]
-    public BucketMeta Bucket { get; set; }
+    [DataContract]
+    public class EventMeta
+    {
+        [DataMember]
+        [JsonPropertyName("bucket")]
+        public BucketMeta Bucket { get; set; }
 
-    [DataMember]
-    [JsonPropertyName("configurationId")]
-    public string ConfigurationId { get; set; }
+        [DataMember]
+        [JsonPropertyName("configurationId")]
+        public string ConfigurationId { get; set; }
 
-    [DataMember(Name = "object")]
-    [JsonPropertyName("object")]
-    public ObjectMeta ObjectMeta { get; set; } // C# won't allow the keyword 'object' as a name
+        [DataMember(Name = "object")]
+        [JsonPropertyName("object")]
+        public ObjectMeta ObjectMeta { get; set; } // C# won't allow the keyword 'object' as a name
 
-    [DataMember]
-    [JsonPropertyName("schemaVersion")]
-    public string SchemaVersion { get; set; }
+        [DataMember]
+        [JsonPropertyName("schemaVersion")]
+        public string SchemaVersion { get; set; }
+    }
 }

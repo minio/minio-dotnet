@@ -19,111 +19,122 @@ using System.Diagnostics;
 using Minio.DataModel.Args;
 using Minio.DataModel.Replication;
 
-namespace Minio.Examples.Cases;
-
-public static class SetBucketReplication
+namespace Minio.Examples.Cases
 {
-    private static string Bash(string cmd)
+    public static class SetBucketReplication
     {
-        var escapedArgs = "";
-        foreach (var str in new List<string>
-                 {
-                     "$", "(", ")", "{", "}",
-                     "[", "]", "@", "#", "$",
-                     "%", "&", "+"
-                 })
-            escapedArgs = cmd.Replace("str", "\\str");
-
-        var fileName = "/bin/bash";
-        var arguments = $"-c \"{escapedArgs}\"" +
-                        "RedirectStandardOutput = true" +
-                        "UseShellExecute = false" +
-                        "CreateNoWindow = true";
-        var startInfo = new ProcessStartInfo(fileName, arguments);
-        using var process = Process.Start(startInfo);
-
-        var result = process.StandardOutput.ReadToEnd();
-        process.WaitForExit();
-
-        return result;
-    }
-
-    // Set Replication configuration for the bucket
-    public static async Task Run(IMinioClient minio,
-        string bucketName = "my-bucket-name",
-        string destBucketName = "dest-bucket-name",
-        string replicationRuleID = "my-replication-ID")
-    {
-        if (minio is null) throw new ArgumentNullException(nameof(minio));
-
-        var setArgs = new SetVersioningArgs()
-            .WithBucket(bucketName)
-            .WithVersioningEnabled();
-        await minio.SetVersioningAsync(setArgs).ConfigureAwait(false);
-        setArgs = new SetVersioningArgs()
-            .WithBucket(destBucketName)
-            .WithVersioningEnabled();
-        await minio.SetVersioningAsync(setArgs).ConfigureAwait(false);
-        var schema = "http://";
-        string serverEndPoint;
-        string accessKey;
-        string secretKey;
-        if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") is not null)
+        private static string Bash(string cmd)
         {
-            serverEndPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");
-            accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
-            secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
-            if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") is not null)
-                if (Environment.GetEnvironmentVariable("ENABLE_HTTPS").Equals("1", StringComparison.OrdinalIgnoreCase))
-                    schema = "https://";
-        }
-        else
-        {
-            serverEndPoint = "play.min.io";
-            accessKey = "Q3AM3UQ867SPQQA43P2F";
-            secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
-            schema = "http://";
+            var escapedArgs = "";
+            foreach (var str in new List<string>
+                     {
+                         "$", "(", ")", "{", "}",
+                         "[", "]", "@", "#", "$",
+                         "%", "&", "+"
+                     })
+            {
+                escapedArgs = cmd.Replace("str", "\\str");
+            }
+
+            var fileName = "/bin/bash";
+            var arguments = $"-c \"{escapedArgs}\"" +
+                            "RedirectStandardOutput = true" +
+                            "UseShellExecute = false" +
+                            "CreateNoWindow = true";
+            var startInfo = new ProcessStartInfo(fileName, arguments);
+            using var process = Process.Start(startInfo);
+
+            var result = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+
+            return result;
         }
 
-        var cmdFullPathMC = Bash("which mc").TrimEnd('\r', '\n', ' ');
-        var cmdAlias = cmdFullPathMC + " alias list | egrep -B1 \"" +
-                       schema + serverEndPoint + "\" | grep -v URL";
-        var alias = Bash(cmdAlias).TrimEnd('\r', '\n', ' ');
-
-        var cmdRemoteAdd = cmdFullPathMC + " admin bucket remote add " +
-                           alias + "/" + bucketName + "/ " + schema +
-                           accessKey + ":" + secretKey + "@" +
-                           serverEndPoint + "/" + destBucketName +
-                           " --service replication --region us-east-1";
-
-        var arn = Bash(cmdRemoteAdd).Replace("Remote ARN = `", "").Replace("`.", "");
-
-        var rule =
-            new ReplicationRule(
-                new DeleteMarkerReplication(DeleteMarkerReplication.StatusDisabled),
-                new ReplicationDestination(null, null,
-                    "arn:aws:s3:::" + destBucketName,
-                    null, null, null, null),
-                new ExistingObjectReplication(ExistingObjectReplication.StatusEnabled),
-                new RuleFilter(null, null, null),
-                new DeleteReplication(DeleteReplication.StatusDisabled),
-                1,
-                replicationRuleID,
-                "",
-                new SourceSelectionCriteria(new SseKmsEncryptedObjects(
-                    SseKmsEncryptedObjects.StatusEnabled)),
-                ReplicationRule.StatusEnabled
-            );
-        var rules = new Collection<ReplicationRule>
+        // Set Replication configuration for the bucket
+        public static async Task Run(IMinioClient minio,
+            string bucketName = "my-bucket-name",
+            string destBucketName = "dest-bucket-name",
+            string replicationRuleID = "my-replication-ID")
         {
-            rule
-        };
-        var repl = new ReplicationConfiguration(arn, rules);
+            if (minio is null)
+            {
+                throw new ArgumentNullException(nameof(minio));
+            }
 
-        await minio.SetBucketReplicationAsync(
-            new SetBucketReplicationArgs()
+            var setArgs = new SetVersioningArgs()
                 .WithBucket(bucketName)
-                .WithConfiguration(repl)
-        ).ConfigureAwait(false);
+                .WithVersioningEnabled();
+            await minio.SetVersioningAsync(setArgs).ConfigureAwait(false);
+            setArgs = new SetVersioningArgs()
+                .WithBucket(destBucketName)
+                .WithVersioningEnabled();
+            await minio.SetVersioningAsync(setArgs).ConfigureAwait(false);
+            var schema = "http://";
+            string serverEndPoint;
+            string accessKey;
+            string secretKey;
+            if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") is not null)
+            {
+                serverEndPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");
+                accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
+                secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+                if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") is not null)
+                {
+                    if (Environment.GetEnvironmentVariable("ENABLE_HTTPS")
+                        .Equals("1", StringComparison.OrdinalIgnoreCase))
+                    {
+                        schema = "https://";
+                    }
+                }
+            }
+            else
+            {
+                serverEndPoint = "play.min.io";
+                accessKey = "Q3AM3UQ867SPQQA43P2F";
+                secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
+                schema = "http://";
+            }
+
+            var cmdFullPathMC = Bash("which mc").TrimEnd('\r', '\n', ' ');
+            var cmdAlias = cmdFullPathMC + " alias list | egrep -B1 \"" +
+                           schema + serverEndPoint + "\" | grep -v URL";
+            var alias = Bash(cmdAlias).TrimEnd('\r', '\n', ' ');
+
+            var cmdRemoteAdd = cmdFullPathMC + " admin bucket remote add " +
+                               alias + "/" + bucketName + "/ " + schema +
+                               accessKey + ":" + secretKey + "@" +
+                               serverEndPoint + "/" + destBucketName +
+                               " --service replication --region us-east-1";
+
+            var arn = Bash(cmdRemoteAdd).Replace("Remote ARN = `", "").Replace("`.", "");
+
+            var rule =
+                new ReplicationRule(
+                    new DeleteMarkerReplication(DeleteMarkerReplication.StatusDisabled),
+                    new ReplicationDestination(null, null,
+                        "arn:aws:s3:::" + destBucketName,
+                        null, null, null, null),
+                    new ExistingObjectReplication(ExistingObjectReplication.StatusEnabled),
+                    new RuleFilter(null, null, null),
+                    new DeleteReplication(DeleteReplication.StatusDisabled),
+                    1,
+                    replicationRuleID,
+                    "",
+                    new SourceSelectionCriteria(new SseKmsEncryptedObjects(
+                        SseKmsEncryptedObjects.StatusEnabled)),
+                    ReplicationRule.StatusEnabled
+                );
+            var rules = new Collection<ReplicationRule>
+            {
+                rule
+            };
+            var repl = new ReplicationConfiguration(arn, rules);
+
+            await minio.SetBucketReplicationAsync(
+                new SetBucketReplicationArgs()
+                    .WithBucket(bucketName)
+                    .WithConfiguration(repl)
+            ).ConfigureAwait(false);
+        }
     }
 }

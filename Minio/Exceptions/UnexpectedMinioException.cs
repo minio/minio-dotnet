@@ -15,28 +15,29 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions;
-
-[Serializable]
-public class UnexpectedMinioException : MinioException
+namespace Minio.Exceptions
 {
-    public UnexpectedMinioException(string message) : base(message)
+    [Serializable]
+    public class UnexpectedMinioException : MinioException
     {
-    }
+        public UnexpectedMinioException(string message) : base(message)
+        {
+        }
 
-    public UnexpectedMinioException(ResponseResult serverResponse) : base(serverResponse)
-    {
-    }
+        public UnexpectedMinioException(ResponseResult serverResponse) : base(serverResponse)
+        {
+        }
 
-    public UnexpectedMinioException(string message, ResponseResult serverResponse) : base(message, serverResponse)
-    {
-    }
+        public UnexpectedMinioException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+        {
+        }
 
-    public UnexpectedMinioException()
-    {
-    }
+        public UnexpectedMinioException()
+        {
+        }
 
-    public UnexpectedMinioException(string message, Exception innerException) : base(message, innerException)
-    {
+        public UnexpectedMinioException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }

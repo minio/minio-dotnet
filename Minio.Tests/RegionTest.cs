@@ -16,27 +16,28 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Minio.Tests;
-
-[TestClass]
-public class RegionTest
+namespace Minio.Tests
 {
-    [DataTestMethod]
-    [DataRow("s3.us-east-2.amazonaws.com", "us-east-2")]
-    [DataRow("s3.amazonaws.com", "")]
-    [DataRow("testbucket.s3-ca-central-1.amazonaws.com", "ca-central-1")]
-    [DataRow("mybucket-s3-us-east-2.amazonaws.com", "us-east-2")]
-    [DataRow("s3.us-west-1.amazonaws.com", "us-west-1")]
-    [DataRow("mybucket-s3-us-west-1.amazonaws.com", "us-west-1")]
-    [DataRow("wests3iss.s3-us-west-1.amazonaws.com", "us-west-1")]
-    [DataRow("test.s3-s3.bucket.s3-us-west-1.amazonaws.com", "us-west-1")]
-    [DataRow("test-s3.s3-bucket.s3-us-west-1.amazonaws.com", "us-west-1")]
-    [DataRow("minio.mydomain.com", "")]
-    [DataRow("minio.mydomain.com:9000", "")]
-    [DataRow("subdomain.minio.mydomain.com:9000", "")]
-    [DataRow("localhost:9000", "")]
-    public void TestGetRegion(string endpoint, string expectedRegion)
+    [TestClass]
+    public class RegionTest
     {
-        Assert.AreEqual(expectedRegion, Regions.GetRegionFromEndpoint(endpoint));
+        [DataTestMethod]
+        [DataRow("s3.us-east-2.amazonaws.com", "us-east-2")]
+        [DataRow("s3.amazonaws.com", "")]
+        [DataRow("testbucket.s3-ca-central-1.amazonaws.com", "ca-central-1")]
+        [DataRow("mybucket-s3-us-east-2.amazonaws.com", "us-east-2")]
+        [DataRow("s3.us-west-1.amazonaws.com", "us-west-1")]
+        [DataRow("mybucket-s3-us-west-1.amazonaws.com", "us-west-1")]
+        [DataRow("wests3iss.s3-us-west-1.amazonaws.com", "us-west-1")]
+        [DataRow("test.s3-s3.bucket.s3-us-west-1.amazonaws.com", "us-west-1")]
+        [DataRow("test-s3.s3-bucket.s3-us-west-1.amazonaws.com", "us-west-1")]
+        [DataRow("minio.mydomain.com", "")]
+        [DataRow("minio.mydomain.com:9000", "")]
+        [DataRow("subdomain.minio.mydomain.com:9000", "")]
+        [DataRow("localhost:9000", "")]
+        public void TestGetRegion(string endpoint, string expectedRegion)
+        {
+            Assert.AreEqual(expectedRegion, Regions.GetRegionFromEndpoint(endpoint));
+        }
     }
 }

@@ -23,74 +23,84 @@ using System.Xml.Serialization;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html
  */
 
-namespace Minio.DataModel.ILM;
-
-[Serializable]
-[XmlRoot(ElementName = "Rule")]
-public class LifecycleRule
+namespace Minio.DataModel.ILM
 {
-    public static readonly string LifecycleRuleStatusEnabled = "Enabled";
-    public static readonly string LifecycleRuleStatusDisabled = "Disabled";
-
-    private RuleFilter _ruleFilter;
-
-    public LifecycleRule()
+    [Serializable]
+    [XmlRoot(ElementName = "Rule")]
+    public class LifecycleRule
     {
-        _ruleFilter = new RuleFilter();
-    }
+        public static readonly string LifecycleRuleStatusEnabled = "Enabled";
+        public static readonly string LifecycleRuleStatusDisabled = "Disabled";
 
-    public LifecycleRule(AbortIncompleteMultipartUpload abortIncompleteMultipartUpload, string id,
-        Expiration expiration, Transition transition, RuleFilter filter,
-        NoncurrentVersionExpiration noncurrentVersionExpiration,
-        NoncurrentVersionTransition noncurrentVersionTransition,
-        string status)
-    {
-        if (string.IsNullOrEmpty(status))
-            throw new ArgumentException($"'{nameof(status)}' cannot be null or empty.", nameof(status));
+        private RuleFilter _ruleFilter;
 
-        if (!status.Equals(LifecycleRuleStatusEnabled, StringComparison.Ordinal) &&
-            !status.Equals(LifecycleRuleStatusDisabled, StringComparison.Ordinal))
-            throw new ArgumentException("Wrong value assignment for " + nameof(Status));
-        AbortIncompleteMultipartUploadObject = abortIncompleteMultipartUpload;
-        ID = id;
-        Expiration = expiration;
-        TransitionObject = transition;
-        Filter = filter;
-        NoncurrentVersionExpirationObject = noncurrentVersionExpiration;
-        NoncurrentVersionTransitionObject = noncurrentVersionTransition;
-        Status = status;
-    }
-
-    [XmlElement(ElementName = "AbortIncompleteMultipartUpload", IsNullable = true)]
-    public AbortIncompleteMultipartUpload AbortIncompleteMultipartUploadObject { get; set; }
-
-    [XmlElement(ElementName = "ID")] public string ID { get; set; }
-
-    [XmlElement(ElementName = "Expiration", IsNullable = true)]
-    public Expiration Expiration { get; set; }
-
-    [XmlElement(ElementName = "Transition", IsNullable = true)]
-    public Transition TransitionObject { get; set; }
-
-    [XmlElement("Filter", IsNullable = true)]
-    public RuleFilter Filter
-    {
-        get => _ruleFilter;
-        set
+        public LifecycleRule()
         {
-            // The filter must not be missing, even if it is empty.
-            if (value is null)
-                _ruleFilter = new RuleFilter();
-            else
-                _ruleFilter = value;
+            _ruleFilter = new RuleFilter();
         }
+
+        public LifecycleRule(AbortIncompleteMultipartUpload abortIncompleteMultipartUpload, string id,
+            Expiration expiration, Transition transition, RuleFilter filter,
+            NoncurrentVersionExpiration noncurrentVersionExpiration,
+            NoncurrentVersionTransition noncurrentVersionTransition,
+            string status)
+        {
+            if (string.IsNullOrEmpty(status))
+            {
+                throw new ArgumentException($"'{nameof(status)}' cannot be null or empty.", nameof(status));
+            }
+
+            if (!status.Equals(LifecycleRuleStatusEnabled, StringComparison.Ordinal) &&
+                !status.Equals(LifecycleRuleStatusDisabled, StringComparison.Ordinal))
+            {
+                throw new ArgumentException("Wrong value assignment for " + nameof(Status));
+            }
+
+            AbortIncompleteMultipartUploadObject = abortIncompleteMultipartUpload;
+            ID = id;
+            Expiration = expiration;
+            TransitionObject = transition;
+            Filter = filter;
+            NoncurrentVersionExpirationObject = noncurrentVersionExpiration;
+            NoncurrentVersionTransitionObject = noncurrentVersionTransition;
+            Status = status;
+        }
+
+        [XmlElement(ElementName = "AbortIncompleteMultipartUpload", IsNullable = true)]
+        public AbortIncompleteMultipartUpload AbortIncompleteMultipartUploadObject { get; set; }
+
+        [XmlElement(ElementName = "ID")] public string ID { get; set; }
+
+        [XmlElement(ElementName = "Expiration", IsNullable = true)]
+        public Expiration Expiration { get; set; }
+
+        [XmlElement(ElementName = "Transition", IsNullable = true)]
+        public Transition TransitionObject { get; set; }
+
+        [XmlElement("Filter", IsNullable = true)]
+        public RuleFilter Filter
+        {
+            get => _ruleFilter;
+            set
+            {
+                // The filter must not be missing, even if it is empty.
+                if (value is null)
+                {
+                    _ruleFilter = new RuleFilter();
+                }
+                else
+                {
+                    _ruleFilter = value;
+                }
+            }
+        }
+
+        [XmlElement("NoncurrentVersionExpiration", IsNullable = true)]
+        public NoncurrentVersionExpiration NoncurrentVersionExpirationObject { get; set; }
+
+        [XmlElement("NoncurrentVersionTransition", IsNullable = true)]
+        public NoncurrentVersionTransition NoncurrentVersionTransitionObject { get; set; }
+
+        [XmlElement("Status")] public string Status { get; set; }
     }
-
-    [XmlElement("NoncurrentVersionExpiration", IsNullable = true)]
-    public NoncurrentVersionExpiration NoncurrentVersionExpirationObject { get; set; }
-
-    [XmlElement("NoncurrentVersionTransition", IsNullable = true)]
-    public NoncurrentVersionTransition NoncurrentVersionTransitionObject { get; set; }
-
-    [XmlElement("Status")] public string Status { get; set; }
 }

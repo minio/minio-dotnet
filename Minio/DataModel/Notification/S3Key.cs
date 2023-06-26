@@ -17,36 +17,37 @@
 using System.Collections.ObjectModel;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Notification;
-
-/// <summary>
-///     S3Key - child of Filter, a tag in the notification xml which carries suffix/prefix
-///     filters and allows filtering event notifications based on S3 Object key's name
-/// </summary>
-[Serializable]
-public class S3Key
+namespace Minio.DataModel.Notification
 {
-    private Collection<FilterRule> filterRules;
-
-    [XmlElement("FilterRule")]
-    public Collection<FilterRule> FilterRules
+    /// <summary>
+    ///     S3Key - child of Filter, a tag in the notification xml which carries suffix/prefix
+    ///     filters and allows filtering event notifications based on S3 Object key's name
+    /// </summary>
+    [Serializable]
+    public class S3Key
     {
-        get
+        private Collection<FilterRule> filterRules;
+
+        [XmlElement("FilterRule")]
+        public Collection<FilterRule> FilterRules
         {
-            filterRules ??= new Collection<FilterRule>();
+            get
+            {
+                filterRules ??= new Collection<FilterRule>();
 
-            return filterRules;
+                return filterRules;
+            }
+            set => filterRules = value;
         }
-        set => filterRules = value;
-    }
 
-    internal bool IsFilterRulesSet()
-    {
-        return filterRules?.Count > 0;
-    }
+        internal bool IsFilterRulesSet()
+        {
+            return filterRules?.Count > 0;
+        }
 
-    public bool ShouldSerializeFilterRules()
-    {
-        return filterRules.Count > 0;
+        public bool ShouldSerializeFilterRules()
+        {
+            return filterRules.Count > 0;
+        }
     }
 }

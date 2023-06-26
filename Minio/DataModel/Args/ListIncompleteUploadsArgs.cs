@@ -14,36 +14,37 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args;
-
-public class ListIncompleteUploadsArgs : BucketArgs<ListIncompleteUploadsArgs>
+namespace Minio.DataModel.Args
 {
-    public ListIncompleteUploadsArgs()
+    public class ListIncompleteUploadsArgs : BucketArgs<ListIncompleteUploadsArgs>
     {
-        RequestMethod = HttpMethod.Get;
-        Recursive = true;
-    }
+        public ListIncompleteUploadsArgs()
+        {
+            RequestMethod = HttpMethod.Get;
+            Recursive = true;
+        }
 
-    internal string Prefix { get; private set; }
-    internal string Delimiter { get; private set; }
-    internal bool Recursive { get; private set; }
+        internal string Prefix { get; private set; }
+        internal string Delimiter { get; private set; }
+        internal bool Recursive { get; private set; }
 
-    public ListIncompleteUploadsArgs WithPrefix(string prefix)
-    {
-        Prefix = prefix ?? string.Empty;
-        return this;
-    }
+        public ListIncompleteUploadsArgs WithPrefix(string prefix)
+        {
+            Prefix = prefix ?? string.Empty;
+            return this;
+        }
 
-    public ListIncompleteUploadsArgs WithDelimiter(string delim)
-    {
-        Delimiter = delim ?? string.Empty;
-        return this;
-    }
+        public ListIncompleteUploadsArgs WithDelimiter(string delim)
+        {
+            Delimiter = delim ?? string.Empty;
+            return this;
+        }
 
-    public ListIncompleteUploadsArgs WithRecursive(bool recursive)
-    {
-        Recursive = recursive;
-        Delimiter = recursive ? string.Empty : "/";
-        return this;
+        public ListIncompleteUploadsArgs WithRecursive(bool recursive)
+        {
+            Recursive = recursive;
+            Delimiter = recursive ? string.Empty : "/";
+            return this;
+        }
     }
 }
