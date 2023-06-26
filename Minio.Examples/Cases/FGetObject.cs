@@ -17,34 +17,33 @@
 using Minio.DataModel.Args;
 using Minio.DataModel.Encryption;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal static class FGetObject
 {
-    internal static class FGetObject
+    // Download object from bucket into local file
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name",
+        string objectName = "my-object-name",
+        string fileName = "local-filename",
+        IServerSideEncryption sse = null)
     {
-        // Download object from bucket into local file
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name",
-            string objectName = "my-object-name",
-            string fileName = "local-filename",
-            IServerSideEncryption sse = null)
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: GetObjectAsync");
-                File.Delete(fileName);
-                var args = new GetObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(objectName)
-                    .WithFile(fileName)
-                    .WithServerSideEncryption(sse);
-                await minio.GetObjectAsync(args).ConfigureAwait(false);
-                Console.WriteLine($"Downloaded the file {fileName} from bucket {bucketName}");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: GetObjectAsync");
+            File.Delete(fileName);
+            var args = new GetObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithFile(fileName)
+                .WithServerSideEncryption(sse);
+            await minio.GetObjectAsync(args).ConfigureAwait(false);
+            Console.WriteLine($"Downloaded the file {fileName} from bucket {bucketName}");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

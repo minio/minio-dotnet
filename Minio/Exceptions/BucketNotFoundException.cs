@@ -15,41 +15,40 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+[Serializable]
+public class BucketNotFoundException : MinioException
 {
-    [Serializable]
-    public class BucketNotFoundException : MinioException
+    private readonly string bucketName;
+
+    public BucketNotFoundException(string bucketName, string message) : base(message)
     {
-        private readonly string bucketName;
+        this.bucketName = bucketName;
+    }
 
-        public BucketNotFoundException(string bucketName, string message) : base(message)
-        {
-            this.bucketName = bucketName;
-        }
+    public BucketNotFoundException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
 
-        public BucketNotFoundException(ResponseResult serverResponse) : base(serverResponse)
-        {
-        }
+    public BucketNotFoundException(string message) : base(message)
+    {
+    }
 
-        public BucketNotFoundException(string message) : base(message)
-        {
-        }
+    public BucketNotFoundException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
 
-        public BucketNotFoundException(string message, ResponseResult serverResponse) : base(message, serverResponse)
-        {
-        }
+    public BucketNotFoundException()
+    {
+    }
 
-        public BucketNotFoundException()
-        {
-        }
+    public BucketNotFoundException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 
-        public BucketNotFoundException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        public override string ToString()
-        {
-            return $"{bucketName}: {base.ToString()}";
-        }
+    public override string ToString()
+    {
+        return $"{bucketName}: {base.ToString()}";
     }
 }

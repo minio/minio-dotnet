@@ -16,35 +16,31 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases
-{
-    public static class MakeBucketWithLock
-    {
-        // Make a bucket
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name", string loc = "us-east-1")
-        {
-            if (minio is null)
-            {
-                throw new ArgumentNullException(nameof(minio));
-            }
+namespace Minio.Examples.Cases;
 
-            try
-            {
-                Console.WriteLine("Running example for API: MakeBucketAsync");
-                await minio.MakeBucketAsync(
-                    new MakeBucketArgs()
-                        .WithBucket(bucketName)
-                        .WithLocation(loc)
-                        .WithObjectLock()
-                ).ConfigureAwait(false);
-                Console.WriteLine($"Created bucket {bucketName} with lock.");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+public static class MakeBucketWithLock
+{
+    // Make a bucket
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name", string loc = "us-east-1")
+    {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
+        try
+        {
+            Console.WriteLine("Running example for API: MakeBucketAsync");
+            await minio.MakeBucketAsync(
+                new MakeBucketArgs()
+                    .WithBucket(bucketName)
+                    .WithLocation(loc)
+                    .WithObjectLock()
+            ).ConfigureAwait(false);
+            Console.WriteLine($"Created bucket {bucketName} with lock.");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

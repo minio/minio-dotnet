@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Select
+namespace Minio.DataModel.Select;
+
+public sealed class SelectEventType
 {
-    public sealed class SelectEventType
+    // Constants for EventType.
+    public static readonly SelectEventType SelectEndEvent = new("End");
+    public static readonly SelectEventType SelectRecordsEvent = new("Records");
+    public static readonly SelectEventType SelectProgressEvent = new("Progress");
+    public static readonly SelectEventType SelectStatsEvent = new("Stats");
+
+    private string Type;
+
+    public SelectEventType()
     {
-        // Constants for EventType.
-        public static readonly SelectEventType SelectEndEvent = new("End");
-        public static readonly SelectEventType SelectRecordsEvent = new("Records");
-        public static readonly SelectEventType SelectProgressEvent = new("Progress");
-        public static readonly SelectEventType SelectStatsEvent = new("Stats");
+    }
 
-        private string Type;
-
-        public SelectEventType()
-        {
-        }
-
-        public SelectEventType(string value)
-        {
-            Type = value;
-        }
+    public SelectEventType(string value)
+    {
+        Type = value;
     }
 }

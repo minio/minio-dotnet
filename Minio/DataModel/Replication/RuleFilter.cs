@@ -25,30 +25,29 @@ using Minio.DataModel.Tags;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
  */
 
-namespace Minio.DataModel.Replication
+namespace Minio.DataModel.Replication;
+
+[Serializable]
+[XmlRoot(ElementName = "Filter")]
+public class RuleFilter
 {
-    [Serializable]
-    [XmlRoot(ElementName = "Filter")]
-    public class RuleFilter
+    public RuleFilter()
     {
-        public RuleFilter()
-        {
-        }
-
-        public RuleFilter(AndOperator theAndOperator, string prefix, Tagging tag)
-        {
-            TheAndOperator = theAndOperator;
-            Prefix = prefix;
-            Tag = tag;
-        }
-
-        [XmlElement(ElementName = "And", IsNullable = true)]
-        public AndOperator TheAndOperator { get; set; }
-
-        [XmlElement(ElementName = "Prefix", IsNullable = true)]
-        public string Prefix { get; set; }
-
-        [XmlElement(ElementName = "Tag", IsNullable = true)]
-        public Tagging Tag { get; set; }
     }
+
+    public RuleFilter(AndOperator theAndOperator, string prefix, Tagging tag)
+    {
+        TheAndOperator = theAndOperator;
+        Prefix = prefix;
+        Tag = tag;
+    }
+
+    [XmlElement(ElementName = "And", IsNullable = true)]
+    public AndOperator TheAndOperator { get; set; }
+
+    [XmlElement(ElementName = "Prefix", IsNullable = true)]
+    public string Prefix { get; set; }
+
+    [XmlElement(ElementName = "Tag", IsNullable = true)]
+    public Tagging Tag { get; set; }
 }

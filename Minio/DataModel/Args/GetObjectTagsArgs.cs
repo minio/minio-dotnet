@@ -14,24 +14,19 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args
+namespace Minio.DataModel.Args;
+
+public class GetObjectTagsArgs : ObjectVersionArgs<GetObjectTagsArgs>
 {
-    public class GetObjectTagsArgs : ObjectVersionArgs<GetObjectTagsArgs>
+    public GetObjectTagsArgs()
     {
-        public GetObjectTagsArgs()
-        {
-            RequestMethod = HttpMethod.Get;
-        }
+        RequestMethod = HttpMethod.Get;
+    }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("tagging", "");
-            if (!string.IsNullOrEmpty(VersionId))
-            {
-                requestMessageBuilder.AddQueryParameter("versionId", VersionId);
-            }
-
-            return requestMessageBuilder;
-        }
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("tagging", "");
+        if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", VersionId);
+        return requestMessageBuilder;
     }
 }

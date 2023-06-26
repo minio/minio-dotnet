@@ -23,28 +23,27 @@ using System.Xml.Serialization;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html
  */
 
-namespace Minio.DataModel.ILM
+namespace Minio.DataModel.ILM;
+
+[Serializable]
+[XmlRoot(ElementName = "NoncurrentVersionExpiration")]
+public class NoncurrentVersionExpiration
 {
-    [Serializable]
-    [XmlRoot(ElementName = "NoncurrentVersionExpiration")]
-    public class NoncurrentVersionExpiration
+    public NoncurrentVersionExpiration()
     {
-        public NoncurrentVersionExpiration()
-        {
-            NoncurrentDays = null;
-            NewerNoncurrentVersions = null;
-        }
-
-        public NoncurrentVersionExpiration(uint nonCurrentDays, uint? newerNoncurrentVersions = null)
-        {
-            NoncurrentDays = nonCurrentDays;
-            NewerNoncurrentVersions = newerNoncurrentVersions;
-        }
-
-        [XmlElement(ElementName = "NoncurrentDays", IsNullable = true)]
-        public uint? NoncurrentDays { get; set; }
-
-        [XmlElement(ElementName = "NewerNoncurrentVersions", IsNullable = true)]
-        public uint? NewerNoncurrentVersions { get; set; }
+        NoncurrentDays = null;
+        NewerNoncurrentVersions = null;
     }
+
+    public NoncurrentVersionExpiration(uint nonCurrentDays, uint? newerNoncurrentVersions = null)
+    {
+        NoncurrentDays = nonCurrentDays;
+        NewerNoncurrentVersions = newerNoncurrentVersions;
+    }
+
+    [XmlElement(ElementName = "NoncurrentDays", IsNullable = true)]
+    public uint? NoncurrentDays { get; set; }
+
+    [XmlElement(ElementName = "NewerNoncurrentVersions", IsNullable = true)]
+    public uint? NewerNoncurrentVersions { get; set; }
 }

@@ -16,27 +16,26 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.ObjectLock
+namespace Minio.DataModel.ObjectLock;
+
+[Serializable]
+[XmlRoot(ElementName = "ObjectLockConfiguration", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+public class ObjectLockConfiguration
 {
-    [Serializable]
-    [XmlRoot(ElementName = "ObjectLockConfiguration", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-    public class ObjectLockConfiguration
+    public const string LockEnabled = "Enabled";
+
+    public ObjectLockConfiguration()
     {
-        public const string LockEnabled = "Enabled";
-
-        public ObjectLockConfiguration()
-        {
-            ObjectLockEnabled = LockEnabled;
-        }
-
-        public ObjectLockConfiguration(ObjectRetentionMode mode, int numOfDays)
-        {
-            ObjectLockEnabled = LockEnabled;
-            Rule = new ObjectLockRule(mode, numOfDays);
-        }
-
-        [XmlElement("ObjectLockEnabled")] public string ObjectLockEnabled { get; set; }
-
-        [XmlElement("Rule")] public ObjectLockRule Rule { get; set; }
+        ObjectLockEnabled = LockEnabled;
     }
+
+    public ObjectLockConfiguration(ObjectRetentionMode mode, int numOfDays)
+    {
+        ObjectLockEnabled = LockEnabled;
+        Rule = new ObjectLockRule(mode, numOfDays);
+    }
+
+    [XmlElement("ObjectLockEnabled")] public string ObjectLockEnabled { get; set; }
+
+    [XmlElement("Rule")] public ObjectLockRule Rule { get; set; }
 }

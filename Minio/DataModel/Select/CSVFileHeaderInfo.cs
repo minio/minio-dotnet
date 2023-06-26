@@ -16,25 +16,24 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Select
+namespace Minio.DataModel.Select;
+
+[Serializable]
+public sealed class CSVFileHeaderInfo
 {
-    [Serializable]
-    public sealed class CSVFileHeaderInfo
+    // Constants for file header info.
+    public static readonly CSVFileHeaderInfo None = new("NONE");
+    public static readonly CSVFileHeaderInfo Ignore = new("IGNORE");
+    public static readonly CSVFileHeaderInfo Use = new("USE");
+
+    public CSVFileHeaderInfo()
     {
-        // Constants for file header info.
-        public static readonly CSVFileHeaderInfo None = new("NONE");
-        public static readonly CSVFileHeaderInfo Ignore = new("IGNORE");
-        public static readonly CSVFileHeaderInfo Use = new("USE");
-
-        public CSVFileHeaderInfo()
-        {
-        }
-
-        public CSVFileHeaderInfo(string value)
-        {
-            HeaderInfo = value;
-        }
-
-        [XmlText] public string HeaderInfo { get; set; }
     }
+
+    public CSVFileHeaderInfo(string value)
+    {
+        HeaderInfo = value;
+    }
+
+    [XmlText] public string HeaderInfo { get; set; }
 }

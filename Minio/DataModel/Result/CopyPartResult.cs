@@ -16,13 +16,12 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Result
+namespace Minio.DataModel.Result;
+
+[Serializable]
+[XmlRoot(ElementName = "CopyPartResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+public class CopyPartResult
 {
-    [Serializable]
-    [XmlRoot(ElementName = "CopyPartResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-    public class CopyPartResult
-    {
-        public string ETag { get; set; }
-        public string LastModified { get; set; }
-    }
+    public string ETag { get; set; }
+    public string LastModified { get; set; }
 }

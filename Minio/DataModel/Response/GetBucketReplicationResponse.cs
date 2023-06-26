@@ -20,24 +20,23 @@ using CommunityToolkit.HighPerformance;
 using Minio.DataModel.Replication;
 using Minio.Helper;
 
-namespace Minio.DataModel.Response
-{
-    internal class GetBucketReplicationResponse : GenericResponse
-    {
-        internal GetBucketReplicationResponse(HttpStatusCode statusCode, string responseContent)
-            : base(statusCode, responseContent)
-        {
-            if (string.IsNullOrEmpty(responseContent) ||
-                !HttpStatusCode.OK.Equals(statusCode))
-            {
-                Config = null;
-                return;
-            }
+namespace Minio.DataModel.Response;
 
-            using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-            Config = Utils.DeserializeXml<ReplicationConfiguration>(stream);
+internal class GetBucketReplicationResponse : GenericResponse
+{
+    internal GetBucketReplicationResponse(HttpStatusCode statusCode, string responseContent)
+        : base(statusCode, responseContent)
+    {
+        if (string.IsNullOrEmpty(responseContent) ||
+            !HttpStatusCode.OK.Equals(statusCode))
+        {
+            Config = null;
+            return;
         }
 
-        internal ReplicationConfiguration Config { set; get; }
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        Config = Utils.DeserializeXml<ReplicationConfiguration>(stream);
     }
+
+    internal ReplicationConfiguration Config { set; get; }
 }

@@ -20,17 +20,16 @@ using CommunityToolkit.HighPerformance;
 using Minio.DataModel.Result;
 using Minio.Helper;
 
-namespace Minio.DataModel.Response
-{
-    internal class RemoveObjectsResponse : GenericResponse
-    {
-        internal RemoveObjectsResponse(HttpStatusCode statusCode, string responseContent)
-            : base(statusCode, responseContent)
-        {
-            using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-            DeletedObjectsResult = Utils.DeserializeXml<DeleteObjectsResult>(stream);
-        }
+namespace Minio.DataModel.Response;
 
-        internal DeleteObjectsResult DeletedObjectsResult { get; }
+internal class RemoveObjectsResponse : GenericResponse
+{
+    internal RemoveObjectsResponse(HttpStatusCode statusCode, string responseContent)
+        : base(statusCode, responseContent)
+    {
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        DeletedObjectsResult = Utils.DeserializeXml<DeleteObjectsResult>(stream);
     }
+
+    internal DeleteObjectsResult DeletedObjectsResult { get; }
 }

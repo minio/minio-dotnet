@@ -17,32 +17,31 @@
 using System.Xml.Serialization;
 using Minio.Helper;
 
-namespace Minio.DataModel.ILM
+namespace Minio.DataModel.ILM;
+
+[Serializable]
+public abstract class Duration
 {
-    [Serializable]
-    public abstract class Duration
+    protected Duration()
     {
-        protected Duration()
-        {
-            Date = null;
-            Days = null;
-        }
-
-        protected Duration(DateTime date)
-        {
-            date = new DateTime(date.Year, date.Month, date.Day, 0, 0, 0);
-            Date = Utils.To8601String(date);
-        }
-
-        protected Duration(double days)
-        {
-            Days = days;
-        }
-
-        [XmlElement(ElementName = "Date", IsNullable = true)]
-        public string Date { get; set; }
-
-        [XmlElement(ElementName = "Days", IsNullable = true)]
-        public double? Days { get; set; }
+        Date = null;
+        Days = null;
     }
+
+    protected Duration(DateTime date)
+    {
+        date = new DateTime(date.Year, date.Month, date.Day, 0, 0, 0);
+        Date = Utils.To8601String(date);
+    }
+
+    protected Duration(double days)
+    {
+        Days = days;
+    }
+
+    [XmlElement(ElementName = "Date", IsNullable = true)]
+    public string Date { get; set; }
+
+    [XmlElement(ElementName = "Days", IsNullable = true)]
+    public double? Days { get; set; }
 }

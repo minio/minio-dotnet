@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args
-{
-    public class GetPolicyArgs : BucketArgs<GetPolicyArgs>
-    {
-        public GetPolicyArgs()
-        {
-            RequestMethod = HttpMethod.Get;
-        }
+namespace Minio.DataModel.Args;
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("policy", "");
-            return requestMessageBuilder;
-        }
+public class GetPolicyArgs : BucketArgs<GetPolicyArgs>
+{
+    public GetPolicyArgs()
+    {
+        RequestMethod = HttpMethod.Get;
+    }
+
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("policy", "");
+        return requestMessageBuilder;
     }
 }

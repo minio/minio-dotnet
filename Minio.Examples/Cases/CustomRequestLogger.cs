@@ -14,30 +14,26 @@
  * limitations under the License.
  */
 
-namespace Minio.Examples.Cases
-{
-    public static class CustomRequestLogger
-    {
-        // Check if a bucket exists
-        public static async Task Run(IMinioClient minio)
-        {
-            if (minio is null)
-            {
-                throw new ArgumentNullException(nameof(minio));
-            }
+namespace Minio.Examples.Cases;
 
-            try
-            {
-                Console.WriteLine("Running example for: set custom request logger");
-                minio.SetTraceOn(new MyRequestLogger());
-                await minio.ListBucketsAsync().ConfigureAwait(false);
-                minio.SetTraceOff();
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+public static class CustomRequestLogger
+{
+    // Check if a bucket exists
+    public static async Task Run(IMinioClient minio)
+    {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
+        try
+        {
+            Console.WriteLine("Running example for: set custom request logger");
+            minio.SetTraceOn(new MyRequestLogger());
+            await minio.ListBucketsAsync().ConfigureAwait(false);
+            minio.SetTraceOff();
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

@@ -24,29 +24,25 @@ using System.Xml.Serialization;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
  */
 
-namespace Minio.DataModel.Replication
+namespace Minio.DataModel.Replication;
+
+[Serializable]
+[XmlRoot(ElementName = "SseKmsEncryptedObjects")]
+public class SseKmsEncryptedObjects
 {
-    [Serializable]
-    [XmlRoot(ElementName = "SseKmsEncryptedObjects")]
-    public class SseKmsEncryptedObjects
+    public const string StatusEnabled = "Enabled";
+    public const string StatusDisabled = "Disabled";
+
+    public SseKmsEncryptedObjects()
     {
-        public const string StatusEnabled = "Enabled";
-        public const string StatusDisabled = "Disabled";
-
-        public SseKmsEncryptedObjects()
-        {
-        }
-
-        public SseKmsEncryptedObjects(string status)
-        {
-            if (string.IsNullOrWhiteSpace(status))
-            {
-                throw new ArgumentException($"'{nameof(status)}' cannot be null or whitespace.", nameof(status));
-            }
-
-            Status = status;
-        }
-
-        [XmlElement("Status")] public string Status { get; set; }
     }
+
+    public SseKmsEncryptedObjects(string status)
+    {
+        if (string.IsNullOrWhiteSpace(status))
+            throw new ArgumentException($"'{nameof(status)}' cannot be null or whitespace.", nameof(status));
+        Status = status;
+    }
+
+    [XmlElement("Status")] public string Status { get; set; }
 }

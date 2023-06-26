@@ -14,28 +14,23 @@
  * limitations under the License.
  */
 
-namespace Minio.Examples.Cases
-{
-    internal static class ListBuckets
-    {
-        // List all buckets on host
-        public static async Task Run(IMinioClient minio)
-        {
-            try
-            {
-                Console.WriteLine("Running example for API: ListBucketsAsync");
-                var list = await minio.ListBucketsAsync().ConfigureAwait(false);
-                foreach (var bucket in list.Buckets)
-                {
-                    Console.WriteLine($"{bucket.Name} {bucket.CreationDateDateTime}");
-                }
+namespace Minio.Examples.Cases;
 
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+internal static class ListBuckets
+{
+    // List all buckets on host
+    public static async Task Run(IMinioClient minio)
+    {
+        try
+        {
+            Console.WriteLine("Running example for API: ListBucketsAsync");
+            var list = await minio.ListBucketsAsync().ConfigureAwait(false);
+            foreach (var bucket in list.Buckets) Console.WriteLine($"{bucket.Name} {bucket.CreationDateDateTime}");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

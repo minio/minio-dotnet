@@ -24,13 +24,12 @@ using Minio.DataModel;
  * AWS, purely based on client certificates mTLS authentication.
  */
 
-namespace Minio.Credentials
+namespace Minio.Credentials;
+
+[Serializable]
+[XmlRoot(ElementName = "AssumeRoleWithCertificateResult")]
+public class CertificateResult
 {
-    [Serializable]
-    [XmlRoot(ElementName = "AssumeRoleWithCertificateResult")]
-    public class CertificateResult
-    {
-        [XmlElement(ElementName = "Credentials")]
-        public AccessCredentials Credentials { get; set; }
-    }
+    [XmlElement(ElementName = "Credentials")]
+    public AccessCredentials Credentials { get; set; }
 }

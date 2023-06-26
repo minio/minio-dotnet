@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Encryption
-{
-    /// <summary>
-    ///     ServerSideEncryption interface
-    /// </summary>
-    public interface IServerSideEncryption
-    {
-        // GetType() needs to return the type of Server-side encryption
-        EncryptionType GetEncryptionType();
+using System.Text;
+using Minio.Helper;
 
-        // Marshals the Server-side encryption headers into dictionary
-        void Marshal(IDictionary<string, string> headers);
-    }
+namespace Minio.DataModel.Encryption;
+
+/// <summary>
+///     ServerSideEncryption interface
+/// </summary>
+public interface IServerSideEncryption
+{
+    // GetType() needs to return the type of Server-side encryption
+    EncryptionType GetEncryptionType();
+
+    // Marshals the Server-side encryption headers into dictionary
+    void Marshal(IDictionary<string, string> headers);
 }

@@ -18,161 +18,160 @@ using System.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Exceptions;
 
-namespace Minio.Tests
+namespace Minio.Tests;
+
+/// <summary>
+///     Summary description for UnitTest1
+/// </summary>
+[TestClass]
+public class UrlTests
 {
-    /// <summary>
-    ///     Summary description for UnitTest1
-    /// </summary>
-    [TestClass]
-    public class UrlTests
+    public UrlTests()
     {
-        public UrlTests()
-        {
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
-                                                   | SecurityProtocolType.Tls11
-                                                   | SecurityProtocolType.Tls12;
-            using var minio = new MinioClient()
-                .WithEndpoint(TestHelper.Endpoint)
-                .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
-                .WithSSL()
-                .Build();
-        }
-
-        /// <summary>
-        ///     Gets or sets the test context which provides
-        ///     information about and functionality for the current test run.
-        /// </summary>
-        public TestContext TestContext { get; set; }
-
-        [TestMethod]
-        public void TestWithUrl()
-        {
-            using var client = new MinioClient()
-                .WithEndpoint("localhost", 9000)
-                .WithCredentials("minio", "minio")
-                .Build();
-        }
-
-        [TestMethod]
-        public void TestWithoutPort()
-        {
-            using var client = new MinioClient()
-                .WithEndpoint("localhost")
-                .WithCredentials("minio", "minio")
-                .Build();
-        }
-
-        [TestMethod]
-        public void TestWithTrailingSlash()
-        {
-            using var client = new MinioClient()
-                .WithEndpoint("localhost:9000/")
-                .WithCredentials("minio", "minio")
-                .Build();
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(InvalidEndpointException))]
-        public void TestUrlFailsWithMalformedScheme()
-        {
-            using var client = new MinioClient()
-                .WithEndpoint("http://localhost:9000")
-                .WithCredentials("minio", "minio")
-                .Build();
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(InvalidEndpointException))]
-        public void TestUrlFailsWithPath()
-        {
-            using var client = new MinioClient()
-                .WithEndpoint("localhost:9000/foo")
-                .WithCredentials("minio", "minio")
-                .Build();
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(InvalidEndpointException))]
-        public void TestUrlFailsWithQuery()
-        {
-            using var client = new MinioClient()
-                .WithEndpoint("localhost:9000/?foo=bar")
-                .WithCredentials("minio", "minio")
-                .Build();
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void TestSetAppInfoFailsNullApp()
-        {
-            using var client = new MinioClient()
-                .WithEndpoint("localhost:9000")
-                .WithCredentials("minio", "minio")
-                .Build();
-            client.SetAppInfo(null, "1.2.2");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void TestSetAppInfoFailsNullVersion()
-        {
-            using var client = new MinioClient()
-                .WithEndpoint("localhost:9000")
-                .WithCredentials("minio", "minio")
-                .Build();
-            client.SetAppInfo("Hello-App", null);
-        }
-
-        [TestMethod]
-        public void TestSetAppInfoSuccess()
-        {
-            using var client = new MinioClient()
-                .WithEndpoint("localhost:9000")
-                .WithCredentials("minio", "minio")
-                .Build();
-            client.SetAppInfo("Hello-App", "1.2.1");
-        }
-
-        [TestMethod]
-        public void TestEndpointSuccess()
-        {
-            using var client = new MinioClient()
-                .WithEndpoint("s3.amazonaws.com")
-                .WithCredentials("minio", "minio")
-                .Build();
-        }
-
-        [TestMethod]
-        public void TestEndpointSuccess2()
-        {
-            using var client = new MinioClient()
-                .WithEndpoint("s3-us-west-1.amazonaws.com")
-                .WithCredentials("minio", "minio")
-                .Build();
-        }
-
-        #region Additional test attributes
-
-        //
-        // You can use the following additional attributes as you write your tests:
-        //
-        // Use ClassInitialize to run code before running the first test in the class
-        // [ClassInitialize()]
-        // public static void MyClassInitialize(TestContext testContext) { }
-        //
-        // Use ClassCleanup to run code after all tests in a class have run
-        // [ClassCleanup()]
-        // public static void MyClassCleanup() { }
-        //
-        // Use TestInitialize to run code before running each test 
-        // [TestInitialize()]
-        // public void MyTestInitialize() { }
-        //
-        // Use TestCleanup to run code after each test has run
-        // [TestCleanup()]
-        // public void MyTestCleanup() { }
-        //
-
-        #endregion
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+                                               | SecurityProtocolType.Tls11
+                                               | SecurityProtocolType.Tls12;
+        using var minio = new MinioClient()
+            .WithEndpoint(TestHelper.Endpoint)
+            .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
+            .WithSSL()
+            .Build();
     }
+
+    /// <summary>
+    ///     Gets or sets the test context which provides
+    ///     information about and functionality for the current test run.
+    /// </summary>
+    public TestContext TestContext { get; set; }
+
+    [TestMethod]
+    public void TestWithUrl()
+    {
+        using var client = new MinioClient()
+            .WithEndpoint("localhost", 9000)
+            .WithCredentials("minio", "minio")
+            .Build();
+    }
+
+    [TestMethod]
+    public void TestWithoutPort()
+    {
+        using var client = new MinioClient()
+            .WithEndpoint("localhost")
+            .WithCredentials("minio", "minio")
+            .Build();
+    }
+
+    [TestMethod]
+    public void TestWithTrailingSlash()
+    {
+        using var client = new MinioClient()
+            .WithEndpoint("localhost:9000/")
+            .WithCredentials("minio", "minio")
+            .Build();
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(InvalidEndpointException))]
+    public void TestUrlFailsWithMalformedScheme()
+    {
+        using var client = new MinioClient()
+            .WithEndpoint("http://localhost:9000")
+            .WithCredentials("minio", "minio")
+            .Build();
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(InvalidEndpointException))]
+    public void TestUrlFailsWithPath()
+    {
+        using var client = new MinioClient()
+            .WithEndpoint("localhost:9000/foo")
+            .WithCredentials("minio", "minio")
+            .Build();
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(InvalidEndpointException))]
+    public void TestUrlFailsWithQuery()
+    {
+        using var client = new MinioClient()
+            .WithEndpoint("localhost:9000/?foo=bar")
+            .WithCredentials("minio", "minio")
+            .Build();
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException))]
+    public void TestSetAppInfoFailsNullApp()
+    {
+        using var client = new MinioClient()
+            .WithEndpoint("localhost:9000")
+            .WithCredentials("minio", "minio")
+            .Build();
+        client.SetAppInfo(null, "1.2.2");
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException))]
+    public void TestSetAppInfoFailsNullVersion()
+    {
+        using var client = new MinioClient()
+            .WithEndpoint("localhost:9000")
+            .WithCredentials("minio", "minio")
+            .Build();
+        client.SetAppInfo("Hello-App", null);
+    }
+
+    [TestMethod]
+    public void TestSetAppInfoSuccess()
+    {
+        using var client = new MinioClient()
+            .WithEndpoint("localhost:9000")
+            .WithCredentials("minio", "minio")
+            .Build();
+        client.SetAppInfo("Hello-App", "1.2.1");
+    }
+
+    [TestMethod]
+    public void TestEndpointSuccess()
+    {
+        using var client = new MinioClient()
+            .WithEndpoint("s3.amazonaws.com")
+            .WithCredentials("minio", "minio")
+            .Build();
+    }
+
+    [TestMethod]
+    public void TestEndpointSuccess2()
+    {
+        using var client = new MinioClient()
+            .WithEndpoint("s3-us-west-1.amazonaws.com")
+            .WithCredentials("minio", "minio")
+            .Build();
+    }
+
+    #region Additional test attributes
+
+    //
+    // You can use the following additional attributes as you write your tests:
+    //
+    // Use ClassInitialize to run code before running the first test in the class
+    // [ClassInitialize()]
+    // public static void MyClassInitialize(TestContext testContext) { }
+    //
+    // Use ClassCleanup to run code after all tests in a class have run
+    // [ClassCleanup()]
+    // public static void MyClassCleanup() { }
+    //
+    // Use TestInitialize to run code before running each test 
+    // [TestInitialize()]
+    // public void MyTestInitialize() { }
+    //
+    // Use TestCleanup to run code after each test has run
+    // [TestCleanup()]
+    // public void MyTestCleanup() { }
+    //
+
+    #endregion
 }

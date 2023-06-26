@@ -17,49 +17,44 @@
 using System.Text;
 using Minio.Helper;
 
-namespace Minio.DataModel.Args
+namespace Minio.DataModel.Args;
+
+public class MakeBucketArgs : BucketArgs<MakeBucketArgs>
 {
-    public class MakeBucketArgs : BucketArgs<MakeBucketArgs>
+    public MakeBucketArgs()
     {
-        public MakeBucketArgs()
+        RequestMethod = HttpMethod.Put;
+    }
+
+    internal string Location { get; set; }
+    internal bool ObjectLock { get; set; }
+
+    public MakeBucketArgs WithLocation(string loc)
+    {
+        Location = loc;
+        return this;
+    }
+
+    public MakeBucketArgs WithObjectLock()
+    {
+        ObjectLock = true;
+        return this;
+    }
+
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
+        if (!string.IsNullOrEmpty(Location) &&
+            !string.Equals(Location, "us-east-1", StringComparison.OrdinalIgnoreCase))
         {
-            RequestMethod = HttpMethod.Put;
+            var config = new CreateBucketConfiguration(Location);
+            var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+            requestMessageBuilder.AddXmlBody(body);
+            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+                Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
         }
 
-        internal string Location { get; set; }
-        internal bool ObjectLock { get; set; }
-
-        public MakeBucketArgs WithLocation(string loc)
-        {
-            Location = loc;
-            return this;
-        }
-
-        public MakeBucketArgs WithObjectLock()
-        {
-            ObjectLock = true;
-            return this;
-        }
-
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
-            if (!string.IsNullOrEmpty(Location) &&
-                !string.Equals(Location, "us-east-1", StringComparison.OrdinalIgnoreCase))
-            {
-                var config = new CreateBucketConfiguration(Location);
-                var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
-                requestMessageBuilder.AddXmlBody(body);
-                requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-                    Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
-            }
-
-            if (ObjectLock)
-            {
-                requestMessageBuilder.AddOrUpdateHeaderParameter("X-Amz-Bucket-Object-Lock-Enabled", "true");
-            }
-
-            return requestMessageBuilder;
-        }
+        if (ObjectLock) requestMessageBuilder.AddOrUpdateHeaderParameter("X-Amz-Bucket-Object-Lock-Enabled", "true");
+        return requestMessageBuilder;
     }
 }

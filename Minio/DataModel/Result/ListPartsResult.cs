@@ -16,13 +16,12 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Result
+namespace Minio.DataModel.Result;
+
+[Serializable]
+[XmlRoot(ElementName = "ListPartsResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+public class ListPartsResult
 {
-    [Serializable]
-    [XmlRoot(ElementName = "ListPartsResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-    public class ListPartsResult
-    {
-        public int NextPartNumberMarker { get; set; }
-        public bool IsTruncated { get; set; }
-    }
+    public int NextPartNumberMarker { get; set; }
+    public bool IsTruncated { get; set; }
 }

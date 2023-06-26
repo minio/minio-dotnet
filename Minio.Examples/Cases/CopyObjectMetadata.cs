@@ -17,52 +17,51 @@
 using Minio.DataModel;
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal static class CopyObjectMetadata
 {
-    internal static class CopyObjectMetadata
+    // Copy object from one bucket to another
+    public static async Task Run(IMinioClient minio,
+        string fromBucketName = "from-bucket-name",
+        string fromObjectName = "from-object-name",
+        string destBucketName = "dest-bucket",
+        string destObjectName = "to-object-name")
     {
-        // Copy object from one bucket to another
-        public static async Task Run(IMinioClient minio,
-            string fromBucketName = "from-bucket-name",
-            string fromObjectName = "from-object-name",
-            string destBucketName = "dest-bucket",
-            string destObjectName = "to-object-name")
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: CopyObjectAsync");
+            Console.WriteLine("Running example for API: CopyObjectAsync");
 
-                // Optionally pass copy conditions to replace metadata on destination object with custom metadata
-                var copyCond = new CopyConditions();
-                copyCond.SetReplaceMetadataDirective();
+            // Optionally pass copy conditions to replace metadata on destination object with custom metadata
+            var copyCond = new CopyConditions();
+            copyCond.SetReplaceMetadataDirective();
 
-                // set custom metadata
-                var metadata = new Dictionary<string, string>
-                    (StringComparer.Ordinal)
-                    {
-                        { "Content-Type", "application/css" },
-                        { "Mynewkey", "my-new-value" }
-                    };
+            // set custom metadata
+            var metadata = new Dictionary<string, string>
+                (StringComparer.Ordinal)
+                {
+                    { "Content-Type", "application/css" },
+                    { "Mynewkey", "my-new-value" }
+                };
 
-                var copySourceObjectArgs = new CopySourceObjectArgs()
-                    .WithBucket(fromBucketName)
-                    .WithObject(fromObjectName)
-                    .WithCopyConditions(copyCond);
-                var copyObjectArgs = new CopyObjectArgs()
-                    .WithBucket(destBucketName)
-                    .WithObject(destObjectName)
-                    .WithHeaders(metadata)
-                    .WithCopyObjectSource(copySourceObjectArgs);
-                await minio.CopyObjectAsync(copyObjectArgs).ConfigureAwait(false);
+            var copySourceObjectArgs = new CopySourceObjectArgs()
+                .WithBucket(fromBucketName)
+                .WithObject(fromObjectName)
+                .WithCopyConditions(copyCond);
+            var copyObjectArgs = new CopyObjectArgs()
+                .WithBucket(destBucketName)
+                .WithObject(destObjectName)
+                .WithHeaders(metadata)
+                .WithCopyObjectSource(copySourceObjectArgs);
+            await minio.CopyObjectAsync(copyObjectArgs).ConfigureAwait(false);
 
-                Console.WriteLine(
-                    $"Copied object {fromObjectName} from bucket {fromBucketName} to bucket {destBucketName}");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine(
+                $"Copied object {fromObjectName} from bucket {fromBucketName} to bucket {destBucketName}");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

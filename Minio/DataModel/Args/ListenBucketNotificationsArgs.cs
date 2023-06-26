@@ -16,127 +16,111 @@
 
 using Minio.DataModel.Notification;
 
-namespace Minio.DataModel.Args
+namespace Minio.DataModel.Args;
+
+public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotificationsArgs>
 {
-    public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotificationsArgs>
+    internal readonly IEnumerable<ApiResponseErrorHandler> NoErrorHandlers =
+        Enumerable.Empty<ApiResponseErrorHandler>();
+
+    public ListenBucketNotificationsArgs()
     {
-        internal readonly IEnumerable<ApiResponseErrorHandler> NoErrorHandlers =
-            Enumerable.Empty<ApiResponseErrorHandler>();
+        RequestMethod = HttpMethod.Get;
+        EnableTrace = false;
+        Events = new List<EventType>();
+        Prefix = "";
+        Suffix = "";
+    }
 
-        public ListenBucketNotificationsArgs()
+    internal string Prefix { get; private set; }
+    internal string Suffix { get; private set; }
+    internal List<EventType> Events { get; }
+    internal IObserver<MinioNotificationRaw> NotificationObserver { get; private set; }
+    public bool EnableTrace { get; private set; }
+
+    public override string ToString()
+    {
+        var str = string.Join("\n", string.Format("\nRequestMethod= {0}", RequestMethod),
+            string.Format("EnableTrace= {0}", EnableTrace));
+
+        var eventsAsStr = "";
+        foreach (var eventType in Events)
         {
-            RequestMethod = HttpMethod.Get;
-            EnableTrace = false;
-            Events = new List<EventType>();
-            Prefix = "";
-            Suffix = "";
+            if (!string.IsNullOrEmpty(eventsAsStr))
+                eventsAsStr += ", ";
+            eventsAsStr += eventType.Value;
         }
 
-        internal string Prefix { get; private set; }
-        internal string Suffix { get; private set; }
-        internal List<EventType> Events { get; }
-        internal IObserver<MinioNotificationRaw> NotificationObserver { get; private set; }
-        public bool EnableTrace { get; private set; }
+        return string.Join("\n", str, string.Format("Events= [{0}]", eventsAsStr), string.Format("Prefix= {0}", Prefix),
+            string.Format("Suffix= {0}\n", Suffix));
+    }
 
-        public override string ToString()
+    public ListenBucketNotificationsArgs WithNotificationObserver(IObserver<MinioNotificationRaw> obs)
+    {
+        NotificationObserver = obs;
+        return this;
+    }
+
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+
+    {
+        foreach (var eventType in Events) requestMessageBuilder.AddQueryParameter("events", eventType.Value);
+        requestMessageBuilder.AddQueryParameter("prefix", Prefix);
+        requestMessageBuilder.AddQueryParameter("suffix", Suffix);
+
+        requestMessageBuilder.FunctionResponseWriter = async (responseStream, cancellationToken) =>
         {
-            var str = string.Join("\n", string.Format("\nRequestMethod= {0}", RequestMethod),
-                string.Format("EnableTrace= {0}", EnableTrace));
-
-            var eventsAsStr = "";
-            foreach (var eventType in Events)
-            {
-                if (!string.IsNullOrEmpty(eventsAsStr))
+            using var sr = new StreamReader(responseStream);
+            while (!sr.EndOfStream)
+                try
                 {
-                    eventsAsStr += ", ";
-                }
-
-                eventsAsStr += eventType.Value;
-            }
-
-            return string.Join("\n", str, string.Format("Events= [{0}]", eventsAsStr),
-                string.Format("Prefix= {0}", Prefix),
-                string.Format("Suffix= {0}\n", Suffix));
-        }
-
-        public ListenBucketNotificationsArgs WithNotificationObserver(IObserver<MinioNotificationRaw> obs)
-        {
-            NotificationObserver = obs;
-            return this;
-        }
-
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-
-        {
-            foreach (var eventType in Events)
-            {
-                requestMessageBuilder.AddQueryParameter("events", eventType.Value);
-            }
-
-            requestMessageBuilder.AddQueryParameter("prefix", Prefix);
-            requestMessageBuilder.AddQueryParameter("suffix", Suffix);
-
-            requestMessageBuilder.FunctionResponseWriter = async (responseStream, cancellationToken) =>
-            {
-                using var sr = new StreamReader(responseStream);
-                while (!sr.EndOfStream)
-                {
-                    try
-                    {
 #if NETSTANDARD || NET6_0
-                        var line = await sr.ReadLineAsync().ConfigureAwait(false);
+                    var line = await sr.ReadLineAsync().ConfigureAwait(false);
 #elif NET7_0_OR_GREATER
-                        var line = await sr.ReadLineAsync(cancellationToken).ConfigureAwait(false);
+                    var line = await sr.ReadLineAsync(cancellationToken).ConfigureAwait(false);
 #endif
-                        if (string.IsNullOrEmpty(line))
-                        {
-                            break;
-                        }
-
-                        if (EnableTrace)
-                        {
-                            Console.WriteLine("== ListenBucketNotificationsAsync read line ==");
-                            Console.WriteLine(line);
-                            Console.WriteLine("==============================================");
-                        }
-
-                        var trimmed = line.Trim();
-                        if (trimmed.Length > 2)
-                        {
-                            NotificationObserver.OnNext(new MinioNotificationRaw(trimmed));
-                        }
-                    }
-                    catch
-                    {
+                    if (string.IsNullOrEmpty(line))
                         break;
+
+                    if (EnableTrace)
+                    {
+                        Console.WriteLine("== ListenBucketNotificationsAsync read line ==");
+                        Console.WriteLine(line);
+                        Console.WriteLine("==============================================");
                     }
+
+                    var trimmed = line.Trim();
+                    if (trimmed.Length > 2) NotificationObserver.OnNext(new MinioNotificationRaw(trimmed));
                 }
-            };
-            return requestMessageBuilder;
-        }
+                catch
+                {
+                    break;
+                }
+        };
+        return requestMessageBuilder;
+    }
 
-        internal ListenBucketNotificationsArgs WithEnableTrace(bool trace)
-        {
-            EnableTrace = trace;
-            return this;
-        }
+    internal ListenBucketNotificationsArgs WithEnableTrace(bool trace)
+    {
+        EnableTrace = trace;
+        return this;
+    }
 
-        public ListenBucketNotificationsArgs WithPrefix(string prefix)
-        {
-            Prefix = prefix;
-            return this;
-        }
+    public ListenBucketNotificationsArgs WithPrefix(string prefix)
+    {
+        Prefix = prefix;
+        return this;
+    }
 
-        public ListenBucketNotificationsArgs WithSuffix(string suffix)
-        {
-            Suffix = suffix;
-            return this;
-        }
+    public ListenBucketNotificationsArgs WithSuffix(string suffix)
+    {
+        Suffix = suffix;
+        return this;
+    }
 
-        public ListenBucketNotificationsArgs WithEvents(IList<EventType> events)
-        {
-            Events.AddRange(events);
-            return this;
-        }
+    public ListenBucketNotificationsArgs WithEvents(IList<EventType> events)
+    {
+        Events.AddRange(events);
+        return this;
     }
 }

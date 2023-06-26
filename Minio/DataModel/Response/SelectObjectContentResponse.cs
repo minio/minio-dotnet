@@ -18,18 +18,17 @@ using System.Net;
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel.Select;
 
-namespace Minio.DataModel.Response
-{
-    internal class SelectObjectContentResponse : GenericResponse
-    {
-        internal SelectObjectContentResponse(HttpStatusCode statusCode, string responseContent,
-            ReadOnlyMemory<byte> responseRawBytes)
-            : base(statusCode, responseContent)
-        {
-            using var stream = responseRawBytes.AsStream();
-            ResponseStream = new SelectResponseStream(stream);
-        }
+namespace Minio.DataModel.Response;
 
-        internal SelectResponseStream ResponseStream { get; }
+internal class SelectObjectContentResponse : GenericResponse
+{
+    internal SelectObjectContentResponse(HttpStatusCode statusCode, string responseContent,
+        ReadOnlyMemory<byte> responseRawBytes)
+        : base(statusCode, responseContent)
+    {
+        using var stream = responseRawBytes.AsStream();
+        ResponseStream = new SelectResponseStream(stream);
     }
+
+    internal SelectResponseStream ResponseStream { get; }
 }

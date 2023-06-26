@@ -20,23 +20,22 @@ using CommunityToolkit.HighPerformance;
 using Minio.DataModel.ObjectLock;
 using Minio.Helper;
 
-namespace Minio.DataModel.Response
-{
-    internal class GetObjectLockConfigurationResponse : GenericResponse
-    {
-        internal GetObjectLockConfigurationResponse(HttpStatusCode statusCode, string responseContent)
-            : base(statusCode, responseContent)
-        {
-            if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
-            {
-                LockConfiguration = null;
-                return;
-            }
+namespace Minio.DataModel.Response;
 
-            using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-            LockConfiguration = Utils.DeserializeXml<ObjectLockConfiguration>(stream);
+internal class GetObjectLockConfigurationResponse : GenericResponse
+{
+    internal GetObjectLockConfigurationResponse(HttpStatusCode statusCode, string responseContent)
+        : base(statusCode, responseContent)
+    {
+        if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
+        {
+            LockConfiguration = null;
+            return;
         }
 
-        internal ObjectLockConfiguration LockConfiguration { get; set; }
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        LockConfiguration = Utils.DeserializeXml<ObjectLockConfiguration>(stream);
     }
+
+    internal ObjectLockConfiguration LockConfiguration { get; set; }
 }

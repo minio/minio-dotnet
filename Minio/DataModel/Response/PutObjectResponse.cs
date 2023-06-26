@@ -16,34 +16,28 @@
 
 using System.Net;
 
-namespace Minio.DataModel.Response
+namespace Minio.DataModel.Response;
+
+public class PutObjectResponse : GenericResponse
 {
-    public class PutObjectResponse : GenericResponse
+    public PutObjectResponse(HttpStatusCode statusCode, string responseContent,
+        IDictionary<string, string> responseHeaders, long size, string name)
+        : base(statusCode, responseContent)
     {
-        public PutObjectResponse(HttpStatusCode statusCode, string responseContent,
-            IDictionary<string, string> responseHeaders, long size, string name)
-            : base(statusCode, responseContent)
-        {
-            if (responseHeaders is null)
+        if (responseHeaders is null) throw new ArgumentNullException(nameof(responseHeaders));
+
+        foreach (var parameter in responseHeaders)
+            if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentNullException(nameof(responseHeaders));
+                Etag = parameter.Value;
+                break;
             }
 
-            foreach (var parameter in responseHeaders)
-            {
-                if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
-                {
-                    Etag = parameter.Value;
-                    break;
-                }
-            }
-
-            Size = size;
-            ObjectName = name;
-        }
-
-        public string Etag { get; set; }
-        public string ObjectName { get; set; }
-        public long Size { get; set; }
+        Size = size;
+        ObjectName = name;
     }
+
+    public string Etag { get; set; }
+    public string ObjectName { get; set; }
+    public long Size { get; set; }
 }

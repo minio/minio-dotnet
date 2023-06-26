@@ -17,46 +17,42 @@
 using Minio.DataModel.Args;
 using Minio.DataModel.Tags;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal static class PutObjectWithTags
 {
-    internal static class PutObjectWithTags
+    private const int MB = 1024 * 1024;
+
+    // Put an object from a local stream into bucket
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name",
+        string objectName = "my-object-name",
+        string fileName = "location-of-file")
     {
-        private const int MB = 1024 * 1024;
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
 
-        // Put an object from a local stream into bucket
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name",
-            string objectName = "my-object-name",
-            string fileName = "location-of-file")
+        try
         {
-            if (minio is null)
-            {
-                throw new ArgumentNullException(nameof(minio));
-            }
+            Console.WriteLine("Running example for API: PutObjectAsync with Tags");
+            var tags = new Dictionary<string, string>
+                (StringComparer.Ordinal)
+                {
+                    { "Test-TagKey", "Test-TagValue" }
+                };
+            var args = new PutObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithContentType("application/octet-stream")
+                .WithFileName(fileName)
+                .WithTagging(Tagging.GetObjectTags(tags));
+            await minio.PutObjectAsync(args).ConfigureAwait(false);
 
-            try
-            {
-                Console.WriteLine("Running example for API: PutObjectAsync with Tags");
-                var tags = new Dictionary<string, string>
-                    (StringComparer.Ordinal)
-                    {
-                        { "Test-TagKey", "Test-TagValue" }
-                    };
-                var args = new PutObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(objectName)
-                    .WithContentType("application/octet-stream")
-                    .WithFileName(fileName)
-                    .WithTagging(Tagging.GetObjectTags(tags));
-                await minio.PutObjectAsync(args).ConfigureAwait(false);
-
-                Console.WriteLine($"Uploaded object {objectName} to bucket {bucketName}");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine($"Uploaded object {objectName} to bucket {bucketName}");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

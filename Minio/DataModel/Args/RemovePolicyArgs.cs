@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args
-{
-    public class RemovePolicyArgs : BucketArgs<RemovePolicyArgs>
-    {
-        public RemovePolicyArgs()
-        {
-            RequestMethod = HttpMethod.Delete;
-        }
+namespace Minio.DataModel.Args;
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("policy", "");
-            return requestMessageBuilder;
-        }
+public class RemovePolicyArgs : BucketArgs<RemovePolicyArgs>
+{
+    public RemovePolicyArgs()
+    {
+        RequestMethod = HttpMethod.Delete;
+    }
+
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("policy", "");
+        return requestMessageBuilder;
     }
 }

@@ -14,37 +14,34 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args
+namespace Minio.DataModel.Args;
+
+public class RemoveUploadArgs : EncryptionArgs<RemoveUploadArgs>
 {
-    public class RemoveUploadArgs : EncryptionArgs<RemoveUploadArgs>
+    public RemoveUploadArgs()
     {
-        public RemoveUploadArgs()
-        {
-            RequestMethod = HttpMethod.Delete;
-        }
+        RequestMethod = HttpMethod.Delete;
+    }
 
-        internal string UploadId { get; private set; }
+    internal string UploadId { get; private set; }
 
-        public RemoveUploadArgs WithUploadId(string id)
-        {
-            UploadId = id;
-            return this;
-        }
+    public RemoveUploadArgs WithUploadId(string id)
+    {
+        UploadId = id;
+        return this;
+    }
 
-        internal override void Validate()
-        {
-            base.Validate();
-            if (string.IsNullOrEmpty(UploadId))
-            {
-                throw new InvalidOperationException(nameof(UploadId) +
-                                                    " cannot be empty. Please assign a valid upload ID to remove.");
-            }
-        }
+    internal override void Validate()
+    {
+        base.Validate();
+        if (string.IsNullOrEmpty(UploadId))
+            throw new InvalidOperationException(nameof(UploadId) +
+                                                " cannot be empty. Please assign a valid upload ID to remove.");
+    }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("uploadId", $"{UploadId}");
-            return requestMessageBuilder;
-        }
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("uploadId", $"{UploadId}");
+        return requestMessageBuilder;
     }
 }

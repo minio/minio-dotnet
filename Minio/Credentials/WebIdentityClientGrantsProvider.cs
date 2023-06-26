@@ -22,77 +22,61 @@ using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 using Minio.Helper;
 
-namespace Minio.Credentials
+namespace Minio.Credentials;
+
+public abstract class WebIdentityClientGrantsProvider<T> : AssumeRoleBaseProvider<T>
+    where T : WebIdentityClientGrantsProvider<T>
 {
-    public abstract class WebIdentityClientGrantsProvider<T> : AssumeRoleBaseProvider<T>
-        where T : WebIdentityClientGrantsProvider<T>
+    public readonly uint MAX_DURATION_SECONDS = (uint)new TimeSpan(7, 0, 0, 0).TotalSeconds;
+    public readonly uint MIN_DURATION_SECONDS = 15;
+
+    internal Uri STSEndpoint { get; set; }
+    internal Func<JsonWebToken> JWTSupplier { get; set; }
+
+    internal uint GetDurationInSeconds(uint expiry)
     {
-        public readonly uint MAX_DURATION_SECONDS = (uint)new TimeSpan(7, 0, 0, 0).TotalSeconds;
-        public readonly uint MIN_DURATION_SECONDS = 15;
+        if (DurationInSeconds is not null && DurationInSeconds.Value > 0) expiry = DurationInSeconds.Value;
+        if (expiry > MAX_DURATION_SECONDS) return MAX_DURATION_SECONDS;
+        return expiry < MIN_DURATION_SECONDS ? MIN_DURATION_SECONDS : expiry;
+    }
 
-        internal Uri STSEndpoint { get; set; }
-        internal Func<JsonWebToken> JWTSupplier { get; set; }
+    internal T WithSTSEndpoint(Uri endpoint)
+    {
+        STSEndpoint = endpoint;
+        return (T)this;
+    }
 
-        internal uint GetDurationInSeconds(uint expiry)
-        {
-            if (DurationInSeconds is not null && DurationInSeconds.Value > 0)
-            {
-                expiry = DurationInSeconds.Value;
-            }
+    internal override async Task<HttpRequestMessageBuilder> BuildRequest()
+    {
+        Validate();
+        var jwt = JWTSupplier();
+        var requestMessageBuilder = await base.BuildRequest().ConfigureAwait(false);
+        requestMessageBuilder = Utils.GetEmptyRestRequest(requestMessageBuilder);
+        requestMessageBuilder.AddQueryParameter("WebIdentityToken", jwt.AccessToken);
+        await Task.Yield();
+        return requestMessageBuilder;
+    }
 
-            if (expiry > MAX_DURATION_SECONDS)
-            {
-                return MAX_DURATION_SECONDS;
-            }
+    internal override AccessCredentials ParseResponse(HttpResponseMessage response)
+    {
+        Validate();
+        // Stream receiveStream = response.Content.ReadAsStreamAsync();
+        // StreamReader readStream = new StreamReader (receiveStream, Encoding.UTF8);
+        // txtBlock.Text = readStream.ReadToEnd();
+        var content = Convert.ToString(response.Content, CultureInfo.InvariantCulture);
+        if (string.IsNullOrWhiteSpace(content) ||
+            !HttpStatusCode.OK.Equals(response.StatusCode))
+            throw new ArgumentNullException(nameof(response), "Unable to get credentials. Response error.");
 
-            return expiry < MIN_DURATION_SECONDS ? MIN_DURATION_SECONDS : expiry;
-        }
+        using var stream = Encoding.UTF8.GetBytes(content).AsMemory().AsStream();
+        return Utils.DeserializeXml<AccessCredentials>(stream);
+    }
 
-        internal T WithSTSEndpoint(Uri endpoint)
-        {
-            STSEndpoint = endpoint;
-            return (T)this;
-        }
-
-        internal override async Task<HttpRequestMessageBuilder> BuildRequest()
-        {
-            Validate();
-            var jwt = JWTSupplier();
-            var requestMessageBuilder = await base.BuildRequest().ConfigureAwait(false);
-            requestMessageBuilder = Utils.GetEmptyRestRequest(requestMessageBuilder);
-            requestMessageBuilder.AddQueryParameter("WebIdentityToken", jwt.AccessToken);
-            await Task.Yield();
-            return requestMessageBuilder;
-        }
-
-        internal override AccessCredentials ParseResponse(HttpResponseMessage response)
-        {
-            Validate();
-            // Stream receiveStream = response.Content.ReadAsStreamAsync();
-            // StreamReader readStream = new StreamReader (receiveStream, Encoding.UTF8);
-            // txtBlock.Text = readStream.ReadToEnd();
-            var content = Convert.ToString(response.Content, CultureInfo.InvariantCulture);
-            if (string.IsNullOrWhiteSpace(content) ||
-                !HttpStatusCode.OK.Equals(response.StatusCode))
-            {
-                throw new ArgumentNullException(nameof(response), "Unable to get credentials. Response error.");
-            }
-
-            using var stream = Encoding.UTF8.GetBytes(content).AsMemory().AsStream();
-            return Utils.DeserializeXml<AccessCredentials>(stream);
-        }
-
-        protected void Validate()
-        {
-            if (JWTSupplier is null)
-            {
-                throw new ArgumentNullException(nameof(JWTSupplier) + " JWT Token supplier cannot be null.");
-            }
-
-            if (STSEndpoint is null || string.IsNullOrWhiteSpace(STSEndpoint.AbsoluteUri))
-            {
-                throw new InvalidOperationException(nameof(STSEndpoint) + " value is invalid.");
-            }
-        }
+    protected void Validate()
+    {
+        if (JWTSupplier is null)
+            throw new ArgumentNullException(nameof(JWTSupplier) + " JWT Token supplier cannot be null.");
+        if (STSEndpoint is null || string.IsNullOrWhiteSpace(STSEndpoint.AbsoluteUri))
+            throw new InvalidOperationException(nameof(STSEndpoint) + " value is invalid.");
     }
 }

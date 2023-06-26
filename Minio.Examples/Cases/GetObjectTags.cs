@@ -16,49 +16,41 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public static class GetObjectTags
 {
-    public static class GetObjectTags
+    // Get Tags set for the object
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name",
+        string objectName = "my-object-name",
+        string versionId = null)
     {
-        // Get Tags set for the object
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name",
-            string objectName = "my-object-name",
-            string versionId = null)
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
+        try
         {
-            if (minio is null)
+            Console.WriteLine("Running example for API: GetObjectTags");
+            var tags = await minio.GetObjectTagsAsync(
+                new GetObjectTagsArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    .WithVersionId(versionId)
+            ).ConfigureAwait(false);
+            if (tags is not null && tags.Tags?.Count > 0)
             {
-                throw new ArgumentNullException(nameof(minio));
-            }
-
-            try
-            {
-                Console.WriteLine("Running example for API: GetObjectTags");
-                var tags = await minio.GetObjectTagsAsync(
-                    new GetObjectTagsArgs()
-                        .WithBucket(bucketName)
-                        .WithObject(objectName)
-                        .WithVersionId(versionId)
-                ).ConfigureAwait(false);
-                if (tags is not null && tags.Tags?.Count > 0)
-                {
-                    Console.WriteLine($"Got tags set for object {bucketName}/{objectName}.");
-                    foreach (var tag in tags.Tags)
-                    {
-                        Console.WriteLine(tag.Key + " : " + tag.Value);
-                    }
-
-                    Console.WriteLine();
-                    return;
-                }
-
-                Console.WriteLine($" Tags not set for object {bucketName}/{objectName}.");
+                Console.WriteLine($"Got tags set for object {bucketName}/{objectName}.");
+                foreach (var tag in tags.Tags) Console.WriteLine(tag.Key + " : " + tag.Value);
                 Console.WriteLine();
+                return;
             }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Object]  Exception: {e}");
-            }
+
+            Console.WriteLine($" Tags not set for object {bucketName}/{objectName}.");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Object]  Exception: {e}");
         }
     }
 }

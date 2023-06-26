@@ -16,33 +16,29 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases
-{
-    public static class RemoveBucketReplication
-    {
-        // Remove Replication configuration set for the bucket
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name")
-        {
-            if (minio is null)
-            {
-                throw new ArgumentNullException(nameof(minio));
-            }
+namespace Minio.Examples.Cases;
 
-            try
-            {
-                Console.WriteLine("Running example for API: RemoveBucketReplication");
-                await minio.RemoveBucketReplicationAsync(
-                    new RemoveBucketReplicationArgs()
-                        .WithBucket(bucketName)
-                ).ConfigureAwait(false);
-                Console.WriteLine($"Bucket Replication removed for bucket {bucketName}.");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+public static class RemoveBucketReplication
+{
+    // Remove Replication configuration set for the bucket
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name")
+    {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
+        try
+        {
+            Console.WriteLine("Running example for API: RemoveBucketReplication");
+            await minio.RemoveBucketReplicationAsync(
+                new RemoveBucketReplicationArgs()
+                    .WithBucket(bucketName)
+            ).ConfigureAwait(false);
+            Console.WriteLine($"Bucket Replication removed for bucket {bucketName}.");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

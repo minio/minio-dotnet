@@ -17,50 +17,45 @@
 using Minio.DataModel.Args;
 using Minio.DataModel.ObjectLock;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public static class GetObjectLockConfiguration
 {
-    public static class GetObjectLockConfiguration
+    // Get the Object Lock Configuration on the bucket
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name")
     {
-        // Get the Object Lock Configuration on the bucket
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name")
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
+        try
         {
-            if (minio is null)
+            Console.WriteLine("Running example for API: GetObjectLockConfiguration");
+            var config = await minio.GetObjectLockConfigurationAsync(
+                new GetObjectLockConfigurationArgs()
+                    .WithBucket(bucketName)
+            ).ConfigureAwait(false);
+            if (config is not null)
             {
-                throw new ArgumentNullException(nameof(minio));
-            }
-
-            try
-            {
-                Console.WriteLine("Running example for API: GetObjectLockConfiguration");
-                var config = await minio.GetObjectLockConfigurationAsync(
-                    new GetObjectLockConfigurationArgs()
-                        .WithBucket(bucketName)
-                ).ConfigureAwait(false);
-                if (config is not null)
+                Console.WriteLine($"Object lock configuration on bucket {bucketName} is : " + config.ObjectLockEnabled);
+                if (config.Rule?.DefaultRetention is not null)
                 {
-                    Console.WriteLine($"Object lock configuration on bucket {bucketName} is : " +
-                                      config.ObjectLockEnabled);
-                    if (config.Rule?.DefaultRetention is not null)
-                    {
-                        var mode = config.Rule.DefaultRetention.Mode == ObjectRetentionMode.GOVERNANCE
-                            ? "GOVERNANCE"
-                            : "COMPLIANCE";
-                        Console.WriteLine("Object Lock Configuration Rule Mode: " + mode + " Duration: " +
-                                          config.Rule.DefaultRetention.Days + " days.");
-                    }
-
-                    Console.WriteLine();
-                    return;
+                    var mode = config.Rule.DefaultRetention.Mode == ObjectRetentionMode.GOVERNANCE
+                        ? "GOVERNANCE"
+                        : "COMPLIANCE";
+                    Console.WriteLine("Object Lock Configuration Rule Mode: " + mode + " Duration: " +
+                                      config.Rule.DefaultRetention.Days + " days.");
                 }
 
-                Console.WriteLine($"Object lock configuration unavailable on bucket {bucketName}.");
                 Console.WriteLine();
+                return;
             }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+
+            Console.WriteLine($"Object lock configuration unavailable on bucket {bucketName}.");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

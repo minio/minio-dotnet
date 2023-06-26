@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args
-{
-    public class GetObjectLockConfigurationArgs : BucketArgs<GetObjectLockConfigurationArgs>
-    {
-        public GetObjectLockConfigurationArgs()
-        {
-            RequestMethod = HttpMethod.Get;
-        }
+namespace Minio.DataModel.Args;
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("object-lock", "");
-            return requestMessageBuilder;
-        }
+public class GetObjectLockConfigurationArgs : BucketArgs<GetObjectLockConfigurationArgs>
+{
+    public GetObjectLockConfigurationArgs()
+    {
+        RequestMethod = HttpMethod.Get;
+    }
+
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("object-lock", "");
+        return requestMessageBuilder;
     }
 }

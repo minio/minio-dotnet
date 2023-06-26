@@ -14,30 +14,28 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+[Serializable]
+public class InvalidExpiryRangeException : MinioException
 {
-    [Serializable]
-    public class InvalidExpiryRangeException : MinioException
+    public InvalidExpiryRangeException(string message) : base(message)
     {
-        public InvalidExpiryRangeException(string message) : base(message)
-        {
-        }
+    }
 
-        public InvalidExpiryRangeException(ResponseResult serverResponse) : base(serverResponse)
-        {
-        }
+    public InvalidExpiryRangeException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
 
-        public InvalidExpiryRangeException(string message, ResponseResult serverResponse) : base(message,
-            serverResponse)
-        {
-        }
+    public InvalidExpiryRangeException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
 
-        public InvalidExpiryRangeException()
-        {
-        }
+    public InvalidExpiryRangeException()
+    {
+    }
 
-        public InvalidExpiryRangeException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
+    public InvalidExpiryRangeException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 }

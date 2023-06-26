@@ -18,62 +18,58 @@ using System.Web;
 using Minio.DataModel.Args;
 using Minio.DataModel.Result;
 
-namespace Minio.DataModel.Response
+namespace Minio.DataModel.Response;
+
+internal class ListObjectVersionResponse
 {
-    internal class ListObjectVersionResponse
+    internal Item BucketObjectsLastItem;
+    internal IObserver<Item> ItemObservable;
+
+    internal ListObjectVersionResponse(ListObjectsArgs args, Tuple<ListVersionsResult, List<Item>> objectList,
+        IObserver<Item> obs)
     {
-        internal Item BucketObjectsLastItem;
-        internal IObserver<Item> ItemObservable;
-
-        internal ListObjectVersionResponse(ListObjectsArgs args, Tuple<ListVersionsResult, List<Item>> objectList,
-            IObserver<Item> obs)
+        ItemObservable = obs;
+        foreach (var item in objectList.Item2)
         {
-            ItemObservable = obs;
-            foreach (var item in objectList.Item2)
-            {
-                BucketObjectsLastItem = item;
-                if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
-                {
-                    item.Key = HttpUtility.UrlDecode(item.Key);
-                }
-
-                ItemObservable.OnNext(item);
-            }
-
-            if (objectList.Item1.NextMarker is not null)
-            {
-                if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
-                {
-                    NextMarker = HttpUtility.UrlDecode(objectList.Item1.NextMarker);
-                    NextKeyMarker = HttpUtility.UrlDecode(objectList.Item1.NextKeyMarker);
-                    NextVerMarker = HttpUtility.UrlDecode(objectList.Item1.NextVersionIdMarker);
-                }
-                else
-                {
-                    NextMarker = objectList.Item1.NextMarker;
-                    NextKeyMarker = objectList.Item1.NextKeyMarker;
-                    NextVerMarker = objectList.Item1.NextVersionIdMarker;
-                }
-            }
-            else if (BucketObjectsLastItem is not null)
-            {
-                if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
-                {
-                    NextMarker = HttpUtility.UrlDecode(BucketObjectsLastItem.Key);
-                    NextKeyMarker = HttpUtility.UrlDecode(BucketObjectsLastItem.Key);
-                    NextVerMarker = HttpUtility.UrlDecode(BucketObjectsLastItem.VersionId);
-                }
-                else
-                {
-                    NextMarker = BucketObjectsLastItem.Key;
-                    NextKeyMarker = BucketObjectsLastItem.Key;
-                    NextVerMarker = BucketObjectsLastItem.VersionId;
-                }
-            }
+            BucketObjectsLastItem = item;
+            if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
+                item.Key = HttpUtility.UrlDecode(item.Key);
+            ItemObservable.OnNext(item);
         }
 
-        internal string NextMarker { get; }
-        internal string NextKeyMarker { get; }
-        internal string NextVerMarker { get; }
+        if (objectList.Item1.NextMarker is not null)
+        {
+            if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
+            {
+                NextMarker = HttpUtility.UrlDecode(objectList.Item1.NextMarker);
+                NextKeyMarker = HttpUtility.UrlDecode(objectList.Item1.NextKeyMarker);
+                NextVerMarker = HttpUtility.UrlDecode(objectList.Item1.NextVersionIdMarker);
+            }
+            else
+            {
+                NextMarker = objectList.Item1.NextMarker;
+                NextKeyMarker = objectList.Item1.NextKeyMarker;
+                NextVerMarker = objectList.Item1.NextVersionIdMarker;
+            }
+        }
+        else if (BucketObjectsLastItem is not null)
+        {
+            if (string.Equals(objectList.Item1.EncodingType, "url", StringComparison.OrdinalIgnoreCase))
+            {
+                NextMarker = HttpUtility.UrlDecode(BucketObjectsLastItem.Key);
+                NextKeyMarker = HttpUtility.UrlDecode(BucketObjectsLastItem.Key);
+                NextVerMarker = HttpUtility.UrlDecode(BucketObjectsLastItem.VersionId);
+            }
+            else
+            {
+                NextMarker = BucketObjectsLastItem.Key;
+                NextKeyMarker = BucketObjectsLastItem.Key;
+                NextVerMarker = BucketObjectsLastItem.VersionId;
+            }
+        }
     }
+
+    internal string NextMarker { get; }
+    internal string NextKeyMarker { get; }
+    internal string NextVerMarker { get; }
 }

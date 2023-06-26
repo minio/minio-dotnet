@@ -17,25 +17,24 @@
 using System.Xml.Serialization;
 using Minio.Helper;
 
-namespace Minio.DataModel.ObjectLock
+namespace Minio.DataModel.ObjectLock;
+
+[Serializable]
+[XmlRoot(ElementName = "Retention", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+public class ObjectRetentionConfiguration
 {
-    [Serializable]
-    [XmlRoot(ElementName = "Retention", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-    public class ObjectRetentionConfiguration
+    public ObjectRetentionConfiguration()
     {
-        public ObjectRetentionConfiguration()
-        {
-            RetainUntilDate = null;
-        }
-
-        public ObjectRetentionConfiguration(DateTime date, ObjectRetentionMode mode = ObjectRetentionMode.GOVERNANCE)
-        {
-            RetainUntilDate = Utils.To8601String(date);
-            Mode = mode;
-        }
-
-        [XmlElement("Mode")] public ObjectRetentionMode Mode { get; set; }
-
-        [XmlElement("RetainUntilDate")] public string RetainUntilDate { get; set; }
+        RetainUntilDate = null;
     }
+
+    public ObjectRetentionConfiguration(DateTime date, ObjectRetentionMode mode = ObjectRetentionMode.GOVERNANCE)
+    {
+        RetainUntilDate = Utils.To8601String(date);
+        Mode = mode;
+    }
+
+    [XmlElement("Mode")] public ObjectRetentionMode Mode { get; set; }
+
+    [XmlElement("RetainUntilDate")] public string RetainUntilDate { get; set; }
 }

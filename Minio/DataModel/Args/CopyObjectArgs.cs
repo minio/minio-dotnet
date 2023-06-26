@@ -18,101 +18,84 @@ using Minio.DataModel.Encryption;
 using Minio.DataModel.ObjectLock;
 using Minio.Helper;
 
-namespace Minio.DataModel.Args
+namespace Minio.DataModel.Args;
+
+public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
 {
-    public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
+    public CopyObjectArgs()
     {
-        public CopyObjectArgs()
+        RequestMethod = HttpMethod.Put;
+        SourceObject = new CopySourceObjectArgs();
+        ReplaceTagsDirective = false;
+        ReplaceMetadataDirective = false;
+        ObjectLockSet = false;
+        RetentionUntilDate = default;
+    }
+
+    internal CopySourceObjectArgs SourceObject { get; set; }
+    internal ObjectStat SourceObjectInfo { get; set; }
+    internal bool ReplaceTagsDirective { get; set; }
+    internal bool ReplaceMetadataDirective { get; set; }
+    internal string StorageClass { get; set; }
+    internal ObjectRetentionMode ObjectLockRetentionMode { get; set; }
+    internal DateTime RetentionUntilDate { get; set; }
+    internal bool ObjectLockSet { get; set; }
+
+    internal override void Validate()
+    {
+        Utils.ValidateBucketName(BucketName);
+        if (SourceObject is null)
+            throw new InvalidOperationException(nameof(SourceObject) + " has not been assigned. Please use " +
+                                                nameof(WithCopyObjectSource));
+
+        if (SourceObjectInfo is null)
+            throw new InvalidOperationException(
+                "StatObject result for the copy source object needed to continue copy operation. Use " +
+                nameof(WithCopyObjectSourceStats) + " to initialize StatObject result.");
+
+        if (!string.IsNullOrEmpty(NotMatchETag) && !string.IsNullOrEmpty(MatchETag))
+            throw new InvalidOperationException("Invalid to set both Etag match conditions " + nameof(NotMatchETag) +
+                                                " and " + nameof(MatchETag));
+
+        if (!ModifiedSince.Equals(default) &&
+            !UnModifiedSince.Equals(default))
+            throw new InvalidOperationException("Invalid to set both modified date match conditions " +
+                                                nameof(ModifiedSince) + " and " + nameof(UnModifiedSince));
+
+        Populate();
+    }
+
+    private void Populate()
+    {
+        if (string.IsNullOrEmpty(ObjectName)) ObjectName = SourceObject.ObjectName;
+        if (SSE?.GetEncryptionType().Equals(EncryptionType.SSE_C) == true)
         {
-            RequestMethod = HttpMethod.Put;
-            SourceObject = new CopySourceObjectArgs();
-            ReplaceTagsDirective = false;
-            ReplaceMetadataDirective = false;
-            ObjectLockSet = false;
-            RetentionUntilDate = default;
+            Headers = new Dictionary<string, string>(StringComparer.Ordinal);
+            SSE.Marshal(Headers);
         }
 
-        internal CopySourceObjectArgs SourceObject { get; set; }
-        internal ObjectStat SourceObjectInfo { get; set; }
-        internal bool ReplaceTagsDirective { get; set; }
-        internal bool ReplaceMetadataDirective { get; set; }
-        internal string StorageClass { get; set; }
-        internal ObjectRetentionMode ObjectLockRetentionMode { get; set; }
-        internal DateTime RetentionUntilDate { get; set; }
-        internal bool ObjectLockSet { get; set; }
-
-        internal override void Validate()
+        if (!ReplaceMetadataDirective)
         {
-            Utils.ValidateBucketName(BucketName);
-            if (SourceObject is null)
-            {
-                throw new InvalidOperationException(nameof(SourceObject) + " has not been assigned. Please use " +
-                                                    nameof(WithCopyObjectSource));
-            }
-
-            if (SourceObjectInfo is null)
-            {
-                throw new InvalidOperationException(
-                    "StatObject result for the copy source object needed to continue copy operation. Use " +
-                    nameof(WithCopyObjectSourceStats) + " to initialize StatObject result.");
-            }
-
-            if (!string.IsNullOrEmpty(NotMatchETag) && !string.IsNullOrEmpty(MatchETag))
-            {
-                throw new InvalidOperationException("Invalid to set both Etag match conditions " +
-                                                    nameof(NotMatchETag) +
-                                                    " and " + nameof(MatchETag));
-            }
-
-            if (!ModifiedSince.Equals(default) &&
-                !UnModifiedSince.Equals(default))
-            {
-                throw new InvalidOperationException("Invalid to set both modified date match conditions " +
-                                                    nameof(ModifiedSince) + " and " + nameof(UnModifiedSince));
-            }
-
-            Populate();
+            // Check in copy conditions if replace metadata has been set
+            var copyReplaceMeta = SourceObject.CopyOperationConditions?.HasReplaceMetadataDirective() == true;
+            WithReplaceMetadataDirective(copyReplaceMeta);
         }
 
-        private void Populate()
+        Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
+        if (ReplaceMetadataDirective)
         {
-            if (string.IsNullOrEmpty(ObjectName))
-            {
-                ObjectName = SourceObject.ObjectName;
-            }
-
-            if (SSE?.GetEncryptionType().Equals(EncryptionType.SSE_C) == true)
-            {
-                Headers = new Dictionary<string, string>(StringComparer.Ordinal);
-                SSE.Marshal(Headers);
-            }
-
-            if (!ReplaceMetadataDirective)
-            {
-                // Check in copy conditions if replace metadata has been set
-                var copyReplaceMeta = SourceObject.CopyOperationConditions?.HasReplaceMetadataDirective() == true;
-                WithReplaceMetadataDirective(copyReplaceMeta);
-            }
-
-            Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
-            if (ReplaceMetadataDirective)
-            {
-                if (Headers is not null)
+            if (Headers is not null)
 #if NETSTANDARD
-                {
-                    foreach (var pair in SourceObjectInfo.MetaData.ToList())
+                foreach (var pair in SourceObjectInfo.MetaData.ToList())
 #else
-                {
-                    foreach (var pair in SourceObjectInfo.MetaData)
+                foreach (var pair in SourceObjectInfo.MetaData)
 #endif
-                    {
-                        var comparer = StringComparer.OrdinalIgnoreCase;
-                        var newDictionary = new Dictionary<string, string>(Headers, comparer);
+                {
+                    var comparer = StringComparer.OrdinalIgnoreCase;
+                    var newDictionary = new Dictionary<string, string>(Headers, comparer);
 
-                        SourceObjectInfo.MetaData.Remove(pair.Key);
-                    }
+                    SourceObjectInfo.MetaData.Remove(pair.Key);
                 }
-            }
 
             Headers = Headers
                 .Concat(SourceObjectInfo.MetaData)
@@ -120,6 +103,7 @@ namespace Minio.DataModel.Args
                 .ToDictionary(item => item.Key, item =>
                     item.Last().Value, StringComparer.Ordinal);
         }
+
         if (Headers is not null)
         {
             var newKVList = new List<Tuple<string, string>>();
@@ -143,20 +127,14 @@ namespace Minio.DataModel.Args
                 newKVList.Add(new Tuple<string, string>(key, item.Value));
             }
 
-            foreach (var item in newKVList)
-            {
-                Headers[item.Item1] = item.Item2;
-            }
+            foreach (var item in newKVList) Headers[item.Item1] = item.Item2;
         }
     }
 
     public CopyObjectArgs WithCopyObjectSource(CopySourceObjectArgs cs)
     {
         if (cs is null)
-        {
-            throw new InvalidOperationException(
-                "The copy source object needed for copy operation is not initialized.");
-        }
+            throw new InvalidOperationException("The copy source object needed for copy operation is not initialized.");
 
         SourceObject.RequestMethod = HttpMethod.Put;
         SourceObject ??= new CopySourceObjectArgs();
@@ -231,20 +209,12 @@ namespace Minio.DataModel.Args
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
         if (!string.IsNullOrEmpty(MatchETag))
-        {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-match", MatchETag);
-        }
-
         if (!string.IsNullOrEmpty(NotMatchETag))
-        {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-none-match", NotMatchETag);
-        }
-
         if (ModifiedSince != default)
-        {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-unmodified-since",
                 Utils.To8601String(ModifiedSince));
-        }
 
         if (UnModifiedSince != default)
         {
@@ -253,11 +223,7 @@ namespace Minio.DataModel.Args
                 Utils.To8601String(UnModifiedSince));
         }
 
-        if (!string.IsNullOrEmpty(VersionId))
-        {
-            requestMessageBuilder.AddQueryParameter("versionId", VersionId);
-        }
-
+        if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", VersionId);
         if (ObjectTags?.TaggingSet?.Tag.Count > 0)
         {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
@@ -266,27 +232,16 @@ namespace Minio.DataModel.Args
         }
 
         if (ReplaceMetadataDirective)
-        {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-metadata-directive", "REPLACE");
-        }
-
         if (!string.IsNullOrEmpty(StorageClass))
-        {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-storage-class", StorageClass);
-        }
-
         if (LegalHoldEnabled == true)
-        {
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-legal-hold", "ON");
-        }
-
         if (ObjectLockSet)
         {
             if (!RetentionUntilDate.Equals(default))
-            {
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
                     Utils.To8601String(RetentionUntilDate));
-            }
 
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
                 ObjectLockRetentionMode == ObjectRetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
@@ -294,6 +249,4 @@ namespace Minio.DataModel.Args
 
         return requestMessageBuilder;
     }
-}
-
 }

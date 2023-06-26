@@ -16,28 +16,23 @@
 
 using System.Text;
 
-namespace Minio.Tests
+namespace Minio.Tests;
+
+internal static class TestHelper
 {
-    internal static class TestHelper
+    internal const string Endpoint = "play.min.io";
+    internal const string AccessKey = "Q3AM3UQ867SPQQA43P2F";
+    internal const string SecretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
+
+    private static readonly Random rnd = new();
+
+    // Generate a random string
+    public static string GetRandomName(int length = 5)
     {
-        internal const string Endpoint = "play.min.io";
-        internal const string AccessKey = "Q3AM3UQ867SPQQA43P2F";
-        internal const string SecretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
+        var characters = "0123456789abcdefghijklmnopqrstuvwxyz";
+        var result = new StringBuilder(length);
 
-        private static readonly Random rnd = new();
-
-        // Generate a random string
-        public static string GetRandomName(int length = 5)
-        {
-            var characters = "0123456789abcdefghijklmnopqrstuvwxyz";
-            var result = new StringBuilder(length);
-
-            for (var i = 0; i < length; i++)
-            {
-                result.Append(characters[rnd.Next(characters.Length)]);
-            }
-
-            return result.ToString();
-        }
+        for (var i = 0; i < length; i++) result.Append(characters[rnd.Next(characters.Length)]);
+        return result.ToString();
     }
 }

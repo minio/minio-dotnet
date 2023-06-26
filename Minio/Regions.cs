@@ -17,44 +17,38 @@
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 
-namespace Minio
+namespace Minio;
+
+public static class Regions
 {
-    public static class Regions
+    private static readonly Regex endpointRegex = new(@"s3[.\-](.*?)\.amazonaws\.com$",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.RightToLeft,
+        TimeSpan.FromHours(1));
+
+    private static readonly ConcurrentDictionary<string, string> cache = new(StringComparer.Ordinal);
+
+    /// <summary>
+    ///     Get corresponding region for input host.
+    /// </summary>
+    /// <param name="endpoint">S3 API endpoint</param>
+    /// <returns>Region corresponding to the endpoint. Default is 'us-east-1'</returns>
+    public static string GetRegionFromEndpoint(string endpoint)
     {
-        private static readonly Regex endpointRegex = new(@"s3[.\-](.*?)\.amazonaws\.com$",
-            RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.RightToLeft,
-            TimeSpan.FromHours(1));
+        if (!string.IsNullOrEmpty(endpoint))
+            return cache.GetOrAdd(endpoint, GetRegionFromEndpointImpl);
+        return string.Empty;
+    }
 
-        private static readonly ConcurrentDictionary<string, string> cache = new(StringComparer.Ordinal);
-
-        /// <summary>
-        ///     Get corresponding region for input host.
-        /// </summary>
-        /// <param name="endpoint">S3 API endpoint</param>
-        /// <returns>Region corresponding to the endpoint. Default is 'us-east-1'</returns>
-        public static string GetRegionFromEndpoint(string endpoint)
+    private static string GetRegionFromEndpointImpl(string endpoint)
+    {
+        if (!string.IsNullOrEmpty(endpoint))
         {
-            if (!string.IsNullOrEmpty(endpoint))
-            {
-                return cache.GetOrAdd(endpoint, GetRegionFromEndpointImpl);
-            }
+            var match = endpointRegex.Match(endpoint);
 
-            return string.Empty;
+            if (match.Success)
+                return match.Groups[1].Value;
         }
 
-        private static string GetRegionFromEndpointImpl(string endpoint)
-        {
-            if (!string.IsNullOrEmpty(endpoint))
-            {
-                var match = endpointRegex.Match(endpoint);
-
-                if (match.Success)
-                {
-                    return match.Groups[1].Value;
-                }
-            }
-
-            return string.Empty;
-        }
+        return string.Empty;
     }
 }

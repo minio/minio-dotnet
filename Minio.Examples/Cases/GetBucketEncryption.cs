@@ -16,38 +16,31 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public static class GetBucketEncryption
 {
-    public static class GetBucketEncryption
+    // Get Encryption Configuration for the bucket
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name")
     {
-        // Get Encryption Configuration for the bucket
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name")
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
+        try
         {
-            if (minio is null)
-            {
-                throw new ArgumentNullException(nameof(minio));
-            }
-
-            try
-            {
-                Console.WriteLine("Running example for API: GetBucketEncryptionAsync");
-                var config = await minio.GetBucketEncryptionAsync(
-                    new GetBucketEncryptionArgs()
-                        .WithBucket(bucketName)
-                ).ConfigureAwait(false);
-                Console.WriteLine($"Got encryption configuration for bucket {bucketName}.");
-                if (config is not null && config.Rule?.Apply is not null)
-                {
-                    Console.WriteLine("Server Side Encryption Algorithm: " + config.Rule.Apply.SSEAlgorithm);
-                }
-
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: GetBucketEncryptionAsync");
+            var config = await minio.GetBucketEncryptionAsync(
+                new GetBucketEncryptionArgs()
+                    .WithBucket(bucketName)
+            ).ConfigureAwait(false);
+            Console.WriteLine($"Got encryption configuration for bucket {bucketName}.");
+            if (config is not null && config.Rule?.Apply is not null)
+                Console.WriteLine("Server Side Encryption Algorithm: " + config.Rule.Apply.SSEAlgorithm);
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

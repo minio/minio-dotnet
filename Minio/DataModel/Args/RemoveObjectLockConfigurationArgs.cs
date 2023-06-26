@@ -18,23 +18,22 @@ using System.Text;
 using Minio.DataModel.ObjectLock;
 using Minio.Helper;
 
-namespace Minio.DataModel.Args
-{
-    public class RemoveObjectLockConfigurationArgs : BucketArgs<RemoveObjectLockConfigurationArgs>
-    {
-        public RemoveObjectLockConfigurationArgs()
-        {
-            RequestMethod = HttpMethod.Put;
-        }
+namespace Minio.DataModel.Args;
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("object-lock", "");
-            var body = Utils.MarshalXML(new ObjectLockConfiguration(), "http://s3.amazonaws.com/doc/2006-03-01/");
-            requestMessageBuilder.AddXmlBody(body);
-            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-                Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
-            return requestMessageBuilder;
-        }
+public class RemoveObjectLockConfigurationArgs : BucketArgs<RemoveObjectLockConfigurationArgs>
+{
+    public RemoveObjectLockConfigurationArgs()
+    {
+        RequestMethod = HttpMethod.Put;
+    }
+
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("object-lock", "");
+        var body = Utils.MarshalXML(new ObjectLockConfiguration(), "http://s3.amazonaws.com/doc/2006-03-01/");
+        requestMessageBuilder.AddXmlBody(body);
+        requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
+        return requestMessageBuilder;
     }
 }

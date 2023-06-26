@@ -14,29 +14,28 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+[Serializable]
+public class RedirectionException : MinioException
 {
-    [Serializable]
-    public class RedirectionException : MinioException
+    public RedirectionException(string message) : base(message)
     {
-        public RedirectionException(string message) : base(message)
-        {
-        }
+    }
 
-        public RedirectionException(ResponseResult serverResponse) : base(serverResponse)
-        {
-        }
+    public RedirectionException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
 
-        public RedirectionException(string message, ResponseResult serverResponse) : base(message, serverResponse)
-        {
-        }
+    public RedirectionException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
 
-        public RedirectionException()
-        {
-        }
+    public RedirectionException()
+    {
+    }
 
-        public RedirectionException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
+    public RedirectionException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 }

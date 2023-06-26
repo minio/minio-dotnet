@@ -14,42 +14,40 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+[Serializable]
+public class InvalidObjectPrefixException : MinioException
 {
-    [Serializable]
-    public class InvalidObjectPrefixException : MinioException
+    private readonly string objectPrefix;
+
+    public InvalidObjectPrefixException(string objectPrefix, string message) : base(message)
     {
-        private readonly string objectPrefix;
+        this.objectPrefix = objectPrefix;
+    }
 
-        public InvalidObjectPrefixException(string objectPrefix, string message) : base(message)
-        {
-            this.objectPrefix = objectPrefix;
-        }
+    public InvalidObjectPrefixException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
 
-        public InvalidObjectPrefixException(ResponseResult serverResponse) : base(serverResponse)
-        {
-        }
+    public InvalidObjectPrefixException(string message) : base(message)
+    {
+    }
 
-        public InvalidObjectPrefixException(string message) : base(message)
-        {
-        }
+    public InvalidObjectPrefixException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
 
-        public InvalidObjectPrefixException(string message, ResponseResult serverResponse) : base(message,
-            serverResponse)
-        {
-        }
+    public InvalidObjectPrefixException()
+    {
+    }
 
-        public InvalidObjectPrefixException()
-        {
-        }
+    public InvalidObjectPrefixException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 
-        public InvalidObjectPrefixException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        public override string ToString()
-        {
-            return $"{objectPrefix}: {base.ToString()}";
-        }
+    public override string ToString()
+    {
+        return $"{objectPrefix}: {base.ToString()}";
     }
 }

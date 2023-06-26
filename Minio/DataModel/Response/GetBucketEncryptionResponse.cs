@@ -20,24 +20,23 @@ using CommunityToolkit.HighPerformance;
 using Minio.DataModel.Encryption;
 using Minio.Helper;
 
-namespace Minio.DataModel.Response
-{
-    internal class GetBucketEncryptionResponse : GenericResponse
-    {
-        internal GetBucketEncryptionResponse(HttpStatusCode statusCode, string responseContent)
-            : base(statusCode, responseContent)
-        {
-            if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
-            {
-                BucketEncryptionConfiguration = null;
-                return;
-            }
+namespace Minio.DataModel.Response;
 
-            using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-            BucketEncryptionConfiguration =
-                Utils.DeserializeXml<ServerSideEncryptionConfiguration>(stream);
+internal class GetBucketEncryptionResponse : GenericResponse
+{
+    internal GetBucketEncryptionResponse(HttpStatusCode statusCode, string responseContent)
+        : base(statusCode, responseContent)
+    {
+        if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
+        {
+            BucketEncryptionConfiguration = null;
+            return;
         }
 
-        internal ServerSideEncryptionConfiguration BucketEncryptionConfiguration { get; set; }
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        BucketEncryptionConfiguration =
+            Utils.DeserializeXml<ServerSideEncryptionConfiguration>(stream);
     }
+
+    internal ServerSideEncryptionConfiguration BucketEncryptionConfiguration { get; set; }
 }

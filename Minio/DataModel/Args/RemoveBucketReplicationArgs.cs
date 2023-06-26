@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args
-{
-    public class RemoveBucketReplicationArgs : BucketArgs<RemoveBucketReplicationArgs>
-    {
-        public RemoveBucketReplicationArgs()
-        {
-            RequestMethod = HttpMethod.Delete;
-        }
+namespace Minio.DataModel.Args;
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("replication", "");
-            return requestMessageBuilder;
-        }
+public class RemoveBucketReplicationArgs : BucketArgs<RemoveBucketReplicationArgs>
+{
+    public RemoveBucketReplicationArgs()
+    {
+        RequestMethod = HttpMethod.Delete;
+    }
+
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("replication", "");
+        return requestMessageBuilder;
     }
 }

@@ -14,44 +14,42 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+[Serializable]
+public class InvalidContentLengthException : MinioException
 {
-    [Serializable]
-    public class InvalidContentLengthException : MinioException
+    private readonly string bucketName;
+    private readonly string objectName;
+
+    public InvalidContentLengthException(string bucketName, string objectName, string message) : base(message)
     {
-        private readonly string bucketName;
-        private readonly string objectName;
+        this.bucketName = bucketName;
+        this.objectName = objectName;
+    }
 
-        public InvalidContentLengthException(string bucketName, string objectName, string message) : base(message)
-        {
-            this.bucketName = bucketName;
-            this.objectName = objectName;
-        }
+    public InvalidContentLengthException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
 
-        public InvalidContentLengthException(ResponseResult serverResponse) : base(serverResponse)
-        {
-        }
+    public InvalidContentLengthException(string message) : base(message)
+    {
+    }
 
-        public InvalidContentLengthException(string message) : base(message)
-        {
-        }
+    public InvalidContentLengthException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
 
-        public InvalidContentLengthException(string message, ResponseResult serverResponse) : base(message,
-            serverResponse)
-        {
-        }
+    public InvalidContentLengthException()
+    {
+    }
 
-        public InvalidContentLengthException()
-        {
-        }
+    public InvalidContentLengthException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 
-        public InvalidContentLengthException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        public override string ToString()
-        {
-            return $"{bucketName} :{objectName}: {base.ToString()}";
-        }
+    public override string ToString()
+    {
+        return $"{bucketName} :{objectName}: {base.ToString()}";
     }
 }

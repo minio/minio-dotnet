@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args
-{
-    public class GetBucketNotificationsArgs : BucketArgs<GetBucketNotificationsArgs>
-    {
-        public GetBucketNotificationsArgs()
-        {
-            RequestMethod = HttpMethod.Get;
-        }
+namespace Minio.DataModel.Args;
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("notification", "");
-            return requestMessageBuilder;
-        }
+public class GetBucketNotificationsArgs : BucketArgs<GetBucketNotificationsArgs>
+{
+    public GetBucketNotificationsArgs()
+    {
+        RequestMethod = HttpMethod.Get;
+    }
+
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("notification", "");
+        return requestMessageBuilder;
     }
 }

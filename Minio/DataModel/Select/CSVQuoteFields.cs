@@ -16,24 +16,23 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Select
+namespace Minio.DataModel.Select;
+
+[Serializable]
+public sealed class CSVQuoteFields
 {
-    [Serializable]
-    public sealed class CSVQuoteFields
+    // Constants for csv quote styles.
+    public static readonly CSVQuoteFields Always = new("Always");
+    public static readonly CSVQuoteFields AsNeeded = new("AsNeeded");
+
+    public CSVQuoteFields(string value)
     {
-        // Constants for csv quote styles.
-        public static readonly CSVQuoteFields Always = new("Always");
-        public static readonly CSVQuoteFields AsNeeded = new("AsNeeded");
-
-        public CSVQuoteFields(string value)
-        {
-            QuoteFields = value;
-        }
-
-        public CSVQuoteFields()
-        {
-        }
-
-        [XmlText] public string QuoteFields { get; set; }
+        QuoteFields = value;
     }
+
+    public CSVQuoteFields()
+    {
+    }
+
+    [XmlText] public string QuoteFields { get; set; }
 }

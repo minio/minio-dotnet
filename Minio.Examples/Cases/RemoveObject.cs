@@ -16,42 +16,38 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal static class RemoveObject
 {
-    internal static class RemoveObject
+    // Remove an object from a bucket
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name",
+        string objectName = "my-object-name",
+        string versionId = null)
     {
-        // Remove an object from a bucket
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name",
-            string objectName = "my-object-name",
-            string versionId = null)
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
+        try
         {
-            if (minio is null)
+            var args = new RemoveObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName);
+            var versions = "";
+            if (!string.IsNullOrEmpty(versionId))
             {
-                throw new ArgumentNullException(nameof(minio));
+                args = args.WithVersionId(versionId);
+                versions = ", with version ID " + versionId + " ";
             }
 
-            try
-            {
-                var args = new RemoveObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(objectName);
-                var versions = "";
-                if (!string.IsNullOrEmpty(versionId))
-                {
-                    args = args.WithVersionId(versionId);
-                    versions = ", with version ID " + versionId + " ";
-                }
-
-                Console.WriteLine("Running example for API: RemoveObjectAsync");
-                await minio.RemoveObjectAsync(args).ConfigureAwait(false);
-                Console.WriteLine($"Removed object {objectName} from bucket {bucketName}{versions} successfully");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket-Object]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: RemoveObjectAsync");
+            await minio.RemoveObjectAsync(args).ConfigureAwait(false);
+            Console.WriteLine($"Removed object {objectName} from bucket {bucketName}{versions} successfully");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket-Object]  Exception: {e}");
         }
     }
 }

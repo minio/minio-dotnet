@@ -16,20 +16,19 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Select
+namespace Minio.DataModel.Select;
+
+[Serializable]
+public class RequestProgress
 {
-    [Serializable]
-    public class RequestProgress
+    public RequestProgress()
     {
-        public RequestProgress()
-        {
-        }
-
-        public RequestProgress(bool val)
-        {
-            Enable = val;
-        }
-
-        [XmlElement(IsNullable = false)] public bool Enable { get; set; }
     }
+
+    public RequestProgress(bool val)
+    {
+        Enable = val;
+    }
+
+    [XmlElement(IsNullable = false)] public bool Enable { get; set; }
 }

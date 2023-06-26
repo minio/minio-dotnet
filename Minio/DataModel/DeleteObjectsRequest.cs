@@ -17,26 +17,25 @@
 using System.Collections.ObjectModel;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+[Serializable]
+[XmlType(TypeName = "Delete")]
+public class DeleteObjectsRequest
 {
-    [Serializable]
-    [XmlType(TypeName = "Delete")]
-    public class DeleteObjectsRequest
+    public DeleteObjectsRequest(Collection<DeleteObject> objectsList, bool quiet = true)
     {
-        public DeleteObjectsRequest(Collection<DeleteObject> objectsList, bool quiet = true)
-        {
-            Quiet = quiet;
-            Objects = objectsList;
-        }
-
-        public DeleteObjectsRequest()
-        {
-            Quiet = true;
-            Objects = new Collection<DeleteObject>();
-        }
-
-        [XmlElement("Quiet")] public bool Quiet { get; set; }
-
-        [XmlElement("Object")] public Collection<DeleteObject> Objects { get; set; }
+        Quiet = quiet;
+        Objects = objectsList;
     }
+
+    public DeleteObjectsRequest()
+    {
+        Quiet = true;
+        Objects = new Collection<DeleteObject>();
+    }
+
+    [XmlElement("Quiet")] public bool Quiet { get; set; }
+
+    [XmlElement("Object")] public Collection<DeleteObject> Objects { get; set; }
 }

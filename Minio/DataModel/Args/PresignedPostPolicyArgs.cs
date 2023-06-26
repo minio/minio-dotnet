@@ -18,117 +18,103 @@ using System.Globalization;
 using Minio.Exceptions;
 using Minio.Helper;
 
-namespace Minio.DataModel.Args
+namespace Minio.DataModel.Args;
+
+public class PresignedPostPolicyArgs : ObjectArgs<PresignedPostPolicyArgs>
 {
-    public class PresignedPostPolicyArgs : ObjectArgs<PresignedPostPolicyArgs>
+    internal PostPolicy Policy { get; set; }
+    internal DateTime Expiration { get; set; }
+
+    internal string Region { get; set; }
+
+    protected new void Validate()
     {
-        internal PostPolicy Policy { get; set; }
-        internal DateTime Expiration { get; set; }
-
-        internal string Region { get; set; }
-
-        protected new void Validate()
+        var checkPolicy = false;
+        try
         {
-            var checkPolicy = false;
-            try
-            {
-                Utils.ValidateBucketName(BucketName);
-                Utils.ValidateObjectName(ObjectName);
-            }
-            catch (Exception ex) when (ex is InvalidBucketNameException || ex is InvalidObjectNameException)
-            {
-                checkPolicy = true;
-            }
+            Utils.ValidateBucketName(BucketName);
+            Utils.ValidateObjectName(ObjectName);
+        }
+        catch (Exception ex) when (ex is InvalidBucketNameException || ex is InvalidObjectNameException)
+        {
+            checkPolicy = true;
+        }
 
-            if (checkPolicy)
-            {
-                if (!Policy.IsBucketSet())
-                {
-                    throw new InvalidOperationException("For the " + nameof(Policy) + " bucket should be set");
-                }
+        if (checkPolicy)
+        {
+            if (!Policy.IsBucketSet())
+                throw new InvalidOperationException("For the " + nameof(Policy) + " bucket should be set");
 
-                if (!Policy.IsKeySet())
-                {
-                    throw new InvalidOperationException("For the " + nameof(Policy) + " key should be set");
-                }
+            if (!Policy.IsKeySet())
+                throw new InvalidOperationException("For the " + nameof(Policy) + " key should be set");
 
-                if (!Policy.IsExpirationSet())
-                {
-                    throw new InvalidOperationException("For the " + nameof(Policy) + " expiration should be set");
-                }
-
-                BucketName = Policy.Bucket;
-                ObjectName = Policy.Key;
-            }
-
-            if (string.IsNullOrEmpty(Expiration.ToString(CultureInfo.InvariantCulture)))
-            {
+            if (!Policy.IsExpirationSet())
                 throw new InvalidOperationException("For the " + nameof(Policy) + " expiration should be set");
-            }
+            BucketName = Policy.Bucket;
+            ObjectName = Policy.Key;
         }
 
-        public PresignedPostPolicyArgs WithExpiration(DateTime ex)
-        {
-            Expiration = ex;
-            return this;
-        }
+        if (string.IsNullOrEmpty(Expiration.ToString(CultureInfo.InvariantCulture)))
+            throw new InvalidOperationException("For the " + nameof(Policy) + " expiration should be set");
+    }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            return requestMessageBuilder;
-        }
+    public PresignedPostPolicyArgs WithExpiration(DateTime ex)
+    {
+        Expiration = ex;
+        return this;
+    }
 
-        internal PresignedPostPolicyArgs WithRegion(string region)
-        {
-            Region = region;
-            return this;
-        }
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        return requestMessageBuilder;
+    }
 
-        internal PresignedPostPolicyArgs WithSessionToken(string sessionToken)
-        {
-            Policy.SetSessionToken(sessionToken);
-            return this;
-        }
+    internal PresignedPostPolicyArgs WithRegion(string region)
+    {
+        Region = region;
+        return this;
+    }
 
-        internal PresignedPostPolicyArgs WithDate(DateTime date)
-        {
-            Policy.SetDate(date);
-            return this;
-        }
+    internal PresignedPostPolicyArgs WithSessionToken(string sessionToken)
+    {
+        Policy.SetSessionToken(sessionToken);
+        return this;
+    }
 
-        internal PresignedPostPolicyArgs WithCredential(string credential)
-        {
-            Policy.SetCredential(credential);
-            return this;
-        }
+    internal PresignedPostPolicyArgs WithDate(DateTime date)
+    {
+        Policy.SetDate(date);
+        return this;
+    }
 
-        internal PresignedPostPolicyArgs WithAlgorithm(string algorithm)
-        {
-            Policy.SetAlgorithm(algorithm);
-            return this;
-        }
+    internal PresignedPostPolicyArgs WithCredential(string credential)
+    {
+        Policy.SetCredential(credential);
+        return this;
+    }
 
-        internal PresignedPostPolicyArgs WithSignature(string signature)
-        {
-            Policy.SetSignature(signature);
-            return this;
-        }
+    internal PresignedPostPolicyArgs WithAlgorithm(string algorithm)
+    {
+        Policy.SetAlgorithm(algorithm);
+        return this;
+    }
 
-        public PresignedPostPolicyArgs WithPolicy(PostPolicy policy)
-        {
-            if (policy is null)
-            {
-                throw new ArgumentNullException(nameof(policy));
-            }
+    internal PresignedPostPolicyArgs WithSignature(string signature)
+    {
+        Policy.SetSignature(signature);
+        return this;
+    }
 
-            Policy = policy;
-            if (policy.Expiration != DateTime.MinValue)
-                // policy.expiration has an assigned value
-            {
-                Expiration = policy.Expiration;
-            }
+    public PresignedPostPolicyArgs WithPolicy(PostPolicy policy)
+    {
+        if (policy is null)
+            throw new ArgumentNullException(nameof(policy));
 
-            return this;
-        }
+        Policy = policy;
+        if (policy.Expiration != DateTime.MinValue)
+            // policy.expiration has an assigned value
+            Expiration = policy.Expiration;
+
+        return this;
     }
 }

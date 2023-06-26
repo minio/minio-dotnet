@@ -16,10 +16,9 @@
 
 using System.Text.Json.Serialization;
 
-namespace Minio.DataModel.Notification
+namespace Minio.DataModel.Notification;
+
+public class Identity
 {
-    public class Identity
-    {
-        [JsonPropertyName("principalId")] public string PrincipalId { get; set; }
-    }
+    [JsonPropertyName("principalId")] public string PrincipalId { get; set; }
 }

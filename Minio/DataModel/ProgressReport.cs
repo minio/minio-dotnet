@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+public class ProgressReport
 {
-    public class ProgressReport
-    {
-        public int Percentage { get; set; }
-        public long TotalBytesTransferred { get; set; }
-    }
+    public int Percentage { get; set; }
+    public long TotalBytesTransferred { get; set; }
 }

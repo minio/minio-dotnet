@@ -52,39 +52,19 @@ public static class Utils
     internal static void ValidateBucketName(string bucketName)
     {
         if (string.IsNullOrEmpty(bucketName))
-        {
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot be empty.");
-        }
-
         if (bucketName.Length < 3)
-        {
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot be smaller than 3 characters.");
-        }
-
         if (bucketName.Length > 63)
-        {
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot be greater than 63 characters.");
-        }
-
         if (bucketName[0] == '.' || bucketName[bucketName.Length - 1] == '.')
-        {
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot start or end with a '.' dot.");
-        }
-
         if (bucketName.Any(c => char.IsUpper(c)))
-        {
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot have upper case characters");
-        }
-
         if (invalidDotBucketName.IsMatch(bucketName))
-        {
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot have successive periods.");
-        }
-
         if (!validBucketName.IsMatch(bucketName))
-        {
             throw new InvalidBucketNameException(bucketName, "Bucket name contains invalid characters.");
-        }
     }
 
     // IsValidObjectName - verify object name in accordance with
@@ -92,24 +72,18 @@ public static class Utils
     internal static void ValidateObjectName(string objectName)
     {
         if (string.IsNullOrEmpty(objectName) || string.IsNullOrEmpty(objectName.Trim()))
-        {
             throw new InvalidObjectNameException(objectName, "Object name cannot be empty.");
-        }
 
         // c# strings are in utf16 format. they are already in unicode format when they arrive here.
         if (objectName.Length > 512)
-        {
             throw new InvalidObjectNameException(objectName, "Object name cannot be greater than 1024 characters.");
-        }
     }
 
     internal static void ValidateObjectPrefix(string objectPrefix)
     {
         if (objectPrefix.Length > 512)
-        {
             throw new InvalidObjectPrefixException(objectPrefix,
                 "Object prefix cannot be greater than 1024 characters.");
-        }
     }
 
     // Return url encoded string where reserved characters have been percent-encoded
@@ -151,28 +125,14 @@ public static class Utils
     {
         var encodedPathBuf = new StringBuilder();
         foreach (var pathSegment in path.Split('/'))
-        {
             if (pathSegment.Length != 0)
             {
-                if (encodedPathBuf.Length > 0)
-                {
-                    encodedPathBuf.Append('/');
-                }
-
+                if (encodedPathBuf.Length > 0) encodedPathBuf.Append('/');
                 encodedPathBuf.Append(UrlEncode(pathSegment));
             }
-        }
 
-        if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
-        {
-            encodedPathBuf.Insert(0, '/');
-        }
-
-        if (path.EndsWith("/", StringComparison.OrdinalIgnoreCase))
-        {
-            encodedPathBuf.Append('/');
-        }
-
+        if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase)) encodedPathBuf.Insert(0, '/');
+        if (path.EndsWith("/", StringComparison.OrdinalIgnoreCase)) encodedPathBuf.Append('/');
         return encodedPathBuf.ToString();
     }
 
@@ -184,9 +144,7 @@ public static class Utils
     internal static void ValidateFile(string filePath, string contentType = null)
     {
         if (string.IsNullOrEmpty(filePath))
-        {
             throw new ArgumentException("empty file name is not allowed", nameof(filePath));
-        }
 
         var fileName = Path.GetFileName(filePath);
         var fileExists = File.Exists(filePath);
@@ -194,9 +152,7 @@ public static class Utils
         {
             var attr = File.GetAttributes(filePath);
             if (attr.HasFlag(FileAttributes.Directory))
-            {
                 throw new ArgumentException($"'{fileName}': not a regular file", nameof(filePath));
-            }
         }
 
         contentType ??= GetContentType(filePath);
@@ -213,10 +169,7 @@ public static class Utils
         {
         }
 
-        if (string.IsNullOrEmpty(extension))
-        {
-            return "application/octet-stream";
-        }
+        if (string.IsNullOrEmpty(extension)) return "application/octet-stream";
 
         return _contentTypeMap.Value.TryGetValue(extension, out var contentType)
             ? contentType
@@ -228,10 +181,7 @@ public static class Utils
         try
         {
             // first, delete target file if exists, as File.Move() does not support overwrite
-            if (File.Exists(destFileName))
-            {
-                File.Delete(destFileName);
-            }
+            if (File.Exists(destFileName)) File.Delete(destFileName);
 
             File.Move(sourceFileName, destFileName);
         }
@@ -242,15 +192,9 @@ public static class Utils
 
     internal static bool IsSupersetOf(IList<string> l1, IList<string> l2)
     {
-        if (l2 is null)
-        {
-            return true;
-        }
+        if (l2 is null) return true;
 
-        if (l1 is null)
-        {
-            return false;
-        }
+        if (l1 is null) return false;
 
         return !l2.Except(l1, StringComparer.Ordinal).Any();
     }
@@ -261,8 +205,7 @@ public static class Utils
 #if NET6_0_OR_GREATER
         ParallelOptions parallelOptions = new()
         {
-            MaxDegreeOfParallelism
-                = maxNoOfParallelProcesses
+            MaxDegreeOfParallelism = maxNoOfParallelProcesses
         };
         return Parallel.ForEachAsync(source, parallelOptions, body);
 #else
@@ -272,9 +215,7 @@ public static class Utils
                     using (partition)
                     {
                         while (partition.MoveNext())
-                        {
                             await body(partition.Current, new CancellationToken()).ConfigureAwait(false);
-                        }
                     }
                 }
             )));
@@ -285,9 +226,7 @@ public static class Utils
         StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
     {
         if (string.IsNullOrEmpty(text))
-        {
             throw new ArgumentException($"'{nameof(text)}' cannot be null or empty.", nameof(text));
-        }
 #if NETSTANDARD
         return text.IndexOf(value, stringComparison) >= 0;
 #else
@@ -303,16 +242,11 @@ public static class Utils
     /// <returns></returns>
     public static object CalculateMultiPartSize(long size, bool copy = false)
     {
-        if (size == -1)
-        {
-            size = Constants.MaximumStreamObjectSize;
-        }
+        if (size == -1) size = Constants.MaximumStreamObjectSize;
 
         if (size > Constants.MaxMultipartPutObjectSize)
-        {
             throw new EntityTooLargeException(
                 $"Your proposed upload size {size} exceeds the maximum allowed object size {Constants.MaxMultipartPutObjectSize}");
-        }
 
         var partSize = (double)Math.Ceiling((decimal)size / Constants.MaxParts);
         var minPartSize = copy ? Constants.MinimumCOPYPartSize : Constants.MinimumPUTPartSize;
@@ -340,11 +274,9 @@ public static class Utils
     {
 #if NETSTANDARD
 #pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
-        using var md5
-            = MD5.Create();
+        using var md5 = MD5.Create();
 #pragma warning restore CA5351 // Do Not Use Broken Cryptographic Algorithms
-        var hashedBytes
-            = md5.ComputeHash(key.ToArray());
+        var hashedBytes = md5.ComputeHash(key.ToArray());
 #else
         ReadOnlySpan<byte> hashedBytes = MD5.HashData(key);
 #endif
@@ -909,10 +841,7 @@ public static class Utils
 
     public static string MarshalXML(object obj, string nmspc)
     {
-        if (obj is null)
-        {
-            throw new ArgumentNullException(nameof(obj));
-        }
+        if (obj is null) throw new ArgumentNullException(nameof(obj));
 
         XmlWriter xw = null;
 
@@ -961,10 +890,7 @@ public static class Utils
             @"<\w+\s+\w+:nil=""true""(\s+xmlns:\w+=""http://www.w3.org/2001/XMLSchema-instance"")?\s*/>";
         var patternToMatch = @"<\w+\s+xmlns=""http://s3.amazonaws.com/doc/2006-03-01/""\s*>";
         if (Regex.Match(config, patternToMatch, regexOptions, TimeSpan.FromHours(1)).Success)
-        {
             patternToReplace = @"xmlns=""http://s3.amazonaws.com/doc/2006-03-01/""\s*";
-        }
-
         return Regex.Replace(
             config,
             patternToReplace,
@@ -982,33 +908,23 @@ public static class Utils
     public static Uri GetBaseUrl(string endpoint)
     {
         if (string.IsNullOrEmpty(endpoint))
-        {
             throw new ArgumentException(
                 string.Format(CultureInfo.InvariantCulture,
                     "{0} is the value of the endpoint. It can't be null or empty.", endpoint),
                 nameof(endpoint));
-        }
 
         if (endpoint.EndsWith("/", StringComparison.OrdinalIgnoreCase))
-        {
             endpoint = endpoint.Substring(0, endpoint.Length - 1);
-        }
-
         if (!endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
             !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
-        {
             throw new InvalidEndpointException(
                 string.Format(CultureInfo.InvariantCulture, "{0} is invalid hostname.", endpoint), "endpoint");
-        }
-
         string conn_url;
         if (endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-        {
             throw new InvalidEndpointException(
                 string.Format(CultureInfo.InvariantCulture,
                     "{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),
                 "endpoint");
-        }
 
         var enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
         var scheme = enable_https?.Equals("1", StringComparison.OrdinalIgnoreCase) == true ? "https://" : "http://";
@@ -1016,11 +932,9 @@ public static class Utils
         var url = new Uri(conn_url);
         var hostnameOfUri = url.Authority;
         if (!string.IsNullOrWhiteSpace(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
-        {
             throw new InvalidEndpointException(
                 string.Format(CultureInfo.InvariantCulture, "{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),
                 "endpoint");
-        }
 
         return url;
     }
@@ -1061,10 +975,7 @@ public static class Utils
 
     public static void Print(object obj)
     {
-        if (obj is null)
-        {
-            throw new ArgumentNullException(nameof(obj));
-        }
+        if (obj is null) throw new ArgumentNullException(nameof(obj));
 
         foreach (var prop in obj.GetType()
                      .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
@@ -1079,32 +990,22 @@ public static class Utils
     public static void PrintDict(IDictionary<string, string> d)
     {
         if (d is not null)
-        {
             foreach (var kv in d)
-            {
                 Console.WriteLine("DEBUG >>        {0} = {1}", kv.Key, kv.Value);
-            }
-        }
 
         Console.WriteLine("DEBUG >>   Done printing\n");
     }
 
     public static string DetermineNamespace(XDocument document)
     {
-        if (document is null)
-        {
-            throw new ArgumentNullException(nameof(document));
-        }
+        if (document is null) throw new ArgumentNullException(nameof(document));
 
         return document.Root.Attributes().FirstOrDefault(attr => attr.IsNamespaceDeclaration)?.Value ?? string.Empty;
     }
 
     public static string SerializeToXml<T>(T anyobject) where T : class
     {
-        if (anyobject is null)
-        {
-            throw new ArgumentNullException(nameof(anyobject));
-        }
+        if (anyobject is null) throw new ArgumentNullException(nameof(anyobject));
 
         var xs = new XmlSerializer(anyobject.GetType());
         using var sw = new StringWriter(CultureInfo.InvariantCulture);
@@ -1155,9 +1056,7 @@ public static class Utils
     {
         if (typeof(T).GetCustomAttributes(typeof(XmlRootAttribute), true)
                 .FirstOrDefault() is XmlRootAttribute xmlRootAttribute)
-        {
             return xmlRootAttribute.Namespace;
-        }
 
         return null;
     }

@@ -23,12 +23,11 @@ using Minio.DataModel;
  * https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html
  */
 
-namespace Minio.Credentials
+namespace Minio.Credentials;
+
+[Serializable]
+[XmlRoot(ElementName = "AssumeRoleWithWebIdentityResponse")]
+public class WebIdentityResponse
 {
-    [Serializable]
-    [XmlRoot(ElementName = "AssumeRoleWithWebIdentityResponse")]
-    public class WebIdentityResponse
-    {
-        [XmlElement("Credentials")] public AccessCredentials Credentials { get; set; }
-    }
+    [XmlElement("Credentials")] public AccessCredentials Credentials { get; set; }
 }

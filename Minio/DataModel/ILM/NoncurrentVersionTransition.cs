@@ -23,25 +23,24 @@ using System.Xml.Serialization;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html
  */
 
-namespace Minio.DataModel.ILM
+namespace Minio.DataModel.ILM;
+
+[Serializable]
+[XmlRoot(ElementName = "NoncurrentVersionTransition")]
+public class NoncurrentVersionTransition : NoncurrentVersionExpiration
 {
-    [Serializable]
-    [XmlRoot(ElementName = "NoncurrentVersionTransition")]
-    public class NoncurrentVersionTransition : NoncurrentVersionExpiration
+    public NoncurrentVersionTransition()
     {
-        public NoncurrentVersionTransition()
-        {
-            StorageClass = null;
-        }
-
-        public NoncurrentVersionTransition(uint nonCurrentDays, string storageClass) : base(nonCurrentDays)
-        {
-            Transition.CheckStorageClass(storageClass);
-            StorageClass = storageClass;
-            NoncurrentDays = nonCurrentDays;
-        }
-
-        [XmlElement(ElementName = "StorageClass", IsNullable = true)]
-        public string StorageClass { get; set; }
+        StorageClass = null;
     }
+
+    public NoncurrentVersionTransition(uint nonCurrentDays, string storageClass) : base(nonCurrentDays)
+    {
+        Transition.CheckStorageClass(storageClass);
+        StorageClass = storageClass;
+        NoncurrentDays = nonCurrentDays;
+    }
+
+    [XmlElement(ElementName = "StorageClass", IsNullable = true)]
+    public string StorageClass { get; set; }
 }

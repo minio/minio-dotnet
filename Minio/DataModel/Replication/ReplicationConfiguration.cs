@@ -28,79 +28,70 @@ using Minio.Helper;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
  */
 
-namespace Minio.DataModel.Replication
+namespace Minio.DataModel.Replication;
+
+[Serializable]
+[XmlRoot(ElementName = "ReplicationConfiguration")]
+public class ReplicationConfiguration
 {
-    [Serializable]
-    [XmlRoot(ElementName = "ReplicationConfiguration")]
-    public class ReplicationConfiguration
+    public ReplicationConfiguration()
     {
-        public ReplicationConfiguration()
+    }
+
+    public ReplicationConfiguration(string role, Collection<ReplicationRule> rules)
+    {
+        if (string.IsNullOrEmpty(role) || string.IsNullOrWhiteSpace(role))
+            throw new ArgumentNullException(nameof(role) + " member cannot be empty.");
+        if (rules is null || rules.Count == 0)
+            throw new ArgumentNullException(nameof(rules) + " member cannot be an empty list.");
+        if (rules.Count >= 1000)
+            throw new ArgumentOutOfRangeException(
+                nameof(rules) + " Count of rules cannot exceed maximum limit of 1000.");
+
+        Role = role;
+        Rules = rules;
+    }
+
+    [XmlElement("Role")] public string Role { get; set; }
+
+    [XmlElement("Rule")] public Collection<ReplicationRule> Rules { get; set; }
+
+    public string MarshalXML()
+    {
+        XmlWriter xw = null;
+
+        var str = string.Empty;
+
+        try
         {
+            var settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true
+            };
+            var ns = new XmlSerializerNamespaces();
+            ns.Add(string.Empty, string.Empty);
+
+            using var sw = new StringWriter(CultureInfo.InvariantCulture);
+
+            var xs = new XmlSerializer(typeof(ReplicationConfiguration), "");
+            using (xw = XmlWriter.Create(sw, settings))
+            {
+                xs.Serialize(xw, this, ns);
+                xw.Flush();
+
+                str = Utils.RemoveNamespaceInXML(sw.ToString()).Replace("\r", "").Replace("\n", "");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            // throw ex;
+        }
+        finally
+        {
+            xw?.Close();
         }
 
-        public ReplicationConfiguration(string role, Collection<ReplicationRule> rules)
-        {
-            if (string.IsNullOrEmpty(role) || string.IsNullOrWhiteSpace(role))
-            {
-                throw new ArgumentNullException(nameof(role) + " member cannot be empty.");
-            }
-
-            if (rules is null || rules.Count == 0)
-            {
-                throw new ArgumentNullException(nameof(rules) + " member cannot be an empty list.");
-            }
-
-            if (rules.Count >= 1000)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(rules) + " Count of rules cannot exceed maximum limit of 1000.");
-            }
-
-            Role = role;
-            Rules = rules;
-        }
-
-        [XmlElement("Role")] public string Role { get; set; }
-
-        [XmlElement("Rule")] public Collection<ReplicationRule> Rules { get; set; }
-
-        public string MarshalXML()
-        {
-            XmlWriter xw = null;
-
-            var str = string.Empty;
-
-            try
-            {
-                var settings = new XmlWriterSettings
-                {
-                    OmitXmlDeclaration = true
-                };
-                var ns = new XmlSerializerNamespaces();
-                ns.Add(string.Empty, string.Empty);
-
-                using var sw = new StringWriter(CultureInfo.InvariantCulture);
-
-                var xs = new XmlSerializer(typeof(ReplicationConfiguration), "");
-                using (xw = XmlWriter.Create(sw, settings))
-                {
-                    xs.Serialize(xw, this, ns);
-                    xw.Flush();
-
-                    str = Utils.RemoveNamespaceInXML(sw.ToString()).Replace("\r", "").Replace("\n", "");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-                // throw ex;
-            }
-            finally
-            {
-                xw?.Close();
-            }
-
-            return str;
-        }
+        return str;
     }
 }

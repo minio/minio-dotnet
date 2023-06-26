@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args
-{
-    public class RemoveBucketEncryptionArgs : BucketArgs<RemoveBucketEncryptionArgs>
-    {
-        public RemoveBucketEncryptionArgs()
-        {
-            RequestMethod = HttpMethod.Delete;
-        }
+namespace Minio.DataModel.Args;
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("encryption", "");
-            return requestMessageBuilder;
-        }
+public class RemoveBucketEncryptionArgs : BucketArgs<RemoveBucketEncryptionArgs>
+{
+    public RemoveBucketEncryptionArgs()
+    {
+        RequestMethod = HttpMethod.Delete;
+    }
+
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("encryption", "");
+        return requestMessageBuilder;
     }
 }

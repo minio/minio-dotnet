@@ -17,33 +17,32 @@
 
 using CommunityToolkit.HighPerformance;
 
-namespace Minio.Functional.Tests
-{
-    internal sealed class RandomStreamGenerator
-    {
-        private readonly Random _random = new();
-        private readonly Memory<byte> _seedBuffer;
+namespace Minio.Functional.Tests;
 
-        public RandomStreamGenerator(int maxBufferSize)
-        {
-            _seedBuffer = new byte[maxBufferSize];
+internal sealed class RandomStreamGenerator
+{
+    private readonly Random _random = new();
+    private readonly Memory<byte> _seedBuffer;
+
+    public RandomStreamGenerator(int maxBufferSize)
+    {
+        _seedBuffer = new byte[maxBufferSize];
 #if NETFRAMEWORK
         _random.NextBytes(_seedBuffer.Span.ToArray());
 #else
-            _random.NextBytes(_seedBuffer.Span);
+        _random.NextBytes(_seedBuffer.Span);
 #endif
-        }
+    }
 
-        public Stream GenerateStreamFromSeed(int size)
-        {
-            var randomWindow = _random.Next(0, size);
+    public Stream GenerateStreamFromSeed(int size)
+    {
+        var randomWindow = _random.Next(0, size);
 
-            Memory<byte> buffer = new byte[size];
+        Memory<byte> buffer = new byte[size];
 
-            _seedBuffer.Slice(randomWindow, size - randomWindow).CopyTo(buffer.Slice(0, size - randomWindow));
-            _seedBuffer.Slice(0, randomWindow).CopyTo(buffer.Slice(size - randomWindow, randomWindow));
+        _seedBuffer.Slice(randomWindow, size - randomWindow).CopyTo(buffer.Slice(0, size - randomWindow));
+        _seedBuffer.Slice(0, randomWindow).CopyTo(buffer.Slice(size - randomWindow, randomWindow));
 
-            return buffer.AsStream();
-        }
+        return buffer.AsStream();
     }
 }

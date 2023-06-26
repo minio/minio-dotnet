@@ -16,104 +16,81 @@
 
 using System.Text.RegularExpressions;
 
-namespace Minio.Helper
+namespace Minio.Helper;
+
+internal static class S3utils
 {
-    internal static class S3utils
+    internal static readonly Regex TrimWhitespaceRegex = new("\\s+", RegexOptions.None, TimeSpan.FromHours(1));
+
+    internal static bool IsAmazonEndPoint(string endpoint)
     {
-        internal static readonly Regex TrimWhitespaceRegex = new("\\s+", RegexOptions.None, TimeSpan.FromHours(1));
+        if (IsAmazonChinaEndPoint(endpoint)) return true;
+        var rgx = new Regex("^s3[.-]?(.*?)\\.amazonaws\\.com$", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
+            TimeSpan.FromHours(1));
+        var matches = rgx.Matches(endpoint);
+        return matches.Count > 0;
+    }
 
-        internal static bool IsAmazonEndPoint(string endpoint)
+    // IsAmazonChinaEndpoint - Match if it is exactly Amazon S3 China endpoint.
+    // Customers who wish to use the new Beijing Region are required
+    // to sign up for a separate set of account credentials unique to
+    // the China (Beijing) Region. Customers with existing AWS credentials
+    // will not be able to access resources in the new Region, and vice versa.
+    // For more info https://aws.amazon.com/about-aws/whats-new/2013/12/18/announcing-the-aws-china-beijing-region/
+    internal static bool IsAmazonChinaEndPoint(string endpoint)
+    {
+        return string.Equals(endpoint, "s3.cn-north-1.amazonaws.com.cn", StringComparison.OrdinalIgnoreCase);
+    }
+
+    // IsVirtualHostSupported - verifies if bucketName can be part of
+    // virtual host. Currently only Amazon S3 and Google Cloud Storage
+    // would support this.
+    internal static bool IsVirtualHostSupported(Uri endpointURL, string bucketName)
+    {
+        if (endpointURL is null) return false;
+        // bucketName can be valid but '.' in the hostname will fail SSL
+        // certificate validation. So do not use host-style for such buckets.
+        if (string.Equals(endpointURL.Scheme, "https", StringComparison.OrdinalIgnoreCase) &&
+            bucketName.Contains('.')) return false;
+        // Return true for all other cases
+        return IsAmazonEndPoint(endpointURL.Host);
+    }
+
+    internal static string GetPath(string p1, string p2)
+    {
+        try
         {
-            if (IsAmazonChinaEndPoint(endpoint))
-            {
-                return true;
-            }
-
-            var rgx = new Regex("^s3[.-]?(.*?)\\.amazonaws\\.com$",
-                RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
-                TimeSpan.FromHours(1));
-            var matches = rgx.Matches(endpoint);
-            return matches.Count > 0;
+            var combination = Path.Combine(p1, p2);
+            // combination = Uri.EscapeUriString(combination);
+            return Utils.EncodePath(combination);
         }
-
-        // IsAmazonChinaEndpoint - Match if it is exactly Amazon S3 China endpoint.
-        // Customers who wish to use the new Beijing Region are required
-        // to sign up for a separate set of account credentials unique to
-        // the China (Beijing) Region. Customers with existing AWS credentials
-        // will not be able to access resources in the new Region, and vice versa.
-        // For more info https://aws.amazon.com/about-aws/whats-new/2013/12/18/announcing-the-aws-china-beijing-region/
-        internal static bool IsAmazonChinaEndPoint(string endpoint)
+        catch (Exception ex)
         {
-            return string.Equals(endpoint, "s3.cn-north-1.amazonaws.com.cn", StringComparison.OrdinalIgnoreCase);
+            throw new ArgumentException(ex.Message);
         }
+    }
 
-        // IsVirtualHostSupported - verifies if bucketName can be part of
-        // virtual host. Currently only Amazon S3 and Google Cloud Storage
-        // would support this.
-        internal static bool IsVirtualHostSupported(Uri endpointURL, string bucketName)
-        {
-            if (endpointURL is null)
-            {
-                return false;
-            }
+    /// <summary>
+    ///     IsValidIP parses input string for ip address validity.
+    /// </summary>
+    /// <param name="ip"></param>
+    /// <returns></returns>
+    internal static bool IsValidIP(string ip)
+    {
+        if (string.IsNullOrEmpty(ip)) return false;
 
-            // bucketName can be valid but '.' in the hostname will fail SSL
-            // certificate validation. So do not use host-style for such buckets.
-            if (string.Equals(endpointURL.Scheme, "https", StringComparison.OrdinalIgnoreCase) &&
-                bucketName.Contains('.'))
-            {
-                return false;
-            }
+        var splitValues = ip.Split('.');
+        if (splitValues.Length != 4) return false;
 
-            // Return true for all other cases
-            return IsAmazonEndPoint(endpointURL.Host);
-        }
+        return splitValues.All(r => byte.TryParse(r, out var _));
+    }
 
-        internal static string GetPath(string p1, string p2)
-        {
-            try
-            {
-                var combination = Path.Combine(p1, p2);
-                // combination = Uri.EscapeUriString(combination);
-                return Utils.EncodePath(combination);
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException(ex.Message);
-            }
-        }
-
-        /// <summary>
-        ///     IsValidIP parses input string for ip address validity.
-        /// </summary>
-        /// <param name="ip"></param>
-        /// <returns></returns>
-        internal static bool IsValidIP(string ip)
-        {
-            if (string.IsNullOrEmpty(ip))
-            {
-                return false;
-            }
-
-            var splitValues = ip.Split('.');
-            if (splitValues.Length != 4)
-            {
-                return false;
-            }
-
-            return splitValues.All(r => byte.TryParse(r, out var _));
-        }
-
-        // TrimAll trims leading and trailing spaces and replace sequential spaces with one space, following Trimall()
-        // in http://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
-        internal static string TrimAll(string s)
-        {
-            if (string.IsNullOrEmpty(s))
-            {
-                return s;
-            }
-
-            return TrimWhitespaceRegex.Replace(s, " ").Trim();
-        }
+    // TrimAll trims leading and trailing spaces and replace sequential spaces with one space, following Trimall()
+    // in http://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
+    internal static string TrimAll(string s)
+    {
+        if (string.IsNullOrEmpty(s))
+            return s;
+        return TrimWhitespaceRegex.Replace(s, " ").Trim();
     }
 }

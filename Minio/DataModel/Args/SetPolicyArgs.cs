@@ -16,33 +16,30 @@
 
 using Minio.Exceptions;
 
-namespace Minio.DataModel.Args
+namespace Minio.DataModel.Args;
+
+public class SetPolicyArgs : BucketArgs<SetPolicyArgs>
 {
-    public class SetPolicyArgs : BucketArgs<SetPolicyArgs>
+    public SetPolicyArgs()
     {
-        public SetPolicyArgs()
-        {
-            RequestMethod = HttpMethod.Put;
-        }
+        RequestMethod = HttpMethod.Put;
+    }
 
-        internal string PolicyJsonString { get; private set; }
+    internal string PolicyJsonString { get; private set; }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            if (string.IsNullOrEmpty(PolicyJsonString))
-            {
-                throw new MinioException("SetPolicyArgs needs the policy to be set to the right JSON contents.");
-            }
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        if (string.IsNullOrEmpty(PolicyJsonString))
+            throw new MinioException("SetPolicyArgs needs the policy to be set to the right JSON contents.");
 
-            requestMessageBuilder.AddQueryParameter("policy", "");
-            requestMessageBuilder.AddJsonBody(PolicyJsonString);
-            return requestMessageBuilder;
-        }
+        requestMessageBuilder.AddQueryParameter("policy", "");
+        requestMessageBuilder.AddJsonBody(PolicyJsonString);
+        return requestMessageBuilder;
+    }
 
-        public SetPolicyArgs WithPolicy(string policy)
-        {
-            PolicyJsonString = policy;
-            return this;
-        }
+    public SetPolicyArgs WithPolicy(string policy)
+    {
+        PolicyJsonString = policy;
+        return this;
     }
 }

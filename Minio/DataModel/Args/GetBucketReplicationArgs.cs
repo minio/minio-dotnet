@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args
-{
-    public class GetBucketReplicationArgs : BucketArgs<GetBucketReplicationArgs>
-    {
-        public GetBucketReplicationArgs()
-        {
-            RequestMethod = HttpMethod.Get;
-        }
+namespace Minio.DataModel.Args;
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("replication", "");
-            return requestMessageBuilder;
-        }
+public class GetBucketReplicationArgs : BucketArgs<GetBucketReplicationArgs>
+{
+    public GetBucketReplicationArgs()
+    {
+        RequestMethod = HttpMethod.Get;
+    }
+
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("replication", "");
+        return requestMessageBuilder;
     }
 }

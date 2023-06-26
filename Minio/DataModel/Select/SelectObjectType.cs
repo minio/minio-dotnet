@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Select
+namespace Minio.DataModel.Select;
+
+public sealed class SelectObjectType
 {
-    public sealed class SelectObjectType
+    // Constants for JSONTypes.
+    public static readonly SelectObjectType CSV = new("CSV");
+    public static readonly SelectObjectType JSON = new("JSON");
+    public static readonly SelectObjectType Parquet = new("Parquet");
+
+    public SelectObjectType()
     {
-        // Constants for JSONTypes.
-        public static readonly SelectObjectType CSV = new("CSV");
-        public static readonly SelectObjectType JSON = new("JSON");
-        public static readonly SelectObjectType Parquet = new("Parquet");
-
-        public SelectObjectType()
-        {
-        }
-
-        public SelectObjectType(string type)
-        {
-            Type = type;
-        }
-
-        public string Type { get; set; }
     }
+
+    public SelectObjectType(string type)
+    {
+        Type = type;
+    }
+
+    public string Type { get; set; }
 }

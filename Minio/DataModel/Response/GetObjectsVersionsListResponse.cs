@@ -22,47 +22,44 @@ using CommunityToolkit.HighPerformance;
 using Minio.DataModel.Result;
 using Minio.Helper;
 
-namespace Minio.DataModel.Response
+namespace Minio.DataModel.Response;
+
+internal class GetObjectsVersionsListResponse : GenericResponse
 {
-    internal class GetObjectsVersionsListResponse : GenericResponse
+    internal ListVersionsResult BucketResult;
+    internal Tuple<ListVersionsResult, List<Item>> ObjectsTuple;
+
+    internal GetObjectsVersionsListResponse(HttpStatusCode statusCode, string responseContent)
+        : base(statusCode, responseContent)
     {
-        internal ListVersionsResult BucketResult;
-        internal Tuple<ListVersionsResult, List<Item>> ObjectsTuple;
+        if (string.IsNullOrEmpty(responseContent) ||
+            !HttpStatusCode.OK.Equals(statusCode))
+            return;
 
-        internal GetObjectsVersionsListResponse(HttpStatusCode statusCode, string responseContent)
-            : base(statusCode, responseContent)
-        {
-            if (string.IsNullOrEmpty(responseContent) ||
-                !HttpStatusCode.OK.Equals(statusCode))
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        BucketResult = Utils.DeserializeXml<ListVersionsResult>(stream);
+
+        var root = XDocument.Parse(responseContent);
+        XNamespace ns = Utils.DetermineNamespace(root);
+
+        var items = from c in root.Root.Descendants(ns + "Version")
+            select new Item
             {
-                return;
-            }
-
-            using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-            BucketResult = Utils.DeserializeXml<ListVersionsResult>(stream);
-
-            var root = XDocument.Parse(responseContent);
-            XNamespace ns = Utils.DetermineNamespace(root);
-
-            var items = from c in root.Root.Descendants(ns + "Version")
-                select new Item
-                {
-                    Key = c.Element(ns + "Key").Value,
-                    LastModified = c.Element(ns + "LastModified").Value,
-                    ETag = c.Element(ns + "ETag").Value,
-                    VersionId = c.Element(ns + "VersionId").Value,
-                    Size = ulong.Parse(c.Element(ns + "Size").Value,
-                        CultureInfo.CurrentCulture),
-                    IsDir = false
-                };
-            var prefixes = from c in root.Root.Descendants(ns + "CommonPrefixes")
-                select new Item
-                {
-                    Key = c.Element(ns + "Prefix").Value,
-                    IsDir = true
-                };
-            items = items.Concat(prefixes);
-            ObjectsTuple = Tuple.Create(BucketResult, items.ToList());
-        }
+                Key = c.Element(ns + "Key").Value,
+                LastModified = c.Element(ns + "LastModified").Value,
+                ETag = c.Element(ns + "ETag").Value,
+                VersionId = c.Element(ns + "VersionId").Value,
+                Size = ulong.Parse(c.Element(ns + "Size").Value,
+                    CultureInfo.CurrentCulture),
+                IsDir = false
+            };
+        var prefixes = from c in root.Root.Descendants(ns + "CommonPrefixes")
+            select new Item
+            {
+                Key = c.Element(ns + "Prefix").Value,
+                IsDir = true
+            };
+        items = items.Concat(prefixes);
+        ObjectsTuple = Tuple.Create(BucketResult, items.ToList());
     }
 }

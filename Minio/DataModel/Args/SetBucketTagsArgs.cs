@@ -18,48 +18,43 @@ using System.Text;
 using Minio.DataModel.Tags;
 using Minio.Helper;
 
-namespace Minio.DataModel.Args
+namespace Minio.DataModel.Args;
+
+public class SetBucketTagsArgs : BucketArgs<SetBucketTagsArgs>
 {
-    public class SetBucketTagsArgs : BucketArgs<SetBucketTagsArgs>
+    public SetBucketTagsArgs()
     {
-        public SetBucketTagsArgs()
-        {
-            RequestMethod = HttpMethod.Put;
-        }
+        RequestMethod = HttpMethod.Put;
+    }
 
-        internal Tagging BucketTags { get; private set; }
+    internal Tagging BucketTags { get; private set; }
 
-        public SetBucketTagsArgs WithTagging(Tagging tags)
-        {
-            if (tags is null)
-            {
-                throw new ArgumentNullException(nameof(tags));
-            }
+    public SetBucketTagsArgs WithTagging(Tagging tags)
+    {
+        if (tags is null)
+            throw new ArgumentNullException(nameof(tags));
 
-            BucketTags = Tagging.GetBucketTags(tags.Tags);
-            return this;
-        }
+        BucketTags = Tagging.GetBucketTags(tags.Tags);
+        return this;
+    }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("tagging", "");
-            var body = BucketTags.MarshalXML();
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("tagging", "");
+        var body = BucketTags.MarshalXML();
 
-            requestMessageBuilder.AddXmlBody(body);
-            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-                Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
+        requestMessageBuilder.AddXmlBody(body);
+        requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
 
-            //
-            return requestMessageBuilder;
-        }
+        //
+        return requestMessageBuilder;
+    }
 
-        internal override void Validate()
-        {
-            base.Validate();
-            if (BucketTags is null || BucketTags.Tags.Count == 0)
-            {
-                throw new InvalidOperationException("Unable to set empty tags.");
-            }
-        }
+    internal override void Validate()
+    {
+        base.Validate();
+        if (BucketTags is null || BucketTags.Tags.Count == 0)
+            throw new InvalidOperationException("Unable to set empty tags.");
     }
 }

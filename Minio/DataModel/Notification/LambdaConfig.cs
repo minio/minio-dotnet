@@ -16,51 +16,44 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Notification
+namespace Minio.DataModel.Notification;
+
+/// <summary>
+///     LambdaConfig carries one single cloudfunction notification configuration
+/// </summary>
+[Serializable]
+public class LambdaConfig : NotificationConfiguration
 {
-    /// <summary>
-    ///     LambdaConfig carries one single cloudfunction notification configuration
-    /// </summary>
-    [Serializable]
-    public class LambdaConfig : NotificationConfiguration
+    public LambdaConfig()
     {
-        public LambdaConfig()
-        {
-        }
+    }
 
-        public LambdaConfig(string arn) : base(arn)
-        {
-            Lambda = arn;
-        }
+    public LambdaConfig(string arn) : base(arn)
+    {
+        Lambda = arn;
+    }
 
-        public LambdaConfig(Arn arn) : base(arn)
-        {
-            if (arn is null)
-            {
-                throw new ArgumentNullException(nameof(arn));
-            }
+    public LambdaConfig(Arn arn) : base(arn)
+    {
+        if (arn is null) throw new ArgumentNullException(nameof(arn));
 
-            Lambda = arn.ToString();
-        }
+        Lambda = arn.ToString();
+    }
 
-        [XmlElement("CloudFunction")] public string Lambda { get; set; }
+    [XmlElement("CloudFunction")] public string Lambda { get; set; }
 
-        // Implement equality for this object
-        public override bool Equals(object obj)
-        {
-            var other = (LambdaConfig)obj;
-            // If parameter is null return false.
-            if (obj is null)
-            {
-                return false;
-            }
+    // Implement equality for this object
+    public override bool Equals(object obj)
+    {
+        var other = (LambdaConfig)obj;
+        // If parameter is null return false.
+        if (obj is null)
+            return false;
+        return other.Lambda.Equals(Lambda, StringComparison.Ordinal);
+    }
 
-            return other.Lambda.Equals(Lambda, StringComparison.Ordinal);
-        }
-
-        public override int GetHashCode()
-        {
-            return StringComparer.Ordinal.GetHashCode(Lambda);
-        }
+    public override int GetHashCode()
+    {
+        return StringComparer.Ordinal.GetHashCode(Lambda);
     }
 }

@@ -16,35 +16,34 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal static class GetVersioning
 {
-    internal static class GetVersioning
+    // Check if Versioning is Enabled on a bucket
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name")
     {
-        // Check if Versioning is Enabled on a bucket
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name")
+        var args = new GetVersioningArgs()
+            .WithBucket(bucketName);
+
+        try
         {
-            var args = new GetVersioningArgs()
-                .WithBucket(bucketName);
-
-            try
+            Console.WriteLine("Running example for API: GetVersioning, ");
+            var config = await minio.GetVersioningAsync(args).ConfigureAwait(false);
+            if (config is null)
             {
-                Console.WriteLine("Running example for API: GetVersioning, ");
-                var config = await minio.GetVersioningAsync(args).ConfigureAwait(false);
-                if (config is null)
-                {
-                    Console.WriteLine("Versioning Configuration not available for bucket " + bucketName);
-                    Console.WriteLine();
-                    return;
-                }
-
-                Console.WriteLine("Versioning Configuration Status " + config.Status + " for bucket " + bucketName);
+                Console.WriteLine("Versioning Configuration not available for bucket " + bucketName);
                 Console.WriteLine();
+                return;
             }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+
+            Console.WriteLine("Versioning Configuration Status " + config.Status + " for bucket " + bucketName);
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

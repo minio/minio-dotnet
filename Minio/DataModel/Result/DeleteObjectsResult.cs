@@ -18,13 +18,12 @@ using System.Collections.ObjectModel;
 using System.Xml.Serialization;
 using Minio.Exceptions;
 
-namespace Minio.DataModel.Result
+namespace Minio.DataModel.Result;
+
+[Serializable]
+[XmlRoot(ElementName = "DeleteResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+public class DeleteObjectsResult
 {
-    [Serializable]
-    [XmlRoot(ElementName = "DeleteResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-    public class DeleteObjectsResult
-    {
-        [XmlElement("Deleted")] public Collection<DeletedObject> ObjectsList { get; set; }
-        [XmlElement("Error")] public Collection<DeleteError> ErrorList { get; set; }
-    }
+    [XmlElement("Deleted")] public Collection<DeletedObject> ObjectsList { get; set; }
+    [XmlElement("Error")] public Collection<DeleteError> ErrorList { get; set; }
 }

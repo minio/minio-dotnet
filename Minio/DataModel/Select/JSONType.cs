@@ -16,24 +16,23 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Select
+namespace Minio.DataModel.Select;
+
+[Serializable]
+public sealed class JSONType
 {
-    [Serializable]
-    public sealed class JSONType
+    // Constants for JSONTypes.
+    public static readonly JSONType Document = new("DOCUMENT");
+    public static readonly JSONType Lines = new("LINES");
+
+    public JSONType()
     {
-        // Constants for JSONTypes.
-        public static readonly JSONType Document = new("DOCUMENT");
-        public static readonly JSONType Lines = new("LINES");
-
-        public JSONType()
-        {
-        }
-
-        public JSONType(string value)
-        {
-            Type = value;
-        }
-
-        [XmlText] public string Type { get; set; }
     }
+
+    public JSONType(string value)
+    {
+        Type = value;
+    }
+
+    [XmlText] public string Type { get; set; }
 }

@@ -18,47 +18,46 @@ using System.Text;
 using Minio.DataModel.Encryption;
 using Minio.Helper;
 
-namespace Minio.DataModel.Args
+namespace Minio.DataModel.Args;
+
+public class SetBucketEncryptionArgs : BucketArgs<SetBucketEncryptionArgs>
 {
-    public class SetBucketEncryptionArgs : BucketArgs<SetBucketEncryptionArgs>
+    public SetBucketEncryptionArgs()
     {
-        public SetBucketEncryptionArgs()
-        {
-            RequestMethod = HttpMethod.Put;
-        }
+        RequestMethod = HttpMethod.Put;
+    }
 
-        internal ServerSideEncryptionConfiguration EncryptionConfig { get; set; }
+    internal ServerSideEncryptionConfiguration EncryptionConfig { get; set; }
 
-        public SetBucketEncryptionArgs WithEncryptionConfig(ServerSideEncryptionConfiguration config)
-        {
-            EncryptionConfig = config;
-            return this;
-        }
+    public SetBucketEncryptionArgs WithEncryptionConfig(ServerSideEncryptionConfiguration config)
+    {
+        EncryptionConfig = config;
+        return this;
+    }
 
-        public SetBucketEncryptionArgs WithAESConfig()
-        {
-            EncryptionConfig = ServerSideEncryptionConfiguration.GetSSEConfigurationWithS3Rule();
-            return this;
-        }
+    public SetBucketEncryptionArgs WithAESConfig()
+    {
+        EncryptionConfig = ServerSideEncryptionConfiguration.GetSSEConfigurationWithS3Rule();
+        return this;
+    }
 
-        public SetBucketEncryptionArgs WithKMSConfig(string keyId = null)
-        {
-            EncryptionConfig = ServerSideEncryptionConfiguration.GetSSEConfigurationWithKMSRule(keyId);
-            return this;
-        }
+    public SetBucketEncryptionArgs WithKMSConfig(string keyId = null)
+    {
+        EncryptionConfig = ServerSideEncryptionConfiguration.GetSSEConfigurationWithKMSRule(keyId);
+        return this;
+    }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            EncryptionConfig ??= ServerSideEncryptionConfiguration.GetSSEConfigurationWithS3Rule();
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        EncryptionConfig ??= ServerSideEncryptionConfiguration.GetSSEConfigurationWithS3Rule();
 
-            requestMessageBuilder.AddQueryParameter("encryption", "");
-            var body = Utils.MarshalXML(EncryptionConfig, "http://s3.amazonaws.com/doc/2006-03-01/");
-            // Convert string to a byte array
-            ReadOnlyMemory<byte> bodyInBytes = Encoding.ASCII.GetBytes(body);
-            requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
-            requestMessageBuilder.SetBody(bodyInBytes);
+        requestMessageBuilder.AddQueryParameter("encryption", "");
+        var body = Utils.MarshalXML(EncryptionConfig, "http://s3.amazonaws.com/doc/2006-03-01/");
+        // Convert string to a byte array
+        ReadOnlyMemory<byte> bodyInBytes = Encoding.ASCII.GetBytes(body);
+        requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
+        requestMessageBuilder.SetBody(bodyInBytes);
 
-            return requestMessageBuilder;
-        }
+        return requestMessageBuilder;
     }
 }

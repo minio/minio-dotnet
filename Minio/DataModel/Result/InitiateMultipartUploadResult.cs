@@ -16,12 +16,11 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Result
+namespace Minio.DataModel.Result;
+
+[Serializable]
+[XmlRoot(ElementName = "InitiateMultipartUploadResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+public class InitiateMultipartUploadResult
 {
-    [Serializable]
-    [XmlRoot(ElementName = "InitiateMultipartUploadResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-    public class InitiateMultipartUploadResult
-    {
-        public string UploadId { get; set; }
-    }
+    public string UploadId { get; set; }
 }

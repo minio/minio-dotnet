@@ -18,38 +18,33 @@ using System.Text;
 using Minio.DataModel.ObjectLock;
 using Minio.Helper;
 
-namespace Minio.DataModel.Args
+namespace Minio.DataModel.Args;
+
+public class SetObjectLegalHoldArgs : ObjectVersionArgs<SetObjectLegalHoldArgs>
 {
-    public class SetObjectLegalHoldArgs : ObjectVersionArgs<SetObjectLegalHoldArgs>
+    public SetObjectLegalHoldArgs()
     {
-        public SetObjectLegalHoldArgs()
-        {
-            RequestMethod = HttpMethod.Put;
-            LegalHoldON = false;
-        }
+        RequestMethod = HttpMethod.Put;
+        LegalHoldON = false;
+    }
 
-        internal bool LegalHoldON { get; private set; }
+    internal bool LegalHoldON { get; private set; }
 
-        public SetObjectLegalHoldArgs WithLegalHold(bool status)
-        {
-            LegalHoldON = status;
-            return this;
-        }
+    public SetObjectLegalHoldArgs WithLegalHold(bool status)
+    {
+        LegalHoldON = status;
+        return this;
+    }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("legal-hold", "");
-            if (!string.IsNullOrEmpty(VersionId))
-            {
-                requestMessageBuilder.AddQueryParameter("versionId", VersionId);
-            }
-
-            var config = new ObjectLegalHoldConfiguration(LegalHoldON);
-            var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
-            requestMessageBuilder.AddXmlBody(body);
-            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-                Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
-            return requestMessageBuilder;
-        }
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("legal-hold", "");
+        if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", VersionId);
+        var config = new ObjectLegalHoldConfiguration(LegalHoldON);
+        var body = Utils.MarshalXML(config, "http://s3.amazonaws.com/doc/2006-03-01/");
+        requestMessageBuilder.AddXmlBody(body);
+        requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+            Utils.GetMD5SumStr(Encoding.UTF8.GetBytes(body)));
+        return requestMessageBuilder;
     }
 }

@@ -16,28 +16,27 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.ILM
+namespace Minio.DataModel.ILM;
+
+[Serializable]
+[XmlRoot(ElementName = "Expiration")]
+public class Expiration : Duration
 {
-    [Serializable]
-    [XmlRoot(ElementName = "Expiration")]
-    public class Expiration : Duration
+    public Expiration()
     {
-        public Expiration()
-        {
-            ExpiredObjectDeleteMarker = default;
-        }
-
-        public Expiration(DateTime date, bool deleteMarker = false) : base(date)
-        {
-            if (date == default)
-            {
-                ExpiredObjectDeleteMarker = deleteMarker;
-                return;
-            }
-
-            ExpiredObjectDeleteMarker = default;
-        }
-
-        [XmlIgnore] public bool? ExpiredObjectDeleteMarker { get; set; }
+        ExpiredObjectDeleteMarker = default;
     }
+
+    public Expiration(DateTime date, bool deleteMarker = false) : base(date)
+    {
+        if (date == default)
+        {
+            ExpiredObjectDeleteMarker = deleteMarker;
+            return;
+        }
+
+        ExpiredObjectDeleteMarker = default;
+    }
+
+    [XmlIgnore] public bool? ExpiredObjectDeleteMarker { get; set; }
 }

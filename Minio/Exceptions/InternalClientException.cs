@@ -15,29 +15,28 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+[Serializable]
+public class InternalClientException : MinioException
 {
-    [Serializable]
-    public class InternalClientException : MinioException
+    public InternalClientException(string message, ResponseResult response) : base(message, response)
     {
-        public InternalClientException(string message, ResponseResult response) : base(message, response)
-        {
-        }
+    }
 
-        public InternalClientException(ResponseResult serverResponse) : base(serverResponse)
-        {
-        }
+    public InternalClientException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
 
-        public InternalClientException(string message) : base(message)
-        {
-        }
+    public InternalClientException(string message) : base(message)
+    {
+    }
 
-        public InternalClientException()
-        {
-        }
+    public InternalClientException()
+    {
+    }
 
-        public InternalClientException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
+    public InternalClientException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 }

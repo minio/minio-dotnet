@@ -16,45 +16,37 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public static class GetBucketTags
 {
-    public static class GetBucketTags
+    // Get Tags assigned to the bucket
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name")
     {
-        // Get Tags assigned to the bucket
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name")
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
+        try
         {
-            if (minio is null)
+            Console.WriteLine("Running example for API: GetBucketTags");
+            var tags = await minio.GetBucketTagsAsync(
+                new GetBucketTagsArgs()
+                    .WithBucket(bucketName)
+            ).ConfigureAwait(false);
+            if (tags is not null && tags.Tags?.Count > 0)
             {
-                throw new ArgumentNullException(nameof(minio));
-            }
-
-            try
-            {
-                Console.WriteLine("Running example for API: GetBucketTags");
-                var tags = await minio.GetBucketTagsAsync(
-                    new GetBucketTagsArgs()
-                        .WithBucket(bucketName)
-                ).ConfigureAwait(false);
-                if (tags is not null && tags.Tags?.Count > 0)
-                {
-                    Console.WriteLine($"Got Bucket Tags set for bucket {bucketName}.");
-                    foreach (var tag in tags.Tags)
-                    {
-                        Console.WriteLine(tag.Key + " : " + tag.Value);
-                    }
-
-                    Console.WriteLine();
-                    return;
-                }
-
-                Console.WriteLine($"Bucket Tags not set for bucket {bucketName}.");
+                Console.WriteLine($"Got Bucket Tags set for bucket {bucketName}.");
+                foreach (var tag in tags.Tags) Console.WriteLine(tag.Key + " : " + tag.Value);
                 Console.WriteLine();
+                return;
             }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+
+            Console.WriteLine($"Bucket Tags not set for bucket {bucketName}.");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

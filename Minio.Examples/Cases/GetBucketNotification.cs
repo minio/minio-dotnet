@@ -16,29 +16,28 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal static class GetBucketNotification
 {
-    internal static class GetBucketNotification
+    // Get bucket notifications - this works only with AWS endpoint
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name")
     {
-        // Get bucket notifications - this works only with AWS endpoint
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name")
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: GetBucketNotificationsAsync");
-                var args = new GetBucketNotificationsArgs()
-                    .WithBucket(bucketName);
-                var notifications = await minio.GetBucketNotificationsAsync(args).ConfigureAwait(false);
-                Console.WriteLine($"Notifications is {notifications.ToXML()} for bucket {bucketName}");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(
-                    $"Error parsing bucket notifications - make sure that you are running this call against AWS end point: {e.Message}");
-                Console.WriteLine(e.StackTrace);
-            }
+            Console.WriteLine("Running example for API: GetBucketNotificationsAsync");
+            var args = new GetBucketNotificationsArgs()
+                .WithBucket(bucketName);
+            var notifications = await minio.GetBucketNotificationsAsync(args).ConfigureAwait(false);
+            Console.WriteLine($"Notifications is {notifications.ToXML()} for bucket {bucketName}");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(
+                $"Error parsing bucket notifications - make sure that you are running this call against AWS end point: {e.Message}");
+            Console.WriteLine(e.StackTrace);
         }
     }
 }

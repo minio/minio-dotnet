@@ -16,70 +16,67 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Notification
+namespace Minio.DataModel.Notification;
+
+/// <summary>
+///     Arn holds ARN information that will be sent to the web service,
+///     ARN desciption can be found in http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
+/// </summary>
+public class Arn
 {
-    /// <summary>
-    ///     Arn holds ARN information that will be sent to the web service,
-    ///     ARN desciption can be found in http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
-    /// </summary>
-    public class Arn
+    [XmlText] private readonly string arnString;
+
+    public Arn()
     {
-        [XmlText] private readonly string arnString;
+    }
 
-        public Arn()
+    /// <summary>
+    ///     Pass valid Arn string on aws to constructor
+    /// </summary>
+    /// <param name="arnString"></param>
+    public Arn(string arnString)
+    {
+        if (string.IsNullOrEmpty(arnString))
+            throw new ArgumentException($"'{nameof(arnString)}' cannot be null or empty.", nameof(arnString));
+
+        var parts = arnString.Split(':');
+        if (parts.Length == 6)
         {
+            Partition = parts[1];
+            Service = parts[2];
+            Region = parts[3];
+            AccountID = parts[4];
+            Resource = parts[5];
+            this.arnString = arnString;
         }
+    }
 
-        /// <summary>
-        ///     Pass valid Arn string on aws to constructor
-        /// </summary>
-        /// <param name="arnString"></param>
-        public Arn(string arnString)
-        {
-            if (string.IsNullOrEmpty(arnString))
-            {
-                throw new ArgumentException($"'{nameof(arnString)}' cannot be null or empty.", nameof(arnString));
-            }
+    /// <summary>
+    ///     Constructs new ARN based on the given partition, service, region, account id and resource
+    /// </summary>
+    /// <param name="partition"></param>
+    /// <param name="service"></param>
+    /// <param name="region"></param>
+    /// <param name="accountId"></param>
+    /// <param name="resource"></param>
+    public Arn(string partition, string service, string region, string accountId, string resource)
+    {
+        Partition = partition;
+        Service = service;
+        Region = region;
+        AccountID = accountId;
+        Resource = resource;
+        arnString = $"arn:{Partition}:{Service}:{Region}:{AccountID}:{Resource}";
+    }
 
-            var parts = arnString.Split(':');
-            if (parts.Length == 6)
-            {
-                Partition = parts[1];
-                Service = parts[2];
-                Region = parts[3];
-                AccountID = parts[4];
-                Resource = parts[5];
-                this.arnString = arnString;
-            }
-        }
+    private string Partition { get; }
+    private string Service { get; }
+    private string Region { get; }
+    private string AccountID { get; }
+    private string Resource { get; }
 
-        /// <summary>
-        ///     Constructs new ARN based on the given partition, service, region, account id and resource
-        /// </summary>
-        /// <param name="partition"></param>
-        /// <param name="service"></param>
-        /// <param name="region"></param>
-        /// <param name="accountId"></param>
-        /// <param name="resource"></param>
-        public Arn(string partition, string service, string region, string accountId, string resource)
-        {
-            Partition = partition;
-            Service = service;
-            Region = region;
-            AccountID = accountId;
-            Resource = resource;
-            arnString = $"arn:{Partition}:{Service}:{Region}:{AccountID}:{Resource}";
-        }
-
-        private string Partition { get; }
-        private string Service { get; }
-        private string Region { get; }
-        private string AccountID { get; }
-        private string Resource { get; }
-
-        public override string ToString()
-        {
-            return arnString;
-        }
+    public override string ToString()
+    {
+        return arnString;
     }
 }

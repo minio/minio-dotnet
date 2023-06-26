@@ -26,50 +26,49 @@ using Minio.Helper;
  * https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html
  */
 
-namespace Minio.Credentials
+namespace Minio.Credentials;
+
+public class WebIdentityProvider : WebIdentityClientGrantsProvider<WebIdentityProvider>
 {
-    public class WebIdentityProvider : WebIdentityClientGrantsProvider<WebIdentityProvider>
+    internal int ExpiryInSeconds { get; set; }
+    internal JsonWebToken CurrentJsonWebToken { get; set; }
+
+    public override AccessCredentials GetCredentials()
     {
-        internal int ExpiryInSeconds { get; set; }
-        internal JsonWebToken CurrentJsonWebToken { get; set; }
+        Validate();
+        return base.GetCredentials();
+    }
 
-        public override AccessCredentials GetCredentials()
-        {
-            Validate();
-            return base.GetCredentials();
-        }
+    public override ValueTask<AccessCredentials> GetCredentialsAsync()
+    {
+        Validate();
+        return base.GetCredentialsAsync();
+    }
 
-        public override ValueTask<AccessCredentials> GetCredentialsAsync()
-        {
-            Validate();
-            return base.GetCredentialsAsync();
-        }
+    internal WebIdentityProvider WithJWTSupplier(Func<JsonWebToken> f)
+    {
+        JWTSupplier = (Func<JsonWebToken>)f.Clone();
+        Validate();
+        return this;
+    }
 
-        internal WebIdentityProvider WithJWTSupplier(Func<JsonWebToken> f)
-        {
-            JWTSupplier = (Func<JsonWebToken>)f.Clone();
-            Validate();
-            return this;
-        }
+    internal override Task<HttpRequestMessageBuilder> BuildRequest()
+    {
+        Validate();
+        CurrentJsonWebToken = JWTSupplier();
+        // RoleArn to be set already.
+        WithRoleAction("AssumeRoleWithWebIdentity");
+        WithDurationInSeconds(GetDurationInSeconds(CurrentJsonWebToken.Expiry));
+        RoleSessionName ??= Utils.To8601String(DateTime.Now);
+        return base.BuildRequest();
+    }
 
-        internal override Task<HttpRequestMessageBuilder> BuildRequest()
-        {
-            Validate();
-            CurrentJsonWebToken = JWTSupplier();
-            // RoleArn to be set already.
-            WithRoleAction("AssumeRoleWithWebIdentity");
-            WithDurationInSeconds(GetDurationInSeconds(CurrentJsonWebToken.Expiry));
-            RoleSessionName ??= Utils.To8601String(DateTime.Now);
-            return base.BuildRequest();
-        }
-
-        internal override AccessCredentials ParseResponse(HttpResponseMessage response)
-        {
-            Validate();
-            var credentials = base.ParseResponse(response);
-            using var stream = Encoding.UTF8.GetBytes(Convert.ToString(response.Content, CultureInfo.InvariantCulture))
-                .AsMemory().AsStream();
-            return Utils.DeserializeXml<AccessCredentials>(stream);
-        }
+    internal override AccessCredentials ParseResponse(HttpResponseMessage response)
+    {
+        Validate();
+        var credentials = base.ParseResponse(response);
+        using var stream = Encoding.UTF8.GetBytes(Convert.ToString(response.Content, CultureInfo.InvariantCulture))
+            .AsMemory().AsStream();
+        return Utils.DeserializeXml<AccessCredentials>(stream);
     }
 }

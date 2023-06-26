@@ -16,49 +16,40 @@
 
 using Minio.DataModel.Tags;
 
-namespace Minio.DataModel.Args
+namespace Minio.DataModel.Args;
+
+public class SetObjectTagsArgs : ObjectVersionArgs<SetObjectTagsArgs>
 {
-    public class SetObjectTagsArgs : ObjectVersionArgs<SetObjectTagsArgs>
+    public SetObjectTagsArgs()
     {
-        public SetObjectTagsArgs()
-        {
-            RequestMethod = HttpMethod.Put;
-        }
+        RequestMethod = HttpMethod.Put;
+    }
 
-        internal Tagging ObjectTags { get; private set; }
+    internal Tagging ObjectTags { get; private set; }
 
-        public SetObjectTagsArgs WithTagging(Tagging tags)
-        {
-            if (tags is null)
-            {
-                throw new ArgumentNullException(nameof(tags));
-            }
+    public SetObjectTagsArgs WithTagging(Tagging tags)
+    {
+        if (tags is null)
+            throw new ArgumentNullException(nameof(tags));
 
-            ObjectTags = Tagging.GetObjectTags(tags.Tags);
-            return this;
-        }
+        ObjectTags = Tagging.GetObjectTags(tags.Tags);
+        return this;
+    }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("tagging", "");
-            if (!string.IsNullOrEmpty(VersionId))
-            {
-                requestMessageBuilder.AddQueryParameter("versionId", VersionId);
-            }
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("tagging", "");
+        if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", VersionId);
+        var body = ObjectTags.MarshalXML();
+        requestMessageBuilder.AddXmlBody(body);
 
-            var body = ObjectTags.MarshalXML();
-            requestMessageBuilder.AddXmlBody(body);
+        return requestMessageBuilder;
+    }
 
-            return requestMessageBuilder;
-        }
-
-        internal override void Validate()
-        {
-            base.Validate();
-            if (ObjectTags is null || ObjectTags.Tags.Count == 0)
-            {
-                throw new InvalidOperationException("Unable to set empty tags.");
-            }
-        }
+    internal override void Validate()
+    {
+        base.Validate();
+        if (ObjectTags is null || ObjectTags.Tags.Count == 0)
+            throw new InvalidOperationException("Unable to set empty tags.");
     }
 }

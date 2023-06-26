@@ -16,33 +16,29 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases
-{
-    public static class RemoveObjectLockConfiguration
-    {
-        // Remove Object Lock Configuration on the bucket
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name")
-        {
-            if (minio is null)
-            {
-                throw new ArgumentNullException(nameof(minio));
-            }
+namespace Minio.Examples.Cases;
 
-            try
-            {
-                Console.WriteLine("Running example for API: RemoveObjectLockConfiguration");
-                await minio.RemoveObjectLockConfigurationAsync(
-                    new RemoveObjectLockConfigurationArgs()
-                        .WithBucket(bucketName)
-                ).ConfigureAwait(false);
-                Console.WriteLine($"Removed Object lock configuration on the bucket {bucketName}.");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+public static class RemoveObjectLockConfiguration
+{
+    // Remove Object Lock Configuration on the bucket
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name")
+    {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
+        try
+        {
+            Console.WriteLine("Running example for API: RemoveObjectLockConfiguration");
+            await minio.RemoveObjectLockConfigurationAsync(
+                new RemoveObjectLockConfigurationArgs()
+                    .WithBucket(bucketName)
+            ).ConfigureAwait(false);
+            Console.WriteLine($"Removed Object lock configuration on the bucket {bucketName}.");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

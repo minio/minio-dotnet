@@ -16,32 +16,31 @@
 
 using Minio.Helper;
 
-namespace Minio.DataModel.Args
+namespace Minio.DataModel.Args;
+
+public abstract class ObjectArgs<T> : BucketArgs<T>
+    where T : ObjectArgs<T>
 {
-    public abstract class ObjectArgs<T> : BucketArgs<T>
-        where T : ObjectArgs<T>
+    protected const string S3ZipExtractKey = "X-Minio-Extract";
+
+    internal string ObjectName { get; set; }
+    internal ReadOnlyMemory<byte> RequestBody { get; set; }
+
+    public T WithObject(string obj)
     {
-        protected const string S3ZipExtractKey = "X-Minio-Extract";
+        ObjectName = obj;
+        return (T)this;
+    }
 
-        internal string ObjectName { get; set; }
-        internal ReadOnlyMemory<byte> RequestBody { get; set; }
+    public T WithRequestBody(ReadOnlyMemory<byte> data)
+    {
+        RequestBody = data;
+        return (T)this;
+    }
 
-        public T WithObject(string obj)
-        {
-            ObjectName = obj;
-            return (T)this;
-        }
-
-        public T WithRequestBody(ReadOnlyMemory<byte> data)
-        {
-            RequestBody = data;
-            return (T)this;
-        }
-
-        internal override void Validate()
-        {
-            base.Validate();
-            Utils.ValidateObjectName(ObjectName);
-        }
+    internal override void Validate()
+    {
+        base.Validate();
+        Utils.ValidateObjectName(ObjectName);
     }
 }

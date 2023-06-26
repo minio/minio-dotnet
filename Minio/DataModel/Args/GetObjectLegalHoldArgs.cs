@@ -14,24 +14,19 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args
+namespace Minio.DataModel.Args;
+
+public class GetObjectLegalHoldArgs : ObjectVersionArgs<GetObjectLegalHoldArgs>
 {
-    public class GetObjectLegalHoldArgs : ObjectVersionArgs<GetObjectLegalHoldArgs>
+    public GetObjectLegalHoldArgs()
     {
-        public GetObjectLegalHoldArgs()
-        {
-            RequestMethod = HttpMethod.Get;
-        }
+        RequestMethod = HttpMethod.Get;
+    }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("legal-hold", "");
-            if (!string.IsNullOrEmpty(VersionId))
-            {
-                requestMessageBuilder.AddQueryParameter("versionId", VersionId);
-            }
-
-            return requestMessageBuilder;
-        }
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("legal-hold", "");
+        if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", VersionId);
+        return requestMessageBuilder;
     }
 }

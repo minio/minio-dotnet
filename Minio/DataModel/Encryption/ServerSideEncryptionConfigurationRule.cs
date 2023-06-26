@@ -16,26 +16,25 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Encryption
+namespace Minio.DataModel.Encryption;
+
+[Serializable]
+[XmlRoot(ElementName = "Rule", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+public class ServerSideEncryptionConfigurationRule
 {
-    [Serializable]
-    [XmlRoot(ElementName = "Rule", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-    public class ServerSideEncryptionConfigurationRule
+    internal const string SSE_AES256 = "AES256";
+    internal const string SSE_AWSKMS = "aws:kms";
+
+    public ServerSideEncryptionConfigurationRule()
     {
-        internal const string SSE_AES256 = "AES256";
-        internal const string SSE_AWSKMS = "aws:kms";
-
-        public ServerSideEncryptionConfigurationRule()
-        {
-            Apply = new ServerSideEncryptionConfigurationApply();
-        }
-
-        public ServerSideEncryptionConfigurationRule(string algorithm = SSE_AES256, string keyId = null)
-        {
-            Apply = new ServerSideEncryptionConfigurationApply(algorithm, keyId);
-        }
-
-        [XmlElement("ApplyServerSideEncryptionByDefault")]
-        public ServerSideEncryptionConfigurationApply Apply { get; set; }
+        Apply = new ServerSideEncryptionConfigurationApply();
     }
+
+    public ServerSideEncryptionConfigurationRule(string algorithm = SSE_AES256, string keyId = null)
+    {
+        Apply = new ServerSideEncryptionConfigurationApply(algorithm, keyId);
+    }
+
+    [XmlElement("ApplyServerSideEncryptionByDefault")]
+    public ServerSideEncryptionConfigurationApply Apply { get; set; }
 }

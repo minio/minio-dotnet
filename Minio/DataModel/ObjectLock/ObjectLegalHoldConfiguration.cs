@@ -16,30 +16,29 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.ObjectLock
-{
-    [Serializable]
-    [XmlRoot(ElementName = "LegalHold", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+namespace Minio.DataModel.ObjectLock;
+
+[Serializable]
+[XmlRoot(ElementName = "LegalHold", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
 
 // Legal Hold Configuration for the object. Status - {ON, OFF}.
-    public class ObjectLegalHoldConfiguration
+public class ObjectLegalHoldConfiguration
+{
+    public ObjectLegalHoldConfiguration()
     {
-        public ObjectLegalHoldConfiguration()
-        {
-            Status = "OFF";
-        }
-
-        public ObjectLegalHoldConfiguration(bool enable = true)
-        {
-            if (enable)
-            {
-                Status = "ON";
-                return;
-            }
-
-            Status = "OFF";
-        }
-
-        public string Status { get; set; }
+        Status = "OFF";
     }
+
+    public ObjectLegalHoldConfiguration(bool enable = true)
+    {
+        if (enable)
+        {
+            Status = "ON";
+            return;
+        }
+
+        Status = "OFF";
+    }
+
+    public string Status { get; set; }
 }

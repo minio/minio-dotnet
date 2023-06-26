@@ -15,33 +15,32 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+[Serializable]
+public class MalFormedXMLException : Exception
 {
-    [Serializable]
-    public class MalFormedXMLException : Exception
+    internal string bucketName;
+    internal string key;
+    internal string resource;
+
+    public MalFormedXMLException()
     {
-        internal string bucketName;
-        internal string key;
-        internal string resource;
+    }
 
-        public MalFormedXMLException()
-        {
-        }
+    public MalFormedXMLException(string message) : base(message)
+    {
+    }
 
-        public MalFormedXMLException(string message) : base(message)
-        {
-        }
+    public MalFormedXMLException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 
-        public MalFormedXMLException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        public MalFormedXMLException(string resource, string bucketName, string message, string keyName = null) :
-            base(message)
-        {
-            this.resource = resource;
-            this.bucketName = bucketName;
-            key = keyName;
-        }
+    public MalFormedXMLException(string resource, string bucketName, string message, string keyName = null) :
+        base(message)
+    {
+        this.resource = resource;
+        this.bucketName = bucketName;
+        key = keyName;
     }
 }

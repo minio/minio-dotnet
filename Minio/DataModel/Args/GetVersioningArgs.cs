@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args
-{
-    public class GetVersioningArgs : BucketArgs<GetVersioningArgs>
-    {
-        public GetVersioningArgs()
-        {
-            RequestMethod = HttpMethod.Get;
-        }
+namespace Minio.DataModel.Args;
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("versioning", "");
-            return requestMessageBuilder;
-        }
+public class GetVersioningArgs : BucketArgs<GetVersioningArgs>
+{
+    public GetVersioningArgs()
+    {
+        RequestMethod = HttpMethod.Get;
+    }
+
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("versioning", "");
+        return requestMessageBuilder;
     }
 }

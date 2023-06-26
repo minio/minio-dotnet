@@ -17,35 +17,31 @@
 using Minio.DataModel.Args;
 using Minio.DataModel.ILM;
 
-namespace Minio.Examples.Cases
-{
-    public static class SetBucketLifecycle
-    {
-        // Set Lifecycle configuration to the bucket
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name",
-            LifecycleConfiguration lfc = null)
-        {
-            if (minio is null)
-            {
-                throw new ArgumentNullException(nameof(minio));
-            }
+namespace Minio.Examples.Cases;
 
-            try
-            {
-                Console.WriteLine("Running example for API: SetBucketLifecycle");
-                await minio.SetBucketLifecycleAsync(
-                    new SetBucketLifecycleArgs()
-                        .WithBucket(bucketName)
-                        .WithLifecycleConfiguration(lfc)
-                ).ConfigureAwait(false);
-                Console.WriteLine($"Bucket Lifecycle set for bucket {bucketName}.");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+public static class SetBucketLifecycle
+{
+    // Set Lifecycle configuration to the bucket
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name",
+        LifecycleConfiguration lfc = null)
+    {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
+        try
+        {
+            Console.WriteLine("Running example for API: SetBucketLifecycle");
+            await minio.SetBucketLifecycleAsync(
+                new SetBucketLifecycleArgs()
+                    .WithBucket(bucketName)
+                    .WithLifecycleConfiguration(lfc)
+            ).ConfigureAwait(false);
+            Console.WriteLine($"Bucket Lifecycle set for bucket {bucketName}.");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

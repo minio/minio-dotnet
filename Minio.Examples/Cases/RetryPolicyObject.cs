@@ -18,56 +18,52 @@ using Minio.DataModel.Args;
 using Minio.Exceptions;
 using Polly;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal static class RetryPolicyObject
 {
-    internal static class RetryPolicyObject
+    // Polly retry policy sample
+    public static async Task Run(MinioClient minio,
+        string bucketName = "my-bucket-name",
+        string bucketObject = "my-object-name")
     {
-        // Polly retry policy sample
-        public static async Task Run(MinioClient minio,
-            string bucketName = "my-bucket-name",
-            string bucketObject = "my-object-name")
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
+        try
         {
-            if (minio is null)
-            {
-                throw new ArgumentNullException(nameof(minio));
-            }
+            var customPolicy = RetryPolicyHelper
+                .CreatePolicyBuilder()
+                .Or<BucketNotFoundException>()
+                .RetryAsync(
+                    2,
+                    (r, i) => Console.WriteLine($"On retry #{i}. Result: {r.Exception?.Message}"));
+
+            minio.WithRetryPolicy(customPolicy);
+
+            Console.WriteLine("Running example for API: RetryPolicyObject");
 
             try
             {
-                var customPolicy = RetryPolicyHelper
-                    .CreatePolicyBuilder()
-                    .Or<BucketNotFoundException>()
-                    .RetryAsync(
-                        2,
-                        (r, i) => Console.WriteLine($"On retry #{i}. Result: {r.Exception?.Message}"));
-
-                minio.WithRetryPolicy(customPolicy);
-
-                Console.WriteLine("Running example for API: RetryPolicyObject");
-
-                try
-                {
-                    var getObjectArgs = new GetObjectArgs()
-                        .WithBucket("bad-bucket")
-                        .WithObject("bad-file")
-                        .WithCallbackStream(s => { });
-                    await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
-                }
-                catch (BucketNotFoundException ex)
-                {
-                    Console.WriteLine("Request failed: " + ex.Message);
-                }
-
-                Console.WriteLine();
+                var getObjectArgs = new GetObjectArgs()
+                    .WithBucket("bad-bucket")
+                    .WithObject("bad-file")
+                    .WithCallbackStream(s => { });
+                await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
             }
-            catch (Exception e)
+            catch (BucketNotFoundException ex)
             {
-                Console.WriteLine($"[StatObject] {bucketName}-{bucketObject} Exception: {e}");
+                Console.WriteLine("Request failed: " + ex.Message);
             }
-            finally
-            {
-                minio.WithRetryPolicy(null);
-            }
+
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[StatObject] {bucketName}-{bucketObject} Exception: {e}");
+        }
+        finally
+        {
+            minio.WithRetryPolicy(null);
         }
     }
 }

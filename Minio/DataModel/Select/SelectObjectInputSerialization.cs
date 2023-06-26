@@ -16,17 +16,16 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Select
+namespace Minio.DataModel.Select;
+
+[Serializable]
+public class SelectObjectInputSerialization
 {
-    [Serializable]
-    public class SelectObjectInputSerialization
-    {
-        public SelectCompressionType CompressionType { get; set; }
+    public SelectCompressionType CompressionType { get; set; }
 
-        [XmlElement("Parquet")] public ParquetInputOptions Parquet { get; set; }
+    [XmlElement("Parquet")] public ParquetInputOptions Parquet { get; set; }
 
-        [XmlElement("CSV")] public CSVInputOptions CSV { get; set; }
+    [XmlElement("CSV")] public CSVInputOptions CSV { get; set; }
 
-        [XmlElement("JSON")] public JSONInputOptions JSON { get; set; }
-    }
+    [XmlElement("JSON")] public JSONInputOptions JSON { get; set; }
 }

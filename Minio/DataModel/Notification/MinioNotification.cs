@@ -16,20 +16,21 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
-namespace Minio.DataModel.Notification
+namespace Minio.DataModel.Notification;
+
+/// <summary>
+///     Helper class to deserialize notifications generated
+///     from MinioNotificaitonRaw by ListenBucketNotifications
+/// </summary>
+[Serializable]
+public class MinioNotification
 {
-    /// <summary>
-    ///     Helper class to deserialize notifications generated
-    ///     from MinioNotificaitonRaw by ListenBucketNotifications
-    /// </summary>
-    [Serializable]
-    public class MinioNotification
-    {
-        public string Err { get; set; }
+    public string Err { get; set; }
 
-        [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
-            Justification = "Needs to be concrete type for XML deserialization")]
-        public Collection<NotificationEvent> Records { get; set; }
-    }
+    [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
+        Justification = "Needs to be concrete type for XML deserialization")]
+    public Collection<NotificationEvent> Records { get; set; }
 }

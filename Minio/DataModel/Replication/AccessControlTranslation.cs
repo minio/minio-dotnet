@@ -24,26 +24,23 @@ using System.Xml.Serialization;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
  */
 
-namespace Minio.DataModel.Replication
+namespace Minio.DataModel.Replication;
+
+[Serializable]
+[XmlRoot(ElementName = "AccessControlTranslation")]
+public class AccessControlTranslation
 {
-    [Serializable]
-    [XmlRoot(ElementName = "AccessControlTranslation")]
-    public class AccessControlTranslation
+    public AccessControlTranslation(string owner)
     {
-        public AccessControlTranslation(string owner)
-        {
-            if (string.IsNullOrWhiteSpace(owner))
-            {
-                throw new ArgumentException($"'{nameof(owner)}' cannot be null or whitespace.", nameof(owner));
-            }
+        if (string.IsNullOrWhiteSpace(owner))
+            throw new ArgumentException($"'{nameof(owner)}' cannot be null or whitespace.", nameof(owner));
 
-            Owner = owner;
-        }
-
-        public AccessControlTranslation()
-        {
-        }
-
-        [XmlElement("Owner")] public string Owner { get; set; }
+        Owner = owner;
     }
+
+    public AccessControlTranslation()
+    {
+    }
+
+    [XmlElement("Owner")] public string Owner { get; set; }
 }

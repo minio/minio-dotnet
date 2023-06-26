@@ -16,32 +16,31 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal static class GetObject
 {
-    internal static class GetObject
+    // Get object in a bucket
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name",
+        string objectName = "my-object-name",
+        string fileName = "my-file-name")
     {
-        // Get object in a bucket
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name",
-            string objectName = "my-object-name",
-            string fileName = "my-file-name")
+        try
         {
-            try
-            {
-                Console.WriteLine("Running example for API: GetObjectAsync");
-                var args = new GetObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(objectName)
-                    .WithFile(fileName);
-                var stat = await minio.GetObjectAsync(args).ConfigureAwait(false);
-                Console.WriteLine($"Downloaded the file {fileName} in bucket {bucketName}");
-                Console.WriteLine($"Stat details of object {objectName} in bucket {bucketName}\n" + stat);
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            Console.WriteLine("Running example for API: GetObjectAsync");
+            var args = new GetObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithFile(fileName);
+            var stat = await minio.GetObjectAsync(args).ConfigureAwait(false);
+            Console.WriteLine($"Downloaded the file {fileName} in bucket {bucketName}");
+            Console.WriteLine($"Stat details of object {objectName} in bucket {bucketName}\n" + stat);
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

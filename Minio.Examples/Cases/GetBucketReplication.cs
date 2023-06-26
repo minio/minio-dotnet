@@ -17,57 +17,53 @@
 using Minio.DataModel.Args;
 using Minio.Exceptions;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+public static class GetBucketReplication
 {
-    public static class GetBucketReplication
+    // Get Replication configuration assigned to the bucket
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name",
+        string replicationRuleID = "my-replication-rule-ID")
     {
-        // Get Replication configuration assigned to the bucket
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name",
-            string replicationRuleID = "my-replication-rule-ID")
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
+        try
         {
-            if (minio is null)
+            Console.WriteLine("Running example for API: GetBucketReplicationConfiguration");
+            var repl = await minio.GetBucketReplicationAsync(
+                new GetBucketReplicationArgs()
+                    .WithBucket(bucketName)
+            ).ConfigureAwait(false);
+            if (repl is not null && repl.Rules?.Count > 0)
             {
-                throw new ArgumentNullException(nameof(minio));
-            }
-
-            try
-            {
-                Console.WriteLine("Running example for API: GetBucketReplicationConfiguration");
-                var repl = await minio.GetBucketReplicationAsync(
-                    new GetBucketReplicationArgs()
-                        .WithBucket(bucketName)
-                ).ConfigureAwait(false);
-                if (repl is not null && repl.Rules?.Count > 0)
+                Console.WriteLine($"Got Bucket Replication Configuration set for bucket {bucketName}.");
+                foreach (var rule in repl.Rules)
                 {
-                    Console.WriteLine($"Got Bucket Replication Configuration set for bucket {bucketName}.");
-                    foreach (var rule in repl.Rules)
+                    if (!string.Equals(rule.ID, replicationRuleID, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (!string.Equals(rule.ID, replicationRuleID, StringComparison.OrdinalIgnoreCase))
-                        {
-                            // failed test due to replication rule id mismatch
-                            var errMessage = "Unexpected replication rule ID: " +
-                                             $"expected: {replicationRuleID}, got: {rule.ID}";
-                            throw new UnexpectedMinioException(errMessage);
-                        }
-
-                        Console.WriteLine("ID: " + rule.ID + ", Status: " + rule.Status);
+                        // failed test due to replication rule id mismatch
+                        var errMessage = "Unexpected replication rule ID: " +
+                                         $"expected: {replicationRuleID}, got: {rule.ID}";
+                        throw new UnexpectedMinioException(errMessage);
                     }
 
-                    Console.WriteLine();
-                    return;
+                    Console.WriteLine("ID: " + rule.ID + ", Status: " + rule.Status);
                 }
 
                 Console.WriteLine();
+                return;
             }
-            catch (MissingBucketReplicationConfigurationException)
-            {
-                Console.WriteLine($"[Bucket] Exception: Replication Configuration not set for bucket {bucketName}.");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+
+            Console.WriteLine();
+        }
+        catch (MissingBucketReplicationConfigurationException)
+        {
+            Console.WriteLine($"[Bucket] Exception: Replication Configuration not set for bucket {bucketName}.");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

@@ -18,13 +18,12 @@
 using System.Xml.Serialization;
 using Minio.DataModel;
 
-namespace Minio.Credentials
+namespace Minio.Credentials;
+
+[Serializable]
+[XmlRoot(ElementName = "AssumeRoleResult")]
+public class AssumeRoleResult
 {
-    [Serializable]
-    [XmlRoot(ElementName = "AssumeRoleResult")]
-    public class AssumeRoleResult
-    {
-        [XmlElement(ElementName = "Credentials")]
-        public AccessCredentials Credentials { get; set; }
-    }
+    [XmlElement(ElementName = "Credentials")]
+    public AccessCredentials Credentials { get; set; }
 }

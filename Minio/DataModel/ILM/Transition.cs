@@ -23,32 +23,29 @@ using System.Xml.Serialization;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html
  */
 
-namespace Minio.DataModel.ILM
+namespace Minio.DataModel.ILM;
+
+[Serializable]
+[XmlRoot(ElementName = "Transition")]
+public class Transition : Duration
 {
-    [Serializable]
-    [XmlRoot(ElementName = "Transition")]
-    public class Transition : Duration
+    public Transition()
     {
-        public Transition()
-        {
-        }
+    }
 
-        public Transition(DateTime date, string storageClass) : base(date)
-        {
-            CheckStorageClass(storageClass);
-            StorageClass = storageClass.ToUpperInvariant();
-        }
+    public Transition(DateTime date, string storageClass) : base(date)
+    {
+        CheckStorageClass(storageClass);
+        StorageClass = storageClass.ToUpperInvariant();
+    }
 
-        [XmlElement(ElementName = "StorageClass", IsNullable = true)]
-        public string StorageClass { get; set; }
+    [XmlElement(ElementName = "StorageClass", IsNullable = true)]
+    public string StorageClass { get; set; }
 
-        internal static void CheckStorageClass(string storageClass)
-        {
-            if (string.IsNullOrWhiteSpace(storageClass))
-            {
-                throw new ArgumentException($"'{nameof(storageClass)}' cannot be null or whitespace.",
-                    nameof(storageClass));
-            }
-        }
+    internal static void CheckStorageClass(string storageClass)
+    {
+        if (string.IsNullOrWhiteSpace(storageClass))
+            throw new ArgumentException($"'{nameof(storageClass)}' cannot be null or whitespace.",
+                nameof(storageClass));
     }
 }

@@ -16,52 +16,51 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases
-{
-    internal static class GetPartialObject
-    {
-        // Get object in a bucket for a particular offset range. Dotnet SDK currently
-        // requires both start offset and end 
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name",
-            string objectName = "my-object-name",
-            string fileName = "my-file-name")
-        {
-            try
-            {
-                Console.WriteLine("Running example for API: GetObjectAsync");
-                // Check whether the object exists using StatObjectAsync(). If the object is not found,
-                // StatObjectAsync() will throw an exception.
-                var statObjectArgs = new StatObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(objectName);
-                await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+namespace Minio.Examples.Cases;
 
-                // Get object content starting at byte position 1024 and length of 4096
-                var getObjectArgs = new GetObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(objectName)
-                    .WithOffsetAndLength(1024L, 4096L)
-                    .WithCallbackStream(async (stream, cancellationToken) =>
-                    {
-                        var fileStream = File.Create(fileName);
-                        await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                        await fileStream.DisposeAsync().ConfigureAwait(false);
-                        var writtenInfo = new FileInfo(fileName);
-                        var file_read_size = writtenInfo.Length;
-                        // Uncomment to print the file on output console
-                        // stream.CopyTo(Console.OpenStandardOutput());
-                        Console.WriteLine(
-                            $"Successfully downloaded object with requested offset and length {writtenInfo.Length} into file");
-                        stream.Dispose();
-                    });
-                await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+internal static class GetPartialObject
+{
+    // Get object in a bucket for a particular offset range. Dotnet SDK currently
+    // requires both start offset and end 
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name",
+        string objectName = "my-object-name",
+        string fileName = "my-file-name")
+    {
+        try
+        {
+            Console.WriteLine("Running example for API: GetObjectAsync");
+            // Check whether the object exists using StatObjectAsync(). If the object is not found,
+            // StatObjectAsync() will throw an exception.
+            var statObjectArgs = new StatObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName);
+            await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+
+            // Get object content starting at byte position 1024 and length of 4096
+            var getObjectArgs = new GetObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithOffsetAndLength(1024L, 4096L)
+                .WithCallbackStream(async (stream, cancellationToken) =>
+                {
+                    var fileStream = File.Create(fileName);
+                    await stream.CopyToAsync(fileStream).ConfigureAwait(false);
+                    await fileStream.DisposeAsync().ConfigureAwait(false);
+                    var writtenInfo = new FileInfo(fileName);
+                    var file_read_size = writtenInfo.Length;
+                    // Uncomment to print the file on output console
+                    // stream.CopyTo(Console.OpenStandardOutput());
+                    Console.WriteLine(
+                        $"Successfully downloaded object with requested offset and length {writtenInfo.Length} into file");
+                    stream.Dispose();
+                });
+            await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

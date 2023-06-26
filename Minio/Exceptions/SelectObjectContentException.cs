@@ -15,30 +15,28 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+[Serializable]
+public class SelectObjectContentException : MinioException
 {
-    [Serializable]
-    public class SelectObjectContentException : MinioException
+    public SelectObjectContentException(string message) : base(message)
     {
-        public SelectObjectContentException(string message) : base(message)
-        {
-        }
+    }
 
-        public SelectObjectContentException(ResponseResult serverResponse) : base(serverResponse)
-        {
-        }
+    public SelectObjectContentException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
 
-        public SelectObjectContentException(string message, ResponseResult serverResponse) : base(message,
-            serverResponse)
-        {
-        }
+    public SelectObjectContentException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
 
-        public SelectObjectContentException()
-        {
-        }
+    public SelectObjectContentException()
+    {
+    }
 
-        public SelectObjectContentException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
+    public SelectObjectContentException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 }

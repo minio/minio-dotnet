@@ -14,41 +14,40 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+[Serializable]
+public class ObjectNotFoundException : MinioException
 {
-    [Serializable]
-    public class ObjectNotFoundException : MinioException
+    private readonly string objectName;
+
+    public ObjectNotFoundException(string objectName, string message) : base(message)
     {
-        private readonly string objectName;
+        this.objectName = objectName;
+    }
 
-        public ObjectNotFoundException(string objectName, string message) : base(message)
-        {
-            this.objectName = objectName;
-        }
+    public ObjectNotFoundException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
 
-        public ObjectNotFoundException(ResponseResult serverResponse) : base(serverResponse)
-        {
-        }
+    public ObjectNotFoundException(string message) : base(message)
+    {
+    }
 
-        public ObjectNotFoundException(string message) : base(message)
-        {
-        }
+    public ObjectNotFoundException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
 
-        public ObjectNotFoundException(string message, ResponseResult serverResponse) : base(message, serverResponse)
-        {
-        }
+    public ObjectNotFoundException()
+    {
+    }
 
-        public ObjectNotFoundException()
-        {
-        }
+    public ObjectNotFoundException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 
-        public ObjectNotFoundException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        public override string ToString()
-        {
-            return $"{objectName}: {base.ToString()}";
-        }
+    public override string ToString()
+    {
+        return $"{objectName}: {base.ToString()}";
     }
 }

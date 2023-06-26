@@ -17,53 +17,50 @@
 using Minio.DataModel.ObjectLock;
 using Minio.Helper;
 
-namespace Minio.DataModel.Args
+namespace Minio.DataModel.Args;
+
+internal class NewMultipartUploadArgs<T> : ObjectWriteArgs<T>
+    where T : NewMultipartUploadArgs<T>
 {
-    internal class NewMultipartUploadArgs<T> : ObjectWriteArgs<T>
-        where T : NewMultipartUploadArgs<T>
+    internal NewMultipartUploadArgs()
     {
-        internal NewMultipartUploadArgs()
+        RequestMethod = HttpMethod.Post;
+    }
+
+    internal ObjectRetentionMode ObjectLockRetentionMode { get; set; }
+    internal DateTime RetentionUntilDate { get; set; }
+    internal bool ObjectLockSet { get; set; }
+
+    public NewMultipartUploadArgs<T> WithObjectLockMode(ObjectRetentionMode mode)
+    {
+        ObjectLockSet = true;
+        ObjectLockRetentionMode = mode;
+        return this;
+    }
+
+    public NewMultipartUploadArgs<T> WithObjectLockRetentionDate(DateTime untilDate)
+    {
+        ObjectLockSet = true;
+        RetentionUntilDate = new DateTime(untilDate.Year, untilDate.Month, untilDate.Day,
+            untilDate.Hour, untilDate.Minute, untilDate.Second);
+        return this;
+    }
+
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("uploads", "");
+        if (ObjectLockSet)
         {
-            RequestMethod = HttpMethod.Post;
+            if (!RetentionUntilDate.Equals(default))
+                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
+                    Utils.To8601String(RetentionUntilDate));
+
+            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
+                ObjectLockRetentionMode == ObjectRetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
         }
 
-        internal ObjectRetentionMode ObjectLockRetentionMode { get; set; }
-        internal DateTime RetentionUntilDate { get; set; }
-        internal bool ObjectLockSet { get; set; }
+        requestMessageBuilder.AddOrUpdateHeaderParameter("content-type", ContentType);
 
-        public NewMultipartUploadArgs<T> WithObjectLockMode(ObjectRetentionMode mode)
-        {
-            ObjectLockSet = true;
-            ObjectLockRetentionMode = mode;
-            return this;
-        }
-
-        public NewMultipartUploadArgs<T> WithObjectLockRetentionDate(DateTime untilDate)
-        {
-            ObjectLockSet = true;
-            RetentionUntilDate = new DateTime(untilDate.Year, untilDate.Month, untilDate.Day,
-                untilDate.Hour, untilDate.Minute, untilDate.Second);
-            return this;
-        }
-
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("uploads", "");
-            if (ObjectLockSet)
-            {
-                if (!RetentionUntilDate.Equals(default))
-                {
-                    requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
-                        Utils.To8601String(RetentionUntilDate));
-                }
-
-                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
-                    ObjectLockRetentionMode == ObjectRetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
-            }
-
-            requestMessageBuilder.AddOrUpdateHeaderParameter("content-type", ContentType);
-
-            return requestMessageBuilder;
-        }
+        return requestMessageBuilder;
     }
 }

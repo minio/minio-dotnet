@@ -16,22 +16,21 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.ObjectLock
+namespace Minio.DataModel.ObjectLock;
+
+[Serializable]
+[XmlRoot(ElementName = "ObjectLockRule", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+public class ObjectLockRule
 {
-    [Serializable]
-    [XmlRoot(ElementName = "ObjectLockRule", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-    public class ObjectLockRule
+    public ObjectLockRule()
     {
-        public ObjectLockRule()
-        {
-            DefaultRetention = null;
-        }
-
-        public ObjectLockRule(ObjectRetentionMode mode, int retentionDurationDays)
-        {
-            DefaultRetention = new DefaultRetention(retentionDurationDays, mode);
-        }
-
-        [XmlElement("DefaultRetention")] public DefaultRetention DefaultRetention { get; set; }
+        DefaultRetention = null;
     }
+
+    public ObjectLockRule(ObjectRetentionMode mode, int retentionDurationDays)
+    {
+        DefaultRetention = new DefaultRetention(retentionDurationDays, mode);
+    }
+
+    [XmlElement("DefaultRetention")] public DefaultRetention DefaultRetention { get; set; }
 }

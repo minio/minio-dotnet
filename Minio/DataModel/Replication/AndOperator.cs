@@ -26,49 +26,39 @@ using Minio.DataModel.Tags;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
  */
 
-namespace Minio.DataModel.Replication
+namespace Minio.DataModel.Replication;
+
+[Serializable]
+[XmlRoot(ElementName = "And")]
+public class AndOperator
 {
-    [Serializable]
-    [XmlRoot(ElementName = "And")]
-    public class AndOperator
+    public AndOperator()
     {
-        public AndOperator()
-        {
-        }
-
-        public AndOperator(string prefix, Tagging tagObj)
-        {
-            if (tagObj is null)
-            {
-                throw new ArgumentNullException(nameof(tagObj));
-            }
-
-            Prefix = prefix;
-            Tags = new Collection<Tag>(tagObj.TaggingSet.Tag);
-        }
-
-        public AndOperator(string prefix, Collection<Tag> tag)
-        {
-            Prefix = prefix;
-            Tags = tag;
-        }
-
-        public AndOperator(string prefix, IDictionary<string, string> tags)
-        {
-            if (tags is null)
-            {
-                throw new ArgumentNullException(nameof(tags));
-            }
-
-            Prefix = prefix;
-            foreach (var item in tags)
-            {
-                Tags.Add(new Tag(item.Key, item.Value));
-            }
-        }
-
-        [XmlElement("Prefix")] internal string Prefix { get; set; }
-
-        [XmlElement("Tag")] public Collection<Tag> Tags { get; set; }
     }
+
+    public AndOperator(string prefix, Tagging tagObj)
+    {
+        if (tagObj is null) throw new ArgumentNullException(nameof(tagObj));
+
+        Prefix = prefix;
+        Tags = new Collection<Tag>(tagObj.TaggingSet.Tag);
+    }
+
+    public AndOperator(string prefix, Collection<Tag> tag)
+    {
+        Prefix = prefix;
+        Tags = tag;
+    }
+
+    public AndOperator(string prefix, IDictionary<string, string> tags)
+    {
+        if (tags is null) throw new ArgumentNullException(nameof(tags));
+
+        Prefix = prefix;
+        foreach (var item in tags) Tags.Add(new Tag(item.Key, item.Value));
+    }
+
+    [XmlElement("Prefix")] internal string Prefix { get; set; }
+
+    [XmlElement("Tag")] public Collection<Tag> Tags { get; set; }
 }

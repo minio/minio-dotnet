@@ -17,34 +17,33 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Minio.DataModel.Notification
+namespace Minio.DataModel.Notification;
+
+public class NotificationEvent
 {
-    public class NotificationEvent
-    {
-        [JsonPropertyName("awsRegion")] public string AwsRegion { get; set; }
+    [JsonPropertyName("awsRegion")] public string AwsRegion { get; set; }
 
-        [JsonPropertyName("eventName")] public string EventName { get; set; }
+    [JsonPropertyName("eventName")] public string EventName { get; set; }
 
-        [JsonPropertyName("eventSource")] public string EventSource { get; set; }
+    [JsonPropertyName("eventSource")] public string EventSource { get; set; }
 
-        [JsonPropertyName("eventTime")] public string EventTime { get; set; }
+    [JsonPropertyName("eventTime")] public string EventTime { get; set; }
 
-        [JsonPropertyName("eventVersion")] public string EventVersion { get; set; }
+    [JsonPropertyName("eventVersion")] public string EventVersion { get; set; }
 
-        [JsonPropertyName("requestParameters")]
-        [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
-            Justification = "Needs to be concrete type for XML deserialization")]
-        public Dictionary<string, string> RequestParameters { get; set; }
+    [JsonPropertyName("requestParameters")]
+    [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
+        Justification = "Needs to be concrete type for XML deserialization")]
+    public Dictionary<string, string> RequestParameters { get; set; }
 
-        [JsonPropertyName("responseElements")]
-        [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
-            Justification = "Needs to be concrete type for XML deserialization")]
-        public Dictionary<string, string> ResponseElements { get; set; }
+    [JsonPropertyName("responseElements")]
+    [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",
+        Justification = "Needs to be concrete type for XML deserialization")]
+    public Dictionary<string, string> ResponseElements { get; set; }
 
-        [JsonPropertyName("s3")] public EventMeta S3 { get; set; }
+    [JsonPropertyName("s3")] public EventMeta S3 { get; set; }
 
-        [JsonPropertyName("source")] public SourceInfo Source { get; set; }
+    [JsonPropertyName("source")] public SourceInfo Source { get; set; }
 
-        [JsonPropertyName("userIdentity")] public Identity UserIdentity { get; set; }
-    }
+    [JsonPropertyName("userIdentity")] public Identity UserIdentity { get; set; }
 }

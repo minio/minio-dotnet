@@ -24,30 +24,26 @@ using System.Xml.Serialization;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html
  */
 
-namespace Minio.DataModel.Replication
+namespace Minio.DataModel.Replication;
+
+[Serializable]
+[XmlRoot(ElementName = "Metrics")]
+public class Metrics
 {
-    [Serializable]
-    [XmlRoot(ElementName = "Metrics")]
-    public class Metrics
+    public Metrics(string status, ReplicationTimeValue eventThreshold)
     {
-        public Metrics(string status, ReplicationTimeValue eventThreshold)
-        {
-            if (string.IsNullOrWhiteSpace(status))
-            {
-                throw new ArgumentException($"'{nameof(status)}' member cannot be empty.", nameof(status));
-            }
-
-            Status = status;
-            EventThreshold = eventThreshold;
-        }
-
-        public Metrics()
-        {
-        }
-
-        [XmlElement(ElementName = "Status", IsNullable = true)]
-        public string Status { get; set; }
-
-        [XmlElement("EventThreshold")] public ReplicationTimeValue EventThreshold { get; set; }
+        if (string.IsNullOrWhiteSpace(status))
+            throw new ArgumentException($"'{nameof(status)}' member cannot be empty.", nameof(status));
+        Status = status;
+        EventThreshold = eventThreshold;
     }
+
+    public Metrics()
+    {
+    }
+
+    [XmlElement(ElementName = "Status", IsNullable = true)]
+    public string Status { get; set; }
+
+    [XmlElement("EventThreshold")] public ReplicationTimeValue EventThreshold { get; set; }
 }

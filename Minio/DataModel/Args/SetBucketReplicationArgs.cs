@@ -17,33 +17,32 @@
 using System.Text;
 using Minio.DataModel.Replication;
 
-namespace Minio.DataModel.Args
+namespace Minio.DataModel.Args;
+
+public class SetBucketReplicationArgs : BucketArgs<SetBucketReplicationArgs>
 {
-    public class SetBucketReplicationArgs : BucketArgs<SetBucketReplicationArgs>
+    public SetBucketReplicationArgs()
     {
-        public SetBucketReplicationArgs()
-        {
-            RequestMethod = HttpMethod.Put;
-        }
+        RequestMethod = HttpMethod.Put;
+    }
 
-        internal ReplicationConfiguration BucketReplication { get; private set; }
+    internal ReplicationConfiguration BucketReplication { get; private set; }
 
-        public SetBucketReplicationArgs WithConfiguration(ReplicationConfiguration conf)
-        {
-            BucketReplication = conf;
-            return this;
-        }
+    public SetBucketReplicationArgs WithConfiguration(ReplicationConfiguration conf)
+    {
+        BucketReplication = conf;
+        return this;
+    }
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("replication", "");
-            var body = BucketReplication.MarshalXML();
-            // Convert string to a byte array
-            ReadOnlyMemory<byte> bodyInBytes = Encoding.ASCII.GetBytes(body);
-            requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
-            requestMessageBuilder.SetBody(bodyInBytes);
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("replication", "");
+        var body = BucketReplication.MarshalXML();
+        // Convert string to a byte array
+        ReadOnlyMemory<byte> bodyInBytes = Encoding.ASCII.GetBytes(body);
+        requestMessageBuilder.BodyParameters.Add("content-type", "text/xml");
+        requestMessageBuilder.SetBody(bodyInBytes);
 
-            return requestMessageBuilder;
-        }
+        return requestMessageBuilder;
     }
 }

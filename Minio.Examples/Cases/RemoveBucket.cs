@@ -16,26 +16,25 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal static class RemoveBucket
 {
-    internal static class RemoveBucket
+    // Remove a bucket
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name")
     {
-        // Remove a bucket
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name")
+        try
         {
-            try
-            {
-                await minio.RemoveBucketAsync(
-                    new RemoveBucketArgs()
-                        .WithBucket(bucketName)
-                ).ConfigureAwait(false);
-                Console.WriteLine($"Removed the bucket {bucketName} successfully");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            await minio.RemoveBucketAsync(
+                new RemoveBucketArgs()
+                    .WithBucket(bucketName)
+            ).ConfigureAwait(false);
+            Console.WriteLine($"Removed the bucket {bucketName} successfully");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

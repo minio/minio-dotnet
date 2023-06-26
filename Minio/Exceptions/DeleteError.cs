@@ -16,11 +16,10 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+[Serializable]
+[XmlRoot(ElementName = "Error")]
+public class DeleteError : ErrorResponse
 {
-    [Serializable]
-    [XmlRoot(ElementName = "Error")]
-    public class DeleteError : ErrorResponse
-    {
-    }
 }

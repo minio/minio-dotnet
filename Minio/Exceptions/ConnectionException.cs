@@ -15,29 +15,28 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+[Serializable]
+public class ConnectionException : MinioException
 {
-    [Serializable]
-    public class ConnectionException : MinioException
+    public ConnectionException(string message, ResponseResult response) : base(message, response)
     {
-        public ConnectionException(string message, ResponseResult response) : base(message, response)
-        {
-        }
+    }
 
-        public ConnectionException(ResponseResult serverResponse) : base(serverResponse)
-        {
-        }
+    public ConnectionException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
 
-        public ConnectionException(string message) : base(message)
-        {
-        }
+    public ConnectionException(string message) : base(message)
+    {
+    }
 
-        public ConnectionException()
-        {
-        }
+    public ConnectionException()
+    {
+    }
 
-        public ConnectionException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
+    public ConnectionException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 }

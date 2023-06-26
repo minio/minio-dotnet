@@ -20,26 +20,25 @@ using CommunityToolkit.HighPerformance;
 using Minio.DataModel.Tags;
 using Minio.Helper;
 
-namespace Minio.DataModel.Response
-{
-    internal class GetBucketTagsResponse : GenericResponse
-    {
-        internal GetBucketTagsResponse(HttpStatusCode statusCode, string responseContent)
-            : base(statusCode, responseContent)
-        {
-            if (string.IsNullOrEmpty(responseContent) ||
-                !HttpStatusCode.OK.Equals(statusCode))
-            {
-                BucketTags = null;
-                return;
-            }
+namespace Minio.DataModel.Response;
 
-            // Remove namespace from response content, if present.
-            responseContent = Utils.RemoveNamespaceInXML(responseContent);
-            using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-            BucketTags = Utils.DeserializeXml<Tagging>(stream);
+internal class GetBucketTagsResponse : GenericResponse
+{
+    internal GetBucketTagsResponse(HttpStatusCode statusCode, string responseContent)
+        : base(statusCode, responseContent)
+    {
+        if (string.IsNullOrEmpty(responseContent) ||
+            !HttpStatusCode.OK.Equals(statusCode))
+        {
+            BucketTags = null;
+            return;
         }
 
-        internal Tagging BucketTags { set; get; }
+        // Remove namespace from response content, if present.
+        responseContent = Utils.RemoveNamespaceInXML(responseContent);
+        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
+        BucketTags = Utils.DeserializeXml<Tagging>(stream);
     }
+
+    internal Tagging BucketTags { set; get; }
 }

@@ -16,46 +16,40 @@
 
 using Minio.Helper;
 
-namespace Minio.DataModel.Args
+namespace Minio.DataModel.Args;
+
+public abstract class BucketArgs<T> : RequestArgs
+    where T : BucketArgs<T>
 {
-    public abstract class BucketArgs<T> : RequestArgs
-        where T : BucketArgs<T>
+    protected const string BucketForceDeleteKey = "X-Minio-Force-Delete";
+
+    public bool IsBucketCreationRequest { get; set; }
+
+    internal string BucketName { get; set; }
+
+    internal IDictionary<string, string> Headers { get; set; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
+    public T WithBucket(string bucket)
     {
-        protected const string BucketForceDeleteKey = "X-Minio-Force-Delete";
+        BucketName = bucket;
+        return (T)this;
+    }
 
-        public bool IsBucketCreationRequest { get; set; }
-
-        internal string BucketName { get; set; }
-
-        internal IDictionary<string, string> Headers { get; set; } =
-            new Dictionary<string, string>(StringComparer.Ordinal);
-
-        public T WithBucket(string bucket)
+    public virtual T WithHeaders(IDictionary<string, string> headers)
+    {
+        if (headers is null || headers.Count <= 0) return (T)this;
+        Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var key in headers.Keys)
         {
-            BucketName = bucket;
-            return (T)this;
+            Headers.Remove(key);
+            Headers[key] = headers[key];
         }
 
-        public virtual T WithHeaders(IDictionary<string, string> headers)
-        {
-            if (headers is null || headers.Count <= 0)
-            {
-                return (T)this;
-            }
+        return (T)this;
+    }
 
-            Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
-            foreach (var key in headers.Keys)
-            {
-                Headers.Remove(key);
-                Headers[key] = headers[key];
-            }
-
-            return (T)this;
-        }
-
-        internal virtual void Validate()
-        {
-            Utils.ValidateBucketName(BucketName);
-        }
+    internal virtual void Validate()
+    {
+        Utils.ValidateBucketName(BucketName);
     }
 }

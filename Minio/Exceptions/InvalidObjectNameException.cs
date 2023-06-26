@@ -14,41 +14,40 @@
  * limitations under the License.
  */
 
-namespace Minio.Exceptions
+namespace Minio.Exceptions;
+
+[Serializable]
+public class InvalidObjectNameException : MinioException
 {
-    [Serializable]
-    public class InvalidObjectNameException : MinioException
+    private readonly string objectName;
+
+    public InvalidObjectNameException(string objectName, string message) : base(message)
     {
-        private readonly string objectName;
+        this.objectName = objectName;
+    }
 
-        public InvalidObjectNameException(string objectName, string message) : base(message)
-        {
-            this.objectName = objectName;
-        }
+    public InvalidObjectNameException(ResponseResult serverResponse) : base(serverResponse)
+    {
+    }
 
-        public InvalidObjectNameException(ResponseResult serverResponse) : base(serverResponse)
-        {
-        }
+    public InvalidObjectNameException(string message) : base(message)
+    {
+    }
 
-        public InvalidObjectNameException(string message) : base(message)
-        {
-        }
+    public InvalidObjectNameException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    {
+    }
 
-        public InvalidObjectNameException(string message, ResponseResult serverResponse) : base(message, serverResponse)
-        {
-        }
+    public InvalidObjectNameException()
+    {
+    }
 
-        public InvalidObjectNameException()
-        {
-        }
+    public InvalidObjectNameException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 
-        public InvalidObjectNameException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        public override string ToString()
-        {
-            return $"{objectName}: {base.ToString()}";
-        }
+    public override string ToString()
+    {
+        return $"{objectName}: {base.ToString()}";
     }
 }

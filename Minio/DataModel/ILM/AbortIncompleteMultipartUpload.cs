@@ -23,23 +23,22 @@ using System.Xml.Serialization;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html
  */
 
-namespace Minio.DataModel.ILM
+namespace Minio.DataModel.ILM;
+
+[Serializable]
+[XmlRoot(ElementName = "AbortIncompleteMultipartUpload")]
+public class AbortIncompleteMultipartUpload
 {
-    [Serializable]
-    [XmlRoot(ElementName = "AbortIncompleteMultipartUpload")]
-    public class AbortIncompleteMultipartUpload
+    public AbortIncompleteMultipartUpload()
     {
-        public AbortIncompleteMultipartUpload()
-        {
-            DaysAfterInitiation = null;
-        }
-
-        public AbortIncompleteMultipartUpload(uint daysAfterInitiation)
-        {
-            DaysAfterInitiation = daysAfterInitiation;
-        }
-
-        [XmlElement(ElementName = "DaysAfterInitiation", IsNullable = true)]
-        internal uint? DaysAfterInitiation { get; set; }
+        DaysAfterInitiation = null;
     }
+
+    public AbortIncompleteMultipartUpload(uint daysAfterInitiation)
+    {
+        DaysAfterInitiation = daysAfterInitiation;
+    }
+
+    [XmlElement(ElementName = "DaysAfterInitiation", IsNullable = true)]
+    internal uint? DaysAfterInitiation { get; set; }
 }

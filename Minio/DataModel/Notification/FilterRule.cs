@@ -16,39 +16,38 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Notification
+namespace Minio.DataModel.Notification;
+
+/// <summary>
+///     FilterRule - child of S3Key, a tag in the notification xml which
+///     carries suffix/prefix filters
+/// </summary>
+[Serializable]
+public class FilterRule
 {
-    /// <summary>
-    ///     FilterRule - child of S3Key, a tag in the notification xml which
-    ///     carries suffix/prefix filters
-    /// </summary>
-    [Serializable]
-    public class FilterRule
+    public FilterRule()
     {
-        public FilterRule()
-        {
-            Name = null;
-            Value = null;
-        }
+        Name = null;
+        Value = null;
+    }
 
-        public FilterRule(string name, string value)
-        {
-            Name = name;
-            Value = value;
-        }
+    public FilterRule(string name, string value)
+    {
+        Name = name;
+        Value = value;
+    }
 
-        [XmlElement] public string Name { get; set; }
+    [XmlElement] public string Name { get; set; }
 
-        [XmlElement] public string Value { get; set; }
+    [XmlElement] public string Value { get; set; }
 
-        public bool ShouldSerializeName()
-        {
-            return Name is not null;
-        }
+    public bool ShouldSerializeName()
+    {
+        return Name is not null;
+    }
 
-        public bool ShouldSerializeValue()
-        {
-            return Value is not null;
-        }
+    public bool ShouldSerializeValue()
+    {
+        return Value is not null;
     }
 }

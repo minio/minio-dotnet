@@ -16,37 +16,35 @@
 
 using System.Xml.Serialization;
 
-namespace Minio.DataModel.Encryption
+namespace Minio.DataModel.Encryption;
+
+[Serializable]
+[XmlRoot(ElementName = "ServerSideEncryptionConfiguration", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+public class ServerSideEncryptionConfiguration
 {
-    [Serializable]
-    [XmlRoot(ElementName = "ServerSideEncryptionConfiguration", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-    public class ServerSideEncryptionConfiguration
+    public ServerSideEncryptionConfiguration()
     {
-        public ServerSideEncryptionConfiguration()
-        {
-            Rule = null;
-        }
+        Rule = null;
+    }
 
-        public ServerSideEncryptionConfiguration(ServerSideEncryptionConfigurationRule rule = null)
-        {
-            Rule = rule;
-        }
+    public ServerSideEncryptionConfiguration(ServerSideEncryptionConfigurationRule rule = null)
+    {
+        Rule = rule;
+    }
 
-        [XmlElement("Rule")] public ServerSideEncryptionConfigurationRule Rule { get; set; }
+    [XmlElement("Rule")] public ServerSideEncryptionConfigurationRule Rule { get; set; }
 
 #pragma warning disable CA1024 // Use properties where appropriate
-        public static ServerSideEncryptionConfiguration GetSSEConfigurationWithS3Rule()
+    public static ServerSideEncryptionConfiguration GetSSEConfigurationWithS3Rule()
 #pragma warning restore CA1024 // Use properties where appropriate
-        {
-            return new ServerSideEncryptionConfiguration(
-                new ServerSideEncryptionConfigurationRule(ServerSideEncryptionConfigurationRule.SSE_AES256));
-        }
+    {
+        return new ServerSideEncryptionConfiguration(
+            new ServerSideEncryptionConfigurationRule(ServerSideEncryptionConfigurationRule.SSE_AES256));
+    }
 
-        public static ServerSideEncryptionConfiguration GetSSEConfigurationWithKMSRule(string masterKeyId = null)
-        {
-            return new ServerSideEncryptionConfiguration(
-                new ServerSideEncryptionConfigurationRule(ServerSideEncryptionConfigurationRule.SSE_AWSKMS,
-                    masterKeyId));
-        }
+    public static ServerSideEncryptionConfiguration GetSSEConfigurationWithKMSRule(string masterKeyId = null)
+    {
+        return new ServerSideEncryptionConfiguration(
+            new ServerSideEncryptionConfigurationRule(ServerSideEncryptionConfigurationRule.SSE_AWSKMS, masterKeyId));
     }
 }

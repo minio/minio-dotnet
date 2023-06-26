@@ -18,79 +18,78 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Minio.Functional.Tests
+namespace Minio.Functional.Tests;
+
+internal sealed class MintLogger
 {
-    internal sealed class MintLogger
+    private readonly JsonSerializerOptions jsonSerializerOptions = new()
     {
-        private readonly JsonSerializerOptions jsonSerializerOptions = new()
-        {
-            WriteIndented = false,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-        };
+        WriteIndented = false,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
 
-        public MintLogger(string testName, string function, string description, TestStatus status, TimeSpan duration,
-            string alert = null, string message = null, string error = null, IDictionary<string, string> args = null)
-        {
-            Function = function;
-            Description = description;
-            Duration = (int)duration.TotalMilliseconds;
-            Name = $"{Name} : {testName}";
-            Alert = alert;
-            Message = message;
-            Error = error;
-            Args = args;
-            Status = status.AsText();
-        }
+    public MintLogger(string testName, string function, string description, TestStatus status, TimeSpan duration,
+        string alert = null, string message = null, string error = null, IDictionary<string, string> args = null)
+    {
+        this.Function = function;
+        this.Description = description;
+        this.Duration = (int)duration.TotalMilliseconds;
+        Name = $"{Name} : {testName}";
+        this.Alert = alert;
+        this.Message = message;
+        this.Error = error;
+        this.Args = args;
+        this.Status = status.AsText();
+    }
 
-        /// <summary>
-        ///     SDK Name
-        /// </summary>
-        public string Name { get; } = "minio-dotnet";
+    /// <summary>
+    ///     SDK Name
+    /// </summary>
+    public string Name { get; } = "minio-dotnet";
 
-        /// <summary>
-        ///     Test function name
-        /// </summary>
-        public string Function { get; }
+    /// <summary>
+    ///     Test function name
+    /// </summary>
+    public string Function { get; }
 
-        /// <summary>
-        ///     Test function description
-        /// </summary>
-        public string Description { get; }
+    /// <summary>
+    ///     Test function description
+    /// </summary>
+    public string Description { get; }
 
-        /// <summary>
-        ///     Key-value pair of args relevant to test
-        /// </summary>
-        public IDictionary<string, string> Args { get; }
+    /// <summary>
+    ///     Key-value pair of args relevant to test
+    /// </summary>
+    public IDictionary<string, string> Args { get; }
 
-        /// <summary>
-        ///     duration of the whole test
-        /// </summary>
-        public int Duration { get; }
+    /// <summary>
+    ///     duration of the whole test
+    /// </summary>
+    public int Duration { get; }
 
-        /// <summary>
-        ///     test status : can be PASS, FAIL, NA
-        /// </summary>
-        public string Status { get; }
+    /// <summary>
+    ///     test status : can be PASS, FAIL, NA
+    /// </summary>
+    public string Status { get; }
 
-        /// <summary>
-        ///     alert message Information like whether this is a Blocker/ Gateway, Server etc can go here
-        /// </summary>
-        public string Alert { get; }
+    /// <summary>
+    ///     alert message Information like whether this is a Blocker/ Gateway, Server etc can go here
+    /// </summary>
+    public string Alert { get; }
 
-        /// <summary>
-        ///     descriptive error message
-        /// </summary>
-        public string Message { get; }
+    /// <summary>
+    ///     descriptive error message
+    /// </summary>
+    public string Message { get; }
 
-        /// <summary>
-        ///     actual low level exception/error thrown by the program
-        /// </summary>
-        public string Error { get; }
+    /// <summary>
+    ///     actual low level exception/error thrown by the program
+    /// </summary>
+    public string Error { get; }
 
-        public void Log()
-        {
-            Console.WriteLine(JsonSerializer.Serialize(this, jsonSerializerOptions));
-        }
+    public void Log()
+    {
+        Console.WriteLine(JsonSerializer.Serialize(this, jsonSerializerOptions));
     }
 }

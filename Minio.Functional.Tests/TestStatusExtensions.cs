@@ -14,19 +14,18 @@
 * limitations under the License.
 */
 
-namespace Minio.Functional.Tests
+namespace Minio.Functional.Tests;
+
+internal static class TestStatusExtensions
 {
-    internal static class TestStatusExtensions
+    public static string AsText(this TestStatus status)
     {
-        public static string AsText(this TestStatus status)
+        return status switch
         {
-            return status switch
-            {
-                TestStatus.PASS => "PASS",
-                TestStatus.FAIL => "FAIL",
-                TestStatus.NA => "NA",
-                _ => "NA"
-            };
-        }
+            TestStatus.PASS => "PASS",
+            TestStatus.FAIL => "FAIL",
+            TestStatus.NA => "NA",
+            _ => "NA"
+        };
     }
 }

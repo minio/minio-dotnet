@@ -16,28 +16,27 @@
 
 using Minio.DataModel.Args;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal static class GetBucketPolicy
 {
-    internal static class GetBucketPolicy
+    // Get bucket policy 
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name",
+        string prefix = "")
     {
-        // Get bucket policy 
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name",
-            string prefix = "")
+        try
         {
-            try
-            {
-                var args = new GetPolicyArgs()
-                    .WithBucket(bucketName);
-                Console.WriteLine("Running example for API: GetPolicyAsync");
-                var policyJson = await minio.GetPolicyAsync(args).ConfigureAwait(false);
-                Console.WriteLine($"Current Policy is {policyJson} for bucket {bucketName}");
-                Console.WriteLine();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Bucket]  Exception: {e}");
-            }
+            var args = new GetPolicyArgs()
+                .WithBucket(bucketName);
+            Console.WriteLine("Running example for API: GetPolicyAsync");
+            var policyJson = await minio.GetPolicyAsync(args).ConfigureAwait(false);
+            Console.WriteLine($"Current Policy is {policyJson} for bucket {bucketName}");
+            Console.WriteLine();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Bucket]  Exception: {e}");
         }
     }
 }

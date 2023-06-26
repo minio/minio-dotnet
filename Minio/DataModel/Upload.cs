@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel
+namespace Minio.DataModel;
+
+public class Upload
 {
-    public class Upload
-    {
-        public string Key { get; set; }
-        public string UploadId { get; set; }
-        public string Initiated { get; set; }
-    }
+    public string Key { get; set; }
+    public string UploadId { get; set; }
+    public string Initiated { get; set; }
 }

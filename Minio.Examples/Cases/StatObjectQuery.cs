@@ -18,61 +18,55 @@ using Minio.DataModel;
 using Minio.DataModel.Args;
 using Minio.Exceptions;
 
-namespace Minio.Examples.Cases
+namespace Minio.Examples.Cases;
+
+internal static class StatObjectQuery
 {
-    internal static class StatObjectQuery
+    public static void PrintStat(string bucketObject, ObjectStat statObject)
     {
-        public static void PrintStat(string bucketObject, ObjectStat statObject)
+        var currentColor = Console.ForegroundColor;
+        Console.WriteLine($"Details of the object {bucketObject} are");
+        Console.ForegroundColor = ConsoleColor.DarkGreen;
+        Console.WriteLine($"{statObject}");
+        Console.ForegroundColor = currentColor;
+        Console.WriteLine();
+    }
+
+    // Get stats on a object
+    public static async Task Run(IMinioClient minio,
+        string bucketName = "my-bucket-name",
+        string bucketObject = "my-object-name",
+        string versionID = null,
+        string matchEtag = null,
+        DateTime modifiedSince = default)
+    {
+        if (minio is null) throw new ArgumentNullException(nameof(minio));
+
+        try
         {
-            var currentColor = Console.ForegroundColor;
-            Console.WriteLine($"Details of the object {bucketObject} are");
-            Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.WriteLine($"{statObject}");
-            Console.ForegroundColor = currentColor;
-            Console.WriteLine();
+            Console.WriteLine("Running example for API: StatObjectAsync [with ObjectQuery]");
+
+            var args = new StatObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(bucketObject)
+                .WithVersionId(versionID)
+                .WithMatchETag(matchEtag)
+                .WithModifiedSince(modifiedSince);
+            var statObjectVersion = await minio.StatObjectAsync(args).ConfigureAwait(false);
+            PrintStat(bucketObject, statObjectVersion);
         }
-
-        // Get stats on a object
-        public static async Task Run(IMinioClient minio,
-            string bucketName = "my-bucket-name",
-            string bucketObject = "my-object-name",
-            string versionID = null,
-            string matchEtag = null,
-            DateTime modifiedSince = default)
+        catch (MinioException me)
         {
-            if (minio is null)
-            {
-                throw new ArgumentNullException(nameof(minio));
-            }
+            var objectNameInfo = $"{bucketName}-{bucketObject}";
+            if (!string.IsNullOrEmpty(versionID))
+                objectNameInfo = objectNameInfo +
+                                 $" (Version ID) {me.Response.VersionId} (Marked DEL) {me.Response.DeleteMarker}";
 
-            try
-            {
-                Console.WriteLine("Running example for API: StatObjectAsync [with ObjectQuery]");
-
-                var args = new StatObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(bucketObject)
-                    .WithVersionId(versionID)
-                    .WithMatchETag(matchEtag)
-                    .WithModifiedSince(modifiedSince);
-                var statObjectVersion = await minio.StatObjectAsync(args).ConfigureAwait(false);
-                PrintStat(bucketObject, statObjectVersion);
-            }
-            catch (MinioException me)
-            {
-                var objectNameInfo = $"{bucketName}-{bucketObject}";
-                if (!string.IsNullOrEmpty(versionID))
-                {
-                    objectNameInfo = objectNameInfo +
-                                     $" (Version ID) {me.Response.VersionId} (Marked DEL) {me.Response.DeleteMarker}";
-                }
-
-                Console.WriteLine($"[StatObject] {objectNameInfo} Exception: {me}");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[StatObject]  Exception: {e}");
-            }
+            Console.WriteLine($"[StatObject] {objectNameInfo} Exception: {me}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[StatObject]  Exception: {e}");
         }
     }
 }

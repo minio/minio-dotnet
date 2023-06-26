@@ -16,33 +16,29 @@
 
 using Minio.Helper;
 
-namespace Minio.DataModel.Encryption
+namespace Minio.DataModel.Encryption;
+
+/// <summary>
+///     Server-side encryption option for source side SSE-C copy operation
+/// </summary>
+public class SSECopy : SSEC
 {
-    /// <summary>
-    ///     Server-side encryption option for source side SSE-C copy operation
-    /// </summary>
-    public class SSECopy : SSEC
+    public SSECopy(byte[] key) : base(key)
     {
-        public SSECopy(byte[] key) : base(key)
-        {
-        }
+    }
 
-        public override void Marshal(IDictionary<string, string> headers)
-        {
-            if (headers is null)
-            {
-                throw new ArgumentNullException(nameof(headers));
-            }
+    public override void Marshal(IDictionary<string, string> headers)
+    {
+        if (headers is null) throw new ArgumentNullException(nameof(headers));
 
-            var md5SumStr = Utils.GetMD5SumStr(Key);
-            headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Algorithm", "AES256");
-            headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key", Convert.ToBase64String(Key));
-            headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key-Md5", md5SumStr);
-        }
+        var md5SumStr = Utils.GetMD5SumStr(Key);
+        headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Algorithm", "AES256");
+        headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key", Convert.ToBase64String(Key));
+        headers.Add("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key-Md5", md5SumStr);
+    }
 
-        public SSEC CloneToSSEC()
-        {
-            return new SSEC(Key);
-        }
+    public SSEC CloneToSSEC()
+    {
+        return new SSEC(Key);
     }
 }

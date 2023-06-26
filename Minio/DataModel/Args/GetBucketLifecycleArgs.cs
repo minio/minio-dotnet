@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-namespace Minio.DataModel.Args
-{
-    public class GetBucketLifecycleArgs : BucketArgs<GetBucketLifecycleArgs>
-    {
-        public GetBucketLifecycleArgs()
-        {
-            RequestMethod = HttpMethod.Get;
-        }
+namespace Minio.DataModel.Args;
 
-        internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-        {
-            requestMessageBuilder.AddQueryParameter("lifecycle", "");
-            return requestMessageBuilder;
-        }
+public class GetBucketLifecycleArgs : BucketArgs<GetBucketLifecycleArgs>
+{
+    public GetBucketLifecycleArgs()
+    {
+        RequestMethod = HttpMethod.Get;
+    }
+
+    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    {
+        requestMessageBuilder.AddQueryParameter("lifecycle", "");
+        return requestMessageBuilder;
     }
 }

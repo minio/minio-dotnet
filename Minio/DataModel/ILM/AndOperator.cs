@@ -25,42 +25,32 @@ using Minio.DataModel.Tags;
  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html
  */
 
-namespace Minio.DataModel.ILM
+namespace Minio.DataModel.ILM;
+
+[Serializable]
+[XmlRoot(ElementName = "And")]
+public class AndOperator
 {
-    [Serializable]
-    [XmlRoot(ElementName = "And")]
-    public class AndOperator
+    public AndOperator()
     {
-        public AndOperator()
-        {
-        }
-
-        public AndOperator(string prefix, IList<Tag> tag)
-        {
-            Prefix = prefix;
-            if (tag?.Count > 0)
-            {
-                Tags = new Collection<Tag>(tag);
-            }
-        }
-
-        public AndOperator(string prefix, IDictionary<string, string> tags)
-        {
-            Prefix = prefix;
-            if (tags is null || tags.Count == 0)
-            {
-                return;
-            }
-
-            foreach (var item in tags)
-            {
-                Tags.Add(new Tag(item.Key, item.Value));
-            }
-        }
-
-        [XmlElement("Prefix")] internal string Prefix { get; set; }
-
-        [XmlElement(ElementName = "Tag", IsNullable = false)]
-        public Collection<Tag> Tags { get; set; }
     }
+
+    public AndOperator(string prefix, IList<Tag> tag)
+    {
+        Prefix = prefix;
+        if (tag?.Count > 0) Tags = new Collection<Tag>(tag);
+    }
+
+    public AndOperator(string prefix, IDictionary<string, string> tags)
+    {
+        Prefix = prefix;
+        if (tags is null || tags.Count == 0)
+            return;
+        foreach (var item in tags) Tags.Add(new Tag(item.Key, item.Value));
+    }
+
+    [XmlElement("Prefix")] internal string Prefix { get; set; }
+
+    [XmlElement(ElementName = "Tag", IsNullable = false)]
+    public Collection<Tag> Tags { get; set; }
 }

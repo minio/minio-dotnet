@@ -18,155 +18,133 @@
 using System.Net;
 using System.Text;
 
-namespace Minio
+namespace Minio;
+
+public class ResponseResult : IDisposable
 {
-    public class ResponseResult : IDisposable
+    private readonly Dictionary<string, string> _headers = new(StringComparer.Ordinal);
+    private string _content;
+    private ReadOnlyMemory<byte> _contentBytes;
+
+    private Stream _stream;
+    private bool disposedValue;
+
+    public ResponseResult(HttpRequestMessage request, HttpResponseMessage response)
     {
-        private readonly Dictionary<string, string> _headers = new(StringComparer.Ordinal);
-        private string _content;
-        private ReadOnlyMemory<byte> _contentBytes;
+        Request = request;
+        Response = response;
+    }
 
-        private Stream _stream;
-        private bool disposedValue;
+    public ResponseResult(HttpRequestMessage request, Exception exception)
+        : this(request, response: null)
+    {
+        Exception = exception;
+    }
 
-        public ResponseResult(HttpRequestMessage request, HttpResponseMessage response)
+    private Exception Exception { get; }
+    public HttpRequestMessage Request { get; }
+    public HttpResponseMessage Response { get; }
+
+    public HttpStatusCode StatusCode
+    {
+        get
         {
-            Request = request;
-            Response = response;
-        }
-
-        public ResponseResult(HttpRequestMessage request, Exception exception)
-            : this(request, response: null)
-        {
-            Exception = exception;
-        }
-
-        private Exception Exception { get; }
-        public HttpRequestMessage Request { get; }
-        public HttpResponseMessage Response { get; }
-
-        public HttpStatusCode StatusCode
-        {
-            get
-            {
 #pragma warning disable MA0099 // Use Explicit enum value instead of 0
-                if (Response is null)
-                {
-                    return 0;
-                }
+            if (Response is null) return 0;
 #pragma warning restore MA0099 // Use Explicit enum value instead of 0
 
-                return Response.StatusCode;
-            }
+            return Response.StatusCode;
         }
+    }
 
-        public Stream ContentStream
+    public Stream ContentStream
+    {
+        get
         {
-            get
-            {
-                if (Response is null)
-                {
-                    return null;
-                }
+            if (Response is null) return null;
 #if NETSTANDARD
-                return _stream ??= Response.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
+            return _stream ??= Response.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
 #else
-                return _stream ??= Response.Content.ReadAsStream();
+            return _stream ??= Response.Content.ReadAsStream();
 #endif
-            }
         }
+    }
 
-        public ReadOnlyMemory<byte> ContentBytes
+    public ReadOnlyMemory<byte> ContentBytes
+    {
+        get
         {
-            get
+            if (ContentStream is null)
+                return ReadOnlyMemory<byte>.Empty;
+
+            if (_contentBytes.IsEmpty)
             {
-                if (ContentStream is null)
-                {
-                    return ReadOnlyMemory<byte>.Empty;
-                }
-
-                if (_contentBytes.IsEmpty)
-                {
-                    using var memoryStream = new MemoryStream();
-                    ContentStream.CopyTo(memoryStream);
-                    _contentBytes = new ReadOnlyMemory<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
-                }
-
-                return _contentBytes;
+                using var memoryStream = new MemoryStream();
+                ContentStream.CopyTo(memoryStream);
+                _contentBytes = new ReadOnlyMemory<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
             }
-        }
 
-        public string Content
+            return _contentBytes;
+        }
+    }
+
+    public string Content
+    {
+        get
         {
-            get
-            {
-                if (ContentBytes.Length == 0)
-                {
-                    return "";
-                }
+            if (ContentBytes.Length == 0) return "";
 #if NETSTANDARD
-                _content ??= Encoding.UTF8.GetString(ContentBytes.ToArray());
+            _content ??= Encoding.UTF8.GetString(ContentBytes.ToArray());
 #else
-                _content ??= Encoding.UTF8.GetString(ContentBytes.Span);
+            _content ??= Encoding.UTF8.GetString(ContentBytes.Span);
 #endif
-                return _content;
-            }
+            return _content;
         }
+    }
 
-        public IDictionary<string, string> Headers
+    public IDictionary<string, string> Headers
+    {
+        get
         {
-            get
+            if (Response is null) return new Dictionary<string, string>(StringComparer.Ordinal);
+
+            if (!_headers.Any())
             {
-                if (Response is null)
-                {
-                    return new Dictionary<string, string>(StringComparer.Ordinal);
-                }
-
-                if (!_headers.Any())
-                {
-                    if (Response.Content is not null)
-                    {
-                        foreach (var item in Response.Content.Headers)
-                        {
-                            _headers.Add(item.Key, item.Value.FirstOrDefault());
-                        }
-                    }
-
-                    foreach (var item in Response.Headers)
-                    {
+                if (Response.Content is not null)
+                    foreach (var item in Response.Content.Headers)
                         _headers.Add(item.Key, item.Value.FirstOrDefault());
-                    }
-                }
 
-                return _headers;
+                foreach (var item in Response.Headers) _headers.Add(item.Key, item.Value.FirstOrDefault());
             }
+
+            return _headers;
         }
+    }
 
-        public string ErrorMessage => Exception?.Message;
+    public string ErrorMessage => Exception?.Message;
 
-        public void Dispose()
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposedValue)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
+            if (disposing)
             {
-                if (disposing)
-                {
-                    _stream?.Dispose();
-                    Request?.Dispose();
-                    Response?.Dispose();
+                _stream?.Dispose();
+                Request?.Dispose();
+                Response?.Dispose();
 
-                    _content = null;
-                    _contentBytes = null;
-                    _stream = null;
-                }
-
-                disposedValue = true;
+                _content = null;
+                _contentBytes = null;
+                _stream = null;
             }
+
+            disposedValue = true;
         }
     }
 }
