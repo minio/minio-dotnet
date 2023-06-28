@@ -1,7 +1,7 @@
 ###############################################################################
 # Set default behavior to automatically normalize line endings.
 ###############################################################################
-* text=lf
+* text=auto eol=lf
 
 # Check out the following as ln always for osx/linux/cygwin
 *.sh text eol=lf
