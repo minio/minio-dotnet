@@ -6,6 +6,11 @@ root = true
 [*.{cs,vb}]
 #### Naming styles ####
 
+# Unix-style newlines with a newline ending every file
+[*]
+end_of_line = lf
+insert_final_newline = true
+
 # Naming rules
 
 dotnet_naming_rule.interface_should_be_begins_with_i.severity = suggestion
