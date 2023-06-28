@@ -91,6 +91,9 @@ dotnet_style_qualification_for_method = false:silent
 dotnet_style_qualification_for_event = false:silent
 
 [*.cs]
+MA0051.maximum_lines_per_method = 100
+MA0051.maximum_statements_per_method = 60
+MA0051.skip_local_functions = false # skip local functions when counting statements
 csharp_using_directive_placement = outside_namespace:suggestion
 csharp_prefer_simple_using_statement = true:suggestion
 csharp_prefer_braces = when_multiline:warning
@@ -107,10 +110,6 @@ csharp_style_expression_bodied_accessors = true:suggestion
 csharp_style_expression_bodied_lambdas = true:suggestion
 csharp_style_expression_bodied_local_functions = false:silent
 csharp_indent_labels = one_less_than_current
-
-MA0051.maximum_lines_per_method = 100
-MA0051.maximum_statements_per_method = 60
-MA0051.skip_local_functions = false # skip local functions when counting statements
 csharp_space_around_binary_operators = before_and_after
 csharp_style_throw_expression = true:suggestion
 csharp_style_prefer_null_check_over_type_check = true:suggestion
