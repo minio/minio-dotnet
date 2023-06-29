@@ -634,7 +634,7 @@ public partial class MinioClient : IMinioClient
         if (response.StatusCode.Equals(HttpStatusCode.Conflict)
             && errResponse.Code.Equals("BucketAlreadyOwnedByYou", StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("Bucket already owned by you: " + errResponse.BucketName,
-                nameof(errResponse.BucketName));
+                nameof(response));
 
         throw new UnexpectedMinioException(errResponse.Message)
         {

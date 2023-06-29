@@ -41,11 +41,11 @@ public class ReplicationConfiguration
     public ReplicationConfiguration(string role, Collection<ReplicationRule> rules)
     {
         if (string.IsNullOrEmpty(role) || string.IsNullOrWhiteSpace(role))
-            throw new ArgumentNullException(nameof(role) + " member cannot be empty.");
+            throw new ArgumentNullException(nameof(role), nameof(role) + " member cannot be empty.");
         if (rules is null || rules.Count == 0)
-            throw new ArgumentNullException(nameof(rules) + " member cannot be an empty list.");
+            throw new ArgumentNullException(nameof(rules), nameof(rules) + " member cannot be an empty list.");
         if (rules.Count >= 1000)
-            throw new ArgumentOutOfRangeException(
+            throw new ArgumentOutOfRangeException(nameof(rules),
                 nameof(rules) + " Count of rules cannot exceed maximum limit of 1000.");
 
         Role = role;
