@@ -205,7 +205,8 @@ public static class Utils
 #if NET6_0_OR_GREATER
         ParallelOptions parallelOptions = new()
         {
-            MaxDegreeOfParallelism = maxNoOfParallelProcesses
+            MaxDegreeOfParallelism
+                = maxNoOfParallelProcesses
         };
         return Parallel.ForEachAsync(source, parallelOptions, body);
 #else
@@ -274,9 +275,11 @@ public static class Utils
     {
 #if NETSTANDARD
 #pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
-        using var md5 = MD5.Create();
+        using var md5
+            = MD5.Create();
 #pragma warning restore CA5351 // Do Not Use Broken Cryptographic Algorithms
-        var hashedBytes = md5.ComputeHash(key.ToArray());
+        var hashedBytes
+            = md5.ComputeHash(key.ToArray());
 #else
         ReadOnlySpan<byte> hashedBytes = MD5.HashData(key);
 #endif

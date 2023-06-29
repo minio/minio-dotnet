@@ -1563,7 +1563,8 @@ public static class FunctionalTest
 
 #if NETFRAMEWORK
             using var md5 = MD5.Create();
-            var hashedOutputBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(outputNoWS));
+            var hashedOutputBytes
+ = md5.ComputeHash(Encoding.UTF8.GetBytes(outputNoWS));
 #else
             // Compute MD5 for a better result.
             var hashedOutputBytes = MD5.HashData(Encoding.UTF8.GetBytes(outputNoWS));
@@ -1573,7 +1574,8 @@ public static class FunctionalTest
 
 #if NETFRAMEWORK
             using var md5CSV = MD5.Create();
-            var hashedCSVBytes = md5CSV.ComputeHash(Encoding.UTF8.GetBytes(csvStringNoWS));
+            var hashedCSVBytes
+ = md5CSV.ComputeHash(Encoding.UTF8.GetBytes(csvStringNoWS));
 #else
             var hashedCSVBytes = MD5.HashData(Encoding.UTF8.GetBytes(csvStringNoWS));
 #endif

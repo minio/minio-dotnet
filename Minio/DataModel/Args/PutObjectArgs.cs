@@ -117,7 +117,8 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         {
 #if NETSTANDARD
             using var sha = SHA256.Create();
-            var hash = sha.ComputeHash(RequestBody.ToArray());
+            var hash
+                = sha.ComputeHash(RequestBody.ToArray());
 #else
             var hash = SHA256.HashData(RequestBody.Span);
 #endif

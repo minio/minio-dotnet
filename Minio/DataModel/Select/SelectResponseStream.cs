@@ -68,7 +68,8 @@ public class SelectResponseStream
 
 #if NETSTANDARD
         var bytes = new byte[buffer.Length];
-        read = payloadStream.Read(bytes, 0, buffer.Length);
+        read
+            = payloadStream.Read(bytes, 0, buffer.Length);
         bytes.CopyTo(buffer);
 #else
         read = payloadStream.Read(buffer);

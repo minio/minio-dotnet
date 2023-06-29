@@ -145,3 +145,5 @@ csharp_style_var_elsewhere = true:suggestion
 csharp_preserve_single_line_blocks = true
 csharp_preserve_single_line_statements = true
 csharp_indent_braces = false
+csharp_new_line_before_members_in_object_initializers = false
+csharp_new_line_before_open_brace = all
