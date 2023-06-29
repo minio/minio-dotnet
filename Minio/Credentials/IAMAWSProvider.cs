@@ -42,7 +42,8 @@ public class IAMAWSProvider : IClientProvider
         {
             CustomEndPoint = new Uri(endpoint);
             if (string.IsNullOrWhiteSpace(CustomEndPoint.Authority))
-                throw new ArgumentNullException(nameof(endpoint), "Endpoint field " + nameof(CustomEndPoint) + " is invalid.");
+                throw new ArgumentNullException(nameof(endpoint),
+                    "Endpoint field " + nameof(CustomEndPoint) + " is invalid.");
         }
 
         Minio_Client = client ??

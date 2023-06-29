@@ -112,7 +112,8 @@ public abstract class AssumeRoleBaseProvider<T> : IClientProvider
         if (string.IsNullOrWhiteSpace(externalId))
             throw new ArgumentNullException(nameof(externalId), "The External ID cannot be null or empty.");
         if (externalId.Length < 2 || externalId.Length > 1224)
-            throw new ArgumentOutOfRangeException(nameof(externalId), "The External Id needs to be between 2 to 1224 characters in length");
+            throw new ArgumentOutOfRangeException(nameof(externalId),
+                "The External Id needs to be between 2 to 1224 characters in length");
         ExternalID = externalId;
         return (T)this;
     }

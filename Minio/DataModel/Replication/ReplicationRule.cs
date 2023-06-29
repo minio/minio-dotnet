@@ -46,12 +46,15 @@ public class ReplicationRule
         if (string.IsNullOrEmpty(id) || string.IsNullOrWhiteSpace(id))
             throw new ArgumentNullException(nameof(id), nameof(id) + " cannot be null or empty.");
         DeleteMarkerReplication = deleteMarkerReplication;
-        Destination = destination ?? throw new ArgumentNullException(nameof(destination), nameof(destination) + " cannot be null or empty.");
+        Destination = destination ??
+                      throw new ArgumentNullException(nameof(destination),
+                          nameof(destination) + " cannot be null or empty.");
         ExistingObjectReplication = existingObjectReplication;
         Filter = filter;
         Priority = priority;
         DeleteReplication = deleteReplication ??
-                            throw new ArgumentNullException(nameof(deleteReplication), nameof(deleteReplication) + " cannot be null or empty.");
+                            throw new ArgumentNullException(nameof(deleteReplication),
+                                nameof(deleteReplication) + " cannot be null or empty.");
         ID = id;
         Prefix = prefix;
         SourceSelectionCriteria = sourceSelectionCriteria;
