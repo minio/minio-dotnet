@@ -32,15 +32,15 @@ internal sealed class MintLogger
     public MintLogger(string testName, string function, string description, TestStatus status, TimeSpan duration,
         string alert = null, string message = null, string error = null, IDictionary<string, string> args = null)
     {
-        this.Function = function;
-        this.Description = description;
-        this.Duration = (int)duration.TotalMilliseconds;
+        Function = function;
+        Description = description;
+        Duration = (int)duration.TotalMilliseconds;
         Name = $"{Name} : {testName}";
-        this.Alert = alert;
-        this.Message = message;
-        this.Error = error;
-        this.Args = args;
-        this.Status = status.AsText();
+        Alert = alert;
+        Message = message;
+        Error = error;
+        Args = args;
+        Status = status.AsText();
     }
 
     /// <summary>

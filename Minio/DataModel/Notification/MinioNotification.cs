@@ -16,8 +16,6 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.Serialization;
-using System.Text.Json.Serialization;
 
 namespace Minio.DataModel.Notification;
 

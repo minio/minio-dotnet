@@ -252,7 +252,7 @@ public static class Utils
         var minPartSize = copy ? Constants.MinimumCOPYPartSize : Constants.MinimumPUTPartSize;
         partSize = (double)Math.Ceiling((decimal)partSize / minPartSize) * minPartSize;
         var partCount = Math.Ceiling(size / partSize);
-        var lastPartSize = size - (partCount - 1) * partSize;
+        var lastPartSize = size - ((partCount - 1) * partSize);
         dynamic obj = new ExpandoObject();
         obj.partSize = partSize;
         obj.partCount = partCount;

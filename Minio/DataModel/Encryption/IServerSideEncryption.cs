@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-using System.Text;
-using Minio.Helper;
-
 namespace Minio.DataModel.Encryption;
 
 /// <summary>

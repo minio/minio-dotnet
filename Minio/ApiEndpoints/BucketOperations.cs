@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Reactive.Linq;
 using CommunityToolkit.HighPerformance;
@@ -34,7 +35,7 @@ using Minio.Helper;
 
 namespace Minio;
 
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0048:File name must match type name", Justification = "Split up in partial classes")]
+[SuppressMessage("Design", "MA0048:File name must match type name", Justification = "Split up in partial classes")]
 public partial class MinioClient : IBucketOperations
 {
     /// <summary>
