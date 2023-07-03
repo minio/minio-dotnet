@@ -251,7 +251,8 @@ internal class V4Authenticator
     {
 #if NETSTANDARD
         using var sha = SHA256.Create();
-        ReadOnlySpan<byte> hash = sha.ComputeHash(body.ToArray());
+        ReadOnlySpan<byte> hash
+            = sha.ComputeHash(body.ToArray());
 #else
         ReadOnlySpan<byte> hash = SHA256.HashData(body);
 #endif
@@ -545,7 +546,8 @@ internal class V4Authenticator
             }
 #if NETSTANDARD
             using var sha = SHA256.Create();
-            var hash = sha.ComputeHash(body.ToArray());
+            var hash
+                = sha.ComputeHash(body.ToArray());
 #else
             var hash = SHA256.HashData(body.Span);
 #endif
@@ -558,9 +560,11 @@ internal class V4Authenticator
 
 #if NETSTANDARD
 #pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
-            using var md5 = MD5.Create();
+            using var md5
+                = MD5.Create();
 #pragma warning restore CA5351 // Do Not Use Broken Cryptographic Algorithms
-            var hash = md5.ComputeHash(bytes.ToArray());
+            var hash
+                = md5.ComputeHash(bytes.ToArray());
 #else
             ReadOnlySpan<byte> hash = MD5.HashData(bytes);
 #endif
