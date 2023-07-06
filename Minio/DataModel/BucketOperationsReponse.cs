@@ -166,6 +166,7 @@ internal class GetObjectsListResponse : GenericResponse
         BucketResult = Utils.DeserializeXml<ListBucketResult>(stream);
 
         var root = XDocument.Parse(responseContent);
+
         XNamespace ns = Utils.DetermineNamespace(root);
 
         var items = from c in root.Root.Descendants(ns + "Contents")
@@ -176,10 +177,11 @@ internal class GetObjectsListResponse : GenericResponse
                 ETag = c.Element(ns + "ETag").Value,
                 Size = ulong.Parse(c.Element(ns + "Size").Value,
                     CultureInfo.CurrentCulture),
-                IsDir = false
-            };
+                IsDir = false,
+                UserMetadata = c.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}UserMetadata").Any() ? c.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}UserMetadata").First().Nodes()?.Select(x => new MetadataItem(((XElement)x).Name.LocalName, ((XElement)x).Value)).ToList() : null
+                    };
         var prefixes = from c in root.Root.Descendants(ns + "CommonPrefixes")
-            select new Item
+        select new Item
             {
                 Key = c.Element(ns + "Prefix").Value,
                 IsDir = true

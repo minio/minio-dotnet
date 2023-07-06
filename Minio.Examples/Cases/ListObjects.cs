@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System;
+using System.Linq;
 namespace Minio.Examples.Cases;
 
 internal static class ListObjects
@@ -23,7 +25,8 @@ internal static class ListObjects
         string bucketName = "my-bucket-name",
         string prefix = null,
         bool recursive = true,
-        bool versions = false)
+        bool versions = false,
+        bool includeUserMetadata = false)
     {
         try
         {
@@ -31,10 +34,14 @@ internal static class ListObjects
             var listArgs = new ListObjectsArgs()
                 .WithBucket(bucketName)
                 .WithPrefix(prefix)
-                .WithRecursive(recursive);
+                .WithRecursive(recursive)
+                .WithUserMetadata(includeUserMetadata);
             var observable = minio.ListObjectsAsync(listArgs);
             var subscription = observable.Subscribe(
-                item => Console.WriteLine($"Object: {item.Key}"),
+                item =>
+                {
+                    Console.WriteLine($"Object: {item.Key}, content-type: {item.UserMetadata.ToList().First().Value}");
+                    },
                 ex => Console.WriteLine($"OnError: {ex}"),
                 () => Console.WriteLine($"Listed all objects in bucket {bucketName}\n"));
         }
