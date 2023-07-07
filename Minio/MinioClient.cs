@@ -22,6 +22,7 @@ using System.Text;
 using CommunityToolkit.HighPerformance;
 using Minio.Credentials;
 using Minio.DataModel;
+using Minio.DataModel.Args;
 using Minio.DataModel.Tracing;
 using Minio.Exceptions;
 using Minio.Helper;
@@ -30,8 +31,6 @@ namespace Minio;
 
 public partial class MinioClient : IMinioClient
 {
-    private const string RegistryAuthHeaderKey = "X-Registry-Auth";
-
     /// <summary>
     ///     Default error handling delegate
     /// </summary>
@@ -207,7 +206,7 @@ public partial class MinioClient : IMinioClient
     ///     Expected to be called from CreateRequest
     /// </summary>
     /// <param name="args">The child object of Args class</param>
-    private void ArgsCheck(Args args)
+    private void ArgsCheck(RequestArgs args)
     {
         if (args is null)
             throw new ArgumentNullException(nameof(args),
@@ -480,8 +479,10 @@ public partial class MinioClient : IMinioClient
             || HttpStatusCode.NotImplemented.Equals(response.StatusCode))
             ParseWellKnownErrorNoContent(response);
 
+#pragma warning disable MA0099 // Use Explicit enum value instead of 0
         if (response.StatusCode == 0)
             throw new ConnectionException("Connection error:" + response.ErrorMessage, response);
+#pragma warning restore MA0099 // Use Explicit enum value instead of 0
         throw new InternalClientException(
             "Unsuccessful response from server without XML:" + response.ErrorMessage, response);
     }
@@ -632,7 +633,8 @@ public partial class MinioClient : IMinioClient
 
         if (response.StatusCode.Equals(HttpStatusCode.Conflict)
             && errResponse.Code.Equals("BucketAlreadyOwnedByYou", StringComparison.OrdinalIgnoreCase))
-            throw new ArgumentException("Bucket already owned by you: " + errResponse.BucketName);
+            throw new ArgumentException("Bucket already owned by you: " + errResponse.BucketName,
+                nameof(response));
 
         throw new UnexpectedMinioException(errResponse.Message)
         {

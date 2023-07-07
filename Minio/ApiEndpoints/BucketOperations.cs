@@ -15,19 +15,27 @@
  * limitations under the License.
  */
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Reactive.Linq;
 using CommunityToolkit.HighPerformance;
+using Minio.ApiEndpoints;
 using Minio.DataModel;
+using Minio.DataModel.Args;
+using Minio.DataModel.Encryption;
 using Minio.DataModel.ILM;
+using Minio.DataModel.Notification;
 using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Replication;
+using Minio.DataModel.Response;
+using Minio.DataModel.Result;
 using Minio.DataModel.Tags;
 using Minio.Exceptions;
 using Minio.Helper;
 
 namespace Minio;
 
+[SuppressMessage("Design", "MA0048:File name must match type name", Justification = "Split up in partial classes")]
 public partial class MinioClient : IBucketOperations
 {
     /// <summary>

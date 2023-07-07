@@ -16,7 +16,7 @@
 
 using System.Xml;
 
-namespace Minio;
+namespace Minio.Helper;
 
 public class AmazonAwsS3XmlReader : XmlTextReader
 {

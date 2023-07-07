@@ -16,6 +16,7 @@
 
 using System.Net;
 using Minio;
+using Minio.DataModel.Args;
 
 namespace SimpleTest;
 

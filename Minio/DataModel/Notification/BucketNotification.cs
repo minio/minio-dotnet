@@ -18,7 +18,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel;
+namespace Minio.DataModel.Notification;
 
 /// <summary>
 ///     Helper class to parse NotificationConfiguration from AWS S3 response XML.

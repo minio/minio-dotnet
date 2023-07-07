@@ -20,11 +20,10 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Web;
-using System.Xml;
-using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 using Minio.Exceptions;
+using Minio.Helper;
 
 /*
  * Certificate Identity Credential provider.
@@ -33,42 +32,6 @@ using Minio.Exceptions;
  */
 
 namespace Minio.Credentials;
-
-[Serializable]
-[XmlRoot(ElementName = "AssumeRoleWithCertificateResponse", Namespace = "https://sts.amazonaws.com/doc/2011-06-15/")]
-public class CertificateResponse
-{
-    [XmlElement(ElementName = "AssumeRoleWithCertificateResult")]
-    public CertificateResult Cr { get; set; }
-
-    public string ToXML()
-    {
-        var settings = new XmlWriterSettings
-        {
-            OmitXmlDeclaration = true
-        };
-        using var ms = new MemoryStream();
-        using var xmlWriter = XmlWriter.Create(ms, settings);
-        var names = new XmlSerializerNamespaces();
-        names.Add(string.Empty, "https://sts.amazonaws.com/doc/2011-06-15/");
-
-        var cs = new XmlSerializer(typeof(CertificateResponse));
-        cs.Serialize(xmlWriter, this, names);
-
-        ms.Flush();
-        ms.Seek(0, SeekOrigin.Begin);
-        using var streamReader = new StreamReader(ms);
-        return streamReader.ReadToEnd();
-    }
-}
-
-[Serializable]
-[XmlRoot(ElementName = "AssumeRoleWithCertificateResult")]
-public class CertificateResult
-{
-    [XmlElement(ElementName = "Credentials")]
-    public AccessCredentials Credentials { get; set; }
-}
 
 public class CertificateIdentityProvider : IClientProvider
 {
@@ -97,9 +60,10 @@ public class CertificateIdentityProvider : IClientProvider
             return Credentials;
 
         if (HttpClient is null)
-            throw new ArgumentException("httpClient cannot be null or empty");
+            throw new ArgumentException("HttpClient cannot be null or empty", nameof(HttpClient));
 
-        if (ClientCertificate is null) throw new ArgumentException("clientCertificate cannot be null or empty");
+        if (ClientCertificate is null)
+            throw new ArgumentException("ClientCertificate cannot be null or empty", nameof(ClientCertificate));
 
         using var response = await HttpClient.PostAsync(PostEndpoint, null).ConfigureAwait(false);
 

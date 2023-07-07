@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using Minio.DataModel.Args;
 using Minio.DataModel.ObjectLock;
 
 namespace Minio.Examples.Cases;
@@ -38,7 +39,7 @@ public static class GetObjectLockConfiguration
                 Console.WriteLine($"Object lock configuration on bucket {bucketName} is : " + config.ObjectLockEnabled);
                 if (config.Rule?.DefaultRetention is not null)
                 {
-                    var mode = config.Rule.DefaultRetention.Mode == RetentionMode.GOVERNANCE
+                    var mode = config.Rule.DefaultRetention.Mode == ObjectRetentionMode.GOVERNANCE
                         ? "GOVERNANCE"
                         : "COMPLIANCE";
                     Console.WriteLine("Object Lock Configuration Rule Mode: " + mode + " Duration: " +

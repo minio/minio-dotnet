@@ -16,6 +16,7 @@
  */
 
 using System.Xml.Serialization;
+using Minio.Helper;
 
 namespace Minio.DataModel;
 

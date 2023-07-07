@@ -15,19 +15,27 @@
  * limitations under the License.
  */
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reactive.Linq;
 using System.Text;
 using System.Xml.Linq;
 using CommunityToolkit.HighPerformance;
+using Minio.ApiEndpoints;
 using Minio.DataModel;
+using Minio.DataModel.Args;
+using Minio.DataModel.Encryption;
 using Minio.DataModel.ObjectLock;
+using Minio.DataModel.Response;
+using Minio.DataModel.Result;
+using Minio.DataModel.Select;
 using Minio.DataModel.Tags;
 using Minio.Exceptions;
 using Minio.Helper;
 
 namespace Minio;
 
+[SuppressMessage("Design", "MA0048:File name must match type name", Justification = "Split up in partial classes")]
 public partial class MinioClient : IObjectOperations
 {
     private readonly List<string> supportedHeaders = new()
@@ -950,7 +958,7 @@ public partial class MinioClient : IObjectOperations
         for (partNumber = 1; partNumber <= partCount; partNumber++)
         {
             var partCondition = args.SourceObject.CopyOperationConditions.Clone();
-            partCondition.byteRangeStart = (long)partSize * (partNumber - 1) + partCondition.byteRangeStart;
+            partCondition.byteRangeStart = ((long)partSize * (partNumber - 1)) + partCondition.byteRangeStart;
             if (partNumber < partCount)
                 partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)partSize - 1;
             else
@@ -1357,7 +1365,7 @@ public partial class MinioClient : IObjectOperations
         for (partNumber = 1; partNumber <= partCount; partNumber++)
         {
             var partCondition = copyConditions.Clone();
-            partCondition.byteRangeStart = (long)partSize * (partNumber - 1) + partCondition.byteRangeStart;
+            partCondition.byteRangeStart = ((long)partSize * (partNumber - 1)) + partCondition.byteRangeStart;
             if (partNumber < partCount)
                 partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)partSize - 1;
             else

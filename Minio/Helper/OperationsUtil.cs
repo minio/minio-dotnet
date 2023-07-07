@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-using Minio.Helper;
-
-namespace Minio;
+namespace Minio.Helper;
 
 public static class OperationsUtil
 {

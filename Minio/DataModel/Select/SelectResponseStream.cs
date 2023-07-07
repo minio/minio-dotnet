@@ -19,8 +19,9 @@ using System.Text;
 using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
 using Minio.Exceptions;
+using Minio.Helper;
 
-namespace Minio.DataModel;
+namespace Minio.DataModel.Select;
 
 [Serializable]
 public class SelectResponseStream
@@ -67,7 +68,8 @@ public class SelectResponseStream
 
 #if NETSTANDARD
         var bytes = new byte[buffer.Length];
-        read = payloadStream.Read(bytes, 0, buffer.Length);
+        read
+            = payloadStream.Read(bytes, 0, buffer.Length);
         bytes.CopyTo(buffer);
 #else
         read = payloadStream.Read(buffer);

@@ -17,7 +17,7 @@
 using System.Collections.ObjectModel;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel;
+namespace Minio.DataModel.Notification;
 
 /// <summary>
 ///     S3Key - child of Filter, a tag in the notification xml which carries suffix/prefix

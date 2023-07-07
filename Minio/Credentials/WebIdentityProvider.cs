@@ -17,9 +17,9 @@
 
 using System.Globalization;
 using System.Text;
-using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
+using Minio.Helper;
 
 /*
  * Web Identity Credential provider
@@ -27,13 +27,6 @@ using Minio.DataModel;
  */
 
 namespace Minio.Credentials;
-
-[Serializable]
-[XmlRoot(ElementName = "AssumeRoleWithWebIdentityResponse")]
-public class WebIdentityResponse
-{
-    [XmlElement("Credentials")] public AccessCredentials Credentials { get; set; }
-}
 
 public class WebIdentityProvider : WebIdentityClientGrantsProvider<WebIdentityProvider>
 {

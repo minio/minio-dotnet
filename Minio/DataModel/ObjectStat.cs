@@ -18,6 +18,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Minio.DataModel.ObjectLock;
+using Minio.Helper;
 
 namespace Minio.DataModel;
 
@@ -50,7 +51,7 @@ public class ObjectStat
     public string ArchiveStatus { get; private set; }
     public DateTime? Expires { get; private set; }
     public string ReplicationStatus { get; }
-    public RetentionMode? ObjectLockMode { get; private set; }
+    public ObjectRetentionMode? ObjectLockMode { get; private set; }
     public DateTime? ObjectLockRetainUntilDate { get; private set; }
     public bool? LegalHoldEnabled { get; private set; }
 
@@ -112,8 +113,8 @@ public class ObjectStat
                 case "x-amz-object-lock-mode":
                     if (!string.IsNullOrWhiteSpace(paramValue))
                         objInfo.ObjectLockMode = paramValue.Equals("governance", StringComparison.OrdinalIgnoreCase)
-                            ? RetentionMode.GOVERNANCE
-                            : RetentionMode.COMPLIANCE;
+                            ? ObjectRetentionMode.GOVERNANCE
+                            : ObjectRetentionMode.COMPLIANCE;
 
                     break;
                 case "x-amz-object-lock-retain-until-date":
@@ -162,7 +163,7 @@ public class ObjectStat
         if (ObjectLockMode is not null)
         {
             objectLockInfo = "ObjectLock Mode(" +
-                             (ObjectLockMode == RetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE") + ")";
+                             (ObjectLockMode == ObjectRetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE") + ")";
             objectLockInfo += " Retain Until Date(" + Utils.To8601String(ObjectLockRetainUntilDate.Value) + ")";
         }
 

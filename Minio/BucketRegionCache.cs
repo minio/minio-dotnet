@@ -17,6 +17,7 @@
 using System.Collections.Concurrent;
 using System.Net;
 using System.Xml.Linq;
+using Minio.Helper;
 
 namespace Minio;
 

@@ -29,7 +29,7 @@ public class ObjectLockConfiguration
         ObjectLockEnabled = LockEnabled;
     }
 
-    public ObjectLockConfiguration(RetentionMode mode, int numOfDays)
+    public ObjectLockConfiguration(ObjectRetentionMode mode, int numOfDays)
     {
         ObjectLockEnabled = LockEnabled;
         Rule = new ObjectLockRule(mode, numOfDays);

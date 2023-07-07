@@ -15,8 +15,9 @@
  */
 
 using System.Xml.Serialization;
+using Minio.Helper;
 
-namespace Minio.DataModel;
+namespace Minio.DataModel.ILM;
 
 [Serializable]
 public abstract class Duration

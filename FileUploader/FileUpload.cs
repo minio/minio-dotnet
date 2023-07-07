@@ -17,6 +17,7 @@
 using System.Net;
 using System.Runtime.InteropServices;
 using Minio;
+using Minio.DataModel.Args;
 
 namespace FileUploader;
 

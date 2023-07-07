@@ -16,6 +16,7 @@
 
 using System.Xml;
 using System.Xml.Serialization;
+using Minio.DataModel.Notification;
 
 namespace Minio.DataModel;
 

@@ -26,12 +26,11 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Minio.Exceptions;
-using Minio.Helper;
 #if !NET6_0_OR_GREATER
 using System.Collections.Concurrent;
 #endif
 
-namespace Minio;
+namespace Minio.Helper;
 
 public static class Utils
 {
@@ -201,13 +200,13 @@ public static class Utils
     }
 
     public static Task RunInParallel<TSource>(IEnumerable<TSource> source,
-        Func<TSource, CancellationToken, ValueTask> body)
+        Func<TSource, CancellationToken, ValueTask> body, int maxNoOfParallelProcesses = 4)
     {
-        var maxNoOfParallelProcesses = 4;
 #if NET6_0_OR_GREATER
         ParallelOptions parallelOptions = new()
         {
-            MaxDegreeOfParallelism = maxNoOfParallelProcesses
+            MaxDegreeOfParallelism
+                = maxNoOfParallelProcesses
         };
         return Parallel.ForEachAsync(source, parallelOptions, body);
 #else
@@ -254,7 +253,7 @@ public static class Utils
         var minPartSize = copy ? Constants.MinimumCOPYPartSize : Constants.MinimumPUTPartSize;
         partSize = (double)Math.Ceiling((decimal)partSize / minPartSize) * minPartSize;
         var partCount = Math.Ceiling(size / partSize);
-        var lastPartSize = size - (partCount - 1) * partSize;
+        var lastPartSize = size - ((partCount - 1) * partSize);
         dynamic obj = new ExpandoObject();
         obj.partSize = partSize;
         obj.partCount = partCount;
@@ -276,9 +275,11 @@ public static class Utils
     {
 #if NETSTANDARD
 #pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
-        using var md5 = MD5.Create();
+        using var md5
+            = MD5.Create();
 #pragma warning restore CA5351 // Do Not Use Broken Cryptographic Algorithms
-        var hashedBytes = md5.ComputeHash(key.ToArray());
+        var hashedBytes
+            = md5.ComputeHash(key.ToArray());
 #else
         ReadOnlySpan<byte> hashedBytes = MD5.HashData(key);
 #endif

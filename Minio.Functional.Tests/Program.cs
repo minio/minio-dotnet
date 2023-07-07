@@ -16,7 +16,9 @@
 */
 
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Net;
+using Minio.Helper;
 
 namespace Minio.Functional.Tests;
 
@@ -38,7 +40,8 @@ internal static class Program
             var posColon = endPoint.LastIndexOf(':');
             if (posColon != -1)
             {
-                port = int.Parse(endPoint.Substring(posColon + 1, endPoint.Length - posColon - 1));
+                port = int.Parse(endPoint.Substring(posColon + 1, endPoint.Length - posColon - 1), NumberStyles.Integer,
+                    CultureInfo.InvariantCulture);
                 endPoint = endPoint.Substring(0, posColon);
             }
 
@@ -107,7 +110,7 @@ internal static class Program
         // If the following test is run against AWS, then the SDK throws
         // "Listening for bucket notification is specific only to `minio`
         // server endpoints".
-        functionalTestTasks.Add(FunctionalTest.ListenBucketNotificationsAsync_Test1(minioClient));
+        await FunctionalTest.ListenBucketNotificationsAsync_Test1(minioClient);
         functionalTestTasks.Add(FunctionalTest.ListenBucketNotificationsAsync_Test2(minioClient));
         functionalTestTasks.Add(FunctionalTest.ListenBucketNotificationsAsync_Test3(minioClient));
 

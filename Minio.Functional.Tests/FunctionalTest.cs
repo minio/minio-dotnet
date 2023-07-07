@@ -32,10 +32,15 @@ using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
+using Minio.DataModel.Args;
+using Minio.DataModel.Encryption;
 using Minio.DataModel.ILM;
+using Minio.DataModel.Notification;
 using Minio.DataModel.ObjectLock;
+using Minio.DataModel.Select;
 using Minio.DataModel.Tags;
 using Minio.Exceptions;
+using Minio.Helper;
 
 namespace Minio.Functional.Tests;
 
@@ -489,7 +494,7 @@ public static class FunctionalTest
             (StringComparer.Ordinal)
             {
                 { "bucketNameSuffix", bucketNameSuffix },
-                { "noOfBuckets", noOfBuckets.ToString() }
+                { "noOfBuckets", noOfBuckets.ToString(CultureInfo.InvariantCulture) }
             };
 
         try
@@ -641,7 +646,7 @@ public static class FunctionalTest
                     .WithObject(item.Item1)
                     .WithVersionId(item.Item2);
                 var retentionConfig = await minio.GetObjectRetentionAsync(objectRetentionArgs).ConfigureAwait(false);
-                var bypassGovMode = retentionConfig.Mode == RetentionMode.GOVERNANCE;
+                var bypassGovMode = retentionConfig.Mode == ObjectRetentionMode.GOVERNANCE;
                 var removeObjectArgs = new RemoveObjectArgs()
                     .WithBucket(bucketName)
                     .WithObject(item.Item1)
@@ -1558,7 +1563,8 @@ public static class FunctionalTest
 
 #if NETFRAMEWORK
             using var md5 = MD5.Create();
-            var hashedOutputBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(outputNoWS));
+            var hashedOutputBytes
+ = md5.ComputeHash(Encoding.UTF8.GetBytes(outputNoWS));
 #else
             // Compute MD5 for a better result.
             var hashedOutputBytes = MD5.HashData(Encoding.UTF8.GetBytes(outputNoWS));
@@ -1568,7 +1574,8 @@ public static class FunctionalTest
 
 #if NETFRAMEWORK
             using var md5CSV = MD5.Create();
-            var hashedCSVBytes = md5CSV.ComputeHash(Encoding.UTF8.GetBytes(csvStringNoWS));
+            var hashedCSVBytes
+ = md5CSV.ComputeHash(Encoding.UTF8.GetBytes(csvStringNoWS));
 #else
             var hashedCSVBytes = MD5.HashData(Encoding.UTF8.GetBytes(csvStringNoWS));
 #endif
@@ -1961,7 +1968,7 @@ public static class FunctionalTest
                 {
                     { "bucketName", bucketName },
                     { "objectName", objectName },
-                    { "fileSize", size.ToString() }
+                    { "fileSize", size.ToString(CultureInfo.InvariantCulture) }
                 };
             var tags = new Dictionary<string, string>
                 (StringComparer.Ordinal)
@@ -2118,7 +2125,7 @@ public static class FunctionalTest
                 {
                     { "bucketName", bucketName },
                     { "objectName", objectName },
-                    { "fileSize", size.ToString() }
+                    { "fileSize", size.ToString(CultureInfo.InvariantCulture) }
                 };
             try
             {
@@ -2281,7 +2288,7 @@ public static class FunctionalTest
             var objectLockArgs = new SetObjectLockConfigurationArgs()
                 .WithBucket(bucketName)
                 .WithLockConfiguration(
-                    new ObjectLockConfiguration(RetentionMode.GOVERNANCE, 33)
+                    new ObjectLockConfiguration(ObjectRetentionMode.GOVERNANCE, 33)
                 );
             await minio.SetObjectLockConfigurationAsync(objectLockArgs).ConfigureAwait(false);
             new MintLogger(nameof(ObjectLockConfigurationAsync_Test1), setObjectLockConfigurationSignature,
@@ -2433,7 +2440,7 @@ public static class FunctionalTest
             var setRetentionArgs = new SetObjectRetentionArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName)
-                .WithRetentionMode(RetentionMode.GOVERNANCE)
+                .WithRetentionMode(ObjectRetentionMode.GOVERNANCE)
                 .WithRetentionUntilDate(untilDate);
             await minio.SetObjectRetentionAsync(setRetentionArgs).ConfigureAwait(false);
             new MintLogger(nameof(ObjectRetentionAsync_Test1), setObjectRetentionSignature,
@@ -2464,7 +2471,7 @@ public static class FunctionalTest
             var config = await minio.GetObjectRetentionAsync(getRetentionArgs).ConfigureAwait(false);
             var plusDays = 10.0;
             Assert.IsNotNull(config);
-            Assert.AreEqual(config.Mode, RetentionMode.GOVERNANCE);
+            Assert.AreEqual(config.Mode, ObjectRetentionMode.GOVERNANCE);
             var untilDate = DateTime.Parse(config.RetainUntilDate, null, DateTimeStyles.RoundtripKind);
             Assert.AreEqual(Math.Ceiling((untilDate - DateTime.Now).TotalDays), plusDays);
             new MintLogger(nameof(ObjectRetentionAsync_Test1), getObjectRetentionSignature,
@@ -2632,7 +2639,7 @@ public static class FunctionalTest
 
             var resp = await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
             // Verify the size of the file from the returned info
-            Assert.AreEqual(expectedFileSize, resp.Size.ToString());
+            Assert.AreEqual(expectedFileSize, resp.Size.ToString(CultureInfo.InvariantCulture));
 
             // HeadObject api test
             var statArgs = new StatObjectArgs()
@@ -2641,7 +2648,7 @@ public static class FunctionalTest
                 .WithHeaders(extractHeader);
             var stat = await minio.StatObjectAsync(statArgs).ConfigureAwait(false);
             // Verify the size of the file from the returned info
-            Assert.AreEqual(expectedFileSize, resp.Size.ToString());
+            Assert.AreEqual(expectedFileSize, resp.Size.ToString(CultureInfo.InvariantCulture));
 
             // ListObject api test with different prefix values
             // prefix value="", expected number of files listed=1
@@ -3597,12 +3604,13 @@ public static class FunctionalTest
             totalBytesTransferred = progressReport.TotalBytesTransferred;
         });
         var args = new Dictionary<string, string>
-        {
-            { "bucketName", bucketName },
-            { "objectName", objectName },
-            { "contentType", contentType },
-            { "size", "1MB" }
-        };
+            (StringComparer.Ordinal)
+            {
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
+                { "size", "1MB" }
+            };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -3648,12 +3656,13 @@ public static class FunctionalTest
             //else Console.WriteLine();
         });
         var args = new Dictionary<string, string>
-        {
-            { "bucketName", bucketName },
-            { "objectName", objectName },
-            { "contentType", contentType },
-            { "size", "64MB" }
-        };
+            (StringComparer.Ordinal)
+            {
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "contentType", contentType },
+                { "size", "64MB" }
+            };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -4901,8 +4910,8 @@ public static class FunctionalTest
                     { "bucketName", bucketName },
                     { "objectName", objectName },
                     { "contentType", contentType },
-                    { "offset", offsetToStartFrom.ToString() },
-                    { "length", lengthToBeRead.ToString() }
+                    { "offset", offsetToStartFrom.ToString(CultureInfo.InvariantCulture) },
+                    { "length", lengthToBeRead.ToString(CultureInfo.InvariantCulture) }
                 };
             try
             {
@@ -5041,7 +5050,7 @@ public static class FunctionalTest
             {
                 var dest = new FileStream(destFileName, FileMode.Create, FileAccess.Write);
                 await stream.CopyToAsync(dest, cancellationToken).ConfigureAwait(false);
-                await dest.DisposeAsync();
+                await dest.DisposeAsync().ConfigureAwait(false);
             };
 
             var getObjectArgs = new GetObjectArgs()
@@ -5532,7 +5541,7 @@ public static class FunctionalTest
             {
                 { "bucketName", bucketName },
                 { "objectName", objectName },
-                { "expiresInt", expiresInt.ToString() }
+                { "expiresInt", expiresInt.ToString(CultureInfo.InvariantCulture) }
             };
         try
         {
@@ -5594,7 +5603,7 @@ public static class FunctionalTest
             {
                 { "bucketName", bucketName },
                 { "objectName", objectName },
-                { "expiresInt", expiresInt.ToString() }
+                { "expiresInt", expiresInt.ToString(CultureInfo.InvariantCulture) }
             };
         try
         {
@@ -5661,7 +5670,7 @@ public static class FunctionalTest
             {
                 { "bucketName", bucketName },
                 { "objectName", objectName },
-                { "expiresInt", expiresInt.ToString() },
+                { "expiresInt", expiresInt.ToString(CultureInfo.InvariantCulture) },
                 {
                     "reqParams",
                     "response-content-type:application/json,response-content-disposition:attachment;filename=  MyDoc u m  e   nt.json ;"
@@ -5709,7 +5718,7 @@ public static class FunctionalTest
             Assert.IsTrue(response.Content.Headers.GetValues("Content-Disposition")
                 .Contains(reqParams["response-content-disposition"], StringComparer.Ordinal));
             Assert.IsTrue(response.Content.Headers.GetValues("Content-Length")
-                .Contains(stats.Size.ToString(), StringComparer.Ordinal));
+                .Contains(stats.Size.ToString(CultureInfo.InvariantCulture), StringComparer.Ordinal));
 
             using (var fs = new FileStream(downloadFile, FileMode.CreateNew))
             {
@@ -5757,7 +5766,7 @@ public static class FunctionalTest
             {
                 { "bucketName", bucketName },
                 { "objectName", objectName },
-                { "expiresInt", expiresInt.ToString() }
+                { "expiresInt", expiresInt.ToString(CultureInfo.InvariantCulture) }
             };
         try
         {
@@ -5808,7 +5817,7 @@ public static class FunctionalTest
             {
                 { "bucketName", bucketName },
                 { "objectName", objectName },
-                { "expiresInt", expiresInt.ToString() }
+                { "expiresInt", expiresInt.ToString(CultureInfo.InvariantCulture) }
             };
         try
         {
@@ -6202,7 +6211,7 @@ public static class FunctionalTest
 
         var rule1 = new LifecycleRule(null, "txt", exp, null,
             new RuleFilter(null, "txt/", null),
-            null, null, LifecycleRule.LIFECYCLE_RULE_STATUS_ENABLED
+            null, null, LifecycleRule.LifecycleRuleStatusEnabled
         );
         rules.Add(rule1);
         var lfc = new LifecycleConfiguration(rules);
@@ -6330,7 +6339,7 @@ public static class FunctionalTest
 
         var rule1 = new LifecycleRule(null, "txt", exp, null,
             new RuleFilter(null, "txt/", null),
-            null, null, LifecycleRule.LIFECYCLE_RULE_STATUS_ENABLED
+            null, null, LifecycleRule.LifecycleRuleStatusEnabled
         );
         rules.Add(rule1);
         var lfc = new LifecycleConfiguration(rules);

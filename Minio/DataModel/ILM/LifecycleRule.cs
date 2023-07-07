@@ -29,8 +29,8 @@ namespace Minio.DataModel.ILM;
 [XmlRoot(ElementName = "Rule")]
 public class LifecycleRule
 {
-    public static readonly string LIFECYCLE_RULE_STATUS_ENABLED = "Enabled";
-    public static readonly string LIFECYCLE_RULE_STATUS_DISABLED = "Disabled";
+    public static readonly string LifecycleRuleStatusEnabled = "Enabled";
+    public static readonly string LifecycleRuleStatusDisabled = "Disabled";
 
     private RuleFilter _ruleFilter;
 
@@ -48,8 +48,8 @@ public class LifecycleRule
         if (string.IsNullOrEmpty(status))
             throw new ArgumentException($"'{nameof(status)}' cannot be null or empty.", nameof(status));
 
-        if (!status.Equals(LIFECYCLE_RULE_STATUS_ENABLED, StringComparison.Ordinal) &&
-            !status.Equals(LIFECYCLE_RULE_STATUS_DISABLED, StringComparison.Ordinal))
+        if (!status.Equals(LifecycleRuleStatusEnabled, StringComparison.Ordinal) &&
+            !status.Equals(LifecycleRuleStatusDisabled, StringComparison.Ordinal))
             throw new ArgumentException("Wrong value assignment for " + nameof(Status));
         AbortIncompleteMultipartUploadObject = abortIncompleteMultipartUpload;
         ID = id;
