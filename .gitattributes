@@ -2,13 +2,14 @@
 # Set default behavior to automatically normalize line endings.
 ###############################################################################
 * text=lf
+
 # Check out the following as ln always for osx/linux/cygwin
-# *.sh text eol=lf
+*.sh text eol=lf
 
 # Windows specific files should always be crlf on checkout
-# *.bat text eol=crlf
-# *.cmd text eol=crlf
-# *.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
 
 ###############################################################################
 # Set default behavior for command prompt diff.
@@ -17,19 +18,19 @@
 # default for csharp files.
 # Note: This is only used by command line
 ###############################################################################
-# *.config  text
-# *.cs      text diff=csharp
-# *.csproj  text
-# *.md      text
-# *.msbuild text
-# *.nuspec  text
-# *.pp      text
-# *.ps1     text
-# *.sln     text
-# *.tt      text
-# *.txt     text
-# *.xaml    text
-# *.xml     text
+*.config  text
+*.cs      text diff=csharp
+*.csproj  text
+*.md      text
+*.msbuild text
+*.nuspec  text
+*.pp      text
+*.ps1     text
+*.sln     text
+*.tt      text
+*.txt     text
+*.xaml    text
+*.xml     text
 
 ###############################################################################
 # Set the merge driver for project and solution files
@@ -59,12 +60,12 @@
 #
 # image files are treated as binary by default.
 ###############################################################################
-# *.bmp     binary
-# *.jpeg    binary
-# *.jpg     binary
-# *.nupkg   binary
-# *.png     binary
-# *.sdf     binary
+*.bmp     binary
+*.jpeg    binary
+*.jpg     binary
+*.nupkg   binary
+*.png     binary
+*.sdf     binary
 
 ###############################################################################
 # diff behavior for common document formats
