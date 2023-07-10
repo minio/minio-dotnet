@@ -16,10 +16,8 @@
  */
 
 using System.Globalization;
-using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Net;
 using System.Web;
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
@@ -122,9 +120,9 @@ public class CertificateIdentityProvider : IClientProvider
         var handler = new HttpClientHandler();
         handler.ClientCertificateOptions = ClientCertificateOption.Manual;
 #if (NET472_OR_GREATER || NET6_0_OR_GREATER)
-    handler.SslProtocols = SslProtocols.Tls12;
+        handler.SslProtocols = SslProtocols.Tls12;
 #else
-    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11;
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11;
 #endif
         handler.ClientCertificates.Add(ClientCertificate);
         HttpClient ??= new HttpClient(handler)
