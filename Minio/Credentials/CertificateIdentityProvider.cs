@@ -16,9 +16,7 @@
  */
 
 using System.Globalization;
-using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-using System.Net;
 using System.Text;
 using System.Web;
 using CommunityToolkit.HighPerformance;
