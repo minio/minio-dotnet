@@ -1,3 +1,4 @@
+﻿using System;
 /*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
@@ -24,14 +25,15 @@ using Minio.Helper;
 namespace Minio.DataModel.Select;
 
 [Serializable]
-public class SelectResponseStream
+public class SelectResponseStream : IDisposable
 {
     private readonly Memory<byte> messageCRC = new byte[4];
     private readonly MemoryStream payloadStream;
     private readonly Memory<byte> prelude = new byte[8];
     private readonly Memory<byte> preludeCRC = new byte[4];
 
-    private bool _isProcessing;
+    private bool isProcessing;
+    private bool disposed;
 
     public SelectResponseStream()
     {
@@ -48,7 +50,7 @@ public class SelectResponseStream
             Payload = new MemoryStream();
         }
 
-        _isProcessing = true;
+        isProcessing = true;
         _ = payloadStream.Seek(0, SeekOrigin.Begin);
         Start();
     }
@@ -61,10 +63,23 @@ public class SelectResponseStream
     [XmlElement("Progress", IsNullable = false)]
     public ProgressMessage Progress { get; set; }
 
+    public virtual void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        payloadStream?.Dispose();
+        Payload?.Dispose();
+
+        disposed = true;
+    }
+
     protected int ReadFromStream(Span<byte> buffer)
     {
         var read = -1;
-        if (!_isProcessing) return read;
+        if (!isProcessing) return read;
 
 #if NETSTANDARD
         var bytes = new byte[buffer.Length];
@@ -74,14 +89,14 @@ public class SelectResponseStream
 #else
         read = payloadStream.Read(buffer);
 #endif
-        if (!payloadStream.CanRead) _isProcessing = false;
+        if (!payloadStream.CanRead) isProcessing = false;
         return read;
     }
 
     private void Start()
     {
         var numBytesRead = 0;
-        while (_isProcessing)
+        while (isProcessing)
         {
             var n = ReadFromStream(prelude.Span);
             numBytesRead += n;
@@ -95,10 +110,10 @@ public class SelectResponseStream
 
             var destinationPrelude = inputArray.Slice(inputArray.Length - 4, 4);
             var isValidPrelude = Crc32.TryHash(inputArray.Slice(0, inputArray.Length - 4), destinationPrelude, out _);
-            if (!isValidPrelude) throw new ArgumentException("invalid prelude CRC");
+            if (!isValidPrelude) throw new ArgumentException("invalid prelude CRC", nameof(destinationPrelude));
 
             if (!destinationPrelude.SequenceEqual(preludeCRCBytes))
-                throw new ArgumentException("Prelude CRC Mismatch");
+                throw new ArgumentException("Prelude CRC Mismatch", nameof(preludeCRCBytes));
 
             var preludeBytes = prelude.Slice(0, 4).Span;
             Span<byte> bytes = new byte[preludeBytes.Length];
@@ -146,10 +161,10 @@ public class SelectResponseStream
 
             var destinationMessage = inputArray.Slice(inputArray.Length - 4, 4);
             var isValidMessage = Crc32.TryHash(inputArray.Slice(0, inputArray.Length - 4), destinationMessage, out _);
-            if (!isValidMessage) throw new ArgumentException("invalid message CRC");
+            if (!isValidMessage) throw new ArgumentException("invalid message CRC", nameof(destinationMessage));
 
             if (!destinationMessage.SequenceEqual(messageCRCBytes))
-                throw new ArgumentException("message CRC Mismatch");
+                throw new ArgumentException("message CRC Mismatch", nameof(messageCRCBytes));
 
             var headerMap = ExtractHeaders(headers);
 
@@ -166,7 +181,7 @@ public class SelectResponseStream
                 if (value.Equals("End", StringComparison.OrdinalIgnoreCase))
                 {
                     // throw new UnexpectedShortReadException("Insufficient data");
-                    _isProcessing = false;
+                    isProcessing = false;
                     break;
                 }
 
@@ -198,7 +213,7 @@ public class SelectResponseStream
             }
         }
 
-        _isProcessing = false;
+        isProcessing = false;
         Payload.Seek(0, SeekOrigin.Begin);
         payloadStream.Close();
     }
