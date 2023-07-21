@@ -1,4 +1,4 @@
-/*
+﻿/*
 * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
 * (C) 2017-2021 MinIO, Inc.
 *
@@ -22,11 +22,11 @@ namespace Minio;
 
 public class ResponseResult : IDisposable
 {
-    private readonly Dictionary<string, string> _headers = new(StringComparer.Ordinal);
-    private string _content;
-    private ReadOnlyMemory<byte> _contentBytes;
+    private readonly Dictionary<string, string> headers = new(StringComparer.Ordinal);
+    private string content;
+    private ReadOnlyMemory<byte> contentBytes;
 
-    private Stream _stream;
+    private Stream stream;
     private bool disposedValue;
 
     public ResponseResult(HttpRequestMessage request, HttpResponseMessage response)
@@ -63,9 +63,9 @@ public class ResponseResult : IDisposable
         {
             if (Response is null) return null;
 #if NETSTANDARD
-            return _stream ??= Response.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
+            return stream ??= Response.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
 #else
-            return _stream ??= Response.Content.ReadAsStream();
+            return stream ??= Response.Content.ReadAsStream();
 #endif
         }
     }
@@ -77,14 +77,14 @@ public class ResponseResult : IDisposable
             if (ContentStream is null)
                 return ReadOnlyMemory<byte>.Empty;
 
-            if (_contentBytes.IsEmpty)
+            if (contentBytes.IsEmpty)
             {
                 using var memoryStream = new MemoryStream();
                 ContentStream.CopyTo(memoryStream);
-                _contentBytes = new ReadOnlyMemory<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
+                contentBytes = new ReadOnlyMemory<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
             }
 
-            return _contentBytes;
+            return contentBytes;
         }
     }
 
@@ -94,11 +94,11 @@ public class ResponseResult : IDisposable
         {
             if (ContentBytes.Length == 0) return "";
 #if NETSTANDARD
-            _content ??= Encoding.UTF8.GetString(ContentBytes.ToArray());
+            content ??= Encoding.UTF8.GetString(ContentBytes.ToArray());
 #else
-            _content ??= Encoding.UTF8.GetString(ContentBytes.Span);
+            content ??= Encoding.UTF8.GetString(ContentBytes.Span);
 #endif
-            return _content;
+            return content;
         }
     }
 
@@ -108,16 +108,16 @@ public class ResponseResult : IDisposable
         {
             if (Response is null) return new Dictionary<string, string>(StringComparer.Ordinal);
 
-            if (!_headers.Any())
+            if (headers.Count == 0)
             {
                 if (Response.Content is not null)
                     foreach (var item in Response.Content.Headers)
-                        _headers.Add(item.Key, item.Value.FirstOrDefault());
+                        headers.Add(item.Key, item.Value.FirstOrDefault());
 
-                foreach (var item in Response.Headers) _headers.Add(item.Key, item.Value.FirstOrDefault());
+                foreach (var item in Response.Headers) headers.Add(item.Key, item.Value.FirstOrDefault());
             }
 
-            return _headers;
+            return headers;
         }
     }
 
@@ -135,13 +135,13 @@ public class ResponseResult : IDisposable
         {
             if (disposing)
             {
-                _stream?.Dispose();
+                stream?.Dispose();
                 Request?.Dispose();
                 Response?.Dispose();
 
-                _content = null;
-                _contentBytes = null;
-                _stream = null;
+                content = null;
+                contentBytes = null;
+                stream = null;
             }
 
             disposedValue = true;

@@ -97,7 +97,7 @@ internal class V4Authenticator
         requestBuilder.RequestUri = requestBuilder.Request.RequestUri;
         var requestUri = requestBuilder.RequestUri;
 
-        if (requestUri.Port == 80 || requestUri.Port == 443)
+        if (requestUri.Port is 80 or 443)
             SetHostHeader(requestBuilder, requestUri.Host);
         else
             SetHostHeader(requestBuilder, requestUri.Host + ":" + requestUri.Port);
@@ -156,7 +156,7 @@ internal class V4Authenticator
     /// <returns>All signed headers</returns>
     private string GetSignedHeaders(SortedDictionary<string, string> headersToSign)
     {
-        return string.Join(';', headersToSign.Keys);
+        return string.Join(";", headersToSign.Keys);
     }
 
     /// <summary>
@@ -360,7 +360,7 @@ internal class V4Authenticator
         queryParams.AddRange(headersToSign.Select(cv =>
             $"{Utils.UrlEncode(cv.Key)}={Utils.UrlEncode(cv.Value.Trim())}"));
         queryParams.Sort(StringComparer.Ordinal);
-        var query = string.Join('&', queryParams);
+        var query = string.Join("&", queryParams);
         _ = canonicalStringList.AddLast(query);
         var canonicalHost = GetCanonicalHost(uri);
         _ = canonicalStringList.AddLast($"host:{canonicalHost}");
@@ -369,7 +369,7 @@ internal class V4Authenticator
         _ = canonicalStringList.AddLast("host");
         _ = canonicalStringList.AddLast("UNSIGNED-PAYLOAD");
 
-        return string.Join('\n', canonicalStringList);
+        return string.Join("\n", canonicalStringList);
     }
 
     private static string GetCanonicalHost(Uri url)
@@ -445,12 +445,12 @@ internal class V4Authenticator
         foreach (var header in headersToSign.Keys)
             canonicalStringList.AddLast(header + ":" + S3utils.TrimAll(headersToSign[header]));
         canonicalStringList.AddLast(string.Empty);
-        canonicalStringList.AddLast(string.Join(';', headersToSign.Keys));
+        canonicalStringList.AddLast(string.Join(";", headersToSign.Keys));
         if (headersToSign.TryGetValue("x-amz-content-sha256", out var value))
             canonicalStringList.AddLast(value);
         else
             canonicalStringList.AddLast(sha256EmptyFileHash);
-        return string.Join('\n', canonicalStringList);
+        return string.Join("\n", canonicalStringList);
     }
 
     public static IDictionary<string, TValue> ToDictionary<TValue>(object obj)

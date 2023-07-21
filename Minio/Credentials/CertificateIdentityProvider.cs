@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2022 MinIO, Inc.
  *
@@ -35,11 +35,11 @@ namespace Minio.Credentials;
 
 public class CertificateIdentityProvider : IClientProvider
 {
-    private readonly int DEFAULT_DURATION_IN_SECONDS = 3600;
+    private readonly int defaultDurationInSeconds = 3600;
 
     public CertificateIdentityProvider()
     {
-        DurationInSeconds = DEFAULT_DURATION_IN_SECONDS;
+        DurationInSeconds = defaultDurationInSeconds;
     }
 
     internal string StsEndpoint { get; set; }
@@ -60,10 +60,10 @@ public class CertificateIdentityProvider : IClientProvider
             return Credentials;
 
         if (HttpClient is null)
-            throw new ArgumentException("HttpClient cannot be null or empty", nameof(HttpClient));
+            throw new ArgumentNullException(nameof(HttpClient), "HttpClient cannot be null or empty");
 
         if (ClientCertificate is null)
-            throw new ArgumentException("ClientCertificate cannot be null or empty", nameof(ClientCertificate));
+            throw new ArgumentNullException(nameof(ClientCertificate), "ClientCertificate cannot be null or empty");
 
         using var response = await HttpClient.PostAsync(PostEndpoint, null).ConfigureAwait(false);
 
@@ -108,7 +108,7 @@ public class CertificateIdentityProvider : IClientProvider
     public CertificateIdentityProvider Build()
     {
         if (string.IsNullOrEmpty(DurationInSeconds.ToString(CultureInfo.InvariantCulture)))
-            DurationInSeconds = DEFAULT_DURATION_IN_SECONDS;
+            DurationInSeconds = defaultDurationInSeconds;
 
         var builder = new UriBuilder(StsEndpoint);
         var query = HttpUtility.ParseQueryString(builder.Query);

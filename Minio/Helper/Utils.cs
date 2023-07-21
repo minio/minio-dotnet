@@ -42,7 +42,7 @@ public static class Utils
     // Invalid bucket name with double dot.
     private static readonly Regex invalidDotBucketName = new("`/./.", RegexOptions.None, TimeSpan.FromHours(1));
 
-    private static readonly Lazy<IDictionary<string, string>> _contentTypeMap = new(AddContentTypeMappings);
+    private static readonly Lazy<IDictionary<string, string>> contentTypeMap = new(AddContentTypeMappings);
 
     /// <summary>
     ///     IsValidBucketName - verify bucket name in accordance with
@@ -57,9 +57,11 @@ public static class Utils
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot be smaller than 3 characters.");
         if (bucketName.Length > 63)
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot be greater than 63 characters.");
+#pragma warning disable IDE0056 // Use index operator: not possible in netstandard2.0
         if (bucketName[0] == '.' || bucketName[bucketName.Length - 1] == '.')
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot start or end with a '.' dot.");
-        if (bucketName.Any(c => char.IsUpper(c)))
+#pragma warning restore IDE0056 // Use index operator
+        if (bucketName.Any(char.IsUpper))
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot have upper case characters");
         if (invalidDotBucketName.IsMatch(bucketName))
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot have successive periods.");
@@ -87,6 +89,7 @@ public static class Utils
     }
 
     // Return url encoded string where reserved characters have been percent-encoded
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0074:Avoid implicit culture-sensitive methods", Justification = "Not possible right now with netstandard2.0 support")]
     internal static string UrlEncode(string input)
     {
         // The following characters are not allowed on the server side
@@ -171,7 +174,7 @@ public static class Utils
 
         if (string.IsNullOrEmpty(extension)) return "application/octet-stream";
 
-        return _contentTypeMap.Value.TryGetValue(extension, out var contentType)
+        return contentTypeMap.Value.TryGetValue(extension, out var contentType)
             ? contentType
             : "application/octet-stream";
     }
@@ -917,7 +920,9 @@ public static class Utils
                 nameof(endpoint));
 
         if (endpoint.EndsWith("/", StringComparison.OrdinalIgnoreCase))
+#pragma warning disable IDE0057 // Use range operator: not possible in netstandard2.0
             endpoint = endpoint.Substring(0, endpoint.Length - 1);
+#pragma warning restore IDE0057 // Use range operator
         if (!endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
             !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
             throw new InvalidEndpointException(

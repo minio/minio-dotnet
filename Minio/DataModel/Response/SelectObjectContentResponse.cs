@@ -1,4 +1,5 @@
-﻿/*
+﻿using System;
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,8 +21,10 @@ using Minio.DataModel.Select;
 
 namespace Minio.DataModel.Response;
 
-internal class SelectObjectContentResponse : GenericResponse
+internal class SelectObjectContentResponse : GenericResponse, IDisposable
 {
+    private bool disposed;
+
     internal SelectObjectContentResponse(HttpStatusCode statusCode, string responseContent,
         ReadOnlyMemory<byte> responseRawBytes)
         : base(statusCode, responseContent)
@@ -31,4 +34,16 @@ internal class SelectObjectContentResponse : GenericResponse
     }
 
     internal SelectResponseStream ResponseStream { get; }
+
+    public virtual void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        ResponseStream?.Dispose();
+
+        disposed = true;
+    }
 }
