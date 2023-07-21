@@ -156,7 +156,7 @@ internal class V4Authenticator
     /// <returns>All signed headers</returns>
     private string GetSignedHeaders(SortedDictionary<string, string> headersToSign)
     {
-        return string.Join(";", headersToSign.Keys);
+        return string.Join(';', headersToSign.Keys);
     }
 
     /// <summary>
@@ -351,30 +351,30 @@ internal class V4Authenticator
         SortedDictionary<string, string> headersToSign)
     {
         var canonicalStringList = new LinkedList<string>();
-        canonicalStringList.AddLast(requestMethod.ToString());
+        _ = canonicalStringList.AddLast(requestMethod.ToString());
 
         var path = uri.AbsolutePath;
 
-        canonicalStringList.AddLast(path);
+        _ = canonicalStringList.AddLast(path);
         var queryParams = uri.Query.TrimStart('?').Split('&').ToList();
         queryParams.AddRange(headersToSign.Select(cv =>
             $"{Utils.UrlEncode(cv.Key)}={Utils.UrlEncode(cv.Value.Trim())}"));
         queryParams.Sort(StringComparer.Ordinal);
-        var query = string.Join("&", queryParams);
-        canonicalStringList.AddLast(query);
+        var query = string.Join('&', queryParams);
+        _ = canonicalStringList.AddLast(query);
         var canonicalHost = GetCanonicalHost(uri);
-        canonicalStringList.AddLast($"host:{canonicalHost}");
+        _ = canonicalStringList.AddLast($"host:{canonicalHost}");
 
-        canonicalStringList.AddLast(string.Empty);
-        canonicalStringList.AddLast("host");
-        canonicalStringList.AddLast("UNSIGNED-PAYLOAD");
+        _ = canonicalStringList.AddLast(string.Empty);
+        _ = canonicalStringList.AddLast("host");
+        _ = canonicalStringList.AddLast("UNSIGNED-PAYLOAD");
 
-        return string.Join("\n", canonicalStringList);
+        return string.Join('\n', canonicalStringList);
     }
 
     private static string GetCanonicalHost(Uri url)
     {
-        if (url.Port > 0 && url.Port != 80 && url.Port != 443)
+        if (url.Port is > 0 and not 80 and not 443)
             return $"{url.Host}:{url.Port}";
         return url.Host;
     }
@@ -445,12 +445,12 @@ internal class V4Authenticator
         foreach (var header in headersToSign.Keys)
             canonicalStringList.AddLast(header + ":" + S3utils.TrimAll(headersToSign[header]));
         canonicalStringList.AddLast(string.Empty);
-        canonicalStringList.AddLast(string.Join(";", headersToSign.Keys));
+        canonicalStringList.AddLast(string.Join(';', headersToSign.Keys));
         if (headersToSign.TryGetValue("x-amz-content-sha256", out var value))
             canonicalStringList.AddLast(value);
         else
             canonicalStringList.AddLast(sha256EmptyFileHash);
-        return string.Join("\n", canonicalStringList);
+        return string.Join('\n', canonicalStringList);
     }
 
     public static IDictionary<string, TValue> ToDictionary<TValue>(object obj)

@@ -41,7 +41,7 @@ public abstract class BucketArgs<T> : RequestArgs
         Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var key in headers.Keys)
         {
-            Headers.Remove(key);
+            _ = Headers.Remove(key);
             Headers[key] = headers[key];
         }
 

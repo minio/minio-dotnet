@@ -1,4 +1,4 @@
-/*
+﻿/*
 * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
 * (C) 2017, 2018, 2019, 2020 MinIO, Inc.
 *
@@ -141,8 +141,7 @@ internal class HttpRequestMessageBuilder
 
     public void AddHeaderParameter(string key, string value)
     {
-        var comparison = StringComparison.InvariantCultureIgnoreCase;
-        if (key.StartsWith("content-", comparison) &&
+        if (key.StartsWith("content-", StringComparison.InvariantCultureIgnoreCase) &&
             !string.IsNullOrEmpty(value) &&
             !BodyParameters.ContainsKey(key))
             BodyParameters.Add(key, value);
@@ -153,7 +152,7 @@ internal class HttpRequestMessageBuilder
     public void AddOrUpdateHeaderParameter(string key, string value)
     {
         if (HeaderParameters.GetType().GetProperty(key) is not null)
-            HeaderParameters.Remove(key);
+            _ = HeaderParameters.Remove(key);
         HeaderParameters[key] = value;
     }
 

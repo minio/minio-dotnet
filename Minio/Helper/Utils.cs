@@ -127,12 +127,12 @@ public static class Utils
         foreach (var pathSegment in path.Split('/'))
             if (pathSegment.Length != 0)
             {
-                if (encodedPathBuf.Length > 0) encodedPathBuf.Append('/');
-                encodedPathBuf.Append(UrlEncode(pathSegment));
+                if (encodedPathBuf.Length > 0) _ = encodedPathBuf.Append('/');
+                _ = encodedPathBuf.Append(UrlEncode(pathSegment));
             }
 
-        if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase)) encodedPathBuf.Insert(0, '/');
-        if (path.EndsWith("/", StringComparison.OrdinalIgnoreCase)) encodedPathBuf.Append('/');
+        if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase)) _ = encodedPathBuf.Insert(0, '/');
+        if (path.EndsWith("/", StringComparison.OrdinalIgnoreCase)) _ = encodedPathBuf.Append('/');
         return encodedPathBuf.ToString();
     }
 
@@ -910,7 +910,7 @@ public static class Utils
             RegexOptions.Multiline;
         var patternToReplace =
             @"<\w+\s+\w+:nil=""true""(\s+xmlns:\w+=""http://www.w3.org/2001/XMLSchema-instance"")?\s*/>";
-        var patternToMatch = @"<\w+\s+xmlns=""http://s3.amazonaws.com/doc/2006-03-01/""\s*>";
+        const string patternToMatch = @"<\w+\s+xmlns=""http://s3.amazonaws.com/doc/2006-03-01/""\s*>";
         if (Regex.Match(config, patternToMatch, regexOptions, TimeSpan.FromHours(1)).Success)
             patternToReplace = @"xmlns=""http://s3.amazonaws.com/doc/2006-03-01/""\s*";
         return Regex.Replace(
@@ -1052,7 +1052,7 @@ public static class Utils
 
             return (T)new XmlSerializer(typeof(T)).Deserialize(stream);
         }
-        catch (Exception)
+        catch
         {
         }
 
@@ -1067,7 +1067,7 @@ public static class Utils
             using var stringReader = new StringReader(xml);
             return (T)serializer.Deserialize(stringReader);
         }
-        catch (Exception)
+        catch
         {
         }
 
