@@ -29,16 +29,16 @@ public sealed class DefaultRequestLogger : IRequestLogger
 
         var sb = new StringBuilder("Request completed in ");
 
-        sb.Append(durationMs);
-        sb.AppendLine(" ms");
+        _ = sb.Append(durationMs);
+        _ = sb.AppendLine(" ms");
 
-        sb.AppendLine();
-        sb.AppendLine("- - - - - - - - - - BEGIN REQUEST - - - - - - - - - -");
-        sb.AppendLine();
-        sb.Append(requestToLog.Method);
-        sb.Append(' ');
-        sb.Append(requestToLog.Uri);
-        sb.AppendLine(" HTTP/1.1");
+        _ = sb.AppendLine();
+        _ = sb.AppendLine("- - - - - - - - - - BEGIN REQUEST - - - - - - - - - -");
+        _ = sb.AppendLine();
+        _ = sb.Append(requestToLog.Method);
+        _ = sb.Append(' ');
+        _ = sb.Append(requestToLog.Uri);
+        _ = sb.AppendLine(" HTTP/1.1");
 
         var requestHeaders = requestToLog.Parameters;
         requestHeaders =
@@ -46,41 +46,41 @@ public sealed class DefaultRequestLogger : IRequestLogger
 
         foreach (var item in requestHeaders)
         {
-            sb.Append(item.Name);
-            sb.Append(": ");
-            sb.AppendLine(item.Value.ToString());
+            _ = sb.Append(item.Name);
+            _ = sb.Append(": ");
+            _ = sb.AppendLine(item.Value.ToString());
         }
 
-        sb.AppendLine();
-        sb.AppendLine();
+        _ = sb.AppendLine();
+        _ = sb.AppendLine();
 
-        sb.AppendLine("- - - - - - - - - - END REQUEST - - - - - - - - - -");
-        sb.AppendLine();
+        _ = sb.AppendLine("- - - - - - - - - - END REQUEST - - - - - - - - - -");
+        _ = sb.AppendLine();
 
-        sb.AppendLine("- - - - - - - - - - BEGIN RESPONSE - - - - - - - - - -");
-        sb.AppendLine();
+        _ = sb.AppendLine("- - - - - - - - - - BEGIN RESPONSE - - - - - - - - - -");
+        _ = sb.AppendLine();
 
-        sb.Append("HTTP/1.1 ");
-        sb.Append((int)responseToLog.StatusCode);
-        sb.Append(' ');
-        sb.AppendLine(responseToLog.StatusCode.ToString());
+        _ = sb.Append("HTTP/1.1 ");
+        _ = sb.Append((int)responseToLog.StatusCode);
+        _ = sb.Append(' ');
+        _ = sb.AppendLine(responseToLog.StatusCode.ToString());
 
         var responseHeaders = responseToLog.Headers;
 
         foreach (var item in responseHeaders)
         {
-            sb.Append(item.Key);
-            sb.Append(": ");
-            sb.AppendLine(item.Value);
+            _ = sb.Append(item.Key);
+            _ = sb.Append(": ");
+            _ = sb.AppendLine(item.Value);
         }
 
-        sb.AppendLine();
-        sb.AppendLine();
+        _ = sb.AppendLine();
+        _ = sb.AppendLine();
 
-        sb.AppendLine(responseToLog.Content);
-        sb.AppendLine(responseToLog.ErrorMessage);
+        _ = sb.AppendLine(responseToLog.Content);
+        _ = sb.AppendLine(responseToLog.ErrorMessage);
 
-        sb.AppendLine("- - - - - - - - - - END RESPONSE - - - - - - - - - -");
+        _ = sb.AppendLine("- - - - - - - - - - END RESPONSE - - - - - - - - - -");
 
         Console.WriteLine(sb.ToString());
     }

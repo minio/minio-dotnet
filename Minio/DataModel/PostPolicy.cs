@@ -265,11 +265,11 @@ public class PostPolicy
 
         // expiration and policies will never be empty because of checks at PresignedPostPolicy()
         var sb = new StringBuilder();
-        sb.Append('{');
-        sb.Append("\"expiration\":\"").Append(Expiration.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")).Append('"')
+        _ = sb.Append('{');
+        _ = sb.Append("\"expiration\":\"").Append(Expiration.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")).Append('"')
             .Append(',');
-        sb.Append("\"conditions\":[").Append(string.Join(",", policyList)).Append(']');
-        sb.Append('}');
+        _ = sb.Append("\"conditions\":[").Append(string.Join(",", policyList)).Append(']');
+        _ = sb.Append('}');
         return Encoding.UTF8.GetBytes(sb.ToString());
     }
 

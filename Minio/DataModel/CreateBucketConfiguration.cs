@@ -51,7 +51,7 @@ public class CreateBucketConfiguration
         cs.Serialize(writer, this, names);
 
         ms.Flush();
-        ms.Seek(0, SeekOrigin.Begin);
+        _ = ms.Seek(0, SeekOrigin.Begin);
         using var sr = new StreamReader(ms);
         return sr.ReadToEnd();
     }

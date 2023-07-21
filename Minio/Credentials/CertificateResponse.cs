@@ -48,7 +48,7 @@ public class CertificateResponse
         cs.Serialize(xmlWriter, this, names);
 
         ms.Flush();
-        ms.Seek(0, SeekOrigin.Begin);
+        _ = ms.Seek(0, SeekOrigin.Begin);
         using var streamReader = new StreamReader(ms);
         return streamReader.ReadToEnd();
     }
