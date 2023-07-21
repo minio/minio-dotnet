@@ -19,8 +19,10 @@ using Minio.Helper;
 
 namespace Minio.DataModel.Args;
 
-public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
+public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>, IDisposable
 {
+    private bool disposed;
+
     public PutObjectArgs()
     {
         RequestMethod = HttpMethod.Put;
@@ -51,6 +53,19 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
     internal Stream ObjectStreamData { get; set; }
     internal IProgress<ProgressReport> Progress { get; set; }
 
+    public virtual void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(FileName))
+            ObjectStreamData?.Close();
+
+        disposed = true;
+    }
+
     internal override void Validate()
     {
         base.Validate();
@@ -72,6 +87,14 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         if (ObjectStreamData is not null && ObjectSize == 0)
             throw new ArgumentException($"{nameof(ObjectSize)} must be set", nameof(ObjectSize));
         Populate();
+    }
+
+    protected virtual void ThrowIfDisposed()
+    {
+        if (disposed)
+        {
+            throw new ObjectDisposedException(GetType().FullName);
+        }
     }
 
     private void Populate()
@@ -189,11 +212,5 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
     {
         Progress = progress;
         return this;
-    }
-
-    ~PutObjectArgs()
-    {
-        if (!string.IsNullOrWhiteSpace(FileName))
-            ObjectStreamData?.Close();
     }
 }
