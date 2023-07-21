@@ -49,7 +49,7 @@ public class SelectResponseStream
         }
 
         _isProcessing = true;
-        payloadStream.Seek(0, SeekOrigin.Begin);
+        _ = payloadStream.Seek(0, SeekOrigin.Begin);
         Start();
     }
 

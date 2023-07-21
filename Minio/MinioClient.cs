@@ -239,7 +239,7 @@ public partial class MinioClient : IMinioClient
         ArgsCheck(args);
 
         var contentType = "application/octet-stream";
-        args.Headers?.TryGetValue("Content-Type", out contentType);
+        _ = (args.Headers?.TryGetValue("Content-Type", out contentType));
         var requestMessageBuilder =
             await CreateRequest(args.RequestMethod,
                 args.BucketName,

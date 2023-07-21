@@ -671,7 +671,7 @@ public partial class MinioClient : IObjectOperations
             .WithVersionId(args.SourceObject.VersionId)
             .WithServerSideEncryption(sseGet);
         var stat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
-        args.WithCopyObjectSourceStats(stat);
+        _ = args.WithCopyObjectSourceStats(stat);
         if (stat.TaggingCount > 0 && !args.ReplaceTagsDirective)
         {
             var getTagArgs = new GetObjectTagsArgs()
@@ -680,7 +680,7 @@ public partial class MinioClient : IObjectOperations
                 .WithVersionId(args.SourceObject.VersionId)
                 .WithServerSideEncryption(sseGet);
             var tag = await GetObjectTagsAsync(getTagArgs, cancellationToken).ConfigureAwait(false);
-            args.WithTagging(tag);
+            _ = args.WithTagging(tag);
         }
 
         args.Validate();
@@ -732,8 +732,8 @@ public partial class MinioClient : IObjectOperations
             if (args.SourceObject.SSE is not null && args.SourceObject.SSE is SSECopy)
                 args.SourceObject.SSE.Marshal(newMeta);
             args.SSE?.Marshal(newMeta);
-            cpReqArgs.WithHeaders(newMeta);
-            await CopyObjectRequestAsync(cpReqArgs, cancellationToken).ConfigureAwait(false);
+            _ = cpReqArgs.WithHeaders(newMeta);
+            _ = await CopyObjectRequestAsync(cpReqArgs, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -999,7 +999,7 @@ public partial class MinioClient : IObjectOperations
             .WithUploadId(uploadId)
             .WithETags(etags);
         // Complete multi part upload
-        await CompleteMultipartUploadAsync(completeMultipartUploadArgs, cancellationToken).ConfigureAwait(false);
+        _ = await CompleteMultipartUploadAsync(completeMultipartUploadArgs, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

@@ -123,7 +123,7 @@ public class CertificateIdentityProvider : IClientProvider
             ClientCertificateOptions = ClientCertificateOption.Manual,
             SslProtocols = SslProtocols.Tls12
         };
-        handler.ClientCertificates.Add(ClientCertificate);
+        _ = handler.ClientCertificates.Add(ClientCertificate);
         HttpClient ??= new HttpClient(handler)
         {
             BaseAddress = new Uri(StsEndpoint)

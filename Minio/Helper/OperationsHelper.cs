@@ -46,7 +46,7 @@ public partial class MinioClient : IMinioClient
             .WithUnModifiedSince(args.UnModifiedSince)
             .WithServerSideEncryption(args.SSE)
             .WithHeaders(args.Headers);
-        if (args.OffsetLengthSet) statArgs.WithOffsetAndLength(args.ObjectOffset, args.ObjectLength);
+        if (args.OffsetLengthSet) _ = statArgs.WithOffsetAndLength(args.ObjectOffset, args.ObjectLength);
         var objStat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
         args?.Validate();
         if (args.FileName is not null)
