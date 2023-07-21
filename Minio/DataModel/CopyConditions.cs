@@ -129,7 +129,7 @@ public class CopyConditions
     public void SetByteRange(long firstByte, long lastByte)
     {
         if (firstByte < 0 || lastByte < firstByte)
-            throw new ArgumentException("Range start less than zero or range end less than range start");
+            throw new ArgumentOutOfRangeException(nameof(lastByte), "Range start less than zero or range end less than range start");
 
         byteRangeStart = firstByte;
         byteRangeEnd = lastByte;

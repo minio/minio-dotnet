@@ -34,16 +34,16 @@ public partial class MinioClient : IMinioClient
     /// <summary>
     ///     Default error handling delegate
     /// </summary>
-    private readonly ApiResponseErrorHandler _defaultErrorHandlingDelegate = response =>
+    private readonly ApiResponseErrorHandler defaultErrorHandlingDelegate = response =>
     {
-        if (response.StatusCode < HttpStatusCode.OK || response.StatusCode >= HttpStatusCode.BadRequest)
+        if (response.StatusCode is < HttpStatusCode.OK or >= HttpStatusCode.BadRequest)
             ParseError(response);
     };
 
     internal readonly IEnumerable<ApiResponseErrorHandler> NoErrorHandlers =
         Enumerable.Empty<ApiResponseErrorHandler>();
-
-    private string CustomUserAgent = string.Empty;
+    private static readonly char[] separator = new[] { '/' };
+    private string customUserAgent = string.Empty;
     private bool disposedValue;
 
     internal bool DisposeHttpClient = true;
@@ -115,7 +115,7 @@ public partial class MinioClient : IMinioClient
     /// <summary>
     ///     Returns the User-Agent header for the request
     /// </summary>
-    internal string FullUserAgent => $"{SystemUserAgent} {CustomUserAgent}";
+    internal string FullUserAgent => $"{SystemUserAgent} {customUserAgent}";
 
     /// <summary>
     ///     Runs httpClient's GetAsync method
@@ -146,7 +146,7 @@ public partial class MinioClient : IMinioClient
         if (string.IsNullOrEmpty(appVersion))
             throw new ArgumentException("Appversion cannot be null or empty", nameof(appVersion));
 
-        CustomUserAgent = $"{appName}/{appVersion}";
+        customUserAgent = $"{appName}/{appVersion}";
     }
 
     /// <summary>
@@ -509,7 +509,7 @@ public partial class MinioClient : IMinioClient
         errorResponse.Resource = pathAndQuery;
 
         // zero, one or two segments
-        var resourceSplits = pathAndQuery.Split(new[] { '/' }, 2, StringSplitOptions.RemoveEmptyEntries);
+        var resourceSplits = pathAndQuery.Split(separator, 2, StringSplitOptions.RemoveEmptyEntries);
 
         if (HttpStatusCode.NotFound.Equals(response.StatusCode))
         {
@@ -665,7 +665,7 @@ public partial class MinioClient : IMinioClient
         foreach (var handler in handlers) handler(response);
 
         // Fall back default error handler
-        _defaultErrorHandlingDelegate(response);
+        defaultErrorHandlingDelegate(response);
     }
 
     /// <summary>

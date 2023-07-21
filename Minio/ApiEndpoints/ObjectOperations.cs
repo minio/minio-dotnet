@@ -81,7 +81,7 @@ public partial class MinioClient : IObjectOperations
         using var response =
             await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
-        var selectObjectContentResponse =
+        using var selectObjectContentResponse =
             new SelectObjectContentResponse(response.StatusCode, response.Content, response.ContentBytes);
         return selectObjectContentResponse.ResponseStream;
     }
@@ -570,7 +570,7 @@ public partial class MinioClient : IObjectOperations
         args.SSE?.Marshal(args.Headers);
 
         var isSnowball = args.Headers.ContainsKey("X-Amz-Meta-Snowball-Auto-Extract") &&
-                         Convert.ToBoolean(args.Headers["X-Amz-Meta-Snowball-Auto-Extract"]);
+                         Convert.ToBoolean(args.Headers["X-Amz-Meta-Snowball-Auto-Extract"], System.Globalization.CultureInfo.InvariantCulture);
 
         // Upload object in single part if size falls under restricted part size
         // or the request has snowball objects
@@ -690,7 +690,7 @@ public partial class MinioClient : IObjectOperations
         if (srcByteRangeSize > args.SourceObjectInfo.Size ||
             (srcByteRangeSize > 0 &&
              args.SourceObject.CopyOperationConditions.byteRangeEnd >= args.SourceObjectInfo.Size))
-            throw new ArgumentException("Specified byte range (" +
+            throw new ArgumentOutOfRangeException(nameof(srcByteRangeSize), "Specified byte range (" +
                                         args.SourceObject.CopyOperationConditions.byteRangeStart +
                                         "-" + args.SourceObject.CopyOperationConditions.byteRangeEnd +
                                         ") does not fit within source object (size=" +
@@ -729,7 +729,7 @@ public partial class MinioClient : IObjectOperations
                 newMeta = new Dictionary<string, string>(args.Headers, StringComparer.Ordinal);
             else
                 newMeta = new Dictionary<string, string>(args.SourceObjectInfo.MetaData, StringComparer.Ordinal);
-            if (args.SourceObject.SSE is not null && args.SourceObject.SSE is SSECopy)
+            if (args.SourceObject.SSE is not null and SSECopy)
                 args.SourceObject.SSE.Marshal(newMeta);
             args.SSE?.Marshal(newMeta);
             _ = cpReqArgs.WithHeaders(newMeta);
@@ -970,7 +970,7 @@ public partial class MinioClient : IObjectOperations
                 queryMap.Add("partNumber", partNumber.ToString(CultureInfo.InvariantCulture));
             }
 
-            if (args.SourceObject.SSE is not null && args.SourceObject.SSE is SSECopy)
+            if (args.SourceObject.SSE is not null and SSECopy)
                 args.SourceObject.SSE.Marshal(args.Headers);
             args.SSE?.Marshal(args.Headers);
             var cpPartArgs = new CopyObjectRequestArgs()
