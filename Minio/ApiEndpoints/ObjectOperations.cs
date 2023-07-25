@@ -1387,7 +1387,7 @@ public partial class MinioClient : IObjectOperations
                     }
                 };
 
-            if (sseSrc is not null && sseSrc is SSECopy) sseSrc.Marshal(customHeader);
+            if (sseSrc is not null and SSECopy) sseSrc.Marshal(customHeader);
             sseDest?.Marshal(customHeader);
 
             var cpPartResult = (CopyPartResult)await CopyObjectRequestAsync(bucketName, objectName,

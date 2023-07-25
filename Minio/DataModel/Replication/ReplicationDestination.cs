@@ -32,7 +32,7 @@ public class ReplicationDestination
 {
     public ReplicationDestination(AccessControlTranslation accessControlTranslation, string account,
         string bucketARN, EncryptionConfiguration encryptionConfiguration,
-        Metrics metrics, ReplicationTime replicationTime, string storageClass)
+        ReplicationMetrics metrics, ReplicationTime replicationTime, string storageClass)
     {
         AccessControlTranslation = accessControlTranslation;
         Account = account;
@@ -59,7 +59,7 @@ public class ReplicationDestination
     public EncryptionConfiguration EncryptionConfiguration { get; set; }
 
     [XmlElement(ElementName = "Metrics", IsNullable = true)]
-    public Metrics Metrics { get; set; }
+    public ReplicationMetrics Metrics { get; set; }
 
     [XmlElement(ElementName = "ReplicationTime", IsNullable = true)]
     public ReplicationTime ReplicationTime { get; set; }
