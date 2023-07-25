@@ -45,7 +45,7 @@ public class CertificateIdentityProvider : IClientProvider
     internal string StsEndpoint { get; set; }
     internal int DurationInSeconds { get; set; }
     internal X509Certificate2 ClientCertificate { get; set; }
-    internal string PostEndpoint { get; set; }
+    internal Uri PostEndpoint { get; set; }
     internal HttpClient HttpClient { get; set; }
     internal AccessCredentials Credentials { get; set; }
 
@@ -116,7 +116,7 @@ public class CertificateIdentityProvider : IClientProvider
         query["Version"] = "2011-06-15";
         query["DurationInSeconds"] = DurationInSeconds.ToString(CultureInfo.InvariantCulture);
         builder.Query = query.ToString();
-        PostEndpoint = builder.ToString();
+        PostEndpoint = builder.Uri;
 
         var handler = new HttpClientHandler
         {

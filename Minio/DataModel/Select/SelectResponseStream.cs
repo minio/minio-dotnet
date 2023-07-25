@@ -25,7 +25,7 @@ using Minio.Helper;
 namespace Minio.DataModel.Select;
 
 [Serializable]
-public class SelectResponseStream : IDisposable
+public sealed class SelectResponseStream : IDisposable
 {
     private readonly Memory<byte> messageCRC = new byte[4];
     private readonly MemoryStream payloadStream;
@@ -63,7 +63,7 @@ public class SelectResponseStream : IDisposable
     [XmlElement("Progress", IsNullable = false)]
     public ProgressMessage Progress { get; set; }
 
-    public virtual void Dispose()
+    public void Dispose()
     {
         if (disposed)
         {
@@ -76,7 +76,7 @@ public class SelectResponseStream : IDisposable
         disposed = true;
     }
 
-    protected int ReadFromStream(Span<byte> buffer)
+    private int ReadFromStream(Span<byte> buffer)
     {
         var read = -1;
         if (!isProcessing) return read;
@@ -218,7 +218,7 @@ public class SelectResponseStream : IDisposable
         payloadStream.Close();
     }
 
-    protected IDictionary<string, string> ExtractHeaders(Span<byte> data)
+    private IDictionary<string, string> ExtractHeaders(Span<byte> data)
     {
         var headerMap = new Dictionary<string, string>(StringComparer.Ordinal);
         var offset = 0;
