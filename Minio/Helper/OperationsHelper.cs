@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -76,7 +76,7 @@ public partial class MinioClient : IMinioClient
         Utils.ValidateFile(tempFileName);
         if (File.Exists(tempFileName)) File.Delete(tempFileName);
 
-        var callbackAsync = async (Stream stream, CancellationToken cancellationToken) =>
+        async Task callbackAsync(Stream stream, CancellationToken cancellationToken)
         {
             using var dest = new FileStream(tempFileName, FileMode.Create, FileAccess.Write);
 #if NETSTANDARD
@@ -84,7 +84,7 @@ public partial class MinioClient : IMinioClient
 #else
             await stream.CopyToAsync(dest, cancellationToken).ConfigureAwait(false);
 #endif
-        };
+        }
 
 #pragma warning disable IDISP001 // Dispose created
         var cts = new CancellationTokenSource();
