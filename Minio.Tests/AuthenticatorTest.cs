@@ -129,8 +129,7 @@ public class AuthenticatorTest
             "http://localhost:9001/bucket/object-name?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=my-access-key%2F20200501%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200501T154533Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host");
         var headersToSign = new SortedDictionary<string, string>(StringComparer.Ordinal)
         {
-            { "X-Special".ToLowerInvariant(), "special" },
-            { "Content-Language".ToLowerInvariant(), "en" }
+            { "X-Special".ToLowerInvariant(), "special" }, { "Content-Language".ToLowerInvariant(), "en" }
         };
 
         var canonicalRequest = authenticator.GetPresignCanonicalRequest(HttpMethod.Put, request, headersToSign);
@@ -150,8 +149,7 @@ public class AuthenticatorTest
             "http://localhost:9001/bucket/object-name?uploadId=upload-id&partNumber=1&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=my-access-key%2F20200501%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200501T154533Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host");
         var headersToSign = new SortedDictionary<string, string>(StringComparer.Ordinal)
         {
-            { "X-Special".ToLowerInvariant(), "special" },
-            { "Content-Language".ToLowerInvariant(), "en" }
+            { "X-Special".ToLowerInvariant(), "special" }, { "Content-Language".ToLowerInvariant(), "en" }
         };
 
         var canonicalRequest = authenticator.GetPresignCanonicalRequest(HttpMethod.Put, request, headersToSign);

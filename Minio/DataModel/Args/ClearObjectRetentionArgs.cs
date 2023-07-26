@@ -31,11 +31,7 @@ public class ClearObjectRetentionArgs : ObjectVersionArgs<ClearObjectRetentionAr
     public static string EmptyRetentionConfigXML()
     {
         using var sw = new StringWriter(CultureInfo.InvariantCulture);
-        var settings = new XmlWriterSettings
-        {
-            OmitXmlDeclaration = true,
-            Indent = true
-        };
+        var settings = new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true };
         using var xw = XmlWriter.Create(sw, settings);
         xw.WriteStartElement("Retention");
         xw.WriteString("");
