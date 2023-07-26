@@ -32,11 +32,11 @@ public class LifecycleRule
     public static readonly string LifecycleRuleStatusEnabled = "Enabled";
     public static readonly string LifecycleRuleStatusDisabled = "Disabled";
 
-    private RuleFilter ruleFilter;
+    private RuleFilter filter;
 
     public LifecycleRule()
     {
-        ruleFilter = new RuleFilter();
+        filter = new RuleFilter();
     }
 
     public LifecycleRule(AbortIncompleteMultipartUpload abortIncompleteMultipartUpload, string id,
@@ -75,14 +75,14 @@ public class LifecycleRule
     [XmlElement("Filter", IsNullable = true)]
     public RuleFilter Filter
     {
-        get => ruleFilter;
+        get => filter;
         set
         {
             // The filter must not be missing, even if it is empty.
             if (value is null)
-                ruleFilter = new RuleFilter();
+                filter = new RuleFilter();
             else
-                ruleFilter = value;
+                filter = value;
         }
     }
 
