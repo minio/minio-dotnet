@@ -38,10 +38,7 @@ public class CreateBucketConfiguration
 
     public string ToXml()
     {
-        var settings = new XmlWriterSettings
-        {
-            OmitXmlDeclaration = true
-        };
+        var settings = new XmlWriterSettings { OmitXmlDeclaration = true };
         using var ms = new MemoryStream();
         using var writer = XmlWriter.Create(ms, settings);
         var names = new XmlSerializerNamespaces();

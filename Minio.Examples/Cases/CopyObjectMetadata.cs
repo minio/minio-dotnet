@@ -38,11 +38,7 @@ internal static class CopyObjectMetadata
 
             // set custom metadata
             var metadata = new Dictionary<string, string>
-                (StringComparer.Ordinal)
-                {
-                    { "Content-Type", "application/css" },
-                    { "Mynewkey", "my-new-value" }
-                };
+                (StringComparer.Ordinal) { { "Content-Type", "application/css" }, { "Mynewkey", "my-new-value" } };
 
             var copySourceObjectArgs = new CopySourceObjectArgs()
                 .WithBucket(fromBucketName)
