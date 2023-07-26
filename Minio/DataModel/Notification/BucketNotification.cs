@@ -138,10 +138,7 @@ public class BucketNotification
     /// <returns></returns>
     public string ToXML()
     {
-        var settings = new XmlWriterSettings
-        {
-            OmitXmlDeclaration = true
-        };
+        var settings = new XmlWriterSettings { OmitXmlDeclaration = true };
         using var ms = new MemoryStream();
         using var xmlWriter = XmlWriter.Create(ms, settings);
         var names = new XmlSerializerNamespaces();

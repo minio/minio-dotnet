@@ -15,6 +15,7 @@
  */
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Globalization;
 using System.Reflection;
@@ -89,7 +90,8 @@ public static class Utils
     }
 
     // Return url encoded string where reserved characters have been percent-encoded
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0074:Avoid implicit culture-sensitive methods", Justification = "Not possible right now with netstandard2.0 support")]
+    [SuppressMessage("Usage", "MA0074:Avoid implicit culture-sensitive methods",
+        Justification = "Not possible right now with netstandard2.0 support")]
     internal static string UrlEncode(string input)
     {
         // The following characters are not allowed on the server side
@@ -855,10 +857,7 @@ public static class Utils
 
         try
         {
-            var settings = new XmlWriterSettings
-            {
-                OmitXmlDeclaration = true
-            };
+            var settings = new XmlWriterSettings { OmitXmlDeclaration = true };
             var ns = new XmlSerializerNamespaces();
             ns.Add("", nmspc);
 

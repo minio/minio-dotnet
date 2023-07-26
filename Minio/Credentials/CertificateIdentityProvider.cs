@@ -120,14 +120,10 @@ public class CertificateIdentityProvider : IClientProvider
 
         var handler = new HttpClientHandler
         {
-            ClientCertificateOptions = ClientCertificateOption.Manual,
-            SslProtocols = SslProtocols.Tls12
+            ClientCertificateOptions = ClientCertificateOption.Manual, SslProtocols = SslProtocols.Tls12
         };
         _ = handler.ClientCertificates.Add(ClientCertificate);
-        HttpClient ??= new HttpClient(handler)
-        {
-            BaseAddress = new Uri(StsEndpoint)
-        };
+        HttpClient ??= new HttpClient(handler) { BaseAddress = new Uri(StsEndpoint) };
 
         Credentials = GetCredentials();
         return this;

@@ -1,4 +1,10 @@
-﻿using System;
+﻿using System.IO.Hashing;
+using System.Text;
+using System.Xml.Serialization;
+using CommunityToolkit.HighPerformance;
+using Minio.Exceptions;
+using Minio.Helper;
+
 /*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
@@ -15,13 +21,6 @@
  * limitations under the License.
  */
 
-using System.IO.Hashing;
-using System.Text;
-using System.Xml.Serialization;
-using CommunityToolkit.HighPerformance;
-using Minio.Exceptions;
-using Minio.Helper;
-
 namespace Minio.DataModel.Select;
 
 [Serializable]
@@ -31,9 +30,9 @@ public sealed class SelectResponseStream : IDisposable
     private readonly MemoryStream payloadStream;
     private readonly Memory<byte> prelude = new byte[8];
     private readonly Memory<byte> preludeCRC = new byte[4];
+    private bool disposed;
 
     private bool isProcessing;
-    private bool disposed;
 
     public SelectResponseStream()
     {
@@ -65,10 +64,7 @@ public sealed class SelectResponseStream : IDisposable
 
     public void Dispose()
     {
-        if (disposed)
-        {
-            return;
-        }
+        if (disposed) return;
 
         payloadStream?.Dispose();
         Payload?.Dispose();

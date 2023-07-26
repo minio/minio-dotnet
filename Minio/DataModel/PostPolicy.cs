@@ -145,7 +145,8 @@ public class PostPolicy
     /// <param name="endRange"></param>
     public void SetContentRange(long startRange, long endRange)
     {
-        if (startRange < 0 || endRange < 0) throw new ArgumentOutOfRangeException(nameof(endRange), "Negative start or end range");
+        if (startRange < 0 || endRange < 0)
+            throw new ArgumentOutOfRangeException(nameof(endRange), "Negative start or end range");
 
         if (startRange > endRange)
             throw new ArgumentException("Start range is greater than end range", nameof(startRange));

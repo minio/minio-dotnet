@@ -61,10 +61,7 @@ public class ObjectStat
             throw new ArgumentNullException(nameof(objectName), "Name of an object cannot be empty");
         if (responseHeaders is null) throw new ArgumentNullException(nameof(responseHeaders));
 
-        var objInfo = new ObjectStat
-        {
-            ObjectName = objectName
-        };
+        var objInfo = new ObjectStat { ObjectName = objectName };
         foreach (var paramName in responseHeaders.Keys)
         {
             var paramValue = responseHeaders[paramName];

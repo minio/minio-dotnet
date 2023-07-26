@@ -42,8 +42,7 @@ internal class V4Authenticator
     //
     private static readonly HashSet<string> ignoredHeaders = new(StringComparer.OrdinalIgnoreCase)
     {
-        "authorization",
-        "user-agent"
+        "authorization", "user-agent"
     };
 
     private readonly string accessKey;

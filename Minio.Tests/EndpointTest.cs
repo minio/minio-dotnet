@@ -33,10 +33,7 @@ public class EndpointTest
             new object[] { "testbucket.s3.amazonaws.com", true }
         };
 
-        object[] parameterValuesArray1 =
-        {
-            "s3.amazonaws.com", true, "testbucket", "testobject", false
-        };
+        object[] parameterValuesArray1 = { "s3.amazonaws.com", true, "testbucket", "testobject", false };
 
         object[][] testCases =
         {
@@ -52,45 +49,34 @@ public class EndpointTest
             },
             new object[]
             {
-                new object[] { "s3.amazonaws.com", true },
-                new object[] { "https://s3.amazonaws.com", null, true }
-            },
-
-            new object[]
-            {
-                new object[] { "s3.amazonaws.com", false },
-                new object[] { "http://s3.amazonaws.com", null, true }
-            },
-
-            new object[]
-            {
-                new object[] { "192.168.1.1:9000", false },
-                new object[] { "http://192.168.1.1:9000", null, true }
+                new object[] { "s3.amazonaws.com", true }, new object[] { "https://s3.amazonaws.com", null, true }
             },
             new object[]
             {
-                new object[] { "192.168.1.1:9000", true },
-                new object[] { "https://192.168.1.1:9000", null, true }
+                new object[] { "s3.amazonaws.com", false }, new object[] { "http://s3.amazonaws.com", null, true }
             },
             new object[]
             {
-                new object[] { "13333.123123.-", true },
-                new object[]
+                new object[] { "192.168.1.1:9000", false }, new object[] { "http://192.168.1.1:9000", null, true }
+            },
+            new object[]
+            {
+                new object[] { "192.168.1.1:9000", true }, new object[] { "https://192.168.1.1:9000", null, true }
+            },
+            new object[]
+            {
+                new object[] { "13333.123123.-", true }, new object[]
                 {
-                    "",
-                    new InvalidEndpointException(
+                    "", new InvalidEndpointException(
                         "Endpoint: 13333.123123.- does not follow ip address or domain name standards."),
                     false
                 }
             },
-
             new object[]
             {
-                new object[] { "s3.aamzza.-", true },
-                new object[]
+                new object[] { "s3.aamzza.-", true }, new object[]
                 {
-                    "",
-                    new InvalidEndpointException(
+                    "", new InvalidEndpointException(
                         "Endpoint: s3.aamzza.- does not follow ip address or domain name standards."),
                     false
                 }
@@ -100,7 +86,9 @@ public class EndpointTest
                 new object[] { "", true },
                 new object[]
                 {
-                    "", new InvalidEndpointException("Endpoint:  does not follow ip address or domain name standards."),
+                    "",
+                    new InvalidEndpointException(
+                        "Endpoint:  does not follow ip address or domain name standards."),
                     false
                 }
             }

@@ -39,7 +39,13 @@ namespace Minio;
 public partial class MinioClient : IObjectOperations
 {
     private readonly List<string> supportedHeaders = new()
-        { "cache-control", "content-encoding", "content-type", "x-amz-acl", "content-disposition" };
+    {
+        "cache-control",
+        "content-encoding",
+        "content-type",
+        "x-amz-acl",
+        "content-disposition"
+    };
 
     /// <summary>
     ///     Get an object. The object will be streamed to the callback given by the user.
@@ -570,7 +576,8 @@ public partial class MinioClient : IObjectOperations
         args.SSE?.Marshal(args.Headers);
 
         var isSnowball = args.Headers.ContainsKey("X-Amz-Meta-Snowball-Auto-Extract") &&
-                         Convert.ToBoolean(args.Headers["X-Amz-Meta-Snowball-Auto-Extract"], System.Globalization.CultureInfo.InvariantCulture);
+                         Convert.ToBoolean(args.Headers["X-Amz-Meta-Snowball-Auto-Extract"],
+                             CultureInfo.InvariantCulture);
 
         // Upload object in single part if size falls under restricted part size
         // or the request has snowball objects
@@ -691,10 +698,12 @@ public partial class MinioClient : IObjectOperations
             (srcByteRangeSize > 0 &&
              args.SourceObject.CopyOperationConditions.byteRangeEnd >= args.SourceObjectInfo.Size))
             throw new ArgumentOutOfRangeException(nameof(srcByteRangeSize), "Specified byte range (" +
-                                        args.SourceObject.CopyOperationConditions.byteRangeStart +
-                                        "-" + args.SourceObject.CopyOperationConditions.byteRangeEnd +
-                                        ") does not fit within source object (size=" +
-                                        args.SourceObjectInfo.Size + ")");
+                                                                            args.SourceObject.CopyOperationConditions
+                                                                                .byteRangeStart +
+                                                                            "-" + args.SourceObject
+                                                                                .CopyOperationConditions.byteRangeEnd +
+                                                                            ") does not fit within source object (size=" +
+                                                                            args.SourceObjectInfo.Size + ")");
 
         if (copySize > Constants.MaxSingleCopyObjectSize ||
             (srcByteRangeSize > 0 &&
@@ -892,7 +901,9 @@ public partial class MinioClient : IObjectOperations
 
             numPartsUploaded++;
             totalParts[partNumber - 1] = new Part
-                { PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize };
+            {
+                PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize
+            };
             etags[partNumber] = etag;
             if (!dataToCopy.IsEmpty) progressReport.TotalBytesTransferred += dataToCopy.Length;
             if (args.ObjectSize != -1) progressReport.Percentage = (int)(100 * partNumber / partCount);
@@ -990,7 +1001,9 @@ public partial class MinioClient : IObjectOperations
                 (CopyPartResult)await CopyObjectRequestAsync(cpPartArgs, cancellationToken).ConfigureAwait(false);
 
             totalParts[partNumber - 1] = new Part
-                { PartNumber = partNumber, ETag = cpPartResult.ETag, Size = (long)expectedReadSize };
+            {
+                PartNumber = partNumber, ETag = cpPartResult.ETag, Size = (long)expectedReadSize
+            };
         }
 
         var etags = new Dictionary<int, string>();
@@ -1396,9 +1409,7 @@ public partial class MinioClient : IObjectOperations
 
             totalParts[partNumber - 1] = new Part
             {
-                PartNumber = partNumber,
-                ETag = cpPartResult.ETag,
-                Size = (long)expectedReadSize
+                PartNumber = partNumber, ETag = cpPartResult.ETag, Size = (long)expectedReadSize
             };
         }
 
