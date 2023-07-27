@@ -869,6 +869,13 @@ public partial class MinioClient : IObjectOperations
         double partSize = multiPartInfo.partSize;
         double partCount = multiPartInfo.partCount;
         double lastPartSize = multiPartInfo.lastPartSize;
+        // for small size objects when object's size < part size
+        if (args.ObjectSize < partSize && args.ObjectSize != -1)
+        {
+            partSize = args.ObjectSize;
+            lastPartSize = 0;
+        }
+
         var totalParts = new Part[(int)partCount];
 
         var expectedReadSize = partSize;

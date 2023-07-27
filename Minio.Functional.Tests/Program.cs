@@ -33,6 +33,7 @@ internal static class Program
         var kmsEnabled = "0";
         var port = 80;
 
+        AppContext.SetSwitch("System.Net.Http.UseSocketsHttpHandler", false);
         var useAWS = Environment.GetEnvironmentVariable("AWS_ENDPOINT") is not null;
         if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") is not null)
         {
@@ -40,9 +41,9 @@ internal static class Program
             var posColon = endPoint.LastIndexOf(':');
             if (posColon != -1)
             {
-                port = int.Parse(endPoint.Substring(posColon + 1, endPoint.Length - posColon - 1), NumberStyles.Integer,
+                port = int.Parse(endPoint.AsSpan(posColon + 1, endPoint.Length - posColon - 1), NumberStyles.Integer,
                     CultureInfo.InvariantCulture);
-                endPoint = endPoint.Substring(0, posColon);
+                endPoint = endPoint[..posColon];
             }
 
             accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
@@ -205,10 +206,10 @@ internal static class Program
         // FunctionalTest.PresignedPostPolicy_Test1(minioClient).Wait();
 
         // Test incomplete uploads
-        functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test1(minioClient));
-        functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test2(minioClient));
-        functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test3(minioClient));
-        functionalTestTasks.Add(FunctionalTest.RemoveIncompleteUpload_Test(minioClient));
+        await FunctionalTest.ListIncompleteUpload_Test1(minioClient);
+        await FunctionalTest.ListIncompleteUpload_Test2(minioClient);
+        await FunctionalTest.ListIncompleteUpload_Test3(minioClient);
+        await FunctionalTest.RemoveIncompleteUpload_Test(minioClient);
 
         // Test GetBucket policy
         functionalTestTasks.Add(FunctionalTest.GetBucketPolicy_Test1(minioClient));

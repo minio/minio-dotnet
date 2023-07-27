@@ -206,7 +206,7 @@ public partial class MinioClient : IMinioClient
     ///     Expected to be called from CreateRequest
     /// </summary>
     /// <param name="args">The child object of Args class</param>
-    private void ArgsCheck(RequestArgs args)
+    private static void ArgsCheck(RequestArgs args)
     {
         if (args is null)
             throw new ArgumentNullException(nameof(args),
@@ -403,12 +403,6 @@ public partial class MinioClient : IMinioClient
         CancellationToken cancellationToken = default)
     {
         var startTime = DateTime.Now;
-        // Logs full url when HTTPtracing is enabled.
-        if (trace)
-        {
-            var fullUrl = requestMessageBuilder.RequestUri;
-        }
-
         var v4Authenticator = new V4Authenticator(Secure,
             AccessKey, SecretKey, Region,
             SessionToken);
@@ -611,8 +605,10 @@ public partial class MinioClient : IMinioClient
 
         if (response.StatusCode.Equals(HttpStatusCode.NotImplemented)
             && errResponse.Code.Equals("NotImplemented", StringComparison.OrdinalIgnoreCase))
+        {
 #pragma warning disable MA0025 // Implement the functionality instead of throwing NotImplementedException
             throw new NotImplementedException(errResponse.Message);
+        }
 #pragma warning restore MA0025 // Implement the functionality instead of throwing NotImplementedException
 
         if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
@@ -723,6 +719,7 @@ public partial class MinioClient : IMinioClient
             if (disposing)
                 if (DisposeHttpClient)
                     HttpClient?.Dispose();
+
             disposedValue = true;
         }
     }
