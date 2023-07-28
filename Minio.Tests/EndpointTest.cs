@@ -83,11 +83,9 @@ public class EndpointTest
             },
             new object[]
             {
-                new object[] { "", true },
-                new object[]
+                new object[] { "", true }, new object[]
                 {
-                    "",
-                    new InvalidEndpointException(
+                    "", new InvalidEndpointException(
                         "Endpoint:  does not follow ip address or domain name standards."),
                     false
                 }
