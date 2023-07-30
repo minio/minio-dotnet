@@ -87,7 +87,7 @@ public partial class MinioClient : IObjectOperations
         using var response =
             await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
-        using var selectObjectContentResponse =
+        var selectObjectContentResponse =
             new SelectObjectContentResponse(response.StatusCode, response.Content, response.ContentBytes);
         return selectObjectContentResponse.ResponseStream;
     }

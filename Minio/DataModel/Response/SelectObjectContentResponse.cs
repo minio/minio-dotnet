@@ -32,13 +32,14 @@ internal class SelectObjectContentResponse : GenericResponse, IDisposable
         ResponseStream = new SelectResponseStream(stream);
     }
 
-    internal SelectResponseStream ResponseStream { get; }
+    internal SelectResponseStream ResponseStream { get; private set; }
 
     public virtual void Dispose()
     {
         if (disposed) return;
 
         ResponseStream?.Dispose();
+        ResponseStream = null;
 
         disposed = true;
     }
