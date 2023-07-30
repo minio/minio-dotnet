@@ -69,6 +69,8 @@ public sealed class SelectResponseStream : IDisposable
         payloadStream?.Dispose();
         Payload?.Dispose();
 
+        Payload = null;
+
         disposed = true;
     }
 
