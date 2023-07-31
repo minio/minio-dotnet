@@ -150,7 +150,7 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
     {
         ObjectLockSet = true;
         RetentionUntilDate = new DateTime(untilDate.Year, untilDate.Month, untilDate.Day,
-            untilDate.Hour, untilDate.Minute, untilDate.Second);
+            untilDate.Hour, untilDate.Minute, untilDate.Second, untilDate.Kind);
         return this;
     }
 }

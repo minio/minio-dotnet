@@ -229,7 +229,7 @@ public class PostPolicy
     /// <param name="date">Set date for the policy</param>
     public void SetDate(DateTime date)
     {
-        var dateStr = date.ToString("yyyyMMddTHHmmssZ");
+        var dateStr = date.ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
         Conditions.Add(new List<(string, string, string)> { ("eq", "$x-amz-date", dateStr) });
         // this.formData.Add("x-amz-date", dateStr);
     }
@@ -266,7 +266,7 @@ public class PostPolicy
         // expiration and policies will never be empty because of checks at PresignedPostPolicy()
         var sb = new StringBuilder();
         sb.Append('{');
-        sb.Append("\"expiration\":\"").Append(Expiration.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")).Append('"')
+        sb.Append("\"expiration\":\"").Append(Expiration.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")).Append('"')
             .Append(',');
         sb.Append("\"conditions\":[").Append(string.Join(",", policyList)).Append(']');
         sb.Append('}');
