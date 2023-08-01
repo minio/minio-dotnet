@@ -91,5 +91,11 @@ jobs:
           fi
           dotnet Minio.Functional.Tests/bin/Release/net${{ matrix.dotnet-version[0] }}.0/Minio.Functional.Tests.dll
 
+      # Create the Nuget
       - name: Create the Nuget package
         run: dotnet pack ${{ env.Minio_Project_Path }} --no-build --configuration Release --output ./artifacts
+
+      # Push to NuGet
+      - name: Push to NuGet
+        if: startsWith(github.ref, 'refs/tags/')
+        run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
