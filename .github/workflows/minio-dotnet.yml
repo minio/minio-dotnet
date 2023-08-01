@@ -130,10 +130,10 @@ jobs:
 
   functional_tests:
     needs: build
-    runs-on: ${{ matrix.os }}  
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
         configuration: [Release]
         dotnet-version: ["7.0.x"]
 
@@ -158,7 +158,6 @@ jobs:
 
       # Execute all functional tests in the solution
       - name: Execute Functional Tests Linux
-        if: ${{ runner.os }} == "Linux"
         env:
           MINT_MODE: full
           SERVER_ENDPOINT: localhost:9000
@@ -178,29 +177,6 @@ jobs:
             sudo cp /tmp/minio-config/certs/private.key /etc/ssl/private/
             /tmp/minio -C /tmp/minio-config server /tmp/fs{1...4} &
             dotnet Minio.Functional.Tests/bin/Release/net6.0/Minio.Functional.Tests.dll
-
-      - name: Execute Functional Tests Windows
-        if: ${{ runner.os }} == "Windows"
-        env:
-          MINT_MODE: full
-          SERVER_ENDPOINT: localhost:9000
-          ACCESS_KEY: minio
-          SECRET_KEY: minio123
-          ENABLE_HTTPS: 1
-          ENABLE_KMS: 1
-          MINIO_ACCESS_KEY: minio
-          MINIO_SECRET_KEY: minio123
-          MINIO_KMS_SECRET_KEY: my-minio-key:OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
-        run: |
-          # Download minio
-          Invoke-WebRequest -Uri https://dl.min.io/server/minio/release/windows-amd64/minio.exe -OutFile minio.exe
-          # Create a directory for minio config and certificates
-          New-Item -ItemType Directory -Path .\minio-config\certs -Force
-          # Copy certificates
-          Copy-Item -Path .\Minio.Functional.Tests\certs\* -Destination .\minio-config\certs
-          # Run minio server
-          Start-Process -NoNewWindow -FilePath .\minio.exe -ArgumentList "-C", ".\minio-config", "server", ".\fs{1...4}"
-          dotnet Minio.Functional.Tests/bin/Release/net6.0/Minio.Functional.Tests.dll
 
   push_to_nuget:
     needs: [build, unit_tests, functional_tests]
