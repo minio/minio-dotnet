@@ -24,6 +24,7 @@ jobs:
     env:
       Solution_Name: Minio.sln
       Test_Project_Path: ./Minio.Tests/Minio.Tests.csproj
+      Minio_Project_Path: ./Minio/Minio.csproj
 
     steps:
       - name: Checkout
@@ -64,7 +65,7 @@ jobs:
 
       # Execute build tests
       - name: Build & Unit Test
-        run: dotnet test ./Minio.Tests/Minio.Tests.csproj --no-restore
+        run: dotnet test ${{ env.Test_Project_Path }} --no-restore
 
       # Execute all functional tests in the solution
       - name: Execute Functional Tests
@@ -91,4 +92,4 @@ jobs:
           dotnet Minio.Functional.Tests/bin/Release/net${{ matrix.dotnet-version[0] }}.0/Minio.Functional.Tests.dll
 
       - name: Create the Nuget package
-        run: dotnet pack ./Minio/Minio.csproj --no-build --configuration Release --output ./artifacts
+        run: dotnet pack ${{ env.Minio_Project_Path }} --no-build --configuration Release --output ./artifacts
