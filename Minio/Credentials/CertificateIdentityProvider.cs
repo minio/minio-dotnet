@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;

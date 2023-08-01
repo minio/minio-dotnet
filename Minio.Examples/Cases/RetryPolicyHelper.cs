@@ -67,7 +67,7 @@ internal static class RetryPolicyHelper
     {
         return policy is null
             ? null
-            : async executeCallback => await policy.ExecuteAsync(executeCallback).ConfigureAwait(false);
+            : policy.ExecuteAsync;
     }
 
     public static MinioClient WithRetryPolicy(this MinioClient client, AsyncPolicy<ResponseResult> policy)

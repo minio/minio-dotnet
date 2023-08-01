@@ -54,7 +54,7 @@ public sealed class SelectResponseStream : IDisposable
         Start();
     }
 
-    public Stream Payload { get; set; }
+    public Stream Payload { get; private set; }
 
     [XmlElement("Stats", IsNullable = false)]
     public StatsMessage Stats { get; set; }
