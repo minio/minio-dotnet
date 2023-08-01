@@ -114,12 +114,6 @@ jobs:
         configuration: [Release]
         dotnet-version: ["7.0.x"]
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
       # Install .NET
       - name: Setup .NET ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v3
@@ -147,10 +141,6 @@ jobs:
         dotnet-version: ["7.0.x"]
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       # Install .NET
       - name: Setup .NET ${{ matrix.dotnet-version }}
@@ -189,12 +179,9 @@ jobs:
 
   push_to_nuget:
     needs: [build, unit_tests, functional_tests, format-check]
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       # Download the Nuget artifacts
       - name: Download the Nuget artifacts
@@ -211,5 +198,4 @@ jobs:
 
       # Push to NuGet
       - name: Push to NuGet
-        if: startsWith(github.ref, 'refs/tags/')
         run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
