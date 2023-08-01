@@ -91,10 +91,15 @@ jobs:
         with:
           dotnet-version: "7.0.x"
 
-      - name: Install tool dependencies and lint
+      # Install regitlint
+      - name: Install tool dependencies
         run: |
           dotnet tool restore
-          dotnet regitlint -f commits -a ${{ github.sha }} -b head --fail-on-diff
+
+      # Run lint
+      - name: Run lint
+        run: |
+          dotnet regitlint -f commits -a ${{ github.sha }} -b HEAD --fail-on-diff
 
   unit_tests:
     needs: build
