@@ -875,9 +875,9 @@ public partial class MinioClient : IObjectOperations
     {
         args?.Validate();
         var multiPartInfo = Utils.CalculateMultiPartSize(args.ObjectSize);
-        double partSize = multiPartInfo.PartSize;
-        double partCount = multiPartInfo.PartCount;
-        double lastPartSize = multiPartInfo.LastPartSize;
+        var partSize = multiPartInfo.PartSize;
+        var partCount = multiPartInfo.PartCount;
+        var lastPartSize = multiPartInfo.LastPartSize;
         // for small size objects when object's size < part size
         if (args.ObjectSize < partSize && args.ObjectSize != -1)
         {
@@ -955,9 +955,9 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken = default)
     {
         var multiPartInfo = Utils.CalculateMultiPartSize(args.CopySize, true);
-        double partSize = multiPartInfo.PartSize;
-        double partCount = multiPartInfo.PartCount;
-        double lastPartSize = multiPartInfo.LastPartSize;
+        var partSize = multiPartInfo.PartSize;
+        var partCount = multiPartInfo.PartCount;
+        var lastPartSize = multiPartInfo.LastPartSize;
         var totalParts = new Part[(int)partCount];
 
         var nmuArgs = new NewMultipartUploadCopyArgs()
@@ -1366,9 +1366,9 @@ public partial class MinioClient : IObjectOperations
         // For all sizes greater than 5GB or if Copy byte range specified in conditions and byte range larger
         // than minimum part size (5 MB) do multipart.
         var multiPartInfo = Utils.CalculateMultiPartSize(copySize, true);
-        double partSize = multiPartInfo.PartSize;
-        double partCount = multiPartInfo.PartCount;
-        double lastPartSize = multiPartInfo.LastPartSize;
+        var partSize = multiPartInfo.PartSize;
+        var partCount = multiPartInfo.PartCount;
+        var lastPartSize = multiPartInfo.LastPartSize;
         var totalParts = new Part[(int)partCount];
 
         var sseHeaders = new Dictionary<string, string>(StringComparer.Ordinal);

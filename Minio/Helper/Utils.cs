@@ -16,9 +16,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Dynamic;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
@@ -206,7 +204,8 @@ public static class Utils
         return !l2.Except(l1, StringComparer.Ordinal).Any();
     }
 
-    public static async Task ForEachAsync<TSource>(this IEnumerable<TSource> source, bool runInParallel = false, int maxNoOfParallelProcesses = 4) where TSource : Task
+    public static async Task ForEachAsync<TSource>(this IEnumerable<TSource> source, bool runInParallel = false,
+        int maxNoOfParallelProcesses = 4) where TSource : Task
     {
         if (source is null) throw new ArgumentNullException(nameof(source));
 
@@ -219,35 +218,31 @@ public static class Utils
                 {
                     MaxDegreeOfParallelism = maxNoOfParallelProcesses
                 };
-                await Parallel.ForEachAsync(source, parallelOptions, async (task, cancellationToken) => await task.ConfigureAwait(false)).ConfigureAwait(false);
+                await Parallel.ForEachAsync(source, parallelOptions,
+                    async (task, cancellationToken) => await task.ConfigureAwait(false)).ConfigureAwait(false);
 #else
-            await Task.WhenAll(Partitioner.Create(source).GetPartitions(maxNoOfParallelProcesses)
-                .Select(partition => Task.Run(async delegate
-                {
-                    using (partition)
-                    {
-                        while (partition.MoveNext())
-                            await partition.Current.ConfigureAwait(false);
-                    }
-                }
-                ))).ConfigureAwait(false);
+                await Task.WhenAll(Partitioner.Create(source).GetPartitions(maxNoOfParallelProcesses)
+                    .Select(partition => Task.Run(async delegate
+                        {
+                            using (partition)
+                            {
+                                while (partition.MoveNext())
+                                    await partition.Current.ConfigureAwait(false);
+                            }
+                        }
+                    ))).ConfigureAwait(false);
 #endif
             }
             else
             {
-                foreach (var task in source)
-                {
-                    await task.ConfigureAwait(false);
-                }
+                foreach (var task in source) await task.ConfigureAwait(false);
             }
         }
         catch (AggregateException ae)
         {
             foreach (var ex in ae.Flatten().InnerExceptions)
-            {
                 // Handle or log the individual exception 'ex'
                 Console.WriteLine($"Exception occurred: {ex.Message}");
-            }
         }
     }
 
@@ -281,9 +276,9 @@ public static class Utils
         var minPartSize = copy ? Constants.MinimumCOPYPartSize : Constants.MinimumPUTPartSize;
         partSize = (double)Math.Ceiling((decimal)partSize / minPartSize) * minPartSize;
         var partCount = Math.Ceiling(size / partSize);
-        var lastPartSize = size - (partCount - 1) * partSize;
-        
-        return  new MultiPartInfo
+        var lastPartSize = size - ((partCount - 1) * partSize);
+
+        return new MultiPartInfo
         {
             PartSize = partSize,
             PartCount = partCount,

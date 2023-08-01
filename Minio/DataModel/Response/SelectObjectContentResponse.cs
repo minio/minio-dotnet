@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+using System.Net;
+using CommunityToolkit.HighPerformance;
+using Minio.DataModel.Select;
+
 namespace Minio.DataModel.Response;
 
 internal class SelectObjectContentResponse : GenericResponse, IDisposable
