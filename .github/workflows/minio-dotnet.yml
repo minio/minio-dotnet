@@ -14,7 +14,7 @@ concurrency:
 
 env:
   Solution_Name: Minio.sln
-  Test_Project_Path: Minio.Tests.dll
+  Test_Project_Path: ./Minio.Tests/Minio.Tests.csproj
   Minio_Project_Path: ./Minio/Minio.csproj
 
 jobs:
@@ -116,6 +116,11 @@ jobs:
         dotnet-version: ["7.0.x"]
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       # Install .NET
       - name: Setup .NET ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v3
@@ -143,6 +148,11 @@ jobs:
         dotnet-version: ["7.0.x"]
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       # Install .NET
       - name: Setup .NET ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v3

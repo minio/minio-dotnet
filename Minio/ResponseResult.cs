@@ -25,8 +25,8 @@ public sealed class ResponseResult : IDisposable
     private readonly Dictionary<string, string> headers = new(StringComparer.Ordinal);
     private string content;
     private ReadOnlyMemory<byte> contentBytes;
-    private Stream stream;
     private bool disposed;
+    private Stream stream;
 
     public ResponseResult(HttpRequestMessage request, HttpResponseMessage response)
     {
@@ -124,10 +124,7 @@ public sealed class ResponseResult : IDisposable
 
     public void Dispose()
     {
-        if (disposed)
-        {
-            return;
-        }
+        if (disposed) return;
 
         stream?.Dispose();
         Request?.Dispose();
