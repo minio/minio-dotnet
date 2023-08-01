@@ -865,10 +865,10 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        dynamic multiPartInfo = Utils.CalculateMultiPartSize(args.ObjectSize);
-        double partSize = multiPartInfo.partSize;
-        double partCount = multiPartInfo.partCount;
-        double lastPartSize = multiPartInfo.lastPartSize;
+        var multiPartInfo = Utils.CalculateMultiPartSize(args.ObjectSize);
+        double partSize = multiPartInfo.PartSize;
+        double partCount = multiPartInfo.PartCount;
+        double lastPartSize = multiPartInfo.LastPartSize;
         var totalParts = new Part[(int)partCount];
 
         var expectedReadSize = partSize;
@@ -936,10 +936,10 @@ public partial class MinioClient : IObjectOperations
     private async Task MultipartCopyUploadAsync(MultipartCopyUploadArgs args,
         CancellationToken cancellationToken = default)
     {
-        dynamic multiPartInfo = Utils.CalculateMultiPartSize(args.CopySize, true);
-        double partSize = multiPartInfo.partSize;
-        double partCount = multiPartInfo.partCount;
-        double lastPartSize = multiPartInfo.lastPartSize;
+        var multiPartInfo = Utils.CalculateMultiPartSize(args.CopySize, true);
+        double partSize = multiPartInfo.PartSize;
+        double partCount = multiPartInfo.PartCount;
+        double lastPartSize = multiPartInfo.LastPartSize;
         var totalParts = new Part[(int)partCount];
 
         var nmuArgs = new NewMultipartUploadCopyArgs()
@@ -1345,10 +1345,10 @@ public partial class MinioClient : IObjectOperations
     {
         // For all sizes greater than 5GB or if Copy byte range specified in conditions and byte range larger
         // than minimum part size (5 MB) do multipart.
-        dynamic multiPartInfo = Utils.CalculateMultiPartSize(copySize, true);
-        double partSize = multiPartInfo.partSize;
-        double partCount = multiPartInfo.partCount;
-        double lastPartSize = multiPartInfo.lastPartSize;
+        var multiPartInfo = Utils.CalculateMultiPartSize(copySize, true);
+        double partSize = multiPartInfo.PartSize;
+        double partCount = multiPartInfo.PartCount;
+        double lastPartSize = multiPartInfo.LastPartSize;
         var totalParts = new Part[(int)partCount];
 
         var sseHeaders = new Dictionary<string, string>(StringComparer.Ordinal);
