@@ -1,0 +1,202 @@
+name: Minio-dotnet Tests
+
+on:
+  push:
+    branches: [ develop, main ]
+  pull_request:
+    branches: [ develop ]
+
+# This ensures that previous jobs for the PR are canceled when the PR is
+# updated.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+env:
+  Solution_Name: Minio.sln
+  Test_Project_Path: ./Minio.Tests/Minio.Tests.csproj
+  Minio_Project_Path: ./Minio/Minio.csproj
+
+jobs:
+    
+  build:
+    runs-on: ${{ matrix.os }}  
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        configuration: [Release]
+        dotnet-version: ["7.0.x"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # Install .NET
+      - name: Setup .NET ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      # Cache NuGet packages
+      - name: Setup .NET Nuget cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-dotnet-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-dotnet-
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          dotnet restore ${{ env.Solution_Name }}
+
+      # Build
+      - name: Build
+        run: dotnet build ${{ env.Solution_Name }} --no-restore --configuration Release
+
+      # Create the Nuget
+      - name: Create the Nuget package
+        run: dotnet pack ${{ env.Minio_Project_Path }} --no-restore --no-build --configuration Release --output ./artifacts
+
+      # Upload the normal artifacts
+      - name: Upload the build output
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            **/bin/Release/
+            **/obj/Release/
+
+      # Upload the Nuget packages
+      - name: Upload the Nuget packages output
+        uses: actions/upload-artifact@v3
+        with:
+          name: nuget-packages
+          path: ./artifacts/*
+
+  format-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # Install .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "7.0.x"
+
+      # Install regitlint
+      - name: Install tool dependencies
+        run: |
+          dotnet tool restore
+
+      # Run lint
+      - name: Run lint
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            dotnet regitlint -f commits -a ${{ github.sha }} -b ${{ github.event.pull_request.head.sha }} --fail-on-diff
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            dotnet regitlint --fail-on-diff
+          fi
+
+  unit_tests:
+    needs: build
+    runs-on: ${{ matrix.os }}  
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        configuration: [Release]
+        dotnet-version: ["7.0.x"]
+
+    steps:
+      # Install .NET
+      - name: Setup .NET ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      # Download the build artifacts
+      - name: Download the build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: .
+
+      # Execute build tests
+      - name: Build & Unit Test
+        run: dotnet test ${{ env.Test_Project_Path }} --no-restore --no-build --configuration Release
+
+  functional_tests:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        configuration: [Release]
+        dotnet-version: ["7.0.x"]
+
+    steps:
+      # Install .NET
+      - name: Setup .NET ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      # Download the build artifacts
+      - name: Download the build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: .
+
+      # Execute all functional tests in the solution
+      - name: Execute Functional Tests Linux
+        env:
+          MINT_MODE: full
+          SERVER_ENDPOINT: localhost:9000
+          ACCESS_KEY: minio
+          SECRET_KEY: minio123
+          ENABLE_HTTPS: 1
+          ENABLE_KMS: 1
+          MINIO_ACCESS_KEY: minio
+          MINIO_SECRET_KEY: minio123
+          MINIO_KMS_SECRET_KEY: my-minio-key:OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
+        run: |
+            wget --quiet -O /tmp/minio https://dl.min.io/server/minio/release/linux-amd64/minio
+            chmod +x /tmp/minio
+            mkdir -p /tmp/minio-config/certs/
+            cp Minio.Functional.Tests/certs/* /tmp/minio-config/certs/
+            sudo cp /tmp/minio-config/certs/public.crt /etc/ssl/certs/
+            sudo cp /tmp/minio-config/certs/private.key /etc/ssl/private/
+            /tmp/minio -C /tmp/minio-config server /tmp/fs{1...4} &
+            dotnet Minio.Functional.Tests/bin/Release/net6.0/Minio.Functional.Tests.dll
+
+  push_to_nuget:
+    needs: [build, unit_tests, functional_tests, format-check]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+
+    steps:
+      # Download the Nuget artifacts
+      - name: Download the Nuget artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: nuget-packages
+          path: ./artifacts
+
+      # Install .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "7.0.x"
+
+      # Push to NuGet
+      - name: Push to NuGet
+        run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json

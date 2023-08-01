@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
     <PropertyGroup>
         <Copyright>Copyright (c) Minio. All rights reserved</Copyright>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
@@ -33,15 +33,12 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <!--<SymbolPackageFormat>snupkg</SymbolPackageFormat>-->
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <IncludeSymbols>true</IncludeSymbols>
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
 
         <DesignTimeBuild>false</DesignTimeBuild>
-        <DebugType>portable</DebugType>
-        <DebugSymbols>true</DebugSymbols>
-
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <GeneratePackageOnBuild Condition=" '$(IsTestProject)' != 'true'">true</GeneratePackageOnBuild>
         <PackageIcon>icon.png</PackageIcon>
