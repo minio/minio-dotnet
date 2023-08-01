@@ -188,7 +188,7 @@ jobs:
             dotnet Minio.Functional.Tests/bin/Release/net6.0/Minio.Functional.Tests.dll
 
   push_to_nuget:
-    needs: [build, unit_tests, functional_tests]
+    needs: [build, unit_tests, functional_tests, format-check]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
