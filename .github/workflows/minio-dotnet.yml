@@ -158,8 +158,7 @@ jobs:
 
       # Execute all functional tests in the solution
       - name: Execute Functional Tests Linux
-        if: ${{ runner.os }}" == "Linux"
-        shell: bash
+        if: ${{ runner.os }} == "Linux"
         env:
           MINT_MODE: full
           SERVER_ENDPOINT: localhost:9000
@@ -181,7 +180,7 @@ jobs:
             dotnet Minio.Functional.Tests/bin/Release/net6.0/Minio.Functional.Tests.dll
 
       - name: Execute Functional Tests Windows
-        if: ${{ runner.os }}" == "Windows"
+        if: ${{ runner.os }} == "Windows"
         env:
           MINT_MODE: full
           SERVER_ENDPOINT: localhost:9000
