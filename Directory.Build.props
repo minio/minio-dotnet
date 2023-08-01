@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
     <PropertyGroup>
         <Copyright>Copyright (c) Minio. All rights reserved</Copyright>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
