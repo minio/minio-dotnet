@@ -56,11 +56,11 @@ jobs:
 
       # Build
       - name: Build
-        run: dotnet build ${{ env.Solution_Name }} --configuration Release --no-restore
+        run: dotnet build ${{ env.Solution_Name }} --no-restore --configuration Release
 
       # Create the Nuget
       - name: Create the Nuget package
-        run: dotnet pack ${{ env.Minio_Project_Path }} --no-build --configuration Release --output ./artifacts
+        run: dotnet pack ${{ env.Minio_Project_Path }} --no-restore --no-build --configuration Release --output ./artifacts
 
       # Upload the normal artifacts
       - name: Upload the build output
@@ -126,7 +126,7 @@ jobs:
 
       # Execute build tests
       - name: Build & Unit Test
-        run: dotnet test ${{ env.Test_Project_Path }} --no-restore --no-build
+        run: dotnet test ${{ env.Test_Project_Path }} --no-restore --no-build --configuration Release
 
   functional_tests:
     needs: build
