@@ -1,0 +1,84 @@
+name: Minio-dotnet Tests
+
+on:
+  push:
+    branches: [ develop, main ]
+  pull_request:
+    branches: [ develop ]
+
+# This ensures that previous jobs for the PR are canceled when the PR is
+# updated.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        configuration: [Release]
+        dotnet-version: ["6.0.x", "7.0.x"]
+
+    runs-on: ${{ matrix.os }}
+    env:
+      Solution_Name: Minio.sln
+      Test_Project_Path: ./Minio.Tests/Minio.Tests.csproj
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # Install the .NET
+      - name: Setup .NET ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          dotnet clean ${{ env.Solution_Name }} --configuration Release && dotnet nuget locals all --clear
+          dotnet restore ${{ env.Solution_Name }}
+
+      - name: Install tool dependencies and lint
+        run: |
+          dotnet tool restore
+          dotnet regitlint --fail-on-diff
+
+      # Build
+      - name: Build
+        run: dotnet build ${{ env.Solution_Name }} --configuration Release --no-restore
+
+      # Execute build tests
+      - name: Build & Unit Test
+        run: dotnet test ./Minio.Tests/Minio.Tests.csproj --no-restore
+
+      # Execute all functional tests in the solution
+      - name: Execute Functional Tests
+        env:
+          MINT_MODE: full
+          SERVER_ENDPOINT: localhost:9000
+          ACCESS_KEY: minio
+          SECRET_KEY: minio123
+          ENABLE_HTTPS: 1
+          ENABLE_KMS: 1
+          MINIO_ACCESS_KEY: minio
+          MINIO_SECRET_KEY: minio123
+          MINIO_KMS_SECRET_KEY: my-minio-key:OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
+        run: |
+          if [ "${{ runner.os }}" == "Linux" ]; then
+            wget --quiet -O /tmp/minio https://dl.min.io/server/minio/release/linux-amd64/minio
+            chmod +x /tmp/minio
+            mkdir -p /tmp/minio-config/certs/
+            cp Minio.Functional.Tests/certs/* /tmp/minio-config/certs/
+            sudo cp /tmp/minio-config/certs/public.crt /etc/ssl/certs/
+            sudo cp /tmp/minio-config/certs/private.key /etc/ssl/private/
+            /tmp/minio -C /tmp/minio-config server /tmp/fs{1...4} &
+          fi
+          dotnet Minio.Functional.Tests/bin/Release/net${{ matrix.dotnet-version[0] }}.0/Minio.Functional.Tests.dll
+
+      - name: Create the Nuget package
+        run: dotnet pack ./Minio/Minio.csproj --no-build --configuration Release --output ./artifacts
