@@ -249,7 +249,6 @@ internal static class Program
             functionalTestTasks.Add(FunctionalTest.EncryptedCopyObject_Test4(minioClient));
         }
 
-        await Utils.RunInParallel(functionalTestTasks, async (task, _) => { await task.ConfigureAwait(false); })
-            .ConfigureAwait(false);
+        await functionalTestTasks.ForEachAsync().ConfigureAwait(false);
     }
 }

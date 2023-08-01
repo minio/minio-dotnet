@@ -24,10 +24,10 @@ namespace Minio.DataModel.Tags;
 [Serializable]
 [XmlRoot(ElementName = "Tagging")]
 /*
-* References for Tagging.
-* https://docs.aws.amazon.com/AmazonS3/latest/dev/object-tagging.html
-* https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html#tag-restrictions
-*/
+ * References for Tagging.
+ * https://docs.aws.amazon.com/AmazonS3/latest/dev/object-tagging.html
+ * https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html#tag-restrictions
+ */
 public class Tagging
 {
     internal const uint MAX_TAG_COUNT_PER_RESOURCE = 50;
