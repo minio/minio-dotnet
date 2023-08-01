@@ -51,7 +51,6 @@ jobs:
       # Install dependencies
       - name: Install dependencies
         run: |
-          dotnet clean ${{ env.Solution_Name }} --configuration Release && dotnet nuget locals all --clear
           dotnet restore ${{ env.Solution_Name }}
 
       # Build
