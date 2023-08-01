@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
+
 using System.Globalization;
-using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Web;
@@ -24,6 +24,11 @@ using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 using Minio.Exceptions;
 using Minio.Helper;
+#if (NET472_OR_GREATER || NET6_0_OR_GREATER)
+using System.Security.Authentication;
+#else
+using System.Net;
+#endif
 
 /*
  * Certificate Identity Credential provider.
@@ -118,11 +123,13 @@ public class CertificateIdentityProvider : IClientProvider
         builder.Query = query.ToString();
         PostEndpoint = builder.ToString();
 
-        var handler = new HttpClientHandler
-        {
-            ClientCertificateOptions = ClientCertificateOption.Manual,
-            SslProtocols = SslProtocols.Tls12
-        };
+        var handler = new HttpClientHandler();
+        handler.ClientCertificateOptions = ClientCertificateOption.Manual;
+#if (NET472_OR_GREATER || NET6_0_OR_GREATER)
+        handler.SslProtocols = SslProtocols.Tls12;
+#else
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11;
+#endif
         handler.ClientCertificates.Add(ClientCertificate);
         HttpClient ??= new HttpClient(handler)
         {
