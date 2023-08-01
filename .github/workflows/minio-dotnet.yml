@@ -94,7 +94,7 @@ jobs:
       - name: Install tool dependencies and lint
         run: |
           dotnet tool restore
-          dotnet regitlint -f --fail-on-diff commits -a ${{ github.sha }} -b head
+          dotnet regitlint -f commits -a ${{ github.sha }} -b head --fail-on-diff
 
   unit_tests:
     needs: build
