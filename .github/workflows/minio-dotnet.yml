@@ -63,7 +63,8 @@ jobs:
         run: dotnet pack ${{ env.Minio_Project_Path }} --no-build --configuration Release --output ./artifacts
 
       # Upload the normal artifacts
-      - uses: actions/upload-artifact@v3
+      - name: Upload the build output
+        uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
           path: |
@@ -71,7 +72,8 @@ jobs:
             **/obj/Release/
 
       # Upload the Nuget packages
-      - uses: actions/upload-artifact@v3
+      - name: Upload the Nuget packages output
+        uses: actions/upload-artifact@v3
         with:
           name: nuget-packages
           path: ./artifacts/*
