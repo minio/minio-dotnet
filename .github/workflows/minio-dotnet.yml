@@ -67,6 +67,7 @@ jobs:
       - name: Create the Nuget package
         run: dotnet pack ${{ env.Minio_Project_Path }} --no-build --configuration Release --output ./artifacts
 
+      # Upload the normal artifacts
       - uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
@@ -74,6 +75,7 @@ jobs:
             **/bin/Release/
             **/obj/Release/
 
+      # Upload the Nuget packages
       - uses: actions/upload-artifact@v3
         with:
           name: nuget-packages
@@ -100,6 +102,7 @@ jobs:
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
+      # Download the build artifacts
       - uses: actions/download-artifact@v3
         with:
           name: build-artifacts
@@ -130,6 +133,7 @@ jobs:
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
+      # Download the build artifacts
       - uses: actions/download-artifact@v3
         with:
           name: build-artifacts
@@ -168,6 +172,7 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Download the Nuget artifacts
       - uses: actions/download-artifact@v3
         with:
           name: nuget-packages
