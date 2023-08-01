@@ -94,7 +94,7 @@ jobs:
       - name: Install tool dependencies and lint
         run: |
           dotnet tool restore
-          dotnet regitlint -f commits -a $env.GIT_PREVIOUS_SUCCESSFUL_COMMIT -b $env.GIT_COMMIT --fail-on-diff --print-diff
+          dotnet regitlint --fail-on-diff commits -a ${{ github.sha }}"
 
   unit_tests:
     needs: build
