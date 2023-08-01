@@ -79,6 +79,7 @@ jobs:
 
   format-check:
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -114,6 +115,7 @@ jobs:
         configuration: [Release]
         dotnet-version: ["7.0.x"]
 
+    steps:
       # Install .NET
       - name: Setup .NET ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v3
@@ -141,7 +143,6 @@ jobs:
         dotnet-version: ["7.0.x"]
 
     steps:
-
       # Install .NET
       - name: Setup .NET ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v3
@@ -181,8 +182,8 @@ jobs:
     needs: [build, unit_tests, functional_tests, format-check]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
-    steps:
 
+    steps:
       # Download the Nuget artifacts
       - name: Download the Nuget artifacts
         uses: actions/download-artifact@v3
