@@ -12,19 +12,20 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
   cancel-in-progress: true
 
+env:
+  Solution_Name: Minio.sln
+  Test_Project_Path: ./Minio.Tests/Minio.Tests.csproj
+  Minio_Project_Path: ./Minio/Minio.csproj
+
 jobs:
+    
   build:
+    runs-on: ${{ matrix.os }}  
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
         configuration: [Release]
         dotnet-version: ["6.0.x", "7.0.x"]
-
-    runs-on: ${{ matrix.os }}
-    env:
-      Solution_Name: Minio.sln
-      Test_Project_Path: ./Minio.Tests/Minio.Tests.csproj
-      Minio_Project_Path: ./Minio/Minio.csproj
 
     steps:
       - name: Checkout
@@ -32,12 +33,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Install the .NET
+      # Install .NET
       - name: Setup .NET ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
+      - name: Install tool dependencies and lint
+        run: |
+          dotnet tool restore
+          dotnet regitlint --fail-on-diff
 
       # Cache NuGet packages
       - name: Setup .NET Nuget cache
@@ -54,18 +59,81 @@ jobs:
           dotnet clean ${{ env.Solution_Name }} --configuration Release && dotnet nuget locals all --clear
           dotnet restore ${{ env.Solution_Name }}
 
-      - name: Install tool dependencies and lint
-        run: |
-          dotnet tool restore
-          dotnet regitlint --fail-on-diff
-
       # Build
       - name: Build
         run: dotnet build ${{ env.Solution_Name }} --configuration Release --no-restore
 
+      # Create the Nuget
+      - name: Create the Nuget package
+        run: dotnet pack ${{ env.Minio_Project_Path }} --no-build --configuration Release --output ./artifacts
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            **/bin/Release/
+            **/obj/Release/
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: nuget-packages
+          path: ./artifacts/*
+
+  test:
+    needs: build
+    runs-on: ${{ matrix.os }}  
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        configuration: [Release]
+        dotnet-version: ["6.0.x", "7.0.x"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # Install .NET
+      - name: Setup .NET ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: .
+
       # Execute build tests
       - name: Build & Unit Test
         run: dotnet test ${{ env.Test_Project_Path }} --no-restore
+
+  functional_tests:
+    needs: build
+    runs-on: ${{ matrix.os }}  
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        configuration: [Release]
+        dotnet-version: ["6.0.x", "7.0.x"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # Install .NET
+      - name: Setup .NET ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: .
 
       # Execute all functional tests in the solution
       - name: Execute Functional Tests
@@ -91,9 +159,25 @@ jobs:
           fi
           dotnet Minio.Functional.Tests/bin/Release/net${{ matrix.dotnet-version[0] }}.0/Minio.Functional.Tests.dll
 
-      # Create the Nuget
-      - name: Create the Nuget package
-        run: dotnet pack ${{ env.Minio_Project_Path }} --no-build --configuration Release --output ./artifacts
+  push_to_nuget:
+    needs: [build, test, functional_tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: nuget-packages
+          path: ./artifacts
+
+      # Install .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "7.0.x"
 
       # Push to NuGet
       - name: Push to NuGet
