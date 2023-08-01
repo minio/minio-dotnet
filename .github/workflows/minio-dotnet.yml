@@ -95,7 +95,7 @@ jobs:
           dotnet tool restore
           dotnet regitlint --fail-on-diff
 
-  test:
+  unit_tests:
     needs: build
     runs-on: ${{ matrix.os }}  
     strategy:
@@ -124,7 +124,7 @@ jobs:
 
       # Execute build tests
       - name: Build & Unit Test
-        run: dotnet test ${{ env.Test_Project_Path }} --no-restore
+        run: dotnet test ${{ env.Test_Project_Path }} --no-restore --no-build
 
   functional_tests:
     needs: build
@@ -155,6 +155,7 @@ jobs:
 
       # Execute all functional tests in the solution
       - name: Execute Functional Tests
+        shell: bash
         env:
           MINT_MODE: full
           SERVER_ENDPOINT: localhost:9000
@@ -178,7 +179,7 @@ jobs:
           dotnet Minio.Functional.Tests/bin/Release/net6.0/Minio.Functional.Tests.dll
 
   push_to_nuget:
-    needs: [build, test, functional_tests]
+    needs: [build, unit_tests, functional_tests]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
