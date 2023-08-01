@@ -29,10 +29,7 @@ public class AssumeRoleResponse
 
     public string ToXML()
     {
-        var settings = new XmlWriterSettings
-        {
-            OmitXmlDeclaration = true
-        };
+        var settings = new XmlWriterSettings { OmitXmlDeclaration = true };
         using var ms = new MemoryStream();
         using var xmlWriter = XmlWriter.Create(ms, settings);
         var names = new XmlSerializerNamespaces();
@@ -42,7 +39,7 @@ public class AssumeRoleResponse
         cs.Serialize(xmlWriter, this, names);
 
         ms.Flush();
-        ms.Seek(0, SeekOrigin.Begin);
+        _ = ms.Seek(0, SeekOrigin.Begin);
         using var streamReader = new StreamReader(ms);
         return streamReader.ReadToEnd();
     }

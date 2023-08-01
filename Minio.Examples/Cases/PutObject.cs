@@ -41,10 +41,7 @@ internal static class PutObject
 
             var fileInfo = new FileInfo(fileName);
             var metaData = new Dictionary<string, string>
-                (StringComparer.Ordinal)
-                {
-                    { "Test-Metadata", "Test  Test" }
-                };
+                (StringComparer.Ordinal) { { "Test-Metadata", "Test  Test" } };
             var args = new PutObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName)

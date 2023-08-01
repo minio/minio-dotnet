@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-using System.Net;
-using CommunityToolkit.HighPerformance;
-using Minio.DataModel.Select;
-
 namespace Minio.DataModel.Response;
 
-internal class SelectObjectContentResponse : GenericResponse
+internal class SelectObjectContentResponse : GenericResponse, IDisposable
 {
+    private bool disposed;
+
     internal SelectObjectContentResponse(HttpStatusCode statusCode, string responseContent,
         ReadOnlyMemory<byte> responseRawBytes)
         : base(statusCode, responseContent)
@@ -30,5 +28,15 @@ internal class SelectObjectContentResponse : GenericResponse
         ResponseStream = new SelectResponseStream(stream);
     }
 
-    internal SelectResponseStream ResponseStream { get; }
+    internal SelectResponseStream ResponseStream { get; private set; }
+
+    public virtual void Dispose()
+    {
+        if (disposed) return;
+
+        ResponseStream?.Dispose();
+        ResponseStream = null;
+
+        disposed = true;
+    }
 }

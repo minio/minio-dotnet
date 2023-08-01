@@ -62,19 +62,19 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
 
     public new NewMultipartUploadCopyArgs WithObjectLockMode(ObjectRetentionMode mode)
     {
-        base.WithObjectLockMode(mode);
+        _ = base.WithObjectLockMode(mode);
         return this;
     }
 
     public new NewMultipartUploadCopyArgs WithHeaders(IDictionary<string, string> headers)
     {
-        base.WithHeaders(headers);
+        _ = base.WithHeaders(headers);
         return this;
     }
 
     public new NewMultipartUploadCopyArgs WithObjectLockRetentionDate(DateTime untilDate)
     {
-        base.WithObjectLockRetentionDate(untilDate);
+        _ = base.WithObjectLockRetentionDate(untilDate);
         return this;
     }
 

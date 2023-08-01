@@ -20,8 +20,12 @@ public static class OperationsUtil
 {
     private static readonly List<string> SupportedHeaders = new()
     {
-        "cache-control", "content-encoding", "content-type",
-        "x-amz-acl", "content-disposition", "x-minio-extract"
+        "cache-control",
+        "content-encoding",
+        "content-type",
+        "x-amz-acl",
+        "content-disposition",
+        "x-minio-extract"
     };
 
     private static readonly List<string> SSEHeaders = new()

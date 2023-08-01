@@ -53,11 +53,7 @@ internal class GetObjectsListResponse : GenericResponse
                 IsDir = false
             };
         var prefixes = from c in root.Root.Descendants(ns + "CommonPrefixes")
-            select new Item
-            {
-                Key = c.Element(ns + "Prefix").Value,
-                IsDir = true
-            };
+            select new Item { Key = c.Element(ns + "Prefix").Value, IsDir = true };
         items = items.Concat(prefixes);
         ObjectsTuple = Tuple.Create(BucketResult, items.ToList());
     }

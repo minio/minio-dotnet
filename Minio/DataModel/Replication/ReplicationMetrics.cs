@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,9 +28,10 @@ namespace Minio.DataModel.Replication;
 
 [Serializable]
 [XmlRoot(ElementName = "Metrics")]
-public class Metrics
+public class ReplicationMetrics
+
 {
-    public Metrics(string status, ReplicationTimeValue eventThreshold)
+    public ReplicationMetrics(string status, ReplicationTimeValue eventThreshold)
     {
         if (string.IsNullOrWhiteSpace(status))
             throw new ArgumentException($"'{nameof(status)}' member cannot be empty.", nameof(status));
@@ -38,7 +39,7 @@ public class Metrics
         EventThreshold = eventThreshold;
     }
 
-    public Metrics()
+    public ReplicationMetrics()
     {
     }
 

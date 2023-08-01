@@ -44,7 +44,7 @@ public sealed class BucketRegionCache
     /// <returns></returns>
     public string Region(string bucketName)
     {
-        regionMap.TryGetValue(bucketName, out var value);
+        _ = regionMap.TryGetValue(bucketName, out var value);
         return value ?? "us-east-1";
     }
 
@@ -55,7 +55,7 @@ public sealed class BucketRegionCache
     /// <param name="region"></param>
     public void Add(string bucketName, string region)
     {
-        regionMap.TryAdd(bucketName, region);
+        _ = regionMap.TryAdd(bucketName, region);
     }
 
     /// <summary>
@@ -64,7 +64,7 @@ public sealed class BucketRegionCache
     /// <param name="bucketName"></param>
     public void Remove(string bucketName)
     {
-        regionMap.TryRemove(bucketName, out var value);
+        _ = regionMap.TryRemove(bucketName, out var value);
     }
 
     /// <summary>
@@ -74,7 +74,7 @@ public sealed class BucketRegionCache
     /// <returns></returns>
     public bool Exists(string bucketName)
     {
-        regionMap.TryGetValue(bucketName, out var value);
+        _ = regionMap.TryGetValue(bucketName, out var value);
         return !string.Equals(value, null, StringComparison.OrdinalIgnoreCase);
     }
 

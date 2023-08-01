@@ -217,7 +217,8 @@ public static class MinioClientExtensions
         minioClient.HttpClient ??= minioClient.Proxy is null
             ? new HttpClient()
             : new HttpClient(httpClientHandler);
-        minioClient.HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", minioClient.FullUserAgent);
+        _ = minioClient.HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent",
+            minioClient.FullUserAgent);
         minioClient.HttpClient.Timeout = TimeSpan.FromMinutes(30);
         return minioClient;
     }

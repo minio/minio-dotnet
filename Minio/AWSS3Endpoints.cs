@@ -31,35 +31,35 @@ public sealed class AWSS3Endpoints
     {
         endpoints = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
         // ap-northeast-1
-        endpoints.TryAdd("ap-northeast-1", "s3-ap-northeast-1.amazonaws.com");
+        _ = endpoints.TryAdd("ap-northeast-1", "s3-ap-northeast-1.amazonaws.com");
         // ap-northeast-2
-        endpoints.TryAdd("ap-northeast-2", "s3-ap-northeast-2.amazonaws.com");
+        _ = endpoints.TryAdd("ap-northeast-2", "s3-ap-northeast-2.amazonaws.com");
         // ap-south-1
-        endpoints.TryAdd("ap-south-1", "s3-ap-south-1.amazonaws.com");
+        _ = endpoints.TryAdd("ap-south-1", "s3-ap-south-1.amazonaws.com");
         // ap-southeast-1
-        endpoints.TryAdd("ap-southeast-1", "s3-ap-southeast-1.amazonaws.com");
+        _ = endpoints.TryAdd("ap-southeast-1", "s3-ap-southeast-1.amazonaws.com");
         // ap-southeast-2
-        endpoints.TryAdd("ap-southeast-2", "s3-ap-southeast-2.amazonaws.com");
+        _ = endpoints.TryAdd("ap-southeast-2", "s3-ap-southeast-2.amazonaws.com");
         // eu-central-1
-        endpoints.TryAdd("eu-central-1", "s3-eu-central-1.amazonaws.com");
+        _ = endpoints.TryAdd("eu-central-1", "s3-eu-central-1.amazonaws.com");
         // eu-west-1
-        endpoints.TryAdd("eu-west-1", "s3-eu-west-1.amazonaws.com");
+        _ = endpoints.TryAdd("eu-west-1", "s3-eu-west-1.amazonaws.com");
         // eu-west-2
-        endpoints.TryAdd("eu-west-2", "s3-eu-west-2.amazonaws.com");
+        _ = endpoints.TryAdd("eu-west-2", "s3-eu-west-2.amazonaws.com");
         // sa-east-1
-        endpoints.TryAdd("sa-east-1", "s3-sa-east-1.amazonaws.com");
+        _ = endpoints.TryAdd("sa-east-1", "s3-sa-east-1.amazonaws.com");
         // us-west-1
-        endpoints.TryAdd("us-west-1", "s3-us-west-1.amazonaws.com");
+        _ = endpoints.TryAdd("us-west-1", "s3-us-west-1.amazonaws.com");
         // us-west-2
-        endpoints.TryAdd("us-west-2", "s3-us-west-2.amazonaws.com");
+        _ = endpoints.TryAdd("us-west-2", "s3-us-west-2.amazonaws.com");
         // us-east-1
-        endpoints.TryAdd("us-east-1", "s3.amazonaws.com");
+        _ = endpoints.TryAdd("us-east-1", "s3.amazonaws.com");
         // us-east-2
-        endpoints.TryAdd("us-east-2", "s3-us-east-2.amazonaws.com");
+        _ = endpoints.TryAdd("us-east-2", "s3-us-east-2.amazonaws.com");
         // ca-central-1
-        endpoints.TryAdd("ca-central-1", "s3.ca-central-1.amazonaws.com");
+        _ = endpoints.TryAdd("ca-central-1", "s3.ca-central-1.amazonaws.com");
         // cn-north-1
-        endpoints.TryAdd("cn-north-1", "s3.cn-north-1.amazonaws.com.cn");
+        _ = endpoints.TryAdd("cn-north-1", "s3.cn-north-1.amazonaws.com.cn");
     }
 
     public static AWSS3Endpoints Instance => lazy.Value;
@@ -72,7 +72,7 @@ public sealed class AWSS3Endpoints
     public static string Endpoint(string region)
     {
         string endpoint = null;
-        if (region is not null) Instance.endpoints.TryGetValue(region, out endpoint);
+        if (region is not null) _ = Instance.endpoints.TryGetValue(region, out endpoint);
         endpoint ??= "s3.amazonaws.com";
         return endpoint;
     }

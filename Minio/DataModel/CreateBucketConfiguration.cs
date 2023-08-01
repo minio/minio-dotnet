@@ -38,10 +38,7 @@ public class CreateBucketConfiguration
 
     public string ToXml()
     {
-        var settings = new XmlWriterSettings
-        {
-            OmitXmlDeclaration = true
-        };
+        var settings = new XmlWriterSettings { OmitXmlDeclaration = true };
         using var ms = new MemoryStream();
         using var writer = XmlWriter.Create(ms, settings);
         var names = new XmlSerializerNamespaces();
@@ -51,7 +48,7 @@ public class CreateBucketConfiguration
         cs.Serialize(writer, this, names);
 
         ms.Flush();
-        ms.Seek(0, SeekOrigin.Begin);
+        _ = ms.Seek(0, SeekOrigin.Begin);
         using var sr = new StreamReader(ms);
         return sr.ReadToEnd();
     }
