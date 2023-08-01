@@ -99,7 +99,7 @@ jobs:
       # Run lint
       - name: Run lint
         run: |
-          dotnet regitlint -f commits -a ${{ github.sha }} -b HEAD --fail-on-diff
+          dotnet regitlint -f commits -a ${{ github.sha }} -b ${{ github.event.pull_request.head.sha }} --fail-on-diff
 
   unit_tests:
     needs: build
