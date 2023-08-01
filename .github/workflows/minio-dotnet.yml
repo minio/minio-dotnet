@@ -14,7 +14,7 @@ concurrency:
 
 env:
   Solution_Name: Minio.sln
-  Test_Project_Path: ./Minio.Tests/Minio.Tests.csproj
+  Test_Project_Path: Minio.Tests.dll
   Minio_Project_Path: ./Minio/Minio.csproj
 
 jobs:
