@@ -17,6 +17,7 @@
 using System.ComponentModel;
 using System.Dynamic;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
@@ -199,28 +200,49 @@ public static class Utils
         return !l2.Except(l1, StringComparer.Ordinal).Any();
     }
 
-    public static Task RunInParallel<TSource>(IEnumerable<TSource> source,
-        Func<TSource, CancellationToken, ValueTask> body, int maxNoOfParallelProcesses = 4)
+    public static async Task ForEachAsync<TSource>(this IEnumerable<TSource> source, bool runInParallel = false, int maxNoOfParallelProcesses = 4) where TSource : Task
     {
-#if NET6_0_OR_GREATER
-        ParallelOptions parallelOptions = new()
+        if (source is null) throw new ArgumentNullException(nameof(source));
+
+        try
         {
-            MaxDegreeOfParallelism
-                = maxNoOfParallelProcesses
-        };
-        return Parallel.ForEachAsync(source, parallelOptions, body);
+            if (runInParallel)
+            {
+#if NET6_0_OR_GREATER
+                ParallelOptions parallelOptions = new()
+                {
+                    MaxDegreeOfParallelism = maxNoOfParallelProcesses
+                };
+                await Parallel.ForEachAsync(source, parallelOptions, async (task, cancellationToken) => await task.ConfigureAwait(false)).ConfigureAwait(false);
 #else
-        return Task.WhenAll(Partitioner.Create(source).GetPartitions(maxNoOfParallelProcesses)
-            .Select(partition => Task.Run(async delegate
+            await Task.WhenAll(Partitioner.Create(source).GetPartitions(maxNoOfParallelProcesses)
+                .Select(partition => Task.Run(async delegate
                 {
                     using (partition)
                     {
                         while (partition.MoveNext())
-                            await body(partition.Current, new CancellationToken()).ConfigureAwait(false);
+                            await partition.Current.ConfigureAwait(false);
                     }
                 }
-            )));
+                ))).ConfigureAwait(false);
 #endif
+            }
+            else
+            {
+                foreach (var task in source)
+                {
+                    await task.ConfigureAwait(false);
+                }
+            }
+        }
+        catch (AggregateException ae)
+        {
+            foreach (var ex in ae.Flatten().InnerExceptions)
+            {
+                // Handle or log the individual exception 'ex'
+                Console.WriteLine($"Exception occurred: {ex.Message}");
+            }
+        }
     }
 
     public static bool CaseInsensitiveContains(string text, string value,
