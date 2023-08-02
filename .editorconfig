@@ -12,6 +12,8 @@ end_of_line = lf
 insert_final_newline = true
 
 * text=auto
+* text eol=lf
+*.* text eol=lf
 
 # Naming rules
 
