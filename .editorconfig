@@ -11,6 +11,8 @@ root = true
 end_of_line = lf
 insert_final_newline = true
 
+* text=auto
+
 # Naming rules
 
 dotnet_naming_rule.interface_should_be_begins_with_i.severity = suggestion
