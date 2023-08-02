@@ -66,7 +66,7 @@ internal static class S3utils
         }
         catch (Exception ex)
         {
-            throw new ArgumentException(ex.Message);
+            throw new ArgumentException(ex.Message, nameof(ex));
         }
     }
 

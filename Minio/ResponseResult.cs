@@ -20,14 +20,13 @@ using System.Text;
 
 namespace Minio;
 
-public class ResponseResult : IDisposable
+public sealed class ResponseResult : IDisposable
 {
     private readonly Dictionary<string, string> headers = new(StringComparer.Ordinal);
     private string content;
     private ReadOnlyMemory<byte> contentBytes;
-    private bool disposedValue;
-
     private Stream stream;
+    private bool disposed;
 
     public ResponseResult(HttpRequestMessage request, HttpResponseMessage response)
     {
@@ -125,26 +124,19 @@ public class ResponseResult : IDisposable
 
     public void Dispose()
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!disposedValue)
+        if (disposed)
         {
-            if (disposing)
-            {
-                stream?.Dispose();
-                Request?.Dispose();
-                Response?.Dispose();
-
-                content = null;
-                contentBytes = null;
-                stream = null;
-            }
-
-            disposedValue = true;
+            return;
         }
+
+        stream?.Dispose();
+        Request?.Dispose();
+        Response?.Dispose();
+
+        content = null;
+        contentBytes = null;
+        stream = null;
+
+        disposed = true;
     }
 }
