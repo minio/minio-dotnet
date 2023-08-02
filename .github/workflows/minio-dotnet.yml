@@ -69,6 +69,9 @@ jobs:
           path: |
             **/bin/Release/
             **/obj/Release/
+            **/*.csproj
+            **/*.key
+            **/*.crt
 
       # Upload the Nuget packages
       - name: Upload the Nuget packages output
@@ -112,11 +115,6 @@ jobs:
         dotnet-version: ["7.0.x"]
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
       # Install .NET
       - name: Setup .NET ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v3
@@ -144,11 +142,6 @@ jobs:
         dotnet-version: ["7.0.x"]
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
       # Install .NET
       - name: Setup .NET ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v3
