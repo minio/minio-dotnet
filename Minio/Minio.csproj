@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<AssemblyName>Minio</AssemblyName>
 		<RootNamespace>Minio</RootNamespace>
@@ -16,7 +16,7 @@
 		<!--
 		<PackageReference Include="System.Reactive.Async" Version="6.0.0-alpha.18" />
 		-->
-		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.0" />
+		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.1" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard2')) ">
