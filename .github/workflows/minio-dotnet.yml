@@ -2,9 +2,9 @@ name: Minio-dotnet Tests
 
 on:
   push:
-    branches: [ develop, main ]
+    branches: [ develop, main, master ]
   pull_request:
-    branches: [ develop ]
+    branches: [ develop, master ]
 
 # This ensures that previous jobs for the PR are canceled when the PR is
 # updated.
