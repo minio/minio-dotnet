@@ -100,11 +100,7 @@ jobs:
       # Run lint
       - name: Run lint
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            dotnet regitlint -f commits -a ${{ github.sha }} -b ${{ github.event.pull_request.head.sha }} --fail-on-diff
-          elif [[ "${{ github.event_name }}" == "push" ]]; then
             dotnet regitlint --fail-on-diff
-          fi
 
   unit_tests:
     needs: build
