@@ -88,7 +88,7 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
             }
         }
 
-        throw new ArgumentNullException(nameof(Client) + " should have been assigned for the operation to continue.");
+        throw new ArgumentNullException(nameof(Client), "Client should have been assigned for the operation to continue.");
     }
 
     internal override async Task<HttpRequestMessageBuilder> BuildRequest()
