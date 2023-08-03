@@ -29,7 +29,8 @@ internal class PutObjectPartArgs : PutObjectArgs
     {
         base.Validate();
         if (string.IsNullOrWhiteSpace(UploadId))
-            throw new ArgumentNullException(nameof(UploadId), nameof(UploadId) + " not assigned for PutObjectPart operation.");
+            throw new ArgumentNullException(nameof(UploadId),
+                nameof(UploadId) + " not assigned for PutObjectPart operation.");
     }
 
     public new PutObjectPartArgs WithBucket(string bkt)

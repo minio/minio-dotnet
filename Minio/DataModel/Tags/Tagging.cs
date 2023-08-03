@@ -55,8 +55,10 @@ public class Tagging
 
         foreach (var tag in tags)
         {
-            if (!ValidateTagKey(tag.Key)) throw new ArgumentException("Invalid Tagging key " + tag.Key, nameof(tag.Key));
-            if (!ValidateTagValue(tag.Value)) throw new ArgumentException("Invalid Tagging value " + tag.Value, nameof(tag.Value));
+            if (!ValidateTagKey(tag.Key))
+                throw new ArgumentException("Invalid Tagging key " + tag.Key, nameof(tag.Key));
+            if (!ValidateTagValue(tag.Value))
+                throw new ArgumentException("Invalid Tagging value " + tag.Value, nameof(tag.Value));
         }
 
         TaggingSet = new TagSet(tags);
