@@ -16,7 +16,6 @@
 
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Dynamic;
 using System.Globalization;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -278,9 +277,9 @@ public static class Utils
         var minPartSize = copy ? Constants.MinimumCOPYPartSize : Constants.MinimumPUTPartSize;
         partSize = (double)Math.Ceiling((decimal)partSize / minPartSize) * minPartSize;
         var partCount = Math.Ceiling(size / partSize);
-        var lastPartSize = size - (partCount - 1) * partSize;
-        
-        return  new MultiPartInfo
+        var lastPartSize = size - ((partCount - 1) * partSize);
+
+        return new MultiPartInfo
         {
             PartSize = partSize,
             PartCount = partCount,
