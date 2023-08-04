@@ -279,12 +279,7 @@ public static class Utils
         var partCount = Math.Ceiling(size / partSize);
         var lastPartSize = size - ((partCount - 1) * partSize);
 
-        return new MultiPartInfo
-        {
-            PartSize = partSize,
-            PartCount = partCount,
-            LastPartSize = lastPartSize
-        };
+        return new MultiPartInfo { PartSize = partSize, PartCount = partCount, LastPartSize = lastPartSize };
     }
 
     /// <summary>
