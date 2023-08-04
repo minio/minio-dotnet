@@ -334,7 +334,7 @@ public partial class MinioClient : IMinioClient
             else if (resourcePath?.Contains("location") == true)
                 // use path style for location query
                 usePathStyle = true;
-            else if (bucketName.Contains('.') && Secure)
+            else if (bucketName.Contains('.', StringComparison.Ordinal) && Secure)
                 // use path style where '.' in bucketName causes SSL certificate validation error
                 usePathStyle = true;
 
@@ -405,11 +405,6 @@ public partial class MinioClient : IMinioClient
         CancellationToken cancellationToken = default)
     {
         var startTime = DateTime.Now;
-        // Logs full url when HTTPtracing is enabled.
-        if (trace)
-        {
-            var fullUrl = requestMessageBuilder.RequestUri;
-        }
 
         var v4Authenticator = new V4Authenticator(Secure,
             AccessKey, SecretKey, Region,

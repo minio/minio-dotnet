@@ -251,7 +251,7 @@ public partial class MinioClient : IObjectOperations
         args.Policy.FormData["policy"] = policyBase64;
         args.Policy.FormData["x-amz-algorithm"] = signV4Algorithm;
         args.Policy.FormData["x-amz-credential"] = credential;
-        args.Policy.FormData["x-amz-date"] = t.ToString("yyyyMMddTHHmmssZ");
+        args.Policy.FormData["x-amz-date"] = t.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
         if (!string.IsNullOrEmpty(SessionToken)) args.Policy.FormData["x-amz-security-token"] = SessionToken;
         args.Policy.FormData["x-amz-signature"] = signature;
 
@@ -1255,10 +1255,10 @@ public partial class MinioClient : IObjectOperations
         while (totalRead < currentPartSize)
         {
             Memory<byte> curData = new byte[currentPartSize - totalRead];
-            var curRead = await data.ReadAsync(curData.Slice(0, currentPartSize - totalRead)).ConfigureAwait(false);
+            var curRead = await data.ReadAsync(curData[..(currentPartSize - totalRead)]).ConfigureAwait(false);
             if (curRead == 0) break;
             for (var i = 0; i < curRead; i++)
-                curData.Slice(i, 1).CopyTo(result.Slice(totalRead + i));
+                curData.Slice(i, 1).CopyTo(result[(totalRead + i)..]);
             totalRead += curRead;
         }
 
@@ -1268,7 +1268,7 @@ public partial class MinioClient : IObjectOperations
 
         Memory<byte> truncatedResult = new byte[totalRead];
         for (var i = 0; i < totalRead; i++)
-            result.Slice(i, 1).CopyTo(truncatedResult.Slice(i));
+            result.Slice(i, 1).CopyTo(truncatedResult[i..]);
         return truncatedResult;
     }
 

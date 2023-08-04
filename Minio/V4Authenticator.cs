@@ -181,7 +181,8 @@ internal class V4Authenticator
         ReadOnlySpan<byte> requestBytes;
 
         ReadOnlySpan<byte> serviceBytes = Encoding.UTF8.GetBytes(GetService(isSts));
-        ReadOnlySpan<byte> formattedDateBytes = Encoding.UTF8.GetBytes(signingDate.ToString("yyyyMMdd"));
+        ReadOnlySpan<byte> formattedDateBytes =
+            Encoding.UTF8.GetBytes(signingDate.ToString("yyyyMMdd", CultureInfo.InvariantCulture));
         ReadOnlySpan<byte> formattedKeyBytes = Encoding.UTF8.GetBytes($"AWS4{secretKey}");
         var dateKey = SignHmac(formattedKeyBytes, formattedDateBytes);
         ReadOnlySpan<byte> regionBytes = Encoding.UTF8.GetBytes(region);
@@ -312,7 +313,7 @@ internal class V4Authenticator
                         + Uri.EscapeDataString(accessKey + "/" + GetScope(region, signingDate))
                         + "&";
         requestQuery += "X-Amz-Date="
-                        + signingDate.ToString("yyyyMMddTHHmmssZ")
+                        + signingDate.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture)
                         + "&";
         requestQuery += "X-Amz-Expires="
                         + expires
@@ -487,7 +488,8 @@ internal class V4Authenticator
     /// <param name="signingDate">Date for signature to be signed</param>
     private void SetDateHeader(HttpRequestMessageBuilder requestBuilder, DateTime signingDate)
     {
-        requestBuilder.AddOrUpdateHeaderParameter("x-amz-date", signingDate.ToString("yyyyMMddTHHmmssZ"));
+        requestBuilder.AddOrUpdateHeaderParameter("x-amz-date",
+            signingDate.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture));
     }
 
     /// <summary>

@@ -104,16 +104,16 @@ public sealed class SelectResponseStream : IDisposable
             if (BitConverter.IsLittleEndian) preludeCRCBytes.Reverse();
             numBytesRead += n;
             Span<byte> inputArray = new byte[prelude.Length + 4];
-            prelude.Span.CopyTo(inputArray.Slice(0, prelude.Length));
+            prelude.Span.CopyTo(inputArray[..prelude.Length]);
 
             var destinationPrelude = inputArray.Slice(inputArray.Length - 4, 4);
-            var isValidPrelude = Crc32.TryHash(inputArray.Slice(0, inputArray.Length - 4), destinationPrelude, out _);
+            var isValidPrelude = Crc32.TryHash(inputArray[..^4], destinationPrelude, out _);
             if (!isValidPrelude) throw new ArgumentException("invalid prelude CRC", nameof(destinationPrelude));
 
             if (!destinationPrelude.SequenceEqual(preludeCRCBytes))
                 throw new ArgumentException("Prelude CRC Mismatch", nameof(preludeCRCBytes));
 
-            var preludeBytes = prelude.Slice(0, 4).Span;
+            var preludeBytes = prelude[..4].Span;
             Span<byte> bytes = new byte[preludeBytes.Length];
             preludeBytes.CopyTo(bytes);
             if (BitConverter.IsLittleEndian) bytes.Reverse();
@@ -158,7 +158,7 @@ public sealed class SelectResponseStream : IDisposable
             payload.Span.CopyTo(inputArray.Slice(prelude.Length + preludeCRC.Length + headerLength, payloadLength));
 
             var destinationMessage = inputArray.Slice(inputArray.Length - 4, 4);
-            var isValidMessage = Crc32.TryHash(inputArray.Slice(0, inputArray.Length - 4), destinationMessage, out _);
+            var isValidMessage = Crc32.TryHash(inputArray[..^4], destinationMessage, out _);
             if (!isValidMessage) throw new ArgumentException("invalid message CRC", nameof(destinationMessage));
 
             if (!destinationMessage.SequenceEqual(messageCRCBytes))

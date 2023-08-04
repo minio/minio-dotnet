@@ -74,11 +74,7 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
             while (!sr.EndOfStream)
                 try
                 {
-#if NETSTANDARD || NET6_0
-                    var line = await sr.ReadLineAsync().ConfigureAwait(false);
-#elif NET7_0_OR_GREATER
                     var line = await sr.ReadLineAsync(cancellationToken).ConfigureAwait(false);
-#endif
                     if (string.IsNullOrEmpty(line))
                         break;
 

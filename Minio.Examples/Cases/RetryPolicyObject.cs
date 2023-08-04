@@ -38,7 +38,7 @@ internal static class RetryPolicyObject
                     2,
                     (r, i) => Console.WriteLine($"On retry #{i}. Result: {r.Exception?.Message}"));
 
-            minio.WithRetryPolicy(customPolicy);
+            _ = minio.WithRetryPolicy(customPolicy);
 
             Console.WriteLine("Running example for API: RetryPolicyObject");
 
@@ -48,7 +48,7 @@ internal static class RetryPolicyObject
                     .WithBucket("bad-bucket")
                     .WithObject("bad-file")
                     .WithCallbackStream(s => { });
-                await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+                _ = await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
             }
             catch (BucketNotFoundException ex)
             {
@@ -63,7 +63,7 @@ internal static class RetryPolicyObject
         }
         finally
         {
-            minio.WithRetryPolicy(null);
+            _ = minio.WithRetryPolicy(null);
         }
     }
 }

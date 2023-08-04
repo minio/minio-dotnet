@@ -33,7 +33,7 @@ public class ReuseTcpConnectionTest
                 .WithBucket(bucket)
                 .WithObject(objectName)
                 .WithFile("testfile");
-            await client.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+            _ = await client.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
 
             return true;
         }
@@ -68,14 +68,14 @@ public class ReuseTcpConnectionTest
                 .WithObject(objectName)
                 .WithStreamData(helloStream)
                 .WithObjectSize(helloData.Length);
-            await minioClient.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+            _ = await minioClient.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
         }
 
-        await GetObjectLength(bucket, objectName).ConfigureAwait(false);
+        _ = await GetObjectLength(bucket, objectName).ConfigureAwait(false);
 
         for (var i = 0; i < 100; i++)
             // sequential execution, produce one tcp connection, check by netstat -an | grep 9000
-            await GetObjectLength(bucket, objectName).ConfigureAwait(false);
+            _ = await GetObjectLength(bucket, objectName).ConfigureAwait(false);
 
         ConcurrentBag<Task> reuseTcpConnectionTasks =
             new(Enumerable.Range(0, 500).Select(_ => GetObjectLength(bucket, objectName)));
@@ -90,7 +90,7 @@ public class ReuseTcpConnectionTest
             .WithBucket(bucket)
             .WithObject(objectName)
             .WithCallbackStream(stream => stream.Dispose());
-        await minioClient.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+        _ = await minioClient.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
 
         return objectLength;
     }

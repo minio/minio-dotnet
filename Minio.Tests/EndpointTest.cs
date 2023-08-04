@@ -26,7 +26,7 @@ public class EndpointTest
     [TestMethod]
     public void TestGetEndpointURL()
     {
-        RequestUtil.GetEndpointURL("s3.amazonaws.com", true);
+        _ = RequestUtil.GetEndpointURL("s3.amazonaws.com", true);
         object[] parameterValuesArray =
         {
             new object[] { "s3.amazonaws.com", true, "testbucket", null, false },

@@ -52,7 +52,7 @@ public class NegativeTest
             .Build();
         var args = new BucketExistsArgs()
             .WithBucket(badName);
-        await Assert
+        _ = await Assert
             .ThrowsExceptionAsync<InvalidBucketNameException>(async () =>
                 await minio.BucketExistsAsync(args).ConfigureAwait(false)).ConfigureAwait(false);
     }

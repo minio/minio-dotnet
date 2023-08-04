@@ -253,7 +253,7 @@ public static class MinioClientExtensions
                 nameof(endpoint));
 
         if (endpoint.EndsWith("/", StringComparison.OrdinalIgnoreCase))
-            endpoint = endpoint.Substring(0, endpoint.Length - 1);
+            endpoint = endpoint[..^1];
         if (!BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
             throw new InvalidEndpointException(
                 string.Format(CultureInfo.InvariantCulture, "{0} is invalid hostname.", endpoint), "endpoint");

@@ -35,7 +35,7 @@ internal static class GetPartialObject
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
-            await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+            _ = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
 
             // Get object content starting at byte position 1024 and length of 4096
             var getObjectArgs = new GetObjectArgs()
@@ -55,7 +55,7 @@ internal static class GetPartialObject
                         $"Successfully downloaded object with requested offset and length {writtenInfo.Length} into file");
                     stream.Dispose();
                 });
-            await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+            _ = await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
             Console.WriteLine();
         }
         catch (Exception e)

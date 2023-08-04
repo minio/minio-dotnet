@@ -92,7 +92,7 @@ public static class BuilderUtil
     private static bool IsValidIPv4(string ip)
     {
         var posColon = ip.LastIndexOf(':');
-        if (posColon != -1) ip = ip.Substring(0, posColon);
+        if (posColon != -1) ip = ip[..posColon];
         var octetsStr = ip.Split('.');
         if (octetsStr.Length != 4) return false;
         var isValidSmallInt = Array.TrueForAll(octetsStr, IsValidSmallInt);
@@ -127,7 +127,7 @@ public static class BuilderUtil
                 return false;
             }
 
-            host = host.Substring(0, posColon);
+            host = host[..posColon];
         }
 
         // Check host if it is a hostname.

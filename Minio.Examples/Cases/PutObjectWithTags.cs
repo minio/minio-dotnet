@@ -42,7 +42,7 @@ internal static class PutObjectWithTags
                 .WithContentType("application/octet-stream")
                 .WithFileName(fileName)
                 .WithTagging(Tagging.GetObjectTags(tags));
-            await minio.PutObjectAsync(args).ConfigureAwait(false);
+            _ = await minio.PutObjectAsync(args).ConfigureAwait(false);
 
             Console.WriteLine($"Uploaded object {objectName} to bucket {bucketName}");
             Console.WriteLine();
