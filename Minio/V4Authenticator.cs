@@ -42,8 +42,7 @@ internal class V4Authenticator
     //
     private static readonly HashSet<string> ignoredHeaders = new(StringComparer.OrdinalIgnoreCase)
     {
-        "authorization",
-        "user-agent"
+        "authorization", "user-agent"
     };
 
     private readonly string accessKey;
@@ -97,7 +96,7 @@ internal class V4Authenticator
         requestBuilder.RequestUri = requestBuilder.Request.RequestUri;
         var requestUri = requestBuilder.RequestUri;
 
-        if (requestUri.Port == 80 || requestUri.Port == 443)
+        if (requestUri.Port is 80 or 443)
             SetHostHeader(requestBuilder, requestUri.Host);
         else
             SetHostHeader(requestBuilder, requestUri.Host + ":" + requestUri.Port);
@@ -351,30 +350,30 @@ internal class V4Authenticator
         SortedDictionary<string, string> headersToSign)
     {
         var canonicalStringList = new LinkedList<string>();
-        canonicalStringList.AddLast(requestMethod.ToString());
+        _ = canonicalStringList.AddLast(requestMethod.ToString());
 
         var path = uri.AbsolutePath;
 
-        canonicalStringList.AddLast(path);
+        _ = canonicalStringList.AddLast(path);
         var queryParams = uri.Query.TrimStart('?').Split('&').ToList();
         queryParams.AddRange(headersToSign.Select(cv =>
             $"{Utils.UrlEncode(cv.Key)}={Utils.UrlEncode(cv.Value.Trim())}"));
         queryParams.Sort(StringComparer.Ordinal);
         var query = string.Join("&", queryParams);
-        canonicalStringList.AddLast(query);
+        _ = canonicalStringList.AddLast(query);
         var canonicalHost = GetCanonicalHost(uri);
-        canonicalStringList.AddLast($"host:{canonicalHost}");
+        _ = canonicalStringList.AddLast($"host:{canonicalHost}");
 
-        canonicalStringList.AddLast(string.Empty);
-        canonicalStringList.AddLast("host");
-        canonicalStringList.AddLast("UNSIGNED-PAYLOAD");
+        _ = canonicalStringList.AddLast(string.Empty);
+        _ = canonicalStringList.AddLast("host");
+        _ = canonicalStringList.AddLast("UNSIGNED-PAYLOAD");
 
         return string.Join("\n", canonicalStringList);
     }
 
     private static string GetCanonicalHost(Uri url)
     {
-        if (url.Port > 0 && url.Port != 80 && url.Port != 443)
+        if (url.Port is > 0 and not 80 and not 443)
             return $"{url.Host}:{url.Port}";
         return url.Host;
     }

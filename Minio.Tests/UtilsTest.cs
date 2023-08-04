@@ -159,10 +159,10 @@ public class UtilsTest
     public void TestValidPartSize1()
     {
         // { partSize = 550502400, partCount = 9987, lastPartSize = 241172480 }
-        dynamic partSizeObject = Utils.CalculateMultiPartSize(5497558138880);
-        double partSize = partSizeObject.partSize;
-        double partCount = partSizeObject.partCount;
-        double lastPartSize = partSizeObject.lastPartSize;
+        var partSizeObject = Utils.CalculateMultiPartSize(5497558138880);
+        var partSize = partSizeObject.PartSize;
+        var partCount = partSizeObject.PartCount;
+        var lastPartSize = partSizeObject.LastPartSize;
         Assert.AreEqual(partSize, 553648128);
         Assert.AreEqual(partCount, 9930);
         Assert.AreEqual(lastPartSize, 385875968);
@@ -171,10 +171,10 @@ public class UtilsTest
     [TestMethod]
     public void TestValidPartSize2()
     {
-        dynamic partSizeObject = Utils.CalculateMultiPartSize(500000000000, true);
-        double partSize = partSizeObject.partSize;
-        double partCount = partSizeObject.partCount;
-        double lastPartSize = partSizeObject.lastPartSize;
+        var partSizeObject = Utils.CalculateMultiPartSize(500000000000, true);
+        var partSize = partSizeObject.PartSize;
+        var partCount = partSizeObject.PartCount;
+        var lastPartSize = partSizeObject.LastPartSize;
         Assert.AreEqual(partSize, 536870912);
         Assert.AreEqual(partCount, 932);
         Assert.AreEqual(lastPartSize, 173180928);

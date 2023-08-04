@@ -39,7 +39,13 @@ namespace Minio;
 public partial class MinioClient : IObjectOperations
 {
     private readonly List<string> supportedHeaders = new()
-        { "cache-control", "content-encoding", "content-type", "x-amz-acl", "content-disposition" };
+    {
+        "cache-control",
+        "content-encoding",
+        "content-type",
+        "x-amz-acl",
+        "content-disposition"
+    };
 
     /// <summary>
     ///     Get an object. The object will be streamed to the callback given by the user.
@@ -570,7 +576,8 @@ public partial class MinioClient : IObjectOperations
         args.SSE?.Marshal(args.Headers);
 
         var isSnowball = args.Headers.ContainsKey("X-Amz-Meta-Snowball-Auto-Extract") &&
-                         Convert.ToBoolean(args.Headers["X-Amz-Meta-Snowball-Auto-Extract"]);
+                         Convert.ToBoolean(args.Headers["X-Amz-Meta-Snowball-Auto-Extract"],
+                             CultureInfo.InvariantCulture);
 
         // Upload object in single part if size falls under restricted part size
         // or the request has snowball objects
@@ -671,7 +678,7 @@ public partial class MinioClient : IObjectOperations
             .WithVersionId(args.SourceObject.VersionId)
             .WithServerSideEncryption(sseGet);
         var stat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
-        args.WithCopyObjectSourceStats(stat);
+        _ = args.WithCopyObjectSourceStats(stat);
         if (stat.TaggingCount > 0 && !args.ReplaceTagsDirective)
         {
             var getTagArgs = new GetObjectTagsArgs()
@@ -680,7 +687,7 @@ public partial class MinioClient : IObjectOperations
                 .WithVersionId(args.SourceObject.VersionId)
                 .WithServerSideEncryption(sseGet);
             var tag = await GetObjectTagsAsync(getTagArgs, cancellationToken).ConfigureAwait(false);
-            args.WithTagging(tag);
+            _ = args.WithTagging(tag);
         }
 
         args.Validate();
@@ -690,11 +697,13 @@ public partial class MinioClient : IObjectOperations
         if (srcByteRangeSize > args.SourceObjectInfo.Size ||
             (srcByteRangeSize > 0 &&
              args.SourceObject.CopyOperationConditions.byteRangeEnd >= args.SourceObjectInfo.Size))
-            throw new ArgumentException("Specified byte range (" +
-                                        args.SourceObject.CopyOperationConditions.byteRangeStart +
-                                        "-" + args.SourceObject.CopyOperationConditions.byteRangeEnd +
-                                        ") does not fit within source object (size=" +
-                                        args.SourceObjectInfo.Size + ")");
+            throw new ArgumentOutOfRangeException(nameof(srcByteRangeSize), "Specified byte range (" +
+                                                                            args.SourceObject.CopyOperationConditions
+                                                                                .byteRangeStart +
+                                                                            "-" + args.SourceObject
+                                                                                .CopyOperationConditions.byteRangeEnd +
+                                                                            ") does not fit within source object (size=" +
+                                                                            args.SourceObjectInfo.Size + ")");
 
         if (copySize > Constants.MaxSingleCopyObjectSize ||
             (srcByteRangeSize > 0 &&
@@ -729,11 +738,11 @@ public partial class MinioClient : IObjectOperations
                 newMeta = new Dictionary<string, string>(args.Headers, StringComparer.Ordinal);
             else
                 newMeta = new Dictionary<string, string>(args.SourceObjectInfo.MetaData, StringComparer.Ordinal);
-            if (args.SourceObject.SSE is not null && args.SourceObject.SSE is SSECopy)
+            if (args.SourceObject.SSE is not null and SSECopy)
                 args.SourceObject.SSE.Marshal(newMeta);
             args.SSE?.Marshal(newMeta);
-            cpReqArgs.WithHeaders(newMeta);
-            await CopyObjectRequestAsync(cpReqArgs, cancellationToken).ConfigureAwait(false);
+            _ = cpReqArgs.WithHeaders(newMeta);
+            _ = await CopyObjectRequestAsync(cpReqArgs, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -865,10 +874,10 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        dynamic multiPartInfo = Utils.CalculateMultiPartSize(args.ObjectSize);
-        double partSize = multiPartInfo.partSize;
-        double partCount = multiPartInfo.partCount;
-        double lastPartSize = multiPartInfo.lastPartSize;
+        var multiPartInfo = Utils.CalculateMultiPartSize(args.ObjectSize);
+        var partSize = multiPartInfo.PartSize;
+        var partCount = multiPartInfo.PartCount;
+        var lastPartSize = multiPartInfo.LastPartSize;
         var totalParts = new Part[(int)partCount];
 
         var expectedReadSize = partSize;
@@ -892,7 +901,9 @@ public partial class MinioClient : IObjectOperations
 
             numPartsUploaded++;
             totalParts[partNumber - 1] = new Part
-                { PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize };
+            {
+                PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize
+            };
             etags[partNumber] = etag;
             if (!dataToCopy.IsEmpty) progressReport.TotalBytesTransferred += dataToCopy.Length;
             if (args.ObjectSize != -1) progressReport.Percentage = (int)(100 * partNumber / partCount);
@@ -936,10 +947,10 @@ public partial class MinioClient : IObjectOperations
     private async Task MultipartCopyUploadAsync(MultipartCopyUploadArgs args,
         CancellationToken cancellationToken = default)
     {
-        dynamic multiPartInfo = Utils.CalculateMultiPartSize(args.CopySize, true);
-        double partSize = multiPartInfo.partSize;
-        double partCount = multiPartInfo.partCount;
-        double lastPartSize = multiPartInfo.lastPartSize;
+        var multiPartInfo = Utils.CalculateMultiPartSize(args.CopySize, true);
+        var partSize = multiPartInfo.PartSize;
+        var partCount = multiPartInfo.PartCount;
+        var lastPartSize = multiPartInfo.LastPartSize;
         var totalParts = new Part[(int)partCount];
 
         var nmuArgs = new NewMultipartUploadCopyArgs()
@@ -970,7 +981,7 @@ public partial class MinioClient : IObjectOperations
                 queryMap.Add("partNumber", partNumber.ToString(CultureInfo.InvariantCulture));
             }
 
-            if (args.SourceObject.SSE is not null && args.SourceObject.SSE is SSECopy)
+            if (args.SourceObject.SSE is not null and SSECopy)
                 args.SourceObject.SSE.Marshal(args.Headers);
             args.SSE?.Marshal(args.Headers);
             var cpPartArgs = new CopyObjectRequestArgs()
@@ -990,7 +1001,9 @@ public partial class MinioClient : IObjectOperations
                 (CopyPartResult)await CopyObjectRequestAsync(cpPartArgs, cancellationToken).ConfigureAwait(false);
 
             totalParts[partNumber - 1] = new Part
-                { PartNumber = partNumber, ETag = cpPartResult.ETag, Size = (long)expectedReadSize };
+            {
+                PartNumber = partNumber, ETag = cpPartResult.ETag, Size = (long)expectedReadSize
+            };
         }
 
         var etags = new Dictionary<int, string>();
@@ -999,7 +1012,7 @@ public partial class MinioClient : IObjectOperations
             .WithUploadId(uploadId)
             .WithETags(etags);
         // Complete multi part upload
-        await CompleteMultipartUploadAsync(completeMultipartUploadArgs, cancellationToken).ConfigureAwait(false);
+        _ = await CompleteMultipartUploadAsync(completeMultipartUploadArgs, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1345,10 +1358,10 @@ public partial class MinioClient : IObjectOperations
     {
         // For all sizes greater than 5GB or if Copy byte range specified in conditions and byte range larger
         // than minimum part size (5 MB) do multipart.
-        dynamic multiPartInfo = Utils.CalculateMultiPartSize(copySize, true);
-        double partSize = multiPartInfo.partSize;
-        double partCount = multiPartInfo.partCount;
-        double lastPartSize = multiPartInfo.lastPartSize;
+        var multiPartInfo = Utils.CalculateMultiPartSize(copySize, true);
+        var partSize = multiPartInfo.PartSize;
+        var partCount = multiPartInfo.PartCount;
+        var lastPartSize = multiPartInfo.LastPartSize;
         var totalParts = new Part[(int)partCount];
 
         var sseHeaders = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -1387,7 +1400,7 @@ public partial class MinioClient : IObjectOperations
                     }
                 };
 
-            if (sseSrc is not null && sseSrc is SSECopy) sseSrc.Marshal(customHeader);
+            if (sseSrc is not null and SSECopy) sseSrc.Marshal(customHeader);
             sseDest?.Marshal(customHeader);
 
             var cpPartResult = (CopyPartResult)await CopyObjectRequestAsync(bucketName, objectName,
@@ -1396,9 +1409,7 @@ public partial class MinioClient : IObjectOperations
 
             totalParts[partNumber - 1] = new Part
             {
-                PartNumber = partNumber,
-                ETag = cpPartResult.ETag,
-                Size = (long)expectedReadSize
+                PartNumber = partNumber, ETag = cpPartResult.ETag, Size = (long)expectedReadSize
             };
         }
 

@@ -1,19 +1,19 @@
 ﻿/*
-* MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
-* (C) 2017-2021 MinIO, Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
+ * (C) 2017-2021 MinIO, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -202,12 +202,18 @@ public static class FunctionalTest
         var Replacements = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "$", "\\$" }, { "(", "\\(" },
-                { ")", "\\)" }, { "{", "\\{" },
-                { "}", "\\}" }, { "[", "\\[" },
-                { "]", "\\]" }, { "@", "\\@" },
-                { "%", "\\%" }, { "&", "\\&" },
-                { "#", "\\#" }, { "+", "\\+" }
+                { "$", "\\$" },
+                { "(", "\\(" },
+                { ")", "\\)" },
+                { "{", "\\{" },
+                { "}", "\\}" },
+                { "[", "\\[" },
+                { "]", "\\]" },
+                { "@", "\\@" },
+                { "%", "\\%" },
+                { "&", "\\&" },
+                { "#", "\\#" },
+                { "+", "\\+" }
             };
 
         foreach (var toReplace in Replacements.Keys) cmd = cmd.Replace(toReplace, Replacements[toReplace]);
@@ -308,7 +314,7 @@ public static class FunctionalTest
         return $"{path}/{fileName}";
     }
 
-    internal static Task RunCoreTests(MinioClient minioClient)
+    internal static async Task RunCoreTests(MinioClient minioClient)
     {
         ConcurrentBag<Task> coreTestsTasks = new()
         {
@@ -338,7 +344,7 @@ public static class FunctionalTest
             GetBucketPolicy_Test1(minioClient)
         };
 
-        return Utils.RunInParallel(coreTestsTasks, async (task, _) => { await task.ConfigureAwait(false); });
+        await coreTestsTasks.ForEachAsync().ConfigureAwait(false);
     }
 
     internal static async Task BucketExists_Test(MinioClient minio)
@@ -352,10 +358,7 @@ public static class FunctionalTest
         var rbArgs = new RemoveBucketArgs()
             .WithBucket(bucketName);
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName } };
 
         try
         {
@@ -393,10 +396,7 @@ public static class FunctionalTest
         var rbArgs = new RemoveBucketArgs()
             .WithBucket(bucketName);
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName } };
 
         var found = false;
         try
@@ -429,10 +429,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(20);
         var objectName = GetRandomName(20);
         var forceFlagHeader = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "x-minio-force-delete", "true" }
-            };
+            (StringComparer.Ordinal) { { "x-minio-force-delete", "true" } };
 
         var beArgs = new BucketExistsArgs()
             .WithBucket(bucketName);
@@ -452,11 +449,7 @@ public static class FunctionalTest
         await Task.Delay(1000).ConfigureAwait(false);
 
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName },
-                { "x-minio-force-delete", "true" }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "x-minio-force-delete", "true" } };
 
         var found = false;
 
@@ -1102,9 +1095,7 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName },
-                { "objectName", objectName },
-                { "fileName", fileName }
+                { "bucketName", bucketName }, { "objectName", objectName }, { "fileName", fileName }
             };
         try
         {
@@ -1141,9 +1132,7 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName },
-                { "objectName", objectName },
-                { "fileName", fileName }
+                { "bucketName", bucketName }, { "objectName", objectName }, { "fileName", fileName }
             };
         try
         {
@@ -1180,11 +1169,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName },
-                { "objectName", objectName }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "objectName", objectName } };
         try
         {
             using (var filestream = rsg.GenerateStreamFromSeed(1 * KB))
@@ -1225,8 +1210,7 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName },
-                { "objectNames", "[" + objectName + "0..." + objectName + "50]" }
+                { "bucketName", bucketName }, { "objectNames", "[" + objectName + "0..." + objectName + "50]" }
             };
         try
         {
@@ -1267,8 +1251,7 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName },
-                { "objectNames", "[" + objectName + "0..." + objectName + "50]" }
+                { "bucketName", bucketName }, { "objectNames", "[" + objectName + "0..." + objectName + "50]" }
             };
         try
         {
@@ -1367,9 +1350,7 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName },
-                { "objectName", objectName },
-                { "expiresOn", expiresOn.ToString() }
+                { "bucketName", bucketName }, { "objectName", objectName }, { "expiresOn", expiresOn.ToString() }
             };
 
         // File to be uploaded
@@ -1435,11 +1416,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var contentType = "csv";
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName },
-                { "objectName", objectName }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "objectName", objectName } };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -1504,9 +1481,7 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName },
-                { "objectName", objectName },
-                { "fileName", outFileName }
+                { "bucketName", bucketName }, { "objectName", objectName }, { "fileName", outFileName }
             };
         try
         {
@@ -1533,18 +1508,12 @@ public static class FunctionalTest
                 CompressionType = SelectCompressionType.NONE,
                 CSV = new CSVInputOptions
                 {
-                    FileHeaderInfo = CSVFileHeaderInfo.None,
-                    RecordDelimiter = "\n",
-                    FieldDelimiter = ","
+                    FileHeaderInfo = CSVFileHeaderInfo.None, RecordDelimiter = "\n", FieldDelimiter = ","
                 }
             };
             var outputSerialization = new SelectObjectOutputSerialization
             {
-                CSV = new CSVOutputOptions
-                {
-                    RecordDelimiter = "\n",
-                    FieldDelimiter = ","
-                }
+                CSV = new CSVOutputOptions { RecordDelimiter = "\n", FieldDelimiter = "," }
             };
             var selArgs = new SelectObjectContentArgs()
                 .WithBucket(bucketName)
@@ -1609,10 +1578,7 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName } };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -1727,11 +1693,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName },
-                { "objectName", objectName }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "objectName", objectName } };
         try
         {
             await Setup_WithLock_Test(minio, bucketName).ConfigureAwait(false);
@@ -1836,17 +1798,9 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName } };
         var tags = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "key1", "value1" },
-                { "key2", "value2" },
-                { "key3", "value3" }
-            };
+            (StringComparer.Ordinal) { { "key1", "value1" }, { "key2", "value2" }, { "key3", "value3" } };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -1971,12 +1925,7 @@ public static class FunctionalTest
                     { "fileSize", size.ToString(CultureInfo.InvariantCulture) }
                 };
             var tags = new Dictionary<string, string>
-                (StringComparer.Ordinal)
-                {
-                    { "key1", "value1" },
-                    { "key2", "value2" },
-                    { "key3", "value3" }
-                };
+                (StringComparer.Ordinal) { { "key1", "value1" }, { "key2", "value2" }, { "key3", "value3" } };
             try
             {
                 await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -2227,10 +2176,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomName(10);
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName } };
         var setLockNotImplemented = false;
         var getLockNotImplemented = false;
 
@@ -2395,11 +2341,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName },
-                { "objectName", objectName }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "objectName", objectName } };
 
         try
         {
@@ -2569,10 +2511,7 @@ public static class FunctionalTest
             if (i == nFiles) i = 1000000;
 
             var fileName = prefix + i + ".bin";
-            var newEntry = new ZipEntry(fileName)
-            {
-                DateTime = DateTime.Now
-            };
+            var newEntry = new ZipEntry(fileName) { DateTime = DateTime.Now };
             zipStream.PutNextEntry(newEntry);
 
             using var stream = rsg.GenerateStreamFromSeed(i);
@@ -2600,11 +2539,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(15) + ".zip";
 
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName },
-                { "objectName", objectName }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "objectName", objectName } };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -2619,10 +2554,7 @@ public static class FunctionalTest
             await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
 
             var extractHeader = new Dictionary<string, string>
-                (StringComparer.Ordinal)
-                {
-                    { "x-minio-extract", "true" }
-                };
+                (StringComparer.Ordinal) { { "x-minio-extract", "true" } };
 
             // GeObject api test
             var r = new Random();
@@ -2723,10 +2655,7 @@ public static class FunctionalTest
 
             var received = new List<MinioNotificationRaw>();
 
-            var eventsList = new List<EventType>
-            {
-                EventType.ObjectCreatedAll
-            };
+            var eventsList = new List<EventType> { EventType.ObjectCreatedAll };
 
             var listenArgs = new ListenBucketNotificationsArgs()
                 .WithBucket(bucketName)
@@ -2848,10 +2777,7 @@ public static class FunctionalTest
     internal static async Task ListenBucketNotificationsAsync_Test2(MinioClient minio)
     {
         var startTime = DateTime.Now;
-        var events = new List<EventType>
-        {
-            EventType.ObjectCreatedAll
-        };
+        var events = new List<EventType> { EventType.ObjectCreatedAll };
         var rxEventData = new MinioNotificationRaw("");
         var rxEventsList = new List<NotificationEvent>();
         var bucketName = GetRandomName(15);
@@ -2859,9 +2785,7 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName },
-                { "contentType", contentType },
-                { "size", "16B" }
+                { "bucketName", bucketName }, { "contentType", contentType }, { "size", "16B" }
             };
 
         try
@@ -2950,10 +2874,7 @@ public static class FunctionalTest
     internal static async Task ListenBucketNotificationsAsync_Test3(MinioClient minio)
     {
         var startTime = DateTime.Now;
-        var events = new List<EventType>
-        {
-            EventType.ObjectCreatedAll
-        };
+        var events = new List<EventType> { EventType.ObjectCreatedAll };
         var rxEventData = new MinioNotificationRaw("");
         IDisposable disposable = null;
         var bucketName = GetRandomName(15);
@@ -2962,10 +2883,7 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName },
-                { "contentType", contentType },
-                { "suffix", suffix },
-                { "size", "16B" }
+                { "bucketName", bucketName }, { "contentType", contentType }, { "suffix", suffix }, { "size", "16B" }
             };
 
         try
@@ -3067,11 +2985,7 @@ public static class FunctionalTest
         var rbArgs = new RemoveBucketArgs()
             .WithBucket(bucketName);
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName },
-                { "region", "us-east-1" }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "region", "us-east-1" } };
 
         try
         {
@@ -3106,11 +3020,7 @@ public static class FunctionalTest
         var rbArgs = new RemoveBucketArgs()
             .WithBucket(bucketName);
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName },
-                { "region", "us-east-1" }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "region", "us-east-1" } };
         var testType = "Test whether make bucket passes when bucketname has a period.";
 
         try
@@ -3147,11 +3057,7 @@ public static class FunctionalTest
         var rbArgs = new RemoveBucketArgs()
             .WithBucket(bucketName);
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName },
-                { "region", "eu-central-1" }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "region", "eu-central-1" } };
         try
         {
             await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
@@ -3186,11 +3092,7 @@ public static class FunctionalTest
         var rbArgs = new RemoveBucketArgs()
             .WithBucket(bucketName);
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName },
-                { "region", "us-west-2" }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "region", "us-west-2" } };
         try
         {
             await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
@@ -3218,11 +3120,7 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         string bucketName = null;
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName },
-                { "region", "us-east-1" }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "region", "us-east-1" } };
 
         try
         {
@@ -3254,11 +3152,7 @@ public static class FunctionalTest
         var rbArgs = new RemoveBucketArgs()
             .WithBucket(bucketName);
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName },
-                { "region", "us-east-1" }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "region", "us-east-1" } };
 
         try
         {
@@ -3402,10 +3296,7 @@ public static class FunctionalTest
         var fileName = CreateFile(1, dataFile1B);
         var contentType = "custom/contenttype";
         var metaData = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "customheader", "minio   dotnet" }
-            };
+            (StringComparer.Ordinal) { { "customheader", "minio   dotnet" } };
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
@@ -3455,10 +3346,7 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName },
-                { "objectName", objectName },
-                { "data", "1B" },
-                { "size", "1B" }
+                { "bucketName", bucketName }, { "objectName", objectName }, { "data", "1B" }, { "size", "1B" }
             };
         try
         {
@@ -4271,7 +4159,9 @@ public static class FunctionalTest
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length)
                     .WithHeaders(new Dictionary<string, string>(StringComparer.Ordinal)
-                        { { "Orig", "orig-val with  spaces" } });
+                    {
+                        { "Orig", "orig-val with  spaces" }
+                    });
                 await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
             }
 
@@ -4362,10 +4252,7 @@ public static class FunctionalTest
 
                 await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
                 var putTags = new Dictionary<string, string>
-                    (StringComparer.Ordinal)
-                    {
-                        { "key1", "PutObjectTags" }
-                    };
+                    (StringComparer.Ordinal) { { "key1", "PutObjectTags" } };
                 var setObjectTagsArgs = new SetObjectTagsArgs()
                     .WithBucket(bucketName)
                     .WithObject(objectName)
@@ -4374,10 +4261,7 @@ public static class FunctionalTest
             }
 
             var copyTags = new Dictionary<string, string>
-                (StringComparer.Ordinal)
-                {
-                    { "key1", "CopyObjectTags" }
-                };
+                (StringComparer.Ordinal) { { "key1", "CopyObjectTags" } };
             var copySourceObjectArgs = new CopySourceObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
@@ -4748,9 +4632,7 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName },
-                { "objectName", objectName },
-                { "contentType", contentType }
+                { "bucketName", bucketName }, { "objectName", objectName }, { "contentType", contentType }
             };
         try
         {
@@ -4817,9 +4699,7 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName },
-                { "objectName", objectName },
-                { "fileName", fileName }
+                { "bucketName", bucketName }, { "objectName", objectName }, { "fileName", fileName }
             };
         try
         {
@@ -5019,9 +4899,7 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName },
-                { "objectName", objectName },
-                { "contentType", contentType }
+                { "bucketName", bucketName }, { "objectName", objectName }, { "contentType", contentType }
             };
 
         try
@@ -5095,9 +4973,7 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName },
-                { "objectName", objectName },
-                { "fileName", outFileName }
+                { "bucketName", bucketName }, { "objectName", objectName }, { "fileName", outFileName }
             };
         try
         {
@@ -5185,10 +5061,7 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName } };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -5263,9 +5136,7 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName },
-                { "objectName", objectName },
-                { "recursive", "false" }
+                { "bucketName", bucketName }, { "objectName", objectName }, { "recursive", "false" }
             };
         try
         {
@@ -5305,9 +5176,7 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName },
-                { "objectName", objectNamePrefix },
-                { "recursive", "false" }
+                { "bucketName", bucketName }, { "objectName", objectNamePrefix }, { "recursive", "false" }
             };
         var objectNames = new List<string>();
         try
@@ -5355,9 +5224,7 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName },
-                { "objectName", objectNamePrefix },
-                { "recursive", "false" }
+                { "bucketName", bucketName }, { "objectName", objectNamePrefix }, { "recursive", "false" }
             };
         var objectNamesSet = new HashSet<string>(StringComparer.Ordinal);
         try
@@ -5876,11 +5743,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var contentType = "gzip";
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName },
-                { "recursive", "true" }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "recursive", "true" } };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -5941,12 +5804,7 @@ public static class FunctionalTest
         var objectName = prefix + GetRandomName(10);
         var contentType = "gzip";
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName },
-                { "prefix", prefix },
-                { "recursive", "false" }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "prefix", prefix }, { "recursive", "false" } };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -6003,12 +5861,7 @@ public static class FunctionalTest
         var objectName = prefix + "/" + GetRandomName(10) + "/suffix";
         var contentType = "gzip";
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName },
-                { "prefix", prefix },
-                { "recursive", "true" }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "prefix", prefix }, { "recursive", "true" } };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -6074,9 +5927,7 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName },
-                { "objectPrefix", objectName.Substring(5) },
-                { "policyType", "readonly" }
+                { "bucketName", bucketName }, { "objectPrefix", objectName.Substring(5) }, { "policyType", "readonly" }
             };
         try
         {
@@ -6129,10 +5980,7 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName } };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -6187,10 +6035,7 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName } };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -6314,10 +6159,7 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName } };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -6332,10 +6174,7 @@ public static class FunctionalTest
         }
 
         var rules = new List<LifecycleRule>();
-        var exp = new Expiration
-        {
-            Days = 30
-        };
+        var exp = new Expiration { Days = 30 };
 
         var rule1 = new LifecycleRule(null, "txt", exp, null,
             new RuleFilter(null, "txt/", null),

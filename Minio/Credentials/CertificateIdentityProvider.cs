@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2022 MinIO, Inc.
  *
@@ -35,17 +35,17 @@ namespace Minio.Credentials;
 
 public class CertificateIdentityProvider : IClientProvider
 {
-    private readonly int DEFAULT_DURATION_IN_SECONDS = 3600;
+    private readonly int defaultDurationInSeconds = 3600;
 
     public CertificateIdentityProvider()
     {
-        DurationInSeconds = DEFAULT_DURATION_IN_SECONDS;
+        DurationInSeconds = defaultDurationInSeconds;
     }
 
     internal string StsEndpoint { get; set; }
     internal int DurationInSeconds { get; set; }
     internal X509Certificate2 ClientCertificate { get; set; }
-    internal string PostEndpoint { get; set; }
+    internal Uri PostEndpoint { get; set; }
     internal HttpClient HttpClient { get; set; }
     internal AccessCredentials Credentials { get; set; }
 
@@ -60,10 +60,10 @@ public class CertificateIdentityProvider : IClientProvider
             return Credentials;
 
         if (HttpClient is null)
-            throw new ArgumentException("HttpClient cannot be null or empty", nameof(HttpClient));
+            throw new ArgumentNullException(nameof(HttpClient), "HttpClient cannot be null or empty");
 
         if (ClientCertificate is null)
-            throw new ArgumentException("ClientCertificate cannot be null or empty", nameof(ClientCertificate));
+            throw new ArgumentNullException(nameof(ClientCertificate), "ClientCertificate cannot be null or empty");
 
         using var response = await HttpClient.PostAsync(PostEndpoint, null).ConfigureAwait(false);
 
@@ -108,7 +108,7 @@ public class CertificateIdentityProvider : IClientProvider
     public CertificateIdentityProvider Build()
     {
         if (string.IsNullOrEmpty(DurationInSeconds.ToString(CultureInfo.InvariantCulture)))
-            DurationInSeconds = DEFAULT_DURATION_IN_SECONDS;
+            DurationInSeconds = defaultDurationInSeconds;
 
         var builder = new UriBuilder(StsEndpoint);
         var query = HttpUtility.ParseQueryString(builder.Query);
@@ -116,18 +116,14 @@ public class CertificateIdentityProvider : IClientProvider
         query["Version"] = "2011-06-15";
         query["DurationInSeconds"] = DurationInSeconds.ToString(CultureInfo.InvariantCulture);
         builder.Query = query.ToString();
-        PostEndpoint = builder.ToString();
+        PostEndpoint = builder.Uri;
 
         var handler = new HttpClientHandler
         {
-            ClientCertificateOptions = ClientCertificateOption.Manual,
-            SslProtocols = SslProtocols.Tls12
+            ClientCertificateOptions = ClientCertificateOption.Manual, SslProtocols = SslProtocols.Tls12
         };
-        handler.ClientCertificates.Add(ClientCertificate);
-        HttpClient ??= new HttpClient(handler)
-        {
-            BaseAddress = new Uri(StsEndpoint)
-        };
+        _ = handler.ClientCertificates.Add(ClientCertificate);
+        HttpClient ??= new HttpClient(handler) { BaseAddress = new Uri(StsEndpoint) };
 
         Credentials = GetCredentials();
         return this;

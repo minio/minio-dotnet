@@ -15,7 +15,7 @@
  */
 
 using System.ComponentModel;
-using System.Dynamic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -25,6 +25,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using Minio.DataModel;
 using Minio.Exceptions;
 #if !NET6_0_OR_GREATER
 using System.Collections.Concurrent;
@@ -42,7 +43,7 @@ public static class Utils
     // Invalid bucket name with double dot.
     private static readonly Regex invalidDotBucketName = new("`/./.", RegexOptions.None, TimeSpan.FromHours(1));
 
-    private static readonly Lazy<IDictionary<string, string>> _contentTypeMap = new(AddContentTypeMappings);
+    private static readonly Lazy<IDictionary<string, string>> contentTypeMap = new(AddContentTypeMappings);
 
     /// <summary>
     ///     IsValidBucketName - verify bucket name in accordance with
@@ -57,9 +58,11 @@ public static class Utils
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot be smaller than 3 characters.");
         if (bucketName.Length > 63)
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot be greater than 63 characters.");
+#pragma warning disable IDE0056 // Use index operator: not possible in netstandard2.0
         if (bucketName[0] == '.' || bucketName[bucketName.Length - 1] == '.')
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot start or end with a '.' dot.");
-        if (bucketName.Any(c => char.IsUpper(c)))
+#pragma warning restore IDE0056 // Use index operator
+        if (bucketName.Any(char.IsUpper))
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot have upper case characters");
         if (invalidDotBucketName.IsMatch(bucketName))
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot have successive periods.");
@@ -87,6 +90,8 @@ public static class Utils
     }
 
     // Return url encoded string where reserved characters have been percent-encoded
+    [SuppressMessage("Usage", "MA0074:Avoid implicit culture-sensitive methods",
+        Justification = "Not possible right now with netstandard2.0 support")]
     internal static string UrlEncode(string input)
     {
         // The following characters are not allowed on the server side
@@ -127,12 +132,12 @@ public static class Utils
         foreach (var pathSegment in path.Split('/'))
             if (pathSegment.Length != 0)
             {
-                if (encodedPathBuf.Length > 0) encodedPathBuf.Append('/');
-                encodedPathBuf.Append(UrlEncode(pathSegment));
+                if (encodedPathBuf.Length > 0) _ = encodedPathBuf.Append('/');
+                _ = encodedPathBuf.Append(UrlEncode(pathSegment));
             }
 
-        if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase)) encodedPathBuf.Insert(0, '/');
-        if (path.EndsWith("/", StringComparison.OrdinalIgnoreCase)) encodedPathBuf.Append('/');
+        if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase)) _ = encodedPathBuf.Insert(0, '/');
+        if (path.EndsWith("/", StringComparison.OrdinalIgnoreCase)) _ = encodedPathBuf.Append('/');
         return encodedPathBuf.ToString();
     }
 
@@ -171,7 +176,7 @@ public static class Utils
 
         if (string.IsNullOrEmpty(extension)) return "application/octet-stream";
 
-        return _contentTypeMap.Value.TryGetValue(extension, out var contentType)
+        return contentTypeMap.Value.TryGetValue(extension, out var contentType)
             ? contentType
             : "application/octet-stream";
     }
@@ -199,28 +204,47 @@ public static class Utils
         return !l2.Except(l1, StringComparer.Ordinal).Any();
     }
 
-    public static Task RunInParallel<TSource>(IEnumerable<TSource> source,
-        Func<TSource, CancellationToken, ValueTask> body, int maxNoOfParallelProcesses = 4)
+    public static async Task ForEachAsync<TSource>(this IEnumerable<TSource> source, bool runInParallel = false,
+        int maxNoOfParallelProcesses = 4) where TSource : Task
     {
-#if NET6_0_OR_GREATER
-        ParallelOptions parallelOptions = new()
+        if (source is null) throw new ArgumentNullException(nameof(source));
+
+        try
         {
-            MaxDegreeOfParallelism
-                = maxNoOfParallelProcesses
-        };
-        return Parallel.ForEachAsync(source, parallelOptions, body);
-#else
-        return Task.WhenAll(Partitioner.Create(source).GetPartitions(maxNoOfParallelProcesses)
-            .Select(partition => Task.Run(async delegate
+            if (runInParallel)
+            {
+#if NET6_0_OR_GREATER
+                ParallelOptions parallelOptions = new()
                 {
-                    using (partition)
-                    {
-                        while (partition.MoveNext())
-                            await body(partition.Current, new CancellationToken()).ConfigureAwait(false);
-                    }
-                }
-            )));
+                    MaxDegreeOfParallelism
+                        = maxNoOfParallelProcesses
+                };
+                await Parallel.ForEachAsync(source, parallelOptions,
+                    async (task, cancellationToken) => await task.ConfigureAwait(false)).ConfigureAwait(false);
+#else
+                await Task.WhenAll(Partitioner.Create(source).GetPartitions(maxNoOfParallelProcesses)
+                    .Select(partition => Task.Run(async delegate
+                        {
+                            using (partition)
+                            {
+                                while (partition.MoveNext())
+                                    await partition.Current.ConfigureAwait(false);
+                            }
+                        }
+                    ))).ConfigureAwait(false);
 #endif
+            }
+            else
+            {
+                foreach (var task in source) await task.ConfigureAwait(false);
+            }
+        }
+        catch (AggregateException ae)
+        {
+            foreach (var ex in ae.Flatten().InnerExceptions)
+                // Handle or log the individual exception 'ex'
+                Console.WriteLine($"Exception occurred: {ex.Message}");
+        }
     }
 
     public static bool CaseInsensitiveContains(string text, string value,
@@ -241,7 +265,7 @@ public static class Utils
     /// <param name="size"></param>
     /// <param name="copy"> If true, use COPY part size, else use PUT part size</param>
     /// <returns></returns>
-    public static object CalculateMultiPartSize(long size, bool copy = false)
+    public static MultiPartInfo CalculateMultiPartSize(long size, bool copy = false)
     {
         if (size == -1) size = Constants.MaximumStreamObjectSize;
 
@@ -254,11 +278,8 @@ public static class Utils
         partSize = (double)Math.Ceiling((decimal)partSize / minPartSize) * minPartSize;
         var partCount = Math.Ceiling(size / partSize);
         var lastPartSize = size - ((partCount - 1) * partSize);
-        dynamic obj = new ExpandoObject();
-        obj.partSize = partSize;
-        obj.partCount = partCount;
-        obj.lastPartSize = lastPartSize;
-        return obj;
+
+        return new MultiPartInfo { PartSize = partSize, PartCount = partCount, LastPartSize = lastPartSize };
     }
 
     /// <summary>
@@ -852,10 +873,7 @@ public static class Utils
 
         try
         {
-            var settings = new XmlWriterSettings
-            {
-                OmitXmlDeclaration = true
-            };
+            var settings = new XmlWriterSettings { OmitXmlDeclaration = true };
             var ns = new XmlSerializerNamespaces();
             ns.Add("", nmspc);
 
@@ -891,7 +909,7 @@ public static class Utils
             RegexOptions.Multiline;
         var patternToReplace =
             @"<\w+\s+\w+:nil=""true""(\s+xmlns:\w+=""http://www.w3.org/2001/XMLSchema-instance"")?\s*/>";
-        var patternToMatch = @"<\w+\s+xmlns=""http://s3.amazonaws.com/doc/2006-03-01/""\s*>";
+        const string patternToMatch = @"<\w+\s+xmlns=""http://s3.amazonaws.com/doc/2006-03-01/""\s*>";
         if (Regex.Match(config, patternToMatch, regexOptions, TimeSpan.FromHours(1)).Success)
             patternToReplace = @"xmlns=""http://s3.amazonaws.com/doc/2006-03-01/""\s*";
         return Regex.Replace(
@@ -917,7 +935,9 @@ public static class Utils
                 nameof(endpoint));
 
         if (endpoint.EndsWith("/", StringComparison.OrdinalIgnoreCase))
+#pragma warning disable IDE0057 // Use range operator: not possible in netstandard2.0
             endpoint = endpoint.Substring(0, endpoint.Length - 1);
+#pragma warning restore IDE0057 // Use range operator
         if (!endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
             !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
             throw new InvalidEndpointException(
@@ -1033,7 +1053,7 @@ public static class Utils
 
             return (T)new XmlSerializer(typeof(T)).Deserialize(stream);
         }
-        catch (Exception)
+        catch
         {
         }
 
@@ -1048,7 +1068,7 @@ public static class Utils
             using var stringReader = new StringReader(xml);
             return (T)serializer.Deserialize(stringReader);
         }
-        catch (Exception)
+        catch
         {
         }
 
