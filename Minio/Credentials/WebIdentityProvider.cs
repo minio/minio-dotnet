@@ -57,8 +57,8 @@ public class WebIdentityProvider : WebIdentityClientGrantsProvider<WebIdentityPr
         Validate();
         CurrentJsonWebToken = JWTSupplier();
         // RoleArn to be set already.
-        WithRoleAction("AssumeRoleWithWebIdentity");
-        WithDurationInSeconds(GetDurationInSeconds(CurrentJsonWebToken.Expiry));
+        _ = WithRoleAction("AssumeRoleWithWebIdentity");
+        _ = WithDurationInSeconds(GetDurationInSeconds(CurrentJsonWebToken.Expiry));
         RoleSessionName ??= Utils.To8601String(DateTime.Now);
         return base.BuildRequest();
     }

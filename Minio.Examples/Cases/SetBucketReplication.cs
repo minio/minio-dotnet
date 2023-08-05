@@ -28,9 +28,19 @@ public static class SetBucketReplication
         var escapedArgs = "";
         foreach (var str in new List<string>
                  {
-                     "$", "(", ")", "{", "}",
-                     "[", "]", "@", "#", "$",
-                     "%", "&", "+"
+                     "$",
+                     "(",
+                     ")",
+                     "{",
+                     "}",
+                     "[",
+                     "]",
+                     "@",
+                     "#",
+                     "$",
+                     "%",
+                     "&",
+                     "+"
                  })
             escapedArgs = cmd.Replace("str", "\\str");
 
@@ -114,10 +124,7 @@ public static class SetBucketReplication
                     SseKmsEncryptedObjects.StatusEnabled)),
                 ReplicationRule.StatusEnabled
             );
-        var rules = new Collection<ReplicationRule>
-        {
-            rule
-        };
+        var rules = new Collection<ReplicationRule> { rule };
         var repl = new ReplicationConfiguration(arn, rules);
 
         await minio.SetBucketReplicationAsync(

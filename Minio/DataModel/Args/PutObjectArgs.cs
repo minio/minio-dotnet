@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -142,7 +142,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
                     !OperationsUtil.IsSSEHeader(p.Key))
                 {
                     key = "x-amz-meta-" + key.ToLowerInvariant();
-                    Headers.Remove(p.Key);
+                    _ = Headers.Remove(p.Key);
                 }
 
                 Headers[key] = p.Value;
@@ -189,11 +189,5 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
     {
         Progress = progress;
         return this;
-    }
-
-    ~PutObjectArgs()
-    {
-        if (!string.IsNullOrWhiteSpace(FileName))
-            ObjectStreamData?.Close();
     }
 }

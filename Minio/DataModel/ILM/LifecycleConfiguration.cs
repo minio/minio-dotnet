@@ -56,10 +56,7 @@ public class LifecycleConfiguration
 
         try
         {
-            var settings = new XmlWriterSettings
-            {
-                OmitXmlDeclaration = true
-            };
+            var settings = new XmlWriterSettings { OmitXmlDeclaration = true };
             var ns = new XmlSerializerNamespaces();
             ns.Add(string.Empty, string.Empty);
 

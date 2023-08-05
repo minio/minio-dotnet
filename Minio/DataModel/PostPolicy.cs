@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -145,7 +145,8 @@ public class PostPolicy
     /// <param name="endRange"></param>
     public void SetContentRange(long startRange, long endRange)
     {
-        if (startRange < 0 || endRange < 0) throw new ArgumentException("Negative start or end range");
+        if (startRange < 0 || endRange < 0)
+            throw new ArgumentOutOfRangeException(nameof(endRange), "Negative start or end range");
 
         if (startRange > endRange)
             throw new ArgumentException("Start range is greater than end range", nameof(startRange));
@@ -265,11 +266,11 @@ public class PostPolicy
 
         // expiration and policies will never be empty because of checks at PresignedPostPolicy()
         var sb = new StringBuilder();
-        sb.Append('{');
-        sb.Append("\"expiration\":\"").Append(Expiration.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")).Append('"')
+        _ = sb.Append('{');
+        _ = sb.Append("\"expiration\":\"").Append(Expiration.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")).Append('"')
             .Append(',');
-        sb.Append("\"conditions\":[").Append(string.Join(",", policyList)).Append(']');
-        sb.Append('}');
+        _ = sb.Append("\"conditions\":[").Append(string.Join(",", policyList)).Append(']');
+        _ = sb.Append('}');
         return Encoding.UTF8.GetBytes(sb.ToString());
     }
 

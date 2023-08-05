@@ -33,15 +33,12 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <!--<SymbolPackageFormat>snupkg</SymbolPackageFormat>-->
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <IncludeSymbols>true</IncludeSymbols>
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
 
         <DesignTimeBuild>false</DesignTimeBuild>
-        <DebugType>portable</DebugType>
-        <DebugSymbols>true</DebugSymbols>
-
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <GeneratePackageOnBuild Condition=" '$(IsTestProject)' != 'true'">true</GeneratePackageOnBuild>
         <PackageIcon>icon.png</PackageIcon>
@@ -79,7 +76,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.61">
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.68">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>

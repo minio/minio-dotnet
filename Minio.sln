@@ -9,8 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Docs\API.md = Docs\API.md
 		Directory.Build.props = Directory.Build.props
 		.config\dotnet-tools.json = .config\dotnet-tools.json
-		.github\workflows\minio-dotnet-linux.yml = .github\workflows\minio-dotnet-linux.yml
-		.github\workflows\minio-dotnet-windows.yml = .github\workflows\minio-dotnet-windows.yml
+		.github\workflows\minio-dotnet.yml = .github\workflows\minio-dotnet.yml
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -48,6 +47,7 @@ Global
 		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A754E7C-2D22-4AD7-BF1A-CA731920C8D4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BF755F32-5535-4248-8F17-E0C261D1954C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BF755F32-5535-4248-8F17-E0C261D1954C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF755F32-5535-4248-8F17-E0C261D1954C}.Release|Any CPU.ActiveCfg = Release|Any CPU
