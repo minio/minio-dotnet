@@ -85,6 +85,8 @@ public class DateTimeTests
         Assert.AreEqual(d.Kind, parsed.Kind);
     }
 
-    private static DateTime TruncateMilliseconds(DateTime dateTime) =>
-        dateTime.AddTicks(-(dateTime.Ticks % TimeSpan.TicksPerSecond));
+    private static DateTime TruncateMilliseconds(DateTime dateTime)
+    {
+        return dateTime.AddTicks(-(dateTime.Ticks % TimeSpan.TicksPerSecond));
+    }
 }
