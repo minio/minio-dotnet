@@ -45,7 +45,7 @@ internal static class GetPartialObject
                 .WithCallbackStream(async (stream, cancellationToken) =>
                 {
                     var fileStream = File.Create(fileName);
-                    await stream.CopyToAsync(fileStream).ConfigureAwait(false);
+                    await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
                     await fileStream.DisposeAsync().ConfigureAwait(false);
                     var writtenInfo = new FileInfo(fileName);
                     var file_read_size = writtenInfo.Length;

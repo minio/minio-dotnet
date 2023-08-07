@@ -739,13 +739,8 @@ public static class FunctionalTest
                     {
                         using var fileStream = File.Create(tempFileName);
 
-#if NETFRAMEWORK
-                        await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                        fileStream.Dispose();
-#else
                         await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
                         await fileStream.DisposeAsync().ConfigureAwait(false);
-#endif
 
                         var writtenInfo = new FileInfo(tempFileName);
                         file_read_size = writtenInfo.Length;
@@ -831,13 +826,8 @@ public static class FunctionalTest
                     {
                         using var fileStream = File.Create(tempFileName);
 
-#if NETFRAMEWORK
-                        await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                        fileStream.Dispose();
-#else
                         await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
                         await fileStream.DisposeAsync().ConfigureAwait(false);
-#endif
 
                         var writtenInfo = new FileInfo(tempFileName);
                         file_read_size = writtenInfo.Length;
@@ -919,13 +909,10 @@ public static class FunctionalTest
                     .WithCallbackStream(async (stream, cancellationToken) =>
                     {
                         using var fileStream = File.Create(tempFileName);
-#if NETFRAMEWORK
-                        await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                        fileStream.Dispose();
-#else
+
                         await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
                         await fileStream.DisposeAsync().ConfigureAwait(false);
-#endif
+
                         var writtenInfo = new FileInfo(tempFileName);
                         file_read_size = writtenInfo.Length;
 
@@ -1316,14 +1303,15 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task DownloadObjectAsync(MinioClient minio, string url, string filePath)
+    internal static async Task DownloadObjectAsync(MinioClient minio, string url, string filePath,
+        CancellationToken cancellationToken = default)
     {
         using var response = await minio.WrapperGetAsync(url).ConfigureAwait(false);
         if (string.IsNullOrEmpty(Convert.ToString(response.Content)) || !HttpStatusCode.OK.Equals(response.StatusCode))
             throw new ArgumentNullException(nameof(response.Content), "Unable to download via presigned URL");
 
         using var fs = new FileStream(filePath, FileMode.CreateNew);
-        await response.Content.CopyToAsync(fs).ConfigureAwait(false);
+        await response.Content.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
     }
 
     internal static async Task UploadObjectAsync(MinioClient minio, string url, string filePath)
@@ -4658,13 +4646,10 @@ public static class FunctionalTest
                     .WithCallbackStream(async (stream, cancellationToken) =>
                     {
                         var fileStream = File.Create(tempFileName);
-#if NETFRAMEWORK
-                        await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                        fileStream.Dispose();
-#else
+
                         await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
                         await fileStream.DisposeAsync().ConfigureAwait(false);
-#endif
+
                         var writtenInfo = new FileInfo(tempFileName);
                         file_read_size = writtenInfo.Length;
 
@@ -4844,13 +4829,10 @@ public static class FunctionalTest
                         .WithCallbackStream(async (stream, cancellationToken) =>
                         {
                             var fileStream = File.Create(tempFileName);
-#if NETFRAMEWORK
-                            await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                            fileStream.Dispose();
-#else
+
                             await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
                             await fileStream.DisposeAsync().ConfigureAwait(false);
-#endif
+
                             var writtenInfo = new FileInfo(tempFileName);
                             actualFileSize = writtenInfo.Length;
 

@@ -61,11 +61,7 @@ public sealed class ResponseResult : IDisposable
         get
         {
             if (Response is null) return null;
-#if NETSTANDARD
-            return stream ??= Response.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
-#else
             return stream ??= Response.Content.ReadAsStream();
-#endif
         }
     }
 
@@ -92,11 +88,7 @@ public sealed class ResponseResult : IDisposable
         get
         {
             if (ContentBytes.Length == 0) return "";
-#if NETSTANDARD
-            content ??= Encoding.UTF8.GetString(ContentBytes.ToArray());
-#else
             content ??= Encoding.UTF8.GetString(ContentBytes.Span);
-#endif
             return content;
         }
     }

@@ -226,11 +226,8 @@ public sealed class SelectResponseStream : IDisposable
             var nameLength = data[offset++];
             var b = data.Slice(offset, nameLength);
 
-#if NETSTANDARD
-            var name = Encoding.UTF8.GetString(b.ToArray());
-#else
             var name = Encoding.UTF8.GetString(b);
-#endif
+
             offset += nameLength;
             var hdrValue = data[offset++];
             if (hdrValue != 7) throw new IOException("header value type is not 7");
@@ -245,11 +242,7 @@ public sealed class SelectResponseStream : IDisposable
 #endif
             b = data.Slice(offset, headerValLength);
 
-#if NETSTANDARD
-            var value = Encoding.UTF8.GetString(b.ToArray());
-#else
             var value = Encoding.UTF8.GetString(b);
-#endif
             offset += headerValLength;
             headerMap.Add(name, value);
         }

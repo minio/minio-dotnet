@@ -189,12 +189,9 @@ internal class V4Authenticator
         var dateRegionKey = SignHmac(dateKey, regionBytes);
         dateRegionServiceKey = SignHmac(dateRegionKey, serviceBytes);
         requestBytes = Encoding.UTF8.GetBytes("aws4_request");
-        var hmac = SignHmac(dateRegionServiceKey, requestBytes);
-#if NETSTANDARD
-        var signingKey = Encoding.UTF8.GetString(hmac.ToArray());
-#else
-        var signingKey = Encoding.UTF8.GetString(hmac);
-#endif
+
+        //var hmac = SignHmac(dateRegionServiceKey, requestBytes);
+        //var signingKey = Encoding.UTF8.GetString(hmac);
         return SignHmac(dateRegionServiceKey, requestBytes);
     }
 
@@ -426,11 +423,7 @@ internal class V4Authenticator
                 cntntByteData = requestBuilder.Request.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
 
             // UTF conversion - String from bytes
-#if NETSTANDARD
-            queryParams = Encoding.UTF8.GetString(cntntByteData.ToArray(), 0, cntntByteData.Length);
-#else
             queryParams = Encoding.UTF8.GetString(cntntByteData);
-#endif
         }
 
         if (!string.IsNullOrEmpty(queryParams) &&
