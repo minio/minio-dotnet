@@ -53,7 +53,8 @@ public static class Program
         return "minio-dotnet-example-" + result;
     }
 
-    public static async Task Main(string[] args)
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0051:Method is too long", Justification = "Needs to run all tests")]
+    public static async Task Main()
     {
         string endPoint = null;
         string accessKey = null;

@@ -377,5 +377,5 @@ dotnet_separate_import_directive_groups = false
 
 dotnet_style_prefer_foreach_explicit_cast_in_source = when_strongly_typed
 
-MA0051.maximum_lines_per_method = 100
+MA0051.maximum_lines_per_method = 150
 MA0051.maximum_statements_per_method = 60

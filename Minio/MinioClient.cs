@@ -36,14 +36,10 @@ public partial class MinioClient : IMinioClient
     /// <summary>
     ///     Default error handling delegate
     /// </summary>
-    private readonly ApiResponseErrorHandler defaultErrorHandlingDelegate = response =>
-    {
-        if (response.StatusCode is < HttpStatusCode.OK or >= HttpStatusCode.BadRequest)
-            ParseError(response);
-    };
+    private IApiResponseErrorHandler DefaultErrorHandlingDelegate { get; } = new DefaultErrorHandler();
 
-    internal readonly IEnumerable<ApiResponseErrorHandler> NoErrorHandlers =
-        Enumerable.Empty<ApiResponseErrorHandler>();
+    internal readonly IEnumerable<IApiResponseErrorHandler> NoErrorHandlers =
+        Enumerable.Empty<IApiResponseErrorHandler>();
 
     private string customUserAgent = string.Empty;
     private bool disposedValue;
@@ -61,7 +57,7 @@ public partial class MinioClient : IMinioClient
     internal int RequestTimeout;
 
     // Handler for task retry policy
-    internal RetryPolicyHandler RetryPolicyHandler;
+    internal IRetryPolicyHandler RetryPolicyHandler;
 
     // Enables HTTP tracing if set to true
     private bool trace;
@@ -380,7 +376,7 @@ public partial class MinioClient : IMinioClient
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns>ResponseResult</returns>
     internal Task<ResponseResult> ExecuteTaskAsync(
-        IEnumerable<ApiResponseErrorHandler> errorHandlers,
+        IEnumerable<IApiResponseErrorHandler> errorHandlers,
         HttpRequestMessageBuilder requestMessageBuilder,
         bool isSts = false,
         CancellationToken cancellationToken = default)
@@ -399,7 +395,7 @@ public partial class MinioClient : IMinioClient
     }
 
     private async Task<ResponseResult> ExecuteTaskCoreAsync(
-        IEnumerable<ApiResponseErrorHandler> errorHandlers,
+        IEnumerable<IApiResponseErrorHandler> errorHandlers,
         HttpRequestMessageBuilder requestMessageBuilder,
         bool isSts = false,
         CancellationToken cancellationToken = default)
@@ -639,7 +635,7 @@ public partial class MinioClient : IMinioClient
     /// <param name="response"></param>
     /// <param name="handlers"></param>
     /// <param name="startTime"></param>
-    private void HandleIfErrorResponse(ResponseResult response, IEnumerable<ApiResponseErrorHandler> handlers,
+    private void HandleIfErrorResponse(ResponseResult response, IEnumerable<IApiResponseErrorHandler> handlers,
         DateTime startTime)
     {
         // Logs Response if HTTP tracing is enabled
@@ -652,10 +648,10 @@ public partial class MinioClient : IMinioClient
         if (handlers is null) throw new ArgumentNullException(nameof(handlers));
 
         // Run through handlers passed to take up error handling
-        foreach (var handler in handlers) handler(response);
+        foreach (var handler in handlers) handler.Handle(response);
 
         // Fall back default error handler
-        defaultErrorHandlingDelegate(response);
+        DefaultErrorHandlingDelegate.Handle(response);
     }
 
     /// <summary>
@@ -703,7 +699,7 @@ public partial class MinioClient : IMinioClient
     {
         return RetryPolicyHandler is null
             ? executeRequestCallback()
-            : RetryPolicyHandler(executeRequestCallback);
+            : RetryPolicyHandler.Handle(executeRequestCallback);
     }
 
     protected virtual void Dispose(bool disposing)
@@ -717,8 +713,3 @@ public partial class MinioClient : IMinioClient
         }
     }
 }
-
-internal delegate void ApiResponseErrorHandler(ResponseResult response);
-
-public delegate Task<ResponseResult> RetryPolicyHandler(
-    Func<Task<ResponseResult>> executeRequestCallback);

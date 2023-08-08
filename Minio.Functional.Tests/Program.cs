@@ -24,6 +24,7 @@ namespace Minio.Functional.Tests;
 
 internal static class Program
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0051:Method is too long", Justification = "Needs to run all tests")]
     public static async Task Main(string[] args)
     {
         string endPoint = null;
@@ -110,7 +111,7 @@ internal static class Program
         // If the following test is run against AWS, then the SDK throws
         // "Listening for bucket notification is specific only to `minio`
         // server endpoints".
-        await FunctionalTest.ListenBucketNotificationsAsync_Test1(minioClient);
+        await FunctionalTest.ListenBucketNotificationsAsync_Test1(minioClient).ConfigureAwait(false);
         functionalTestTasks.Add(FunctionalTest.ListenBucketNotificationsAsync_Test2(minioClient));
         functionalTestTasks.Add(FunctionalTest.ListenBucketNotificationsAsync_Test3(minioClient));
 

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2021 MinIO, Inc.
  *
@@ -28,8 +28,8 @@ namespace Minio.Credentials;
 public abstract class AssumeRoleBaseProvider<T> : IClientProvider
     where T : AssumeRoleBaseProvider<T>
 {
-    internal readonly IEnumerable<ApiResponseErrorHandler> NoErrorHandlers =
-        Enumerable.Empty<ApiResponseErrorHandler>();
+    internal readonly IEnumerable<IApiResponseErrorHandler> NoErrorHandlers =
+        Enumerable.Empty<IApiResponseErrorHandler>();
 
     protected AssumeRoleBaseProvider(MinioClient client)
     {

@@ -387,7 +387,7 @@ internal class V4Authenticator
     {
         var canonicalStringList = new LinkedList<string>();
         // METHOD
-        canonicalStringList.AddLast(requestBuilder.Method.ToString());
+        _ = canonicalStringList.AddLast(requestBuilder.Method.ToString());
 
         var queryParamsDict = new Dictionary<string, string>(StringComparer.Ordinal);
         if (requestBuilder.QueryParameters is not null)
@@ -403,8 +403,8 @@ internal class V4Authenticator
             foreach (var p in queryKeys)
             {
                 if (sb1.Length > 0)
-                    sb1.Append('&');
-                sb1.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}", p, queryParamsDict[p]);
+                    _ = sb1.Append('&');
+                _ = sb1.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}", p, queryParamsDict[p]);
             }
 
             queryParams = sb1.ToString();
@@ -431,18 +431,18 @@ internal class V4Authenticator
             !string.Equals(requestBuilder.RequestUri.Query, "?location=", StringComparison.OrdinalIgnoreCase))
             requestBuilder.RequestUri = new Uri(requestBuilder.RequestUri + "?" + queryParams);
 
-        canonicalStringList.AddLast(requestBuilder.RequestUri.AbsolutePath);
-        canonicalStringList.AddLast(queryParams);
+        _ = canonicalStringList.AddLast(requestBuilder.RequestUri.AbsolutePath);
+        _ = canonicalStringList.AddLast(queryParams);
 
         // Headers to sign
         foreach (var header in headersToSign.Keys)
-            canonicalStringList.AddLast(header + ":" + S3utils.TrimAll(headersToSign[header]));
-        canonicalStringList.AddLast(string.Empty);
-        canonicalStringList.AddLast(string.Join(";", headersToSign.Keys));
+            _ = canonicalStringList.AddLast(header + ":" + S3utils.TrimAll(headersToSign[header]));
+        _ = canonicalStringList.AddLast(string.Empty);
+        _ = canonicalStringList.AddLast(string.Join(";", headersToSign.Keys));
         if (headersToSign.TryGetValue("x-amz-content-sha256", out var value))
-            canonicalStringList.AddLast(value);
+            _ = canonicalStringList.AddLast(value);
         else
-            canonicalStringList.AddLast(sha256EmptyFileHash);
+            _ = canonicalStringList.AddLast(sha256EmptyFileHash);
         return string.Join("\n", canonicalStringList);
     }
 

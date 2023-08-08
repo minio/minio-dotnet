@@ -44,10 +44,10 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
 
         if (OffsetLengthSet)
         {
-            if (ObjectOffset < 0) throw new ArgumentException("Offset should be zero or greater", nameof(ObjectOffset));
+            if (ObjectOffset < 0) throw new InvalidDataException("Offset should be zero or greater: " + nameof(ObjectOffset));
 
             if (ObjectLength < 0)
-                throw new ArgumentException("Length should be greater than or equal to zero", nameof(ObjectLength));
+                throw new InvalidDataException("Length should be greater than or equal to zero: " + nameof(ObjectLength));
         }
 
         if (FileName is not null) Utils.ValidateFile(FileName);

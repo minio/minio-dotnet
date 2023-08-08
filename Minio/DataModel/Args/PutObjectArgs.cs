@@ -60,8 +60,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
                                         " must be set.");
 
         if (PartNumber < 0)
-            throw new ArgumentOutOfRangeException(nameof(PartNumber), PartNumber,
-                "Invalid Part number value. Cannot be less than 0");
+            throw new InvalidDataException("Invalid Part number value. Cannot be less than 0");
         // Check if only one of filename or stream are initialized
         if (!string.IsNullOrWhiteSpace(FileName) && ObjectStreamData is not null)
             throw new InvalidOperationException("Only one of " + nameof(FileName) + " or " + nameof(ObjectStreamData) +
