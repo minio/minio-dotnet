@@ -33,7 +33,7 @@ public class RetryHandlerTest
             .Build();
 
         var invokeCount = 0;
-        client.WithRetryPolicy(
+        _ = client.WithRetryPolicy(
             async callback =>
             {
                 invokeCount++;
@@ -58,7 +58,7 @@ public class RetryHandlerTest
 
         var invokeCount = 0;
         var retryCount = 3;
-        client.WithRetryPolicy(
+        _ = client.WithRetryPolicy(
             async callback =>
             {
                 Exception exception = null;
@@ -82,7 +82,7 @@ public class RetryHandlerTest
             .WithBucket(Guid.NewGuid().ToString())
             .WithObject("aa")
             .WithCallbackStream(s => { });
-        await Assert.ThrowsExceptionAsync<BucketNotFoundException>(
+        _ = await Assert.ThrowsExceptionAsync<BucketNotFoundException>(
             () => client.GetObjectAsync(getObjectArgs)).ConfigureAwait(false);
         Assert.AreEqual(invokeCount, retryCount);
     }

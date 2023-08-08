@@ -51,7 +51,7 @@ internal static class S3utils
         // bucketName can be valid but '.' in the hostname will fail SSL
         // certificate validation. So do not use host-style for such buckets.
         if (string.Equals(endpointURL.Scheme, "https", StringComparison.OrdinalIgnoreCase) &&
-            bucketName.Contains('.')) return false;
+            bucketName.Contains('.', StringComparison.Ordinal)) return false;
         // Return true for all other cases
         return IsAmazonEndPoint(endpointURL.Host);
     }

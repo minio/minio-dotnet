@@ -37,7 +37,7 @@ internal static class FGetObject
                 .WithObject(objectName)
                 .WithFile(fileName)
                 .WithServerSideEncryption(sse);
-            await minio.GetObjectAsync(args).ConfigureAwait(false);
+            _ = await minio.GetObjectAsync(args).ConfigureAwait(false);
             Console.WriteLine($"Downloaded the file {fileName} from bucket {bucketName}");
             Console.WriteLine();
         }

@@ -58,7 +58,7 @@ public static class FileUpload
             Console.WriteLine(ex.Message);
         }
 
-        if (IsWindows()) Console.ReadLine();
+        if (IsWindows()) _ = Console.ReadLine();
     }
 
     /// <summary>
@@ -96,7 +96,7 @@ public static class FileUpload
                 .WithObject(objectName)
                 .WithFileName(filePath)
                 .WithContentType(contentType);
-            await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+            _ = await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
             Console.WriteLine($"\nSuccessfully uploaded {objectName}\n");
         }
         catch (Exception e)
@@ -106,6 +106,6 @@ public static class FileUpload
 
         // Added for Windows folks. Without it, the window, tests
         // run in, dissappears as soon as the test code completes.
-        if (IsWindows()) Console.ReadLine();
+        if (IsWindows()) _ = Console.ReadLine();
     }
 }

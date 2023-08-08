@@ -49,7 +49,7 @@ public static class Program
     {
         var characters = "0123456789abcdefghijklmnopqrstuvwxyz";
         var result = new StringBuilder(5);
-        for (var i = 0; i < 5; i++) result.Append(characters[rnd.Next(characters.Length)]);
+        for (var i = 0; i < 5; i++) _ = result.Append(characters[rnd.Next(characters.Length)]);
         return "minio-dotnet-example-" + result;
     }
 
@@ -69,7 +69,7 @@ public static class Program
             {
                 port = int.Parse(endPoint.Substring(posColon + 1, endPoint.Length - posColon - 1), NumberStyles.Integer,
                     CultureInfo.InvariantCulture);
-                endPoint = endPoint.Substring(0, posColon);
+                endPoint = endPoint[..posColon];
             }
 
             accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
@@ -280,6 +280,6 @@ public static class Program
         File.Delete(smallFileName);
         File.Delete(bigFileName);
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) Console.ReadLine();
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) _ = Console.ReadLine();
     }
 }

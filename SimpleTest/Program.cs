@@ -55,7 +55,7 @@ public static class Program
 
         var found = await IsBucketExists(minio, bucketName).ConfigureAwait(false);
         Console.WriteLine("Bucket exists? = " + found);
-        Console.ReadLine();
+        _ = Console.ReadLine();
     }
 
     private static Task<bool> IsBucketExists(IMinioClient minio, string bucketName)

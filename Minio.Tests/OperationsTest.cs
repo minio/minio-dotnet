@@ -27,7 +27,7 @@ public class OperationsTest
                 .WithBucket(bucket)
                 .WithObject(objectName)
                 .WithCallbackStream(stream => { });
-            await client.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+            _ = await client.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
 
             return true;
         }
@@ -69,7 +69,7 @@ public class OperationsTest
                 .WithObject(objectName)
                 .WithStreamData(helloStream)
                 .WithObjectSize(helloData.Length);
-            await client.PutObjectAsync(PutObjectArgs).ConfigureAwait(false);
+            _ = await client.PutObjectAsync(PutObjectArgs).ConfigureAwait(false);
         }
 
         var presignedGetObjectArgs = new PresignedGetObjectArgs()
@@ -119,7 +119,7 @@ public class OperationsTest
                 .WithObject(objectName)
                 .WithStreamData(helloStream)
                 .WithObjectSize(helloData.Length);
-            await client.PutObjectAsync(PutObjectArgs).ConfigureAwait(false);
+            _ = await client.PutObjectAsync(PutObjectArgs).ConfigureAwait(false);
         }
 
         var presignedGetObjectArgs = new PresignedGetObjectArgs()

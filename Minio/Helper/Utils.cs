@@ -15,7 +15,6 @@
  */
 
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -58,10 +57,8 @@ public static class Utils
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot be smaller than 3 characters.");
         if (bucketName.Length > 63)
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot be greater than 63 characters.");
-#pragma warning disable IDE0056 // Use index operator: not possible in netstandard2.0
-        if (bucketName[0] == '.' || bucketName[bucketName.Length - 1] == '.')
+        if (bucketName[0] == '.' || bucketName[^1] == '.')
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot start or end with a '.' dot.");
-#pragma warning restore IDE0056 // Use index operator
         if (bucketName.Any(char.IsUpper))
             throw new InvalidBucketNameException(bucketName, "Bucket name cannot have upper case characters");
         if (invalidDotBucketName.IsMatch(bucketName))
@@ -90,39 +87,37 @@ public static class Utils
     }
 
     // Return url encoded string where reserved characters have been percent-encoded
-    [SuppressMessage("Usage", "MA0074:Avoid implicit culture-sensitive methods",
-        Justification = "Not possible right now with netstandard2.0 support")]
     internal static string UrlEncode(string input)
     {
         // The following characters are not allowed on the server side
         // '-', '_', '.', '/', '*'
-        return Uri.EscapeDataString(input).Replace("\\!", "%21")
-            .Replace("\\\"", "%22")
-            .Replace("\\#", "%23")
-            .Replace("\\$", "%24")
-            .Replace("\\%", "%25")
-            .Replace("\\&", "%26")
-            .Replace("\\'", "%27")
-            .Replace("\\(", "%28")
-            .Replace("\\)", "%29")
-            .Replace("\\+", "%2B")
-            .Replace("\\,", "%2C")
-            .Replace("\\:", "%3A")
-            .Replace("\\;", "%3B")
-            .Replace("\\<", "%3C")
-            .Replace("\\=", "%3D")
-            .Replace("\\>", "%3E")
-            .Replace("\\?", "%3F")
-            .Replace("\\@", "%40")
-            .Replace("\\[", "%5B")
-            .Replace("\\\\", "%5C")
-            .Replace("\\]", "%5D")
-            .Replace("\\^", "%5E")
-            .Replace("\\'", "%60")
-            .Replace("\\{", "%7B")
-            .Replace("\\|", "%7C")
-            .Replace("\\}", "%7D")
-            .Replace("\\~", "%7E");
+        return Uri.EscapeDataString(input).Replace("\\!", "%21", StringComparison.Ordinal)
+            .Replace("\\\"", "%22", StringComparison.Ordinal)
+            .Replace("\\#", "%23", StringComparison.Ordinal)
+            .Replace("\\$", "%24", StringComparison.Ordinal)
+            .Replace("\\%", "%25", StringComparison.Ordinal)
+            .Replace("\\&", "%26", StringComparison.Ordinal)
+            .Replace("\\'", "%27", StringComparison.Ordinal)
+            .Replace("\\(", "%28", StringComparison.Ordinal)
+            .Replace("\\)", "%29", StringComparison.Ordinal)
+            .Replace("\\+", "%2B", StringComparison.Ordinal)
+            .Replace("\\,", "%2C", StringComparison.Ordinal)
+            .Replace("\\:", "%3A", StringComparison.Ordinal)
+            .Replace("\\;", "%3B", StringComparison.Ordinal)
+            .Replace("\\<", "%3C", StringComparison.Ordinal)
+            .Replace("\\=", "%3D", StringComparison.Ordinal)
+            .Replace("\\>", "%3E", StringComparison.Ordinal)
+            .Replace("\\?", "%3F", StringComparison.Ordinal)
+            .Replace("\\@", "%40", StringComparison.Ordinal)
+            .Replace("\\[", "%5B", StringComparison.Ordinal)
+            .Replace("\\\\", "%5C", StringComparison.Ordinal)
+            .Replace("\\]", "%5D", StringComparison.Ordinal)
+            .Replace("\\^", "%5E", StringComparison.Ordinal)
+            .Replace("\\'", "%60", StringComparison.Ordinal)
+            .Replace("\\{", "%7B", StringComparison.Ordinal)
+            .Replace("\\|", "%7C", StringComparison.Ordinal)
+            .Replace("\\}", "%7D", StringComparison.Ordinal)
+            .Replace("\\~", "%7E", StringComparison.Ordinal);
     }
 
     // Return encoded path where extra "/" are trimmed off.
@@ -160,7 +155,7 @@ public static class Utils
                 throw new ArgumentException($"'{fileName}': not a regular file", nameof(filePath));
         }
 
-        contentType ??= GetContentType(filePath);
+        //contentType ??= GetContentType(filePath);
     }
 
     internal static string GetContentType(string fileName)
@@ -252,11 +247,8 @@ public static class Utils
     {
         if (string.IsNullOrEmpty(text))
             throw new ArgumentException($"'{nameof(text)}' cannot be null or empty.", nameof(text));
-#if NETSTANDARD
-        return text.IndexOf(value, stringComparison) >= 0;
-#else
+
         return text.Contains(value, stringComparison);
-#endif
     }
 
     /// <summary>
@@ -935,9 +927,7 @@ public static class Utils
                 nameof(endpoint));
 
         if (endpoint.EndsWith("/", StringComparison.OrdinalIgnoreCase))
-#pragma warning disable IDE0057 // Use range operator: not possible in netstandard2.0
-            endpoint = endpoint.Substring(0, endpoint.Length - 1);
-#pragma warning restore IDE0057 // Use range operator
+            endpoint = endpoint[..^1];
         if (!endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
             !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
             throw new InvalidEndpointException(
