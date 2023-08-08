@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using Microsoft.Extensions.Logging;
 using Minio.DataModel.Tracing;
 
 namespace Minio.Handlers;
