@@ -17,7 +17,7 @@
 using System.Text;
 using Minio.DataModel.Tracing;
 
-namespace Minio;
+namespace Minio.Handlers;
 
 public sealed class DefaultRequestLogger : IRequestLogger
 {

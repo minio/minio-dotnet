@@ -18,7 +18,7 @@
 using System.Net;
 using System.Text;
 
-namespace Minio;
+namespace Minio.DataModel.Result;
 
 public sealed class ResponseResult : IDisposable
 {

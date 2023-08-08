@@ -1,4 +1,6 @@
-﻿using Polly;
+﻿using Minio.DataModel.Result;
+using Minio.Handlers;
+using Polly;
 
 namespace Minio.Examples.Cases;
 

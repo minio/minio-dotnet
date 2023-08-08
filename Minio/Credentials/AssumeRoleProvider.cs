@@ -18,6 +18,7 @@
 using System.Text;
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
+using Minio.DataModel.Result;
 using Minio.Exceptions;
 using Minio.Helper;
 

@@ -78,7 +78,7 @@ internal class V4Authenticator
     {
         if (!string.IsNullOrEmpty(region)) return region;
 
-        var endpointRegion = Regions.GetRegionFromEndpoint(endpoint);
+        var endpointRegion = RegionHelper.GetRegionFromEndpoint(endpoint);
         return string.IsNullOrEmpty(endpointRegion) ? "us-east-1" : endpointRegion;
     }
 

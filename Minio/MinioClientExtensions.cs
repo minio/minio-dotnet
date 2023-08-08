@@ -3,7 +3,9 @@ using System.Globalization;
 using System.Net;
 using Minio.Credentials;
 using Minio.DataModel;
+using Minio.DataModel.Result;
 using Minio.Exceptions;
+using Minio.Handlers;
 using Minio.Helper;
 
 namespace Minio;

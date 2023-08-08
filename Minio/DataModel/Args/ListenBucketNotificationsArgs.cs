@@ -15,6 +15,7 @@
  */
 
 using Minio.DataModel.Notification;
+using Minio.Handlers;
 
 namespace Minio.DataModel.Args;
 

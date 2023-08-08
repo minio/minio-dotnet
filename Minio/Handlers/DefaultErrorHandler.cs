@@ -1,6 +1,7 @@
 ﻿using System.Net;
+using Minio.DataModel.Result;
 
-namespace Minio;
+namespace Minio.Handlers;
 
 public class DefaultErrorHandler : IApiResponseErrorHandler
 {

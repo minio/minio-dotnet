@@ -23,8 +23,10 @@ using CommunityToolkit.HighPerformance;
 using Minio.Credentials;
 using Minio.DataModel;
 using Minio.DataModel.Args;
+using Minio.DataModel.Result;
 using Minio.DataModel.Tracing;
 using Minio.Exceptions;
+using Minio.Handlers;
 using Minio.Helper;
 
 namespace Minio;
@@ -184,7 +186,7 @@ public partial class MinioClient : IMinioClient
 
         // pick region from endpoint if present
         if (!string.IsNullOrEmpty(Endpoint))
-            rgn = Regions.GetRegionFromEndpoint(Endpoint);
+            rgn = RegionHelper.GetRegionFromEndpoint(Endpoint);
 
         // Pick region from location HEAD request
         if (rgn?.Length == 0)

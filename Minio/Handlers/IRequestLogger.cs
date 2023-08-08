@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
+using Microsoft.Extensions.Logging;
 using Minio.DataModel.Tracing;
 
-namespace Minio;
+namespace Minio.Handlers;
 
 public interface IRequestLogger
 {

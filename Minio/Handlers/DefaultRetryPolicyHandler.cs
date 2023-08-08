@@ -1,4 +1,6 @@
-﻿namespace Minio;
+﻿using Minio.DataModel.Result;
+
+namespace Minio.Handlers;
 
 public class DefaultRetryPolicyHandler : IRetryPolicyHandler
 {
