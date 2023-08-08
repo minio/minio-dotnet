@@ -156,7 +156,7 @@ public partial class MinioClient : IMinioClient
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    private async Task<IList<DeleteError>> removeObjectsAsync(RemoveObjectsArgs args,
+    private async Task<IList<DeleteError>> RemoveBucketObjectsAsync(RemoveObjectsArgs args,
         CancellationToken cancellationToken)
     {
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
@@ -187,7 +187,7 @@ public partial class MinioClient : IMinioClient
         var iterArgs = new RemoveObjectsArgs()
             .WithBucket(args.BucketName)
             .WithObjectsVersions(objVersions);
-        var errorsList = await removeObjectsAsync(iterArgs, cancellationToken).ConfigureAwait(false);
+        var errorsList = await RemoveBucketObjectsAsync(iterArgs, cancellationToken).ConfigureAwait(false);
         fullErrorsList.AddRange(errorsList);
         return fullErrorsList;
     }
@@ -213,7 +213,7 @@ public partial class MinioClient : IMinioClient
         var iterArgs = new RemoveObjectsArgs()
             .WithBucket(args.BucketName)
             .WithObjects(objNames);
-        var errorsList = await removeObjectsAsync(iterArgs, cancellationToken).ConfigureAwait(false);
+        var errorsList = await RemoveBucketObjectsAsync(iterArgs, cancellationToken).ConfigureAwait(false);
         fullErrorsList.AddRange(errorsList);
         return fullErrorsList;
     }
