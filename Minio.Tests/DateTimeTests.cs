@@ -6,7 +6,7 @@ using Minio.Helper;
 namespace Minio.Tests;
 
 /// <summary>
-/// Tests for DateTime conversion.
+///     Tests for DateTime conversion.
 /// </summary>
 [TestClass]
 public class DateTimeTests
@@ -55,10 +55,7 @@ public class DateTimeTests
     public void TestObjectStatExpires()
     {
         var d = TruncateMilliseconds(DateTime.Now);
-        var headers = new Dictionary<string, string>
-        {
-            ["x-amz-expiration"] = d.ToUniversalTime().ToString("r")
-        };
+        var headers = new Dictionary<string, string> { ["x-amz-expiration"] = d.ToUniversalTime().ToString("r") };
         var stat = ObjectStat.FromResponseHeaders("test", headers);
         Assert.AreEqual(d.ToUniversalTime(), stat.Expires?.ToUniversalTime());
     }
