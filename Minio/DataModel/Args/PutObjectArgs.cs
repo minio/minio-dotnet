@@ -56,21 +56,21 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         base.Validate();
         // Check atleast one of filename or stream are initialized
         if (string.IsNullOrWhiteSpace(FileName) && ObjectStreamData is null)
-            throw new ArgumentException("One of " + nameof(FileName) + " or " + nameof(ObjectStreamData) +
-                                        " must be set.", nameof(FileName));
+            throw new NullReferenceException("One of " + nameof(FileName) + " or " + nameof(ObjectStreamData) +
+                                        " must be set.");
 
         if (PartNumber < 0)
             throw new ArgumentOutOfRangeException(nameof(PartNumber), PartNumber,
                 "Invalid Part number value. Cannot be less than 0");
         // Check if only one of filename or stream are initialized
         if (!string.IsNullOrWhiteSpace(FileName) && ObjectStreamData is not null)
-            throw new ArgumentException("Only one of " + nameof(FileName) + " or " + nameof(ObjectStreamData) +
-                                        " should be set.", nameof(FileName));
+            throw new NullReferenceException("Only one of " + nameof(FileName) + " or " + nameof(ObjectStreamData) +
+                                        " should be set.");
 
         if (!string.IsNullOrWhiteSpace(FileName)) Utils.ValidateFile(FileName);
         // Check object size when using stream data
         if (ObjectStreamData is not null && ObjectSize == 0)
-            throw new ArgumentException($"{nameof(ObjectSize)} must be set", nameof(ObjectSize));
+            throw new NullReferenceException($"{nameof(ObjectSize)} must be set");
         Populate();
     }
 

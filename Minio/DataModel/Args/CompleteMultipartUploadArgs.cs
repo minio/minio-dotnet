@@ -47,7 +47,7 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
     {
         base.Validate();
         if (string.IsNullOrWhiteSpace(UploadId))
-            throw new ArgumentNullException(nameof(UploadId), nameof(UploadId) + " cannot be empty.");
+            throw new NullReferenceException(nameof(UploadId) + " cannot be empty.");
         if (ETags is null || ETags.Count <= 0)
             throw new InvalidOperationException(nameof(ETags) + " dictionary cannot be empty.");
     }

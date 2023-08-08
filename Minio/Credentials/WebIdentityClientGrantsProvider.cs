@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2021 MinIO, Inc.
  *
@@ -75,7 +75,7 @@ public abstract class WebIdentityClientGrantsProvider<T> : AssumeRoleBaseProvide
     protected void Validate()
     {
         if (JWTSupplier is null)
-            throw new ArgumentNullException(nameof(JWTSupplier), " JWT Token supplier cannot be null.");
+            throw new NullReferenceException(nameof(JWTSupplier) + " JWT Token supplier cannot be null.");
         if (STSEndpoint is null || string.IsNullOrWhiteSpace(STSEndpoint.AbsoluteUri))
             throw new InvalidOperationException(nameof(STSEndpoint) + " value is invalid.");
     }

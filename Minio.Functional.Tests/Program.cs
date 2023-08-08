@@ -40,7 +40,7 @@ internal static class Program
             var posColon = endPoint.LastIndexOf(':');
             if (posColon != -1)
             {
-                port = int.Parse(endPoint.Substring(posColon + 1, endPoint.Length - posColon - 1), NumberStyles.Integer,
+                port = int.Parse(endPoint.AsSpan(posColon + 1, endPoint.Length - posColon - 1), NumberStyles.Integer,
                     CultureInfo.InvariantCulture);
                 endPoint = endPoint[..posColon];
             }

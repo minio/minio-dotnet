@@ -93,7 +93,7 @@ public class Tagging
     {
         if (value is null || // Empty or whitespace is allowed
             value.Length > MAX_TAG_VALUE_LENGTH ||
-            value.Contains('&'))
+            value.Contains('&', StringComparison.OrdinalIgnoreCase))
             return false;
 
         return true;

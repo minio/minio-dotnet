@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2021 MinIO, Inc.
  *
@@ -46,9 +46,8 @@ public class IAMAWSProvider : IClientProvider
                     "Endpoint field " + nameof(CustomEndPoint) + " is invalid.");
         }
 
-        Minio_Client = client ??
-                       throw new ArgumentException("MinioClient reference field " +
-                                                   nameof(Minio_Client) + " cannot be null.");
+        Minio_Client = client ?? throw new ArgumentNullException(nameof(client));
+
         CustomEndPoint = new Uri(endpoint);
     }
 

@@ -60,10 +60,10 @@ public class CertificateIdentityProvider : IClientProvider
             return Credentials;
 
         if (HttpClient is null)
-            throw new ArgumentNullException(nameof(HttpClient), "HttpClient cannot be null or empty");
+            throw new NullReferenceException(nameof(HttpClient) + " cannot be null or empty");
 
         if (ClientCertificate is null)
-            throw new ArgumentNullException(nameof(ClientCertificate), "ClientCertificate cannot be null or empty");
+            throw new NullReferenceException(nameof(ClientCertificate) + " cannot be null or empty");
 
         using var response = await HttpClient.PostAsync(PostEndpoint, null).ConfigureAwait(false);
 
