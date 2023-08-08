@@ -247,7 +247,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
     public void Validate()
     {
         if (Minio_Client is null)
-            throw new ArgumentNullException(nameof(Minio_Client) +
+            throw new InvalidOperationException(nameof(Minio_Client) +
                                             " should be assigned for the operation to continue.");
     }
 }

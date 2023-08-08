@@ -91,6 +91,7 @@ public sealed class SelectResponseStream : IDisposable
         return read;
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0051:Method is too long", Justification = "Needs to be refactored")]
     private void Start()
     {
         var numBytesRead = 0;
@@ -202,12 +203,7 @@ public sealed class SelectResponseStream : IDisposable
                     Stats = stats;
                 }
 
-#if NETSTANDARD
-                if (value.Equals("Records", StringComparison.OrdinalIgnoreCase))
-                    Payload.Write(payload.ToArray(), 0, payloadLength);
-#else
                 if (value.Equals("Records", StringComparison.OrdinalIgnoreCase)) Payload.Write(payload.Span);
-#endif
             }
         }
 

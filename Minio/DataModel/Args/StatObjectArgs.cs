@@ -54,12 +54,12 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
         if (OffsetLengthSet)
         {
             if (ObjectOffset < 0 || ObjectLength < 0)
-                throw new ArgumentException(nameof(ObjectOffset) + " and " + nameof(ObjectLength) +
-                                            "cannot be less than 0.", nameof(ObjectOffset));
+                throw new InvalidDataException(nameof(ObjectOffset) + " and " + nameof(ObjectLength) +
+                                            "cannot be less than 0.");
 
             if (ObjectOffset == 0 && ObjectLength == 0)
-                throw new ArgumentException("Either " + nameof(ObjectOffset) + " or " + nameof(ObjectLength) +
-                                            " must be greater than 0.", nameof(ObjectOffset));
+                throw new InvalidDataException("Either " + nameof(ObjectOffset) + " or " + nameof(ObjectLength) +
+                                            " must be greater than 0.");
         }
 
         Populate();

@@ -75,7 +75,7 @@ public abstract class WebIdentityClientGrantsProvider<T> : AssumeRoleBaseProvide
     protected void Validate()
     {
         if (JWTSupplier is null)
-            throw new NullReferenceException(nameof(JWTSupplier) + " JWT Token supplier cannot be null.");
+            throw new InvalidOperationException(nameof(JWTSupplier) + " JWT Token supplier cannot be null.");
         if (STSEndpoint is null || string.IsNullOrWhiteSpace(STSEndpoint.AbsoluteUri))
             throw new InvalidOperationException(nameof(STSEndpoint) + " value is invalid.");
     }
