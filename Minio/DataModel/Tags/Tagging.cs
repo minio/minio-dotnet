@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -83,7 +83,7 @@ public class Tagging
         if (string.IsNullOrEmpty(key) ||
             string.IsNullOrWhiteSpace(key) ||
             key.Length > MAX_TAG_KEY_LENGTH ||
-            key.Contains('&'))
+            key.Contains('&', StringComparison.Ordinal))
             return false;
 
         return true;

@@ -40,8 +40,8 @@ internal sealed class RandomStreamGenerator
 
         Memory<byte> buffer = new byte[size];
 
-        _seedBuffer.Slice(randomWindow, size - randomWindow).CopyTo(buffer.Slice(0, size - randomWindow));
-        _seedBuffer.Slice(0, randomWindow).CopyTo(buffer.Slice(size - randomWindow, randomWindow));
+        _seedBuffer[randomWindow..size].CopyTo(buffer[..(size - randomWindow)]);
+        _seedBuffer[..randomWindow].CopyTo(buffer.Slice(size - randomWindow, randomWindow));
 
         return buffer.AsStream();
     }

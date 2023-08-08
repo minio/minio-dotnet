@@ -25,11 +25,11 @@ internal static class RequestUtil
 {
     internal static Uri GetEndpointURL(string endPoint, bool secure)
     {
-        if (endPoint.Contains(':'))
+        if (endPoint.Contains(':', StringComparison.Ordinal))
         {
             var parts = endPoint.Split(':');
             var host = parts[0];
-            var port = parts[1];
+            //var port = parts[1];
             if (!S3utils.IsValidIP(host) && !IsValidEndpoint(host))
                 throw new InvalidEndpointException("Endpoint: " + endPoint +
                                                    " does not follow ip address or domain name standards.");
@@ -91,7 +91,6 @@ internal static class RequestUtil
     internal static void ValidateEndpoint(Uri uri, string endpoint)
     {
         if (string.IsNullOrEmpty(uri.OriginalString)) throw new InvalidEndpointException("Endpoint cannot be empty.");
-        var host = uri.Host;
 
         if (!IsValidEndpoint(uri.Host)) throw new InvalidEndpointException(endpoint, "Invalid endpoint.");
         if (!uri.AbsolutePath.Equals("/", StringComparison.OrdinalIgnoreCase))
@@ -114,11 +113,11 @@ internal static class RequestUtil
         // endpoint may be a hostname
         // refer https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_host_names
         // why checks are as shown below.
-        if (endpoint.Length < 1 || endpoint.Length > 253) return false;
+        if (endpoint.Length is < 1 or > 253) return false;
 
         foreach (var label in endpoint.Split('.'))
         {
-            if (label.Length < 1 || label.Length > 63) return false;
+            if (label.Length is < 1 or > 63) return false;
 
             var validLabel = new Regex("^[a-zA-Z0-9]([A-Za-z0-9-_]*[a-zA-Z0-9])?$", RegexOptions.ExplicitCapture,
                 TimeSpan.FromHours(1));

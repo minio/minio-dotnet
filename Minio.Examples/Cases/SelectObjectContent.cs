@@ -37,12 +37,12 @@ internal static class SelectObjectContent
             Console.WriteLine("Running example for API: SelectObjectContentAsync");
 
             var csvString = new StringBuilder();
-            csvString.AppendLine("Employee,Manager,Group");
-            csvString.AppendLine("Employee4,Employee2,500");
-            csvString.AppendLine("Employee3,Employee1,500");
-            csvString.AppendLine("Employee1,,1000");
-            csvString.AppendLine("Employee5,Employee1,500");
-            csvString.AppendLine("Employee2,Employee1,800");
+            _ = csvString.AppendLine("Employee,Manager,Group");
+            _ = csvString.AppendLine("Employee4,Employee2,500");
+            _ = csvString.AppendLine("Employee3,Employee1,500");
+            _ = csvString.AppendLine("Employee1,,1000");
+            _ = csvString.AppendLine("Employee5,Employee1,500");
+            _ = csvString.AppendLine("Employee2,Employee1,800");
             ReadOnlyMemory<byte> csvBytes = Encoding.UTF8.GetBytes(csvString.ToString());
             using var stream = csvBytes.AsStream();
             var putObjectArgs = new PutObjectArgs()
@@ -50,7 +50,7 @@ internal static class SelectObjectContent
                 .WithObject(newObjectName)
                 .WithStreamData(stream)
                 .WithObjectSize(stream.Length);
-            await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+            _ = await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
 
             var queryType = QueryExpressionType.SQL;
             var queryExpr = "select count(*) from s3object";

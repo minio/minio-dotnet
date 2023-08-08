@@ -27,7 +27,7 @@ public static class CustomRequestLogger
         {
             Console.WriteLine("Running example for: set custom request logger");
             minio.SetTraceOn(new MyRequestLogger());
-            await minio.ListBucketsAsync().ConfigureAwait(false);
+            _ = await minio.ListBucketsAsync().ConfigureAwait(false);
             minio.SetTraceOff();
             Console.WriteLine();
         }

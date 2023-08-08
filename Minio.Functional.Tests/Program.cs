@@ -42,7 +42,7 @@ internal static class Program
             {
                 port = int.Parse(endPoint.Substring(posColon + 1, endPoint.Length - posColon - 1), NumberStyles.Integer,
                     CultureInfo.InvariantCulture);
-                endPoint = endPoint.Substring(0, posColon);
+                endPoint = endPoint[..posColon];
             }
 
             accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");

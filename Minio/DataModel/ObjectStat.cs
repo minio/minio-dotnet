@@ -131,7 +131,7 @@ public class ObjectStat
                     if (OperationsUtil.IsSupportedHeader(paramName))
                         objInfo.MetaData[paramName] = paramValue;
                     else if (paramName.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
-                        objInfo.MetaData[paramName.Substring("x-amz-meta-".Length)] = paramValue;
+                        objInfo.MetaData[paramName["x-amz-meta-".Length..]] = paramValue;
                     else
                         objInfo.ExtraHeaders[paramName] = paramValue;
                     break;

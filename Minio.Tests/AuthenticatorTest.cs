@@ -34,7 +34,7 @@ public class AuthenticatorTest
         var authenticatorInsecure = new V4Authenticator(false, "a", "b");
         Assert.IsFalse(authenticatorInsecure.IsAnonymous);
 
-        authenticatorInsecure.Authenticate(request);
+        _ = authenticatorInsecure.Authenticate(request);
         Assert.IsTrue(HasPayloadHeader(request, "x-amz-content-sha256"));
     }
 
@@ -51,7 +51,7 @@ public class AuthenticatorTest
         var authenticatorSecure = new V4Authenticator(true, "a", "b");
         Assert.IsFalse(authenticatorSecure.IsAnonymous);
 
-        authenticatorSecure.Authenticate(request);
+        _ = authenticatorSecure.Authenticate(request);
         Assert.IsTrue(HasPayloadHeader(request, "x-amz-content-sha256"));
     }
 
@@ -65,7 +65,7 @@ public class AuthenticatorTest
 
         var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
         request.AddJsonBody("[]");
-        authenticator.Authenticate(request);
+        _ = authenticator.Authenticate(request);
         Assert.IsTrue(HasPayloadHeader(request, "x-amz-content-sha256"));
         var match = GetHeaderKV(request, "x-amz-content-sha256");
         Assert.IsTrue(match?.Item2.Equals("UNSIGNED-PAYLOAD", StringComparison.Ordinal) == true);
@@ -80,7 +80,7 @@ public class AuthenticatorTest
         Assert.IsFalse(authenticator.IsAnonymous);
         var request = new HttpRequestMessageBuilder(HttpMethod.Put, "http://localhost:9000/bucketname/objectname");
         request.AddJsonBody("[]");
-        authenticator.Authenticate(request);
+        _ = authenticator.Authenticate(request);
         Assert.IsTrue(HasPayloadHeader(request, "x-amz-content-sha256"));
         Assert.IsFalse(HasPayloadHeader(request, "Content-Md5"));
     }
