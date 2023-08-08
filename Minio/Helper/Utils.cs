@@ -15,6 +15,7 @@
  */
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -26,7 +27,6 @@ using System.Xml.Linq;
 using System.Xml.Serialization;
 using Minio.DataModel;
 using Minio.Exceptions;
-using System.Diagnostics.CodeAnalysis;
 #if !NET6_0_OR_GREATER
 using System.Collections.Concurrent;
 #endif

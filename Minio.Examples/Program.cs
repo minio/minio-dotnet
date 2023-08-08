@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
 using System.Runtime.InteropServices;
@@ -53,7 +54,7 @@ public static class Program
         return "minio-dotnet-example-" + result;
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0051:Method is too long", Justification = "Needs to run all tests")]
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "Needs to run all tests")]
     public static async Task Main()
     {
         string endPoint = null;

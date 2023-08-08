@@ -513,7 +513,8 @@ public static class FunctionalTest
         {
             var list = await minio.ListBucketsAsync().ConfigureAwait(false);
             bucketList = list.Buckets;
-            bucketList = bucketList.Where(x => x.Name.EndsWith(bucketNameSuffix, StringComparison.OrdinalIgnoreCase)).ToList();
+            bucketList = bucketList.Where(x => x.Name.EndsWith(bucketNameSuffix, StringComparison.OrdinalIgnoreCase))
+                .ToList();
             Assert.AreEqual(noOfBuckets, bucketList.Count);
             bucketList.ToList().Sort((x, y) =>
             {
@@ -1340,7 +1341,9 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName }, { "objectName", objectName }, { "expiresOn", expiresOn.ToString(CultureInfo.InvariantCulture) }
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "expiresOn", expiresOn.ToString(CultureInfo.InvariantCulture) }
             };
 
         // File to be uploaded
@@ -2377,8 +2380,8 @@ public static class FunctionalTest
                 .WithRetentionUntilDate(untilDate);
             await minio.SetObjectRetentionAsync(setRetentionArgs).ConfigureAwait(false);
             new MintLogger(nameof(ObjectRetentionAsync_Test1), setObjectRetentionSignature,
-                    "Tests whether SetObjectRetentionAsync passes", TestStatus.PASS, DateTime.Now - startTime,
-                    args: args).Log();
+                "Tests whether SetObjectRetentionAsync passes", TestStatus.PASS, DateTime.Now - startTime,
+                args: args).Log();
         }
         catch (NotImplementedException ex)
         {
@@ -2407,8 +2410,8 @@ public static class FunctionalTest
             var untilDate = DateTime.Parse(config.RetainUntilDate, null, DateTimeStyles.RoundtripKind);
             Assert.AreEqual(Math.Ceiling((untilDate - DateTime.Now).TotalDays), plusDays);
             new MintLogger(nameof(ObjectRetentionAsync_Test1), getObjectRetentionSignature,
-                    "Tests whether GetObjectRetentionAsync passes", TestStatus.PASS, DateTime.Now - startTime,
-                    args: args).Log();
+                "Tests whether GetObjectRetentionAsync passes", TestStatus.PASS, DateTime.Now - startTime,
+                args: args).Log();
         }
         catch (NotImplementedException ex)
         {

@@ -1,4 +1,5 @@
-﻿using System.IO.Hashing;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.IO.Hashing;
 using System.Text;
 using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
@@ -91,7 +92,7 @@ public sealed class SelectResponseStream : IDisposable
         return read;
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0051:Method is too long", Justification = "Needs to be refactored")]
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "Needs to be refactored")]
     private void Start()
     {
         var numBytesRead = 0;

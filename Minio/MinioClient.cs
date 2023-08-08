@@ -33,11 +33,6 @@ public partial class MinioClient : IMinioClient
 {
     private static readonly char[] separator = { '/' };
 
-    /// <summary>
-    ///     Default error handling delegate
-    /// </summary>
-    private IApiResponseErrorHandler DefaultErrorHandlingDelegate { get; } = new DefaultErrorHandler();
-
     internal readonly IEnumerable<IApiResponseErrorHandler> NoErrorHandlers =
         Enumerable.Empty<IApiResponseErrorHandler>();
 
@@ -75,6 +70,11 @@ public partial class MinioClient : IMinioClient
         SessionToken = "";
         Provider = null;
     }
+
+    /// <summary>
+    ///     Default error handling delegate
+    /// </summary>
+    private IApiResponseErrorHandler DefaultErrorHandlingDelegate { get; } = new DefaultErrorHandler();
 
     // Save Credentials from user
     internal string AccessKey { get; set; }

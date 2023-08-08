@@ -248,6 +248,6 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
     {
         if (Minio_Client is null)
             throw new InvalidOperationException(nameof(Minio_Client) +
-                                            " should be assigned for the operation to continue.");
+                                                " should be assigned for the operation to continue.");
     }
 }

@@ -16,6 +16,7 @@
  */
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
 using Minio.Helper;
@@ -24,7 +25,7 @@ namespace Minio.Functional.Tests;
 
 internal static class Program
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0051:Method is too long", Justification = "Needs to run all tests")]
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "Needs to run all tests")]
     public static async Task Main(string[] args)
     {
         string endPoint = null;
