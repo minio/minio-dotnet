@@ -69,7 +69,7 @@ public class IAMAWSProvider : IClientProvider
                 url = RequestUtil.MakeTargetURL("sts." + region + ".amazonaws.com", true);
         }
 
-        IClientProvider provider = new WebIdentityProvider()
+        var provider = new WebIdentityProvider()
             .WithSTSEndpoint(url)
             .WithRoleAction("AssumeRoleWithWebIdentity")
             .WithDurationInSeconds(null)
@@ -125,7 +125,7 @@ public class IAMAWSProvider : IClientProvider
             url = new Uri(urlStr);
         }
 
-        IClientProvider provider = new WebIdentityProvider()
+        var provider = new WebIdentityProvider()
             .WithJWTSupplier(() =>
             {
                 var tokenContents = File.ReadAllText(tokenFile);

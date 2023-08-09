@@ -76,7 +76,7 @@ public partial class MinioClient : IMinioClient
     /// <summary>
     ///     Default error handling delegate
     /// </summary>
-    private IApiResponseErrorHandler DefaultErrorHandlingDelegate { get; } = new DefaultErrorHandler();
+    public IApiResponseErrorHandler DefaultErrorHandler { get; set; } = new DefaultErrorHandler();
 
     // Save Credentials from user
     internal string AccessKey { get; set; }
@@ -650,7 +650,7 @@ public partial class MinioClient : IMinioClient
         foreach (var handler in handlers) handler.Handle(response);
 
         // Fall back default error handler
-        DefaultErrorHandlingDelegate.Handle(response);
+        DefaultErrorHandler.Handle(response);
     }
 
     /// <summary>
