@@ -190,11 +190,9 @@ public partial class MinioClient : IMinioClient
 
         // Pick region from location HEAD request
         if (rgn?.Length == 0)
-        {
             rgn = BucketRegionCache.Instance.Exists(bucketName)
                 ? await BucketRegionCache.Update(this, bucketName).ConfigureAwait(false)
                 : BucketRegionCache.Instance.Region(bucketName);
-        }
 
         // Defaults to us-east-1 if region could not be found
         return rgn?.Length == 0 ? "us-east-1" : rgn;
