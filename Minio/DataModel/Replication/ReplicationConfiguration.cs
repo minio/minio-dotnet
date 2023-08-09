@@ -76,7 +76,8 @@ public class ReplicationConfiguration
                 xs.Serialize(xw, this, ns);
                 xw.Flush();
 
-                str = Utils.RemoveNamespaceInXML(sw.ToString()).Replace("\r", "", StringComparison.OrdinalIgnoreCase).Replace("\n", "", StringComparison.OrdinalIgnoreCase);
+                str = Utils.RemoveNamespaceInXML(sw.ToString()).Replace("\r", "", StringComparison.OrdinalIgnoreCase)
+                    .Replace("\n", "", StringComparison.OrdinalIgnoreCase);
             }
         }
         catch (Exception ex)
