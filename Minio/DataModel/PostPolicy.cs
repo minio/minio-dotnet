@@ -230,7 +230,7 @@ public class PostPolicy
     /// <param name="date">Set date for the policy</param>
     public void SetDate(DateTime date)
     {
-        var dateStr = date.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
+        var dateStr = date.ToUniversalTime().ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
         Conditions.Add(new List<(string, string, string)> { ("eq", "$x-amz-date", dateStr) });
         // this.formData.Add("x-amz-date", dateStr);
     }
@@ -268,7 +268,8 @@ public class PostPolicy
         var sb = new StringBuilder();
         _ = sb.Append('{');
         _ = sb.Append("\"expiration\":\"")
-            .Append(Expiration.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture)).Append('"')
+            .Append(Expiration.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture))
+            .Append('"')
             .Append(',');
         _ = sb.Append("\"conditions\":[").Append(string.Join(",", policyList)).Append(']');
         _ = sb.Append('}');

@@ -102,9 +102,7 @@ public class ObjectStat
                     var expiryMatch = Regex.Match(expirationResponse, expiryDatePattern, RegexOptions.None,
                         TimeSpan.FromHours(1));
                     if (expiryMatch.Success)
-                        objInfo.Expires = DateTime.SpecifyKind(
-                            DateTime.Parse(expiryMatch.Value, CultureInfo.CurrentCulture),
-                            DateTimeKind.Utc);
+                        objInfo.Expires = DateTime.Parse(expiryMatch.Value, CultureInfo.CurrentCulture);
 
                     break;
                 case "x-amz-object-lock-mode":
@@ -117,9 +115,7 @@ public class ObjectStat
                 case "x-amz-object-lock-retain-until-date":
                     var lockUntilDate = paramValue;
                     if (!string.IsNullOrWhiteSpace(lockUntilDate))
-                        objInfo.ObjectLockRetainUntilDate = DateTime.SpecifyKind(
-                            DateTime.Parse(lockUntilDate, CultureInfo.CurrentCulture),
-                            DateTimeKind.Utc);
+                        objInfo.ObjectLockRetainUntilDate = DateTime.Parse(lockUntilDate, CultureInfo.CurrentCulture);
 
                     break;
                 case "x-amz-object-lock-legal-hold":

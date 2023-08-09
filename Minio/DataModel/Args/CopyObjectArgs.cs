@@ -175,7 +175,7 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
     {
         ObjectLockSet = true;
         RetentionUntilDate = new DateTime(untilDate.Year, untilDate.Month, untilDate.Day,
-            untilDate.Hour, untilDate.Minute, untilDate.Second);
+            untilDate.Hour, untilDate.Minute, untilDate.Second, untilDate.Kind);
         return this;
     }
 

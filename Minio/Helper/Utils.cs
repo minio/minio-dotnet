@@ -890,7 +890,7 @@ public static class Utils
 
     public static string To8601String(DateTime dt)
     {
-        return dt.ToString("yyyy-MM-dd'T'HH:mm:ssZ", CultureInfo.InvariantCulture);
+        return dt.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ssZ", CultureInfo.InvariantCulture);
     }
 
     public static string RemoveNamespaceInXML(string config)
