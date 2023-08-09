@@ -68,7 +68,7 @@ public class DateTimeTests
     public void TestObjectStatObjectLockRetainUntilDate()
     {
         var d = TruncateMilliseconds(DateTime.Now);
-        var headers = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase)
+        var headers = new Dictionary<string, string> (StringComparer.InvariantCultureIgnoreCase)
         {
             ["x-amz-object-lock-retain-until-date"] = d.ToUniversalTime().ToString("O")
         };
