@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
+using Minio.DataModel.Result;
 using Minio.Exceptions;
+using Minio.Handlers;
 using Polly;
 
 namespace Minio.Examples.Cases;
 
 internal static class RetryPolicyHelper
 {
-    private const int defaultRetryCount = 3;
+    private const int DefaultRetryCount = 3;
     private static readonly TimeSpan defaultRetryInterval = TimeSpan.FromMilliseconds(200);
 
     private static readonly TimeSpan defaultMaxRetryInterval = TimeSpan.FromSeconds(10);
@@ -49,7 +51,7 @@ internal static class RetryPolicyHelper
 
     public static AsyncPolicy<ResponseResult> GetDefaultRetryPolicy()
     {
-        return GetDefaultRetryPolicy(defaultRetryCount, defaultRetryInterval, defaultMaxRetryInterval);
+        return GetDefaultRetryPolicy(DefaultRetryCount, defaultRetryInterval, defaultMaxRetryInterval);
     }
 
     public static AsyncPolicy<ResponseResult> GetDefaultRetryPolicy(
@@ -63,11 +65,11 @@ internal static class RetryPolicyHelper
                 i => CalcBackoff(i, retryInterval, maxRetryInterval));
     }
 
-    public static RetryPolicyHandler AsRetryDelegate(this AsyncPolicy<ResponseResult> policy)
+    public static IRetryPolicyHandler AsRetryDelegate(this AsyncPolicy<ResponseResult> policy)
     {
         return policy is null
             ? null
-            : policy.ExecuteAsync;
+            : new RetryPolicyHandler(policy);
     }
 
     public static MinioClient WithRetryPolicy(this MinioClient client, AsyncPolicy<ResponseResult> policy)

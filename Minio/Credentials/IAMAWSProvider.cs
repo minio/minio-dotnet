@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2021 MinIO, Inc.
  *
@@ -19,6 +19,7 @@ using System.Net;
 using System.Text.Json;
 using Minio.DataModel;
 using Minio.Exceptions;
+using Minio.Handlers;
 using Minio.Helper;
 
 /*
@@ -46,9 +47,8 @@ public class IAMAWSProvider : IClientProvider
                     "Endpoint field " + nameof(CustomEndPoint) + " is invalid.");
         }
 
-        Minio_Client = client ??
-                       throw new ArgumentException("MinioClient reference field " +
-                                                   nameof(Minio_Client) + " cannot be null.");
+        Minio_Client = client ?? throw new ArgumentNullException(nameof(client));
+
         CustomEndPoint = new Uri(endpoint);
     }
 
@@ -152,7 +152,7 @@ public class IAMAWSProvider : IClientProvider
         requestBuilder.AddQueryParameter("location", "");
 
         using var response =
-            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandler>(), requestBuilder)
+            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<IApiResponseErrorHandler>(), requestBuilder)
                 .ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(response.Content) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))
@@ -183,7 +183,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
         requestBuilder.AddQueryParameter("location", "");
 
         using var response =
-            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<ApiResponseErrorHandler>(), requestBuilder)
+            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<IApiResponseErrorHandler>(), requestBuilder)
                 .ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(response.Content) ||
@@ -248,7 +248,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
     public void Validate()
     {
         if (Minio_Client is null)
-            throw new ArgumentNullException(nameof(Minio_Client) +
-                                            " should be assigned for the operation to continue.");
+            throw new InvalidOperationException(nameof(Minio_Client) +
+                                                " should be assigned for the operation to continue.");
     }
 }

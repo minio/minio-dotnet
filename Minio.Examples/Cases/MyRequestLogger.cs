@@ -16,6 +16,7 @@
 
 using System.Text;
 using Minio.DataModel.Tracing;
+using Minio.Handlers;
 
 namespace Minio.Examples.Cases;
 

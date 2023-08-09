@@ -15,13 +15,14 @@
  */
 
 using Minio.DataModel.Notification;
+using Minio.Handlers;
 
 namespace Minio.DataModel.Args;
 
 public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotificationsArgs>
 {
-    internal readonly IEnumerable<ApiResponseErrorHandler> NoErrorHandlers =
-        Enumerable.Empty<ApiResponseErrorHandler>();
+    internal readonly IEnumerable<IApiResponseErrorHandler> NoErrorHandlers =
+        Enumerable.Empty<IApiResponseErrorHandler>();
 
     public ListenBucketNotificationsArgs()
     {

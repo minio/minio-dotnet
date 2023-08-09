@@ -1,4 +1,5 @@
-﻿using System.IO.Hashing;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.IO.Hashing;
 using System.Text;
 using System.Xml.Serialization;
 using CommunityToolkit.HighPerformance;
@@ -91,6 +92,7 @@ public sealed class SelectResponseStream : IDisposable
         return read;
     }
 
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "Needs to be refactored")]
     private void Start()
     {
         var numBytesRead = 0;
@@ -108,10 +110,10 @@ public sealed class SelectResponseStream : IDisposable
 
             var destinationPrelude = inputArray.Slice(inputArray.Length - 4, 4);
             var isValidPrelude = Crc32.TryHash(inputArray[..^4], destinationPrelude, out _);
-            if (!isValidPrelude) throw new ArgumentException("invalid prelude CRC", nameof(destinationPrelude));
+            if (!isValidPrelude) throw new InvalidDataException("invalid prelude CRC: " + nameof(destinationPrelude));
 
             if (!destinationPrelude.SequenceEqual(preludeCRCBytes))
-                throw new ArgumentException("Prelude CRC Mismatch", nameof(preludeCRCBytes));
+                throw new InvalidDataException("Prelude CRC Mismatch: " + nameof(preludeCRCBytes));
 
             var preludeBytes = prelude[..4].Span;
             Span<byte> bytes = new byte[preludeBytes.Length];
@@ -159,10 +161,10 @@ public sealed class SelectResponseStream : IDisposable
 
             var destinationMessage = inputArray.Slice(inputArray.Length - 4, 4);
             var isValidMessage = Crc32.TryHash(inputArray[..^4], destinationMessage, out _);
-            if (!isValidMessage) throw new ArgumentException("invalid message CRC", nameof(destinationMessage));
+            if (!isValidMessage) throw new InvalidDataException("invalid message CRC: " + nameof(destinationMessage));
 
             if (!destinationMessage.SequenceEqual(messageCRCBytes))
-                throw new ArgumentException("message CRC Mismatch", nameof(messageCRCBytes));
+                throw new InvalidDataException("message CRC Mismatch: " + nameof(messageCRCBytes));
 
             var headerMap = ExtractHeaders(headers);
 
@@ -202,12 +204,7 @@ public sealed class SelectResponseStream : IDisposable
                     Stats = stats;
                 }
 
-#if NETSTANDARD
-                if (value.Equals("Records", StringComparison.OrdinalIgnoreCase))
-                    Payload.Write(payload.ToArray(), 0, payloadLength);
-#else
                 if (value.Equals("Records", StringComparison.OrdinalIgnoreCase)) Payload.Write(payload.Span);
-#endif
             }
         }
 

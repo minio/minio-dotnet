@@ -17,11 +17,12 @@
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 
-namespace Minio;
+namespace Minio.Helper;
 
-public static class Regions
+public static class RegionHelper
+
 {
-    private static readonly Regex endpointRegex = new(@"s3[.\-](.*?)\.amazonaws\.com$",
+    private static readonly Regex endpointRegex = new(@"s3[.\-](?<name>.*?)\.amazonaws\.com$",
         RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.RightToLeft,
         TimeSpan.FromHours(1));
 

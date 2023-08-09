@@ -27,6 +27,7 @@ using Minio.DataModel.Result;
 using Minio.DataModel.Select;
 using Minio.DataModel.Tags;
 using Minio.Exceptions;
+using Minio.Handlers;
 
 namespace Minio;
 

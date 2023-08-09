@@ -15,6 +15,7 @@
  */
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -141,7 +142,7 @@ public static class Utils
         return string.IsNullOrEmpty(secretKey) && string.IsNullOrEmpty(accessKey);
     }
 
-    internal static void ValidateFile(string filePath, string contentType = null)
+    internal static void ValidateFile(string filePath)
     {
         if (string.IsNullOrEmpty(filePath))
             throw new ArgumentException("empty file name is not allowed", nameof(filePath));
@@ -154,8 +155,6 @@ public static class Utils
             if (attr.HasFlag(FileAttributes.Directory))
                 throw new ArgumentException($"'{fileName}': not a regular file", nameof(filePath));
         }
-
-        //contentType ??= GetContentType(filePath);
     }
 
     internal static string GetContentType(string fileName)
@@ -299,6 +298,7 @@ public static class Utils
         return Convert.ToBase64String(hashedBytes);
     }
 
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "One time list of type mappings")]
     private static IDictionary<string, string> AddContentTypeMappings()
     {
         return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)

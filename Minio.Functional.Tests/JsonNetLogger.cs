@@ -16,6 +16,7 @@
 
 using System.Text.Json;
 using Minio.DataModel.Tracing;
+using Minio.Handlers;
 
 namespace Minio.Functional.Tests;
 

@@ -16,7 +16,7 @@
 
 using Minio.DataModel.Tracing;
 
-namespace Minio;
+namespace Minio.Handlers;
 
 public interface IRequestLogger
 {

@@ -513,7 +513,8 @@ public static class FunctionalTest
         {
             var list = await minio.ListBucketsAsync().ConfigureAwait(false);
             bucketList = list.Buckets;
-            bucketList = bucketList.Where(x => x.Name.EndsWith(bucketNameSuffix)).ToList();
+            bucketList = bucketList.Where(x => x.Name.EndsWith(bucketNameSuffix, StringComparison.OrdinalIgnoreCase))
+                .ToList();
             Assert.AreEqual(noOfBuckets, bucketList.Count);
             bucketList.ToList().Sort((x, y) =>
             {
@@ -729,7 +730,7 @@ public static class FunctionalTest
                     .WithObjectSize(filestream.Length)
                     .WithServerSideEncryption(ssec)
                     .WithContentType(contentType);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                _ = await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
 
                 var getObjectArgs = new GetObjectArgs()
                     .WithBucket(bucketName)
@@ -752,8 +753,8 @@ public static class FunctionalTest
                     .WithBucket(bucketName)
                     .WithObject(objectName)
                     .WithServerSideEncryption(ssec);
-                await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
-                await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+                _ = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+                _ = await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
             }
 
             new MintLogger("PutGetStatEncryptedObject_Test1", putObjectSignature,
@@ -816,7 +817,7 @@ public static class FunctionalTest
                     .WithObjectSize(filestream.Length)
                     .WithContentType(contentType)
                     .WithServerSideEncryption(ssec);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                _ = await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
 
                 var getObjectArgs = new GetObjectArgs()
                     .WithBucket(bucketName)
@@ -839,8 +840,8 @@ public static class FunctionalTest
                     .WithBucket(bucketName)
                     .WithObject(objectName)
                     .WithServerSideEncryption(ssec);
-                await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
-                await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+                _ = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+                _ = await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
             }
 
             new MintLogger("PutGetStatEncryptedObject_Test2", putObjectSignature,
@@ -901,7 +902,7 @@ public static class FunctionalTest
                     .WithObjectSize(filestream.Length)
                     .WithServerSideEncryption(sses3)
                     .WithContentType(contentType);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                _ = await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
 
                 var getObjectArgs = new GetObjectArgs()
                     .WithBucket(bucketName)
@@ -922,8 +923,8 @@ public static class FunctionalTest
                 var statObjectArgs = new StatObjectArgs()
                     .WithBucket(bucketName)
                     .WithObject(objectName);
-                await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
-                await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+                _ = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
+                _ = await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
             }
 
             new MintLogger("PutGetStatEncryptedObject_Test3", putObjectSignature,
@@ -1308,7 +1309,7 @@ public static class FunctionalTest
     {
         using var response = await minio.WrapperGetAsync(url).ConfigureAwait(false);
         if (string.IsNullOrEmpty(Convert.ToString(response.Content)) || !HttpStatusCode.OK.Equals(response.StatusCode))
-            throw new ArgumentNullException(nameof(response.Content), "Unable to download via presigned URL");
+            throw new InvalidOperationException("Unable to download via presigned URL" + nameof(response.Content));
 
         using var fs = new FileStream(filePath, FileMode.CreateNew);
         await response.Content.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
@@ -1340,7 +1341,9 @@ public static class FunctionalTest
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
-                { "bucketName", bucketName }, { "objectName", objectName }, { "expiresOn", expiresOn.ToString() }
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "expiresOn", expiresOn.ToString(CultureInfo.InvariantCulture) }
             };
 
         // File to be uploaded
@@ -2160,6 +2163,7 @@ public static class FunctionalTest
 
     #region Object Lock Configuration
 
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "TODO")]
     internal static async Task ObjectLockConfigurationAsync_Test1(MinioClient minio)
     {
         var startTime = DateTime.Now;
@@ -2376,9 +2380,8 @@ public static class FunctionalTest
                 .WithRetentionUntilDate(untilDate);
             await minio.SetObjectRetentionAsync(setRetentionArgs).ConfigureAwait(false);
             new MintLogger(nameof(ObjectRetentionAsync_Test1), setObjectRetentionSignature,
-                    "Tests whether SetObjectRetentionAsync passes", TestStatus.PASS, DateTime.Now - startTime,
-                    args: args)
-                .Log();
+                "Tests whether SetObjectRetentionAsync passes", TestStatus.PASS, DateTime.Now - startTime,
+                args: args).Log();
         }
         catch (NotImplementedException ex)
         {
@@ -2407,9 +2410,8 @@ public static class FunctionalTest
             var untilDate = DateTime.Parse(config.RetainUntilDate, null, DateTimeStyles.RoundtripKind);
             Assert.AreEqual(Math.Ceiling((untilDate - DateTime.Now).TotalDays), plusDays);
             new MintLogger(nameof(ObjectRetentionAsync_Test1), getObjectRetentionSignature,
-                    "Tests whether GetObjectRetentionAsync passes", TestStatus.PASS, DateTime.Now - startTime,
-                    args: args)
-                .Log();
+                "Tests whether GetObjectRetentionAsync passes", TestStatus.PASS, DateTime.Now - startTime,
+                args: args).Log();
         }
         catch (NotImplementedException ex)
         {
@@ -2809,8 +2811,8 @@ public static class FunctionalTest
                     rxEventData = ev;
                     Notify(rxEventData);
                 },
-                ex => throw new ArgumentException($"OnError: {ex.Message}"),
-                () => throw new ArgumentException("STOPPED LISTENING FOR BUCKET NOTIFICATIONS\n"));
+                ex => throw new InvalidOperationException($"OnError: {ex.Message}"),
+                () => throw new InvalidOperationException("STOPPED LISTENING FOR BUCKET NOTIFICATIONS\n"));
 
             // Sleep to give enough time for the subscriber to be ready
             var sleepTime = 1000; // Milliseconds
@@ -2836,7 +2838,7 @@ public static class FunctionalTest
             {
                 await Task.Delay(waitTime).ConfigureAwait(false);
                 if ((DateTime.UtcNow - stTime).TotalMilliseconds >= timeout)
-                    throw new ArgumentException("Timeout: while waiting for events");
+                    throw new TimeoutException("Timeout: while waiting for events");
             }
 
             foreach (var ev in rxEventsList) Assert.AreEqual("s3:ObjectCreated:Put", ev.EventName);
@@ -2922,7 +2924,7 @@ public static class FunctionalTest
             {
                 await Task.Delay(waitTime).ConfigureAwait(false);
                 if ((DateTime.UtcNow - stTime).TotalMilliseconds >= timeout)
-                    throw new ArgumentException("Timeout: while waiting for events");
+                    throw new TimeoutException("Timeout: while waiting for events");
             }
 
             if (!string.IsNullOrEmpty(rxEventData.json))
@@ -2941,7 +2943,7 @@ public static class FunctionalTest
             }
             else
             {
-                throw new ArgumentException("Missed Event: Bucket notification failed.");
+                throw new InvalidDataException("Missed Event: Bucket notification failed.");
             }
         }
         catch (Exception ex)
@@ -4638,7 +4640,7 @@ public static class FunctionalTest
                     .WithStreamData(filestream)
                     .WithObjectSize(filestream.Length)
                     .WithContentType(contentType);
-                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                _ = await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
 
                 var getObjectArgs = new GetObjectArgs()
                     .WithBucket(bucketName)
@@ -4656,7 +4658,7 @@ public static class FunctionalTest
                         Assert.AreEqual(file_write_size, file_read_size);
                         File.Delete(tempFileName);
                     });
-                await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+                _ = await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
             }
 
             await Task.Delay(1000).ConfigureAwait(false);
@@ -5236,7 +5238,7 @@ public static class FunctionalTest
             var subscription = observable.Subscribe(
                 item =>
                 {
-                    Assert.IsTrue(item.Key.StartsWith(objectNamePrefix));
+                    Assert.IsTrue(item.Key.StartsWith(objectNamePrefix, StringComparison.OrdinalIgnoreCase));
                     if (!objectNamesSet.Add(item.Key))
                         new MintLogger("ListObjects_Test6", listObjectsSignature,
                             "Tests whether ListObjects lists more than 1000 objects correctly(max-keys = 1000)",
@@ -5309,7 +5311,7 @@ public static class FunctionalTest
             var subscription = observable.Subscribe(
                 item =>
                 {
-                    Assert.IsTrue(item.Key.StartsWith(prefix));
+                    Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
                     count++;
                     objectVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
                 },
@@ -5526,7 +5528,7 @@ public static class FunctionalTest
                     "reqParams",
                     "response-content-type:application/json,response-content-disposition:attachment;filename=  MyDoc u m  e   nt.json ;"
                 },
-                { "reqDate", reqDate.ToString() }
+                { "reqDate", reqDate.ToString(CultureInfo.InvariantCulture) }
             };
         try
         {
@@ -5562,7 +5564,7 @@ public static class FunctionalTest
 
             using var response = await minio.WrapperGetAsync(presigned_url).ConfigureAwait(false);
             if (response.StatusCode != HttpStatusCode.OK || string.IsNullOrEmpty(Convert.ToString(response.Content)))
-                throw new ArgumentNullException(nameof(response.Content), "Unable to download via presigned URL");
+                throw new InvalidOperationException("Unable to download via presigned URL " + nameof(response.Content));
 
             Assert.IsTrue(response.Content.Headers.GetValues("Content-Type")
                 .Contains(reqParams["response-content-type"], StringComparer.Ordinal));

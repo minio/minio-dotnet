@@ -56,9 +56,9 @@ public class Tagging
         foreach (var tag in tags)
         {
             if (!ValidateTagKey(tag.Key))
-                throw new ArgumentException("Invalid Tagging key " + tag.Key, nameof(tag.Key));
+                throw new InvalidOperationException("Invalid Tagging key " + tag.Key);
             if (!ValidateTagValue(tag.Value))
-                throw new ArgumentException("Invalid Tagging value " + tag.Value, nameof(tag.Value));
+                throw new InvalidOperationException("Invalid Tagging value " + tag.Value);
         }
 
         TaggingSet = new TagSet(tags);
@@ -93,7 +93,7 @@ public class Tagging
     {
         if (value is null || // Empty or whitespace is allowed
             value.Length > MAX_TAG_VALUE_LENGTH ||
-            value.Contains('&'))
+            value.Contains('&', StringComparison.OrdinalIgnoreCase))
             return false;
 
         return true;

@@ -697,13 +697,13 @@ public partial class MinioClient : IObjectOperations
         if (srcByteRangeSize > args.SourceObjectInfo.Size ||
             (srcByteRangeSize > 0 &&
              args.SourceObject.CopyOperationConditions.byteRangeEnd >= args.SourceObjectInfo.Size))
-            throw new ArgumentOutOfRangeException(nameof(srcByteRangeSize), "Specified byte range (" +
-                                                                            args.SourceObject.CopyOperationConditions
-                                                                                .byteRangeStart +
-                                                                            "-" + args.SourceObject
-                                                                                .CopyOperationConditions.byteRangeEnd +
-                                                                            ") does not fit within source object (size=" +
-                                                                            args.SourceObjectInfo.Size + ")");
+            throw new InvalidDataException("Specified byte range (" +
+                                           args.SourceObject.CopyOperationConditions
+                                               .byteRangeStart +
+                                           "-" + args.SourceObject
+                                               .CopyOperationConditions.byteRangeEnd +
+                                           ") does not fit within source object (size=" +
+                                           args.SourceObjectInfo.Size + ")");
 
         if (copySize > Constants.MaxSingleCopyObjectSize ||
             (srcByteRangeSize > 0 &&

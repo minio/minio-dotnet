@@ -15,6 +15,7 @@
  */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Minio.Helper;
 
 namespace Minio.Tests;
 
@@ -37,6 +38,6 @@ public class RegionTest
     [DataRow("localhost:9000", "")]
     public void TestGetRegion(string endpoint, string expectedRegion)
     {
-        Assert.AreEqual(expectedRegion, Regions.GetRegionFromEndpoint(endpoint));
+        Assert.AreEqual(expectedRegion, RegionHelper.GetRegionFromEndpoint(endpoint));
     }
 }
