@@ -28,6 +28,7 @@
         <AnalysisLevel>latest</AnalysisLevel>
         <AnalysisMode>Default</AnalysisMode>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
         <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
 
         <IsTestProject>$(MSBuildProjectName.Contains('Test'))</IsTestProject>

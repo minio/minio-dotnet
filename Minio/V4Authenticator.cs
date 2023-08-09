@@ -263,7 +263,7 @@ internal class V4Authenticator
     /// <returns>Hexlified string of input bytes</returns>
     private string BytesToHex(ReadOnlySpan<byte> checkSum)
     {
-        return BitConverter.ToString(checkSum.ToArray()).Replace("-", string.Empty).ToLowerInvariant();
+        return BitConverter.ToString(checkSum.ToArray()).Replace("-", string.Empty, StringComparison.OrdinalIgnoreCase).ToLowerInvariant();
     }
 
     /// <summary>
@@ -545,7 +545,7 @@ internal class V4Authenticator
 #else
             var hash = SHA256.HashData(body.Span);
 #endif
-            var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
+            var hex = BitConverter.ToString(hash).Replace("-", string.Empty, StringComparison.OrdinalIgnoreCase).ToLowerInvariant();
             requestBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
         }
         else if (!IsSecure && !requestBuilder.Content.IsEmpty)

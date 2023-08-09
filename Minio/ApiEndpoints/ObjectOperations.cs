@@ -1207,7 +1207,7 @@ public partial class MinioClient : IObjectOperations
             {
                 PartNumber = int.Parse(c.Element(ns + "PartNumber").Value,
                     CultureInfo.CurrentCulture),
-                ETag = c.Element(ns + "ETag").Value.Replace("\"", string.Empty),
+                ETag = c.Element(ns + "ETag").Value.Replace("\"", string.Empty, StringComparison.OrdinalIgnoreCase),
                 Size = long.Parse(c.Element(ns + "Size").Value,
                     CultureInfo.CurrentCulture)
             };

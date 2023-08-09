@@ -74,7 +74,7 @@ public class ObjectStat
                     objInfo.LastModified = DateTime.Parse(paramValue, CultureInfo.InvariantCulture);
                     break;
                 case "etag":
-                    objInfo.ETag = paramValue.Replace("\"", string.Empty);
+                    objInfo.ETag = paramValue.Replace("\"", string.Empty, StringComparison.OrdinalIgnoreCase);
                     break;
                 case "content-type":
                     objInfo.ContentType = paramValue;

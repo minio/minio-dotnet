@@ -299,7 +299,7 @@ public static class Utils
     }
 
     [SuppressMessage("Design", "MA0051:Method is too long", Justification = "One time list of type mappings")]
-    private static IDictionary<string, string> AddContentTypeMappings()
+    private static Dictionary<string, string> AddContentTypeMappings()
     {
         return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {

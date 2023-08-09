@@ -238,7 +238,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
         if (string.IsNullOrEmpty(endpoint))
             throw new ArgumentException($"'{nameof(endpoint)}' cannot be null or empty.", nameof(endpoint));
 
-        if (endpoint.Contains("https") || endpoint.Contains("http"))
+        if (endpoint.Contains("https", StringComparison.OrdinalIgnoreCase) || endpoint.Contains("http", StringComparison.OrdinalIgnoreCase))
             CustomEndPoint = new Uri(endpoint);
         else
             CustomEndPoint = RequestUtil.MakeTargetURL(endpoint, true);

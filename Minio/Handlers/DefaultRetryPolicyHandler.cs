@@ -17,6 +17,8 @@ public class DefaultRetryPolicyHandler : IRetryPolicyHandler
 
     public virtual Task<ResponseResult> Handle(Func<Task<ResponseResult>> executeRequestCallback)
     {
+        if (executeRequestCallback is null) throw new ArgumentNullException(nameof(executeRequestCallback));
+
         if (RetryPolicyHandler is not null)
             return RetryPolicyHandler.Invoke(executeRequestCallback);
 

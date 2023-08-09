@@ -121,7 +121,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
 #else
             var hash = SHA256.HashData(RequestBody.Span);
 #endif
-            var hex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
+            var hex = BitConverter.ToString(hash).Replace("-", string.Empty, StringComparison.OrdinalIgnoreCase).ToLowerInvariant();
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
             requestMessageBuilder.SetBody(RequestBody);
         }
