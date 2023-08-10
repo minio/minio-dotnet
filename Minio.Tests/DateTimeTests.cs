@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Globalization;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
 using Minio.DataModel.Args;
 using Minio.Helper;
@@ -55,7 +56,10 @@ public class DateTimeTests
     public void TestObjectStatExpires()
     {
         var d = TruncateMilliseconds(DateTime.Now);
-        var headers = new Dictionary<string, string> { ["x-amz-expiration"] = d.ToUniversalTime().ToString("r") };
+        var headers = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase)
+        {
+            ["x-amz-expiration"] = d.ToUniversalTime().ToString("r", CultureInfo.InvariantCulture)
+        };
         var stat = ObjectStat.FromResponseHeaders("test", headers);
         Assert.AreEqual(d.ToUniversalTime(), stat.Expires?.ToUniversalTime());
     }
@@ -64,7 +68,7 @@ public class DateTimeTests
     public void TestObjectStatObjectLockRetainUntilDate()
     {
         var d = TruncateMilliseconds(DateTime.Now);
-        var headers = new Dictionary<string, string>
+        var headers = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase)
         {
             ["x-amz-object-lock-retain-until-date"] = d.ToUniversalTime().ToString("O")
         };
@@ -77,7 +81,7 @@ public class DateTimeTests
     {
         var d = TruncateMilliseconds(DateTime.Now);
         var converted = Utils.To8601String(d);
-        var parsed = DateTime.Parse(converted);
+        var parsed = DateTime.Parse(converted, CultureInfo.InvariantCulture);
         Assert.AreEqual(d, parsed);
         Assert.AreEqual(d.Kind, parsed.Kind);
     }
