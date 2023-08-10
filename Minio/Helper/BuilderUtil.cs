@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,7 +26,7 @@ public static class BuilderUtil
         if (string.IsNullOrEmpty(endpoint))
             throw new ArgumentException($"'{nameof(endpoint)}' cannot be null or empty.", nameof(endpoint));
 
-        return endpoint.Contains(".dualstack.");
+        return endpoint.Contains(".dualstack.", StringComparison.OrdinalIgnoreCase);
     }
 
     public static bool IsAwsAccelerateEndpoint(string endpoint)

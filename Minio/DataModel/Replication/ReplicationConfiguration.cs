@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -76,7 +76,8 @@ public class ReplicationConfiguration
                 xs.Serialize(xw, this, ns);
                 xw.Flush();
 
-                str = Utils.RemoveNamespaceInXML(sw.ToString()).Replace("\r", "").Replace("\n", "");
+                str = Utils.RemoveNamespaceInXML(sw.ToString()).Replace("\r", "", StringComparison.OrdinalIgnoreCase)
+                    .Replace("\n", "", StringComparison.OrdinalIgnoreCase);
             }
         }
         catch (Exception ex)

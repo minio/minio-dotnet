@@ -76,7 +76,7 @@ public partial class MinioClient : IMinioClient
     /// <summary>
     ///     Default error handling delegate
     /// </summary>
-    private IApiResponseErrorHandler DefaultErrorHandlingDelegate { get; } = new DefaultErrorHandler();
+    public IApiResponseErrorHandler DefaultErrorHandler { get; set; } = new DefaultErrorHandler();
 
     // Save Credentials from user
     internal string AccessKey { get; set; }
@@ -326,7 +326,7 @@ public partial class MinioClient : IMinioClient
             if (method == HttpMethod.Put && objectName is null && resourcePath is null)
                 // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
                 usePathStyle = true;
-            else if (resourcePath?.Contains("location") == true)
+            else if (resourcePath?.Contains("location", StringComparison.OrdinalIgnoreCase) == true)
                 // use path style for location query
                 usePathStyle = true;
             else if (bucketName.Contains('.', StringComparison.Ordinal) && Secure)
@@ -608,7 +608,7 @@ public partial class MinioClient : IMinioClient
             && errResponse.Code.Equals("InvalidRequest", StringComparison.OrdinalIgnoreCase))
         {
             var legalHold = new Dictionary<string, string>(StringComparer.Ordinal) { { "legal-hold", "" } };
-            if (response.Request.RequestUri.Query.Contains("legalHold"))
+            if (response.Request.RequestUri.Query.Contains("legalHold", StringComparison.OrdinalIgnoreCase))
                 throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
         }
 
@@ -650,7 +650,7 @@ public partial class MinioClient : IMinioClient
         foreach (var handler in handlers) handler.Handle(response);
 
         // Fall back default error handler
-        DefaultErrorHandlingDelegate.Handle(response);
+        DefaultErrorHandler.Handle(response);
     }
 
     /// <summary>

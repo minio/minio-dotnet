@@ -213,7 +213,7 @@ public sealed class SelectResponseStream : IDisposable
         payloadStream.Close();
     }
 
-    private IDictionary<string, string> ExtractHeaders(Span<byte> data)
+    private Dictionary<string, string> ExtractHeaders(Span<byte> data)
     {
         var headerMap = new Dictionary<string, string>(StringComparer.Ordinal);
         var offset = 0;

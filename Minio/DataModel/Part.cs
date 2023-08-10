@@ -31,7 +31,7 @@ public class Part
         set
         {
             if (value is not null)
-                etag = value.Replace("\"", string.Empty);
+                etag = value.Replace("\"", string.Empty, StringComparison.OrdinalIgnoreCase);
             else
                 etag = null;
         }
