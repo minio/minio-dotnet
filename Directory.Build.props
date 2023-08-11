@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
     <PropertyGroup>
         <Copyright>Copyright (c) Minio. All rights reserved</Copyright>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
@@ -85,7 +85,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.81">
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.82">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
