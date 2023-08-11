@@ -62,9 +62,13 @@ internal class HttpRequestMessageBuilder
         {
             var requestUriBuilder = new UriBuilder(RequestUri);
 
-            foreach (var queryParameter in QueryParameters)
+            if (QueryParameters.Count > 0)
             {
                 var query = HttpUtility.ParseQueryString(requestUriBuilder.Query);
+                foreach (var queryParameter in QueryParameters)
+                {
+                    query.Add(HttpUtility.UrlEncode(queryParameter.Key), HttpUtility.UrlEncode(queryParameter.Value));
+                }
                 requestUriBuilder.Query = query.ToString();
             }
 
@@ -95,12 +99,15 @@ internal class HttpRequestMessageBuilder
                             }
 
                             break;
+
                         case "content-length":
                             request.Content.Headers.ContentLength = Convert.ToInt32(val, CultureInfo.InvariantCulture);
                             break;
+
                         case "content-md5":
                             request.Content.Headers.ContentMD5 = Convert.FromBase64String(val);
                             break;
+
                         default:
                             var errMessage = "Unsupported signed header: (" + key + ": " + val;
                             throw new UnexpectedMinioException(errMessage);
