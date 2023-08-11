@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+
 using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -69,25 +70,14 @@ public class CertificateIdentityProvider : IClientProvider
         if (ClientCertificate is null)
             throw new InvalidOperationException(nameof(ClientCertificate) + " cannot be null or empty");
 
-        using var response = await HttpClient.PostAsync(PostEndpoint, content: null).ConfigureAwait(false);
+        using var response = await HttpClient.PostAsync(PostEndpoint, null).ConfigureAwait(false);
 
         var certResponse = new CertificateResponse();
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var stream = Encoding.UTF8.GetBytes(content).AsMemory().AsStream();
-            try
-            {
-                certResponse = Utils.DeserializeXml<CertificateResponse>(stream);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-            finally
-            {
-                await stream.DisposeAsync().ConfigureAwait(false);
-            }
+            using var stream = Encoding.UTF8.GetBytes(content).AsMemory().AsStream();
+            certResponse = Utils.DeserializeXml<CertificateResponse>(stream);
         }
 
         if (Credentials is null && certResponse?.Cr is not null)
@@ -132,10 +122,7 @@ public class CertificateIdentityProvider : IClientProvider
         builder.Query = query.ToString();
         PostEndpoint = builder.Uri;
 
-        var handler = new HttpClientHandler
-        {
-            ClientCertificateOptions = ClientCertificateOption.Manual
-        };
+        var handler = new HttpClientHandler { ClientCertificateOptions = ClientCertificateOption.Manual };
 #if (NET472_OR_GREATER || NET6_0_OR_GREATER)
         handler.SslProtocols = SslProtocols.Tls12;
 #else
