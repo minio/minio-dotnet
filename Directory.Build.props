@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
     <PropertyGroup>
         <Copyright>Copyright (c) Minio. All rights reserved</Copyright>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
@@ -61,7 +61,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-        <PackageReference Include="Meziantou.Polyfill" Version="1.0.25">
+        <PackageReference Include="Meziantou.Polyfill" Version="1.0.26">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
