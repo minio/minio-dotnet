@@ -25,7 +25,7 @@ namespace Minio.Tests;
 public class HttpRequestMessageBuilderTests
 {
     [TestMethod]
-    public void TestNoQueryParametersAdded()
+    public void RequestGetter_NoQueryParametersAdded_ReturnsUrisQueryParameters()
     {
         var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, "http://localhost:9000/bucketname/objectname?query1=one&query2=two");
 
@@ -33,11 +33,20 @@ public class HttpRequestMessageBuilderTests
     }
 
     [TestMethod]
-    public void TestAditionalQueryParameters()
+    public void RequestGetter_AditionalQueryParameters_ReturnsAllQueryParameters()
     {
         var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, "http://localhost:9000/bucketname/objectname?query1=one&query2=two");
         requestBuilder.QueryParameters.Add("query3", "three");
 
         Assert.AreEqual("?query1=one&query2=two&query3=three", requestBuilder.Request.RequestUri.Query);
+    }
+
+    [TestMethod]
+    public void RequestGetter_DuplicatedQueryParameters_ReturnsAllQueryParameters()
+    {
+        var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, "http://localhost:9000/bucketname/objectname?query1=one&query2=two");
+        requestBuilder.QueryParameters.Add("query2", "new_value");
+
+        Assert.AreEqual("?query1=one&query2=two&query2=new_value", requestBuilder.Request.RequestUri.Query);
     }
 }
