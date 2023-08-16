@@ -18,9 +18,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reactive.Linq;
-using System.Text;
-using System.Xml.Linq;
-using CommunityToolkit.HighPerformance;
 using Minio.ApiEndpoints;
 using Minio.DataModel;
 using Minio.DataModel.Args;
@@ -246,7 +243,7 @@ public partial class MinioClient : IObjectOperations
         if (!string.IsNullOrEmpty(SessionToken)) args.Policy.FormData["x-amz-security-token"] = SessionToken;
         args.Policy.FormData["x-amz-signature"] = signature;
 
-        uri = RequestUtil.MakeTargetURL(BaseUrl, Secure, args.BucketName, region, usePathStyle: false);
+        uri = RequestUtil.MakeTargetURL(BaseUrl, Secure, args.BucketName, region, false);
         return (uri, args.Policy.FormData);
     }
 
@@ -620,7 +617,7 @@ public partial class MinioClient : IObjectOperations
             putObjectPartArgs = putObjectPartArgs
                 .WithStreamData(fileStream)
                 .WithObjectSize(fileStream.Length)
-                .WithRequestBody(data: null);
+                .WithRequestBody(null);
             etags = await PutObjectPartAsync(putObjectPartArgs, cancellationToken).ConfigureAwait(false);
         }
         // Upload stream contents
@@ -938,7 +935,7 @@ public partial class MinioClient : IObjectOperations
     private async Task MultipartCopyUploadAsync(MultipartCopyUploadArgs args,
         CancellationToken cancellationToken = default)
     {
-        var multiPartInfo = Utils.CalculateMultiPartSize(args.CopySize, copy: true);
+        var multiPartInfo = Utils.CalculateMultiPartSize(args.CopySize, true);
         var partSize = multiPartInfo.PartSize;
         var partCount = multiPartInfo.PartCount;
         var lastPartSize = multiPartInfo.LastPartSize;
