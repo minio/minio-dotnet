@@ -6053,14 +6053,16 @@ public static class FunctionalTest
         }
 
         var rules = new List<LifecycleRule>();
-        var exp = new Expiration(DateTime.Now.AddYears(1));
-        var compareDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0);
-        var expInDays = (compareDate.AddYears(1) - compareDate).TotalDays;
+        var baseDate = DateTime.Now;
+        var expDate = baseDate.AddYears(1);
+        var exp = new Expiration(expDate);
+
+        var calculatedExpDate = expDate.AddDays(1).AddSeconds(-1).ToUniversalTime().Date.ToString("o");
+        var realExpDate = DateTime.Parse(calculatedExpDate, CultureInfo.InvariantCulture);
+        var expInDays = (realExpDate.Date - baseDate.Date).TotalDays;
 
         var rule1 = new LifecycleRule(null, "txt", exp, null,
-            new RuleFilter(null, "txt/", null),
-            null, null, LifecycleRule.LifecycleRuleStatusEnabled
-        );
+            new RuleFilter(null, "txt/", null), null, null, LifecycleRule.LifecycleRuleStatusEnabled);
         rules.Add(rule1);
         var lfc = new LifecycleConfiguration(rules);
         try
@@ -6099,7 +6101,7 @@ public static class FunctionalTest
             Assert.IsTrue(lfcObj.Rules.Count > 0);
             Assert.AreEqual(lfcObj.Rules.Count, lfc.Rules.Count);
             var lfcDate = DateTime.Parse(lfcObj.Rules[0].Expiration.Date, null, DateTimeStyles.RoundtripKind);
-            Assert.AreEqual(Math.Floor((lfcDate - compareDate).TotalDays), expInDays);
+            Assert.AreEqual(Math.Floor((lfcDate - baseDate).TotalDays), expInDays);
             new MintLogger(nameof(BucketLifecycleAsync_Test1) + ".2", getBucketLifecycleSignature,
                     "Tests whether GetBucketLifecycleAsync passes", TestStatus.PASS, DateTime.Now - startTime,
                     args: args)

@@ -15,7 +15,6 @@
  */
 
 using System.Xml.Serialization;
-using Minio.Helper;
 
 namespace Minio.DataModel.ILM;
 
@@ -30,8 +29,7 @@ public abstract class Duration
 
     protected Duration(DateTime date)
     {
-        date = new DateTime(date.Year, date.Month, date.Day, 0, 0, 0);
-        Date = Utils.To8601String(date);
+        Date = date.AddDays(1).AddSeconds(-1).ToUniversalTime().Date.ToString("o");
     }
 
     protected Duration(double days)
