@@ -51,9 +51,7 @@ public partial class MinioClient : IMinioClient
         args?.Validate();
         if (args.FileName is not null)
             await GetObjectFileAsync(args, objStat, cancellationToken).ConfigureAwait(false);
-        else if (args.CallBack is not null)
-            await GetObjectStreamAsync(args, objStat, args.CallBack, cancellationToken).ConfigureAwait(false);
-        else await GetObjectStreamAsync(args, objStat, args.FuncCallBack, cancellationToken).ConfigureAwait(false);
+        else await GetObjectStreamAsync(args, cancellationToken).ConfigureAwait(false);
         return objStat;
     }
 
@@ -95,45 +93,15 @@ public partial class MinioClient : IMinioClient
             await callbackAsync(stream, cts.Token).ConfigureAwait(false);
             Utils.MoveWithReplace(tempFileName, args.FileName);
         });
-        return GetObjectStreamAsync(args, objectStat, null, cancellationToken);
+        return GetObjectStreamAsync(args, cancellationToken);
     }
 
     /// <summary>
     ///     private helper method. It returns the specified portion or full object from the bucket
     /// </summary>
     /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name etc </param>
-    /// <param name="objectStat">
-    ///     ObjectStat object encapsulates information like - object name, size, etag etc, represents
-    ///     Object Information
-    /// </param>
-    /// <param name="cb"> Action object of type Stream, callback to send Object contents, if assigned </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    private async Task GetObjectStreamAsync(GetObjectArgs args, ObjectStat objectStat, Action<Stream> cb,
-        CancellationToken cancellationToken = default)
-    {
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        using var response =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    ///     private helper method. It returns the specified portion or full object from the bucket
-    /// </summary>
-    /// <param name="args">GetObjectArgs Arguments Object encapsulates information like - bucket name, object name etc </param>
-    /// <param name="objectStat">
-    ///     ObjectStat object encapsulates information like - object name, size, etag etc, represents
-    ///     Object Information
-    /// </param>
-    /// <param name="cb">
-    ///     Callback function to send/process Object contents using
-    ///     async Func object which takes Stream and CancellationToken as input
-    ///     and Task as output, if assigned
-    /// </param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    private async Task GetObjectStreamAsync(GetObjectArgs args, ObjectStat objectStat,
-        Func<Stream, CancellationToken, Task> cb,
-        CancellationToken cancellationToken = default)
+    private async Task GetObjectStreamAsync(GetObjectArgs args, CancellationToken cancellationToken = default)
     {
         var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
         using var response =
