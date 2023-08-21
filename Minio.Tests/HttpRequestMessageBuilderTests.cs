@@ -19,7 +19,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Minio.Tests;
 
 /// <summary>
-/// HttpRequestMessageBuilder Tests
+///     HttpRequestMessageBuilder Tests
 /// </summary>
 [TestClass]
 public class HttpRequestMessageBuilderTests
@@ -27,7 +27,8 @@ public class HttpRequestMessageBuilderTests
     [TestMethod]
     public void RequestGetter_NoQueryParametersAdded_ReturnsUrisQueryParameters()
     {
-        var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, "http://localhost:9000/bucketname/objectname?query1=one&query2=two");
+        var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get,
+            "http://localhost:9000/bucketname/objectname?query1=one&query2=two");
 
         Assert.AreEqual("?query1=one&query2=two", requestBuilder.Request.RequestUri.Query);
     }
@@ -35,7 +36,8 @@ public class HttpRequestMessageBuilderTests
     [TestMethod]
     public void RequestGetter_AditionalQueryParameters_ReturnsAllQueryParameters()
     {
-        var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, "http://localhost:9000/bucketname/objectname?query1=one&query2=two");
+        var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get,
+            "http://localhost:9000/bucketname/objectname?query1=one&query2=two");
         requestBuilder.QueryParameters.Add("query3", "three");
 
         Assert.AreEqual("?query1=one&query2=two&query3=three", requestBuilder.Request.RequestUri.Query);
@@ -44,7 +46,8 @@ public class HttpRequestMessageBuilderTests
     [TestMethod]
     public void RequestGetter_DuplicatedQueryParameters_ReturnsAllQueryParameters()
     {
-        var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, "http://localhost:9000/bucketname/objectname?query1=one&query2=two");
+        var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get,
+            "http://localhost:9000/bucketname/objectname?query1=one&query2=two");
         requestBuilder.QueryParameters.Add("query2", "new_value");
 
         Assert.AreEqual("?query1=one&query2=two&query2=new_value", requestBuilder.Request.RequestUri.Query);
