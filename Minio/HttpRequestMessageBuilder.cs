@@ -18,7 +18,6 @@
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Web;
 using Minio.Exceptions;
 
 namespace Minio;
@@ -61,13 +60,6 @@ internal class HttpRequestMessageBuilder
         get
         {
             var requestUriBuilder = new UriBuilder(RequestUri);
-
-            foreach (var queryParameter in QueryParameters)
-            {
-                var query = HttpUtility.ParseQueryString(requestUriBuilder.Query);
-                requestUriBuilder.Query = query.ToString();
-            }
-
             var requestUri = requestUriBuilder.Uri;
             var request = new HttpRequestMessage(Method, requestUri);
 
@@ -95,12 +87,15 @@ internal class HttpRequestMessageBuilder
                             }
 
                             break;
+
                         case "content-length":
                             request.Content.Headers.ContentLength = Convert.ToInt32(val, CultureInfo.InvariantCulture);
                             break;
+
                         case "content-md5":
                             request.Content.Headers.ContentMD5 = Convert.FromBase64String(val);
                             break;
+
                         default:
                             var errMessage = "Unsupported signed header: (" + key + ": " + val;
                             throw new UnexpectedMinioException(errMessage);
