@@ -66,7 +66,7 @@ internal class HttpRequestMessageBuilder
             {
                 var query = HttpUtility.ParseQueryString(requestUriBuilder.Query);
                 foreach (var queryParameter in QueryParameters)
-                    query.Add(HttpUtility.UrlEncode(queryParameter.Key), HttpUtility.UrlEncode(queryParameter.Value));
+                    query[HttpUtility.UrlEncode(queryParameter.Key)] = HttpUtility.UrlEncode(queryParameter.Value);
                 requestUriBuilder.Query = query.ToString();
             }
 
