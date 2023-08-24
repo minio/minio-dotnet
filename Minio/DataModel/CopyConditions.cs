@@ -112,9 +112,12 @@ public class CopyConditions
     public bool HasReplaceMetadataDirective()
     {
         foreach (var item in copyConditions)
-            if (item.Key.Equals("x-amz-metadata-directive", StringComparison.OrdinalIgnoreCase) &&
-                item.Value.ToUpperInvariant().Equals("REPLACE", StringComparison.Ordinal))
+        {
+            if (item.Key.Equals("x-amz-metadata-directive", StringComparison.OrdinalIgnoreCase) && item.Value.ToUpperInvariant().Equals("REPLACE", StringComparison.Ordinal))
+            {
                 return true;
+            }
+        }
 
         return false;
     }
@@ -129,8 +132,7 @@ public class CopyConditions
     public void SetByteRange(long firstByte, long lastByte)
     {
         if (firstByte < 0 || lastByte < firstByte)
-            throw new ArgumentOutOfRangeException(nameof(lastByte),
-                "Range start less than zero or range end less than range start");
+            throw new ArgumentOutOfRangeException(nameof(lastByte), "Range start less than zero or range end less than range start");
 
         byteRangeStart = firstByte;
         byteRangeEnd = lastByte;

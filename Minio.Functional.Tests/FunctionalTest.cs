@@ -2677,13 +2677,13 @@ public static class FunctionalTest
                     // "NotImplemented" api error. If so, we throw an exception
                     // and skip running this test
                     if (received.Count > 1 &&
-                        received[1].json.StartsWith("<Error><Code>", StringComparison.OrdinalIgnoreCase))
+                        received[1].Json.StartsWith("<Error><Code>", StringComparison.OrdinalIgnoreCase))
                     {
                         // Although the attribute is called "json",
                         // returned data in list "received" is in xml
                         // format and it is an error.Here, we convert xml
                         // into json format.
-                        var receivedJson = XmlStrToJsonStr(received[1].json);
+                        var receivedJson = XmlStrToJsonStr(received[1].Json);
 
                         // Cleanup the "Error" key encapsulating "receivedJson"
                         // data. This is required to match and convert json data
@@ -2701,7 +2701,7 @@ public static class FunctionalTest
                         throw ex;
                     }
 
-                    var notification = JsonSerializer.Deserialize<MinioNotification>(received[0].json);
+                    var notification = JsonSerializer.Deserialize<MinioNotification>(received[0].Json);
 
                     if (notification.Records is not null)
                     {
@@ -2802,7 +2802,7 @@ public static class FunctionalTest
 
             void Notify(MinioNotificationRaw data)
             {
-                var notification = JsonSerializer.Deserialize<MinioNotification>(data.json);
+                var notification = JsonSerializer.Deserialize<MinioNotification>(data.Json);
                 if (notification is not { Records: not null }) return;
 
                 rxEventsList.AddRange(notification.Records);
@@ -2842,7 +2842,7 @@ public static class FunctionalTest
             var timeout = 3000; // Milliseconds
             var waitTime = 25; // Milliseconds
             var stTime = DateTime.UtcNow;
-            while (string.IsNullOrEmpty(rxEventData.json))
+            while (string.IsNullOrEmpty(rxEventData.Json))
             {
                 await Task.Delay(waitTime).ConfigureAwait(false);
                 if ((DateTime.UtcNow - stTime).TotalMilliseconds >= timeout)
@@ -2928,16 +2928,16 @@ public static class FunctionalTest
             var stTime = DateTime.UtcNow;
             var waitTime = 25; // Milliseconds
             var timeout = 3000; // Milliseconds
-            while (string.IsNullOrEmpty(rxEventData.json))
+            while (string.IsNullOrEmpty(rxEventData.Json))
             {
                 await Task.Delay(waitTime).ConfigureAwait(false);
                 if ((DateTime.UtcNow - stTime).TotalMilliseconds >= timeout)
                     throw new TimeoutException("Timeout: while waiting for events");
             }
 
-            if (!string.IsNullOrEmpty(rxEventData.json))
+            if (!string.IsNullOrEmpty(rxEventData.Json))
             {
-                var notification = JsonSerializer.Deserialize<MinioNotification>(rxEventData.json);
+                var notification = JsonSerializer.Deserialize<MinioNotification>(rxEventData.Json);
                 Assert.IsTrue(notification.Records[0].EventName
                     .Equals("s3:ObjectCreated:Put", StringComparison.OrdinalIgnoreCase));
                 new MintLogger(nameof(ListenBucketNotificationsAsync_Test3),

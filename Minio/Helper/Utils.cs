@@ -219,11 +219,13 @@ public static class Utils
                 await Task.WhenAll(Partitioner.Create(source).GetPartitions(maxNoOfParallelProcesses)
                     .Select(partition => Task.Run(async delegate
                         {
+#pragma warning disable IDISP007 // Don't dispose injected
                             using (partition)
                             {
                                 while (partition.MoveNext())
                                     await partition.Current.ConfigureAwait(false);
                             }
+#pragma warning restore IDISP007 // Don't dispose injected
                         }
                     ))).ConfigureAwait(false);
 #endif

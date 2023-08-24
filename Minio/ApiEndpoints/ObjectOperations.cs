@@ -157,6 +157,7 @@ public partial class MinioClient : IObjectOperations
 
         if (uploads is null) return;
         foreach (var upload in uploads)
+        {
             if (upload.Key.Equals(args.ObjectName, StringComparison.OrdinalIgnoreCase))
             {
                 var rmArgs = new RemoveUploadArgs()
@@ -165,6 +166,7 @@ public partial class MinioClient : IObjectOperations
                     .WithUploadId(upload.UploadId);
                 await RemoveUploadAsync(rmArgs, cancellationToken).ConfigureAwait(false);
             }
+        }
     }
 
     /// <summary>
@@ -243,7 +245,7 @@ public partial class MinioClient : IObjectOperations
         if (!string.IsNullOrEmpty(SessionToken)) args.Policy.FormData["x-amz-security-token"] = SessionToken;
         args.Policy.FormData["x-amz-signature"] = signature;
 
-        uri = RequestUtil.MakeTargetURL(BaseUrl, Secure, args.BucketName, region, false);
+        uri = RequestUtil.MakeTargetURL(BaseUrl, Secure, args.BucketName, region, usePathStyle: false);
         return (uri, args.Policy.FormData);
     }
 
@@ -397,10 +399,9 @@ public partial class MinioClient : IObjectOperations
     {
         args?.Validate();
         IList<DeleteError> errs = new List<DeleteError>();
-        if (args.ObjectNamesVersions.Count > 0)
-            errs = await RemoveObjectVersionsHelper(args, errs.ToList(), cancellationToken).ConfigureAwait(false);
-        else
-            errs = await RemoveObjectsHelper(args, errs, cancellationToken).ConfigureAwait(false);
+        errs = args.ObjectNamesVersions.Count > 0
+            ? await RemoveObjectVersionsHelper(args, errs.ToList(), cancellationToken).ConfigureAwait(false)
+            : await RemoveObjectsHelper(args, errs, cancellationToken).ConfigureAwait(false);
 
         return Observable.Create<DeleteError>( // From Current change
             async obs =>
@@ -575,11 +576,10 @@ public partial class MinioClient : IObjectOperations
             var bytes = await ReadFullAsync(args.ObjectStreamData, (int)args.ObjectSize).ConfigureAwait(false);
             var bytesRead = bytes.Length;
             if (bytesRead != (int)args.ObjectSize)
-                throw new UnexpectedShortReadException(
-                    $"Data read {bytesRead} is shorter than the size {args.ObjectSize} of input buffer.");
+                throw new UnexpectedShortReadException($"Data read {bytesRead.ToString(CultureInfo.InvariantCulture)} is shorter than the size {args.ObjectSize.ToString(CultureInfo.InvariantCulture)} of input buffer.");
 
             args = args.WithRequestBody(bytes)
-                .WithStreamData(null)
+                .WithStreamData(data: null)
                 .WithObjectSize(bytesRead);
             return await PutObjectSinglePartAsync(args, cancellationToken).ConfigureAwait(false);
         }
@@ -617,7 +617,7 @@ public partial class MinioClient : IObjectOperations
             putObjectPartArgs = putObjectPartArgs
                 .WithStreamData(fileStream)
                 .WithObjectSize(fileStream.Length)
-                .WithRequestBody(null);
+                .WithRequestBody(data: null);
             etags = await PutObjectPartAsync(putObjectPartArgs, cancellationToken).ConfigureAwait(false);
         }
         // Upload stream contents
@@ -682,16 +682,10 @@ public partial class MinioClient : IObjectOperations
         var srcByteRangeSize = args.SourceObject.CopyOperationConditions?.ByteRange ?? 0L;
         var copySize = srcByteRangeSize == 0 ? args.SourceObjectInfo.Size : srcByteRangeSize;
 
-        if (srcByteRangeSize > args.SourceObjectInfo.Size ||
-            (srcByteRangeSize > 0 &&
-             args.SourceObject.CopyOperationConditions.byteRangeEnd >= args.SourceObjectInfo.Size))
-            throw new InvalidDataException("Specified byte range (" +
-                                           args.SourceObject.CopyOperationConditions
-                                               .byteRangeStart +
-                                           "-" + args.SourceObject
-                                               .CopyOperationConditions.byteRangeEnd +
-                                           ") does not fit within source object (size=" +
-                                           args.SourceObjectInfo.Size + ")");
+        if (srcByteRangeSize > args.SourceObjectInfo.Size || (srcByteRangeSize > 0 && args.SourceObject.CopyOperationConditions.byteRangeEnd >= args.SourceObjectInfo.Size))
+        {
+            throw new InvalidDataException($"Specified byte range ({args.SourceObject.CopyOperationConditions.byteRangeStart.ToString(CultureInfo.InvariantCulture)}-{args.SourceObject.CopyOperationConditions.byteRangeEnd.ToString(CultureInfo.InvariantCulture)}) does not fit within source object (size={args.SourceObjectInfo.Size.ToString(CultureInfo.InvariantCulture)})");
+        }
 
         if (copySize > Constants.MaxSingleCopyObjectSize ||
             (srcByteRangeSize > 0 &&
@@ -721,11 +715,9 @@ public partial class MinioClient : IObjectOperations
                 .WithReplaceTagsDirective(args.ReplaceTagsDirective)
                 .WithTagging(args.ObjectTags);
             cpReqArgs.Validate();
-            Dictionary<string, string> newMeta;
-            if (args.ReplaceMetadataDirective)
-                newMeta = new Dictionary<string, string>(args.Headers, StringComparer.Ordinal);
-            else
-                newMeta = new Dictionary<string, string>(args.SourceObjectInfo.MetaData, StringComparer.Ordinal);
+            var newMeta = args.ReplaceMetadataDirective
+                ? new Dictionary<string, string>(args.Headers, StringComparer.Ordinal)
+                : new Dictionary<string, string>(args.SourceObjectInfo.MetaData, StringComparer.Ordinal);
             if (args.SourceObject.SSE is not null and SSECopy)
                 args.SourceObject.SSE.Marshal(newMeta);
             args.SSE?.Marshal(newMeta);
@@ -935,7 +927,7 @@ public partial class MinioClient : IObjectOperations
     private async Task MultipartCopyUploadAsync(MultipartCopyUploadArgs args,
         CancellationToken cancellationToken = default)
     {
-        var multiPartInfo = Utils.CalculateMultiPartSize(args.CopySize, true);
+        var multiPartInfo = Utils.CalculateMultiPartSize(args.CopySize, copy: true);
         var partSize = multiPartInfo.PartSize;
         var partCount = multiPartInfo.PartCount;
         var lastPartSize = multiPartInfo.LastPartSize;
@@ -958,10 +950,9 @@ public partial class MinioClient : IObjectOperations
         {
             var partCondition = args.SourceObject.CopyOperationConditions.Clone();
             partCondition.byteRangeStart = ((long)partSize * (partNumber - 1)) + partCondition.byteRangeStart;
-            if (partNumber < partCount)
-                partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)partSize - 1;
-            else
-                partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)lastPartSize - 1;
+            partCondition.byteRangeEnd = partNumber < partCount
+                ? partCondition.byteRangeStart + (long)partSize - 1
+                : partCondition.byteRangeStart + (long)lastPartSize - 1;
             var queryMap = new Dictionary<string, string>(StringComparer.Ordinal);
             if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
             {

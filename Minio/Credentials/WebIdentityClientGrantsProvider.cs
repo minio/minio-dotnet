@@ -27,8 +27,8 @@ namespace Minio.Credentials;
 public abstract class WebIdentityClientGrantsProvider<T> : AssumeRoleBaseProvider<T>
     where T : WebIdentityClientGrantsProvider<T>
 {
-    public readonly uint MAX_DURATION_SECONDS = (uint)new TimeSpan(7, 0, 0, 0).TotalSeconds;
-    public readonly uint MIN_DURATION_SECONDS = 15;
+    internal readonly uint MAX_DURATION_SECONDS = (uint)new TimeSpan(7, 0, 0, 0).TotalSeconds;
+    internal readonly uint MIN_DURATION_SECONDS = 15;
 
     internal Uri STSEndpoint { get; set; }
     internal Func<JsonWebToken> JWTSupplier { get; set; }

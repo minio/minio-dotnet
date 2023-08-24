@@ -21,7 +21,7 @@ namespace Minio.DataModel;
 
 public class PostPolicy
 {
-    public IList<IList<(string, string, string)>> Conditions = new List<IList<(string, string, string)>>();
+    public IList<IList<(string, string, string)>> Conditions { get; } = new List<IList<(string, string, string)>>();
 
     /// <summary>
     ///     Get the populated dictionary of policy data.
