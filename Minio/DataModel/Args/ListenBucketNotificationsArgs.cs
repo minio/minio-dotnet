@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Globalization;
 using Minio.DataModel.Notification;
 using Minio.Handlers;
 
@@ -41,8 +42,8 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
 
     public override string ToString()
     {
-        var str = string.Join("\n", string.Format("\nRequestMethod= {0}", RequestMethod),
-            string.Format("EnableTrace= {0}", EnableTrace));
+        var str = string.Join("\n", string.Format(CultureInfo.InvariantCulture, "\nRequestMethod= {0}", RequestMethod),
+            string.Format(CultureInfo.InvariantCulture, "EnableTrace= {0}", EnableTrace));
 
         var eventsAsStr = "";
         foreach (var eventType in Events)
@@ -52,8 +53,9 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
             eventsAsStr += eventType.Value;
         }
 
-        return string.Join("\n", str, string.Format("Events= [{0}]", eventsAsStr), string.Format("Prefix= {0}", Prefix),
-            string.Format("Suffix= {0}\n", Suffix));
+        return string.Join("\n", str, string.Format(CultureInfo.InvariantCulture, "Events= [{0}]", eventsAsStr),
+            string.Format(CultureInfo.InvariantCulture, "Prefix= {0}", Prefix),
+            string.Format(CultureInfo.InvariantCulture, "Suffix= {0}\n", Suffix));
     }
 
     public ListenBucketNotificationsArgs WithNotificationObserver(IObserver<MinioNotificationRaw> obs)

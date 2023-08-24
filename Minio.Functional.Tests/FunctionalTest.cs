@@ -218,7 +218,8 @@ public static class FunctionalTest
                 { "+", "\\+" }
             };
 
-        foreach (var toReplace in Replacements.Keys) cmd = cmd.Replace(toReplace, Replacements[toReplace], StringComparison.Ordinal);
+        foreach (var toReplace in Replacements.Keys)
+            cmd = cmd.Replace(toReplace, Replacements[toReplace], StringComparison.Ordinal);
         var cmdNoReturn = cmd + " >/dev/null 2>&1";
 
         using var process = new Process
@@ -594,8 +595,9 @@ public static class FunctionalTest
         {
             versioningConfig = await minio.GetVersioningAsync(new GetVersioningArgs()
                 .WithBucket(bucketName)).ConfigureAwait(false);
-            if (versioningConfig is not null && (versioningConfig.Status.Contains("Enabled", StringComparison.Ordinal) ||
-                                                 versioningConfig.Status.Contains("Suspended", StringComparison.Ordinal)))
+            if (versioningConfig is not null &&
+                (versioningConfig.Status.Contains("Enabled", StringComparison.Ordinal) ||
+                 versioningConfig.Status.Contains("Suspended", StringComparison.Ordinal)))
                 getVersions = true;
 
             lockConfig = await minio.GetObjectLockConfigurationAsync(lockConfigurationArgs).ConfigureAwait(false);
@@ -1656,7 +1658,8 @@ public static class FunctionalTest
         }
         catch (Exception ex)
         {
-            if (ex.Message.Contains("The server side encryption configuration was not found", StringComparison.OrdinalIgnoreCase))
+            if (ex.Message.Contains("The server side encryption configuration was not found",
+                    StringComparison.OrdinalIgnoreCase))
             {
                 new MintLogger(nameof(BucketEncryptionsAsync_Test1), removeBucketEncryptionSignature,
                     "Tests whether RemoveBucketEncryptionAsync passes", TestStatus.PASS, DateTime.Now - startTime,
@@ -2257,7 +2260,8 @@ public static class FunctionalTest
                 .WithBucket(bucketName);
             var config = await minio.GetObjectLockConfigurationAsync(objectLockArgs).ConfigureAwait(false);
             Assert.IsNotNull(config);
-            Assert.IsTrue(config.ObjectLockEnabled.Contains(ObjectLockConfiguration.LockEnabled, StringComparison.OrdinalIgnoreCase));
+            Assert.IsTrue(config.ObjectLockEnabled.Contains(ObjectLockConfiguration.LockEnabled,
+                StringComparison.OrdinalIgnoreCase));
             Assert.IsNotNull(config.Rule);
             Assert.IsNotNull(config.Rule.DefaultRetention);
             Assert.AreEqual(config.Rule.DefaultRetention.Days, 33);
@@ -2447,7 +2451,8 @@ public static class FunctionalTest
         }
         catch (Exception ex)
         {
-            var errMsgLock = ex.Message.Contains("The specified object does not have a ObjectLock configuration", StringComparison.OrdinalIgnoreCase);
+            var errMsgLock = ex.Message.Contains("The specified object does not have a ObjectLock configuration",
+                StringComparison.OrdinalIgnoreCase);
             if (errMsgLock)
             {
                 new MintLogger(nameof(ObjectRetentionAsync_Test1), clearObjectRetentionSignature,
@@ -2701,10 +2706,13 @@ public static class FunctionalTest
                     if (notification.Records is not null)
                     {
                         Assert.AreEqual(1, notification.Records.Count);
-                        Assert.IsTrue(notification.Records[0].EventName.Contains("s3:ObjectCreated:Put", StringComparison.OrdinalIgnoreCase));
+                        Assert.IsTrue(notification.Records[0].EventName
+                            .Contains("s3:ObjectCreated:Put", StringComparison.OrdinalIgnoreCase));
                         Assert.IsTrue(
-                            objectName.Contains(HttpUtility.UrlDecode(notification.Records[0].S3.ObjectMeta.Key), StringComparison.OrdinalIgnoreCase));
-                        Assert.IsTrue(contentType.Contains(notification.Records[0].S3.ObjectMeta.ContentType, StringComparison.OrdinalIgnoreCase));
+                            objectName.Contains(HttpUtility.UrlDecode(notification.Records[0].S3.ObjectMeta.Key),
+                                StringComparison.OrdinalIgnoreCase));
+                        Assert.IsTrue(contentType.Contains(notification.Records[0].S3.ObjectMeta.ContentType,
+                            StringComparison.OrdinalIgnoreCase));
                         eventDetected = true;
                         break;
                     }
@@ -3704,7 +3712,8 @@ public static class FunctionalTest
         catch (MinioException ex)
         {
             if (ex.Message.Contains(
-                    "MinIO API responded with message=At least one of the pre-conditions you specified did not hold", StringComparison.OrdinalIgnoreCase))
+                    "MinIO API responded with message=At least one of the pre-conditions you specified did not hold",
+                    StringComparison.OrdinalIgnoreCase))
             {
                 new MintLogger(nameof(CopyObject_Test2), copyObjectSignature,
                     "Tests whether CopyObject with Etag mismatch passes", TestStatus.PASS, DateTime.Now - startTime,
@@ -4193,7 +4202,8 @@ public static class FunctionalTest
             var dstats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
             Assert.IsTrue(dstats.MetaData["Content-Type"] is not null);
             Assert.IsTrue(dstats.MetaData["Mynewkey"] is not null);
-            Assert.IsTrue(dstats.MetaData["Content-Type"].Contains("application/css", StringComparison.OrdinalIgnoreCase));
+            Assert.IsTrue(dstats.MetaData["Content-Type"]
+                .Contains("application/css", StringComparison.OrdinalIgnoreCase));
             Assert.IsTrue(dstats.MetaData["Mynewkey"].Contains("test   test", StringComparison.Ordinal));
             new MintLogger("CopyObject_Test8", copyObjectSignature,
                 "Tests whether CopyObject with metadata replacement passes", TestStatus.PASS, DateTime.Now - startTime,
@@ -4848,7 +4858,8 @@ public static class FunctionalTest
                                 .ConfigureAwait(false);
 #endif
 
-                            actualContent = actualContent.Replace("\n", "", StringComparison.Ordinal).Replace("\r", "", StringComparison.Ordinal);
+                            actualContent = actualContent.Replace("\n", "", StringComparison.Ordinal)
+                                .Replace("\r", "", StringComparison.Ordinal);
                             Assert.AreEqual(actualContent, expectedContent);
                         });
 
@@ -5563,7 +5574,8 @@ public static class FunctionalTest
             var presigned_url = await minio.PresignedGetObjectAsync(preArgs).ConfigureAwait(false);
 
             using var response = await minio.WrapperGetAsync(presigned_url).ConfigureAwait(false);
-            if (response.StatusCode != HttpStatusCode.OK || string.IsNullOrEmpty(Convert.ToString(response.Content)))
+            if (response.StatusCode != HttpStatusCode.OK ||
+                string.IsNullOrEmpty(Convert.ToString(response.Content, CultureInfo.InvariantCulture)))
                 throw new InvalidOperationException("Unable to download via presigned URL " + nameof(response.Content));
 
             Assert.IsTrue(response.Content.Headers.GetValues("Content-Type")
