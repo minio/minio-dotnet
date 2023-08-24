@@ -1032,39 +1032,53 @@ public static class Utils
         return sw.ToString();
     }
 
-    public static T DeserializeXml<T>(Stream stream) where T : class
+    public static T DeserializeXml<T>(Stream stream) where T : class, new()
     {
-        try
+        if (stream == null || stream.Length == 0)
         {
-            var ns = GetNamespace<T>();
-            if (!string.IsNullOrWhiteSpace(ns) && ns is "http://s3.amazonaws.com/doc/2006-03-01/")
-            {
-                using var amazonAwsS3XmlReader = new AmazonAwsS3XmlReader(stream);
-                return (T)new XmlSerializer(typeof(T)).Deserialize(amazonAwsS3XmlReader);
-            }
-
-            return (T)new XmlSerializer(typeof(T)).Deserialize(stream);
-        }
-        catch
-        {
+            return default;
         }
 
-        return default;
+        var ns = GetNamespace<T>();
+        if (!string.IsNullOrWhiteSpace(ns) && string.Equals(ns, "http://s3.amazonaws.com/doc/2006-03-01/", StringComparison.OrdinalIgnoreCase))
+        {
+            using var amazonAwsS3XmlReader = new AmazonAwsS3XmlReader(stream);
+            return (T)new XmlSerializer(typeof(T)).Deserialize(amazonAwsS3XmlReader);
+        }
+
+        using var reader = new StreamReader(stream);
+        var xmlContent = reader.ReadToEnd();
+
+        return DeserializeXml<T>(xmlContent); // Call the string overload
     }
 
-    public static T DeserializeXml<T>(string xml) where T : class
+    public static T DeserializeXml<T>(string xml) where T : class, new()
     {
+        if (string.IsNullOrEmpty(xml))
+        {
+            return default;
+        }
+
+        var settings = new XmlReaderSettings
+        {
+            // Disable DTD processing
+            DtdProcessing = DtdProcessing.Prohibit,
+            // Disable XML schema validation
+            XmlResolver = null
+        };
+
+        using var stringReader = new StringReader(xml);
+        using var xmlReader = XmlReader.Create(stringReader, settings);
+
         try
         {
             var serializer = new XmlSerializer(typeof(T));
-            using var stringReader = new StringReader(xml);
-            return (T)serializer.Deserialize(stringReader);
+            return (T)serializer.Deserialize(xmlReader);
         }
-        catch
+        catch (InvalidOperationException)
         {
+            return default;
         }
-
-        return default;
     }
 
     private static string GetNamespace<T>()
