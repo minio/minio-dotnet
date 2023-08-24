@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Runtime.Serialization;
 using Minio.DataModel.Result;
 
 namespace Minio.Exceptions;
@@ -48,12 +49,13 @@ public class InvalidObjectPrefixException : MinioException
     {
     }
 
+    protected InvalidObjectPrefixException(SerializationInfo serializationInfo, StreamingContext streamingContext) :
+        base(serializationInfo, streamingContext)
+    {
+    }
+
     public override string ToString()
     {
         return $"{objectPrefix}: {base.ToString()}";
-    }
-
-    protected InvalidObjectPrefixException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
-    {
     }
 }

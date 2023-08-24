@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Runtime.Serialization;
 using Minio.DataModel.Result;
 
 namespace Minio.Exceptions;
@@ -50,12 +51,13 @@ public class MissingBucketReplicationConfigurationException : MinioException
     {
     }
 
+    protected MissingBucketReplicationConfigurationException(SerializationInfo serializationInfo,
+        StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    {
+    }
+
     public override string ToString()
     {
         return $"{bucketName}: {base.ToString()}";
-    }
-
-    protected MissingBucketReplicationConfigurationException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
-    {
     }
 }

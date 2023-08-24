@@ -1034,13 +1034,11 @@ public static class Utils
 
     public static T DeserializeXml<T>(Stream stream) where T : class, new()
     {
-        if (stream == null || stream.Length == 0)
-        {
-            return default;
-        }
+        if (stream == null || stream.Length == 0) return default;
 
         var ns = GetNamespace<T>();
-        if (!string.IsNullOrWhiteSpace(ns) && string.Equals(ns, "http://s3.amazonaws.com/doc/2006-03-01/", StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrWhiteSpace(ns) && string.Equals(ns, "http://s3.amazonaws.com/doc/2006-03-01/",
+                StringComparison.OrdinalIgnoreCase))
         {
             using var amazonAwsS3XmlReader = new AmazonAwsS3XmlReader(stream);
             return (T)new XmlSerializer(typeof(T)).Deserialize(amazonAwsS3XmlReader);
@@ -1054,10 +1052,7 @@ public static class Utils
 
     public static T DeserializeXml<T>(string xml) where T : class, new()
     {
-        if (string.IsNullOrEmpty(xml))
-        {
-            return default;
-        }
+        if (string.IsNullOrEmpty(xml)) return default;
 
         var settings = new XmlReaderSettings
         {

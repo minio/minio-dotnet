@@ -253,7 +253,7 @@ public class PostPolicy
             .Append(Expiration.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture))
             .Append('"')
             .Append(',');
-        _ = sb.Append("\"conditions\":[").Append(string.Join(",", policyList)).Append(']');
+        _ = sb.Append("\"conditions\":[").AppendJoin(",", policyList).Append(']');
         _ = sb.Append('}');
         return Encoding.UTF8.GetBytes(sb.ToString());
     }

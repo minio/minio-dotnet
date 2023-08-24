@@ -157,7 +157,6 @@ public partial class MinioClient : IObjectOperations
 
         if (uploads is null) return;
         foreach (var upload in uploads)
-        {
             if (upload.Key.Equals(args.ObjectName, StringComparison.OrdinalIgnoreCase))
             {
                 var rmArgs = new RemoveUploadArgs()
@@ -166,7 +165,6 @@ public partial class MinioClient : IObjectOperations
                     .WithUploadId(upload.UploadId);
                 await RemoveUploadAsync(rmArgs, cancellationToken).ConfigureAwait(false);
             }
-        }
     }
 
     /// <summary>
@@ -245,7 +243,7 @@ public partial class MinioClient : IObjectOperations
         if (!string.IsNullOrEmpty(SessionToken)) args.Policy.FormData["x-amz-security-token"] = SessionToken;
         args.Policy.FormData["x-amz-signature"] = signature;
 
-        uri = RequestUtil.MakeTargetURL(BaseUrl, Secure, args.BucketName, region, usePathStyle: false);
+        uri = RequestUtil.MakeTargetURL(BaseUrl, Secure, args.BucketName, region, false);
         return (uri, args.Policy.FormData);
     }
 
@@ -576,10 +574,11 @@ public partial class MinioClient : IObjectOperations
             var bytes = await ReadFullAsync(args.ObjectStreamData, (int)args.ObjectSize).ConfigureAwait(false);
             var bytesRead = bytes.Length;
             if (bytesRead != (int)args.ObjectSize)
-                throw new UnexpectedShortReadException($"Data read {bytesRead.ToString(CultureInfo.InvariantCulture)} is shorter than the size {args.ObjectSize.ToString(CultureInfo.InvariantCulture)} of input buffer.");
+                throw new UnexpectedShortReadException(
+                    $"Data read {bytesRead.ToString(CultureInfo.InvariantCulture)} is shorter than the size {args.ObjectSize.ToString(CultureInfo.InvariantCulture)} of input buffer.");
 
             args = args.WithRequestBody(bytes)
-                .WithStreamData(data: null)
+                .WithStreamData(null)
                 .WithObjectSize(bytesRead);
             return await PutObjectSinglePartAsync(args, cancellationToken).ConfigureAwait(false);
         }
@@ -617,7 +616,7 @@ public partial class MinioClient : IObjectOperations
             putObjectPartArgs = putObjectPartArgs
                 .WithStreamData(fileStream)
                 .WithObjectSize(fileStream.Length)
-                .WithRequestBody(data: null);
+                .WithRequestBody(null);
             etags = await PutObjectPartAsync(putObjectPartArgs, cancellationToken).ConfigureAwait(false);
         }
         // Upload stream contents
@@ -682,10 +681,11 @@ public partial class MinioClient : IObjectOperations
         var srcByteRangeSize = args.SourceObject.CopyOperationConditions?.ByteRange ?? 0L;
         var copySize = srcByteRangeSize == 0 ? args.SourceObjectInfo.Size : srcByteRangeSize;
 
-        if (srcByteRangeSize > args.SourceObjectInfo.Size || (srcByteRangeSize > 0 && args.SourceObject.CopyOperationConditions.byteRangeEnd >= args.SourceObjectInfo.Size))
-        {
-            throw new InvalidDataException($"Specified byte range ({args.SourceObject.CopyOperationConditions.byteRangeStart.ToString(CultureInfo.InvariantCulture)}-{args.SourceObject.CopyOperationConditions.byteRangeEnd.ToString(CultureInfo.InvariantCulture)}) does not fit within source object (size={args.SourceObjectInfo.Size.ToString(CultureInfo.InvariantCulture)})");
-        }
+        if (srcByteRangeSize > args.SourceObjectInfo.Size || (srcByteRangeSize > 0 &&
+                                                              args.SourceObject.CopyOperationConditions.byteRangeEnd >=
+                                                              args.SourceObjectInfo.Size))
+            throw new InvalidDataException(
+                $"Specified byte range ({args.SourceObject.CopyOperationConditions.byteRangeStart.ToString(CultureInfo.InvariantCulture)}-{args.SourceObject.CopyOperationConditions.byteRangeEnd.ToString(CultureInfo.InvariantCulture)}) does not fit within source object (size={args.SourceObjectInfo.Size.ToString(CultureInfo.InvariantCulture)})");
 
         if (copySize > Constants.MaxSingleCopyObjectSize ||
             (srcByteRangeSize > 0 &&
@@ -927,7 +927,7 @@ public partial class MinioClient : IObjectOperations
     private async Task MultipartCopyUploadAsync(MultipartCopyUploadArgs args,
         CancellationToken cancellationToken = default)
     {
-        var multiPartInfo = Utils.CalculateMultiPartSize(args.CopySize, copy: true);
+        var multiPartInfo = Utils.CalculateMultiPartSize(args.CopySize, true);
         var partSize = multiPartInfo.PartSize;
         var partCount = multiPartInfo.PartCount;
         var lastPartSize = multiPartInfo.LastPartSize;

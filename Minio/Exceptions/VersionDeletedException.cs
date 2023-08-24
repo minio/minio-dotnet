@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Runtime.Serialization;
 using Minio.DataModel.Result;
 
 namespace Minio.Exceptions;
@@ -48,12 +49,13 @@ public class VersionDeletedException : MinioException
     {
     }
 
+    protected VersionDeletedException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(
+        serializationInfo, streamingContext)
+    {
+    }
+
     public override string ToString()
     {
         return $"{versionId}: {base.ToString()}";
-    }
-
-    protected VersionDeletedException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
-    {
     }
 }

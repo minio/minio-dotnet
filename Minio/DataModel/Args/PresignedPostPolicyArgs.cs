@@ -99,12 +99,6 @@ public class PresignedPostPolicyArgs : ObjectArgs<PresignedPostPolicyArgs>
         return this;
     }
 
-    internal PresignedPostPolicyArgs WithSignature(string signature)
-    {
-        Policy.SetSignature(signature);
-        return this;
-    }
-
     public PresignedPostPolicyArgs WithPolicy(PostPolicy policy)
     {
         if (policy is null)

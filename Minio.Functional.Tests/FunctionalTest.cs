@@ -1268,6 +1268,7 @@ public static class FunctionalTest
                 .WithVersions(true);
             var observable = minio.ListObjectsAsync(listObjectsArgs);
             var objVersions = new List<Tuple<string, string>>();
+#pragma warning disable AsyncFixer03 // Fire-and-forget async-void methods or delegates
             var subscription = observable.Subscribe(
                 item => objVersions.Add(new Tuple<string, string>(item.Key, item.VersionId)),
                 ex => throw ex,
@@ -1285,6 +1286,7 @@ public static class FunctionalTest
                         ex => throw ex,
                         async () => await TearDown(minio, bucketName).ConfigureAwait(false));
                 });
+#pragma warning restore AsyncFixer03 // Fire-and-forget async-void methods or delegates
 
             await Task.Delay(2 * 1000).ConfigureAwait(false);
             new MintLogger("RemoveObjects_Test3", removeObjectSignature2,
@@ -2333,13 +2335,16 @@ public static class FunctionalTest
 
     #region Object Retention
 
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "Refactor later")]
     internal static async Task ObjectRetentionAsync_Test1(MinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
-        var args = new Dictionary<string, string>
-            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "objectName", objectName } };
+        var args = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            { "bucketName", bucketName }, { "objectName", objectName }
+        };
 
         try
         {

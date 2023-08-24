@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+using System.Runtime.Serialization;
+
 namespace Minio.Exceptions;
 
 [Serializable]
@@ -44,7 +46,8 @@ public class MalFormedXMLException : Exception
         key = keyName;
     }
 
-    protected MalFormedXMLException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    protected MalFormedXMLException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(
+        serializationInfo, streamingContext)
     {
     }
 }

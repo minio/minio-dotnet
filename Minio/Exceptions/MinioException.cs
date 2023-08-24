@@ -39,7 +39,8 @@ public class MinioException : Exception
     {
     }
 
-    protected MinioException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    protected MinioException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(
+        serializationInfo, streamingContext)
     {
     }
 

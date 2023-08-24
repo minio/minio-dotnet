@@ -43,7 +43,8 @@ public class AccessDeniedException : MinioException
     {
     }
 
-    protected AccessDeniedException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    protected AccessDeniedException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(
+        serializationInfo, streamingContext)
     {
     }
 }

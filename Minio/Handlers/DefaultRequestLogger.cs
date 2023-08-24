@@ -48,7 +48,7 @@ public sealed class DefaultRequestLogger : IRequestLogger
         {
             _ = sb.Append(item.Name);
             _ = sb.Append(": ");
-            _ = sb.AppendLine(item.Value.ToString());
+            _ = sb.Append(item.Value).AppendLine();
         }
 
         _ = sb.AppendLine();

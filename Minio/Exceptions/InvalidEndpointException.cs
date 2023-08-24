@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Runtime.Serialization;
 using Minio.DataModel.Result;
 
 namespace Minio.Exceptions;
@@ -48,14 +49,15 @@ public class InvalidEndpointException : MinioException
     {
     }
 
+    protected InvalidEndpointException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(
+        serializationInfo, streamingContext)
+    {
+    }
+
     public override string ToString()
     {
         if (string.IsNullOrEmpty(endpoint))
             return base.ToString();
         return $"{endpoint}: {base.ToString()}";
-    }
-
-    protected InvalidEndpointException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
-    {
     }
 }
