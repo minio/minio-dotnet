@@ -236,24 +236,6 @@ public class PostPolicy
     }
 
     /// <summary>
-    ///     Set base64 encoded policy to form dictionary.
-    /// </summary>
-    /// <param name="policyBase64">Base64 encoded policy</param>
-    public void SetPolicy(string policyBase64)
-    {
-        // this.formData.Add("policy", policyBase64);
-    }
-
-    /// <summary>
-    ///     Set computed signature for the policy to form dictionary.
-    /// </summary>
-    /// <param name="signature">Computed signature</param>
-    public void SetSignature(string signature)
-    {
-        // this.formData.Add("x-amz-signature", signature);
-    }
-
-    /// <summary>
     ///     Serialize policy into JSON string.
     /// </summary>
     /// <returns>Serialized JSON policy</returns>
