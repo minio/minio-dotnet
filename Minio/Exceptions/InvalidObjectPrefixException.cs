@@ -52,4 +52,8 @@ public class InvalidObjectPrefixException : MinioException
     {
         return $"{objectPrefix}: {base.ToString()}";
     }
+
+    protected InvalidObjectPrefixException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    {
+    }
 }

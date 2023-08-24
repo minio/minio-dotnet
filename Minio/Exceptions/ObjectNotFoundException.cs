@@ -52,4 +52,8 @@ public class ObjectNotFoundException : MinioException
     {
         return $"{objectName}: {base.ToString()}";
     }
+
+    protected ObjectNotFoundException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    {
+    }
 }

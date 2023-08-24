@@ -47,4 +47,8 @@ public class ErrorResponseException : MinioException
     public ErrorResponseException(string message, Exception innerException) : base(message, innerException)
     {
     }
+
+    protected ErrorResponseException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    {
+    }
 }

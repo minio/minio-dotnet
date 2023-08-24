@@ -52,4 +52,8 @@ public class CredentialsProviderException : MinioException
     {
         return $"{credentialProviderType}: {base.ToString()}";
     }
+
+    protected CredentialsProviderException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    {
+    }
 }

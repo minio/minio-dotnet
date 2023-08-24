@@ -40,4 +40,8 @@ public class ForbiddenException : MinioException
     public ForbiddenException(string message, Exception innerException) : base(message, innerException)
     {
     }
+
+    protected ForbiddenException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    {
+    }
 }

@@ -40,4 +40,8 @@ public class EntityTooLargeException : MinioException
     public EntityTooLargeException(string message, Exception innerException) : base(message, innerException)
     {
     }
+
+    protected EntityTooLargeException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    {
+    }
 }

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,6 +38,10 @@ public class UnexpectedShortReadException : MinioException
     }
 
     public UnexpectedShortReadException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+
+    protected UnexpectedShortReadException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
     {
     }
 }

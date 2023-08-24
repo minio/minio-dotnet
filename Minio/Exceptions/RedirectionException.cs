@@ -40,4 +40,8 @@ public class RedirectionException : MinioException
     public RedirectionException(string message, Exception innerException) : base(message, innerException)
     {
     }
+
+    protected RedirectionException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    {
+    }
 }

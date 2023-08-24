@@ -52,4 +52,8 @@ public class InvalidBucketNameException : MinioException
     {
         return $"{bucketName}: {base.ToString()}";
     }
+
+    protected InvalidBucketNameException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    {
+    }
 }

@@ -41,4 +41,8 @@ public class InternalClientException : MinioException
     public InternalClientException(string message, Exception innerException) : base(message, innerException)
     {
     }
+
+    protected InternalClientException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    {
+    }
 }

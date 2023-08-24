@@ -41,4 +41,8 @@ public class SelectObjectContentException : MinioException
     public SelectObjectContentException(string message, Exception innerException) : base(message, innerException)
     {
     }
+
+    protected SelectObjectContentException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    {
+    }
 }

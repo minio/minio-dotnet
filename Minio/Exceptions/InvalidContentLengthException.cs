@@ -54,4 +54,8 @@ public class InvalidContentLengthException : MinioException
     {
         return $"{bucketName} :{objectName}: {base.ToString()}";
     }
+
+    protected InvalidContentLengthException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    {
+    }
 }

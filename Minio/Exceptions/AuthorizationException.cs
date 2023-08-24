@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2017, 2018, 2019, 2020 MinIO, Inc.
  *
@@ -41,6 +41,10 @@ public class AuthorizationException : Exception
     }
 
     public AuthorizationException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+
+    protected AuthorizationException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
     {
     }
 }

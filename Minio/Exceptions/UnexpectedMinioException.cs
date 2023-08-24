@@ -41,4 +41,8 @@ public class UnexpectedMinioException : MinioException
     public UnexpectedMinioException(string message, Exception innerException) : base(message, innerException)
     {
     }
+
+    protected UnexpectedMinioException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    {
+    }
 }

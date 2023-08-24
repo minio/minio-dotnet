@@ -54,4 +54,8 @@ public class InvalidEndpointException : MinioException
             return base.ToString();
         return $"{endpoint}: {base.ToString()}";
     }
+
+    protected InvalidEndpointException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    {
+    }
 }

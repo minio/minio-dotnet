@@ -41,4 +41,8 @@ public class ConnectionException : MinioException
     public ConnectionException(string message, Exception innerException) : base(message, innerException)
     {
     }
+
+    protected ConnectionException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    {
+    }
 }

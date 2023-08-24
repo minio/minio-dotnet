@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -51,5 +51,9 @@ public class VersionDeletedException : MinioException
     public override string ToString()
     {
         return $"{versionId}: {base.ToString()}";
+    }
+
+    protected VersionDeletedException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+    {
     }
 }
