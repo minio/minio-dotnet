@@ -681,11 +681,18 @@ public partial class MinioClient : IObjectOperations
         var srcByteRangeSize = args.SourceObject.CopyOperationConditions?.ByteRange ?? 0L;
         var copySize = srcByteRangeSize == 0 ? args.SourceObjectInfo.Size : srcByteRangeSize;
 
-        if (srcByteRangeSize > args.SourceObjectInfo.Size || (srcByteRangeSize > 0 &&
-                                                              args.SourceObject.CopyOperationConditions.byteRangeEnd >=
-                                                              args.SourceObjectInfo.Size))
+        if (srcByteRangeSize > args.SourceObjectInfo.Size ||
+            (srcByteRangeSize > 0 &&
+             args.SourceObject.CopyOperationConditions.byteRangeEnd >=
+             args.SourceObjectInfo.Size))
             throw new InvalidDataException(
-                $"Specified byte range ({args.SourceObject.CopyOperationConditions.byteRangeStart.ToString(CultureInfo.InvariantCulture)}-{args.SourceObject.CopyOperationConditions.byteRangeEnd.ToString(CultureInfo.InvariantCulture)}) does not fit within source object (size={args.SourceObjectInfo.Size.ToString(CultureInfo.InvariantCulture)})");
+                $"Specified byte range ({
+                    args.SourceObject.CopyOperationConditions
+                        .byteRangeStart.ToString(CultureInfo.InvariantCulture)}-{
+                        args.SourceObject.CopyOperationConditions.byteRangeEnd
+                            .ToString(CultureInfo.InvariantCulture)
+                    }) does not fit within source object (size={
+                        args.SourceObjectInfo.Size.ToString(CultureInfo.InvariantCulture)})");
 
         if (copySize > Constants.MaxSingleCopyObjectSize ||
             (srcByteRangeSize > 0 &&
