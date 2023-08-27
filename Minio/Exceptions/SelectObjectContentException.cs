@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+using System.Runtime.Serialization;
 using Minio.DataModel.Result;
 
 namespace Minio.Exceptions;
@@ -39,6 +40,11 @@ public class SelectObjectContentException : MinioException
     }
 
     public SelectObjectContentException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+
+    protected SelectObjectContentException(SerializationInfo serializationInfo, StreamingContext streamingContext) :
+        base(serializationInfo, streamingContext)
     {
     }
 }

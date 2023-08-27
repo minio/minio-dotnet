@@ -23,10 +23,10 @@ namespace Minio.DataModel.Notification;
 /// </summary>
 public class MinioNotificationRaw
 {
-    public string json;
-
     public MinioNotificationRaw(string json)
     {
-        this.json = json;
+        Json = json;
     }
+
+    public string Json { get; }
 }

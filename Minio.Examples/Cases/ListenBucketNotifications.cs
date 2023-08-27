@@ -42,7 +42,7 @@ internal static class ListenBucketNotifications
             var observable = minio.ListenBucketNotificationsAsync(bucketName, events, prefix, suffix);
 
             var subscription = observable.Subscribe(
-                notification => Console.WriteLine($"Notification: {notification.json}"),
+                notification => Console.WriteLine($"Notification: {notification.Json}"),
                 ex => Console.WriteLine($"OnError: {ex}"),
                 () => Console.WriteLine("Stopped listening for bucket notifications\n"));
 

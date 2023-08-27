@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Runtime.Serialization;
 using Minio.DataModel.Result;
 
 namespace Minio.Exceptions;
@@ -38,6 +39,11 @@ public class EntityTooLargeException : MinioException
     }
 
     public EntityTooLargeException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+
+    protected EntityTooLargeException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(
+        serializationInfo, streamingContext)
     {
     }
 }

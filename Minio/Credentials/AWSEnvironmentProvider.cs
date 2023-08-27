@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2021 MinIO, Inc.
  *
@@ -21,32 +21,35 @@ namespace Minio.Credentials;
 
 public class AWSEnvironmentProvider : IClientProvider
 {
+    internal string AccessKey
+    {
+        get
+        {
+            var accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
+            if (string.IsNullOrWhiteSpace(accessKey)) accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY");
+            return accessKey;
+        }
+    }
+
+    internal string SecretKey
+    {
+        get
+        {
+            var secretKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
+            if (string.IsNullOrWhiteSpace(secretKey)) secretKey = Environment.GetEnvironmentVariable("AWS_SECRET_KEY");
+            return secretKey;
+        }
+    }
+
+    internal string SessionToken => Environment.GetEnvironmentVariable("AWS_SESSION_TOKEN");
+
     public AccessCredentials GetCredentials()
     {
-        return new AccessCredentials(GetAccessKey(), GetSecretKey(), GetSessionToken(), default);
+        return new AccessCredentials(AccessKey, SecretKey, SessionToken, default);
     }
 
     public ValueTask<AccessCredentials> GetCredentialsAsync()
     {
         return new ValueTask<AccessCredentials>(GetCredentials());
-    }
-
-    internal string GetAccessKey()
-    {
-        var accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
-        if (string.IsNullOrWhiteSpace(accessKey)) accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY");
-        return accessKey;
-    }
-
-    internal string GetSecretKey()
-    {
-        var secretKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
-        if (string.IsNullOrWhiteSpace(secretKey)) secretKey = Environment.GetEnvironmentVariable("AWS_SECRET_KEY");
-        return secretKey;
-    }
-
-    internal string GetSessionToken()
-    {
-        return Environment.GetEnvironmentVariable("AWS_SESSION_TOKEN");
     }
 }

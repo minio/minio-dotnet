@@ -21,7 +21,7 @@ namespace Minio.DataModel;
 
 public class PostPolicy
 {
-    public IList<IList<(string, string, string)>> Conditions = new List<IList<(string, string, string)>>();
+    public IList<IList<(string, string, string)>> Conditions { get; } = new List<IList<(string, string, string)>>();
 
     /// <summary>
     ///     Get the populated dictionary of policy data.
@@ -236,24 +236,6 @@ public class PostPolicy
     }
 
     /// <summary>
-    ///     Set base64 encoded policy to form dictionary.
-    /// </summary>
-    /// <param name="policyBase64">Base64 encoded policy</param>
-    public void SetPolicy(string policyBase64)
-    {
-        // this.formData.Add("policy", policyBase64);
-    }
-
-    /// <summary>
-    ///     Set computed signature for the policy to form dictionary.
-    /// </summary>
-    /// <param name="signature">Computed signature</param>
-    public void SetSignature(string signature)
-    {
-        // this.formData.Add("x-amz-signature", signature);
-    }
-
-    /// <summary>
     ///     Serialize policy into JSON string.
     /// </summary>
     /// <returns>Serialized JSON policy</returns>
@@ -271,7 +253,7 @@ public class PostPolicy
             .Append(Expiration.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture))
             .Append('"')
             .Append(',');
-        _ = sb.Append("\"conditions\":[").Append(string.Join(",", policyList)).Append(']');
+        _ = sb.Append("\"conditions\":[").AppendJoin(",", policyList).Append(']');
         _ = sb.Append('}');
         return Encoding.UTF8.GetBytes(sb.ToString());
     }

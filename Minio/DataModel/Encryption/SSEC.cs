@@ -24,7 +24,7 @@ namespace Minio.DataModel.Encryption;
 public class SSEC : IServerSideEncryption
 {
     // secret AES-256 Key
-    protected byte[] Key;
+    internal byte[] Key;
 
     public SSEC(byte[] key)
     {

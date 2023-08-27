@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Runtime.Serialization;
 using Minio.DataModel.Result;
 
 namespace Minio.Exceptions;
@@ -45,6 +46,11 @@ public class InvalidBucketNameException : MinioException
     }
 
     public InvalidBucketNameException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+
+    protected InvalidBucketNameException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(
+        serializationInfo, streamingContext)
     {
     }
 

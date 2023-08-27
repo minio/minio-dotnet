@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,8 +24,6 @@ public sealed class MessageType
     public static readonly MessageType Error = new("error");
     public static readonly MessageType Event = new("event");
 
-    [XmlText] public string Type;
-
     public MessageType()
     {
     }
@@ -34,4 +32,6 @@ public sealed class MessageType
     {
         Type = value;
     }
+
+    [XmlText] public string Type { get; set; }
 }

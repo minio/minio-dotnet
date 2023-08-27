@@ -565,6 +565,9 @@ public partial class MinioClient : IMinioClient
 
     private static void ParseErrorFromContent(ResponseResult response)
     {
+        if (response is null)
+            throw new ArgumentNullException(nameof(response));
+
         if (response.StatusCode.Equals(HttpStatusCode.NotFound)
             && response.Request.RequestUri.PathAndQuery.EndsWith("?location", StringComparison.OrdinalIgnoreCase)
             && response.Request.Method.Equals(HttpMethod.Get))
