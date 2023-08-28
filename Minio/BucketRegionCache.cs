@@ -64,7 +64,7 @@ public sealed class BucketRegionCache
     /// <param name="bucketName"></param>
     public void Remove(string bucketName)
     {
-        _ = regionMap.TryRemove(bucketName, out var value);
+        _ = regionMap.TryRemove(bucketName, out _);
     }
 
     /// <summary>
