@@ -87,13 +87,13 @@ public sealed class BucketRegionCache
     {
         string region = null;
 
-        if (!string.Equals(bucketName, null, StringComparison.OrdinalIgnoreCase) && client.AccessKey is not null
-            && client.SecretKey is not null && !Instance.Exists(bucketName))
+        if (!string.Equals(bucketName, null, StringComparison.OrdinalIgnoreCase) && client.Config.AccessKey is not null
+            && client.Config.SecretKey is not null && !Instance.Exists(bucketName))
         {
             string location = null;
             var path = Utils.UrlEncode(bucketName);
             // Initialize client
-            var requestUrl = RequestUtil.MakeTargetURL(client.BaseUrl, client.Secure);
+            var requestUrl = RequestUtil.MakeTargetURL(client.Config.BaseUrl, client.Config.Secure);
 
             var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, requestUrl, path);
             requestBuilder.AddQueryParameter("location", "");

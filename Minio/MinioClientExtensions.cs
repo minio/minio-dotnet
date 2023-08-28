@@ -17,6 +17,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using Minio.Credentials;
 using Minio.DataModel;
 using Minio.DataModel.Result;
@@ -28,16 +30,16 @@ namespace Minio;
 
 public static class MinioClientExtensions
 {
-    public static MinioClient WithEndpoint(this MinioClient minioClient, string endpoint)
+    public static IMinioClient WithEndpoint(this IMinioClient minioClient, string endpoint)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
-        minioClient.BaseUrl = endpoint;
+        minioClient.Config.BaseUrl = endpoint;
         minioClient.SetBaseURL(GetBaseUrl(endpoint));
         return minioClient;
     }
 
-    public static MinioClient WithEndpoint(this MinioClient minioClient, string endpoint, int port)
+    public static IMinioClient WithEndpoint(this IMinioClient minioClient, string endpoint, int port)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
@@ -48,7 +50,7 @@ public static class MinioClientExtensions
         return minioClient.WithEndpoint(endpoint + ":" + port);
     }
 
-    public static MinioClient WithEndpoint(this MinioClient minioClient, Uri url)
+    public static IMinioClient WithEndpoint(this IMinioClient minioClient, Uri url)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
@@ -57,7 +59,7 @@ public static class MinioClientExtensions
         return minioClient.WithEndpoint(url.AbsoluteUri);
     }
 
-    public static MinioClient WithRegion(this MinioClient minioClient, string region)
+    public static IMinioClient WithRegion(this IMinioClient minioClient, string region)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
@@ -66,32 +68,32 @@ public static class MinioClientExtensions
                 string.Format(CultureInfo.InvariantCulture, "{0} the region value can't be null or empty.", region),
                 nameof(region));
 
-        minioClient.Region = region;
+        minioClient.Config.Region = region;
         return minioClient;
     }
 
-    public static MinioClient WithRegion(this MinioClient minioClient)
+    public static IMinioClient WithRegion(this IMinioClient minioClient)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
         // Set region to its default value if empty or null
-        minioClient.Region = "us-east-1";
+        minioClient.Config.Region = "us-east-1";
         return minioClient;
     }
 
-    public static MinioClient WithCredentials(this MinioClient minioClient, string accessKey, string secretKey)
+    public static IMinioClient WithCredentials(this IMinioClient minioClient, string accessKey, string secretKey)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
-        minioClient.AccessKey = accessKey;
-        minioClient.SecretKey = secretKey;
+        minioClient.Config.AccessKey = accessKey;
+        minioClient.Config.SecretKey = secretKey;
         return minioClient;
     }
 
-    public static MinioClient WithSessionToken(this MinioClient minioClient, string st)
+    public static IMinioClient WithSessionToken(this IMinioClient minioClient, string st)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
-        minioClient.SessionToken = st;
+        minioClient.Config.SessionToken = st;
         return minioClient;
     }
 
@@ -99,14 +101,14 @@ public static class MinioClientExtensions
     ///     Connects to Cloud Storage with HTTPS if this method is invoked on client object
     /// </summary>
     /// <returns></returns>
-    public static MinioClient WithSSL(this MinioClient minioClient, bool secure = true)
+    public static IMinioClient WithSSL(this IMinioClient minioClient, bool secure = true)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
         if (secure)
         {
-            minioClient.Secure = true;
-            if (string.IsNullOrEmpty(minioClient.BaseUrl))
+            minioClient.Config.Secure = true;
+            if (string.IsNullOrEmpty(minioClient.Config.BaseUrl))
                 return minioClient;
             //var secureUrl = RequestUtil.MakeTargetURL(minioClient.BaseUrl, minioClient.Secure);
         }
@@ -120,11 +122,11 @@ public static class MinioClientExtensions
     /// <param name="minioClient">The MinioClient instance used</param>
     /// <param name="proxy">Information on the proxy server in the setup.</param>
     /// <returns></returns>
-    public static MinioClient WithProxy(this MinioClient minioClient, IWebProxy proxy)
+    public static IMinioClient WithProxy(this IMinioClient minioClient, IWebProxy proxy)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
-        minioClient.Proxy = proxy;
+        minioClient.Config.Proxy = proxy;
         return minioClient;
     }
 
@@ -134,11 +136,11 @@ public static class MinioClientExtensions
     /// <param name="minioClient">The MinioClient instance used</param>
     /// <param name="timeout">Timeout in milliseconds.</param>
     /// <returns></returns>
-    public static MinioClient WithTimeout(this MinioClient minioClient, int timeout)
+    public static IMinioClient WithTimeout(this IMinioClient minioClient, int timeout)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
-        minioClient.RequestTimeout = timeout;
+        minioClient.Config.RequestTimeout = timeout;
         return minioClient;
     }
 
@@ -148,12 +150,12 @@ public static class MinioClientExtensions
     /// <param name="minioClient">The MinioClient instance used</param>
     /// <param name="retryPolicyHandler">Delegate that will wrap execution of http client requests.</param>
     /// <returns></returns>
-    public static MinioClient WithRetryPolicy(this MinioClient minioClient,
+    public static IMinioClient WithRetryPolicy(this IMinioClient minioClient,
         IRetryPolicyHandler retryPolicyHandler)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
-        minioClient.RetryPolicyHandler = retryPolicyHandler;
+        minioClient.Config.RetryPolicyHandler = retryPolicyHandler;
         return minioClient;
     }
 
@@ -163,7 +165,7 @@ public static class MinioClientExtensions
     /// <param name="minioClient">The MinioClient instance used</param>
     /// <param name="retryPolicyHandler">Delegate that will wrap execution of http client requests.</param>
     /// <returns></returns>
-    public static MinioClient WithRetryPolicy(this MinioClient minioClient,
+    public static IMinioClient WithRetryPolicy(this IMinioClient minioClient,
         Func<Func<Task<ResponseResult>>, Task<ResponseResult>> retryPolicyHandler)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
@@ -179,13 +181,13 @@ public static class MinioClientExtensions
     /// <param name="httpClient"> Instance of HttpClient</param>
     /// <param name="disposeHttpClient"> Dispose the HttpClient when leaving</param>
     /// <returns></returns>
-    public static MinioClient WithHttpClient(this MinioClient minioClient, HttpClient httpClient,
+    public static IMinioClient WithHttpClient(this IMinioClient minioClient, HttpClient httpClient,
         bool disposeHttpClient = false)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
-        if (httpClient is not null) minioClient.HttpClient = httpClient;
-        minioClient.DisposeHttpClient = disposeHttpClient;
+        if (httpClient is not null) minioClient.Config.HttpClient = httpClient;
+        minioClient.Config.DisposeHttpClient = disposeHttpClient;
         return minioClient;
     }
 
@@ -193,66 +195,66 @@ public static class MinioClientExtensions
     ///     With provider for credentials and session token if being used
     /// </summary>
     /// <returns></returns>
-    public static MinioClient WithCredentialsProvider(this MinioClient minioClient, IClientProvider provider)
+    public static IMinioClient WithCredentialsProvider(this IMinioClient minioClient, IClientProvider provider)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
-        minioClient.Provider = provider;
+        minioClient.Config.Provider = provider;
         AccessCredentials credentials;
-        if (minioClient.Provider is IAMAWSProvider)
+        if (minioClient.Config.Provider is IAMAWSProvider)
             // Empty object, we need the Minio client completely
             credentials = new AccessCredentials();
         else
-            credentials = minioClient.Provider.GetCredentials();
+            credentials = minioClient.Config.Provider.GetCredentials();
 
         if (credentials is null)
             // Unable to fetch credentials.
             return minioClient;
 
-        minioClient.AccessKey = credentials.AccessKey;
-        minioClient.SecretKey = credentials.SecretKey;
+        minioClient.Config.AccessKey = credentials.AccessKey;
+        minioClient.Config.SecretKey = credentials.SecretKey;
         var isSessionTokenAvailable = !string.IsNullOrEmpty(credentials.SessionToken);
-        if ((minioClient.Provider is AWSEnvironmentProvider ||
-             minioClient.Provider is IAMAWSProvider ||
-             minioClient.Provider is CertificateIdentityProvider ||
-             (minioClient.Provider is ChainedProvider chainedProvider &&
+        if ((minioClient.Config.Provider is AWSEnvironmentProvider ||
+             minioClient.Config.Provider is IAMAWSProvider ||
+             minioClient.Config.Provider is CertificateIdentityProvider ||
+             (minioClient.Config.Provider is ChainedProvider chainedProvider &&
               chainedProvider.CurrentProvider is AWSEnvironmentProvider))
             && isSessionTokenAvailable)
-            minioClient.SessionToken = credentials.SessionToken;
+            minioClient.Config.SessionToken = credentials.SessionToken;
 
         return minioClient;
     }
 
-    public static MinioClient Build(this MinioClient minioClient)
+    public static IMinioClient Build(this IMinioClient minioClient)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
         // Instantiate a region cache
-        minioClient.regionCache = BucketRegionCache.Instance;
-        if (string.IsNullOrEmpty(minioClient.BaseUrl)) throw new MinioException("Endpoint not initialized.");
-        if (minioClient.Provider is not null && minioClient.Provider.GetType() != typeof(ChainedProvider) &&
-            minioClient.SessionToken is null)
+        minioClient.Config.RegionCache = BucketRegionCache.Instance;
+        if (string.IsNullOrEmpty(minioClient.Config.BaseUrl)) throw new MinioException("Endpoint not initialized.");
+        if (minioClient.Config.Provider is not null && minioClient.Config.Provider.GetType() != typeof(ChainedProvider) &&
+            minioClient.Config.SessionToken is null)
             throw new MinioException("User Access Credentials Provider not initialized correctly.");
-        if (minioClient.Provider is null &&
-            (string.IsNullOrEmpty(minioClient.AccessKey) || string.IsNullOrEmpty(minioClient.SecretKey)))
+        if (minioClient.Config.Provider is null &&
+            (string.IsNullOrEmpty(minioClient.Config.AccessKey) || string.IsNullOrEmpty(minioClient.Config.SecretKey)))
             throw new MinioException("User Access Credentials not initialized.");
 
-        var host = minioClient.BaseUrl;
+        var host = minioClient.Config.BaseUrl;
 
-        var scheme = minioClient.Secure ? Utils.UrlEncode("https") : Utils.UrlEncode("http");
+        var scheme = minioClient.Config.Secure ? Utils.UrlEncode("https") : Utils.UrlEncode("http");
 
-        if (!minioClient.BaseUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            minioClient.Endpoint = string.Format(CultureInfo.InvariantCulture, "{0}://{1}", scheme, host);
+        if (!minioClient.Config.BaseUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            minioClient.Config.Endpoint = string.Format(CultureInfo.InvariantCulture, "{0}://{1}", scheme, host);
         else
-            minioClient.Endpoint = host;
+            minioClient.Config.Endpoint = host;
 
-        var httpClientHandler = new HttpClientHandler { Proxy = minioClient.Proxy };
-        minioClient.HttpClient ??= minioClient.Proxy is null
+        var httpClientHandler = new HttpClientHandler { Proxy = minioClient.Config.Proxy };
+        minioClient.Config.HttpClient ??= minioClient.Config.Proxy is null
             ? new HttpClient()
             : new HttpClient(httpClientHandler);
-        _ = minioClient.HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent",
-            minioClient.FullUserAgent);
-        minioClient.HttpClient.Timeout = TimeSpan.FromMinutes(30);
+        _ = minioClient.Config.HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent",
+            minioClient.Config.FullUserAgent);
+        minioClient.Config.HttpClient.Timeout = TimeSpan.FromMinutes(30);
         return minioClient;
     }
 
@@ -275,6 +277,25 @@ public static class MinioClientExtensions
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
         return minioClient.WrapperPutAsync(new Uri(url), strm);
+    }
+
+    /// <summary>
+    ///     Sets app version and name. Used for constructing User-Agent header in all HTTP requests
+    /// </summary>
+    /// <param name="minioClient"></param>
+    /// <param name="appName"></param>
+    /// <param name="appVersion"></param>
+    public static IMinioClient SetAppInfo(this IMinioClient minioClient, string appName, string appVersion)
+    {
+        if (string.IsNullOrEmpty(appName))
+            throw new ArgumentException("Appname cannot be null or empty", nameof(appName));
+
+        if (string.IsNullOrEmpty(appVersion))
+            throw new ArgumentException("Appversion cannot be null or empty", nameof(appVersion));
+
+        minioClient.Config.CustomUserAgent = $"{appName}/{appVersion}";
+        
+        return minioClient;
     }
 
     internal static Uri GetBaseUrl(string endpoint)
@@ -310,11 +331,108 @@ public static class MinioClientExtensions
         return url;
     }
 
-    internal static void SetBaseURL(this MinioClient minioClient, Uri url)
+    internal static void SetBaseURL(this IMinioClient minioClient, Uri url)
     {
         if (url.IsDefaultPort)
-            minioClient.BaseUrl = url.Host;
+            minioClient.Config.BaseUrl = url.Host;
         else
-            minioClient.BaseUrl = url.Host + ":" + url.Port;
+            minioClient.Config.BaseUrl = url.Host + ":" + url.Port;
+    }
+
+    internal static string SystemUserAgent
+    {
+        get
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var version = assembly.GetName().Version;
+            var release = $"minio-dotnet/{version}";
+#if NET46
+		string arch = Environment.Is64BitOperatingSystem ? "x86_64" : "x86";
+		return $"MinIO ({Environment.OSVersion};{arch}) {release}";
+#else
+            var arch = RuntimeInformation.OSArchitecture.ToString();
+            return $"MinIO ({RuntimeInformation.OSDescription};{arch}) {release}";
+#endif
+        }
+    }
+
+    /// <summary>
+    ///     Actual doer that executes the request on the server
+    /// </summary>
+    /// <param name="minioClient"></param>
+    /// <param name="errorHandlers">List of handlers to override default handling</param>
+    /// <param name="requestMessageBuilder">The build of HttpRequestMessageBuilder </param>
+    /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns>ResponseResult</returns>
+    internal static Task<ResponseResult> ExecuteTaskAsync(this IMinioClient minioClient,
+        IEnumerable<IApiResponseErrorHandler> errorHandlers,
+        HttpRequestMessageBuilder requestMessageBuilder,
+        bool isSts = false,
+        CancellationToken cancellationToken = default)
+    {
+        if (minioClient.Config.RequestTimeout > 0)
+        {
+            using var internalTokenSource = new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, minioClient.Config.RequestTimeout));
+            using var timeoutTokenSource =
+                CancellationTokenSource.CreateLinkedTokenSource(internalTokenSource.Token, cancellationToken);
+            cancellationToken = timeoutTokenSource.Token;
+        }
+
+        return minioClient.ExecuteWithRetry(
+            () => minioClient.ExecuteTaskCoreAsync(errorHandlers, requestMessageBuilder,
+                isSts, cancellationToken));
+    }
+
+    private static async Task<ResponseResult> ExecuteTaskCoreAsync(this IMinioClient minioClient,
+        IEnumerable<IApiResponseErrorHandler> errorHandlers,
+        HttpRequestMessageBuilder requestMessageBuilder,
+        bool isSts = false,
+        CancellationToken cancellationToken = default)
+    {
+        var startTime = DateTime.Now;
+
+        var v4Authenticator = new V4Authenticator(minioClient.Config.Secure,
+            minioClient.Config.AccessKey, minioClient.Config.SecretKey, minioClient.Config.Region,
+            minioClient.Config.SessionToken);
+
+        requestMessageBuilder.AddOrUpdateHeaderParameter("Authorization",
+            v4Authenticator.Authenticate(requestMessageBuilder, isSts));
+
+        var request = requestMessageBuilder.Request;
+
+        ResponseResult responseResult = null;
+        try
+        {
+            var response = await minioClient.Config.HttpClient.SendAsync(request,
+                    HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                .ConfigureAwait(false);
+            responseResult = new ResponseResult(request, response);
+            if (requestMessageBuilder.ResponseWriter is not null)
+                requestMessageBuilder.ResponseWriter(responseResult.ContentStream);
+            if (requestMessageBuilder.FunctionResponseWriter is not null)
+                await requestMessageBuilder.FunctionResponseWriter(responseResult.ContentStream, cancellationToken)
+                    .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception e)
+        {
+            responseResult?.Dispose();
+            responseResult = new ResponseResult(request, e);
+        }
+
+        minioClient.HandleIfErrorResponse(responseResult, errorHandlers, startTime);
+        return responseResult;
+    }
+
+    private static Task<ResponseResult> ExecuteWithRetry(this IMinioClient minioClient,
+        Func<Task<ResponseResult>> executeRequestCallback)
+    {
+        return minioClient.Config.RetryPolicyHandler is null
+            ? executeRequestCallback()
+            : minioClient.Config.RetryPolicyHandler.Handle(executeRequestCallback);
     }
 }

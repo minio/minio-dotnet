@@ -34,7 +34,7 @@ public class IAMAWSProvider : IClientProvider
 {
     public IAMAWSProvider()
     {
-        Minio_Client = null;
+        Client = null;
     }
 
     public IAMAWSProvider(string endpoint, MinioClient client)
@@ -47,14 +47,14 @@ public class IAMAWSProvider : IClientProvider
                     "Endpoint field " + nameof(CustomEndPoint) + " is invalid.");
         }
 
-        Minio_Client = client ?? throw new ArgumentNullException(nameof(client));
+        Client = client ?? throw new ArgumentNullException(nameof(client));
 
         CustomEndPoint = new Uri(endpoint);
     }
 
     internal Uri CustomEndPoint { get; set; }
     internal AccessCredentials Credentials { get; set; }
-    internal MinioClient Minio_Client { get; set; }
+    internal IMinioClient Client { get; set; }
 
     public AccessCredentials GetCredentials()
     {
@@ -152,7 +152,7 @@ public class IAMAWSProvider : IClientProvider
         requestBuilder.AddQueryParameter("location", "");
 
         using var response =
-            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<IApiResponseErrorHandler>(), requestBuilder)
+            await Client.ExecuteTaskAsync(Enumerable.Empty<IApiResponseErrorHandler>(), requestBuilder)
                 .ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(response.Content) ||
             !HttpStatusCode.OK.Equals(response.StatusCode))
@@ -183,7 +183,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
         requestBuilder.AddQueryParameter("location", "");
 
         using var response =
-            await Minio_Client.ExecuteTaskAsync(Enumerable.Empty<IApiResponseErrorHandler>(), requestBuilder)
+            await Client.ExecuteTaskAsync(Enumerable.Empty<IApiResponseErrorHandler>(), requestBuilder)
                 .ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(response.Content) ||
@@ -223,9 +223,9 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
         return new Uri(newUrlStr);
     }
 
-    public IAMAWSProvider WithMinioClient(MinioClient minio)
+    public IAMAWSProvider WithMinioClient(IMinioClient minio)
     {
-        Minio_Client = minio;
+        Client = minio;
         if (Credentials is null ||
             string.IsNullOrWhiteSpace(Credentials.AccessKey) || string.IsNullOrWhiteSpace(Credentials.SecretKey))
             Credentials = GetCredentialsAsync().AsTask().GetAwaiter().GetResult();
@@ -248,8 +248,8 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
 
     public void Validate()
     {
-        if (Minio_Client is null)
-            throw new InvalidOperationException(nameof(Minio_Client) +
+        if (Client is null)
+            throw new InvalidOperationException(nameof(Client) +
                                                 " should be assigned for the operation to continue.");
     }
 }

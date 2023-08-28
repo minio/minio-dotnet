@@ -33,34 +33,19 @@ namespace Minio;
 
 public partial class MinioClient : IMinioClient
 {
+    public MinioConfig Config { get; } = new MinioConfig();
+
     private static readonly char[] separator = { '/' };
 
     internal readonly IEnumerable<IApiResponseErrorHandler> NoErrorHandlers =
         Enumerable.Empty<IApiResponseErrorHandler>();
 
-    private string customUserAgent = string.Empty;
     private bool disposedValue;
-
-    internal bool DisposeHttpClient = true;
 
     private IRequestLogger logger;
 
-    internal IClientProvider Provider;
-    internal string Region;
-
-    // Cache holding bucket to region mapping for buckets seen so far.
-    internal BucketRegionCache regionCache;
-
-    internal int RequestTimeout;
-
-    // Handler for task retry policy
-    internal IRetryPolicyHandler RetryPolicyHandler;
-
     // Enables HTTP tracing if set to true
     private bool trace;
-
-    // Corresponding URI for above endpoint
-    internal Uri uri;
 
     /// <summary>
     ///     Creates and returns an MinIO Client
@@ -68,9 +53,6 @@ public partial class MinioClient : IMinioClient
     /// <returns>Client with no arguments to be used with other builder methods</returns>
     public MinioClient()
     {
-        Region = "";
-        SessionToken = "";
-        Provider = null;
     }
 
     /// <summary>
@@ -78,51 +60,14 @@ public partial class MinioClient : IMinioClient
     /// </summary>
     public IApiResponseErrorHandler DefaultErrorHandler { get; set; } = new DefaultErrorHandler();
 
-    // Save Credentials from user
-    internal string AccessKey { get; set; }
-    internal string SecretKey { get; set; }
-    internal string BaseUrl { get; set; }
-
-    // Reconstructed endpoint with scheme and host.In the case of Amazon, this url
-    // is the virtual style path or location based endpoint
-    internal string Endpoint { get; set; }
-    internal string SessionToken { get; set; }
-
-    // Indicates if we are using HTTPS or not
-    internal bool Secure { get; set; }
-
-    internal HttpClient HttpClient { get; set; }
-
     internal IWebProxy Proxy { get; set; }
-
-    private static string SystemUserAgent
-    {
-        get
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-            var version = assembly.GetName().Version;
-            var release = $"minio-dotnet/{version}";
-#if NET46
-		string arch = Environment.Is64BitOperatingSystem ? "x86_64" : "x86";
-		return $"MinIO ({Environment.OSVersion};{arch}) {release}";
-#else
-            var arch = RuntimeInformation.OSArchitecture.ToString();
-            return $"MinIO ({RuntimeInformation.OSDescription};{arch}) {release}";
-#endif
-        }
-    }
-
-    /// <summary>
-    ///     Returns the User-Agent header for the request
-    /// </summary>
-    internal string FullUserAgent => $"{SystemUserAgent} {customUserAgent}";
 
     /// <summary>
     ///     Runs httpClient's GetAsync method
     /// </summary>
     public Task<HttpResponseMessage> WrapperGetAsync(Uri uri)
     {
-        return HttpClient.GetAsync(uri);
+        return Config.HttpClient.GetAsync(uri);
     }
 
     /// <summary>
@@ -130,23 +75,7 @@ public partial class MinioClient : IMinioClient
     /// </summary>
     public Task WrapperPutAsync(Uri uri, StreamContent strm)
     {
-        return Task.Run(async () => await HttpClient.PutAsync(uri, strm).ConfigureAwait(false));
-    }
-
-    /// <summary>
-    ///     Sets app version and name. Used for constructing User-Agent header in all HTTP requests
-    /// </summary>
-    /// <param name="appName"></param>
-    /// <param name="appVersion"></param>
-    public void SetAppInfo(string appName, string appVersion)
-    {
-        if (string.IsNullOrEmpty(appName))
-            throw new ArgumentException("Appname cannot be null or empty", nameof(appName));
-
-        if (string.IsNullOrEmpty(appVersion))
-            throw new ArgumentException("Appversion cannot be null or empty", nameof(appVersion));
-
-        customUserAgent = $"{appName}/{appVersion}";
+        return Task.Run(async () => await Config.HttpClient.PutAsync(uri, strm).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -182,11 +111,11 @@ public partial class MinioClient : IMinioClient
     {
         var rgn = "";
         // Use user specified region in client constructor if present
-        if (!string.IsNullOrEmpty(Region)) return Region;
+        if (!string.IsNullOrEmpty(Config.Region)) return Config.Region;
 
         // pick region from endpoint if present
-        if (!string.IsNullOrEmpty(Endpoint))
-            rgn = RegionHelper.GetRegionFromEndpoint(Endpoint);
+        if (!string.IsNullOrEmpty(Config.Endpoint))
+            rgn = RegionHelper.GetRegionFromEndpoint(Config.Endpoint);
 
         // Pick region from location HEAD request
         if (rgn?.Length == 0)
@@ -283,36 +212,36 @@ public partial class MinioClient : IMinioClient
 
         if (objectName is not null) Utils.ValidateObjectName(objectName);
 
-        if (Provider is not null)
+        if (Config.Provider is not null)
         {
-            var isAWSEnvProvider = Provider is AWSEnvironmentProvider ||
-                                   (Provider is ChainedProvider ch &&
+            var isAWSEnvProvider = Config.Provider is AWSEnvironmentProvider ||
+                                   (Config.Provider is ChainedProvider ch &&
                                     ch.CurrentProvider is AWSEnvironmentProvider);
 
-            var isIAMAWSProvider = Provider is IAMAWSProvider ||
-                                   (Provider is ChainedProvider chained &&
+            var isIAMAWSProvider = Config.Provider is IAMAWSProvider ||
+                                   (Config.Provider is ChainedProvider chained &&
                                     chained.CurrentProvider is AWSEnvironmentProvider);
 
             AccessCredentials creds;
             if (isAWSEnvProvider)
             {
-                var aWSEnvProvider = (AWSEnvironmentProvider)Provider;
+                var aWSEnvProvider = (AWSEnvironmentProvider)Config.Provider;
                 creds = await aWSEnvProvider.GetCredentialsAsync().ConfigureAwait(false);
             }
             else if (isIAMAWSProvider)
             {
-                var iamAWSProvider = (IAMAWSProvider)Provider;
+                var iamAWSProvider = (IAMAWSProvider)Config.Provider;
                 creds = iamAWSProvider.Credentials;
             }
             else
             {
-                creds = await Provider.GetCredentialsAsync().ConfigureAwait(false);
+                creds = await Config.Provider.GetCredentialsAsync().ConfigureAwait(false);
             }
 
             if (creds is not null)
             {
-                AccessKey = creds.AccessKey;
-                SecretKey = creds.SecretKey;
+                Config.AccessKey = creds.AccessKey;
+                Config.SecretKey = creds.SecretKey;
             }
         }
 
@@ -321,7 +250,7 @@ public partial class MinioClient : IMinioClient
         var resource = string.Empty;
         var usePathStyle = false;
 
-        if (!string.IsNullOrEmpty(bucketName) && S3utils.IsAmazonEndPoint(BaseUrl))
+        if (!string.IsNullOrEmpty(bucketName) && S3utils.IsAmazonEndPoint(Config.BaseUrl))
         {
             if (method == HttpMethod.Put && objectName is null && resourcePath is null)
                 // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
@@ -329,7 +258,7 @@ public partial class MinioClient : IMinioClient
             else if (resourcePath?.Contains("location", StringComparison.OrdinalIgnoreCase) == true)
                 // use path style for location query
                 usePathStyle = true;
-            else if (bucketName.Contains('.', StringComparison.Ordinal) && Secure)
+            else if (bucketName.Contains('.', StringComparison.Ordinal) && Config.Secure)
                 // use path style where '.' in bucketName causes SSL certificate validation error
                 usePathStyle = true;
 
@@ -337,7 +266,7 @@ public partial class MinioClient : IMinioClient
         }
 
         // Set Target URL
-        var requestUrl = RequestUtil.MakeTargetURL(BaseUrl, Secure, bucketName, region, usePathStyle);
+        var requestUrl = RequestUtil.MakeTargetURL(Config.BaseUrl, Config.Secure, bucketName, region, usePathStyle);
 
         if (objectName is not null) resource += Utils.EncodePath(objectName);
 
@@ -364,77 +293,6 @@ public partial class MinioClient : IMinioClient
         }
 
         return messageBuilder;
-    }
-
-    /// <summary>
-    ///     Actual doer that executes the request on the server
-    /// </summary>
-    /// <param name="errorHandlers">List of handlers to override default handling</param>
-    /// <param name="requestMessageBuilder">The build of HttpRequestMessageBuilder </param>
-    /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>ResponseResult</returns>
-    internal Task<ResponseResult> ExecuteTaskAsync(
-        IEnumerable<IApiResponseErrorHandler> errorHandlers,
-        HttpRequestMessageBuilder requestMessageBuilder,
-        bool isSts = false,
-        CancellationToken cancellationToken = default)
-    {
-        if (RequestTimeout > 0)
-        {
-            using var internalTokenSource = new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, RequestTimeout));
-            using var timeoutTokenSource =
-                CancellationTokenSource.CreateLinkedTokenSource(internalTokenSource.Token, cancellationToken);
-            cancellationToken = timeoutTokenSource.Token;
-        }
-
-        return ExecuteWithRetry(
-            () => ExecuteTaskCoreAsync(errorHandlers, requestMessageBuilder,
-                isSts, cancellationToken));
-    }
-
-    private async Task<ResponseResult> ExecuteTaskCoreAsync(
-        IEnumerable<IApiResponseErrorHandler> errorHandlers,
-        HttpRequestMessageBuilder requestMessageBuilder,
-        bool isSts = false,
-        CancellationToken cancellationToken = default)
-    {
-        var startTime = DateTime.Now;
-
-        var v4Authenticator = new V4Authenticator(Secure,
-            AccessKey, SecretKey, Region,
-            SessionToken);
-
-        requestMessageBuilder.AddOrUpdateHeaderParameter("Authorization",
-            v4Authenticator.Authenticate(requestMessageBuilder, isSts));
-
-        var request = requestMessageBuilder.Request;
-
-        ResponseResult responseResult = null;
-        try
-        {
-            var response = await HttpClient.SendAsync(request,
-                    HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-                .ConfigureAwait(false);
-            responseResult = new ResponseResult(request, response);
-            if (requestMessageBuilder.ResponseWriter is not null)
-                requestMessageBuilder.ResponseWriter(responseResult.ContentStream);
-            if (requestMessageBuilder.FunctionResponseWriter is not null)
-                await requestMessageBuilder.FunctionResponseWriter(responseResult.ContentStream, cancellationToken)
-                    .ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception e)
-        {
-            responseResult?.Dispose();
-            responseResult = new ResponseResult(request, e);
-        }
-
-        HandleIfErrorResponse(responseResult, errorHandlers, startTime);
-        return responseResult;
     }
 
     /// <summary>
@@ -696,21 +554,13 @@ public partial class MinioClient : IMinioClient
         logger.LogRequest(requestToLog, responseToLog, durationMs);
     }
 
-    private Task<ResponseResult> ExecuteWithRetry(
-        Func<Task<ResponseResult>> executeRequestCallback)
-    {
-        return RetryPolicyHandler is null
-            ? executeRequestCallback()
-            : RetryPolicyHandler.Handle(executeRequestCallback);
-    }
-
     protected virtual void Dispose(bool disposing)
     {
         if (!disposedValue)
         {
             if (disposing)
-                if (DisposeHttpClient)
-                    HttpClient?.Dispose();
+                if (Config.DisposeHttpClient)
+                    Config.HttpClient?.Dispose();
             disposedValue = true;
         }
     }

@@ -33,7 +33,7 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
     {
     }
 
-    public AssumeRoleProvider(MinioClient client) : base(client)
+    public AssumeRoleProvider(IMinioClient client) : base(client)
     {
     }
 

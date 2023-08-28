@@ -16,13 +16,15 @@
  */
 
 using Minio.ApiEndpoints;
+using Minio.Credentials;
 using Minio.Handlers;
 
 namespace Minio;
 
 public interface IMinioClient : IBucketOperations, IObjectOperations, IDisposable
 {
-    void SetAppInfo(string appName, string appVersion);
+    MinioConfig Config { get; }
+
     void SetTraceOff();
     void SetTraceOn(IRequestLogger logger = null);
     Task<HttpResponseMessage> WrapperGetAsync(Uri uri);
