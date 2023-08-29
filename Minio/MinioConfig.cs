@@ -23,21 +23,21 @@ public class MinioConfig
     public bool DisposeHttpClient { get; internal set; } = true;
 
     // Save Credentials from user
-    public string AccessKey { get; set; }
-    public string SecretKey { get; set; }
-    public string BaseUrl { get; set; }
+    public string AccessKey { get; internal set; }
+    public string SecretKey { get; internal set; }
+    public string BaseUrl { get; internal set; }
 
     // Reconstructed endpoint with scheme and host.In the case of Amazon, this url
     // is the virtual style path or location based endpoint
-    public string Endpoint { get; set; }
-    public string SessionToken { get; set; }
+    public string Endpoint { get; internal set; }
+    public string SessionToken { get; internal set; }
 
     // Indicates if we are using HTTPS or not
-    public bool Secure { get; set; }
+    public bool Secure { get; internal set; }
 
-    public string Region { get; set; }
+    public string Region { get; internal set; }
 
-    public int RequestTimeout { get; set; }
+    public int RequestTimeout { get; internal set; }
 
     // Enables HTTP tracing if set to true
     public bool TraceHttp { get; internal set; }

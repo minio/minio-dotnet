@@ -39,8 +39,6 @@ public partial class MinioClient : IMinioClient
     {
     }
 
-    internal IWebProxy Proxy { get; set; }
-
     public MinioConfig Config { get; } = new();
 
     public IEnumerable<IApiResponseErrorHandler> ResponseErrorHandlers { get; internal set; } =
