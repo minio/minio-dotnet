@@ -6100,8 +6100,8 @@ public static class FunctionalTest
             Assert.IsNotNull(lfcObj.Rules);
             Assert.IsTrue(lfcObj.Rules.Count > 0);
             Assert.AreEqual(lfcObj.Rules.Count, lfc.Rules.Count);
-            var lfcDate = DateTime.Parse(lfcObj.Rules[0].Expiration.Date, null, DateTimeStyles.RoundtripKind);
-            Assert.AreEqual(Math.Floor((lfcDate - baseDate).TotalDays), expInDays);
+            var lfcDate = DateTime.Parse(lfcObj.Rules[0].Expiration.ExpiryDate, null, DateTimeStyles.RoundtripKind);
+            Assert.AreEqual((lfcDate.Date - baseDate.Date).TotalDays, expInDays);
             new MintLogger(nameof(BucketLifecycleAsync_Test1) + ".2", getBucketLifecycleSignature,
                     "Tests whether GetBucketLifecycleAsync passes", TestStatus.PASS, DateTime.Now - startTime,
                     args: args)
