@@ -8,6 +8,7 @@ public static class LoggingExtensions
     /// <summary>
     ///     Logs the request sent to server and corresponding response
     /// </summary>
+    /// <param name="minioClient"></param>
     /// <param name="request"></param>
     /// <param name="response"></param>
     /// <param name="durationMs"></param>

@@ -3,6 +3,7 @@ using Minio.Credentials;
 using Minio.DataModel;
 using Minio.DataModel.Args;
 using Minio.DataModel.Result;
+using Minio.Exceptions;
 using Minio.Handlers;
 using Minio.Helper;
 
@@ -116,6 +117,7 @@ public static class RequestExtensions
     ///     Constructs a HttpRequestMessageBuilder using bucket/object names from Args.
     ///     Calls overloaded CreateRequest method.
     /// </summary>
+    /// <param name="minioClient"></param>
     /// <param name="args">The direct descendant of BucketArgs class, args with populated values from Input</param>
     /// <returns>A HttpRequestMessageBuilder</returns>
     internal static async Task<HttpRequestMessageBuilder> CreateRequest<T>(this IMinioClient minioClient,
@@ -132,6 +134,7 @@ public static class RequestExtensions
     ///     Constructs a HttpRequestMessage using bucket/object names from Args.
     ///     Calls overloaded CreateRequest method.
     /// </summary>
+    /// <param name="minioClient"></param>
     /// <param name="args">The direct descendant of ObjectArgs class, args with populated values from Input</param>
     /// <returns>A HttpRequestMessage</returns>
     internal static async Task<HttpRequestMessageBuilder> CreateRequest<T>(this IMinioClient minioClient,
@@ -156,6 +159,7 @@ public static class RequestExtensions
     ///     has the side-effect of overriding the baseUrl in the HttpClient
     ///     with region specific host path or virtual style path.
     /// </summary>
+    /// <param name="minioClient"></param>
     /// <param name="method">HTTP method</param>
     /// <param name="bucketName">Bucket Name</param>
     /// <param name="objectName">Object Name</param>
@@ -286,6 +290,7 @@ public static class RequestExtensions
     /// <summary>
     ///     Resolve region of the bucket.
     /// </summary>
+    /// <param name="minioClient"></param>
     /// <param name="bucketName"></param>
     /// <returns></returns>
     internal static async Task<string> GetRegion(this IMinioClient minioClient, string bucketName)
@@ -311,6 +316,7 @@ public static class RequestExtensions
     /// <summary>
     ///     Delegate errors to handlers
     /// </summary>
+    /// <param name="minioClient"></param>
     /// <param name="response"></param>
     /// <param name="handlers"></param>
     /// <param name="startTime"></param>
