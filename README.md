@@ -10,6 +10,39 @@ To install [MinIO .NET package](https://www.nuget.org/packages/Minio/), run the 
 ```powershell
 PM> Install-Package Minio
 ```
+
+## MinIO Client Example for ASP.NET
+
+```cs
+using Minio;
+
+public static class Program
+{
+    var endpoint = "play.min.io";
+    var accessKey = "Q3AM3UQ867trueSPQQA43P2F";
+    var secretKey = "zuf+tfteSlswRu7BJ86wtrueekitnifILbZam1KYY3TG";
+
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder();
+
+        // Add Minio using the default endpoint
+        builder.Services.AddMinio(accessKey, secretKey);
+
+        // Add Minio using the custom endpoint and configure additional settings for default MinioClient initialization
+        builder.Services.AddMinio(configureClient => configureClient
+            .WithEndpoint(endpoint)
+            .WithCredentials(accessKey, secretKey));
+
+        // NOTE: SSL and Build are called by the build-in services already.
+
+        var app = builder.Build();
+        app.Run();
+    }
+}
+
+```
+
 ## MinIO Client Example
 To connect to an Amazon S3 compatible cloud storage service, you need the following information
 
@@ -46,6 +79,7 @@ foreach (var bucket in getListBucketsTask.Result.Buckets)
 }
 
 ```
+
 ## Complete _File Uploader_ Example
 
 This example program connects to an object storage server, creates a bucket and uploads a file to the bucket.
