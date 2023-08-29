@@ -83,7 +83,7 @@ public sealed class BucketRegionCache
     /// </summary>
     /// <param name="client"></param>
     /// <param name="bucketName"></param>
-    internal static async Task<string> Update(MinioClient client, string bucketName)
+    internal static async Task<string> Update(IMinioClient client, string bucketName)
     {
         string region = null;
 
@@ -98,7 +98,7 @@ public sealed class BucketRegionCache
             var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, requestUrl, path);
             requestBuilder.AddQueryParameter("location", "");
             using var response =
-                await client.ExecuteTaskAsync(client.NoErrorHandlers, requestBuilder).ConfigureAwait(false);
+                await client.ExecuteTaskAsync(client.ResponseErrorHandlers, requestBuilder).ConfigureAwait(false);
 
             if (response is not null && HttpStatusCode.OK.Equals(response.StatusCode))
             {

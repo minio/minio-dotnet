@@ -30,6 +30,23 @@ namespace Minio;
 
 public static class MinioClientExtensions
 {
+    internal static string SystemUserAgent
+    {
+        get
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var version = assembly.GetName().Version;
+            var release = $"minio-dotnet/{version}";
+#if NET46
+		string arch = Environment.Is64BitOperatingSystem ? "x86_64" : "x86";
+		return $"MinIO ({Environment.OSVersion};{arch}) {release}";
+#else
+            var arch = RuntimeInformation.OSArchitecture.ToString();
+            return $"MinIO ({RuntimeInformation.OSDescription};{arch}) {release}";
+#endif
+        }
+    }
+
     public static IMinioClient WithEndpoint(this IMinioClient minioClient, string endpoint)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
@@ -232,7 +249,8 @@ public static class MinioClientExtensions
         // Instantiate a region cache
         minioClient.Config.RegionCache = BucketRegionCache.Instance;
         if (string.IsNullOrEmpty(minioClient.Config.BaseUrl)) throw new MinioException("Endpoint not initialized.");
-        if (minioClient.Config.Provider is not null && minioClient.Config.Provider.GetType() != typeof(ChainedProvider) &&
+        if (minioClient.Config.Provider is not null &&
+            minioClient.Config.Provider.GetType() != typeof(ChainedProvider) &&
             minioClient.Config.SessionToken is null)
             throw new MinioException("User Access Credentials Provider not initialized correctly.");
         if (minioClient.Config.Provider is null &&
@@ -294,7 +312,7 @@ public static class MinioClientExtensions
             throw new ArgumentException("Appversion cannot be null or empty", nameof(appVersion));
 
         minioClient.Config.CustomUserAgent = $"{appName}/{appVersion}";
-        
+
         return minioClient;
     }
 
@@ -337,102 +355,5 @@ public static class MinioClientExtensions
             minioClient.Config.BaseUrl = url.Host;
         else
             minioClient.Config.BaseUrl = url.Host + ":" + url.Port;
-    }
-
-    internal static string SystemUserAgent
-    {
-        get
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-            var version = assembly.GetName().Version;
-            var release = $"minio-dotnet/{version}";
-#if NET46
-		string arch = Environment.Is64BitOperatingSystem ? "x86_64" : "x86";
-		return $"MinIO ({Environment.OSVersion};{arch}) {release}";
-#else
-            var arch = RuntimeInformation.OSArchitecture.ToString();
-            return $"MinIO ({RuntimeInformation.OSDescription};{arch}) {release}";
-#endif
-        }
-    }
-
-    /// <summary>
-    ///     Actual doer that executes the request on the server
-    /// </summary>
-    /// <param name="minioClient"></param>
-    /// <param name="errorHandlers">List of handlers to override default handling</param>
-    /// <param name="requestMessageBuilder">The build of HttpRequestMessageBuilder </param>
-    /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>ResponseResult</returns>
-    internal static Task<ResponseResult> ExecuteTaskAsync(this IMinioClient minioClient,
-        IEnumerable<IApiResponseErrorHandler> errorHandlers,
-        HttpRequestMessageBuilder requestMessageBuilder,
-        bool isSts = false,
-        CancellationToken cancellationToken = default)
-    {
-        if (minioClient.Config.RequestTimeout > 0)
-        {
-            using var internalTokenSource = new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, minioClient.Config.RequestTimeout));
-            using var timeoutTokenSource =
-                CancellationTokenSource.CreateLinkedTokenSource(internalTokenSource.Token, cancellationToken);
-            cancellationToken = timeoutTokenSource.Token;
-        }
-
-        return minioClient.ExecuteWithRetry(
-            () => minioClient.ExecuteTaskCoreAsync(errorHandlers, requestMessageBuilder,
-                isSts, cancellationToken));
-    }
-
-    private static async Task<ResponseResult> ExecuteTaskCoreAsync(this IMinioClient minioClient,
-        IEnumerable<IApiResponseErrorHandler> errorHandlers,
-        HttpRequestMessageBuilder requestMessageBuilder,
-        bool isSts = false,
-        CancellationToken cancellationToken = default)
-    {
-        var startTime = DateTime.Now;
-
-        var v4Authenticator = new V4Authenticator(minioClient.Config.Secure,
-            minioClient.Config.AccessKey, minioClient.Config.SecretKey, minioClient.Config.Region,
-            minioClient.Config.SessionToken);
-
-        requestMessageBuilder.AddOrUpdateHeaderParameter("Authorization",
-            v4Authenticator.Authenticate(requestMessageBuilder, isSts));
-
-        var request = requestMessageBuilder.Request;
-
-        ResponseResult responseResult = null;
-        try
-        {
-            var response = await minioClient.Config.HttpClient.SendAsync(request,
-                    HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-                .ConfigureAwait(false);
-            responseResult = new ResponseResult(request, response);
-            if (requestMessageBuilder.ResponseWriter is not null)
-                requestMessageBuilder.ResponseWriter(responseResult.ContentStream);
-            if (requestMessageBuilder.FunctionResponseWriter is not null)
-                await requestMessageBuilder.FunctionResponseWriter(responseResult.ContentStream, cancellationToken)
-                    .ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception e)
-        {
-            responseResult?.Dispose();
-            responseResult = new ResponseResult(request, e);
-        }
-
-        minioClient.HandleIfErrorResponse(responseResult, errorHandlers, startTime);
-        return responseResult;
-    }
-
-    private static Task<ResponseResult> ExecuteWithRetry(this IMinioClient minioClient,
-        Func<Task<ResponseResult>> executeRequestCallback)
-    {
-        return minioClient.Config.RetryPolicyHandler is null
-            ? executeRequestCallback()
-            : minioClient.Config.RetryPolicyHandler.Handle(executeRequestCallback);
     }
 }

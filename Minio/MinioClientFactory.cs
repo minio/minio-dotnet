@@ -35,9 +35,11 @@ public class MinioClientFactory : IMinioClientFactory
     {
         if (configureClient == null) throw new ArgumentNullException(nameof(configureClient));
 
-        var client = new MinioClient();
+        var client = new MinioClient()
+            .WithSSL();
         configureClient(client);
         _ = client.Build();
+
 
         return client;
     }

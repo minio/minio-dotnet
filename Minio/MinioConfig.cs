@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net;
 using Minio.Credentials;
 using Minio.Handlers;
 
 namespace Minio;
+
 public class MinioConfig
 {
     // Cache holding bucket to region mapping for buckets seen so far.
@@ -42,6 +38,9 @@ public class MinioConfig
     public string Region { get; set; }
 
     public int RequestTimeout { get; set; }
+
+    // Enables HTTP tracing if set to true
+    public bool TraceHttp { get; internal set; }
 
     public string CustomUserAgent { get; internal set; } = string.Empty;
 

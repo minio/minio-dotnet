@@ -16,7 +16,6 @@
  */
 
 using Minio.ApiEndpoints;
-using Minio.Credentials;
 using Minio.Handlers;
 
 namespace Minio;
@@ -24,6 +23,9 @@ namespace Minio;
 public interface IMinioClient : IBucketOperations, IObjectOperations, IDisposable
 {
     MinioConfig Config { get; }
+    IEnumerable<IApiResponseErrorHandler> ResponseErrorHandlers { get; }
+    IApiResponseErrorHandler DefaultErrorHandler { get; }
+    IRequestLogger Logger { get; }
 
     void SetTraceOff();
     void SetTraceOn(IRequestLogger logger = null);

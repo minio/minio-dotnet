@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Text;
 using CommunityToolkit.HighPerformance;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -20,9 +20,9 @@ public class ReuseTcpConnectionTest
             .Build();
     }
 
-    private MinioClient minioClient { get; }
+    private IMinioClient minioClient { get; }
 
-    private async Task<bool> ObjectExistsAsync(MinioClient client, string bucket, string objectName)
+    private async Task<bool> ObjectExistsAsync(IMinioClient client, string bucket, string objectName)
     {
         if (string.IsNullOrEmpty(bucket))
             bucket = "bucket";

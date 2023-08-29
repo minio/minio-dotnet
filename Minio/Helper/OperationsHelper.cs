@@ -103,9 +103,10 @@ public partial class MinioClient : IMinioClient
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     private async Task GetObjectStreamAsync(GetObjectArgs args, CancellationToken cancellationToken = default)
     {
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await this.ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
     }
 
@@ -127,9 +128,10 @@ public partial class MinioClient : IMinioClient
     private async Task<IList<DeleteError>> RemoveBucketObjectsAsync(RemoveObjectsArgs args,
         CancellationToken cancellationToken)
     {
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await this.ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         var removeObjectsResponse = new RemoveObjectsResponse(response.StatusCode, response.Content);
         return removeObjectsResponse.DeletedObjectsResult.ErrorList;
