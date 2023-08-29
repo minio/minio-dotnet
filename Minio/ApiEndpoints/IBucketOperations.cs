@@ -376,4 +376,13 @@ public interface IBucketOperations
     /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     Task RemoveBucketReplicationAsync(RemoveBucketReplicationArgs args, CancellationToken cancellationToken = default);
+
+    Task<string> GetPolicyAsync(GetPolicyArgs args, CancellationToken cancellationToken = default);
+
+    IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events,
+        string prefix = "", string suffix = "", CancellationToken cancellationToken = default);
+
+    Task RemovePolicyAsync(RemovePolicyArgs args, CancellationToken cancellationToken = default);
+
+    Task SetPolicyAsync(SetPolicyArgs args, CancellationToken cancellationToken = default);
 }
