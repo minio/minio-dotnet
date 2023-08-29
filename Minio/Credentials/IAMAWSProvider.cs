@@ -37,7 +37,7 @@ public class IAMAWSProvider : IClientProvider
         Client = null;
     }
 
-    public IAMAWSProvider(string endpoint, MinioClient client)
+    public IAMAWSProvider(string endpoint, IMinioClient client)
     {
         if (!string.IsNullOrWhiteSpace(endpoint))
         {
