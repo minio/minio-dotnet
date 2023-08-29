@@ -45,6 +45,7 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<IMinioClientFactory>(minioClientFactory);
 
         var client = minioClientFactory.CreateClient();
+        client.Config.ServiceProvider = services.BuildServiceProvider();
         switch (lifetime)
         {
             case ServiceLifetime.Singleton:

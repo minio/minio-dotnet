@@ -25,7 +25,7 @@ public interface IMinioClient : IBucketOperations, IObjectOperations, IDisposabl
     MinioConfig Config { get; }
     IEnumerable<IApiResponseErrorHandler> ResponseErrorHandlers { get; }
     IApiResponseErrorHandler DefaultErrorHandler { get; }
-    IRequestLogger Logger { get; }
+    IRequestLogger RequestLogger { get; }
 
     void SetTraceOff();
     void SetTraceOn(IRequestLogger logger = null);

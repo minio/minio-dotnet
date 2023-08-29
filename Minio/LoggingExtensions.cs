@@ -43,6 +43,6 @@ public static class LoggingExtensions
             DurationMs = durationMs
         };
 
-        minioClient.Logger.LogRequest(requestToLog, responseToLog, durationMs);
+        minioClient.RequestLogger.LogRequest(requestToLog, responseToLog, durationMs);
     }
 }

@@ -13,6 +13,8 @@ PM> Install-Package Minio
 
 ## MinIO Client Example for ASP.NET
 
+When using `AddMinio` to add Minio to your ServiceCollection, Minio will also use any custom Logging providers you've added, like Serilog to output traces when enabled.
+
 ```cs
 using Minio;
 

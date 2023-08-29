@@ -18,6 +18,8 @@
 using System.Net;
 using System.Text;
 using CommunityToolkit.HighPerformance;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Minio.DataModel.Result;
 using Minio.Exceptions;
 using Minio.Handlers;
@@ -49,7 +51,7 @@ public partial class MinioClient : IMinioClient
     /// </summary>
     public IApiResponseErrorHandler DefaultErrorHandler { get; internal set; } = new DefaultErrorHandler();
 
-    public IRequestLogger Logger { get; internal set; }
+    public IRequestLogger RequestLogger { get; internal set; }
 
     /// <summary>
     ///     Runs httpClient's GetAsync method
@@ -70,9 +72,10 @@ public partial class MinioClient : IMinioClient
     /// <summary>
     ///     Sets HTTP tracing On.Writes output to Console
     /// </summary>
-    public void SetTraceOn(IRequestLogger logger = null)
+    public void SetTraceOn(IRequestLogger requestLogger = null)
     {
-        Logger = logger ?? new DefaultRequestLogger();
+        var logger = Config?.ServiceProvider?.GetRequiredService<ILogger<DefaultRequestLogger>>();
+        RequestLogger = requestLogger ?? new DefaultRequestLogger(logger);
         Config.TraceHttp = true;
     }
 
