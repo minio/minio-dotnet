@@ -54,8 +54,7 @@ public class AndOperator
             Tags.Add(new Tag(item.Key, item.Value));
     }
 
-    [XmlElement("Prefix")]
-    public string Prefix { get; set; }
+    [XmlElement("Prefix")] public string Prefix { get; set; }
 
     [XmlElement(ElementName = "Tag", IsNullable = false)]
     public Collection<Tag> Tags { get; set; }
