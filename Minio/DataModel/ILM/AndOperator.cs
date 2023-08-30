@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +38,8 @@ public class AndOperator
     public AndOperator(string prefix, IList<Tag> tag)
     {
         Prefix = prefix;
-        if (tag?.Count > 0) Tags = new Collection<Tag>(tag);
+        if (tag?.Count > 0)
+            Tags = new Collection<Tag>(tag);
     }
 
     public AndOperator(string prefix, IDictionary<string, string> tags)
@@ -46,10 +47,14 @@ public class AndOperator
         Prefix = prefix;
         if (tags is null || tags.Count == 0)
             return;
-        foreach (var item in tags) Tags.Add(new Tag(item.Key, item.Value));
+
+        Tags = new Collection<Tag>();
+
+        foreach (var item in tags)
+            Tags.Add(new Tag(item.Key, item.Value));
     }
 
-    [XmlElement("Prefix")] internal string Prefix { get; set; }
+    [XmlElement("Prefix")] public string Prefix { get; set; }
 
     [XmlElement(ElementName = "Tag", IsNullable = false)]
     public Collection<Tag> Tags { get; set; }
