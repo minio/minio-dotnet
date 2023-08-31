@@ -15,12 +15,24 @@
  */
 
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Minio.DataModel.Tracing;
 
 namespace Minio.Handlers;
 
 public sealed class DefaultRequestLogger : IRequestLogger
 {
+    private readonly ILogger logger;
+
+    public DefaultRequestLogger()
+    {
+    }
+
+    public DefaultRequestLogger(ILogger logger)
+    {
+        this.logger = logger;
+    }
+
     public void LogRequest(RequestToLog requestToLog, ResponseToLog responseToLog, double durationMs)
     {
         if (requestToLog is null) throw new ArgumentNullException(nameof(requestToLog));
@@ -82,6 +94,10 @@ public sealed class DefaultRequestLogger : IRequestLogger
 
         _ = sb.AppendLine("- - - - - - - - - - END RESPONSE - - - - - - - - - -");
 
-        Console.WriteLine(sb.ToString());
+
+        if (logger is not null)
+            logger.LogInformation(sb.ToString());
+        else
+            Console.WriteLine(sb.ToString());
     }
 }

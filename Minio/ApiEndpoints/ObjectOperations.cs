@@ -71,9 +71,10 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         var selectObjectContentResponse =
             new SelectObjectContentResponse(response.StatusCode, response.Content, response.ContentBytes);
@@ -185,10 +186,11 @@ public partial class MinioClient : IObjectOperations
     public async Task<string> PresignedGetObjectAsync(PresignedGetObjectArgs args)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
-        var authenticator = new V4Authenticator(Secure, AccessKey, SecretKey, Region,
-            SessionToken);
-        return authenticator.PresignURL(requestMessageBuilder, args.Expiry, Region, SessionToken, args.RequestDate);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
+        var authenticator = new V4Authenticator(Config.Secure, Config.AccessKey, Config.SecretKey, Config.Region,
+            Config.SessionToken);
+        return authenticator.PresignURL(requestMessageBuilder, args.Expiry, Config.Region, Config.SessionToken,
+            args.RequestDate);
     }
 
     /// <summary>
@@ -208,14 +210,14 @@ public partial class MinioClient : IObjectOperations
             throw new ArgumentNullException(nameof(args));
 
         // string region = string.Empty;
-        var region = await GetRegion(args.BucketName).ConfigureAwait(false);
+        var region = await this.GetRegion(args.BucketName).ConfigureAwait(false);
         args.Validate();
         // Presigned operations are not allowed for anonymous users
-        if (string.IsNullOrEmpty(AccessKey) && string.IsNullOrEmpty(SecretKey))
+        if (string.IsNullOrEmpty(Config.AccessKey) && string.IsNullOrEmpty(Config.SecretKey))
             throw new MinioException("Presigned operations are not supported for anonymous credentials");
 
-        var authenticator = new V4Authenticator(Secure, AccessKey, SecretKey,
-            region, SessionToken);
+        var authenticator = new V4Authenticator(Config.Secure, Config.AccessKey, Config.SecretKey,
+            region, Config.SessionToken);
 
         // Get base64 encoded policy.
         var policyBase64 = args.Policy.Base64();
@@ -226,7 +228,7 @@ public partial class MinioClient : IObjectOperations
         var signature = authenticator.PresignPostSignature(region, t, policyBase64);
         args = args.WithDate(t)
             .WithAlgorithm(signV4Algorithm)
-            .WithSessionToken(SessionToken)
+            .WithSessionToken(Config.SessionToken)
             .WithCredential(credential)
             .WithRegion(region);
 
@@ -240,11 +242,12 @@ public partial class MinioClient : IObjectOperations
         args.Policy.FormData["x-amz-algorithm"] = signV4Algorithm;
         args.Policy.FormData["x-amz-credential"] = credential;
         args.Policy.FormData["x-amz-date"] = t.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
-        if (!string.IsNullOrEmpty(SessionToken)) args.Policy.FormData["x-amz-security-token"] = SessionToken;
+        if (!string.IsNullOrEmpty(Config.SessionToken))
+            args.Policy.FormData["x-amz-security-token"] = Config.SessionToken;
         args.Policy.FormData["x-amz-signature"] = signature;
 
-        uri = RequestUtil.MakeTargetURL(BaseUrl, Secure, args.BucketName, region, false);
-        return (uri, args.Policy.FormData);
+        Config.Uri = RequestUtil.MakeTargetURL(Config.BaseUrl, Config.Secure, args.BucketName, region, false);
+        return (Config.Uri, args.Policy.FormData);
     }
 
     /// <summary>
@@ -262,14 +265,14 @@ public partial class MinioClient : IObjectOperations
     public async Task<string> PresignedPutObjectAsync(PresignedPutObjectArgs args)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(HttpMethod.Put, args.BucketName,
+        var requestMessageBuilder = await this.CreateRequest(HttpMethod.Put, args.BucketName,
             args.ObjectName,
             args.Headers, // contentType
             Convert.ToString(args.GetType(), CultureInfo.InvariantCulture), // metaData
             Utils.ObjectToByteArray(args.RequestBody)).ConfigureAwait(false);
-        var authenticator = new V4Authenticator(Secure, AccessKey, SecretKey, Region,
-            SessionToken);
-        return authenticator.PresignURL(requestMessageBuilder, args.Expiry, Region, SessionToken);
+        var authenticator = new V4Authenticator(Config.Secure, Config.AccessKey, Config.SecretKey, Config.Region,
+            Config.SessionToken);
+        return authenticator.PresignURL(requestMessageBuilder, args.Expiry, Config.Region, Config.SessionToken);
     }
 
     /// <summary>
@@ -293,9 +296,10 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         var legalHoldConfig = new GetLegalHoldResponse(response.StatusCode, response.Content);
         return legalHoldConfig.CurrentLegalHoldConfiguration?.Status.Equals("on", StringComparison.OrdinalIgnoreCase) ==
@@ -323,9 +327,10 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
     }
 
@@ -344,9 +349,10 @@ public partial class MinioClient : IObjectOperations
     public async Task<Tagging> GetObjectTagsAsync(GetObjectTagsArgs args, CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         var getObjectTagsResponse = new GetObjectTagsResponse(response.StatusCode, response.Content);
         return getObjectTagsResponse.ObjectTags;
@@ -370,9 +376,10 @@ public partial class MinioClient : IObjectOperations
     public async Task RemoveObjectAsync(RemoveObjectArgs args, CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var restResponse =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
     }
 
@@ -429,9 +436,10 @@ public partial class MinioClient : IObjectOperations
     public async Task SetObjectTagsAsync(SetObjectTagsArgs args, CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
     }
 
@@ -451,9 +459,10 @@ public partial class MinioClient : IObjectOperations
     public async Task RemoveObjectTagsAsync(RemoveObjectTagsArgs args, CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
     }
 
@@ -478,9 +487,10 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
     }
 
@@ -504,9 +514,10 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         var retentionResponse = new GetRetentionResponse(response.StatusCode, response.Content);
         return retentionResponse.CurrentRetentionConfiguration;
@@ -533,9 +544,10 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
     }
 
@@ -762,9 +774,10 @@ public partial class MinioClient : IObjectOperations
     public async Task<ObjectStat> StatObjectAsync(StatObjectArgs args, CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         var responseHeaders = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var param in response.Headers.ToList()) responseHeaders.Add(param.Key, param.Value);
@@ -784,9 +797,10 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         var getUploadResponse = new GetMultipartUploadsListResponse(response.StatusCode, response.Content);
 
@@ -802,9 +816,10 @@ public partial class MinioClient : IObjectOperations
     private async Task RemoveUploadAsync(RemoveUploadArgs args, CancellationToken cancellationToken)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
     }
 
@@ -831,9 +846,10 @@ public partial class MinioClient : IObjectOperations
         //Skipping validate as we need the case where stream sends 0 bytes
         var progressReport = new ProgressReport();
         args.Progress?.Report(progressReport);
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
         progressReport.Percentage = 100;
@@ -1020,9 +1036,10 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         var uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
         return uploadResponse.UploadId;
@@ -1047,9 +1064,10 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         var uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
         return uploadResponse.UploadId;
@@ -1063,9 +1081,10 @@ public partial class MinioClient : IObjectOperations
     private async Task<object> CopyObjectRequestAsync(CopyObjectRequestArgs args, CancellationToken cancellationToken)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         var copyObjectResponse =
             new CopyObjectResponse(response.StatusCode, response.Content, args.CopyOperationObjectType);
@@ -1088,9 +1107,10 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken)
     {
         args?.Validate();
-        var requestMessageBuilder = await CreateRequest(args).ConfigureAwait(false);
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await ExecuteTaskAsync(NoErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         return new PutObjectResponse(response.StatusCode, response.Content, response.Headers, -1,
             args.ObjectName);

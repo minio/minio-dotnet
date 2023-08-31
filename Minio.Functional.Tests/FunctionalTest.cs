@@ -317,7 +317,7 @@ public static class FunctionalTest
         return $"{path}/{fileName}";
     }
 
-    internal static Task RunCoreTests(MinioClient minioClient)
+    internal static Task RunCoreTests(IMinioClient minioClient)
     {
         ConcurrentBag<Task> coreTestsTasks = new()
         {
@@ -350,7 +350,7 @@ public static class FunctionalTest
         return coreTestsTasks.ForEachAsync();
     }
 
-    internal static async Task BucketExists_Test(MinioClient minio)
+    internal static async Task BucketExists_Test(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName();
@@ -388,7 +388,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task RemoveBucket_Test1(MinioClient minio)
+    internal static async Task RemoveBucket_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(20);
@@ -426,7 +426,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task RemoveBucket_Test2(MinioClient minio)
+    internal static async Task RemoveBucket_Test2(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(20);
@@ -479,7 +479,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task ListBuckets_Test(MinioClient minio)
+    internal static async Task ListBuckets_Test(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         IList<Bucket> bucketList = new List<Bucket>();
@@ -551,7 +551,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task Setup_Test(MinioClient minio, string bucketName)
+    internal static async Task Setup_Test(IMinioClient minio, string bucketName)
     {
         var beArgs = new BucketExistsArgs()
             .WithBucket(bucketName);
@@ -564,7 +564,7 @@ public static class FunctionalTest
         Assert.IsTrue(found);
     }
 
-    internal static async Task Setup_WithLock_Test(MinioClient minio, string bucketName)
+    internal static async Task Setup_WithLock_Test(IMinioClient minio, string bucketName)
     {
         var mbArgs = new MakeBucketArgs()
             .WithBucket(bucketName)
@@ -576,7 +576,7 @@ public static class FunctionalTest
         Assert.IsTrue(found);
     }
 
-    internal static async Task TearDown(MinioClient minio, string bucketName)
+    internal static async Task TearDown(IMinioClient minio, string bucketName)
     {
         var beArgs = new BucketExistsArgs()
             .WithBucket(bucketName);
@@ -695,7 +695,7 @@ public static class FunctionalTest
         return JsonSerializer.Serialize(obj);
     }
 
-    internal static async Task PutGetStatEncryptedObject_Test1(MinioClient minio)
+    internal static async Task PutGetStatEncryptedObject_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -782,7 +782,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task PutGetStatEncryptedObject_Test2(MinioClient minio)
+    internal static async Task PutGetStatEncryptedObject_Test2(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -870,7 +870,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task PutGetStatEncryptedObject_Test3(MinioClient minio)
+    internal static async Task PutGetStatEncryptedObject_Test3(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -946,7 +946,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task PutObject_Task(MinioClient minio, string bucketName, string objectName,
+    internal static async Task PutObject_Task(IMinioClient minio, string bucketName, string objectName,
         string fileName = null, string contentType = "application/octet-stream", long size = 0,
         Dictionary<string, string> metaData = null, Stream mstream = null)
     {
@@ -982,7 +982,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task<ObjectStat> PutObject_Tester(MinioClient minio,
+    internal static async Task<ObjectStat> PutObject_Tester(IMinioClient minio,
         string bucketName, string objectName, string fileName = null,
         string contentType = "application/octet-stream", long size = 0,
         Dictionary<string, string> metaData = null, Stream mstream = null,
@@ -1041,7 +1041,7 @@ public static class FunctionalTest
         return statObject;
     }
 
-    internal static async Task StatObject_Test1(MinioClient minio)
+    internal static async Task StatObject_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -1078,7 +1078,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task FPutObject_Test1(MinioClient minio)
+    internal static async Task FPutObject_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -1115,7 +1115,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task FPutObject_Test2(MinioClient minio)
+    internal static async Task FPutObject_Test2(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -1155,7 +1155,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task RemoveObject_Test1(MinioClient minio)
+    internal static async Task RemoveObject_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -1193,7 +1193,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task RemoveObjects_Test2(MinioClient minio)
+    internal static async Task RemoveObjects_Test2(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -1235,7 +1235,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task RemoveObjects_Test3(MinioClient minio)
+    internal static async Task RemoveObjects_Test3(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -1308,7 +1308,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task DownloadObjectAsync(MinioClient minio, string url, string filePath,
+    internal static async Task DownloadObjectAsync(IMinioClient minio, string url, string filePath,
         CancellationToken cancellationToken = default)
     {
         using var response = await minio.WrapperGetAsync(url).ConfigureAwait(false);
@@ -1319,14 +1319,14 @@ public static class FunctionalTest
         await response.Content.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
     }
 
-    internal static async Task UploadObjectAsync(MinioClient minio, string url, string filePath)
+    internal static async Task UploadObjectAsync(IMinioClient minio, string url, string filePath)
     {
         using var filestream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
         using var stream = new StreamContent(filestream);
         await minio.WrapperPutAsync(url, stream).ConfigureAwait(false);
     }
 
-    internal static async Task PresignedPostPolicy_Test1(MinioClient minio)
+    internal static async Task PresignedPostPolicy_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -1406,7 +1406,7 @@ public static class FunctionalTest
         if (!IsMintEnv()) File.Delete(fileName);
     }
 
-    internal static async Task RemoveIncompleteUpload_Test(MinioClient minio)
+    internal static async Task RemoveIncompleteUpload_Test(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -1469,7 +1469,7 @@ public static class FunctionalTest
 
     #region Select Object Content
 
-    internal static async Task SelectObjectContent_Test(MinioClient minio)
+    internal static async Task SelectObjectContent_Test(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -1570,7 +1570,7 @@ public static class FunctionalTest
 
     #region Bucket Encryption
 
-    internal static async Task BucketEncryptionsAsync_Test1(MinioClient minio)
+    internal static async Task BucketEncryptionsAsync_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -1685,7 +1685,7 @@ public static class FunctionalTest
 
     #region Legal Hold Status
 
-    internal static async Task LegalHoldStatusAsync_Test1(MinioClient minio)
+    internal static async Task LegalHoldStatusAsync_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -1791,7 +1791,7 @@ public static class FunctionalTest
 
     #region Bucket Tagging
 
-    internal static async Task BucketTagsAsync_Test1(MinioClient minio)
+    internal static async Task BucketTagsAsync_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -1905,7 +1905,7 @@ public static class FunctionalTest
 
     #region Object Tagging
 
-    internal static async Task ObjectTagsAsync_Test1(MinioClient minio)
+    internal static async Task ObjectTagsAsync_Test1(IMinioClient minio)
     {
         // Test will run twice once for file size 1KB amd once
         // for 6MB to cover single and multipart upload functions
@@ -2056,7 +2056,7 @@ public static class FunctionalTest
 
     #region Object Versioning
 
-    internal static async Task ObjectVersioningAsync_Test1(MinioClient minio)
+    internal static async Task ObjectVersioningAsync_Test1(IMinioClient minio)
     {
         // Test will run twice once for file size 1KB amd once
         // for 6MB to cover single and multipart upload functions
@@ -2169,7 +2169,7 @@ public static class FunctionalTest
     #region Object Lock Configuration
 
     [SuppressMessage("Design", "MA0051:Method is too long", Justification = "TODO")]
-    internal static async Task ObjectLockConfigurationAsync_Test1(MinioClient minio)
+    internal static async Task ObjectLockConfigurationAsync_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -2336,7 +2336,7 @@ public static class FunctionalTest
     #region Object Retention
 
     [SuppressMessage("Design", "MA0051:Method is too long", Justification = "Refactor later")]
-    internal static async Task ObjectRetentionAsync_Test1(MinioClient minio)
+    internal static async Task ObjectRetentionAsync_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -2532,7 +2532,7 @@ public static class FunctionalTest
         return outputMemStream;
     }
 
-    internal static async Task GetObjectS3Zip_Test1(MinioClient minio)
+    internal static async Task GetObjectS3Zip_Test1(IMinioClient minio)
     {
         var path = "test/small/";
         var startTime = DateTime.Now;
@@ -2637,7 +2637,7 @@ public static class FunctionalTest
 
     #region Bucket Notifications
 
-    internal static async Task ListenBucketNotificationsAsync_Test1(MinioClient minio)
+    internal static async Task ListenBucketNotificationsAsync_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -2779,7 +2779,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task ListenBucketNotificationsAsync_Test2(MinioClient minio)
+    internal static async Task ListenBucketNotificationsAsync_Test2(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var events = new List<EventType> { EventType.ObjectCreatedAll };
@@ -2876,7 +2876,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task ListenBucketNotificationsAsync_Test3(MinioClient minio)
+    internal static async Task ListenBucketNotificationsAsync_Test3(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var events = new List<EventType> { EventType.ObjectCreatedAll };
@@ -2979,7 +2979,7 @@ public static class FunctionalTest
 
     #region Make Bucket
 
-    internal static async Task MakeBucket_Test1(MinioClient minio)
+    internal static async Task MakeBucket_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(60);
@@ -3012,7 +3012,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task MakeBucket_Test2(MinioClient minio, bool aws = false)
+    internal static async Task MakeBucket_Test2(IMinioClient minio, bool aws = false)
     {
         if (!aws)
             return;
@@ -3048,7 +3048,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task MakeBucket_Test3(MinioClient minio, bool aws = false)
+    internal static async Task MakeBucket_Test3(IMinioClient minio, bool aws = false)
     {
         if (!aws)
             return;
@@ -3083,7 +3083,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task MakeBucket_Test4(MinioClient minio, bool aws = false)
+    internal static async Task MakeBucket_Test4(IMinioClient minio, bool aws = false)
     {
         if (!aws)
             return;
@@ -3120,7 +3120,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task MakeBucket_Test5(MinioClient minio)
+    internal static async Task MakeBucket_Test5(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         string bucketName = null;
@@ -3145,7 +3145,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task MakeBucketLock_Test1(MinioClient minio)
+    internal static async Task MakeBucketLock_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(60);
@@ -3183,7 +3183,7 @@ public static class FunctionalTest
 
     #region Put Object
 
-    internal static async Task PutObject_Test1(MinioClient minio)
+    internal static async Task PutObject_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -3222,7 +3222,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task PutObject_Test2(MinioClient minio)
+    internal static async Task PutObject_Test2(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -3256,7 +3256,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task PutObject_Test3(MinioClient minio)
+    internal static async Task PutObject_Test3(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -3293,7 +3293,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task PutObject_Test4(MinioClient minio)
+    internal static async Task PutObject_Test4(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -3343,7 +3343,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task PutObject_Test5(MinioClient minio)
+    internal static async Task PutObject_Test5(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -3376,7 +3376,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task PutObject_Test7(MinioClient minio)
+    internal static async Task PutObject_Test7(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -3430,7 +3430,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task PutObject_Test8(MinioClient minio)
+    internal static async Task PutObject_Test8(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -3484,7 +3484,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task PutObject_Test9(MinioClient minio)
+    internal static async Task PutObject_Test9(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -3531,7 +3531,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task PutObject_Test10(MinioClient minio)
+    internal static async Task PutObject_Test10(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -3585,7 +3585,7 @@ public static class FunctionalTest
 
     #region Copy Object
 
-    internal static async Task CopyObject_Test1(MinioClient minio)
+    internal static async Task CopyObject_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -3657,7 +3657,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task CopyObject_Test2(MinioClient minio)
+    internal static async Task CopyObject_Test2(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -3746,7 +3746,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task CopyObject_Test3(MinioClient minio)
+    internal static async Task CopyObject_Test3(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -3824,7 +3824,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task CopyObject_Test4(MinioClient minio)
+    internal static async Task CopyObject_Test4(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -3898,7 +3898,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task CopyObject_Test5(MinioClient minio)
+    internal static async Task CopyObject_Test5(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -3975,7 +3975,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task CopyObject_Test6(MinioClient minio)
+    internal static async Task CopyObject_Test6(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -4056,7 +4056,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task CopyObject_Test7(MinioClient minio)
+    internal static async Task CopyObject_Test7(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -4135,7 +4135,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task CopyObject_Test8(MinioClient minio)
+    internal static async Task CopyObject_Test8(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -4228,7 +4228,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task CopyObject_Test9(MinioClient minio)
+    internal static async Task CopyObject_Test9(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -4313,7 +4313,7 @@ public static class FunctionalTest
 
     #region Encrypted Copy Object
 
-    internal static async Task EncryptedCopyObject_Test1(MinioClient minio)
+    internal static async Task EncryptedCopyObject_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -4397,7 +4397,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task EncryptedCopyObject_Test2(MinioClient minio)
+    internal static async Task EncryptedCopyObject_Test2(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -4479,7 +4479,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task EncryptedCopyObject_Test3(MinioClient minio)
+    internal static async Task EncryptedCopyObject_Test3(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -4553,7 +4553,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task EncryptedCopyObject_Test4(MinioClient minio)
+    internal static async Task EncryptedCopyObject_Test4(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -4629,7 +4629,7 @@ public static class FunctionalTest
 
     #region Get Object
 
-    internal static async Task GetObject_Test1(MinioClient minio)
+    internal static async Task GetObject_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -4694,7 +4694,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task GetObject_Test2(MinioClient minio)
+    internal static async Task GetObject_Test2(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -4763,7 +4763,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task GetObject_3_OffsetLength_Tests(MinioClient minio)
+    internal static async Task GetObject_3_OffsetLength_Tests(IMinioClient minio)
         // 3 tests will run to check different values of offset and length parameters
         // when GetObject api returns part of the object as defined by the offset
         // and length parameters. Tests will be reported as GetObject_Test3,
@@ -4890,7 +4890,7 @@ public static class FunctionalTest
     }
 
 #if NET6_0_OR_GREATER
-    internal static async Task GetObject_AsyncCallback_Test1(MinioClient minio)
+    internal static async Task GetObject_AsyncCallback_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -4966,7 +4966,7 @@ public static class FunctionalTest
     }
 #endif
 
-    internal static async Task FGetObject_Test1(MinioClient minio)
+    internal static async Task FGetObject_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -5015,7 +5015,7 @@ public static class FunctionalTest
 
     #region List Objects
 
-    internal static async Task ListObjects_Test1(MinioClient minio)
+    internal static async Task ListObjects_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -5058,7 +5058,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task ListObjects_Test2(MinioClient minio)
+    internal static async Task ListObjects_Test2(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -5087,7 +5087,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task ListObjects_Test3(MinioClient minio)
+    internal static async Task ListObjects_Test3(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -5130,7 +5130,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task ListObjects_Test4(MinioClient minio)
+    internal static async Task ListObjects_Test4(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -5169,7 +5169,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task ListObjects_Test5(MinioClient minio)
+    internal static async Task ListObjects_Test5(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -5217,7 +5217,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task ListObjects_Test6(MinioClient minio)
+    internal static async Task ListObjects_Test6(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -5283,7 +5283,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task ListObjectVersions_Test1(MinioClient minio)
+    internal static async Task ListObjectVersions_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -5352,7 +5352,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task ListObjects_Test(MinioClient minio, string bucketName, string prefix, int numObjects,
+    internal static async Task ListObjects_Test(IMinioClient minio, string bucketName, string prefix, int numObjects,
         bool recursive = true, bool versions = false, Dictionary<string, string> headers = null)
     {
         var startTime = DateTime.Now;
@@ -5397,7 +5397,7 @@ public static class FunctionalTest
 
     #region Presigned Get Object
 
-    internal static async Task PresignedGetObject_Test1(MinioClient minio)
+    internal static async Task PresignedGetObject_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -5461,7 +5461,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task PresignedGetObject_Test2(MinioClient minio)
+    internal static async Task PresignedGetObject_Test2(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -5526,7 +5526,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task PresignedGetObject_Test3(MinioClient minio)
+    internal static async Task PresignedGetObject_Test3(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -5623,7 +5623,7 @@ public static class FunctionalTest
 
     #region Presigned Put Object
 
-    internal static async Task PresignedPutObject_Test1(MinioClient minio)
+    internal static async Task PresignedPutObject_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -5675,7 +5675,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task PresignedPutObject_Test2(MinioClient minio)
+    internal static async Task PresignedPutObject_Test2(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -5739,7 +5739,7 @@ public static class FunctionalTest
 
     #region List Incomplete Upload
 
-    internal static async Task ListIncompleteUpload_Test1(MinioClient minio)
+    internal static async Task ListIncompleteUpload_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -5799,7 +5799,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task ListIncompleteUpload_Test2(MinioClient minio)
+    internal static async Task ListIncompleteUpload_Test2(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -5856,7 +5856,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task ListIncompleteUpload_Test3(MinioClient minio)
+    internal static async Task ListIncompleteUpload_Test3(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -5922,7 +5922,7 @@ public static class FunctionalTest
     /// </summary>
     /// <param name="minio"></param>
     /// <returns></returns>
-    internal static async Task SetBucketPolicy_Test1(MinioClient minio)
+    internal static async Task SetBucketPolicy_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -5977,7 +5977,7 @@ public static class FunctionalTest
     /// </summary>
     /// <param name="minio"></param>
     /// <returns></returns>
-    internal static async Task GetBucketPolicy_Test1(MinioClient minio)
+    internal static async Task GetBucketPolicy_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -6033,7 +6033,7 @@ public static class FunctionalTest
 
     #region Bucket Lifecycle
 
-    internal static async Task BucketLifecycleAsync_Test1(MinioClient minio)
+    internal static async Task BucketLifecycleAsync_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -6157,7 +6157,7 @@ public static class FunctionalTest
         }
     }
 
-    internal static async Task BucketLifecycleAsync_Test2(MinioClient minio)
+    internal static async Task BucketLifecycleAsync_Test2(IMinioClient minio)
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);

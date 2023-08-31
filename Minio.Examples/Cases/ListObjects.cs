@@ -21,7 +21,7 @@ namespace Minio.Examples.Cases;
 internal static class ListObjects
 {
     // List objects matching optional prefix in a specified bucket.
-    public static void Run(MinioClient minio,
+    public static void Run(IMinioClient minio,
         string bucketName = "my-bucket-name",
         string prefix = null,
         bool recursive = true,

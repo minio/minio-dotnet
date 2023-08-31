@@ -33,7 +33,7 @@ public abstract class AssumeRoleBaseProvider<T> : IClientProvider
     internal readonly IEnumerable<IApiResponseErrorHandler> NoErrorHandlers =
         Enumerable.Empty<IApiResponseErrorHandler>();
 
-    protected AssumeRoleBaseProvider(MinioClient client)
+    protected AssumeRoleBaseProvider(IMinioClient client)
     {
         Client = client;
     }
@@ -44,7 +44,7 @@ public abstract class AssumeRoleBaseProvider<T> : IClientProvider
     }
 
     internal AccessCredentials Credentials { get; set; }
-    internal MinioClient Client { get; set; }
+    internal IMinioClient Client { get; set; }
     internal string Action { get; set; }
     internal uint? DurationInSeconds { get; set; }
     internal string Region { get; set; }

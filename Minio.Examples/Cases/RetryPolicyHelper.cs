@@ -72,7 +72,7 @@ internal static class RetryPolicyHelper
             : new RetryPolicyHandler(policy);
     }
 
-    public static MinioClient WithRetryPolicy(this MinioClient client, AsyncPolicy<ResponseResult> policy)
+    public static IMinioClient WithRetryPolicy(this IMinioClient client, AsyncPolicy<ResponseResult> policy)
     {
         return client.WithRetryPolicy(policy.AsRetryDelegate());
     }

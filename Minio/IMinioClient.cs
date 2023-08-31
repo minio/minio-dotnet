@@ -22,7 +22,11 @@ namespace Minio;
 
 public interface IMinioClient : IBucketOperations, IObjectOperations, IDisposable
 {
-    void SetAppInfo(string appName, string appVersion);
+    MinioConfig Config { get; }
+    IEnumerable<IApiResponseErrorHandler> ResponseErrorHandlers { get; }
+    IApiResponseErrorHandler DefaultErrorHandler { get; }
+    IRequestLogger RequestLogger { get; }
+
     void SetTraceOff();
     void SetTraceOn(IRequestLogger logger = null);
     Task<HttpResponseMessage> WrapperGetAsync(Uri uri);

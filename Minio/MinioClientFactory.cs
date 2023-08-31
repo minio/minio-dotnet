@@ -18,6 +18,7 @@ namespace Minio;
 
 public class MinioClientFactory : IMinioClientFactory
 {
+    private const string DefaultEndpoint = "play.min.io";
     private readonly Action<IMinioClient> defaultConfigureClient;
 
     public MinioClientFactory(Action<IMinioClient> defaultConfigureClient)
@@ -35,9 +36,16 @@ public class MinioClientFactory : IMinioClientFactory
     {
         if (configureClient == null) throw new ArgumentNullException(nameof(configureClient));
 
-        var client = new MinioClient();
+        var client = new MinioClient()
+            .WithSSL();
+
         configureClient(client);
+
+        if (string.IsNullOrEmpty(client.Config.Endpoint))
+            _ = client.WithEndpoint(DefaultEndpoint);
+
         _ = client.Build();
+
 
         return client;
     }

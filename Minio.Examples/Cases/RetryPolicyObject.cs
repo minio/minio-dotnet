@@ -23,7 +23,7 @@ namespace Minio.Examples.Cases;
 internal static class RetryPolicyObject
 {
     // Polly retry policy sample
-    public static async Task Run(MinioClient minio,
+    public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name",
         string bucketObject = "my-object-name")
     {

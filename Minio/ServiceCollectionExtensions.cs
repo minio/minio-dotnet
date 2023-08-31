@@ -23,15 +23,29 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddMinio(
         this IServiceCollection services,
+        string accessKey,
+        string secretKey,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+    {
+        if (services is null) throw new ArgumentNullException(nameof(services));
+
+        _ = services.AddMinio(configureClient => configureClient.WithCredentials(accessKey, secretKey), lifetime);
+        return services;
+    }
+
+    public static IServiceCollection AddMinio(
+        this IServiceCollection services,
         Action<IMinioClient> configureClient,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
+        if (services is null) throw new ArgumentNullException(nameof(services));
         if (configureClient == null) throw new ArgumentNullException(nameof(configureClient));
 
         var minioClientFactory = new MinioClientFactory(configureClient);
         services.TryAddSingleton<IMinioClientFactory>(minioClientFactory);
 
         var client = minioClientFactory.CreateClient();
+        client.Config.ServiceProvider = services.BuildServiceProvider();
         switch (lifetime)
         {
             case ServiceLifetime.Singleton:

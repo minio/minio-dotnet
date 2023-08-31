@@ -83,22 +83,22 @@ public sealed class BucketRegionCache
     /// </summary>
     /// <param name="client"></param>
     /// <param name="bucketName"></param>
-    internal static async Task<string> Update(MinioClient client, string bucketName)
+    internal static async Task<string> Update(IMinioClient client, string bucketName)
     {
         string region = null;
 
-        if (!string.Equals(bucketName, null, StringComparison.OrdinalIgnoreCase) && client.AccessKey is not null
-            && client.SecretKey is not null && !Instance.Exists(bucketName))
+        if (!string.Equals(bucketName, null, StringComparison.OrdinalIgnoreCase) && client.Config.AccessKey is not null
+            && client.Config.SecretKey is not null && !Instance.Exists(bucketName))
         {
             string location = null;
             var path = Utils.UrlEncode(bucketName);
             // Initialize client
-            var requestUrl = RequestUtil.MakeTargetURL(client.BaseUrl, client.Secure);
+            var requestUrl = RequestUtil.MakeTargetURL(client.Config.BaseUrl, client.Config.Secure);
 
             var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, requestUrl, path);
             requestBuilder.AddQueryParameter("location", "");
             using var response =
-                await client.ExecuteTaskAsync(client.NoErrorHandlers, requestBuilder).ConfigureAwait(false);
+                await client.ExecuteTaskAsync(client.ResponseErrorHandlers, requestBuilder).ConfigureAwait(false);
 
             if (response is not null && HttpStatusCode.OK.Equals(response.StatusCode))
             {
