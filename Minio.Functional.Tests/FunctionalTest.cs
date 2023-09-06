@@ -590,10 +590,9 @@ public static class FunctionalTest
             new GetObjectLockConfigurationArgs()
                 .WithBucket(bucketName);
         ObjectLockConfiguration lockConfig = null;
-        VersioningConfiguration versioningConfig = null;
         try
         {
-            versioningConfig = await minio.GetVersioningAsync(new GetVersioningArgs()
+            var versioningConfig = await minio.GetVersioningAsync(new GetVersioningArgs()
                 .WithBucket(bucketName)).ConfigureAwait(false);
             if (versioningConfig is not null &&
                 (versioningConfig.Status.Contains("Enabled", StringComparison.Ordinal) ||
@@ -6057,9 +6056,8 @@ public static class FunctionalTest
         var expDate = baseDate.AddYears(1);
         var exp = new Expiration(expDate);
 
-        var calculatedExpDate = expDate.AddDays(1).AddSeconds(-1).ToUniversalTime().Date.ToString("o");
-        var realExpDate = DateTime.Parse(calculatedExpDate, CultureInfo.InvariantCulture);
-        var expInDays = (realExpDate.Date - baseDate.Date).TotalDays;
+        var calculatedExpDate = expDate.AddDays(1).AddSeconds(-1).ToUniversalTime().Date;
+        var expInDays = (calculatedExpDate.ToLocalTime().Date - baseDate.Date).TotalDays;
 
         var rule1 = new LifecycleRule(null, "txt", exp, null,
             new RuleFilter(null, "txt/", null), null, null, LifecycleRule.LifecycleRuleStatusEnabled);
@@ -6084,7 +6082,6 @@ public static class FunctionalTest
         }
         catch (Exception ex)
         {
-            await TearDown(minio, bucketName).ConfigureAwait(false);
             new MintLogger(nameof(BucketLifecycleAsync_Test1) + ".1", setBucketLifecycleSignature,
                 "Tests whether SetBucketLifecycleAsync passes", TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
                 ex.ToString(), args: args).Log();
