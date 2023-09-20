@@ -82,7 +82,9 @@ public partial class MinioClient : IMinioClient
 #else
             var dest = new FileStream(tempFileName, FileMode.Create, FileAccess.Write);
             await using (dest.ConfigureAwait(false))
-            await stream.CopyToAsync(dest, cancellationToken).ConfigureAwait(false);
+            {
+                await stream.CopyToAsync(dest, cancellationToken).ConfigureAwait(false);
+            }
 #endif
         }
 
