@@ -76,11 +76,15 @@ public partial class MinioClient : IMinioClient
 
         async Task callbackAsync(Stream stream, CancellationToken cancellationToken)
         {
-            using var dest = new FileStream(tempFileName, FileMode.Create, FileAccess.Write);
 #if NETSTANDARD
+            using var dest = new FileStream(tempFileName, FileMode.Create, FileAccess.Write);
             await stream.CopyToAsync(dest).ConfigureAwait(false);
 #else
-            await stream.CopyToAsync(dest, cancellationToken).ConfigureAwait(false);
+            var dest = new FileStream(tempFileName, FileMode.Create, FileAccess.Write);
+            await using (dest.ConfigureAwait(false))
+            {
+                await stream.CopyToAsync(dest, cancellationToken).ConfigureAwait(false);
+            }
 #endif
         }
 
@@ -90,7 +94,7 @@ public partial class MinioClient : IMinioClient
         cts.CancelAfter(TimeSpan.FromSeconds(15));
         args.WithCallbackStream(async (stream, cancellationToken) =>
         {
-            await callbackAsync(stream, cts.Token).ConfigureAwait(false);
+            await callbackAsync(stream, cancellationToken).ConfigureAwait(false);
             Utils.MoveWithReplace(tempFileName, args.FileName);
         });
         return GetObjectStreamAsync(args, cancellationToken);
