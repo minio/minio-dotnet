@@ -17,6 +17,7 @@ When using `AddMinio` to add Minio to your ServiceCollection, Minio will also us
 
 ```cs
 using Minio;
+using Minio.DataModel.Args;
 
 public static class Program
 {
@@ -107,7 +108,7 @@ var accessKey = "Q3AM3UQ867trueSPQQA43P2F";
 var secretKey = "zuf+tfteSlswRu7BJ86wtrueekitnifILbZam1KYY3TG";
 var secure = true;
 // Initialize the client with access credentials.
-private static MinioClient minio = new MinioClient()
+private static IMinioClient minio = new MinioClient()
                                     .WithEndpoint(endpoint)
                                     .WithCredentials(accessKey, secretKey)
                                     .WithSSL(secure)
@@ -133,6 +134,8 @@ using System;
 using Minio;
 using Minio.Exceptions;
 using Minio.DataModel;
+using Minio.Credentials;
+using Minio.DataModel.Args;
 using System.Threading.Tasks;
 
 namespace FileUploader
