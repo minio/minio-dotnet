@@ -16,7 +16,7 @@
         <RepositoryUrl>https://github.com/minio/minio-dotnet</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <Product>$(AssemblyName) ($(TargetFramework))</Product>
-        <Version>6.0.0</Version>
+        <Version>6.0.1</Version>
 
         <!--<Nullable>enable</Nullable>-->
         <ImplicitUsings>enable</ImplicitUsings>
