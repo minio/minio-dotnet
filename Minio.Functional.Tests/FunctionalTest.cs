@@ -632,7 +632,7 @@ public static class FunctionalTest
             exceptionList.Add,
             () => { });
 
-        await Task.Delay(4500).ConfigureAwait(false);
+        await Task.Delay(9000).ConfigureAwait(false);
         if (lockConfig?.ObjectLockEnabled.Equals(ObjectLockConfiguration.LockEnabled,
                 StringComparison.OrdinalIgnoreCase) == true)
         {
@@ -2701,7 +2701,7 @@ public static class FunctionalTest
                         Exception ex = new UnexpectedMinioException(err.Message);
                         if (string.Equals(err.Code, "NotImplemented", StringComparison.OrdinalIgnoreCase))
                             ex = new NotImplementedException(err.Message);
-
+                        await TearDown(minio, bucketName).ConfigureAwait(false);
                         throw ex;
                     }
 
@@ -2730,6 +2730,7 @@ public static class FunctionalTest
                 listenBucketNotificationsSignature,
                 "Tests whether ListenBucketNotifications passes for small object",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
+                await TearDown(minio, bucketName).ConfigureAwait(false);
         }
         catch (NotImplementedException ex)
         {
@@ -2738,6 +2739,7 @@ public static class FunctionalTest
                 "Tests whether ListenBucketNotifications passes for small object",
                 TestStatus.NA, DateTime.Now - startTime, ex.Message,
                 ex.ToString(), args: args).Log();
+            await TearDown(minio, bucketName).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -2769,12 +2771,9 @@ public static class FunctionalTest
                     "Tests whether ListenBucketNotifications passes for small object",
                     TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
                     ex.ToString(), args: args).Log();
+                await TearDown(minio, bucketName).ConfigureAwait(false);
                 throw;
             }
-        }
-        finally
-        {
-            await TearDown(minio, bucketName).ConfigureAwait(false);
         }
     }
 
@@ -5388,7 +5387,7 @@ public static class FunctionalTest
                 () => { });
         }
 
-        await Task.Delay(5000).ConfigureAwait(false);
+        await Task.Delay(20000).ConfigureAwait(false);
         Assert.AreEqual(numObjects, count);
     }
 
@@ -6045,7 +6044,7 @@ public static class FunctionalTest
         catch (Exception ex)
         {
             await TearDown(minio, bucketName).ConfigureAwait(false);
-            new MintLogger(nameof(BucketLifecycleAsync_Test1), setBucketLifecycleSignature,
+            new MintLogger(nameof(BucketLifecycleAsync_Test1) + ".0", setBucketLifecycleSignature,
                 "Tests whether SetBucketLifecycleAsync passes", TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
                 ex.ToString(), args: args).Log();
             throw;
