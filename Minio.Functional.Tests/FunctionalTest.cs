@@ -2730,7 +2730,7 @@ public static class FunctionalTest
                 listenBucketNotificationsSignature,
                 "Tests whether ListenBucketNotifications passes for small object",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
-                await TearDown(minio, bucketName).ConfigureAwait(false);
+            await TearDown(minio, bucketName).ConfigureAwait(false);
         }
         catch (NotImplementedException ex)
         {
