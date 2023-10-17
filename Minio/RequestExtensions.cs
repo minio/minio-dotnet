@@ -1,4 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Net;
+using System.Net.Http.Headers;
+using Microsoft.Win32;
 using Minio.Credentials;
 using Minio.DataModel;
 using Minio.DataModel.Args;
@@ -47,18 +50,29 @@ public static class RequestExtensions
         bool isSts = false,
         CancellationToken cancellationToken = default)
     {
-        if (minioClient.Config.RequestTimeout > 0)
+        Task<ResponseResult> responseResult;
+        try
         {
-            using var internalTokenSource =
-                new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, minioClient.Config.RequestTimeout));
-            using var timeoutTokenSource =
-                CancellationTokenSource.CreateLinkedTokenSource(internalTokenSource.Token, cancellationToken);
-            cancellationToken = timeoutTokenSource.Token;
+            if (minioClient.Config.RequestTimeout > 0)
+            {
+                using var internalTokenSource =
+                    new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, minioClient.Config.RequestTimeout));
+                using var timeoutTokenSource =
+                    CancellationTokenSource.CreateLinkedTokenSource(internalTokenSource.Token, cancellationToken);
+                cancellationToken = timeoutTokenSource.Token;
+            }
+
+             responseResult = minioClient.ExecuteWithRetry(
+                async () => await minioClient.ExecuteTaskCoreAsync(errorHandlers, requestMessageBuilder,
+                    isSts, cancellationToken).ConfigureAwait(false));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"\n\n   *** ExecuteTaskAsync::Threw an exception => {ex.Message}");
+            throw;
         }
 
-        return minioClient.ExecuteWithRetry(
-            () => minioClient.ExecuteTaskCoreAsync(errorHandlers, requestMessageBuilder,
-                isSts, cancellationToken));
+        return responseResult;
     }
 
     private static async Task<ResponseResult> ExecuteTaskCoreAsync(this IMinioClient minioClient,
@@ -99,6 +113,24 @@ public static class RequestExtensions
         {
             responseResult?.Dispose();
             responseResult = new ResponseResult(request, e);
+        }
+
+        if (responseResult.StatusCode == HttpStatusCode.NotFound)
+        {
+            if (request.Method == HttpMethod.Head)
+            {
+                Exception ex = new BucketNotFoundException();
+                responseResult.Exception = ex;
+                return responseResult;
+            }
+
+            if (request.RequestUri.ToString().Contains("lock", StringComparison.OrdinalIgnoreCase) &&
+                request.Method == HttpMethod.Get)
+            {
+                Exception ex = new MissingObjectLockConfigurationException();
+                responseResult.Exception = ex;
+                return responseResult;
+            }
         }
 
         minioClient.HandleIfErrorResponse(responseResult, errorHandlers, startTime);

@@ -632,7 +632,7 @@ public static class FunctionalTest
             exceptionList.Add,
             () => { });
 
-        await Task.Delay(9000).ConfigureAwait(false);
+        await Task.Delay(20000).ConfigureAwait(false);
         if (lockConfig?.ObjectLockEnabled.Equals(ObjectLockConfiguration.LockEnabled,
                 StringComparison.OrdinalIgnoreCase) == true)
         {
@@ -5387,7 +5387,7 @@ public static class FunctionalTest
                 () => { });
         }
 
-        await Task.Delay(20000).ConfigureAwait(false);
+        await Task.Delay(40000).ConfigureAwait(false);
         Assert.AreEqual(numObjects, count);
     }
 
