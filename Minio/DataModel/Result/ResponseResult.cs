@@ -40,7 +40,7 @@ public sealed class ResponseResult : IDisposable
         Exception = exception;
     }
 
-    public Exception Exception { get; set;}
+    public Exception Exception { get; set; }
     public HttpRequestMessage Request { get; }
     public HttpResponseMessage Response { get; }
 

@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Net.Http.Headers;
-using Microsoft.Win32;
 using Minio.Credentials;
 using Minio.DataModel;
 using Minio.DataModel.Args;
@@ -62,7 +60,7 @@ public static class RequestExtensions
                 cancellationToken = timeoutTokenSource.Token;
             }
 
-             responseResult = minioClient.ExecuteWithRetry(
+            responseResult = minioClient.ExecuteWithRetry(
                 async () => await minioClient.ExecuteTaskCoreAsync(errorHandlers, requestMessageBuilder,
                     isSts, cancellationToken).ConfigureAwait(false));
         }

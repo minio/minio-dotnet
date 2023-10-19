@@ -805,8 +805,8 @@ public static class FunctionalTest
             aesEncryption.KeySize = 256;
             aesEncryption.GenerateKey();
             var ssec = new SSEC(aesEncryption.Key);
-
-            using (var filestream = rsg.GenerateStreamFromSeed(6 * MB))
+            Stream filestream;
+            await using ((filestream = rsg.GenerateStreamFromSeed(6 * MB)).ConfigureAwait(false))
             {
                 var file_write_size = filestream.Length;
 
@@ -826,16 +826,18 @@ public static class FunctionalTest
                     .WithServerSideEncryption(ssec)
                     .WithCallbackStream(async (stream, cancellationToken) =>
                     {
-                        using var fileStream = File.Create(tempFileName);
+                        Stream fileStream;
+                        await using ((fileStream = File.Create(tempFileName)).ConfigureAwait(false))
+                        {
+                            await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
+                            await fileStream.DisposeAsync().ConfigureAwait(false);
 
-                        await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                        await fileStream.DisposeAsync().ConfigureAwait(false);
+                            var writtenInfo = new FileInfo(tempFileName);
+                            file_read_size = writtenInfo.Length;
 
-                        var writtenInfo = new FileInfo(tempFileName);
-                        file_read_size = writtenInfo.Length;
-
-                        Assert.AreEqual(file_write_size, file_read_size);
-                        File.Delete(tempFileName);
+                            Assert.AreEqual(file_write_size, file_read_size);
+                            File.Delete(tempFileName);
+                        }
                     });
                 var statObjectArgs = new StatObjectArgs()
                     .WithBucket(bucketName)
@@ -848,24 +850,26 @@ public static class FunctionalTest
             new MintLogger("PutGetStatEncryptedObject_Test2", putObjectSignature,
                 "Tests whether Put/Get/Stat multipart upload with encryption passes", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
+            File.Delete(tempFileName);
+            await TearDown(minio, bucketName).ConfigureAwait(false);
         }
         catch (NotImplementedException ex)
         {
             new MintLogger("PutGetStatEncryptedObject_Test2", putObjectSignature,
                 "Tests whether Put/Get/Stat multipart upload with encryption passes", TestStatus.NA,
                 DateTime.Now - startTime, "", ex.Message, ex.ToString(), args).Log();
+            File.Delete(tempFileName);
+            await TearDown(minio, bucketName).ConfigureAwait(false);
+            throw;
         }
         catch (Exception ex)
         {
             new MintLogger("PutGetStatEncryptedObject_Test2", putObjectSignature,
                 "Tests whether Put/Get/Stat multipart upload with encryption passes", TestStatus.FAIL,
                 DateTime.Now - startTime, "", ex.Message, ex.ToString(), args).Log();
-            throw;
-        }
-        finally
-        {
             File.Delete(tempFileName);
             await TearDown(minio, bucketName).ConfigureAwait(false);
+            throw;
         }
     }
 
@@ -4871,18 +4875,20 @@ public static class FunctionalTest
 
                 new MintLogger(testName, getObjectSignature, "Tests whether GetObject returns all the data",
                     TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
+
+                if (File.Exists(tempFileName)) File.Delete(tempFileName);
+                if (File.Exists(tempSource)) File.Delete(tempSource);
+                await TearDown(minio, bucketName).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 new MintLogger(testName, getObjectSignature, "Tests whether GetObject returns all the data",
                     TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
-                throw;
-            }
-            finally
-            {
+
                 if (File.Exists(tempFileName)) File.Delete(tempFileName);
                 if (File.Exists(tempSource)) File.Delete(tempSource);
                 await TearDown(minio, bucketName).ConfigureAwait(false);
+                throw;
             }
         }
     }
@@ -6055,11 +6061,12 @@ public static class FunctionalTest
         var expDate = baseDate.AddYears(1);
         var exp = new Expiration(expDate);
 
-        var calculatedExpDate = expDate.AddDays(1).AddSeconds(-1).ToUniversalTime().Date;
-        var expInDays = (calculatedExpDate.ToLocalTime().Date - baseDate.Date).TotalDays;
+        var calcDateTime = DateTime.Parse(exp.ExpiryDate, null, DateTimeStyles.RoundtripKind);
+        var expInDays = (calcDateTime.Date - baseDate.ToUniversalTime().Date).TotalDays;
 
-        var rule1 = new LifecycleRule(null, "txt", exp, null,
-            new RuleFilter(null, "txt/", null), null, null, LifecycleRule.LifecycleRuleStatusEnabled);
+        var rule1 = new LifecycleRule(null, "txt", exp,
+            null, new RuleFilter(null, "txt/", null), null,
+            null, LifecycleRule.LifecycleRuleStatusEnabled);
         rules.Add(rule1);
         var lfc = new LifecycleConfiguration(rules);
         try
@@ -6097,7 +6104,9 @@ public static class FunctionalTest
             Assert.IsTrue(lfcObj.Rules.Count > 0);
             Assert.AreEqual(lfcObj.Rules.Count, lfc.Rules.Count);
             var lfcDate = DateTime.Parse(lfcObj.Rules[0].Expiration.ExpiryDate, null, DateTimeStyles.RoundtripKind);
-            Assert.AreEqual((lfcDate.Date - baseDate.Date).TotalDays, expInDays);
+            var lfcExpInDays = (lfcDate.Date - baseDate.ToUniversalTime().Date).TotalDays;
+            Assert.AreEqual(lfcExpInDays, expInDays);
+
             new MintLogger(nameof(BucketLifecycleAsync_Test1) + ".2", getBucketLifecycleSignature,
                     "Tests whether GetBucketLifecycleAsync passes", TestStatus.PASS, DateTime.Now - startTime,
                     args: args)
