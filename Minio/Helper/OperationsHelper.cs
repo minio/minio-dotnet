@@ -110,8 +110,7 @@ public partial class MinioClient : IMinioClient
         var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
             await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+                cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

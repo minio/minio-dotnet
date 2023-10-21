@@ -50,7 +50,7 @@ public static class MinioClientExtensions
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
-        minioClient.Config.BaseUrl = endpoint;
+        minioClient.Config.Endpoint = endpoint;
         minioClient.SetBaseURL(GetBaseUrl(endpoint));
         return minioClient;
     }
@@ -63,7 +63,10 @@ public static class MinioClientExtensions
             throw new ArgumentException(
                 string.Format(CultureInfo.InvariantCulture, "Port {0} is not a number between 1 and 65535", port),
                 nameof(port));
-        return minioClient.WithEndpoint(endpoint + ":" + port);
+        endpoint = endpoint + ":" + port.ToString(CultureInfo.InvariantCulture);
+        minioClient.Config.Endpoint = endpoint;
+        minioClient.SetBaseURL(GetBaseUrl(endpoint));
+        return minioClient;
     }
 
     public static IMinioClient WithEndpoint(this IMinioClient minioClient, Uri url)
@@ -71,8 +74,10 @@ public static class MinioClientExtensions
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
         if (url is null) throw new ArgumentNullException(nameof(url));
+        minioClient.SetBaseURL(url);
+        minioClient.Config.Endpoint = url.AbsoluteUri;
 
-        return minioClient.WithEndpoint(url.AbsoluteUri);
+        return minioClient;
     }
 
     public static IMinioClient WithRegion(this IMinioClient minioClient, string region)
@@ -92,7 +97,7 @@ public static class MinioClientExtensions
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
         // Set region to its default value if empty or null
-        minioClient.Config.Region = "us-east-1";
+        minioClient.Config.Region ??= "us-east-1";
         return minioClient;
     }
 
@@ -120,15 +125,7 @@ public static class MinioClientExtensions
     public static IMinioClient WithSSL(this IMinioClient minioClient, bool secure = true)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
-
-        if (secure)
-        {
-            minioClient.Config.Secure = true;
-            if (string.IsNullOrEmpty(minioClient.Config.BaseUrl))
-                return minioClient;
-            //var secureUrl = RequestUtil.MakeTargetURL(minioClient.BaseUrl, minioClient.Secure);
-        }
-
+        minioClient.Config.Secure = secure;
         return minioClient;
     }
 

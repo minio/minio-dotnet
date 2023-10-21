@@ -590,10 +590,9 @@ public static class FunctionalTest
             new GetObjectLockConfigurationArgs()
                 .WithBucket(bucketName);
         ObjectLockConfiguration lockConfig = null;
-        VersioningConfiguration versioningConfig = null;
         try
         {
-            versioningConfig = await minio.GetVersioningAsync(new GetVersioningArgs()
+            var versioningConfig = await minio.GetVersioningAsync(new GetVersioningArgs()
                 .WithBucket(bucketName)).ConfigureAwait(false);
             if (versioningConfig is not null &&
                 (versioningConfig.Status.Contains("Enabled", StringComparison.Ordinal) ||
@@ -633,7 +632,7 @@ public static class FunctionalTest
             exceptionList.Add,
             () => { });
 
-        await Task.Delay(4500).ConfigureAwait(false);
+        await Task.Delay(20000).ConfigureAwait(false);
         if (lockConfig?.ObjectLockEnabled.Equals(ObjectLockConfiguration.LockEnabled,
                 StringComparison.OrdinalIgnoreCase) == true)
         {
@@ -806,8 +805,8 @@ public static class FunctionalTest
             aesEncryption.KeySize = 256;
             aesEncryption.GenerateKey();
             var ssec = new SSEC(aesEncryption.Key);
-
-            using (var filestream = rsg.GenerateStreamFromSeed(6 * MB))
+            Stream filestream;
+            await using ((filestream = rsg.GenerateStreamFromSeed(6 * MB)).ConfigureAwait(false))
             {
                 var file_write_size = filestream.Length;
 
@@ -827,16 +826,18 @@ public static class FunctionalTest
                     .WithServerSideEncryption(ssec)
                     .WithCallbackStream(async (stream, cancellationToken) =>
                     {
-                        using var fileStream = File.Create(tempFileName);
+                        Stream fileStream;
+                        await using ((fileStream = File.Create(tempFileName)).ConfigureAwait(false))
+                        {
+                            await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
+                            await fileStream.DisposeAsync().ConfigureAwait(false);
 
-                        await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                        await fileStream.DisposeAsync().ConfigureAwait(false);
+                            var writtenInfo = new FileInfo(tempFileName);
+                            file_read_size = writtenInfo.Length;
 
-                        var writtenInfo = new FileInfo(tempFileName);
-                        file_read_size = writtenInfo.Length;
-
-                        Assert.AreEqual(file_write_size, file_read_size);
-                        File.Delete(tempFileName);
+                            Assert.AreEqual(file_write_size, file_read_size);
+                            File.Delete(tempFileName);
+                        }
                     });
                 var statObjectArgs = new StatObjectArgs()
                     .WithBucket(bucketName)
@@ -849,24 +850,26 @@ public static class FunctionalTest
             new MintLogger("PutGetStatEncryptedObject_Test2", putObjectSignature,
                 "Tests whether Put/Get/Stat multipart upload with encryption passes", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
+            File.Delete(tempFileName);
+            await TearDown(minio, bucketName).ConfigureAwait(false);
         }
         catch (NotImplementedException ex)
         {
             new MintLogger("PutGetStatEncryptedObject_Test2", putObjectSignature,
                 "Tests whether Put/Get/Stat multipart upload with encryption passes", TestStatus.NA,
                 DateTime.Now - startTime, "", ex.Message, ex.ToString(), args).Log();
+            File.Delete(tempFileName);
+            await TearDown(minio, bucketName).ConfigureAwait(false);
+            throw;
         }
         catch (Exception ex)
         {
             new MintLogger("PutGetStatEncryptedObject_Test2", putObjectSignature,
                 "Tests whether Put/Get/Stat multipart upload with encryption passes", TestStatus.FAIL,
                 DateTime.Now - startTime, "", ex.Message, ex.ToString(), args).Log();
-            throw;
-        }
-        finally
-        {
             File.Delete(tempFileName);
             await TearDown(minio, bucketName).ConfigureAwait(false);
+            throw;
         }
     }
 
@@ -2702,7 +2705,7 @@ public static class FunctionalTest
                         Exception ex = new UnexpectedMinioException(err.Message);
                         if (string.Equals(err.Code, "NotImplemented", StringComparison.OrdinalIgnoreCase))
                             ex = new NotImplementedException(err.Message);
-
+                        await TearDown(minio, bucketName).ConfigureAwait(false);
                         throw ex;
                     }
 
@@ -2731,6 +2734,7 @@ public static class FunctionalTest
                 listenBucketNotificationsSignature,
                 "Tests whether ListenBucketNotifications passes for small object",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
+            await TearDown(minio, bucketName).ConfigureAwait(false);
         }
         catch (NotImplementedException ex)
         {
@@ -2739,6 +2743,7 @@ public static class FunctionalTest
                 "Tests whether ListenBucketNotifications passes for small object",
                 TestStatus.NA, DateTime.Now - startTime, ex.Message,
                 ex.ToString(), args: args).Log();
+            await TearDown(minio, bucketName).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -2770,12 +2775,9 @@ public static class FunctionalTest
                     "Tests whether ListenBucketNotifications passes for small object",
                     TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
                     ex.ToString(), args: args).Log();
+                await TearDown(minio, bucketName).ConfigureAwait(false);
                 throw;
             }
-        }
-        finally
-        {
-            await TearDown(minio, bucketName).ConfigureAwait(false);
         }
     }
 
@@ -4873,18 +4875,20 @@ public static class FunctionalTest
 
                 new MintLogger(testName, getObjectSignature, "Tests whether GetObject returns all the data",
                     TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
+
+                if (File.Exists(tempFileName)) File.Delete(tempFileName);
+                if (File.Exists(tempSource)) File.Delete(tempSource);
+                await TearDown(minio, bucketName).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 new MintLogger(testName, getObjectSignature, "Tests whether GetObject returns all the data",
                     TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
-                throw;
-            }
-            finally
-            {
+
                 if (File.Exists(tempFileName)) File.Delete(tempFileName);
                 if (File.Exists(tempSource)) File.Delete(tempSource);
                 await TearDown(minio, bucketName).ConfigureAwait(false);
+                throw;
             }
         }
     }
@@ -5389,7 +5393,7 @@ public static class FunctionalTest
                 () => { });
         }
 
-        await Task.Delay(5000).ConfigureAwait(false);
+        await Task.Delay(40000).ConfigureAwait(false);
         Assert.AreEqual(numObjects, count);
     }
 
@@ -6046,21 +6050,23 @@ public static class FunctionalTest
         catch (Exception ex)
         {
             await TearDown(minio, bucketName).ConfigureAwait(false);
-            new MintLogger(nameof(BucketLifecycleAsync_Test1), setBucketLifecycleSignature,
+            new MintLogger(nameof(BucketLifecycleAsync_Test1) + ".0", setBucketLifecycleSignature,
                 "Tests whether SetBucketLifecycleAsync passes", TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
                 ex.ToString(), args: args).Log();
             throw;
         }
 
         var rules = new List<LifecycleRule>();
-        var exp = new Expiration(DateTime.Now.AddYears(1));
-        var compareDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0);
-        var expInDays = (compareDate.AddYears(1) - compareDate).TotalDays;
+        var baseDate = DateTime.Now;
+        var expDate = baseDate.AddYears(1);
+        var exp = new Expiration(expDate);
 
-        var rule1 = new LifecycleRule(null, "txt", exp, null,
-            new RuleFilter(null, "txt/", null),
-            null, null, LifecycleRule.LifecycleRuleStatusEnabled
-        );
+        var calcDateTime = DateTime.Parse(exp.ExpiryDate, null, DateTimeStyles.RoundtripKind);
+        var expInDays = (calcDateTime.Date - baseDate.ToUniversalTime().Date).TotalDays;
+
+        var rule1 = new LifecycleRule(null, "txt", exp,
+            null, new RuleFilter(null, "txt/", null), null,
+            null, LifecycleRule.LifecycleRuleStatusEnabled);
         rules.Add(rule1);
         var lfc = new LifecycleConfiguration(rules);
         try
@@ -6082,7 +6088,6 @@ public static class FunctionalTest
         }
         catch (Exception ex)
         {
-            await TearDown(minio, bucketName).ConfigureAwait(false);
             new MintLogger(nameof(BucketLifecycleAsync_Test1) + ".1", setBucketLifecycleSignature,
                 "Tests whether SetBucketLifecycleAsync passes", TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
                 ex.ToString(), args: args).Log();
@@ -6098,8 +6103,10 @@ public static class FunctionalTest
             Assert.IsNotNull(lfcObj.Rules);
             Assert.IsTrue(lfcObj.Rules.Count > 0);
             Assert.AreEqual(lfcObj.Rules.Count, lfc.Rules.Count);
-            var lfcDate = DateTime.Parse(lfcObj.Rules[0].Expiration.Date, null, DateTimeStyles.RoundtripKind);
-            Assert.AreEqual(Math.Floor((lfcDate - compareDate).TotalDays), expInDays);
+            var lfcDate = DateTime.Parse(lfcObj.Rules[0].Expiration.ExpiryDate, null, DateTimeStyles.RoundtripKind);
+            var lfcExpInDays = (lfcDate.Date - baseDate.ToUniversalTime().Date).TotalDays;
+            Assert.AreEqual(lfcExpInDays, expInDays);
+
             new MintLogger(nameof(BucketLifecycleAsync_Test1) + ".2", getBucketLifecycleSignature,
                     "Tests whether GetBucketLifecycleAsync passes", TestStatus.PASS, DateTime.Now - startTime,
                     args: args)
