@@ -203,13 +203,68 @@ internal class V4Authenticator
     /// <returns>Computed hmac of input content</returns>
     private ReadOnlySpan<byte> SignHmac(ReadOnlySpan<byte> key, ReadOnlySpan<byte> content)
     {
+        return ComputeHmac256(key.ToArray(), content.ToArray());
+//#if NETSTANDARD
+//        using var hmac = new HMACSHA256(key.ToArray());
+//        hmac.Initialize();
+//        return hmac.ComputeHash(content.ToArray());
+//#else
+//        return HMACSHA256.HashData(key, content);
+//#endif
+    }
+
+    private byte[] ComputeHmac256(byte[] key, byte[] content)
+    {
+        var hKey = key;
+        if (hKey.Length > 64)
+        {
+            hKey = ComputeSha256(hKey);
+        }
+        else if (hKey.Length < 64)
+        {
+            var data = new byte[64];
+            Array.Copy(hKey.ToArray(), data, hKey.Length);
+            hKey = (data);
+        }
+
+        var innerKeyPad = new byte[hKey.Length];
+        for (var i = 0; i < hKey.Length; i++)
+        {
+            innerKeyPad[i] = (byte)(hKey[i] ^ 0x36);
+        }
+
+        var innerBody = new byte[content.Length + innerKeyPad.Length];
+        Array.Copy(innerKeyPad, innerBody, innerKeyPad.Length);
+        Array.Copy(content,0, innerBody, innerKeyPad.Length, content.Length);
+        var innerHash = ComputeSha256(innerBody);
+
+        var outerKeyPad = new byte[hKey.Length];
+        for (var i = 0; i < hKey.Length; i++)
+        {
+            outerKeyPad[i] = (byte)(hKey[i] ^ 0x5c);
+        }
+
+        var outerBody = new byte[innerHash.Length + outerKeyPad.Length];
+        Array.Copy(outerKeyPad, outerBody, outerKeyPad.Length);
+        Array.Copy(innerHash, 0, outerBody, outerKeyPad.Length, innerHash.Length);
+        var outerHash = ComputeSha256(outerBody);
+        return outerHash;
+    }
+    /// <summary>
+    ///     Compute sha256 checksum.
+    /// </summary>
+    /// <param name="body">Bytes body</param>
+    /// <returns>Bytes of sha256 checksum</returns>
+    private byte[] ComputeSha256(byte[] body)
+    {
 #if NETSTANDARD
-        using var hmac = new HMACSHA256(key.ToArray());
-        hmac.Initialize();
-        return hmac.ComputeHash(content.ToArray());
+        using var sha = SHA256.Create();
+        var hash
+            = sha.ComputeHash(body.ToArray());
 #else
-        return HMACSHA256.HashData(key, content);
+        var hash = SHA256.HashData(body);
 #endif
+        return hash;
     }
 
     /// <summary>
