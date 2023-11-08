@@ -26,12 +26,12 @@ public sealed class ResponseResult : IDisposable
     private string content;
     private ReadOnlyMemory<byte> contentBytes;
     private bool disposed;
-    private Stream stream;
 
-    public ResponseResult(HttpRequestMessage request, HttpResponseMessage response)
+    public ResponseResult(HttpRequestMessage request, HttpResponseMessage response, Stream stream = null)
     {
         Request = request;
         Response = response;
+        ContentStream = stream;
     }
 
     public ResponseResult(HttpRequestMessage request, Exception exception)
@@ -56,14 +56,7 @@ public sealed class ResponseResult : IDisposable
         }
     }
 
-    public Stream ContentStream
-    {
-        get
-        {
-            if (Response is null) return null;
-            return stream ??= Response.Content.ReadAsStream();
-        }
-    }
+    public Stream ContentStream { get; }//if (Response is null) return null;//return stream ??= Response.Content.ReadAsStream();
 
     public ReadOnlyMemory<byte> ContentBytes
     {
@@ -118,13 +111,12 @@ public sealed class ResponseResult : IDisposable
     {
         if (disposed) return;
 
-        stream?.Dispose();
+        ContentStream?.Dispose();
         Request?.Dispose();
         Response?.Dispose();
 
         content = null;
         contentBytes = null;
-        stream = null;
 
         disposed = true;
     }

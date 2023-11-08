@@ -96,7 +96,16 @@ public static class RequestExtensions
             var response = await minioClient.Config.HttpClient.SendAsync(request,
                     HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
-            responseResult = new ResponseResult(request, response);
+            var statusCode = response.StatusCode;
+            var memoryStream = new MemoryStream();
+            if (statusCode == HttpStatusCode.OK)
+            {
+                var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
+                memoryStream.Position = 0;
+            }
+
+            responseResult = new ResponseResult(request, response, memoryStream);
             if (requestMessageBuilder.ResponseWriter is not null)
                 requestMessageBuilder.ResponseWriter(responseResult.ContentStream);
             if (requestMessageBuilder.FunctionResponseWriter is not null)
