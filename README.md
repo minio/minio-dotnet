@@ -22,7 +22,7 @@ using Minio.DataModel.Args;
 public static class Program
 {
     var endpoint = "play.min.io";
-    var accessKey = "Q3AM3UQ867trueSPQQA43P2F";
+    var accessKey = "Q3AM3UQ867SPQQA43P2F";
     var secretKey = "zuf+tfteSlswRu7BJ86wtrueekitnifILbZam1KYY3TG";
 
     public static void Main(string[] args)
