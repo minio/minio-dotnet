@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel;
 
 [Serializable]
-[XmlRoot(ElementName = "VersioningConfiguration")]
+[XmlRoot(ElementName = "VersioningConfiguration", Namespace = "https://s3.amazonaws.com/doc/2011-06-15/")]
 public class VersioningConfiguration
 {
     public VersioningConfiguration()
@@ -30,10 +31,7 @@ public class VersioningConfiguration
 
     public VersioningConfiguration(bool enableVersioning = true)
     {
-        if (enableVersioning)
-            Status = "Enabled";
-        else
-            Status = "Suspended";
+        Status = enableVersioning ? "Enabled" : "Suspended";
     }
 
     public VersioningConfiguration(VersioningConfiguration vc)
@@ -44,7 +42,26 @@ public class VersioningConfiguration
         MfaDelete = vc.MfaDelete;
     }
 
-    [XmlElement] public string Status { get; set; }
+    [XmlElement(ElementName = "Status")]
+    public string Status { get; set; }
 
+    [XmlElement(ElementName = "MfaDelete")]
     public string MfaDelete { get; set; }
+
+    public string ToXML()
+    {
+        var settings = new XmlWriterSettings { OmitXmlDeclaration = true };
+        using var ms = new MemoryStream();
+        using var xmlWriter = XmlWriter.Create(ms, settings);
+        var names = new XmlSerializerNamespaces();
+        names.Add(string.Empty, "https://sts.amazonaws.com/doc/2011-06-15/");
+
+        var cs = new XmlSerializer(typeof(VersioningConfiguration));
+        cs.Serialize(xmlWriter, this, names);
+
+        ms.Flush();
+        _ = ms.Seek(0, SeekOrigin.Begin);
+        using var streamReader = new StreamReader(ms);
+        return streamReader.ReadToEnd();
+    }
 }

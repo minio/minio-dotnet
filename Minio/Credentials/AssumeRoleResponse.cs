@@ -35,7 +35,7 @@ public class AssumeRoleResponse
         var names = new XmlSerializerNamespaces();
         names.Add(string.Empty, "https://sts.amazonaws.com/doc/2011-06-15/");
 
-        var cs = new XmlSerializer(typeof(CertificateResponse));
+        var cs = new XmlSerializer(typeof(AssumeRoleResponse));
         cs.Serialize(xmlWriter, this, names);
 
         ms.Flush();
