@@ -20,7 +20,7 @@ using System.Xml.Serialization;
 namespace Minio.DataModel;
 
 [Serializable]
-[XmlRoot(ElementName = "VersioningConfiguration", Namespace = "https://s3.amazonaws.com/doc/2011-06-15/")]
+[XmlRoot(ElementName = "VersioningConfiguration", Namespace = "https://sts.amazonaws.com/doc/2011-06-15/")]
 public class VersioningConfiguration
 {
     public VersioningConfiguration()
@@ -42,8 +42,7 @@ public class VersioningConfiguration
         MfaDelete = vc.MfaDelete;
     }
 
-    [XmlElement(ElementName = "Status")]
-    public string Status { get; set; }
+    [XmlElement(ElementName = "Status")] public string Status { get; set; }
 
     [XmlElement(ElementName = "MfaDelete")]
     public string MfaDelete { get; set; }
