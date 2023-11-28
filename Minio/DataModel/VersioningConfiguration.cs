@@ -21,7 +21,6 @@ namespace Minio.DataModel;
 
 [Serializable]
 [XmlRoot(ElementName = "VersioningConfiguration", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-
 public class VersioningConfiguration
 {
     public VersioningConfiguration()
