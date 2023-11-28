@@ -593,7 +593,8 @@ public static class FunctionalTest
         try
         {
             var versioningConfig = await minio.GetVersioningAsync(new GetVersioningArgs()
-                .WithBucket(bucketName)).ConfigureAwait(false);
+                .WithBucket(bucketName)
+                .WithVersions(true)).ConfigureAwait(false);
             if (versioningConfig is not null &&
                 (versioningConfig.Status.Contains("Enabled", StringComparison.Ordinal) ||
                  versioningConfig.Status.Contains("Suspended", StringComparison.Ordinal)))
@@ -2216,18 +2217,18 @@ public static class FunctionalTest
         }
         catch (NotImplementedException ex)
         {
+            await TearDown(minio, bucketName).ConfigureAwait(false);
             new MintLogger(nameof(ObjectLockConfigurationAsync_Test1), setObjectLockConfigurationSignature,
                 "Tests whether SetObjectLockConfigurationAsync passes", TestStatus.NA, DateTime.Now - startTime,
                 ex.Message, ex.ToString(), args: args).Log();
-            await TearDown(minio, bucketName).ConfigureAwait(false);
             return;
         }
         catch (Exception ex)
         {
+            await TearDown(minio, bucketName).ConfigureAwait(false);
             new MintLogger(nameof(ObjectLockConfigurationAsync_Test1), setObjectLockConfigurationSignature,
                 "Tests whether SetObjectLockConfigurationAsync passes", TestStatus.FAIL, DateTime.Now - startTime,
                 ex.Message, ex.ToString(), args: args).Log();
-            await TearDown(minio, bucketName).ConfigureAwait(false);
             throw;
         }
 
@@ -2246,16 +2247,17 @@ public static class FunctionalTest
         catch (NotImplementedException ex)
         {
             setLockNotImplemented = true;
+            await TearDown(minio, bucketName).ConfigureAwait(false);
             new MintLogger(nameof(ObjectLockConfigurationAsync_Test1), setObjectLockConfigurationSignature,
                 "Tests whether SetObjectLockConfigurationAsync passes", TestStatus.NA, DateTime.Now - startTime,
                 ex.Message, ex.ToString(), args: args).Log();
         }
         catch (Exception ex)
         {
+            await TearDown(minio, bucketName).ConfigureAwait(false);
             new MintLogger(nameof(ObjectLockConfigurationAsync_Test1), setObjectLockConfigurationSignature,
                 "Tests whether SetObjectLockConfigurationAsync passes", TestStatus.FAIL, DateTime.Now - startTime,
                 ex.Message, ex.ToString(), args: args).Log();
-            await TearDown(minio, bucketName).ConfigureAwait(false);
             throw;
         }
 
@@ -2276,6 +2278,7 @@ public static class FunctionalTest
         }
         catch (NotImplementedException ex)
         {
+            await TearDown(minio, bucketName).ConfigureAwait(false);
             getLockNotImplemented = true;
             new MintLogger(nameof(ObjectLockConfigurationAsync_Test1), getObjectLockConfigurationSignature,
                 "Tests whether GetObjectLockConfigurationAsync passes", TestStatus.NA, DateTime.Now - startTime,
@@ -2329,7 +2332,6 @@ public static class FunctionalTest
         }
         finally
         {
-            await Task.Delay(1500).ConfigureAwait(false);
             await TearDown(minio, bucketName).ConfigureAwait(false);
         }
     }
@@ -2734,7 +2736,6 @@ public static class FunctionalTest
                 listenBucketNotificationsSignature,
                 "Tests whether ListenBucketNotifications passes for small object",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
-            await TearDown(minio, bucketName).ConfigureAwait(false);
         }
         catch (NotImplementedException ex)
         {
@@ -2743,7 +2744,6 @@ public static class FunctionalTest
                 "Tests whether ListenBucketNotifications passes for small object",
                 TestStatus.NA, DateTime.Now - startTime, ex.Message,
                 ex.ToString(), args: args).Log();
-            await TearDown(minio, bucketName).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -2775,9 +2775,12 @@ public static class FunctionalTest
                     "Tests whether ListenBucketNotifications passes for small object",
                     TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
                     ex.ToString(), args: args).Log();
-                await TearDown(minio, bucketName).ConfigureAwait(false);
                 throw;
             }
+        }
+        finally
+        {
+            await TearDown(minio, bucketName).ConfigureAwait(false);
         }
     }
 

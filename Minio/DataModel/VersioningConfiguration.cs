@@ -20,7 +20,8 @@ using System.Xml.Serialization;
 namespace Minio.DataModel;
 
 [Serializable]
-[XmlRoot(ElementName = "VersioningConfiguration", Namespace = "https://sts.amazonaws.com/doc/2011-06-15/")]
+[XmlRoot(ElementName = "VersioningConfiguration", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+
 public class VersioningConfiguration
 {
     public VersioningConfiguration()
@@ -53,7 +54,7 @@ public class VersioningConfiguration
         using var ms = new MemoryStream();
         using var xmlWriter = XmlWriter.Create(ms, settings);
         var names = new XmlSerializerNamespaces();
-        names.Add(string.Empty, "https://sts.amazonaws.com/doc/2011-06-15/");
+        names.Add(string.Empty, "http://s3.amazonaws.com/doc/2006-03-01/");
 
         var cs = new XmlSerializer(typeof(VersioningConfiguration));
         cs.Serialize(xmlWriter, this, names);

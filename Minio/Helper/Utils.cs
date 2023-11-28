@@ -1078,10 +1078,9 @@ public static class Utils
 
     private static string GetNamespace<T>()
     {
-        if (typeof(T).GetCustomAttributes(typeof(XmlRootAttribute), true)
-                .FirstOrDefault() is XmlRootAttribute xmlRootAttribute)
-            return xmlRootAttribute.Namespace;
-
-        return null;
+        return typeof(T).GetCustomAttributes(typeof(XmlRootAttribute), true)
+            .FirstOrDefault() is XmlRootAttribute xmlRootAttribute
+            ? xmlRootAttribute.Namespace
+            : null;
     }
 }
