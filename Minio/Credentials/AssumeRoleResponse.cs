@@ -21,7 +21,7 @@ using System.Xml.Serialization;
 namespace Minio.Credentials;
 
 [Serializable]
-[XmlRoot(ElementName = "AssumeRoleResponse", Namespace = "https://sts.amazonaws.com/doc/2011-06-15/")]
+[XmlRoot(ElementName = "AssumeRoleResponse", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
 public class AssumeRoleResponse
 {
     [XmlElement(ElementName = "AssumeRoleResult")]
@@ -33,7 +33,7 @@ public class AssumeRoleResponse
         using var ms = new MemoryStream();
         using var xmlWriter = XmlWriter.Create(ms, settings);
         var names = new XmlSerializerNamespaces();
-        names.Add(string.Empty, "https://sts.amazonaws.com/doc/2011-06-15/");
+        names.Add(string.Empty, "http://s3.amazonaws.com/doc/2006-03-01/");
 
         var cs = new XmlSerializer(typeof(AssumeRoleResponse));
         cs.Serialize(xmlWriter, this, names);
