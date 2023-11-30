@@ -1065,21 +1065,14 @@ public static class Utils
         using var stringReader = new StringReader(xml);
         using var xmlReader = XmlReader.Create(stringReader, settings);
 
-        try
-        {
-            var serializer = new XmlSerializer(typeof(T));
-            return (T)serializer.Deserialize(xmlReader);
-        }
-        catch
-        {
-            throw;
-        }
+        var serializer = new XmlSerializer(typeof(T));
+        return (T)serializer.Deserialize(xmlReader);
     }
 
     private static string GetNamespace<T>()
     {
         return typeof(T).GetCustomAttributes(typeof(XmlRootAttribute), true)
-                .FirstOrDefault() is XmlRootAttribute xmlRootAttribute
+            .FirstOrDefault() is XmlRootAttribute xmlRootAttribute
             ? xmlRootAttribute.Namespace
             : null;
     }
