@@ -32,7 +32,8 @@ public static class FileUpload
 {
     private static bool IsWindows()
     {
-        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        return System.OSPlatform.Windows;
+
     }
 
     private static async Task Main(string[] args)

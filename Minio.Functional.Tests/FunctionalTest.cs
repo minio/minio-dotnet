@@ -4826,7 +4826,7 @@ public static class FunctionalTest
                     {
                         expectedFileSize = objectSize - offsetToStartFrom;
                         var noOfCtrlChars = 1;
-                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) noOfCtrlChars = 2;
+                        if (System.OSPlatform.Windows) noOfCtrlChars = 2;
 
                         expectedContent = string.Concat(line)
                             .Substring(offsetToStartFrom, expectedFileSize - noOfCtrlChars);

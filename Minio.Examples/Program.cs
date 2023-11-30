@@ -282,6 +282,7 @@ public static class Program
         File.Delete(smallFileName);
         File.Delete(bigFileName);
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) _ = Console.ReadLine();
+        if (System.OSPlatform.Windows;) _ = Console.ReadLine();
+
     }
 }
