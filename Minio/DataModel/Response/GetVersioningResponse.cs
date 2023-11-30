@@ -15,8 +15,6 @@
  */
 
 using System.Net;
-using System.Text;
-using CommunityToolkit.HighPerformance;
 using Minio.Helper;
 
 namespace Minio.DataModel.Response;
@@ -30,8 +28,7 @@ internal class GetVersioningResponse : GenericResponse
             !HttpStatusCode.OK.Equals(statusCode))
             return;
 
-        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-        VersioningConfig = Utils.DeserializeXml<VersioningConfiguration>(stream);
+        VersioningConfig = Utils.DeserializeXml<VersioningConfiguration>(responseContent);
     }
 
     internal VersioningConfiguration VersioningConfig { get; set; }

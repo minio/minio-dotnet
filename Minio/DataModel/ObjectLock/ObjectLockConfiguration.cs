@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel.ObjectLock;
@@ -38,4 +39,21 @@ public class ObjectLockConfiguration
     [XmlElement("ObjectLockEnabled")] public string ObjectLockEnabled { get; set; }
 
     [XmlElement("Rule")] public ObjectLockRule Rule { get; set; }
+
+    public string ToXML()
+    {
+        var settings = new XmlWriterSettings { OmitXmlDeclaration = true };
+        using var ms = new MemoryStream();
+        using var xmlWriter = XmlWriter.Create(ms, settings);
+        var names = new XmlSerializerNamespaces();
+        names.Add(string.Empty, "http://s3.amazonaws.com/doc/2006-03-01/");
+
+        var cs = new XmlSerializer(typeof(ObjectLockConfiguration));
+        cs.Serialize(xmlWriter, this, names);
+
+        ms.Flush();
+        _ = ms.Seek(0, SeekOrigin.Begin);
+        using var streamReader = new StreamReader(ms);
+        return streamReader.ReadToEnd();
+    }
 }

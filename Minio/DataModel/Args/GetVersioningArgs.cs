@@ -23,6 +23,14 @@ public class GetVersioningArgs : BucketArgs<GetVersioningArgs>
         RequestMethod = HttpMethod.Get;
     }
 
+    internal bool Versions { get; private set; }
+
+    public GetVersioningArgs WithVersions(bool ver)
+    {
+        Versions = ver;
+        return this;
+    }
+
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
         requestMessageBuilder.AddQueryParameter("versioning", "");
