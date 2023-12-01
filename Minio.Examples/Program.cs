@@ -17,7 +17,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using Minio.DataModel;
@@ -282,7 +281,6 @@ public static class Program
         File.Delete(smallFileName);
         File.Delete(bigFileName);
 
-        if (System.OSPlatform.Windows;) _ = Console.ReadLine();
-
+        if (OperatingSystem.IsWindows()) _ = Console.ReadLine();
     }
 }
