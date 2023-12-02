@@ -15,7 +15,6 @@
  */
 
 using System.Net;
-using System.Runtime.InteropServices;
 using Minio;
 using Minio.DataModel.Args;
 
@@ -32,7 +31,7 @@ public static class FileUpload
 {
     private static bool IsWindows()
     {
-        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        return OperatingSystem.IsWindows();
     }
 
     private static async Task Main(string[] args)

@@ -20,7 +20,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -4821,7 +4820,10 @@ public static class FunctionalTest
 #else
                 await File.WriteAllLinesAsync(tempSource, line).ConfigureAwait(false);
 #endif
-                using (var filestream = File.Open(tempSource, FileMode.Open, FileAccess.Read, FileShare.Read))
+                FileStream filestream = null;
+                await
+                    using ((filestream = File.Open(tempSource, FileMode.Open, FileAccess.Read, FileShare.Read))
+                           .ConfigureAwait(false))
                 {
                     var objectSize = (int)filestream.Length;
                     var expectedFileSize = lengthToBeRead;
@@ -4830,7 +4832,7 @@ public static class FunctionalTest
                     {
                         expectedFileSize = objectSize - offsetToStartFrom;
                         var noOfCtrlChars = 1;
-                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) noOfCtrlChars = 2;
+                        if (OperatingSystem.IsWindows()) noOfCtrlChars = 2;
 
                         expectedContent = string.Concat(line)
                             .Substring(offsetToStartFrom, expectedFileSize - noOfCtrlChars);
