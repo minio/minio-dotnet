@@ -583,8 +583,9 @@ public partial class MinioClient : IObjectOperations
         if ((args.ObjectSize < Constants.MinimumPartSize || isSnowball) && args.ObjectSize >= 0 &&
             args.ObjectStreamData is not null)
         {
-            if (args.ObjectStreamData.Position >= args.ObjectStreamData.Lenght)
-                args.ObjectStreamData.Position = 0;
+            if ((int)args.ObjectSize !=  ObjectStreamData.Lenght - ObjectStreamData.Position)
+                throw new UnexpectedShortReadException(
+                    $"Stream Position {ObjectStreamData.Position.ToString(CultureInfo.InvariantCulture)} has inequal distance to the end of the input buffer.");
             var bytes = await ReadFullAsync(args.ObjectStreamData, (int)args.ObjectSize).ConfigureAwait(false);
             var bytesRead = bytes.Length;
             if (bytesRead != (int)args.ObjectSize)
