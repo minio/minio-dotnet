@@ -583,6 +583,8 @@ public partial class MinioClient : IObjectOperations
         if ((args.ObjectSize < Constants.MinimumPartSize || isSnowball) && args.ObjectSize >= 0 &&
             args.ObjectStreamData is not null)
         {
+            if (args.ObjectStreamData.Position >= args.ObjectStreamData.Lenght)
+                args.ObjectStreamData.Position = 0;
             var bytes = await ReadFullAsync(args.ObjectStreamData, (int)args.ObjectSize).ConfigureAwait(false);
             var bytesRead = bytes.Length;
             if (bytesRead != (int)args.ObjectSize)
