@@ -832,6 +832,10 @@ public partial class MinioClient : IObjectOperations
     ///     Headers, SSE Headers
     /// </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <param name="singleFile">
+    ///     This boolean parameter differentiates single part file upload and
+    ///     multi part file upload as this function is shared by both.
+    /// </param>
     /// <returns></returns>
     /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
     /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
