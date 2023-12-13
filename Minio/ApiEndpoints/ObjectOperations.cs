@@ -17,6 +17,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Net;
 using System.Reactive.Linq;
 using Minio.ApiEndpoints;
 using Minio.DataModel;
@@ -841,20 +842,29 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="InvalidOperationException">The file stream is currently in a read operation</exception>
     /// <exception cref="AccessDeniedException">For encrypted PUT operation, Access is denied if the key is wrong</exception>
     private async Task<PutObjectResponse> PutObjectSinglePartAsync(PutObjectArgs args,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        bool singleFile = true)
     {
         //Skipping validate as we need the case where stream sends 0 bytes
         var progressReport = new ProgressReport();
-        args.Progress?.Report(progressReport);
+        if (singleFile) args.Progress?.Report(progressReport);
         var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
             await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
-        progressReport.Percentage = 100;
-        progressReport.TotalBytesTransferred = args.ObjectSize;
-        args.Progress?.Report(progressReport);
+        if (singleFile)
+        {
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                progressReport.Percentage = 100;
+                progressReport.TotalBytesTransferred = args.ObjectSize;
+            }
+
+            args.Progress?.Report(progressReport);
+        }
+
         return new PutObjectResponse(response.StatusCode, response.Content, response.Headers,
             args.ObjectSize, args.ObjectName);
     }
@@ -922,12 +932,6 @@ public partial class MinioClient : IObjectOperations
                 .WithUploadId(args.UploadId);
             await RemoveUploadAsync(removeUploadArgs, cancellationToken).ConfigureAwait(false);
             return null;
-        }
-
-        if (args.ObjectSize == -1)
-        {
-            progressReport.Percentage = 100;
-            args.Progress?.Report(progressReport);
         }
 
         return etags;

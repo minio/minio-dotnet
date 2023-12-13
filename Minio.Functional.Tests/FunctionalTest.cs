@@ -3494,13 +3494,19 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
-        var contentType = "application/octet-stream";
+        const int objSize = 1 * MB;
+        const string contentType = "application/octet-stream";
         var percentage = 0;
         var totalBytesTransferred = 0L;
         var progress = new Progress<ProgressReport>(progressReport =>
         {
             percentage = progressReport.Percentage;
             totalBytesTransferred = progressReport.TotalBytesTransferred;
+            // Console.WriteLine(
+            //    $"PutObject_Test9 - Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
+            // if (progressReport.Percentage != 100)
+            //    Console.SetCursorPosition(0, Console.CursorTop - 1);
+            // else Console.WriteLine();
         });
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
@@ -3514,9 +3520,9 @@ public static class FunctionalTest
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
             _ = await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
-                rsg.GenerateStreamFromSeed(1 * MB), progress).ConfigureAwait(false);
+                rsg.GenerateStreamFromSeed(objSize), progress).ConfigureAwait(false);
             Assert.IsTrue(percentage == 100);
-            Assert.IsTrue(totalBytesTransferred == 1 * MB);
+            Assert.IsTrue(totalBytesTransferred == objSize);
             new MintLogger(nameof(PutObject_Test9), putObjectSignature,
                 "Tests whether PutObject with progress passes for small object", TestStatus.PASS,
                 DateTime.Now - startTime,
@@ -3548,11 +3554,11 @@ public static class FunctionalTest
         {
             percentage = progressReport.Percentage;
             totalBytesTransferred = progressReport.TotalBytesTransferred;
-            //Console.WriteLine(
-            //    $"Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
-            //if (progressReport.Percentage != 100)
+            // Console.WriteLine(
+            //    $"PutObject_Test10 - Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
+            // if (progressReport.Percentage != 100)
             //    Console.SetCursorPosition(0, Console.CursorTop - 1);
-            //else Console.WriteLine();
+            // else Console.WriteLine();
         });
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
