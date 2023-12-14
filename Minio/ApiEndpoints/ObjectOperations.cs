@@ -593,7 +593,7 @@ public partial class MinioClient : IObjectOperations
             args = args.WithRequestBody(bytes)
                 .WithStreamData(null)
                 .WithObjectSize(bytesRead);
-            return await PutObjectSinglePartAsync(args, cancellationToken).ConfigureAwait(false);
+            return await PutObjectSinglePartAsync(args, cancellationToken, true).ConfigureAwait(false);
         }
 
         // For all sizes greater than 5MiB do multipart.
@@ -847,7 +847,7 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="AccessDeniedException">For encrypted PUT operation, Access is denied if the key is wrong</exception>
     private async Task<PutObjectResponse> PutObjectSinglePartAsync(PutObjectArgs args,
         CancellationToken cancellationToken = default,
-        bool singleFile = true)
+        bool singleFile = false)
     {
         //Skipping validate as we need the case where stream sends 0 bytes
         var progressReport = new ProgressReport();
@@ -858,15 +858,19 @@ public partial class MinioClient : IObjectOperations
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
-        if (singleFile)
+        if (singleFile && args.Progress is not null)
         {
+            var statArgs = new StatObjectArgs()
+                .WithBucket(args.BucketName)
+                .WithObject(args.ObjectName);
+            var stat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 progressReport.Percentage = 100;
-                progressReport.TotalBytesTransferred = args.ObjectSize;
+                progressReport.TotalBytesTransferred = stat.Size;
             }
 
-            args.Progress?.Report(progressReport);
+            args.Progress.Report(progressReport);
         }
 
         return new PutObjectResponse(response.StatusCode, response.Content, response.Headers,
