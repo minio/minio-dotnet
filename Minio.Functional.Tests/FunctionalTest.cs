@@ -691,6 +691,7 @@ public static class FunctionalTest
         var xmlSerializer = new XmlSerializer(typeof(string));
         using var stringReader = new StringReader(xml);
 
+        // ! TODO:
         var obj = (string)xmlSerializer.Deserialize(stringReader)!;
         return JsonSerializer.Serialize(obj);
     }
