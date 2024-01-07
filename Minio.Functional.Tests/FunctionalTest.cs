@@ -594,7 +594,7 @@ public static class FunctionalTest
         ObjectLockConfiguration lockConfig = null;
         try
         {
-            VersioningConfiguration versioningConfig = await minio.GetVersioningAsync(new GetVersioningArgs()
+            var versioningConfig = await minio.GetVersioningAsync(new GetVersioningArgs()
                 .WithBucket(bucketName)
                 .WithVersions(true)).ConfigureAwait(false);
             if (versioningConfig is not null &&
