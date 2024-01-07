@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+<<<<<<< HEAD
+=======
+using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+>>>>>>> 538b056 (Fix analyzer update)
 using System.Globalization;
 using System.Xml;
 using System.Xml.Serialization;
