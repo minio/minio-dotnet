@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Xml;
 using System.Xml.Serialization;
@@ -38,7 +37,7 @@ public class ReplicationConfiguration
     {
     }
 
-    public ReplicationConfiguration(string role, Collection<ReplicationRule> rules)
+    public ReplicationConfiguration(string role, ICollection<ReplicationRule> rules)
     {
         if (string.IsNullOrEmpty(role) || string.IsNullOrWhiteSpace(role))
             throw new ArgumentNullException(nameof(role), nameof(role) + " member cannot be empty.");
@@ -54,7 +53,7 @@ public class ReplicationConfiguration
 
     [XmlElement("Role")] public string Role { get; set; }
 
-    [XmlElement("Rule")] public Collection<ReplicationRule> Rules { get; set; }
+    [XmlElement("Rule")] public ICollection<ReplicationRule> Rules { get; set; }
 
     public string MarshalXML()
     {

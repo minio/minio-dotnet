@@ -1273,11 +1273,10 @@ public static class FunctionalTest
                 .WithVersions(true);
             var observable = minio.ListObjectsAsync(listObjectsArgs);
             var objVersions = new List<Tuple<string, string>>();
-#pragma warning disable AsyncFixer03 // Fire-and-forget async-void methods or delegates
             var subscription = observable.Subscribe(
                 item => objVersions.Add(new Tuple<string, string>(item.Key, item.VersionId)),
                 ex => throw ex,
-                async () =>
+                () => Task.Factory.StartNew(async () =>
                 {
                     var removeObjectsArgs = new RemoveObjectsArgs()
                         .WithBucket(bucketName)
@@ -1287,11 +1286,11 @@ public static class FunctionalTest
 
                     var deList = new List<DeleteError>();
                     using var rmSub = rmObservable.Subscribe(
-                        err => deList.Add(err),
+                        deList.Add,
                         ex => throw ex,
-                        async () => await TearDown(minio, bucketName).ConfigureAwait(false));
-                });
-#pragma warning restore AsyncFixer03 // Fire-and-forget async-void methods or delegates
+                        () => Task.Factory.StartNew(async () =>
+                            await TearDown(minio, bucketName).ConfigureAwait(false)));
+                }));
 
             await Task.Delay(2 * 1000).ConfigureAwait(false);
             new MintLogger("RemoveObjects_Test3", removeObjectSignature2,
