@@ -23,7 +23,7 @@ namespace Minio.DataModel;
 [XmlType(TypeName = "Delete")]
 public class DeleteObjectsRequest
 {
-    public DeleteObjectsRequest(Collection<DeleteObject> objectsList, bool quiet = true)
+    public DeleteObjectsRequest(ICollection<DeleteObject> objectsList, bool quiet = true)
     {
         Quiet = quiet;
         Objects = objectsList;
@@ -37,5 +37,5 @@ public class DeleteObjectsRequest
 
     [XmlElement("Quiet")] public bool Quiet { get; set; }
 
-    [XmlElement("Object")] public Collection<DeleteObject> Objects { get; set; }
+    [XmlElement("Object")] public ICollection<DeleteObject> Objects { get; set; }
 }
