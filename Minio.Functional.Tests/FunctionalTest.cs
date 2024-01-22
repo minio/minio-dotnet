@@ -364,8 +364,11 @@ public static class FunctionalTest
 
         try
         {
-            await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
+            await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
             var found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
+            Assert.IsFalse(found);
+            await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
+            found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
             Assert.IsTrue(found);
             new MintLogger(nameof(BucketExists_Test), bucketExistsSignature, "Tests whether BucketExists passes",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
@@ -1006,7 +1009,7 @@ public static class FunctionalTest
             filestream = bs.AsStream();
         }
 
-        using (filestream)
+        await using (filestream.ConfigureAwait(false))
         {
             var file_write_size = filestream.Length;
             var tempFileName = "tempfile-" + GetRandomName();
@@ -1035,11 +1038,6 @@ public static class FunctionalTest
                 Assert.IsNotNull(statObject.ContentType);
                 Assert.IsTrue(statObject.ContentType.Equals(contentType, StringComparison.OrdinalIgnoreCase));
             }
-
-            var rmArgs = new RemoveObjectArgs()
-                .WithBucket(bucketName)
-                .WithObject(objectName);
-            await minio.RemoveObjectAsync(rmArgs).ConfigureAwait(false);
         }
 
         return statObject;
@@ -3673,6 +3671,9 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
+        var objectSize = 1 * KB;
+        var objectSizeStr = objectSize.ToString(CultureInfo.InvariantCulture)
+            .Replace(" * ", "", StringComparison.Ordinal);
         var destBucketName = GetRandomName(15);
         var destObjectName = GetRandomName(10);
         var args = new Dictionary<string, string>
@@ -3682,8 +3683,8 @@ public static class FunctionalTest
                 { "objectName", objectName },
                 { "destBucketName", destBucketName },
                 { "destObjectName", destObjectName },
-                { "data", "1KB" },
-                { "size", "1KB" }
+                { "data", objectSizeStr },
+                { "size", objectSizeStr }
             };
         try
         {
@@ -3691,13 +3692,12 @@ public static class FunctionalTest
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
             await Setup_Test(minio, destBucketName).ConfigureAwait(false);
 
-            using var filestream = rsg.GenerateStreamFromSeed(1 * KB);
+            using var filestream = rsg.GenerateStreamFromSeed(objectSize);
             var putObjectArgs = new PutObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName)
                 .WithStreamData(filestream)
-                .WithObjectSize(filestream.Length)
-                .WithHeaders(null);
+                .WithObjectSize(filestream.Length);
             _ = await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -3705,7 +3705,8 @@ public static class FunctionalTest
             await TearDown(minio, bucketName).ConfigureAwait(false);
             await TearDown(minio, destBucketName).ConfigureAwait(false);
             new MintLogger("CopyObject_Test2", copyObjectSignature,
-                "Tests whether CopyObject with Etag mismatch passes", TestStatus.FAIL, DateTime.Now - startTime,
+                "Tests whether CopyObject_Test2 with Etag mismatch (1initial part) passes", TestStatus.FAIL,
+                DateTime.Now - startTime,
                 ex.Message, ex.ToString(), args: args).Log();
             throw;
         }
@@ -3724,6 +3725,10 @@ public static class FunctionalTest
                 .WithObject(destObjectName);
 
             await minio.CopyObjectAsync(copyObjectArgs).ConfigureAwait(false);
+
+            new MintLogger("CopyObject_Test2", copyObjectSignature,
+                "Tests whether CopyObject_Test2 with Etag mismatch passes", TestStatus.PASS, DateTime.Now - startTime,
+                args: args).Log();
         }
         catch (MinioException ex)
         {
@@ -3732,13 +3737,15 @@ public static class FunctionalTest
                     StringComparison.OrdinalIgnoreCase))
             {
                 new MintLogger(nameof(CopyObject_Test2), copyObjectSignature,
-                    "Tests whether CopyObject with Etag mismatch passes", TestStatus.PASS, DateTime.Now - startTime,
+                    "Tests whether CopyObject_Test2 with Etag mismatch passes", TestStatus.PASS,
+                    DateTime.Now - startTime,
                     args: args).Log();
             }
             else
             {
                 new MintLogger(nameof(CopyObject_Test2), copyObjectSignature,
-                    "Tests whether CopyObject with Etag mismatch passes", TestStatus.FAIL, DateTime.Now - startTime,
+                    "Tests whether CopyObject_Test2 with Etag mismatch passes", TestStatus.FAIL,
+                    DateTime.Now - startTime,
                     ex.Message, ex.ToString(), args: args).Log();
                 throw;
             }
@@ -3746,7 +3753,7 @@ public static class FunctionalTest
         catch (Exception ex)
         {
             new MintLogger(nameof(CopyObject_Test2), copyObjectSignature,
-                "Tests whether CopyObject with Etag mismatch passes", TestStatus.FAIL, DateTime.Now - startTime,
+                "Tests whether CopyObject_Test2 with Etag mismatch passes", TestStatus.FAIL, DateTime.Now - startTime,
                 ex.Message, ex.ToString(), args: args).Log();
             throw;
         }
@@ -4074,6 +4081,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var destBucketName = GetRandomName(15);
         var destObjectName = GetRandomName(10);
+        var objectSize = 1 * KB;
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
@@ -4089,13 +4097,14 @@ public static class FunctionalTest
             // Test CopyConditions where matching ETag is found
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
             await Setup_Test(minio, destBucketName).ConfigureAwait(false);
-            using (var filestream = rsg.GenerateStreamFromSeed(1 * KB))
+            Stream stream = null;
+            await using ((stream = rsg.GenerateStreamFromSeed(objectSize)).ConfigureAwait(false))
             {
                 var putObjectArgs = new PutObjectArgs()
                     .WithBucket(bucketName)
                     .WithObject(objectName)
-                    .WithStreamData(filestream)
-                    .WithObjectSize(filestream.Length);
+                    .WithStreamData(stream)
+                    .WithObjectSize(stream.Length);
                 _ = await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
             }
 

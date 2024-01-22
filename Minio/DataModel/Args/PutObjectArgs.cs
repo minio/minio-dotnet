@@ -151,7 +151,8 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
             }
 
         if (string.IsNullOrWhiteSpace(ContentType)) ContentType = "application/octet-stream";
-        if (!Headers.ContainsKey("Content-Type")) Headers["Content-Type"] = ContentType;
+        // if (!Headers.ContainsKey("Content-Type")) Headers["Content-Type"] = ContentType;
+        Headers["Content-Type"] = ContentType;
         return this;
     }
 
