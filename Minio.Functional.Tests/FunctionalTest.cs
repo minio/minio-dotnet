@@ -3500,6 +3500,7 @@ public static class FunctionalTest
         {
             percentage = progressReport.Percentage;
             totalBytesTransferred = progressReport.TotalBytesTransferred;
+            Console.WriteLine($"\n\n **INCREMENTS** {totalBytesTransferred.ToString(CultureInfo.InvariantCulture)}");
             // Console.WriteLine(
             //    $"PutObject_Test9 - Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
             // if (progressReport.Percentage != 100)
@@ -3519,7 +3520,9 @@ public static class FunctionalTest
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
             _ = await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
                 rsg.GenerateStreamFromSeed(objSize), progress).ConfigureAwait(false);
+            Console.WriteLine();
             Assert.IsTrue(percentage == 100);
+            Console.WriteLine($"ORIG Size {objSize} is COMPARED with **** {totalBytesTransferred.ToString(CultureInfo.InvariantCulture)}\n\n");
             Assert.IsTrue(totalBytesTransferred == objSize);
             new MintLogger(nameof(PutObject_Test9), putObjectSignature,
                 "Tests whether PutObject with progress passes for small object", TestStatus.PASS,
