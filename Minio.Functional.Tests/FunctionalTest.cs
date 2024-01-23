@@ -3705,7 +3705,7 @@ public static class FunctionalTest
             await TearDown(minio, bucketName).ConfigureAwait(false);
             await TearDown(minio, destBucketName).ConfigureAwait(false);
             new MintLogger("CopyObject_Test2", copyObjectSignature,
-                "Tests whether CopyObject_Test2 with Etag mismatch (1initial part) passes", TestStatus.FAIL,
+                "Tests whether CopyObject_Test2 with Etag mismatch (initial part) passes", TestStatus.FAIL,
                 DateTime.Now - startTime,
                 ex.Message, ex.ToString(), args: args).Log();
             throw;
