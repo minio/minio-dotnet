@@ -16,9 +16,9 @@ public static class RequestExtensions
         Justification = "This is done in the interface. String is provided here for convenience")]
     public static Task<HttpResponseMessage> WrapperGetAsync(this IMinioClient minioClient, string url)
     {
-        if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
-
-        return minioClient.WrapperGetAsync(new Uri(url));
+        return minioClient is null
+            ? throw new ArgumentNullException(nameof(minioClient))
+            : minioClient.WrapperGetAsync(new Uri(url));
     }
 
     /// <summary>
@@ -28,9 +28,9 @@ public static class RequestExtensions
         Justification = "This is done in the interface. String is provided here for convenience")]
     public static Task WrapperPutAsync(this IMinioClient minioClient, string url, StreamContent strm)
     {
-        if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
-
-        return minioClient.WrapperPutAsync(new Uri(url), strm);
+        return minioClient is null
+            ? throw new ArgumentNullException(nameof(minioClient))
+            : minioClient.WrapperPutAsync(new Uri(url), strm);
     }
 
     /// <summary>
@@ -90,7 +90,7 @@ public static class RequestExtensions
 
         var request = requestMessageBuilder.Request;
 
-        ResponseResult responseResult = null;
+        var responseResult = new ResponseResult(request, response: null);
         try
         {
             var response = await minioClient.Config.HttpClient.SendAsync(request,
@@ -102,37 +102,47 @@ public static class RequestExtensions
             if (requestMessageBuilder.FunctionResponseWriter is not null)
                 await requestMessageBuilder.FunctionResponseWriter(responseResult.ContentStream, cancellationToken)
                     .ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception e)
-        {
-            responseResult?.Dispose();
-            responseResult = new ResponseResult(request, e);
-        }
 
-        if (responseResult.StatusCode == HttpStatusCode.NotFound)
-        {
-            if (request.Method == HttpMethod.Head)
+            var path = request.RequestUri.LocalPath.TrimStart('/').TrimEnd('/').Split('/');
+            if (responseResult.Response.StatusCode == HttpStatusCode.NotFound)
             {
-                Exception ex = new BucketNotFoundException();
-                responseResult.Exception = ex;
-                return responseResult;
+                if (request.Method == HttpMethod.Head)
+                {
+                    if (responseResult.Exception?.GetType().Equals(typeof(BucketNotFoundException)) == true ||
+                        path?.ToList().Count == 1)
+                        responseResult.Exception = new BucketNotFoundException();
+
+                    if (path?.ToList().Count > 1)
+                    {
+                        var found = await minioClient
+                            .BucketExistsAsync(new BucketExistsArgs().WithBucket(path.ToList()[0]), cancellationToken)
+                            .ConfigureAwait(false);
+                        responseResult.Exception = !found
+                            ? new Exception("ThrowBucketNotFoundException")
+                            : new ObjectNotFoundException();
+                        throw responseResult.Exception;
+                    }
+                }
+
+                if (request.RequestUri.ToString().Contains("lock", StringComparison.OrdinalIgnoreCase) &&
+                    request.Method == HttpMethod.Get)
+                    responseResult.Exception = new MissingObjectLockConfigurationException();
             }
 
-            if (request.RequestUri.ToString().Contains("lock", StringComparison.OrdinalIgnoreCase) &&
-                request.Method == HttpMethod.Get)
-            {
-                Exception ex = new MissingObjectLockConfigurationException();
-                responseResult.Exception = ex;
-                return responseResult;
-            }
+            return responseResult;
         }
+        catch (Exception ex) when (ex is not (OperationCanceledException or
+                                       ObjectNotFoundException))
+        {
+            if (ex.Message.Equals("ThrowBucketNotFoundException", StringComparison.Ordinal))
+                throw new BucketNotFoundException();
 
-        minioClient.HandleIfErrorResponse(responseResult, errorHandlers, startTime);
-        return responseResult;
+            if (responseResult is not null)
+                responseResult.Exception = ex;
+            else
+                responseResult = new ResponseResult(request, ex);
+            return responseResult;
+        }
     }
 
     private static Task<ResponseResult> ExecuteWithRetry(this IMinioClient minioClient,
@@ -361,12 +371,14 @@ public static class RequestExtensions
             minioClient.LogRequest(response.Request, response, (now - startTime).TotalMilliseconds);
         }
 
-        if (handlers is null) throw new ArgumentNullException(nameof(handlers));
+        if (response.Exception is null)
+            throw response.Exception;
 
-        // Run through handlers passed to take up error handling
-        foreach (var handler in handlers) handler.Handle(response);
-
-        // Fall back default error handler
-        minioClient.DefaultErrorHandler.Handle(response);
+        if (handlers.Any())
+            // Run through handlers passed to take up error handling
+            foreach (var handler in handlers)
+                handler.Handle(response);
+        else
+            minioClient.DefaultErrorHandler.Handle(response);
     }
 }

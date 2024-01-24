@@ -11,8 +11,8 @@
     <ProjectReference Include="..\Minio\Minio.csproj" />
   </ItemGroup>
 
-	<ItemGroup Condition=" $(TargetFramework.StartsWith('net4')) ">
-		<Reference Include="System.Web" />
-	</ItemGroup>
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('net4')) ">
+    <Reference Include="System.Web" />
+  </ItemGroup>
 
 </Project>

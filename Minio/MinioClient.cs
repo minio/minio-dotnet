@@ -16,8 +16,6 @@
  */
 
 using System.Net;
-using System.Text;
-using CommunityToolkit.HighPerformance;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Minio.DataModel.Result;
@@ -234,8 +232,7 @@ public partial class MinioClient : IMinioClient
             throw new BucketNotFoundException(bucketName, "Not found.");
         }
 
-        using var stream = Encoding.UTF8.GetBytes(response.Content).AsMemory().AsStream();
-        var errResponse = Utils.DeserializeXml<ErrorResponse>(stream);
+        var errResponse = Utils.DeserializeXml<ErrorResponse>(response.Content);
 
         if (response.StatusCode.Equals(HttpStatusCode.Forbidden)
             && (errResponse.Code.Equals("SignatureDoesNotMatch", StringComparison.OrdinalIgnoreCase) ||
@@ -260,14 +257,16 @@ public partial class MinioClient : IMinioClient
 
         if (response.StatusCode.Equals(HttpStatusCode.NotImplemented)
             && errResponse.Code.Equals("NotImplemented", StringComparison.OrdinalIgnoreCase))
+        {
 #pragma warning disable MA0025 // Implement the functionality instead of throwing NotImplementedException
             throw new NotImplementedException(errResponse.Message);
+        }
 #pragma warning restore MA0025 // Implement the functionality instead of throwing NotImplementedException
 
         if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
             && errResponse.Code.Equals("InvalidRequest", StringComparison.OrdinalIgnoreCase))
         {
-            var legalHold = new Dictionary<string, string>(StringComparer.Ordinal) { { "legal-hold", "" } };
+            _ = new Dictionary<string, string>(StringComparer.Ordinal) { { "legal-hold", "" } };
             if (response.Request.RequestUri.Query.Contains("legalHold", StringComparison.OrdinalIgnoreCase))
                 throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
         }
@@ -285,6 +284,12 @@ public partial class MinioClient : IMinioClient
             throw new ArgumentException("Bucket already owned by you: " + errResponse.BucketName,
                 nameof(response));
 
+        if (response.StatusCode.Equals(HttpStatusCode.PreconditionFailed)
+            && errResponse.Code.Equals("PreconditionFailed", StringComparison.OrdinalIgnoreCase))
+            throw new PreconditionFailedException("At least one of the pre-conditions you " +
+                                                  "specified did not hold for object: \"" + errResponse.Resource +
+                                                  "\"");
+
         throw new UnexpectedMinioException(errResponse.Message) { Response = errResponse, XmlError = response.Content };
     }
 
@@ -292,9 +297,8 @@ public partial class MinioClient : IMinioClient
     {
         if (!disposedValue)
         {
-            if (disposing)
-                if (Config.DisposeHttpClient)
-                    Config.HttpClient?.Dispose();
+            if (disposing && Config.DisposeHttpClient)
+                Config.HttpClient?.Dispose();
             disposedValue = true;
         }
     }
