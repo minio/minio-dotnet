@@ -1022,7 +1022,9 @@ public static class FunctionalTest
                 .WithProgress(progress)
                 .WithContentType(contentType)
                 .WithHeaders(metaData);
-            await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+            var statPutObj = await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+            Console.WriteLine("\n\nPrint statPutObj");
+            Utils.Print(statPutObj);
 
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket(bucketName)
@@ -3503,7 +3505,7 @@ public static class FunctionalTest
             // Console.WriteLine(
             //    $"PutObject_Test9 - Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
             if (progressReport.Percentage != 100)
-               Console.SetCursorPosition(0, Console.CursorTop - 1);
+                Console.SetCursorPosition(0, Console.CursorTop - 1);
             // else Console.WriteLine();
         });
         var args = new Dictionary<string, string>
@@ -3518,12 +3520,11 @@ public static class FunctionalTest
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
 
-
             var stream = rsg.GenerateStreamFromSeed(objSize);
-            _ = await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
+            var statObj = await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
                 stream, progress).ConfigureAwait(false);
-            Console.WriteLine($"\n\n    percentage = {percentage]\n\n");
-            Assert.IsTrue(d == 100);
+            Console.WriteLine($"\n\n    percentage = {percentage.ToString(CultureInfo.InvariantCulture)}\n\n");
+            Assert.IsTrue(percentage == 100);
             Assert.IsTrue(totalBytesTransferred == objSize);
             new MintLogger(nameof(PutObject_Test9), putObjectSignature,
                 "Tests whether PutObject with progress passes for small object", TestStatus.PASS,
