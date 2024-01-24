@@ -1023,8 +1023,6 @@ public static class FunctionalTest
                 .WithContentType(contentType)
                 .WithHeaders(metaData);
             var statPutObj = await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
-            Console.WriteLine("\n\nPrint statPutObj");
-            Utils.Print(statPutObj);
 
             var statObjectArgs = new StatObjectArgs()
                 .WithBucket(bucketName)
@@ -3506,7 +3504,7 @@ public static class FunctionalTest
             //    $"PutObject_Test9 - Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
             if (progressReport.Percentage != 100)
             {
-                var topPosition = Console.CursorTop > 0 ? Console.CursorTop - 1: Console.CursorTop;
+                var topPosition = Console.CursorTop > 0 ? Console.CursorTop - 1 : Console.CursorTop;
                 Console.SetCursorPosition(0, topPosition);
             }
             // else Console.WriteLine();
@@ -3526,7 +3524,6 @@ public static class FunctionalTest
             var stream = rsg.GenerateStreamFromSeed(objSize);
             var statObj = await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
                 stream, progress).ConfigureAwait(false);
-            Console.WriteLine($"\n\n    percentage = {percentage.ToString(CultureInfo.InvariantCulture)}\n\n");
             Assert.IsTrue(percentage == 100);
             Assert.IsTrue(totalBytesTransferred == objSize);
             new MintLogger(nameof(PutObject_Test9), putObjectSignature,
@@ -3562,8 +3559,11 @@ public static class FunctionalTest
             totalBytesTransferred = progressReport.TotalBytesTransferred;
             // Console.WriteLine(
             //    $"PutObject_Test10 - Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
-            // if (progressReport.Percentage != 100)
-            //    Console.SetCursorPosition(0, Console.CursorTop - 1);
+            if (progressReport.Percentage != 100)
+            {
+                var topPosition = Console.CursorTop > 0 ? Console.CursorTop - 1 : Console.CursorTop;
+                Console.SetCursorPosition(0, topPosition);
+            }
             // else Console.WriteLine();
         });
         var args = new Dictionary<string, string>
