@@ -3505,7 +3505,10 @@ public static class FunctionalTest
             // Console.WriteLine(
             //    $"PutObject_Test9 - Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
             if (progressReport.Percentage != 100)
-                Console.SetCursorPosition(0, Console.CursorTop - 1);
+            {
+                var topPosition = Console.CursorTop > 0 ? Console.CursorTop - 1: Console.CursorTop;
+                Console.SetCursorPosition(0, topPosition);
+            }
             // else Console.WriteLine();
         });
         var args = new Dictionary<string, string>
