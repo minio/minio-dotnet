@@ -15,7 +15,6 @@
  */
 
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 using Minio.DataModel.Tags;
 
