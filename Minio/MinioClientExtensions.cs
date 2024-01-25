@@ -59,7 +59,7 @@ public static class MinioClientExtensions
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
-        if (port < 1 || port > 65535)
+        if (port is < 1 or > 65535)
             throw new ArgumentException(
                 string.Format(CultureInfo.InvariantCulture, "Port {0} is not a number between 1 and 65535", port),
                 nameof(port));

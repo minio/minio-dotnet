@@ -594,8 +594,7 @@ public static class FunctionalTest
         ObjectLockConfiguration lockConfig = null;
         try
         {
-            VersioningConfiguration versioningConfig = null;
-            versioningConfig = await minio.GetVersioningAsync(new GetVersioningArgs()
+            var versioningConfig = await minio.GetVersioningAsync(new GetVersioningArgs()
                 .WithBucket(bucketName)
                 .WithVersions(true)).ConfigureAwait(false);
             if (versioningConfig is not null &&
@@ -831,7 +830,7 @@ public static class FunctionalTest
                     .WithServerSideEncryption(ssec)
                     .WithCallbackStream(async (stream, cancellationToken) =>
                     {
-                        Stream fileStream;
+                        FileStream fileStream;
                         await using ((fileStream = File.Create(tempFileName)).ConfigureAwait(false))
                         {
                             await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);

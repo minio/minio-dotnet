@@ -71,7 +71,7 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
         requestMessageBuilder.AddQueryParameter("prefix", Prefix);
         requestMessageBuilder.AddQueryParameter("suffix", Suffix);
 
-        requestMessageBuilder.FunctionResponseWriter = async (responseStream, cancellationToken) =>
+        requestMessageBuilder.ResponseWriter = async (responseStream, cancellationToken) =>
         {
             using var sr = new StreamReader(responseStream);
             while (!sr.EndOfStream)

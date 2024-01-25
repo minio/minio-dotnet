@@ -98,9 +98,7 @@ public static class RequestExtensions
                 .ConfigureAwait(false);
             responseResult = new ResponseResult(request, response);
             if (requestMessageBuilder.ResponseWriter is not null)
-                requestMessageBuilder.ResponseWriter(responseResult.ContentStream);
-            if (requestMessageBuilder.FunctionResponseWriter is not null)
-                await requestMessageBuilder.FunctionResponseWriter(responseResult.ContentStream, cancellationToken)
+                await requestMessageBuilder.ResponseWriter(responseResult.ContentStream, cancellationToken)
                     .ConfigureAwait(false);
 
             var path = request.RequestUri.LocalPath.TrimStart('/').TrimEnd('/').Split('/');
