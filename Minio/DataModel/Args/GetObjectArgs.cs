@@ -90,11 +90,8 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
             var taskCompletionSource = new TaskCompletionSource<bool>();
 
             if (cancellationToken.IsCancellationRequested)
-            {
                 taskCompletionSource.SetCanceled();
-            }
             else
-            {
                 try
                 {
                     cb(stream);
@@ -104,7 +101,6 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
                 {
                     taskCompletionSource.SetException(ex);
                 }
-            }
 
             return taskCompletionSource.Task;
         };
