@@ -1,19 +1,19 @@
 <Project>
     <PropertyGroup>
-        <Copyright>Copyright (c) Minio. All rights reserved</Copyright>
+        <Copyright>Copyright (c) Newtera. All rights reserved</Copyright>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-        <PackageProjectUrl>https://github.com/minio/minio-dotnet</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/newtera/newtera-dotnet</PackageProjectUrl>
         <Authors>MinIO, Inc.</Authors>
         <Owners>MinIO, Inc.</Owners>
-        <PackageTags>minio;cloud;storage</PackageTags>
-        <PackageReleaseNotes>https://github.com/minio/minio-dotnet/releases</PackageReleaseNotes>
+        <PackageTags>newtera;cloud;storage</PackageTags>
+        <PackageReleaseNotes>https://github.com/newtera/newtera-dotnet/releases</PackageReleaseNotes>
         <PackageReadmeFile>readme.md</PackageReadmeFile>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <NeutralLanguage>en-US</NeutralLanguage>
         <MinClientVersion>2.14</MinClientVersion>
 
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
-        <RepositoryUrl>https://github.com/minio/minio-dotnet</RepositoryUrl>
+        <RepositoryUrl>https://github.com/newtera/newtera-dotnet</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <Product>$(AssemblyName) ($(TargetFramework))</Product>
         <Version>6.0.2</Version>

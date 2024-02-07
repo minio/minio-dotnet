@@ -6,6 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Minio\Minio.csproj" />
+    <ProjectReference Include="..\Newtera\Newtera.csproj" />
   </ItemGroup>
 </Project>

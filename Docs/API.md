@@ -5,7 +5,7 @@
 ## MinIO
 
 ```cs
-IMinioClient minioClient = new MinioClient()
+INewteraClient newteraClient = new NewteraClient()
                               .WithEndpoint("play.min.io")
                               .WithCredentials("Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
                               .WithSSL()
@@ -16,7 +16,7 @@ IMinioClient minioClient = new MinioClient()
 
 
 ```cs
-IIMinioClient minioClient = new MinioClient()
+IINewteraClient newteraClient = new NewteraClient()
                               .WithEndpoint("s3.amazonaws.com")
                               .WithCredentials("YOUR-ACCESSKEYID", "YOUR-SECRETACCESSKEY")
                               .WithSSL()
@@ -58,7 +58,7 @@ IIMinioClient minioClient = new MinioClient()
 
 |                                                                                                                                                                 |
 |-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region = "", string sessionToken="")`                                 |
+| `public NewteraClient(string endpoint, string accessKey = "", string secretKey = "", string region = "", string sessionToken="")`                                 |
 | Creates MinIO client object with given endpoint.AccessKey, secretKey, region and sessionToken are optional parameters, and can be omitted for anonymous access. |
 | The client object uses Http access by default. To use Https, chain method WithSSL() to client object to use secure transfer protocol                            |
 
@@ -88,7 +88,7 @@ __Parameters__
 
 |                                                                                                                                              |
 |----------------------------------------------------------------------------------------------------------------------------------------------|
-| `public MinioClient()`                                                                                                                       |
+| `public NewteraClient()`                                                                                                                       |
 | Creates MinIO client. This client gives an empty object that can be used with Chaining to populate only the member variables we need.        |
 | The next important step is to connect to an endpoint. You can chain one of the overloaded method WithEndpoint() to client object to connect. |
 | This client object also uses Http access by default. To use Https, chain method WithSSL() or WithSSL(true) to client object to use secure transfer protocol.  |
@@ -103,7 +103,7 @@ __Parameters__
 
 | Return Type     | Exceptions         |
 |:----------------|:-------------------|
-| ``MinioClient`` | Listed Exceptions: |
+| ``NewteraClient`` | Listed Exceptions: |
 
 
 __Examples__
@@ -112,24 +112,24 @@ __Examples__
 
 
 ```cs
-// 1. Using Builder with public MinioClient(), Endpoint, Credentials & Secure (HTTPS) connection
-IMinioClient minioClient = new MinioClient()
+// 1. Using Builder with public NewteraClient(), Endpoint, Credentials & Secure (HTTPS) connection
+INewteraClient newteraClient = new NewteraClient()
                               .WithEndpoint("play.min.io")
                               .WithCredentials("Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
                               .WithSSL()
                               .Build()
-// 2. Using Builder with public MinioClient(), Endpoint, Credentials & Secure (HTTPS) connection
-IMinioClient minioClient = new MinioClient()
+// 2. Using Builder with public NewteraClient(), Endpoint, Credentials & Secure (HTTPS) connection
+INewteraClient newteraClient = new NewteraClient()
                               .WithEndpoint("play.min.io", 9000, true)
                               .WithCredentials("Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
                               .WithSSL()
                               .Build()
 
-// 3. Initializing minio client with proxy
+// 3. Initializing newtera client with proxy
 IWebProxy proxy = new WebProxy("192.168.0.1", 8000);
-IMinioClient minioClient = new MinioClient()
+INewteraClient newteraClient = new NewteraClient()
                               .WithEndpoint("my-ip-address:9000")
-                              .WithCredentials("minio", "minio123")
+                              .WithCredentials("newtera", "newtera123")
                               .WithSSL()
                               .WithProxy(proxy)
                               .Build();
@@ -139,8 +139,8 @@ IMinioClient minioClient = new MinioClient()
 ### AWS S3
 
 ```cs
-// 1. Using Builder with public MinioClient(), Endpoint, Credentials, Secure (HTTPS) connection & proxy
-IMinioClient s3Client = new MinioClient()
+// 1. Using Builder with public NewteraClient(), Endpoint, Credentials, Secure (HTTPS) connection & proxy
+INewteraClient s3Client = new NewteraClient()
                            .WithEndpoint("s3.amazonaws.com")
                            .WithCredentials("YOUR-AWS-ACCESSKEYID", "YOUR-AWS-SECRETACCESSKEY")
                            .WithSSL()
@@ -183,7 +183,7 @@ __Example__
 try
 {
    // Create bucket if it doesn't exist.
-   bool found = await minioClient.BucketExistsAsync("mybucket");
+   bool found = await newteraClient.BucketExistsAsync("mybucket");
    if (found)
    {
       Console.WriteLine("mybucket already exists");
@@ -191,11 +191,11 @@ try
    else
    {
      // Create bucket 'my-bucketname'.
-     await minioClient.MakeBucketAsync("mybucket");
+     await newteraClient.MakeBucketAsync("mybucket");
      Console.WriteLine("mybucket is created successfully");
    }
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -231,7 +231,7 @@ __Example__
 try
 {
    // Create bucket if it doesn't exist.
-   bool found = await minioClient.BucketExistsAsync(bktExistArgs);
+   bool found = await newteraClient.BucketExistsAsync(bktExistArgs);
    if (found)
    {
       Console.WriteLine(bktExistArgs.BucketName +" already exists");
@@ -239,11 +239,11 @@ try
    else
    {
      // Create bucket 'my-bucketname'.
-     await minioClient.MakeBucketAsync(mkBktArgs);
+     await newteraClient.MakeBucketAsync(mkBktArgs);
      Console.WriteLine(mkBktArgs.BucketName + " is created successfully");
    }
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -280,13 +280,13 @@ __Example__
 try
 {
     // List buckets that have read access.
-    var list = await minioClient.ListBucketsAsync();
+    var list = await newteraClient.ListBucketsAsync();
     foreach (Bucket bucket in list.Buckets)
     {
         Console.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
     }
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -327,10 +327,10 @@ __Example__
 try
 {
    // Check whether 'my-bucketname' exists or not.
-   bool found = await minioClient.BucketExistsAsync(bucketName);
+   bool found = await newteraClient.BucketExistsAsync(bucketName);
    Console.WriteLine("bucket-name " + ((found == true) ? "exists" : "does not exist"));
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
    Console.WriteLine("[Bucket]  Exception: {0}", e);
 }
@@ -371,10 +371,10 @@ __Example__
 try
 {
    // Check whether 'my-bucketname' exists or not.
-   bool found = await minioClient.BucketExistsAsync(args);
+   bool found = await newteraClient.BucketExistsAsync(args);
    Console.WriteLine(args.BucketName + " " + ((found == true) ? "exists" : "does not exist"));
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
    Console.WriteLine("[Bucket]  Exception: {0}", e);
 }
@@ -418,11 +418,11 @@ __Example__
 try
 {
     // Check if my-bucket exists before removing it.
-    bool found = await minioClient.BucketExistsAsync("mybucket");
+    bool found = await newteraClient.BucketExistsAsync("mybucket");
     if (found)
     {
         // Remove bucket my-bucketname. This operation will succeed only if the bucket is empty.
-        await minioClient.RemoveBucketAsync("mybucket");
+        await newteraClient.RemoveBucketAsync("mybucket");
         Console.WriteLine("mybucket is removed successfully");
     }
     else
@@ -430,7 +430,7 @@ try
         Console.WriteLine("mybucket does not exist");
     }
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -473,11 +473,11 @@ __Example__
 try
 {
     // Check if my-bucket exists before removing it.
-    bool found = await minioClient.BucketExistsAsync(bktExistsArgs);
+    bool found = await newteraClient.BucketExistsAsync(bktExistsArgs);
     if (found)
     {
         // Remove bucket my-bucketname. This operation will succeed only if the bucket is empty.
-        await minioClient.RemoveBucketAsync(rmBktArgs);
+        await newteraClient.RemoveBucketAsync(rmBktArgs);
         Console.WriteLine(rmBktArgs.BucketName + " is removed successfully");
     }
     else
@@ -485,7 +485,7 @@ try
         Console.WriteLine(bktExistsArgs.BucketName + " does not exist");
     }
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -519,19 +519,19 @@ __Example__
 try
 {
     // Check whether 'mybucket' exists or not.
-    bool found = minioClient.BucketExistsAsync(bktExistsArgs);
+    bool found = newteraClient.BucketExistsAsync(bktExistsArgs);
     if (found)
     {
         var args = new GetVersioningArgs("mybucket")
                        .WithSSL();
-        VersioningConfiguration vc = await minio.GetVersioningInfoAsync(args);
+        VersioningConfiguration vc = await newtera.GetVersioningInfoAsync(args);
     }
     else
     {
         Console.WriteLine(bktExistsArgs.BucketName + " does not exist");
     }
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -566,21 +566,21 @@ __Example__
 try
 {
     // Check whether 'mybucket' exists or not.
-    bool found = minioClient.BucketExistsAsync(bktExistsArgs);
+    bool found = newteraClient.BucketExistsAsync(bktExistsArgs);
     if (found)
     {
         var args = new SetVersioningArgs("mybucket")
                        .WithSSL()
                        .WithVersioningEnabled();
 
-        await minio.SetVersioningAsync(setArgs);
+        await newtera.SetVersioningAsync(setArgs);
     }
     else
     {
         Console.WriteLine(bktExistsArgs.BucketName + " does not exist");
     }
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -612,7 +612,7 @@ __Parameters__
 |             | ``InvalidBucketNameException`` : upon invalid bucket name                             |
 |             | ``BucketNotFoundException`` : upon bucket with name not found                         |
 |             | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|             | ``UnexpectedMinioException`` : upon internal errors encountered during the operation  |
+|             | ``UnexpectedNewteraException`` : upon internal errors encountered during the operation  |
 
 
 
@@ -626,9 +626,9 @@ try
     SetBucketEncryptionArgs args = new SetBucketEncryptionArgs()
                                        .WithBucket(bucketName)
                                        .WithEncryptionConfig(config);
-    await minio.SetBucketEncryptionAsync(args);
+    await newtera.SetBucketEncryptionAsync(args);
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -658,7 +658,7 @@ __Parameters__
 |                                             | ``InvalidBucketNameException`` : upon invalid bucket name                             |
 |                                             | ``BucketNotFoundException`` : upon bucket with name not found                         |
 |                                             | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|                                             | ``UnexpectedMinioException`` : upon internal errors encountered during the operation  |
+|                                             | ``UnexpectedNewteraException`` : upon internal errors encountered during the operation  |
 
 __ServerSideEncryptionConfiguration__  object which contains the bucket encryption configuration.
 
@@ -671,10 +671,10 @@ try
     // Get Bucket Encryption Configuration for the bucket
     var args = new GetBucketEncryptionArgs()
                    .WithBucket(bucketName);
-    ServerSideEncryptionConfiguration config = await minio.GetBucketEncryptionAsync(args);
+    ServerSideEncryptionConfiguration config = await newtera.GetBucketEncryptionAsync(args);
     Console.WriteLine($"Got encryption configuration for bucket {bucketName}.");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -705,7 +705,7 @@ __Parameters__
 |             | ``InvalidBucketNameException`` : upon invalid bucket name                             |
 |             | ``BucketNotFoundException`` : upon bucket with name not found                         |
 |             | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|             | ``UnexpectedMinioException`` : upon internal errors encountered during the operation  |
+|             | ``UnexpectedNewteraException`` : upon internal errors encountered during the operation  |
 
 
 
@@ -718,10 +718,10 @@ try
     // Remove Bucket Encryption Configuration for the bucket
     var args = new RemoveBucketEncryptionArgs()
                    .WithBucket(bucketName);
-    await minio.RemoveBucketEncryptionAsync(args);
+    await newtera.RemoveBucketEncryptionAsync(args);
     Console.WriteLine($"Removed encryption configuration for bucket {bucketName}.");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -751,7 +751,7 @@ __Parameters__
 |             | ``InvalidBucketNameException`` : upon invalid bucket name                             |
 |             | ``BucketNotFoundException`` : upon bucket with name not found                         |
 |             | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|             | ``UnexpectedMinioException`` : upon internal errors encountered during the operation  |
+|             | ``UnexpectedNewteraException`` : upon internal errors encountered during the operation  |
 
 
 __Example__
@@ -763,10 +763,10 @@ try
     // Set Tags for the bucket
     SetBucketTagsArgs args = new SetBucketTagsArgs()
                                  .WithBucket(bucketName);
-    await minio.SetBucketTagsAsync(args);
+    await newtera.SetBucketTagsAsync(args);
     Console.WriteLine($"Set Tags for bucket {bucketName}.");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -796,7 +796,7 @@ __Parameters__
 |                                                                     | ``InvalidBucketNameException`` : upon invalid bucket name                             |
 |                                                                     | ``BucketNotFoundException`` : upon bucket with name not found                         |
 |                                                                     | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|                                                                     | ``UnexpectedMinioException`` : upon internal errors encountered during the operation  |
+|                                                                     | ``UnexpectedNewteraException`` : upon internal errors encountered during the operation  |
 
 
 
@@ -809,10 +809,10 @@ try
     // Get Bucket Tags for the bucket
     var args = new GetBucketTagsArgs()
                    .WithBucket(bucketName);
-    var tags = await minio.GetBucketTagsAsync(args);
+    var tags = await newtera.GetBucketTagsAsync(args);
     Console.WriteLine($"Got tags for bucket {bucketName}.");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -844,7 +844,7 @@ __Parameters__
 |             | ``InvalidBucketNameException`` : upon invalid bucket name                             |
 |             | ``BucketNotFoundException`` : upon bucket with name not found                         |
 |             | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|             | ``UnexpectedMinioException`` : upon internal errors encountered during the operation  |
+|             | ``UnexpectedNewteraException`` : upon internal errors encountered during the operation  |
 
 
 
@@ -857,10 +857,10 @@ try
     // Remove Bucket Encryption Configuration for the bucket
     var args = new RemoveBucketTagsArgs()
                    .WithBucket(bucketName);
-    await minio.RemoveBucketTagsAsync(args);
+    await newtera.RemoveBucketTagsAsync(args);
     Console.WriteLine($"Removed tags for bucket {bucketName}.");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -891,7 +891,7 @@ __Parameters__
 |             | ``InvalidBucketNameException`` : upon invalid bucket name                             |
 |             | ``BucketNotFoundException`` : upon bucket with name not found                         |
 |             | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|             | ``UnexpectedMinioException`` : upon internal errors encountered during the operation  |
+|             | ``UnexpectedNewteraException`` : upon internal errors encountered during the operation  |
 
 
 
@@ -905,10 +905,10 @@ try
     SetBucketLifecycleArgs args = new SetBucketLifecycleArgs()
                                       .WithBucket(bucketName)
                                       .WithConfiguration(lfc);
-    await minio.SetBucketLifecycleAsync(args);
+    await newtera.SetBucketLifecycleAsync(args);
     Console.WriteLine($"Set Lifecycle for bucket {bucketName}.");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -938,7 +938,7 @@ __Parameters__
 |                                                                                                                     | ``InvalidBucketNameException`` : upon invalid bucket name                             |
 |                                                                                                                     | ``BucketNotFoundException`` : upon bucket with name not found                         |
 |                                                                                                                     | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|                                                                                                                     | ``UnexpectedMinioException`` : upon internal errors encountered during the operation  |
+|                                                                                                                     | ``UnexpectedNewteraException`` : upon internal errors encountered during the operation  |
 
 
 
@@ -951,10 +951,10 @@ try
     // Get Bucket Lifecycle configuration for the bucket
     var args = new GetBucketLifecycleArgs()
                    .WithBucket(bucketName);
-    var lfc = await minio.GetBucketLifecycleAsync(args);
+    var lfc = await newtera.GetBucketLifecycleAsync(args);
     Console.WriteLine($"Got Lifecycle configuration for bucket {bucketName}.");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -985,7 +985,7 @@ __Parameters__
 |             | ``InvalidBucketNameException`` : upon invalid bucket name                             |
 |             | ``BucketNotFoundException`` : upon bucket with name not found                         |
 |             | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|             | ``UnexpectedMinioException`` : upon internal errors encountered during the operation  |
+|             | ``UnexpectedNewteraException`` : upon internal errors encountered during the operation  |
 
 
 
@@ -998,10 +998,10 @@ try
     // Remove Bucket Lifecycle Configuration for the bucket
     var args = new RemoveBucketLifecycleArgs()
                    .WithBucket(bucketName);
-    await minio.RemoveBucketLifecycleAsync(args);
+    await newtera.RemoveBucketLifecycleAsync(args);
     Console.WriteLine($"Removed Lifecycle configuration for bucket {bucketName}.");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -1033,7 +1033,7 @@ __Parameters__
 |             | ``InvalidBucketNameException`` : upon invalid bucket name                             |
 |             | ``BucketNotFoundException`` : upon bucket with name not found                         |
 |             | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|             | ``UnexpectedMinioException`` : upon internal errors encountered during the operation  |
+|             | ``UnexpectedNewteraException`` : upon internal errors encountered during the operation  |
 
 
 
@@ -1047,10 +1047,10 @@ try
     SetBucketReplicationArgs args = new SetBucketReplicationArgs()
                                         .WithBucket(bucketName)
                                         .WithConfiguration(cfg);
-    await minio.SetBucketReplicationAsync(args);
+    await newtera.SetBucketReplicationAsync(args);
     Console.WriteLine($"Set Replication configuration for bucket {bucketName}.");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -1081,7 +1081,7 @@ __Parameters__
 |                                                                                                                           | ``InvalidBucketNameException`` : upon invalid bucket name                             |
 |                                                                                                                           | ``BucketNotFoundException`` : upon bucket with name not found                         |
 |                                                                                                                           | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|                                                                                                                           | ``UnexpectedMinioException`` : upon internal errors encountered during the operation  |
+|                                                                                                                           | ``UnexpectedNewteraException`` : upon internal errors encountered during the operation  |
 
 
 
@@ -1094,10 +1094,10 @@ try
     // Get Bucket Replication for the bucket
     var args = new GetBucketReplicationArgs()
                    .WithBucket(bucketName);
-    var cfg = await minio.GetBucketReplicationAsync(args);
+    var cfg = await newtera.GetBucketReplicationAsync(args);
     Console.WriteLine($"Got Replication configuration for bucket {bucketName}.");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -1128,7 +1128,7 @@ __Parameters__
 |             | ``InvalidBucketNameException`` : upon invalid bucket name                             |
 |             | ``BucketNotFoundException`` : upon bucket with name not found                         |
 |             | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|             | ``UnexpectedMinioException`` : upon internal errors encountered during the operation  |
+|             | ``UnexpectedNewteraException`` : upon internal errors encountered during the operation  |
 
 
 
@@ -1141,10 +1141,10 @@ try
     // Remove Bucket Replication Configuration for the bucket
     var args = new RemoveBucketReplicationArgs()
                    .WithBucket(bucketName);
-    await minio.RemoveBucketReplicationAsync(args);
+    await newtera.RemoveBucketReplicationAsync(args);
     Console.WriteLine($"Removed Replication configuration for bucket {bucketName}.");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -1180,7 +1180,7 @@ try
 {
     // Just list of objects
     // Check whether 'mybucket' exists or not.
-    bool found = minioClient.BucketExistsAsync("mybucket");
+    bool found = newteraClient.BucketExistsAsync("mybucket");
     if (found)
     {
         // List objects from 'my-bucketname'
@@ -1188,7 +1188,7 @@ try
                                   .WithBucket("mybucket")
                                   .WithPrefix("prefix")
                                   .WithRecursive(true);
-        IObservable<Item> observable = minioClient.ListObjectsAsync(args);
+        IObservable<Item> observable = newteraClient.ListObjectsAsync(args);
         IDisposable subscription = observable.Subscribe(
                 item => Console.WriteLine("OnNext: {0}", item.Key),
                 ex => Console.WriteLine("OnError: {0}", ex.Message),
@@ -1199,7 +1199,7 @@ try
         Console.WriteLine("mybucket does not exist");
     }
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -1208,7 +1208,7 @@ try
 {
     // List of objects with version IDs.
     // Check whether 'mybucket' exists or not.
-    bool found = minioClient.BucketExistsAsync("mybucket");
+    bool found = newteraClient.BucketExistsAsync("mybucket");
     if (found)
     {
         // List objects from 'my-bucketname'
@@ -1217,7 +1217,7 @@ try
                                   .WithPrefix("prefix")
                                   .WithRecursive(true)
                                   .WithVersions(true)
-        IObservable<Item> observable = minioClient.ListObjectsAsync(args, true);
+        IObservable<Item> observable = newteraClient.ListObjectsAsync(args, true);
         IDisposable subscription = observable.Subscribe(
                 item => Console.WriteLine("OnNext: {0} - {1}", item.Key, item.VersionId),
                 ex => Console.WriteLine("OnError: {0}", ex.Message),
@@ -1228,7 +1228,7 @@ try
         Console.WriteLine("mybucket does not exist");
     }
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -1261,7 +1261,7 @@ __Parameters__
 |             | ``InvalidBucketNameException`` : upon invalid bucket name                             |
 |             | ``BucketNotFoundException`` : upon bucket with name not found                         |
 |             | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|             | ``UnexpectedMinioException`` : upon internal errors encountered during the operation  |
+|             | ``UnexpectedNewteraException`` : upon internal errors encountered during the operation  |
 
 
 
@@ -1276,10 +1276,10 @@ try
     SetObjectLockConfigurationArgs args = new SetObjectLockConfigurationArgs()
                                               .WithBucket(bucketName)
                                               .WithLockConfiguration(config);
-    await minio.SetObjectLockConfigurationAsync(args);
+    await newtera.SetObjectLockConfigurationAsync(args);
     Console.WriteLine($"Set Object lock configuration to bucket {bucketName}.");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -1311,7 +1311,7 @@ __Parameters__
 |                                                                                                                            | ``InvalidBucketNameException`` : upon invalid bucket name                             |
 |                                                                                                                            | ``BucketNotFoundException`` : upon bucket with name not found                         |
 |                                                                                                                            | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|                                                                                                                            | ``UnexpectedMinioException`` : upon internal errors encountered during the operation  |
+|                                                                                                                            | ``UnexpectedNewteraException`` : upon internal errors encountered during the operation  |
 
 
 
@@ -1324,10 +1324,10 @@ try
     // Get the Object Lock Configuration for the bucket
     var args = new GetObjectLockConfigurationArgs()
                    .WithBucket(bucketName);
-    var config = await minio.GetObjectLockConfigurationAsync(args);
+    var config = await newtera.GetObjectLockConfigurationAsync(args);
     Console.WriteLine($"Object lock configuration on bucket {bucketName} is : " + config.ObjectLockEnabled);
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -1359,7 +1359,7 @@ __Parameters__
 |             | ``InvalidBucketNameException`` : upon invalid bucket name                             |
 |             | ``BucketNotFoundException`` : upon bucket with name not found                         |
 |             | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|             | ``UnexpectedMinioException`` : upon internal errors encountered during the operation  |
+|             | ``UnexpectedNewteraException`` : upon internal errors encountered during the operation  |
 
 
 
@@ -1372,10 +1372,10 @@ try
     // Remove Object Lock Configuration on the bucket
     var args = new RemoveObjectLockConfigurationArgs()
                    .WithBucket(bucketName);
-    await minio.RemoveObjectLockConfigurationAsync(args);
+    await newtera.RemoveObjectLockConfigurationAsync(args);
     Console.WriteLine($"Removed Object lock configuration on bucket {bucketName}.");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -1412,7 +1412,7 @@ __Example__
 try
 {
     // Check whether 'mybucket' exist or not.
-    bool found = minioClient.BucketExistsAsync("mybucket");
+    bool found = newteraClient.BucketExistsAsync("mybucket");
     if (found)
     {
         // List all incomplete multipart upload of objects in 'mybucket'
@@ -1420,7 +1420,7 @@ try
                                                  .WithBucket("mybucket")
                                                  .WithPrefix("prefix")
                                                  .WithRecursive(true);
-        IObservable<Upload> observable = minioClient.ListIncompleteUploads(listArgs);
+        IObservable<Upload> observable = newteraClient.ListIncompleteUploads(listArgs);
         IDisposable subscription = observable.Subscribe(
                             item => Console.WriteLine("OnNext: {0}", item.Key),
                             ex => Console.WriteLine("OnError: {0}", ex.Message),
@@ -1431,7 +1431,7 @@ try
         Console.WriteLine("mybucket does not exist");
     }
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -1441,9 +1441,9 @@ catch (MinioException e)
 <a name="listenBucketNotifications"></a>
 ### ListenBucketNotificationsAsync(ListenBucketNotificationsArgs args)
 
-`IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(ListenBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+`IObservable<NewteraNotificationRaw> ListenBucketNotificationsAsync(ListenBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
-Subscribes to bucket change notifications (a Minio-only extension)
+Subscribes to bucket change notifications (a Newtera-only extension)
 
 __Parameters__
 
@@ -1456,7 +1456,7 @@ __Parameters__
 
 | Return Type                                                                                                                                                                                                       | Exceptions |
 |:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------|
-| ``IObservable<MinioNotificationRaw>``: an Observable of _MinioNotificationRaw_, which contain the raw JSON notifications. Use the _MinioNotification_ class to deserialise using the JSON library of your choice. | _None_     |
+| ``IObservable<NewteraNotificationRaw>``: an Observable of _NewteraNotificationRaw_, which contain the raw JSON notifications. Use the _NewteraNotification_ class to deserialise using the JSON library of your choice. | _None_     |
 
 
 __Example__
@@ -1473,7 +1473,7 @@ try
                                              .WithEvents(events)
                                              .WithPrefix(prefix)
                                              .WithSuffix(suffix);
-    IObservable<MinioNotificationRaw> observable = minioClient.ListenBucketNotificationsAsync(args);
+    IObservable<NewteraNotificationRaw> observable = newteraClient.ListenBucketNotificationsAsync(args);
 
     IDisposable subscription = observable.Subscribe(
         notification => Console.WriteLine($"Notification: {notification.json}"),
@@ -1481,7 +1481,7 @@ try
         () => Console.WriteLine($"Stopped listening for bucket notifications\n"));
 
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -1521,10 +1521,10 @@ try
 {
     GetPolicyArgs args = new GetPolicyArgs()
                              .WithBucket("myBucket");
-    String policyJson = await minioClient.GetPolicyAsync(args);
+    String policyJson = await newteraClient.GetPolicyAsync(args);
     Console.WriteLine("Current policy: " + policyJson);
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -1565,9 +1565,9 @@ try
     SetPolicyArgs args = new SetPolicyArgs()
                              .WithBucket("myBucket")
                              .WithPolicy(policyJson);
-    await minioClient.SetPolicyAsync(args);
+    await newteraClient.SetPolicyAsync(args);
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -1604,7 +1604,7 @@ __Example__
 try
 {
     BucketNotification notification = new BucketNotification();
-    Arn topicArn = new Arn("aws", "sns", "us-west-1", "412334153608", "topicminio");
+    Arn topicArn = new Arn("aws", "sns", "us-west-1", "412334153608", "topicnewtera");
 
     TopicConfig topicConfiguration = new TopicConfig(topicArn);
     List<EventType> events = new List<EventType>(){ EventType.ObjectCreatedPut , EventType.ObjectCreatedCopy };
@@ -1613,17 +1613,17 @@ try
     topicConfiguration.AddFilterSuffix("jpg");
     notification.AddTopic(topicConfiguration);
 
-    QueueConfig queueConfiguration = new QueueConfig("arn:aws:sqs:us-west-1:482314153608:testminioqueue1");
+    QueueConfig queueConfiguration = new QueueConfig("arn:aws:sqs:us-west-1:482314153608:testnewteraqueue1");
     queueConfiguration.AddEvents(new List<EventType>() { EventType.ObjectCreatedCompleteMultipartUpload });
     notification.AddQueue(queueConfiguration);
 
     SetBucketNotificationsArgs args = new SetBucketNotificationsArgs()
                                           .WithBucket(bucketName)
                                           .WithBucketNotificationConfiguration(notification);
-    await minio.SetBucketNotificationsAsync(args);
+    await newtera.SetBucketNotificationsAsync(args);
     Console.WriteLine("Notifications set for the bucket " + args.BucketName + " successfully");
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -1663,10 +1663,10 @@ try
 {
     GetBucketNotificationsArgs args = new GetBucketNotificationsArgs()
                                           .WithBucket(bucketName);
-    BucketNotification notifications = await minioClient.GetBucketNotificationAsync(args);
+    BucketNotification notifications = await newteraClient.GetBucketNotificationAsync(args);
     Console.WriteLine("Notifications is " + notifications.ToXML());
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -1707,10 +1707,10 @@ try
 {
     RemoveAllBucketNotificationsArgs args = new RemoveAllBucketNotificationsArgs()
                                                 .WithBucket(bucketName);
-    await minioClient.RemoveAllBucketNotificationsAsync(args);
+    await newteraClient.RemoveAllBucketNotificationsAsync(args);
     Console.WriteLine("Notifications successfully removed from the bucket " + bucketName);
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -1757,7 +1757,7 @@ try
    StatObjectArgs statObjectArgs = new StatObjectArgs()
                                        .WithBucket("mybucket")
                                        .WithObject("myobject");
-   await minioClient.StatObjectAsync(statObjectArgs);
+   await newteraClient.StatObjectAsync(statObjectArgs);
 
    // Get input stream to have content of 'my-objectname' from 'my-bucketname'
    GetObjectArgs getObjectArgs = new GetObjectArgs()
@@ -1767,9 +1767,9 @@ try
                                           {
                                               stream.CopyTo(Console.OpenStandardOutput());
                                           });
-   await minioClient.GetObjectAsync(getObjectArgs);
+   await newteraClient.GetObjectAsync(getObjectArgs);
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -1784,7 +1784,7 @@ try
     StatObjectArgs statObjectArgs = new StatObjectArgs()
                                         .WithBucket("mybucket")
                                         .WithObject("myobject");
-    await minioClient.StatObjectAsync(statObjectArgs);
+    await newteraClient.StatObjectAsync(statObjectArgs);
 
     // Get input stream to have content of 'my-objectname' from 'my-bucketname'
     GetObjectArgs getObjectArgs = new GetObjectArgs()
@@ -1796,9 +1796,9 @@ try
     {
         stream.CopyTo(Console.OpenStandardOutput());
     });
-    await minioClient.GetObjectAsync(getObjectArgs);
+    await newteraClient.GetObjectAsync(getObjectArgs);
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -1813,16 +1813,16 @@ try
     StatObjectArgs statObjectArgs = new StatObjectArgs()
                                         .WithBucket("mybucket")
                                         .WithObject("myobject");
-    await minioClient.StatObjectAsync(statObjectArgs);
+    await newteraClient.StatObjectAsync(statObjectArgs);
 
     // Gets the object's data and stores it in photo.jpg
     GetObjectArgs getObjectArgs = new GetObjectArgs()
                                       .WithBucket("mybucket")
                                       .WithObject("myobject")
                                       .WithFileName("photo.jpg");
-    await minioClient.GetObjectAsync(getObjectArgs);
+    await newteraClient.GetObjectAsync(getObjectArgs);
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -1886,10 +1886,10 @@ try
                                       .WithContentType("application/octet-stream")
                                       .WithServerSideEncryption(ssec)
                                       .WithProgress(progress);
-    await minio.PutObjectAsync(putObjectArgs);
+    await newtera.PutObjectAsync(putObjectArgs);
     Console.WriteLine("island.jpg is uploaded successfully");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -1932,10 +1932,10 @@ try
    StatObjectArgs statObjectArgs = new StatObjectArgs()
                                        .WithBucket("mybucket")
                                        .WithObject("myobject");
-   ObjectStat objectStat = await minioClient.StatObjectAsync(statObjectArgs);
+   ObjectStat objectStat = await newteraClient.StatObjectAsync(statObjectArgs);
    Console.WriteLine(objectStat);
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -1990,10 +1990,10 @@ try
     sseSrc = new SSEC(aesEncryption.Key);
     sseDst = new SSES3();
    */
-   await minioClient.CopyObjectAsync("mybucket",  "island.jpg", "mydestbucket", "processed.png", copyConditions, sseSrc:sseSrc, sseDest:sseDst);
+   await newteraClient.CopyObjectAsync("mybucket",  "island.jpg", "mydestbucket", "processed.png", copyConditions, sseSrc:sseSrc, sseDest:sseDst);
    Console.WriteLine("island.jpg is uploaded successfully");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -2034,10 +2034,10 @@ try
     RemoveObjectArgs rmArgs = new RemoveObjectArgs()
                                   .WithBucket("mybucket")
                                   .WithObject("myobject");
-    await minioClient.RemoveObjectAsync(args);
+    await newteraClient.RemoveObjectAsync(args);
     Console.WriteLine("successfully removed mybucket/myobject");
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error: " + e);
 }
@@ -2049,10 +2049,10 @@ try
                                   .WithBucket("mybucket")
                                   .WithObject("myobject")
                                   .WithVersionId("versionId");
-    await minioClient.RemoveObjectAsync(args);
+    await newteraClient.RemoveObjectAsync(args);
     Console.WriteLine("successfully removed mybucket/myobject{versionId}");
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error: " + e);
 }
@@ -2098,7 +2098,7 @@ try
     RemoveObjectsAsync rmArgs = new RemoveObjectsAsync()
                                     .WithBucket(bucketName)
                                     .WithObjects(objectNames);
-    IObservable<DeleteError> observable = await minio.RemoveObjectAsync(rmArgs);
+    IObservable<DeleteError> observable = await newtera.RemoveObjectAsync(rmArgs);
     IDisposable subscription = observable.Subscribe(
         deleteError => Console.WriteLine("Object: {0}", deleteError.Key),
         ex => Console.WriteLine("OnError: {0}", ex),
@@ -2107,7 +2107,7 @@ try
             Console.WriteLine("Removed objects from " + bucketName + "\n");
         });
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error: " + e);
 }
@@ -2129,7 +2129,7 @@ try
     RemoveObjectsAsync rmArgs = new RemoveObjectsAsync()
                                     .WithBucket(bucketName)
                                     .WithObjectsVersions(objectsVersions);
-    IObservable<DeleteError> observable = await minio.RemoveObjectsAsync(rmArgs);
+    IObservable<DeleteError> observable = await newtera.RemoveObjectsAsync(rmArgs);
     IDisposable subscription = observable.Subscribe(
         deleteError => Console.WriteLine("Object: {0}", deleteError.Key),
         ex => Console.WriteLine("OnError: {0}", ex),
@@ -2138,7 +2138,7 @@ try
             Console.WriteLine("Listed all delete errors for remove objects on  " + bucketName + "\n");
         });
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error: " + e);
 }
@@ -2180,10 +2180,10 @@ try
     RemoveIncompleteUploadArgs args = new RemoveIncompleteUploadArgs()
                                           .WithBucket(bucketName)
                                           .WithObject(objectName);
-    await minioClient.RemoveIncompleteUploadAsync(args);
+    await newteraClient.RemoveIncompleteUploadAsync(args);
     Console.WriteLine("successfully removed all incomplete upload session of my-bucketname/my-objectname");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -2250,7 +2250,7 @@ try
                                        .WithBucket(bucketName)
                                        .WithObject(objectName)
                                        .WithSelectObjectOptions(opts);
-    var resp = await  minio.SelectObjectContentAsync(args);
+    var resp = await  newtera.SelectObjectContentAsync(args);
     resp.Payload.CopyTo(Console.OpenStandardOutput());
     Console.WriteLine("Bytes scanned:" + resp.Stats.BytesScanned);
     Console.WriteLine("Bytes returned:" + resp.Stats.BytesReturned);
@@ -2260,7 +2260,7 @@ try
         Console.WriteLine("Progress :" + resp.Progress.BytesProcessed);
     }
 }
-catch (MinioException e)
+catch (NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -2309,9 +2309,9 @@ try
                                       .WithObject(objectName)
                                       .WithVersionId(versionId)
                                       .WithLegalHold(true);
-    await minio.SetObjectLegalHoldAsync(args);
+    await newtera.SetObjectLegalHoldAsync(args);
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -2357,12 +2357,12 @@ try
                    .WithBucket(bucketName)
                    .WithObject(objectName)
                    .WithVersionId(versionId);
-    bool enabled = await minio.GetObjectLegalHoldAsync(args);
+    bool enabled = await newtera.GetObjectLegalHoldAsync(args);
     Console.WriteLine("LegalHold Configuration STATUS for " + bucketName + "/" + objectName +
                                         (!string.IsNullOrEmpty(versionId)?" with Version ID " + versionId: " ") +
                                         " : " + (enabled?"ON":"OFF"));
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -2393,7 +2393,7 @@ __Parameters__
 |             | ``BucketNotFoundException`` : upon bucket with name not found                         |
 |             | ``ObjectNotFoundException`` : upon object with name not found                         |
 |             | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|             | ``UnexpectedMinioException`` : upon internal errors encountered during the operation  |
+|             | ``UnexpectedNewteraException`` : upon internal errors encountered during the operation  |
 
 
 
@@ -2407,10 +2407,10 @@ try
     SetObjectTagsArgs args = new SetObjectTagsArgs()
                                  .WithBucket(bucketName)
                                  .WithObject(objectName);
-    await minio.SetObjectTagsAsync(args);
+    await newtera.SetObjectTagsAsync(args);
     Console.WriteLine($"Set tags for object {bucketName}/{objectName}.");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -2443,7 +2443,7 @@ __Parameters__
 |                                                                           | ``BucketNotFoundException`` : upon bucket with name not found                         |
 |                                                                           | ``ObjectNotFoundException`` : upon object with name not found                         |
 |                                                                           | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|                                                                           | ``UnexpectedMinioException`` : upon internal errors encountered during the operation  |
+|                                                                           | ``UnexpectedNewteraException`` : upon internal errors encountered during the operation  |
 
 
 
@@ -2457,10 +2457,10 @@ try
     var args = new GetObjectTagsArgs()
                    .WithBucket(bucketName)
                    .WithObject(objectName);
-    var tags = await minio.GetObjectTagsAsync(args);
+    var tags = await newtera.GetObjectTagsAsync(args);
     Console.WriteLine($"Got tags for object {bucketName}/{objectName}.");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -2493,7 +2493,7 @@ __Parameters__
 |             | ``BucketNotFoundException`` : upon bucket with name not found                         |
 |             | ``ObjectNotFoundException`` : upon object with name not found                         |
 |             | ``MalFormedXMLException`` : upon configuration XML in http request validation failure |
-|             | ``UnexpectedMinioException`` : upon internal errors encountered during the operation  |
+|             | ``UnexpectedNewteraException`` : upon internal errors encountered during the operation  |
 
 
 
@@ -2507,10 +2507,10 @@ try
     var args = new RemoveObjectTagsArgs()
                    .WithBucket(bucketName)
                    .WithObject(objectName);
-    await minio.RemoveObjectTagsAsync(args);
+    await newtera.RemoveObjectTagsAsync(args);
     Console.WriteLine($"Removed tags for object {bucketName}/{objectName}.");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -2558,10 +2558,10 @@ try
                                       .WithBucket(bucketName)
                                       .WithObject(objectName)
                                       .WithRetentionValidDays(numOfDays);
-    await minio.SetObjectRetentionAsync(args);
+    await newtera.SetObjectRetentionAsync(args);
     Console.WriteLine($"Assigned retention configuration to object {bucketName}/{objectName}");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -2608,10 +2608,10 @@ try
     var args = new GetObjectRetentionArgs()
                    .WithBucket(bucketName)
                    .WithObject(objectName);
-    ObjectRetentionConfiguration config = await minio.GetObjectRetentionAsync(args);
+    ObjectRetentionConfiguration config = await newtera.GetObjectRetentionAsync(args);
     Console.WriteLine($"Got retention configuration for object {bucketName}/{objectName}");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -2658,10 +2658,10 @@ try
     ClearObjectRetentionArgs args = new ClearObjectRetentionArgs()
                                         .WithBucket(bucketName)
                                         .WithObject(objectName);
-    await minio.ClearObjectRetentionAsync(args);
+    await newtera.ClearObjectRetentionAsync(args);
     Console.WriteLine($"Clears retention configuration to object {bucketName}/{objectName}");
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
    Console.WriteLine("Error occurred: " + e);
 }
@@ -2702,10 +2702,10 @@ try
                                       .WithBucket("mybucket")
                                       .WithObject("myobject")
                                       .WithExpiry(60 * 60 * 24);
-    String url = await minioClient.PresignedGetObjectAsync(args);
+    String url = await newteraClient.PresignedGetObjectAsync(args);
     Console.WriteLine(url);
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -2743,10 +2743,10 @@ try
                                       .WithBucket("mybucket")
                                       .WithObject("myobject")
                                       .WithExpiry(60 * 60 * 24);
-    String url = await minioClient.PresignedPutObjectAsync(args);
+    String url = await newteraClient.PresignedPutObjectAsync(args);
     Console.WriteLine(url);
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
@@ -2794,7 +2794,7 @@ try
                                        .WithObject("my-objectname")
                                        .WithPolicy(policy);
 
-    Dictionary<string, string> formData = minioClient.Api.PresignedPostPolicy(args);
+    Dictionary<string, string> formData = newteraClient.Api.PresignedPostPolicy(args);
     string curlCommand = "curl ";
     foreach (KeyValuePair<string, string> pair in formData)
     {
@@ -2803,7 +2803,7 @@ try
     curlCommand = curlCommand + " -F file=@/etc/bashrc https://s3.amazonaws.com/my-bucketname";
     Console.WriteLine(curlCommand);
 }
-catch(MinioException e)
+catch(NewteraException e)
 {
   Console.WriteLine("Error occurred: " + e);
 }
@@ -2826,7 +2826,7 @@ __Example__
 
 ```cs
 // Set Application name and version to be used in subsequent API requests.
-minioClient.SetAppInfo("myCloudApp", "1.0.0")
+newteraClient.SetAppInfo("myCloudApp", "1.0.0")
 ```
 <a name="SetTraceOn"></a>
 ### SetTraceOn(IRequestLogger logger = null)
@@ -2836,16 +2836,16 @@ __Parameters__
 
 | Param    | Type             | Description                                                                                |
 |----------|------------------|--------------------------------------------------------------------------------------------|
-| `logger` | _IRequestLogger_ | Implementation of interface `Minio.IRequestLogger` for serialization models for trace HTTP |
+| `logger` | _IRequestLogger_ | Implementation of interface `Newtera.IRequestLogger` for serialization models for trace HTTP |
 
 __Example__
 
 ```cs
 // Set HTTP tracing on with default trace logger.
-minioClient.SetTraceOn()
+newteraClient.SetTraceOn()
 
 // Set custom logger for HTTP trace
-minioClient.SetTraceOn(new JsonNetLogger())
+newteraClient.SetTraceOn(new JsonNetLogger())
 ```
 
 
@@ -2856,5 +2856,5 @@ Disables HTTP tracing.
 __Example__
 ```cs
 // Sets HTTP tracing off.
-minioClient.SetTraceOff()
+newteraClient.SetTraceOff()
 ```

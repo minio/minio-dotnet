@@ -1,5 +1,5 @@
 ﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
+ * MinIO .NET Library for Newtera TDM, (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 
 using System.Net;
-using Minio;
-using Minio.DataModel.Args;
+using Newtera;
+using Newtera.DataModel.Args;
 
 namespace FileUploader;
 
@@ -45,12 +45,12 @@ public static class FileUpload
 
         try
         {
-            using var minio = new MinioClient()
+            using var newtera = new NewteraClient()
                 .WithEndpoint(endpoint)
                 .WithCredentials(accessKey, secretKey)
                 .WithSSL()
                 .Build();
-            await Run(minio).ConfigureAwait(false);
+            await Run(newtera).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -63,9 +63,9 @@ public static class FileUpload
     /// <summary>
     ///     Task that uploads a file to a bucket
     /// </summary>
-    /// <param name="minio"></param>
+    /// <param name="newtera"></param>
     /// <returns></returns>
-    private static async Task Run(IMinioClient minio)
+    private static async Task Run(INewteraClient newtera)
     {
         // Make a new bucket called mymusic.
         var bucketName = "mymusic-folder"; //<==== change this
@@ -81,13 +81,13 @@ public static class FileUpload
         {
             var bktExistArgs = new BucketExistsArgs()
                 .WithBucket(bucketName);
-            var found = await minio.BucketExistsAsync(bktExistArgs).ConfigureAwait(false);
+            var found = await newtera.BucketExistsAsync(bktExistArgs).ConfigureAwait(false);
             if (!found)
             {
                 var mkBktArgs = new MakeBucketArgs()
                     .WithBucket(bucketName)
                     .WithLocation(location);
-                await minio.MakeBucketAsync(mkBktArgs).ConfigureAwait(false);
+                await newtera.MakeBucketAsync(mkBktArgs).ConfigureAwait(false);
             }
 
             var putObjectArgs = new PutObjectArgs()
@@ -95,7 +95,7 @@ public static class FileUpload
                 .WithObject(objectName)
                 .WithFileName(filePath)
                 .WithContentType(contentType);
-            _ = await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+            _ = await newtera.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
             Console.WriteLine($"\nSuccessfully uploaded {objectName}\n");
         }
         catch (Exception e)
