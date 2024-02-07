@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<AssemblyName>Minio</AssemblyName>
 		<RootNamespace>Minio</RootNamespace>
 		<TargetFrameworks>net6.0;net7.0;netstandard2.0</TargetFrameworks>
 		<AssemblyOriginatorKeyFile>..\Minio.snk</AssemblyOriginatorKeyFile>
-		<SignAssembly>true</SignAssembly>
+		<SignAssembly>False</SignAssembly>
 		<PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
 		<Description>MinIO .NET SDK for Amazon S3 Compatible Cloud Storage.</Description>
 		<Product>Minio</Product>

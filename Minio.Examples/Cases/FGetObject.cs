@@ -15,7 +15,6 @@
  */
 
 using Minio.DataModel.Args;
-using Minio.DataModel.Encryption;
 
 namespace Minio.Examples.Cases;
 
@@ -25,8 +24,7 @@ internal static class FGetObject
     public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name",
         string objectName = "my-object-name",
-        string fileName = "local-filename",
-        IServerSideEncryption sse = null)
+        string fileName = "local-filename")
     {
         try
         {
@@ -35,8 +33,7 @@ internal static class FGetObject
             var args = new GetObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName)
-                .WithFile(fileName)
-                .WithServerSideEncryption(sse);
+                .WithFile(fileName);
             _ = await minio.GetObjectAsync(args).ConfigureAwait(false);
             Console.WriteLine($"Downloaded the file {fileName} from bucket {bucketName}");
             Console.WriteLine();

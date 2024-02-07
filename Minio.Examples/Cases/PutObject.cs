@@ -17,7 +17,6 @@
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 using Minio.DataModel.Args;
-using Minio.DataModel.Encryption;
 
 namespace Minio.Examples.Cases;
 
@@ -30,8 +29,7 @@ internal static class PutObject
         string bucketName = "my-bucket-name",
         string objectName = "my-object-name",
         string fileName = "location-of-file",
-        IProgress<ProgressReport> progress = null,
-        IServerSideEncryption sse = null)
+        IProgress<ProgressReport> progress = null)
     {
         try
         {
@@ -49,8 +47,7 @@ internal static class PutObject
                 .WithObjectSize(filestream.Length)
                 .WithContentType("application/octet-stream")
                 .WithHeaders(metaData)
-                .WithProgress(progress)
-                .WithServerSideEncryption(sse);
+                .WithProgress(progress);
             _ = await minio.PutObjectAsync(args).ConfigureAwait(false);
 
             Console.WriteLine($"Uploaded object {objectName} to bucket {bucketName}");

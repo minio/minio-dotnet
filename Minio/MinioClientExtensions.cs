@@ -80,27 +80,6 @@ public static class MinioClientExtensions
         return minioClient;
     }
 
-    public static IMinioClient WithRegion(this IMinioClient minioClient, string region)
-    {
-        if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
-
-        if (string.IsNullOrEmpty(region))
-            throw new ArgumentException(
-                string.Format(CultureInfo.InvariantCulture, "{0} the region value can't be null or empty.", region),
-                nameof(region));
-
-        minioClient.Config.Region = region;
-        return minioClient;
-    }
-
-    public static IMinioClient WithRegion(this IMinioClient minioClient)
-    {
-        if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
-        // Set region to its default value if empty or null
-        minioClient.Config.Region ??= "us-east-1";
-        return minioClient;
-    }
-
     public static IMinioClient WithCredentials(this IMinioClient minioClient, string accessKey, string secretKey)
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
@@ -214,11 +193,7 @@ public static class MinioClientExtensions
 
         minioClient.Config.Provider = provider;
         AccessCredentials credentials;
-        if (minioClient.Config.Provider is IAMAWSProvider)
-            // Empty object, we need the Minio client completely
-            credentials = new AccessCredentials();
-        else
-            credentials = minioClient.Config.Provider.GetCredentials();
+        credentials = minioClient.Config.Provider.GetCredentials();
 
         if (credentials is null)
             // Unable to fetch credentials.
@@ -226,14 +201,6 @@ public static class MinioClientExtensions
 
         minioClient.Config.AccessKey = credentials.AccessKey;
         minioClient.Config.SecretKey = credentials.SecretKey;
-        var isSessionTokenAvailable = !string.IsNullOrEmpty(credentials.SessionToken);
-        if ((minioClient.Config.Provider is AWSEnvironmentProvider ||
-             minioClient.Config.Provider is IAMAWSProvider ||
-             minioClient.Config.Provider is CertificateIdentityProvider ||
-             (minioClient.Config.Provider is ChainedProvider chainedProvider &&
-              chainedProvider.CurrentProvider is AWSEnvironmentProvider))
-            && isSessionTokenAvailable)
-            minioClient.Config.SessionToken = credentials.SessionToken;
 
         return minioClient;
     }
@@ -242,13 +209,7 @@ public static class MinioClientExtensions
     {
         if (minioClient is null) throw new ArgumentNullException(nameof(minioClient));
 
-        // Instantiate a region cache
-        minioClient.Config.RegionCache = BucketRegionCache.Instance;
         if (string.IsNullOrEmpty(minioClient.Config.BaseUrl)) throw new MinioException("Endpoint not initialized.");
-        if (minioClient.Config.Provider is not null &&
-            minioClient.Config.Provider.GetType() != typeof(ChainedProvider) &&
-            minioClient.Config.SessionToken is null)
-            throw new MinioException("User Access Credentials Provider not initialized correctly.");
         if (minioClient.Config.Provider is null &&
             (string.IsNullOrEmpty(minioClient.Config.AccessKey) || string.IsNullOrEmpty(minioClient.Config.SecretKey)))
             throw new MinioException("User Access Credentials not initialized.");

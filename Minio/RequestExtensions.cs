@@ -37,15 +37,11 @@ public static class RequestExtensions
     ///     Actual doer that executes the request on the server
     /// </summary>
     /// <param name="minioClient"></param>
-    /// <param name="errorHandlers">List of handlers to override default handling</param>
     /// <param name="requestMessageBuilder">The build of HttpRequestMessageBuilder </param>
-    /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns>ResponseResult</returns>
     internal static Task<ResponseResult> ExecuteTaskAsync(this IMinioClient minioClient,
-        IEnumerable<IApiResponseErrorHandler> errorHandlers,
         HttpRequestMessageBuilder requestMessageBuilder,
-        bool isSts = false,
         CancellationToken cancellationToken = default)
     {
         Task<ResponseResult> responseResult;
@@ -61,8 +57,7 @@ public static class RequestExtensions
             }
 
             responseResult = minioClient.ExecuteWithRetry(
-                async () => await minioClient.ExecuteTaskCoreAsync(errorHandlers, requestMessageBuilder,
-                    isSts, cancellationToken).ConfigureAwait(false));
+                async () => await minioClient.ExecuteTaskCoreAsync(requestMessageBuilder, cancellationToken).ConfigureAwait(false));
         }
         catch (Exception ex)
         {
@@ -74,19 +69,19 @@ public static class RequestExtensions
     }
 
     private static async Task<ResponseResult> ExecuteTaskCoreAsync(this IMinioClient minioClient,
-        IEnumerable<IApiResponseErrorHandler> errorHandlers,
         HttpRequestMessageBuilder requestMessageBuilder,
-        bool isSts = false,
         CancellationToken cancellationToken = default)
     {
         var startTime = DateTime.Now;
 
+        /*
         var v4Authenticator = new V4Authenticator(minioClient.Config.Secure,
             minioClient.Config.AccessKey, minioClient.Config.SecretKey, minioClient.Config.Region,
             minioClient.Config.SessionToken);
 
         requestMessageBuilder.AddOrUpdateHeaderParameter("Authorization",
             v4Authenticator.Authenticate(requestMessageBuilder, isSts));
+        */
 
         var request = requestMessageBuilder.Request;
 
@@ -121,10 +116,6 @@ public static class RequestExtensions
                         throw responseResult.Exception;
                     }
                 }
-
-                if (request.RequestUri.ToString().Contains("lock", StringComparison.OrdinalIgnoreCase) &&
-                    request.Method == HttpMethod.Get)
-                    responseResult.Exception = new MissingObjectLockConfigurationException();
             }
 
             return responseResult;
@@ -163,8 +154,7 @@ public static class RequestExtensions
     {
         ArgsCheck(args);
         var requestMessageBuilder =
-            await minioClient.CreateRequest(args.RequestMethod, args.BucketName, headerMap: args.Headers,
-                isBucketCreationRequest: args.IsBucketCreationRequest).ConfigureAwait(false);
+            await minioClient.CreateRequest(args.RequestMethod, args.BucketName, headerMap: args.Headers).ConfigureAwait(false);
         return args.BuildRequest(requestMessageBuilder);
     }
 
@@ -205,7 +195,6 @@ public static class RequestExtensions
     /// <param name="contentType">Content Type</param>
     /// <param name="body">request body</param>
     /// <param name="resourcePath">query string</param>
-    /// <param name="isBucketCreationRequest">boolean to define bucket creation</param>
     /// <returns>A HttpRequestMessage builder</returns>
     /// <exception cref="BucketNotFoundException">When bucketName is invalid</exception>
     internal static async Task<HttpRequestMessageBuilder> CreateRequest(this IMinioClient minioClient,
@@ -215,45 +204,19 @@ public static class RequestExtensions
         IDictionary<string, string> headerMap = null,
         string contentType = "application/octet-stream",
         ReadOnlyMemory<byte> body = default,
-        string resourcePath = null,
-        bool isBucketCreationRequest = false)
+        string resourcePath = null)
     {
-        var region = string.Empty;
         if (bucketName is not null)
         {
             Utils.ValidateBucketName(bucketName);
-            // Fetch correct region for bucket if this is not a bucket creation
-            if (!isBucketCreationRequest)
-                region = await minioClient.GetRegion(bucketName).ConfigureAwait(false);
         }
 
         if (objectName is not null) Utils.ValidateObjectName(objectName);
 
         if (minioClient.Config.Provider is not null)
         {
-            var isAWSEnvProvider = minioClient.Config.Provider is AWSEnvironmentProvider ||
-                                   (minioClient.Config.Provider is ChainedProvider ch &&
-                                    ch.CurrentProvider is AWSEnvironmentProvider);
-
-            var isIAMAWSProvider = minioClient.Config.Provider is IAMAWSProvider ||
-                                   (minioClient.Config.Provider is ChainedProvider chained &&
-                                    chained.CurrentProvider is AWSEnvironmentProvider);
-
             AccessCredentials creds;
-            if (isAWSEnvProvider)
-            {
-                var aWSEnvProvider = (AWSEnvironmentProvider)minioClient.Config.Provider;
-                creds = await aWSEnvProvider.GetCredentialsAsync().ConfigureAwait(false);
-            }
-            else if (isIAMAWSProvider)
-            {
-                var iamAWSProvider = (IAMAWSProvider)minioClient.Config.Provider;
-                creds = iamAWSProvider.Credentials;
-            }
-            else
-            {
-                creds = await minioClient.Config.Provider.GetCredentialsAsync().ConfigureAwait(false);
-            }
+            creds = await minioClient.Config.Provider.GetCredentialsAsync().ConfigureAwait(false);
 
             if (creds is not null)
             {
@@ -267,24 +230,9 @@ public static class RequestExtensions
         var resource = string.Empty;
         var usePathStyle = false;
 
-        if (!string.IsNullOrEmpty(bucketName) && S3utils.IsAmazonEndPoint(minioClient.Config.BaseUrl))
-        {
-            if (method == HttpMethod.Put && objectName is null && resourcePath is null)
-                // use path style for make bucket to workaround "AuthorizationHeaderMalformed" error from s3.amazonaws.com
-                usePathStyle = true;
-            else if (resourcePath?.Contains("location", StringComparison.OrdinalIgnoreCase) == true)
-                // use path style for location query
-                usePathStyle = true;
-            else if (bucketName.Contains('.', StringComparison.Ordinal) && minioClient.Config.Secure)
-                // use path style where '.' in bucketName causes SSL certificate validation error
-                usePathStyle = true;
-
-            if (usePathStyle) resource += Utils.UrlEncode(bucketName) + "/";
-        }
-
         // Set Target URL
         var requestUrl = RequestUtil.MakeTargetURL(minioClient.Config.BaseUrl, minioClient.Config.Secure, bucketName,
-            region, usePathStyle);
+            usePathStyle);
 
         if (objectName is not null) resource += Utils.EncodePath(objectName);
 
@@ -323,32 +271,6 @@ public static class RequestExtensions
         if (args is null)
             throw new ArgumentNullException(nameof(args),
                 "Args object cannot be null. It needs to be assigned to an instantiated child object of Args.");
-    }
-
-    /// <summary>
-    ///     Resolve region of the bucket.
-    /// </summary>
-    /// <param name="minioClient"></param>
-    /// <param name="bucketName"></param>
-    /// <returns></returns>
-    internal static async Task<string> GetRegion(this IMinioClient minioClient, string bucketName)
-    {
-        var rgn = "";
-        // Use user specified region in client constructor if present
-        if (!string.IsNullOrEmpty(minioClient.Config.Region)) return minioClient.Config.Region;
-
-        // pick region from endpoint if present
-        if (!string.IsNullOrEmpty(minioClient.Config.Endpoint))
-            rgn = RegionHelper.GetRegionFromEndpoint(minioClient.Config.Endpoint);
-
-        // Pick region from location HEAD request
-        if (rgn?.Length == 0)
-            rgn = BucketRegionCache.Instance.Exists(bucketName)
-                ? await BucketRegionCache.Update(minioClient, bucketName).ConfigureAwait(false)
-                : BucketRegionCache.Instance.Region(bucketName);
-
-        // Defaults to us-east-1 if region could not be found
-        return rgn?.Length == 0 ? "us-east-1" : rgn;
     }
 
     /// <summary>

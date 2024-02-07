@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using Minio.DataModel.ObjectLock;
 using Minio.Helper;
 
 namespace Minio.DataModel.Args;
@@ -25,13 +24,12 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
     internal bool ReplaceTagsDirective { get; set; }
     internal string StorageClass { get; set; }
     internal ObjectStat SourceObjectInfo { get; set; }
-    internal CopySourceObjectArgs SourceObject { get; set; }
 
     internal override void Validate()
     {
         base.Validate();
-        if (SourceObjectInfo is null || SourceObject is null)
-            throw new InvalidOperationException(nameof(SourceObjectInfo) + " and " + nameof(SourceObject) +
+        if (SourceObjectInfo is null)
+            throw new InvalidOperationException(nameof(SourceObjectInfo) +
                                                 " need to be initialized for a NewMultipartUpload operation to work.");
 
         Populate();
@@ -51,8 +49,7 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
             {
                 var key = item.Key;
                 if (!OperationsUtil.IsSupportedHeader(item.Key) &&
-                    !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase) &&
-                    !OperationsUtil.IsSSEHeader(key))
+                    !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase))
                     newKVList.Add(new Tuple<string, string>("x-amz-meta-" + key.ToLowerInvariant(), item.Value));
             }
 
@@ -60,21 +57,9 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
         }
     }
 
-    public new NewMultipartUploadCopyArgs WithObjectLockMode(ObjectRetentionMode mode)
-    {
-        _ = base.WithObjectLockMode(mode);
-        return this;
-    }
-
     public new NewMultipartUploadCopyArgs WithHeaders(IDictionary<string, string> headers)
     {
         _ = base.WithHeaders(headers);
-        return this;
-    }
-
-    public new NewMultipartUploadCopyArgs WithObjectLockRetentionDate(DateTime untilDate)
-    {
-        _ = base.WithObjectLockRetentionDate(untilDate);
         return this;
     }
 
@@ -102,50 +87,14 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
         return this;
     }
 
-    public NewMultipartUploadCopyArgs WithCopyObjectSource(CopySourceObjectArgs cs)
-    {
-        if (cs is null)
-            throw new InvalidOperationException("The copy source object needed for copy operation is not initialized.");
-
-        SourceObject ??= new CopySourceObjectArgs();
-        SourceObject.RequestMethod = HttpMethod.Put;
-        SourceObject.BucketName = cs.BucketName;
-        SourceObject.ObjectName = cs.ObjectName;
-        SourceObject.VersionId = cs.VersionId;
-        SourceObject.SSE = cs.SSE;
-        SourceObject.Headers = cs.Headers;
-        SourceObject.MatchETag = cs.MatchETag;
-        SourceObject.ModifiedSince = cs.ModifiedSince;
-        SourceObject.NotMatchETag = cs.NotMatchETag;
-        SourceObject.UnModifiedSince = cs.UnModifiedSince;
-        SourceObject.CopySourceObjectPath = $"{cs.BucketName}/{Utils.UrlEncode(cs.ObjectName)}";
-        SourceObject.CopyOperationConditions = cs.CopyOperationConditions?.Clone();
-        return this;
-    }
-
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
         requestMessageBuilder.AddQueryParameter("uploads", "");
-        if (ObjectTags?.TaggingSet?.Tag.Count > 0)
-        {
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
-                ReplaceTagsDirective ? "REPLACE" : "COPY");
-        }
 
         if (ReplaceMetadataDirective)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-metadata-directive", "REPLACE");
         if (!string.IsNullOrWhiteSpace(StorageClass))
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-storage-class", StorageClass);
-        if (ObjectLockSet)
-        {
-            if (!RetentionUntilDate.Equals(default))
-                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
-                    Utils.To8601String(RetentionUntilDate));
-
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
-                ObjectLockRetentionMode == ObjectRetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
-        }
 
         return requestMessageBuilder;
     }

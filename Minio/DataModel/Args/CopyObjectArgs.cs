@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using Minio.DataModel.Encryption;
-using Minio.DataModel.ObjectLock;
 using Minio.Helper;
 
 namespace Minio.DataModel.Args;
@@ -25,33 +23,20 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
     public CopyObjectArgs()
     {
         RequestMethod = HttpMethod.Put;
-        SourceObject = new CopySourceObjectArgs();
         ReplaceTagsDirective = false;
         ReplaceMetadataDirective = false;
         ObjectLockSet = false;
-        RetentionUntilDate = default;
     }
 
-    internal CopySourceObjectArgs SourceObject { get; set; }
     internal ObjectStat SourceObjectInfo { get; set; }
     internal bool ReplaceTagsDirective { get; set; }
     internal bool ReplaceMetadataDirective { get; set; }
     internal string StorageClass { get; set; }
-    internal ObjectRetentionMode ObjectLockRetentionMode { get; set; }
-    internal DateTime RetentionUntilDate { get; set; }
     internal bool ObjectLockSet { get; set; }
 
     internal override void Validate()
     {
         Utils.ValidateBucketName(BucketName);
-        if (SourceObject is null)
-            throw new InvalidOperationException(nameof(SourceObject) + " has not been assigned. Please use " +
-                                                nameof(WithCopyObjectSource));
-
-        if (SourceObjectInfo is null)
-            throw new InvalidOperationException(
-                "StatObject result for the copy source object needed to continue copy operation. Use " +
-                nameof(WithCopyObjectSourceStats) + " to initialize StatObject result.");
 
         if (!string.IsNullOrEmpty(NotMatchETag) && !string.IsNullOrEmpty(MatchETag))
             throw new InvalidOperationException("Invalid to set both Etag match conditions " + nameof(NotMatchETag) +
@@ -67,20 +52,6 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
 
     private void Populate()
     {
-        if (string.IsNullOrEmpty(ObjectName)) ObjectName = SourceObject.ObjectName;
-        if (SSE?.GetEncryptionType().Equals(EncryptionType.SSE_C) == true)
-        {
-            Headers = new Dictionary<string, string>(StringComparer.Ordinal);
-            SSE.Marshal(Headers);
-        }
-
-        if (!ReplaceMetadataDirective)
-        {
-            // Check in copy conditions if replace metadata has been set
-            var copyReplaceMeta = SourceObject.CopyOperationConditions?.HasReplaceMetadataDirective() == true;
-            WithReplaceMetadataDirective(copyReplaceMeta);
-        }
-
         Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
         if (ReplaceMetadataDirective)
         {
@@ -116,8 +87,7 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
                 var key = item.Key;
                 if (!OperationsUtil.IsSupportedHeader(item.Key) &&
                     !item.Key.StartsWith("x-amz-meta",
-                        StringComparison.OrdinalIgnoreCase) &&
-                    !OperationsUtil.IsSSEHeader(key))
+                        StringComparison.OrdinalIgnoreCase))
                 {
                     newKVList.Add(new Tuple<string, string>("x-amz-meta-" +
                                                             key.ToLowerInvariant(), item.Value));
@@ -129,27 +99,6 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
 
             foreach (var item in newKVList) Headers[item.Item1] = item.Item2;
         }
-    }
-
-    public CopyObjectArgs WithCopyObjectSource(CopySourceObjectArgs cs)
-    {
-        if (cs is null)
-            throw new InvalidOperationException("The copy source object needed for copy operation is not initialized.");
-
-        SourceObject.RequestMethod = HttpMethod.Put;
-        SourceObject ??= new CopySourceObjectArgs();
-        SourceObject.BucketName = cs.BucketName;
-        SourceObject.ObjectName = cs.ObjectName;
-        SourceObject.VersionId = cs.VersionId;
-        SourceObject.SSE = cs.SSE;
-        SourceObject.Headers = cs.Headers;
-        SourceObject.MatchETag = cs.MatchETag;
-        SourceObject.ModifiedSince = cs.ModifiedSince;
-        SourceObject.NotMatchETag = cs.NotMatchETag;
-        SourceObject.UnModifiedSince = cs.UnModifiedSince;
-        SourceObject.CopySourceObjectPath = $"{cs.BucketName}/{Utils.UrlEncode(cs.ObjectName)}";
-        SourceObject.CopyOperationConditions = cs.CopyOperationConditions?.Clone();
-        return this;
     }
 
     public CopyObjectArgs WithReplaceTagsDirective(bool replace)
@@ -164,45 +113,9 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         return this;
     }
 
-    public CopyObjectArgs WithObjectLockMode(ObjectRetentionMode mode)
-    {
-        ObjectLockSet = true;
-        ObjectLockRetentionMode = mode;
-        return this;
-    }
-
-    public CopyObjectArgs WithObjectLockRetentionDate(DateTime untilDate)
-    {
-        ObjectLockSet = true;
-        RetentionUntilDate = new DateTime(untilDate.Year, untilDate.Month, untilDate.Day,
-            untilDate.Hour, untilDate.Minute, untilDate.Second, untilDate.Kind);
-        return this;
-    }
-
-    internal CopyObjectArgs WithCopyObjectSourceStats(ObjectStat info)
-    {
-        SourceObjectInfo = info;
-        if (info.MetaData is not null && !ReplaceMetadataDirective)
-        {
-            SourceObject.Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
-            SourceObject.Headers = SourceObject.Headers.Concat(info.MetaData)
-                .GroupBy(item => item.Key, StringComparer.Ordinal)
-                .ToDictionary(item => item.Key, item => item.First().Value, StringComparer.Ordinal);
-        }
-
-        return this;
-    }
-
     internal CopyObjectArgs WithStorageClass(string storageClass)
     {
         StorageClass = storageClass;
-        return this;
-    }
-
-    public CopyObjectArgs WithRetentionUntilDate(DateTime date)
-    {
-        ObjectLockSet = true;
-        RetentionUntilDate = date;
         return this;
     }
 
@@ -224,12 +137,6 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         }
 
         if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", VersionId);
-        if (ObjectTags?.TaggingSet?.Tag.Count > 0)
-        {
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
-                ReplaceTagsDirective ? "COPY" : "REPLACE");
-        }
 
         if (ReplaceMetadataDirective)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-metadata-directive", "REPLACE");
@@ -237,15 +144,6 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-storage-class", StorageClass);
         if (LegalHoldEnabled == true)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-legal-hold", "ON");
-        if (ObjectLockSet)
-        {
-            if (!RetentionUntilDate.Equals(default))
-                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
-                    Utils.To8601String(RetentionUntilDate));
-
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
-                ObjectLockRetentionMode == ObjectRetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
-        }
 
         return requestMessageBuilder;
     }

@@ -22,12 +22,8 @@ using System.Reactive.Linq;
 using Minio.ApiEndpoints;
 using Minio.DataModel;
 using Minio.DataModel.Args;
-using Minio.DataModel.Encryption;
-using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Response;
 using Minio.DataModel.Result;
-using Minio.DataModel.Select;
-using Minio.DataModel.Tags;
 using Minio.Exceptions;
 using Minio.Helper;
 
@@ -56,310 +52,6 @@ public partial class MinioClient : IObjectOperations
     }
 
     /// <summary>
-    ///     Select an object's content. The object will be streamed to the callback given by the user.
-    /// </summary>
-    /// <param name="args">
-    ///     SelectObjectContentArgs Arguments Object which encapsulates bucket name, object name, Select Object
-    ///     Options
-    /// </param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    public async Task<SelectResponseStream> SelectObjectContentAsync(SelectObjectContentArgs args,
-        CancellationToken cancellationToken = default)
-    {
-        args?.Validate();
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-        var selectObjectContentResponse =
-            new SelectObjectContentResponse(response.StatusCode, response.Content, response.ContentBytes);
-        return selectObjectContentResponse.ResponseStream;
-    }
-
-    /// <summary>
-    ///     Lists all incomplete uploads in a given bucket and prefix recursively
-    /// </summary>
-    /// <param name="args">ListIncompleteUploadsArgs Arguments Object which encapsulates bucket name, prefix, recursive</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>A lazily populated list of incomplete uploads</returns>
-    /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    public IObservable<Upload> ListIncompleteUploads(ListIncompleteUploadsArgs args,
-        CancellationToken cancellationToken = default)
-    {
-        args?.Validate();
-        return Observable.Create<Upload>(
-            async obs =>
-            {
-                string nextKeyMarker = null;
-                string nextUploadIdMarker = null;
-                var isRunning = true;
-
-                while (isRunning)
-                {
-                    var getArgs = new GetMultipartUploadsListArgs()
-                        .WithBucket(args.BucketName)
-                        .WithDelimiter(args.Delimiter)
-                        .WithPrefix(args.Prefix)
-                        .WithKeyMarker(nextKeyMarker)
-                        .WithUploadIdMarker(nextUploadIdMarker);
-                    var uploads = await GetMultipartUploadsListAsync(getArgs, cancellationToken).ConfigureAwait(false);
-                    if (uploads is null)
-                    {
-                        isRunning = false;
-                        continue;
-                    }
-
-                    foreach (var upload in uploads.Item2) obs.OnNext(upload);
-                    nextKeyMarker = uploads.Item1.NextKeyMarker;
-                    nextUploadIdMarker = uploads.Item1.NextUploadIdMarker;
-                    isRunning = uploads.Item1.IsTruncated;
-                }
-            });
-    }
-
-    /// <summary>
-    ///     Remove incomplete uploads from a given bucket and objectName
-    /// </summary>
-    /// <param name="args">RemoveIncompleteUploadArgs Arguments Object which encapsulates bucket, object names</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns></returns>
-    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    public async Task RemoveIncompleteUploadAsync(RemoveIncompleteUploadArgs args,
-        CancellationToken cancellationToken = default)
-    {
-        args?.Validate();
-        var listUploadArgs = new ListIncompleteUploadsArgs()
-            .WithBucket(args.BucketName)
-            .WithPrefix(args.ObjectName);
-
-        Upload[] uploads;
-        try
-        {
-            uploads = await ListIncompleteUploads(listUploadArgs, cancellationToken)?.ToArray();
-        }
-        catch (Exception ex) when (ex.GetType() == typeof(BucketNotFoundException))
-        {
-            throw;
-        }
-
-        if (uploads is null) return;
-        foreach (var upload in uploads)
-            if (upload.Key.Equals(args.ObjectName, StringComparison.OrdinalIgnoreCase))
-            {
-                var rmArgs = new RemoveUploadArgs()
-                    .WithBucket(args.BucketName)
-                    .WithObject(args.ObjectName)
-                    .WithUploadId(upload.UploadId);
-                await RemoveUploadAsync(rmArgs, cancellationToken).ConfigureAwait(false);
-            }
-    }
-
-    /// <summary>
-    ///     Presigned get url - returns a presigned url to access an object's data without credentials.URL can have a maximum
-    ///     expiry of
-    ///     up to 7 days or a minimum of 1 second.Additionally, you can override a set of response headers using reqParams.
-    /// </summary>
-    /// <param name="args">
-    ///     PresignedGetObjectArgs Arguments object encapsulating bucket and object names, expiry time, response
-    ///     headers, request date
-    /// </param>
-    /// <returns></returns>
-    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    public async Task<string> PresignedGetObjectAsync(PresignedGetObjectArgs args)
-    {
-        args?.Validate();
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        var authenticator = new V4Authenticator(Config.Secure, Config.AccessKey, Config.SecretKey, Config.Region,
-            Config.SessionToken);
-        return authenticator.PresignURL(requestMessageBuilder, args.Expiry, Config.Region, Config.SessionToken,
-            args.RequestDate);
-    }
-
-    /// <summary>
-    ///     Presigned post policy
-    /// </summary>
-    /// <param name="args">PresignedPostPolicyArgs Arguments object encapsulating Policy, Expiry, Region, </param>
-    /// <returns>Tuple of URI and Policy Form data</returns>
-    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    public async Task<(Uri, IDictionary<string, string>)> PresignedPostPolicyAsync(PresignedPostPolicyArgs args)
-    {
-        if (args is null)
-            throw new ArgumentNullException(nameof(args));
-
-        // string region = string.Empty;
-        var region = await this.GetRegion(args.BucketName).ConfigureAwait(false);
-        args.Validate();
-        // Presigned operations are not allowed for anonymous users
-        if (string.IsNullOrEmpty(Config.AccessKey) && string.IsNullOrEmpty(Config.SecretKey))
-            throw new MinioException("Presigned operations are not supported for anonymous credentials");
-
-        var authenticator = new V4Authenticator(Config.Secure, Config.AccessKey, Config.SecretKey,
-            region, Config.SessionToken);
-
-        // Get base64 encoded policy.
-        var policyBase64 = args.Policy.Base64();
-
-        var t = DateTime.UtcNow;
-        const string signV4Algorithm = "AWS4-HMAC-SHA256";
-        var credential = authenticator.GetCredentialString(t, region);
-        var signature = authenticator.PresignPostSignature(region, t, policyBase64);
-        args = args.WithDate(t)
-            .WithAlgorithm(signV4Algorithm)
-            .WithSessionToken(Config.SessionToken)
-            .WithCredential(credential)
-            .WithRegion(region);
-
-        // Fill in the form data.
-        args.Policy.FormData["bucket"] = args.BucketName;
-        // args.Policy.formData["key"] = "\\\"" + args.ObjectName + "\\\"";
-
-        args.Policy.FormData["key"] = args.ObjectName;
-
-        args.Policy.FormData["policy"] = policyBase64;
-        args.Policy.FormData["x-amz-algorithm"] = signV4Algorithm;
-        args.Policy.FormData["x-amz-credential"] = credential;
-        args.Policy.FormData["x-amz-date"] = t.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
-        if (!string.IsNullOrEmpty(Config.SessionToken))
-            args.Policy.FormData["x-amz-security-token"] = Config.SessionToken;
-        args.Policy.FormData["x-amz-signature"] = signature;
-
-        Config.Uri = RequestUtil.MakeTargetURL(Config.BaseUrl, Config.Secure, args.BucketName, region, false);
-        return (Config.Uri, args.Policy.FormData);
-    }
-
-    /// <summary>
-    ///     Presigned Put url -returns a presigned url to upload an object without credentials.URL can have a maximum expiry of
-    ///     upto 7 days or a minimum of 1 second.
-    /// </summary>
-    /// <param name="args">PresignedPutObjectArgs Arguments Object which encapsulates bucket, object names, expiry</param>
-    /// <returns></returns>
-    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    public async Task<string> PresignedPutObjectAsync(PresignedPutObjectArgs args)
-    {
-        args?.Validate();
-        var requestMessageBuilder = await this.CreateRequest(HttpMethod.Put, args.BucketName,
-            args.ObjectName,
-            args.Headers, // contentType
-            Convert.ToString(args.GetType(), CultureInfo.InvariantCulture), // metaData
-            Utils.ObjectToByteArray(args.RequestBody)).ConfigureAwait(false);
-        var authenticator = new V4Authenticator(Config.Secure, Config.AccessKey, Config.SecretKey, Config.Region,
-            Config.SessionToken);
-        return authenticator.PresignURL(requestMessageBuilder, args.Expiry, Config.Region, Config.SessionToken);
-    }
-
-    /// <summary>
-    ///     Get the configuration object for Legal Hold Status
-    /// </summary>
-    /// <param name="args">
-    ///     GetObjectLegalHoldArgs Arguments Object which has object identifier information - bucket name,
-    ///     object name, version ID
-    /// </param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation </param>
-    /// <returns> True if Legal Hold is ON, false otherwise  </returns>
-    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    /// <exception cref="MissingObjectLockConfigurationException">When object lock configuration on bucket is not set</exception>
-    /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
-    /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    public async Task<bool> GetObjectLegalHoldAsync(GetObjectLegalHoldArgs args,
-        CancellationToken cancellationToken = default)
-    {
-        args?.Validate();
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-        var legalHoldConfig = new GetLegalHoldResponse(response.StatusCode, response.Content);
-        return legalHoldConfig.CurrentLegalHoldConfiguration?.Status.Equals("on", StringComparison.OrdinalIgnoreCase) ==
-               true;
-    }
-
-    /// <summary>
-    ///     Set the Legal Hold Status using the related configuration
-    /// </summary>
-    /// <param name="args">
-    ///     SetObjectLegalHoldArgs Arguments Object which has object identifier information - bucket name,
-    ///     object name, version ID
-    /// </param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns> Task </returns>
-    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    /// <exception cref="MissingObjectLockConfigurationException">When object lock configuration on bucket is not set</exception>
-    /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
-    /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    public async Task SetObjectLegalHoldAsync(SetObjectLegalHoldArgs args,
-        CancellationToken cancellationToken = default)
-    {
-        args?.Validate();
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    ///     Gets Tagging values set for this object
-    /// </summary>
-    /// <param name="args"> GetObjectTagsArgs Arguments Object with information like Bucket, Object name, (optional)version Id</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>Tagging Object with key-value tag pairs</returns>
-    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
-    public async Task<Tagging> GetObjectTagsAsync(GetObjectTagsArgs args, CancellationToken cancellationToken = default)
-    {
-        args?.Validate();
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-        var getObjectTagsResponse = new GetObjectTagsResponse(response.StatusCode, response.Content);
-        return getObjectTagsResponse.ObjectTags;
-    }
-
-    /// <summary>
     ///     Removes an object with given name in specific bucket
     /// </summary>
     /// <param name="args">
@@ -379,7 +71,7 @@ public partial class MinioClient : IObjectOperations
         args?.Validate();
         var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var restResponse =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+            await this.ExecuteTaskAsync(requestMessageBuilder,
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
     }
@@ -419,140 +111,6 @@ public partial class MinioClient : IObjectOperations
     }
 
     /// <summary>
-    ///     Sets the Tagging values for this object
-    /// </summary>
-    /// <param name="args">
-    ///     SetObjectTagsArgs Arguments Object with information like Bucket name,Object name, (optional)version
-    ///     Id, tag key-value pairs
-    /// </param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns></returns>
-    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
-    /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    public async Task SetObjectTagsAsync(SetObjectTagsArgs args, CancellationToken cancellationToken = default)
-    {
-        args?.Validate();
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    ///     Removes Tagging values stored for the object
-    /// </summary>
-    /// <param name="args">RemoveObjectTagsArgs Arguments Object with information like Bucket name</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns></returns>
-    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
-    /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    public async Task RemoveObjectTagsAsync(RemoveObjectTagsArgs args, CancellationToken cancellationToken = default)
-    {
-        args?.Validate();
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    ///     Set the Retention using the configuration object
-    /// </summary>
-    /// <param name="args">
-    ///     SetObjectRetentionArgs Arguments Object which has object identifier information - bucket name,
-    ///     object name, version ID
-    /// </param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns> Task </returns>
-    /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    /// <exception cref="MissingObjectLockConfigurationException">When object lock configuration on bucket is not set</exception>
-    /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
-    /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    public async Task SetObjectRetentionAsync(SetObjectRetentionArgs args,
-        CancellationToken cancellationToken = default)
-    {
-        args?.Validate();
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    ///     Get the Retention configuration for the object
-    /// </summary>
-    /// <param name="args">
-    ///     GetObjectRetentionArgs Arguments Object which has object identifier information - bucket name,
-    ///     object name, version ID
-    /// </param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns> Task </returns>
-    /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
-    /// <exception cref="MissingObjectLockConfigurationException">When object lock configuration on bucket is not set</exception>
-    public async Task<ObjectRetentionConfiguration> GetObjectRetentionAsync(GetObjectRetentionArgs args,
-        CancellationToken cancellationToken = default)
-    {
-        args?.Validate();
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-        var retentionResponse = new GetRetentionResponse(response.StatusCode, response.Content);
-        return retentionResponse.CurrentRetentionConfiguration;
-    }
-
-    /// <summary>
-    ///     Clears the Retention configuration for the object
-    /// </summary>
-    /// <param name="args">
-    ///     ClearObjectRetentionArgs Arguments Object which has object identifier information - bucket name,
-    ///     object name, version ID
-    /// </param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns> Task </returns>
-    /// <exception cref="AuthorizationException">When access or secret key provided is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    /// <exception cref="MissingObjectLockConfigurationException">When object lock configuration on bucket is not set</exception>
-    /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
-    /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    public async Task ClearObjectRetentionAsync(ClearObjectRetentionArgs args,
-        CancellationToken cancellationToken = default)
-    {
-        args?.Validate();
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-    }
-
-    /// <summary>
     ///     Creates object in a bucket fom input stream or filename.
     /// </summary>
     /// <param name="args">
@@ -573,7 +131,6 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        args.SSE?.Marshal(args.Headers);
 
         var isSnowball = args.Headers.ContainsKey("X-Amz-Meta-Snowball-Auto-Extract") &&
                          Convert.ToBoolean(args.Headers["X-Amz-Meta-Snowball-Auto-Extract"],
@@ -603,14 +160,10 @@ public partial class MinioClient : IObjectOperations
             .WithVersionId(args.VersionId)
             .WithHeaders(args.Headers)
             .WithContentType(args.ContentType)
-            .WithTagging(args.ObjectTags)
-            .WithLegalHold(args.LegalHoldEnabled)
-            .WithRetentionConfiguration(args.Retention)
-            .WithServerSideEncryption(args.SSE);
+            .WithLegalHold(args.LegalHoldEnabled);
         // Get upload Id after creating new multi-part upload operation to
         // be used in putobject part, complete multipart upload operations.
         var uploadId = await NewMultipartUploadAsync(multipartUploadArgs, cancellationToken).ConfigureAwait(false);
-        // Remove SSE-S3 and KMS headers during PutObjectPart operations.
         var putObjectPartArgs = new PutObjectPartArgs()
             .WithBucket(args.BucketName)
             .WithObject(args.ObjectName)
@@ -650,118 +203,6 @@ public partial class MinioClient : IObjectOperations
     }
 
     /// <summary>
-    ///     Copy a source object into a new destination object.
-    /// </summary>
-    /// <param name="args">
-    ///     CopyObjectArgs Arguments Object which encapsulates bucket name, object name, destination bucket,
-    ///     destination object names, Copy conditions object, metadata, SSE source, destination objects
-    /// </param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns></returns>
-    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
-    public async Task CopyObjectAsync(CopyObjectArgs args, CancellationToken cancellationToken = default)
-    {
-        if (args is null)
-            throw new ArgumentNullException(nameof(args));
-
-        IServerSideEncryption sseGet = null;
-        if (args.SourceObject.SSE is SSECopy sSECopy) sseGet = sSECopy.CloneToSSEC();
-
-        var statArgs = new StatObjectArgs()
-            .WithBucket(args.SourceObject.BucketName)
-            .WithObject(args.SourceObject.ObjectName)
-            .WithVersionId(args.SourceObject.VersionId)
-            .WithServerSideEncryption(sseGet);
-        var stat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
-        _ = args.WithCopyObjectSourceStats(stat);
-        if (stat.TaggingCount > 0 && !args.ReplaceTagsDirective)
-        {
-            var getTagArgs = new GetObjectTagsArgs()
-                .WithBucket(args.SourceObject.BucketName)
-                .WithObject(args.SourceObject.ObjectName)
-                .WithVersionId(args.SourceObject.VersionId)
-                .WithServerSideEncryption(sseGet);
-            var tag = await GetObjectTagsAsync(getTagArgs, cancellationToken).ConfigureAwait(false);
-            _ = args.WithTagging(tag);
-        }
-
-        args.Validate();
-        var srcByteRangeSize = args.SourceObject.CopyOperationConditions?.ByteRange ?? 0L;
-        var copySize = srcByteRangeSize == 0 ? args.SourceObjectInfo.Size : srcByteRangeSize;
-
-        if (srcByteRangeSize > args.SourceObjectInfo.Size ||
-            (srcByteRangeSize > 0 &&
-             args.SourceObject.CopyOperationConditions.byteRangeEnd >=
-             args.SourceObjectInfo.Size))
-            throw new InvalidDataException($"Specified byte range ({args.SourceObject
-                .CopyOperationConditions
-                .byteRangeStart.ToString(CultureInfo.InvariantCulture)}-{args.SourceObject
-                .CopyOperationConditions.byteRangeEnd.ToString(CultureInfo.InvariantCulture)
-            }) does not fit within source object (size={args.SourceObjectInfo.Size
-                .ToString(CultureInfo.InvariantCulture)})");
-
-        if (copySize > Constants.MaxSingleCopyObjectSize ||
-            (srcByteRangeSize > 0 &&
-             srcByteRangeSize != args.SourceObjectInfo.Size))
-        {
-            var multiArgs = new MultipartCopyUploadArgs(args)
-                .WithCopySize(copySize);
-            await MultipartCopyUploadAsync(multiArgs, cancellationToken).ConfigureAwait(false);
-        }
-        else
-        {
-            var sourceObject = new CopySourceObjectArgs()
-                .WithBucket(args.SourceObject.BucketName)
-                .WithObject(args.SourceObject.ObjectName)
-                .WithVersionId(args.SourceObject.VersionId)
-                .WithCopyConditions(args.SourceObject.CopyOperationConditions);
-
-            var cpReqArgs = new CopyObjectRequestArgs()
-                .WithBucket(args.BucketName)
-                .WithObject(args.ObjectName)
-                .WithVersionId(args.VersionId)
-                .WithHeaders(args.Headers)
-                .WithCopyObjectSource(sourceObject)
-                .WithSourceObjectInfo(args.SourceObjectInfo)
-                .WithCopyOperationObjectType(typeof(CopyObjectResult))
-                .WithReplaceMetadataDirective(args.ReplaceMetadataDirective)
-                .WithReplaceTagsDirective(args.ReplaceTagsDirective)
-                .WithTagging(args.ObjectTags);
-            cpReqArgs.Validate();
-            var newMeta = args.ReplaceMetadataDirective
-                ? new Dictionary<string, string>(args.Headers, StringComparer.Ordinal)
-                : new Dictionary<string, string>(args.SourceObjectInfo.MetaData, StringComparer.Ordinal);
-            if (args.SourceObject.SSE is not null and SSECopy)
-                args.SourceObject.SSE.Marshal(newMeta);
-            args.SSE?.Marshal(newMeta);
-            _ = cpReqArgs.WithHeaders(newMeta);
-            _ = await CopyObjectRequestAsync(cpReqArgs, cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    /// <summary>
-    ///     Presigned post policy
-    /// </summary>
-    /// <param name="policy"></param>
-    /// <returns></returns>
-    public Task<(Uri, IDictionary<string, string>)> PresignedPostPolicyAsync(PostPolicy policy)
-    {
-        if (policy is null)
-            throw new ArgumentNullException(nameof(policy));
-
-        var args = new PresignedPostPolicyArgs()
-            .WithBucket(policy.Bucket)
-            .WithObject(policy.Key)
-            .WithPolicy(policy);
-        return PresignedPostPolicyAsync(args);
-    }
-
-    /// <summary>
     ///     Tests the object's existence and returns metadata about existing objects.
     /// </summary>
     /// <param name="args">
@@ -775,7 +216,7 @@ public partial class MinioClient : IObjectOperations
         args?.Validate();
         var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+            await this.ExecuteTaskAsync(requestMessageBuilder,
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         var responseHeaders = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -798,7 +239,7 @@ public partial class MinioClient : IObjectOperations
         args?.Validate();
         var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+            await this.ExecuteTaskAsync(requestMessageBuilder,
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         var getUploadResponse = new GetMultipartUploadsListResponse(response.StatusCode, response.Content);
@@ -817,7 +258,7 @@ public partial class MinioClient : IObjectOperations
         args?.Validate();
         var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+            await this.ExecuteTaskAsync(requestMessageBuilder,
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
     }
@@ -827,7 +268,7 @@ public partial class MinioClient : IObjectOperations
     /// </summary>
     /// <param name="args">
     ///     PutObjectArgs encapsulates bucket name, object name, upload id, part number, object data(body),
-    ///     Headers, SSE Headers
+    ///     Headers
     /// </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <param name="singleFile">
@@ -852,7 +293,7 @@ public partial class MinioClient : IObjectOperations
         if (singleFile) args.Progress?.Report(progressReport);
         var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+            await this.ExecuteTaskAsync(requestMessageBuilder,
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
@@ -944,94 +385,10 @@ public partial class MinioClient : IObjectOperations
     }
 
     /// <summary>
-    ///     Make a multi part copy upload for objects larger than 5GB or if CopyCondition specifies a byte range.
-    /// </summary>
-    /// <param name="args">
-    ///     MultipartCopyUploadArgs Arguments object encapsulating destination and source bucket, object names,
-    ///     copy conditions, size, metadata, SSE
-    /// </param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
-    private async Task MultipartCopyUploadAsync(MultipartCopyUploadArgs args,
-        CancellationToken cancellationToken = default)
-    {
-        var multiPartInfo = Utils.CalculateMultiPartSize(args.CopySize, true);
-        var partSize = multiPartInfo.PartSize;
-        var partCount = multiPartInfo.PartCount;
-        var lastPartSize = multiPartInfo.LastPartSize;
-        var totalParts = new Part[(int)partCount];
-
-        var nmuArgs = new NewMultipartUploadCopyArgs()
-            .WithBucket(args.BucketName)
-            .WithObject(args.ObjectName ?? args.SourceObject.ObjectName)
-            .WithHeaders(args.Headers)
-            .WithCopyObjectSource(args.SourceObject)
-            .WithSourceObjectInfo(args.SourceObjectInfo)
-            .WithReplaceMetadataDirective(args.ReplaceMetadataDirective)
-            .WithReplaceTagsDirective(args.ReplaceTagsDirective);
-        nmuArgs.Validate();
-        // No need to resume upload since this is a Server-side copy. Just initiate a new upload.
-        var uploadId = await NewMultipartUploadAsync(nmuArgs, cancellationToken).ConfigureAwait(false);
-        var expectedReadSize = partSize;
-        int partNumber;
-        for (partNumber = 1; partNumber <= partCount; partNumber++)
-        {
-            var partCondition = args.SourceObject.CopyOperationConditions.Clone();
-            partCondition.byteRangeStart = ((long)partSize * (partNumber - 1)) + partCondition.byteRangeStart;
-            partCondition.byteRangeEnd = partNumber < partCount
-                ? partCondition.byteRangeStart + (long)partSize - 1
-                : partCondition.byteRangeStart + (long)lastPartSize - 1;
-            var queryMap = new Dictionary<string, string>(StringComparer.Ordinal);
-            if (!string.IsNullOrEmpty(uploadId) && partNumber > 0)
-            {
-                queryMap.Add("uploadId", uploadId);
-                queryMap.Add("partNumber", partNumber.ToString(CultureInfo.InvariantCulture));
-            }
-
-            if (args.SourceObject.SSE is not null and SSECopy)
-                args.SourceObject.SSE.Marshal(args.Headers);
-            args.SSE?.Marshal(args.Headers);
-            var cpPartArgs = new CopyObjectRequestArgs()
-                .WithBucket(args.BucketName)
-                .WithObject(args.ObjectName)
-                .WithVersionId(args.VersionId)
-                .WithHeaders(args.Headers)
-                .WithCopyOperationObjectType(typeof(CopyPartResult))
-                .WithPartCondition(partCondition)
-                .WithQueryMap(queryMap)
-                .WithCopyObjectSource(args.SourceObject)
-                .WithSourceObjectInfo(args.SourceObjectInfo)
-                .WithReplaceMetadataDirective(args.ReplaceMetadataDirective)
-                .WithReplaceTagsDirective(args.ReplaceTagsDirective)
-                .WithTagging(args.ObjectTags);
-            var cpPartResult =
-                (CopyPartResult)await CopyObjectRequestAsync(cpPartArgs, cancellationToken).ConfigureAwait(false);
-
-            totalParts[partNumber - 1] = new Part
-            {
-                PartNumber = partNumber, ETag = cpPartResult.ETag, Size = (long)expectedReadSize
-            };
-        }
-
-        var etags = new Dictionary<int, string>();
-        for (partNumber = 1; partNumber <= partCount; partNumber++) etags[partNumber] = totalParts[partNumber - 1].ETag;
-        var completeMultipartUploadArgs = new CompleteMultipartUploadArgs(args)
-            .WithUploadId(uploadId)
-            .WithETags(etags);
-        // Complete multi part upload
-        _ = await CompleteMultipartUploadAsync(completeMultipartUploadArgs, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
     ///     Start a new multi-part upload request
     /// </summary>
     /// <param name="args">
-    ///     NewMultipartUploadPutArgs arguments object encapsulating bucket name, object name, Headers, SSE
+    ///     NewMultipartUploadPutArgs arguments object encapsulating bucket name, object name, Headers
     ///     Headers
     /// </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -1048,7 +405,7 @@ public partial class MinioClient : IObjectOperations
         args?.Validate();
         var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+            await this.ExecuteTaskAsync(requestMessageBuilder,
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         var uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
@@ -1059,7 +416,7 @@ public partial class MinioClient : IObjectOperations
     ///     Start a new multi-part copy upload request
     /// </summary>
     /// <param name="args">
-    ///     NewMultipartUploadCopyArgs arguments object encapsulating bucket name, object name, Headers, SSE
+    ///     NewMultipartUploadCopyArgs arguments object encapsulating bucket name, object name, Headers
     ///     Headers
     /// </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -1076,29 +433,11 @@ public partial class MinioClient : IObjectOperations
         args?.Validate();
         var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+            await this.ExecuteTaskAsync(requestMessageBuilder,
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         var uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
         return uploadResponse.UploadId;
-    }
-
-    /// <summary>
-    ///     Create the copy request, execute it and return the copy result.
-    /// </summary>
-    /// <param name="args"> CopyObjectRequestArgs Arguments Object encapsulating </param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    private async Task<object> CopyObjectRequestAsync(CopyObjectRequestArgs args, CancellationToken cancellationToken)
-    {
-        args?.Validate();
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-        var copyObjectResponse =
-            new CopyObjectResponse(response.StatusCode, response.Content, args.CopyOperationObjectType);
-        return copyObjectResponse.CopyPartRequestResult;
     }
 
     /// <summary>
@@ -1119,7 +458,7 @@ public partial class MinioClient : IObjectOperations
         args?.Validate();
         var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+            await this.ExecuteTaskAsync(requestMessageBuilder,
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         return new PutObjectResponse(response.StatusCode, response.Content, response.Headers, -1,

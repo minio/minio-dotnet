@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,35 +14,18 @@
  * limitations under the License.
  */
 
-using Minio.DataModel.ObjectLock;
-using Minio.DataModel.Tags;
-
 namespace Minio.DataModel.Args;
 
 public abstract class ObjectWriteArgs<T> : ObjectConditionalQueryArgs<T>
     where T : ObjectWriteArgs<T>
 {
-    internal Tagging ObjectTags { get; set; }
-    internal ObjectRetentionConfiguration Retention { get; set; }
     internal bool? LegalHoldEnabled { get; set; }
     internal string ContentType { get; set; }
-
-    public T WithTagging(Tagging tagging)
-    {
-        ObjectTags = tagging;
-        return (T)this;
-    }
 
     public T WithContentType(string type)
     {
         ContentType = string.IsNullOrWhiteSpace(type) ? "application/octet-stream" : type;
         if (!Headers.ContainsKey("Content-Type")) Headers["Content-Type"] = type;
-        return (T)this;
-    }
-
-    public T WithRetentionConfiguration(ObjectRetentionConfiguration retentionConfiguration)
-    {
-        Retention = retentionConfiguration;
         return (T)this;
     }
 

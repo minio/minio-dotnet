@@ -31,10 +31,8 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
         // destBucketName, destObjectName, metadata, sseHeaders
         RequestMethod = HttpMethod.Post;
         BucketName = args.BucketName;
-        ObjectName = args.ObjectName ?? args.SourceObject.ObjectName;
+        ObjectName = args.ObjectName;
         Headers = new Dictionary<string, string>(StringComparer.Ordinal);
-        SSE = args.SSE;
-        SSE?.Marshal(args.Headers);
         if (args.Headers?.Count > 0)
             Headers = Headers.Concat(args.Headers).GroupBy(item => item.Key, StringComparer.Ordinal)
                 .ToDictionary(item => item.Key, item => item.First().Value, StringComparer.Ordinal);

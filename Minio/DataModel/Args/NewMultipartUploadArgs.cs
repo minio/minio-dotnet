@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using Minio.DataModel.ObjectLock;
 using Minio.Helper;
 
 namespace Minio.DataModel.Args;
@@ -27,24 +26,8 @@ internal class NewMultipartUploadArgs<T> : ObjectWriteArgs<T>
         RequestMethod = HttpMethod.Post;
     }
 
-    internal ObjectRetentionMode ObjectLockRetentionMode { get; set; }
     internal DateTime RetentionUntilDate { get; set; }
     internal bool ObjectLockSet { get; set; }
-
-    public NewMultipartUploadArgs<T> WithObjectLockMode(ObjectRetentionMode mode)
-    {
-        ObjectLockSet = true;
-        ObjectLockRetentionMode = mode;
-        return this;
-    }
-
-    public NewMultipartUploadArgs<T> WithObjectLockRetentionDate(DateTime untilDate)
-    {
-        ObjectLockSet = true;
-        RetentionUntilDate = new DateTime(untilDate.Year, untilDate.Month, untilDate.Day,
-            untilDate.Hour, untilDate.Minute, untilDate.Second, untilDate.Kind);
-        return this;
-    }
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
@@ -54,9 +37,6 @@ internal class NewMultipartUploadArgs<T> : ObjectWriteArgs<T>
             if (!RetentionUntilDate.Equals(default))
                 requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
                     Utils.To8601String(RetentionUntilDate));
-
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
-                ObjectLockRetentionMode == ObjectRetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
         }
 
         requestMessageBuilder.AddOrUpdateHeaderParameter("content-type", ContentType);

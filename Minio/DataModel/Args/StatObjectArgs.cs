@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using Minio.DataModel.Encryption;
-
 namespace Minio.DataModel.Args;
 
 public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
@@ -68,7 +66,6 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
     private void Populate()
     {
         Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
-        if (SSE?.GetEncryptionType().Equals(EncryptionType.SSE_C) == true) SSE.Marshal(Headers);
         if (OffsetLengthSet)
         {
             // "Range" header accepts byte start index and end index

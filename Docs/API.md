@@ -762,8 +762,7 @@ try
 {
     // Set Tags for the bucket
     SetBucketTagsArgs args = new SetBucketTagsArgs()
-                                 .WithBucket(bucketName)
-                                 .WithTagging(tags);
+                                 .WithBucket(bucketName);
     await minio.SetBucketTagsAsync(args);
     Console.WriteLine($"Set Tags for bucket {bucketName}.");
 }
@@ -1842,7 +1841,7 @@ __Parameters__
 
 | Param                 | Type                                 | Description                                                                                                                       |
 |:----------------------|:-------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------|
-| ``args``              | _PutObjectArgs_                      | Arguments object - bucket name, object name, file name, object data stream, object size, content type, object metadata, operation executing progress, SSE. etc. |
+| ``args``              | _PutObjectArgs_                      | Arguments object - bucket name, object name, file name, object data stream, object size, content type, object metadata, operation executing progress etc. |
 | ``cancellationToken`` | _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken)                                                                        |
 
 
@@ -1955,7 +1954,7 @@ __Parameters__
 
 | Param                 | Type                                 | Description                                                                                                                                                 |
 |:----------------------|:-------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ``args``              | _CopyObjectArgs_                     | Arguments object - bucket name, object name, destination bucket name, destination object name, copy conditions, metadata, Source SSE, Destination SSE. etc. |
+| ``args``              | _CopyObjectArgs_                     | Arguments object - bucket name, object name, destination bucket name, destination object name, copy conditions, metadata, Source SSE, Destination. etc. |
 | ``cancellationToken`` | _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken)                                                                                                  |
 
 
@@ -2407,8 +2406,7 @@ try
     // Set Tags for the object
     SetObjectTagsArgs args = new SetObjectTagsArgs()
                                  .WithBucket(bucketName)
-                                 .WithObject(objectName)
-                                 .WithTagging(tags);
+                                 .WithObject(objectName);
     await minio.SetObjectTagsAsync(args);
     Console.WriteLine($"Set tags for object {bucketName}/{objectName}.");
 }
