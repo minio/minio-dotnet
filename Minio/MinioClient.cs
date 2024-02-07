@@ -182,7 +182,6 @@ public partial class MinioClient : IMinioClient
                 else
                 {
                     errorResponse.Code = "NoSuchBucket";
-                    BucketRegionCache.Instance.Remove(resource);
                     error = new BucketNotFoundException(resource, "Not found.");
                 }
             }
@@ -228,7 +227,6 @@ public partial class MinioClient : IMinioClient
             && response.Request.Method.Equals(HttpMethod.Get))
         {
             var bucketName = response.Request.RequestUri.PathAndQuery.Split('?')[0];
-            BucketRegionCache.Instance.Remove(bucketName);
             throw new BucketNotFoundException(bucketName, "Not found.");
         }
 
@@ -262,22 +260,6 @@ public partial class MinioClient : IMinioClient
             throw new NotImplementedException(errResponse.Message);
         }
 #pragma warning restore MA0025 // Implement the functionality instead of throwing NotImplementedException
-
-        if (response.StatusCode.Equals(HttpStatusCode.BadRequest)
-            && errResponse.Code.Equals("InvalidRequest", StringComparison.OrdinalIgnoreCase))
-        {
-            _ = new Dictionary<string, string>(StringComparer.Ordinal) { { "legal-hold", "" } };
-            if (response.Request.RequestUri.Query.Contains("legalHold", StringComparison.OrdinalIgnoreCase))
-                throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
-        }
-
-        if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-            && errResponse.Code.Equals("ObjectLockConfigurationNotFoundError", StringComparison.OrdinalIgnoreCase))
-            throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
-
-        if (response.StatusCode.Equals(HttpStatusCode.NotFound)
-            && errResponse.Code.Equals("ReplicationConfigurationNotFoundError", StringComparison.OrdinalIgnoreCase))
-            throw new MissingBucketReplicationConfigurationException(errResponse.BucketName, errResponse.Message);
 
         if (response.StatusCode.Equals(HttpStatusCode.Conflict)
             && errResponse.Code.Equals("BucketAlreadyOwnedByYou", StringComparison.OrdinalIgnoreCase))

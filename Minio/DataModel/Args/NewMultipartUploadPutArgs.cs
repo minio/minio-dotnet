@@ -22,9 +22,6 @@ internal class NewMultipartUploadPutArgs : NewMultipartUploadArgs<NewMultipartUp
     {
         requestMessageBuilder.AddQueryParameter("uploads", "");
 
-        if (ObjectTags?.TaggingSet?.Tag.Count > 0)
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
-
         requestMessageBuilder.AddOrUpdateHeaderParameter("content-type", ContentType);
 
         return requestMessageBuilder;

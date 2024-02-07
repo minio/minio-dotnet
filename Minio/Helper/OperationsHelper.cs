@@ -44,15 +44,13 @@ public partial class MinioClient : IMinioClient
             .WithNotMatchETag(args.NotMatchETag)
             .WithModifiedSince(args.ModifiedSince)
             .WithUnModifiedSince(args.UnModifiedSince)
-            .WithServerSideEncryption(args.SSE)
             .WithHeaders(args.Headers);
         if (args.OffsetLengthSet) _ = statArgs.WithOffsetAndLength(args.ObjectOffset, args.ObjectLength);
-        var objStat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
         args?.Validate();
         if (args.FileName is not null)
-            await GetObjectFileAsync(args, objStat, cancellationToken).ConfigureAwait(false);
+            await GetObjectFileAsync(args, null, cancellationToken).ConfigureAwait(false);
         else await GetObjectStreamAsync(args, cancellationToken).ConfigureAwait(false);
-        return objStat;
+        return null;
     }
 
     /// <summary>
@@ -109,7 +107,7 @@ public partial class MinioClient : IMinioClient
     {
         var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+            await this.ExecuteTaskAsync(requestMessageBuilder,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
@@ -133,7 +131,7 @@ public partial class MinioClient : IMinioClient
     {
         var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+            await this.ExecuteTaskAsync(requestMessageBuilder,
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         var removeObjectsResponse = new RemoveObjectsResponse(response.StatusCode, response.Content);

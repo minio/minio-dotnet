@@ -20,9 +20,6 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using Minio.DataModel;
-using Minio.DataModel.Encryption;
-using Minio.DataModel.Notification;
-using Minio.DataModel.ObjectLock;
 using Minio.Examples.Cases;
 
 namespace Minio.Examples;
@@ -122,7 +119,7 @@ public static class Program
         for (var i = 0; i < 10; i++) objectsList.Add(objectName + i);
 
         // Set app Info 
-        minioClient.SetAppInfo("app-name", "app-version");
+        //minioClient.SetAppInfo("app-name", "app-version");
 
         // Set HTTP Tracing On
         // minioClient.SetTraceOn();
@@ -136,43 +133,14 @@ public static class Program
         await MakeBucket.Run(minioClient, bucketName).ConfigureAwait(false);
         await MakeBucket.Run(minioClient, destBucketName).ConfigureAwait(false);
 
-        // Bucket with Lock tests
-        await MakeBucketWithLock.Run(minioClient, lockBucketName).ConfigureAwait(false);
-        await BucketExists.Run(minioClient, lockBucketName).ConfigureAwait(false);
-        await RemoveBucket.Run(minioClient, lockBucketName).ConfigureAwait(false);
-
-        // Versioning tests
-        await GetVersioning.Run(minioClient, bucketName).ConfigureAwait(false);
-        await EnableSuspendVersioning.Run(minioClient, bucketName).ConfigureAwait(false);
-        await GetVersioning.Run(minioClient, bucketName).ConfigureAwait(false);
-        // List all the buckets on the server
-        await ListBuckets.Run(minioClient).ConfigureAwait(false);
-
-        // Start listening for bucket notifications
-        ListenBucketNotifications.Run(minioClient, bucketName, new List<EventType> { EventType.ObjectCreatedAll });
-
         // Put an object to the new bucket
         await PutObject.Run(minioClient, bucketName, objectName, smallFileName, progress).ConfigureAwait(false);
-
-        // Get object metadata
-        await StatObject.Run(minioClient, bucketName, objectName).ConfigureAwait(false);
 
         // List the objects in the new bucket
         ListObjects.Run(minioClient, bucketName);
 
         // Get the file and Download the object as file
         await GetObject.Run(minioClient, bucketName, objectName, smallFileName).ConfigureAwait(false);
-        // Select content from object
-        await SelectObjectContent.Run(minioClient, bucketName, objectName).ConfigureAwait(false);
-        // Delete the file and Download partial object as file
-        await GetPartialObject.Run(minioClient, bucketName, objectName, smallFileName).ConfigureAwait(false);
-
-        // Server side copyObject
-        await CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName).ConfigureAwait(false);
-
-        // Server side copyObject with metadata replacement
-        await CopyObjectMetadata.Run(minioClient, bucketName, objectName, destBucketName, objectName)
-            .ConfigureAwait(false);
 
         // Upload a File with PutObject
         await FPutObject.Run(minioClient, bucketName, objectName, smallFileName).ConfigureAwait(false);
@@ -183,81 +151,10 @@ public static class Program
         // Automatic Multipart Upload with object more than 5Mb
         await PutObject.Run(minioClient, bucketName, objectName, bigFileName, progress).ConfigureAwait(false);
 
-        // Specify SSE-C encryption options
-        using var aesEncryption = Aes.Create();
-        aesEncryption.KeySize = 256;
-        aesEncryption.GenerateKey();
-
-        var ssec = new SSEC(aesEncryption.Key);
-        // Specify SSE-C source side encryption for Copy operations
-        var sseCpy = new SSECopy(aesEncryption.Key);
-
-        // Uncomment to specify SSE-S3 encryption option
-        var sses3 = new SSES3();
-
-        // Uncomment to specify SSE-KMS encryption option
-        var sseKms = new SSEKMS("kms-key",
-            new Dictionary<string, string>(StringComparer.Ordinal) { { "kms-context", "somevalue" } });
-
         // Upload encrypted object
         var putFileName1 = CreateFile(1 * UNIT_MB);
-        await PutObject.Run(minioClient, bucketName, objectName, putFileName1, progress, ssec).ConfigureAwait(false);
-        // Copy SSE-C encrypted object to unencrypted object
-        await CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName, sseCpy, ssec)
-            .ConfigureAwait(false);
-        // Download SSE-C encrypted object
-        await FGetObject.Run(minioClient, destBucketName, objectName, bigFileName, ssec).ConfigureAwait(false);
-
-        // List the incomplete uploads
-        ListIncompleteUploads.Run(minioClient, bucketName);
-
-        // Remove all the incomplete uploads
-        await RemoveIncompleteUpload.Run(minioClient, bucketName, objectName).ConfigureAwait(false);
-
-        // Set a policy for given bucket
-        await SetBucketPolicy.Run(minioClient, bucketName).ConfigureAwait(false);
-        // Get the policy for given bucket
-        await GetBucketPolicy.Run(minioClient, bucketName).ConfigureAwait(false);
-
-        // Set bucket notifications
-        await SetBucketNotification.Run(minioClient, bucketName).ConfigureAwait(false);
-
-        // Get bucket notifications
-        await GetBucketNotification.Run(minioClient, bucketName).ConfigureAwait(false);
-
-        // Remove all bucket notifications
-        await RemoveAllBucketNotifications.Run(minioClient, bucketName).ConfigureAwait(false);
-
-        // Object Lock Configuration operations
-        lockBucketName = GetRandomName();
-        await MakeBucketWithLock.Run(minioClient, lockBucketName).ConfigureAwait(false);
-        var configuration = new ObjectLockConfiguration(ObjectRetentionMode.GOVERNANCE, 35);
-        await SetObjectLockConfiguration.Run(minioClient, lockBucketName, configuration).ConfigureAwait(false);
-        await GetObjectLockConfiguration.Run(minioClient, lockBucketName).ConfigureAwait(false);
-        await RemoveObjectLockConfiguration.Run(minioClient, lockBucketName).ConfigureAwait(false);
-        await RemoveBucket.Run(minioClient, lockBucketName).ConfigureAwait(false);
-
-        // Bucket Replication operations
-        var replicationRuleID = "myreplicationID-3333";
-        await SetBucketReplication.Run(minioClient, bucketName, destBucketName, replicationRuleID)
-            .ConfigureAwait(false);
-        await GetBucketReplication.Run(minioClient, bucketName, replicationRuleID).ConfigureAwait(false);
-        // TODO: we can verify that the replication happens by checking
-        // the content in the destination matches the source content.
-        //     We also cannot remove the replication config immediately
-        //     after running GetBucketReplication command, as
-        //     replicating the source in the destination takes some time.
-        await RemoveBucketReplication.Run(minioClient, bucketName).ConfigureAwait(false);
-
-        // Get the presigned url for a GET object request
-        await PresignedGetObject.Run(minioClient, bucketName, objectName).ConfigureAwait(false);
-
-        // Get the presigned POST policy curl url
-        await PresignedPostPolicy.Run(minioClient, bucketName, objectName).ConfigureAwait(false);
-
-        // Get the presigned url for a PUT object request
-        await PresignedPutObject.Run(minioClient, bucketName, objectName).ConfigureAwait(false);
-
+        await PutObject.Run(minioClient, bucketName, objectName, putFileName1, progress).ConfigureAwait(false);
+  
         // Delete the list of objects
         await RemoveObjects.Run(minioClient, bucketName, objectsList).ConfigureAwait(false);
 
@@ -266,9 +163,6 @@ public static class Program
 
         // Delete the object
         await RemoveObject.Run(minioClient, destBucketName, objectName).ConfigureAwait(false);
-
-        // Retry on failure
-        await RetryPolicyObject.Run(minioClient, destBucketName, objectName).ConfigureAwait(false);
 
         // Tracing request with custom logger
         await CustomRequestLogger.Run(minioClient).ConfigureAwait(false);

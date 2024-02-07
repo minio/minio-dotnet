@@ -9,9 +9,6 @@ public class MinioConfig
 {
     internal ServiceProvider ServiceProvider { get; set; }
 
-    // Cache holding bucket to region mapping for buckets seen so far.
-    public BucketRegionCache RegionCache { get; internal set; }
-
     public IClientProvider Provider { get; internal set; }
     public HttpClient HttpClient { get; internal set; }
     public IWebProxy Proxy { get; internal set; }
@@ -37,8 +34,6 @@ public class MinioConfig
 
     // Indicates if we are using HTTPS or not
     public bool Secure { get; internal set; }
-
-    public string Region { get; internal set; }
 
     public int RequestTimeout { get; internal set; }
 

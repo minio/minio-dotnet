@@ -40,7 +40,6 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         ObjectName = args.ObjectName;
         ObjectSize = args.ObjectSize;
         PartNumber = args.PartNumber;
-        SSE = args.SSE;
         UploadId = args.UploadId;
     }
 
@@ -96,18 +95,6 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
             requestMessageBuilder.AddQueryParameter("partNumber", $"{PartNumber}");
         }
 
-        if (ObjectTags?.TaggingSet?.Tag.Count > 0)
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
-
-        if (Retention is not null)
-        {
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
-                Retention.RetainUntilDate);
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode", Retention.Mode.ToString());
-            requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
-                Utils.GetMD5SumStr(RequestBody.Span));
-        }
-
         if (LegalHoldEnabled is not null)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-legal-hold",
                 LegalHoldEnabled == true ? "ON" : "OFF");
@@ -138,8 +125,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
             {
                 var key = p.Key;
                 if (!OperationsUtil.IsSupportedHeader(p.Key) &&
-                    !p.Key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase) &&
-                    !OperationsUtil.IsSSEHeader(p.Key))
+                    !p.Key.StartsWith("x-amz-meta-", StringComparison.OrdinalIgnoreCase))
                 {
                     key = "x-amz-meta-" + key.ToLowerInvariant();
                     _ = Headers.Remove(p.Key);

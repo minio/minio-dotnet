@@ -16,7 +16,6 @@
 
 using System.Xml;
 using System.Xml.Serialization;
-using Minio.DataModel.Notification;
 
 namespace Minio.DataModel;
 
@@ -43,9 +42,6 @@ public class CreateBucketConfiguration
         using var writer = XmlWriter.Create(ms, settings);
         var names = new XmlSerializerNamespaces();
         names.Add(string.Empty, "http://s3.amazonaws.com/doc/2006-03-01/");
-
-        var cs = new XmlSerializer(typeof(BucketNotification));
-        cs.Serialize(writer, this, names);
 
         ms.Flush();
         _ = ms.Seek(0, SeekOrigin.Begin);

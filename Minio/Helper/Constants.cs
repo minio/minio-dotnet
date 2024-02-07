@@ -69,19 +69,4 @@ internal static class Constants
     public static long OptimalReadBufferSize = 1024L * 1024L * 5;
 
     public static int DefaultExpiryTime = 7 * 24 * 3600;
-
-    /// <summary>
-    ///     SSEGenericHeader is the AWS SSE header used for SSE-S3 and SSE-KMS.
-    /// </summary>
-    public static string SSEGenericHeader = "X-Amz-Server-Side-Encryption";
-
-    /// <summary>
-    ///     SSEKMSKeyId is the AWS SSE KMS Key-Id
-    /// </summary>
-    public static string SSEKMSKeyId = "X-Amz-Server-Side-Encryption-Aws-Kms-Key-Id";
-
-    /// <summary>
-    ///     SSEKMSContext is the AWS SSE KMS Context.
-    /// </summary>
-    public static string SSEKMSContext = "X-Amz-Server-Side-Encryption-Context";
 }

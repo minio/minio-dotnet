@@ -25,35 +25,16 @@ internal static class RequestUtil
 {
     internal static Uri GetEndpointURL(string endPoint, bool secure)
     {
-        if (endPoint.Contains(':', StringComparison.Ordinal))
-        {
-            var parts = endPoint.Split(':');
-            var host = parts[0];
-            //var port = parts[1];
-            if (!S3utils.IsValidIP(host) && !IsValidEndpoint(host))
-                throw new InvalidEndpointException("Endpoint: " + endPoint +
-                                                   " does not follow ip address or domain name standards.");
-        }
-        else
-        {
-            if (!S3utils.IsValidIP(endPoint) && !IsValidEndpoint(endPoint))
-                throw new InvalidEndpointException("Endpoint: " + endPoint +
-                                                   " does not follow ip address or domain name standards.");
-        }
-
         var uri = TryCreateUri(endPoint, secure);
         ValidateEndpoint(uri, endPoint);
         return uri;
     }
 
-    internal static Uri MakeTargetURL(string endPoint, bool secure, string bucketName = null, string region = null,
+    internal static Uri MakeTargetURL(string endPoint, bool secure, string bucketName = null,
         bool usePathStyle = true)
     {
         // For Amazon S3 endpoint, try to fetch location based endpoint.
         var host = endPoint;
-        if (S3utils.IsAmazonEndPoint(endPoint))
-            // Fetch new host based on the bucket location.
-            host = AWSS3Endpoints.Endpoint(region);
 
         if (!usePathStyle)
         {

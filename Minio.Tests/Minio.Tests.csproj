@@ -3,7 +3,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <IsPackable>False</IsPackable>
     <AssemblyOriginatorKeyFile>..\Minio.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>False</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>
