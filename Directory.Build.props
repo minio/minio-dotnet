@@ -3,8 +3,8 @@
         <Copyright>Copyright (c) Newtera. All rights reserved</Copyright>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/newtera/newtera-dotnet</PackageProjectUrl>
-        <Authors>MinIO, Inc.</Authors>
-        <Owners>MinIO, Inc.</Owners>
+        <Authors>Newtera, Inc.</Authors>
+        <Owners>Newtera, Inc.</Owners>
         <PackageTags>newtera;cloud;storage</PackageTags>
         <PackageReleaseNotes>https://github.com/newtera/newtera-dotnet/releases</PackageReleaseNotes>
         <PackageReadmeFile>readme.md</PackageReadmeFile>

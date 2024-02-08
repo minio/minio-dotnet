@@ -52,28 +52,4 @@ public abstract class ObjectConditionalQueryArgs<T> : ObjectVersionArgs<T>
 
         return requestMessageBuilder;
     }
-
-    public T WithMatchETag(string etag)
-    {
-        MatchETag = etag;
-        return (T)this;
-    }
-
-    public T WithNotMatchETag(string etag)
-    {
-        NotMatchETag = etag;
-        return (T)this;
-    }
-
-    public T WithModifiedSince(DateTime d)
-    {
-        ModifiedSince = new DateTime(d.Year, d.Month, d.Day, 0, 0, 0);
-        return (T)this;
-    }
-
-    public T WithUnModifiedSince(DateTime d)
-    {
-        UnModifiedSince = new DateTime(d.Year, d.Month, d.Day, 0, 0, 0);
-        return (T)this;
-    }
 }
