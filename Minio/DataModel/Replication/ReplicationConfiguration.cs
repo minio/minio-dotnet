@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Xml;
 using System.Xml.Serialization;
@@ -48,12 +49,12 @@ public class ReplicationConfiguration
                 nameof(rules) + " Count of rules cannot exceed maximum limit of 1000.");
 
         Role = role;
-        Rules = rules;
+        Rules = (Collection<ReplicationRule>)rules;
     }
 
     [XmlElement("Role")] public string Role { get; set; }
 
-    [XmlElement("Rule")] public ICollection<ReplicationRule> Rules { get; set; }
+    [XmlElement("Rule")] public Collection<ReplicationRule> Rules { get; set; }
 
     public string MarshalXML()
     {
