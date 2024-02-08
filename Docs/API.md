@@ -1,8 +1,8 @@
 # .NET Client API Reference [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io)
 
-## Initialize MinIO Client object.
+## Initialize Newtera Client object.
 
-## MinIO
+## Newtera
 
 ```cs
 INewteraClient newteraClient = new NewteraClient()
@@ -59,7 +59,7 @@ IINewteraClient newteraClient = new NewteraClient()
 |                                                                                                                                                                 |
 |-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `public NewteraClient(string endpoint, string accessKey = "", string secretKey = "", string region = "", string sessionToken="")`                                 |
-| Creates MinIO client object with given endpoint.AccessKey, secretKey, region and sessionToken are optional parameters, and can be omitted for anonymous access. |
+| Creates Newtera client object with given endpoint.AccessKey, secretKey, region and sessionToken are optional parameters, and can be omitted for anonymous access. |
 | The client object uses Http access by default. To use Https, chain method WithSSL() to client object to use secure transfer protocol                            |
 
 
@@ -79,17 +79,17 @@ __Parameters__
 
 | Secure Access (TLS)                                                      |
 |--------------------------------------------------------------------------|
-| `Chain .WithSSL() or WithSSL(true) to MinIO Client object to use https. ` |
+| `Chain .WithSSL() or WithSSL(true) to Newtera Client object to use https. ` |
 | `Chain .WithSSL(false) or nothing to Client object to use http. ` |
 
 | Proxy                                                                     |
 |----------------------------------------------------------------------|
-| `Chain .WithProxy(proxyObject) to MinIO Client object to use proxy ` |
+| `Chain .WithProxy(proxyObject) to Newtera Client object to use proxy ` |
 
 |                                                                                                                                              |
 |----------------------------------------------------------------------------------------------------------------------------------------------|
 | `public NewteraClient()`                                                                                                                       |
-| Creates MinIO client. This client gives an empty object that can be used with Chaining to populate only the member variables we need.        |
+| Creates Newtera client. This client gives an empty object that can be used with Chaining to populate only the member variables we need.        |
 | The next important step is to connect to an endpoint. You can chain one of the overloaded method WithEndpoint() to client object to connect. |
 | This client object also uses Http access by default. To use Https, chain method WithSSL() or WithSSL(true) to client object to use secure transfer protocol.  |
 | To use non-anonymous access, chain method WithCredentials() to the client object along with the access key & secret key.                     |
@@ -98,7 +98,7 @@ __Parameters__
 
 | Endpoint                                                                            |
 |-----------------------------------------------------------------------------|
-| `Chain .WithEndpoint() to MinIO Client object to initialize the endpoint. ` |
+| `Chain .WithEndpoint() to Newtera Client object to initialize the endpoint. ` |
 
 
 | Return Type     | Exceptions         |
@@ -108,7 +108,7 @@ __Parameters__
 
 __Examples__
 
-### MinIO
+### Newtera
 
 
 ```cs
@@ -2048,7 +2048,6 @@ try
     RemoveObjectArgs rmArgs = new RemoveObjectArgs()
                                   .WithBucket("mybucket")
                                   .WithObject("myobject")
-                                  .WithVersionId("versionId");
     await newteraClient.RemoveObjectAsync(args);
     Console.WriteLine("successfully removed mybucket/myobject{versionId}");
 }
@@ -2307,7 +2306,6 @@ try
     SetObjectLegalHoldArgs args = new SetObjectLegalHoldArgs()
                                       .WithBucket(bucketName)
                                       .WithObject(objectName)
-                                      .WithVersionId(versionId)
                                       .WithLegalHold(true);
     await newtera.SetObjectLegalHoldAsync(args);
 }
@@ -2355,8 +2353,7 @@ try
     // Get Legal Hold status a object
     var args = new GetObjectLegalHoldArgs()
                    .WithBucket(bucketName)
-                   .WithObject(objectName)
-                   .WithVersionId(versionId);
+                   .WithObject(objectName);
     bool enabled = await newtera.GetObjectLegalHoldAsync(args);
     Console.WriteLine("LegalHold Configuration STATUS for " + bucketName + "/" + objectName +
                                         (!string.IsNullOrEmpty(versionId)?" with Version ID " + versionId: " ") +

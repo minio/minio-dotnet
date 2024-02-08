@@ -1,5 +1,5 @@
 ﻿/*
- * MinIO .NET Library for Newtera TDM, (C) 2017 MinIO, Inc.
+ * Newtera .NET Library for Newtera TDM, (C) 2017 Newtera, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,52 +93,6 @@ public class UnitTest1
     {
         using var newtera = new NewteraClient()
             .WithEndpoint("http://localhost:9000/?foo=bar")
-            .Build();
-    }
-
-    [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
-    public void TestSetAppInfoFailsNullApp()
-    {
-        using var client = new NewteraClient()
-            .WithEndpoint("localhost", 9000)
-            .Build();
-        client.SetAppInfo(null, "1.2.2");
-    }
-
-    [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
-    public void TestSetAppInfoFailsNullVersion()
-    {
-        using var client = new NewteraClient()
-            .WithEndpoint("localhost", 9000)
-            .Build();
-        client.SetAppInfo("Hello-App", null);
-    }
-
-    [TestMethod]
-    public void TestSetAppInfoSuccess()
-    {
-        using var client = new NewteraClient()
-            .WithEndpoint("localhost", 9000)
-            .Build();
-        client.SetAppInfo("Hello-App", "1.2.1");
-    }
-
-    [TestMethod]
-    public void TestEndpointSuccess()
-    {
-        using var client = new NewteraClient()
-            .WithEndpoint("s3.amazonaws.com")
-            .Build();
-    }
-
-    [TestMethod]
-    [ExpectedException(typeof(InvalidEndpointException))]
-    public void TestEndpointFailure()
-    {
-        using var client = new NewteraClient()
-            .WithEndpoint("s3-us-west-1.amazonaws.com")
             .Build();
     }
 

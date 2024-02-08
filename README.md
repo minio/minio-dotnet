@@ -256,17 +256,6 @@ dotnet test ./Newtera.Tests/Newtera.Tests.csproj
 * [BucketExists.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/BucketExists.cs)
 * [RemoveBucket.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/RemoveBucket.cs)
 * [ListObjects.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/ListObjects.cs)
-* [ListIncompleteUploads.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/ListIncompleteUploads.cs)
-* [ListenBucketNotifications.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/ListenBucketNotifications.cs)
-
-#### Bucket policy Operations
-* [GetBucketPolicy.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/GetBucketPolicy.cs)
-* [SetBucketPolicy.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/SetBucketPolicy.cs)
-
-#### Bucket notification Operations
-* [GetBucketNotification.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/GetBucketNotification.cs)
-* [SetBucketNotification.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/SetBucketNotification.cs)
-* [RemoveAllBucketNotifications.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/RemoveAllBucketNotifications.cs)
 
 #### File Object Operations
 * [FGetObject.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/FGetObject.cs)
@@ -275,20 +264,11 @@ dotnet test ./Newtera.Tests/Newtera.Tests.csproj
 #### Object Operations
 * [GetObject.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/GetObject.cs)
 * [GetPartialObject.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/GetPartialObject.cs)
-* [SelectObjectContent.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/SelectObjectContent.cs)
 
 * [PutObject.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/PutObject.cs)
 * [StatObject.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/StatObject.cs)
 * [RemoveObject.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/RemoveObject.cs)
 * [RemoveObjects.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/RemoveObjects.cs)
-* [CopyObject.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/CopyObject.cs)
-* [CopyObjectMetadata.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/CopyObjectMetadata.cs)
-* [RemoveIncompleteUpload.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/RemoveIncompleteUpload.cs)
-
-#### Presigned Operations
-* [PresignedGetObject.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/PresignedGetObject.cs)
-* [PresignedPutObject.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/PresignedPutObject.cs)
-* [PresignedPostPolicy.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/PresignedPostPolicy.cs)
 
 #### Client Custom Settings
 * [SetAppInfo](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Program.cs)

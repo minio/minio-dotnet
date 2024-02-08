@@ -39,11 +39,6 @@ public partial class NewteraClient : INewteraClient
         var statArgs = new StatObjectArgs()
             .WithBucket(args.BucketName)
             .WithObject(args.ObjectName)
-            .WithVersionId(args.VersionId)
-            .WithMatchETag(args.MatchETag)
-            .WithNotMatchETag(args.NotMatchETag)
-            .WithModifiedSince(args.ModifiedSince)
-            .WithUnModifiedSince(args.UnModifiedSince)
             .WithHeaders(args.Headers);
         if (args.OffsetLengthSet) _ = statArgs.WithOffsetAndLength(args.ObjectOffset, args.ObjectLength);
         args?.Validate();

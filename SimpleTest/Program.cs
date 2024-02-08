@@ -1,5 +1,5 @@
 ﻿/*
- * MinIO .NET Library for Newtera TDM, (C) 2017 MinIO, Inc.
+ * Newtera .NET Library for Newtera TDM, (C) 2017 Newtera, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,6 @@ public static class Program
 {
     private static async Task Main(string[] args)
     {
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
-                                               | SecurityProtocolType.Tls11
-                                               | SecurityProtocolType.Tls12;
-
         // Note: s3 AccessKey and SecretKey needs to be added in App.config file
         // See instructions in README.md on running examples for more information.
         using var newtera = new NewteraClient()

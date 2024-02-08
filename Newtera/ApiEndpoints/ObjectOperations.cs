@@ -157,7 +157,6 @@ public partial class NewteraClient : IObjectOperations
         var multipartUploadArgs = new NewMultipartUploadPutArgs()
             .WithBucket(args.BucketName)
             .WithObject(args.ObjectName)
-            .WithVersionId(args.VersionId)
             .WithHeaders(args.Headers)
             .WithContentType(args.ContentType)
             .WithLegalHold(args.LegalHoldEnabled);
