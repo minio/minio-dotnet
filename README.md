@@ -22,8 +22,8 @@ using Minio.DataModel.Args;
 public static class Program
 {
     var endpoint = "play.min.io";
-    var accessKey = "Q3AM3UQ867SPQQA43P2F";
-    var secretKey = "zuf+tfteSlswRu7BJ86wtrueekitnifILbZam1KYY3TG";
+    var accessKey = "minioadmin";
+    var secretKey = "minioadmin";
 
     public static void Main(string[] args)
     {
@@ -104,8 +104,8 @@ The following examples uses a freely hosted public MinIO service "play.min.io" f
 using Minio;
 
 var endpoint = "play.min.io";
-var accessKey = "Q3AM3UQ867trueSPQQA43P2F";
-var secretKey = "zuf+tfteSlswRu7BJ86wtrueekitnifILbZam1KYY3TG";
+var accessKey = "minioadmin";
+var secretKey = "minioadmin";
 var secure = true;
 // Initialize the client with access credentials.
 private static IMinioClient minio = new MinioClient()
@@ -145,8 +145,8 @@ namespace FileUploader
         static void Main(string[] args)
         {
             var endpoint  = "play.min.io";
-            var accessKey = "Q3AM3UQ867SPQQA43P2F";
-            var secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
+            var accessKey = "minioadmin";
+            var secretKey = "minioadmin";
             try
             {
                 var minio = new MinioClient()
