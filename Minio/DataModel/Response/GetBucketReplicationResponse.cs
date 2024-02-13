@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +28,7 @@ internal class GetBucketReplicationResponse : GenericResponse
         : base(statusCode, responseContent)
     {
         if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
+            HttpStatusCode.OK != statusCode)
         {
             Config = null;
             return;

@@ -26,7 +26,7 @@ internal class GetPolicyResponse : GenericResponse
         : base(statusCode, responseContent)
     {
         if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
+            HttpStatusCode.OK != statusCode)
             return;
 
         Initialize().Wait();

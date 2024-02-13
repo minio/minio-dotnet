@@ -53,7 +53,7 @@ public partial class MinioClient : IBucketOperations
                 .ConfigureAwait(false);
 
         var bucketList = new ListAllMyBucketsResult();
-        if (HttpStatusCode.OK.Equals(response.StatusCode))
+        if (HttpStatusCode.OK == response.StatusCode)
         {
             using var stream = response.ContentBytes.AsStream();
             bucketList = Utils.DeserializeXml<ListAllMyBucketsResult>(stream);
@@ -84,7 +84,7 @@ public partial class MinioClient : IBucketOperations
         catch (InternalClientException ice)
         {
             return (ice.ServerResponse is null ||
-                    !HttpStatusCode.NotFound.Equals(ice.ServerResponse.StatusCode)) &&
+                    HttpStatusCode.NotFound != ice.ServerResponse.StatusCode) &&
                    ice.ServerResponse is not null;
         }
         catch (Exception ex)

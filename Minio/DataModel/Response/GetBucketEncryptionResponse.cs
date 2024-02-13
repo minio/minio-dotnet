@@ -27,7 +27,7 @@ internal class GetBucketEncryptionResponse : GenericResponse
     internal GetBucketEncryptionResponse(HttpStatusCode statusCode, string responseContent)
         : base(statusCode, responseContent)
     {
-        if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
+        if (string.IsNullOrEmpty(responseContent) || HttpStatusCode.OK != statusCode)
         {
             BucketEncryptionConfiguration = null;
             return;

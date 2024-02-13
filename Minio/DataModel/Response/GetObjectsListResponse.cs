@@ -33,7 +33,7 @@ internal class GetObjectsListResponse : GenericResponse
         : base(statusCode, responseContent)
     {
         if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
+            HttpStatusCode.OK != statusCode)
             return;
 
         using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();

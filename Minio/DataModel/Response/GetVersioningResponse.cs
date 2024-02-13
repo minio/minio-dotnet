@@ -25,7 +25,7 @@ internal class GetVersioningResponse : GenericResponse
         : base(statusCode, responseContent)
     {
         if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
+            HttpStatusCode.OK != statusCode)
             return;
 
         VersioningConfig = Utils.DeserializeXml<VersioningConfiguration>(responseContent);

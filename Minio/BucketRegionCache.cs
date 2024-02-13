@@ -100,7 +100,7 @@ public sealed class BucketRegionCache
             using var response =
                 await client.ExecuteTaskAsync(client.ResponseErrorHandlers, requestBuilder).ConfigureAwait(false);
 
-            if (response is not null && HttpStatusCode.OK.Equals(response.StatusCode))
+            if (response is not null && HttpStatusCode.OK == response.StatusCode)
             {
                 var root = XDocument.Parse(response.Content);
                 location = root.Root.Value;
