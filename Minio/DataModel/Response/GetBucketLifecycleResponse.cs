@@ -28,7 +28,7 @@ internal class GetBucketLifecycleResponse : GenericResponse
         : base(statusCode, responseContent)
     {
         if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
+            HttpStatusCode.OK != statusCode)
         {
             BucketLifecycle = null;
             return;

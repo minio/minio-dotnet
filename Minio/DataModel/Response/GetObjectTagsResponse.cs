@@ -28,7 +28,7 @@ internal class GetObjectTagsResponse : GenericResponse
         : base(statusCode, responseContent)
     {
         if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
+            HttpStatusCode.OK != statusCode)
         {
             ObjectTags = null;
             return;

@@ -1313,7 +1313,7 @@ public static class FunctionalTest
         CancellationToken cancellationToken = default)
     {
         using var response = await minio.WrapperGetAsync(url).ConfigureAwait(false);
-        if (string.IsNullOrEmpty(Convert.ToString(response.Content)) || !HttpStatusCode.OK.Equals(response.StatusCode))
+        if (string.IsNullOrEmpty(Convert.ToString(response.Content)) || HttpStatusCode.OK != response.StatusCode)
             throw new InvalidOperationException("Unable to download via presigned URL" + nameof(response.Content));
 
         using var fs = new FileStream(filePath, FileMode.CreateNew);

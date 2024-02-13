@@ -65,7 +65,7 @@ public abstract class WebIdentityClientGrantsProvider<T> : AssumeRoleBaseProvide
         // txtBlock.Text = readStream.ReadToEnd();
         var content = Convert.ToString(response.Content, CultureInfo.InvariantCulture);
         if (string.IsNullOrWhiteSpace(content) ||
-            !HttpStatusCode.OK.Equals(response.StatusCode))
+            HttpStatusCode.OK != response.StatusCode)
             throw new ArgumentNullException(nameof(response), "Unable to get credentials. Response error.");
 
         using var stream = Encoding.UTF8.GetBytes(content).AsMemory().AsStream();

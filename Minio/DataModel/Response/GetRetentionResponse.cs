@@ -27,7 +27,7 @@ internal class GetRetentionResponse : GenericResponse
     public GetRetentionResponse(HttpStatusCode statusCode, string responseContent)
         : base(statusCode, responseContent)
     {
-        if (string.IsNullOrEmpty(responseContent) && !HttpStatusCode.OK.Equals(statusCode))
+        if (string.IsNullOrEmpty(responseContent) && HttpStatusCode.OK != statusCode)
         {
             CurrentRetentionConfiguration = null;
             return;
