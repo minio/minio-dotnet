@@ -35,7 +35,8 @@ public static class Program
         // Add Minio using the custom endpoint and configure additional settings for default MinioClient initialization
         builder.Services.AddMinio(configureClient => configureClient
             .WithEndpoint(endpoint)
-            .WithCredentials(accessKey, secretKey));
+            .WithCredentials(accessKey, secretKey)
+	    .Build());
 
         // NOTE: SSL and Build are called by the build-in services already.
 
