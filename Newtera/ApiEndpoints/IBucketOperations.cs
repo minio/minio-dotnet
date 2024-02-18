@@ -25,17 +25,6 @@ namespace Newtera.ApiEndpoints;
 public interface IBucketOperations
 {
     /// <summary>
-    ///     Create a bucket with the given name.
-    /// </summary>
-    /// <param name="args">MakeBucketArgs Arguments Object that has bucket info like name, location. etc</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns> Task </returns>
-    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
-    /// <exception cref="NotImplementedException">When object-lock or another extension is not implemented</exception>
-    Task MakeBucketAsync(MakeBucketArgs args, CancellationToken cancellationToken = default);
-
-    /// <summary>
     ///     List all objects in a bucket
     /// </summary>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -53,17 +42,6 @@ public interface IBucketOperations
     /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     Task<bool> BucketExistsAsync(BucketExistsArgs args, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    ///     Remove the bucket with the given name.
-    /// </summary>
-    /// <param name="args">RemoveBucketArgs Arguments Object which has bucket identifier information like bucket name .etc.</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns> Task </returns>
-    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    Task RemoveBucketAsync(RemoveBucketArgs args, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     List all objects non-recursively in a bucket with a given prefix, optionally emulating a directory

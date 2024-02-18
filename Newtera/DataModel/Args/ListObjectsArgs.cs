@@ -20,14 +20,12 @@ public class ListObjectsArgs : BucketArgs<ListObjectsArgs>
 {
     public ListObjectsArgs()
     {
-        UseV2 = true;
         Versions = false;
     }
 
     internal string Prefix { get; private set; }
     internal bool Recursive { get; private set; }
     internal bool Versions { get; private set; }
-    internal bool UseV2 { get; private set; }
 
     public ListObjectsArgs WithPrefix(string prefix)
     {
@@ -44,12 +42,6 @@ public class ListObjectsArgs : BucketArgs<ListObjectsArgs>
     public ListObjectsArgs WithVersions(bool ver)
     {
         Versions = ver;
-        return this;
-    }
-
-    public ListObjectsArgs WithListObjectsV1(bool useV1)
-    {
-        UseV2 = !useV1;
         return this;
     }
 }

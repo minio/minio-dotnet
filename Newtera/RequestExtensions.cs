@@ -88,6 +88,7 @@ public static class RequestExtensions
         var responseResult = new ResponseResult(request, response: null);
         try
         {
+            System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
             var response = await newteraClient.Config.HttpClient.SendAsync(request,
                     HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
@@ -154,7 +155,7 @@ public static class RequestExtensions
     {
         ArgsCheck(args);
         var requestMessageBuilder =
-            await newteraClient.CreateRequest(args.RequestMethod, args.BucketName, headerMap: args.Headers).ConfigureAwait(false);
+            await newteraClient.CreateRequest(args.RequestMethod, args.RequestPath, args.BucketName, headerMap: args.Headers).ConfigureAwait(false);
         return args.BuildRequest(requestMessageBuilder);
     }
 
@@ -174,6 +175,7 @@ public static class RequestExtensions
         _ = args.Headers?.TryGetValue("Content-Type", out contentType);
         var requestMessageBuilder =
             await newteraClient.CreateRequest(args.RequestMethod,
+                args.RequestPath,
                 args.BucketName,
                 args.ObjectName,
                 args.Headers,
@@ -199,6 +201,7 @@ public static class RequestExtensions
     /// <exception cref="BucketNotFoundException">When bucketName is invalid</exception>
     internal static async Task<HttpRequestMessageBuilder> CreateRequest(this INewteraClient newteraClient,
         HttpMethod method,
+        string requestPath = null,
         string bucketName = null,
         string objectName = null,
         IDictionary<string, string> headerMap = null,
@@ -225,14 +228,10 @@ public static class RequestExtensions
             }
         }
 
-        // This section reconstructs the url with scheme followed by location specific endpoint (s3.region.amazonaws.com)
-        // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
         var resource = string.Empty;
-        var usePathStyle = false;
 
         // Set Target URL
-        var requestUrl = RequestUtil.MakeTargetURL(newteraClient.Config.BaseUrl, newteraClient.Config.Secure, bucketName,
-            usePathStyle);
+        var requestUrl = RequestUtil.MakeTargetURL(newteraClient.Config.BaseUrl, newteraClient.Config.Secure, requestPath, bucketName);
 
         if (objectName is not null) resource += Utils.EncodePath(objectName);
 

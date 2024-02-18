@@ -24,8 +24,7 @@ internal static class ListObjects
     public static void Run(INewteraClient newtera,
         string bucketName = "my-bucket-name",
         string prefix = null,
-        bool recursive = true,
-        bool versions = false)
+        bool recursive = true)
     {
         try
         {

@@ -39,11 +39,4 @@ public class NewteraConfig
 
     // Enables HTTP tracing if set to true
     public bool TraceHttp { get; internal set; }
-
-    public string CustomUserAgent { get; internal set; } = string.Empty;
-
-    /// <summary>
-    ///     Returns the User-Agent header for the request
-    /// </summary>
-    public string FullUserAgent => $"{NewteraClientExtensions.SystemUserAgent} {CustomUserAgent}";
 }
