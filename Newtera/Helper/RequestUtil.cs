@@ -30,16 +30,18 @@ internal static class RequestUtil
         return uri;
     }
 
-    internal static Uri MakeTargetURL(string endPoint, bool secure, string bucketName = null,
-        bool usePathStyle = true)
+    internal static Uri MakeTargetURL(string endPoint, bool secure, string requestPath = null, string bucketName = null)
     {
-        // For Amazon S3 endpoint, try to fetch location based endpoint.
         var host = endPoint;
 
-        if (!usePathStyle)
+        if (!string.IsNullOrEmpty(requestPath))
         {
-            var suffix = bucketName is not null ? bucketName + "/" : "";
-            host = host + "/" + suffix;
+            host = Combine(host, requestPath);
+        }
+
+        if (!string.IsNullOrEmpty(bucketName))
+        {
+            host = Combine(host, bucketName);
         }
 
         var scheme = secure ? "https" : "http";
@@ -107,5 +109,12 @@ internal static class RequestUtil
         }
 
         return true;
+    }
+
+    internal static string Combine(string uri1, string uri2)
+    {
+        uri1 = uri1.TrimEnd('/');
+        uri2 = uri2.TrimStart('/');
+        return string.Format("{0}/{1}", uri1, uri2);
     }
 }

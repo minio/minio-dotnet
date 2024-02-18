@@ -89,43 +89,6 @@ public partial class NewteraClient : IBucketOperations
     }
 
     /// <summary>
-    ///     Remove the bucket with the given name.
-    /// </summary>
-    /// <param name="args">RemoveBucketArgs Arguments Object which has bucket identifier information like bucket name .etc.</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns> Task </returns>
-    /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucketName is not found</exception>
-    /// <exception cref="InvalidBucketNameException">When bucketName is null</exception>
-    public async Task RemoveBucketAsync(RemoveBucketArgs args, CancellationToken cancellationToken = default)
-    {
-        args?.Validate();
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var response = await this.ExecuteTaskAsync(requestMessageBuilder, cancellationToken: cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    ///     Create a bucket with the given name.
-    /// </summary>
-    /// <param name="args">MakeBucketArgs Arguments Object that has bucket info like name, location. etc</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns> Task </returns>
-    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucketName is invalid</exception>
-    /// <exception cref="NotImplementedException">When object-lock or another extension is not implemented</exception>
-    public async Task MakeBucketAsync(MakeBucketArgs args, CancellationToken cancellationToken = default)
-    {
-        args?.Validate();
-
-        args.IsBucketCreationRequest = true;
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var response =
-            await this.ExecuteTaskAsync(requestMessageBuilder,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-    }
-
-    /// <summary>
     ///     List all objects along with versions non-recursively in a bucket with a given prefix, optionally emulating a
     ///     directory
     /// </summary>
@@ -164,7 +127,6 @@ public partial class NewteraClient : IBucketOperations
                         .WithDelimiter(delimiter)
                         .WithContinuationToken(nextContinuationToken)
                         .WithMarker(marker)
-                        .WithListObjectsV1(!args.UseV2)
                         .WithHeaders(args.Headers)
                         .WithVersionIdMarker(versionIdMarker);
   

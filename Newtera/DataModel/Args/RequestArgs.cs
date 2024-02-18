@@ -24,6 +24,8 @@ public abstract class RequestArgs
     // Will be one of the types: - HEAD, GET, PUT, DELETE. etc.
     internal HttpMethod RequestMethod { get; set; }
 
+    internal string RequestPath { get; set; }
+
     internal virtual HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
         return requestMessageBuilder;

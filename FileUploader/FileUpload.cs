@@ -34,7 +34,7 @@ public static class FileUpload
         return OperatingSystem.IsWindows();
     }
 
-    private static async Task Main(string[] args)
+    private static async Task Main()
     {
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                                | SecurityProtocolType.Tls11
@@ -68,8 +68,7 @@ public static class FileUpload
     private static async Task Run(INewteraClient newtera)
     {
         // Make a new bucket called mymusic.
-        var bucketName = "mymusic-folder"; //<==== change this
-        var location = "us-east-1";
+        var bucketName = "tdm"; //<==== change this
         // Upload the zip file
         var objectName = "my-golden-oldies.mp3";
         // The following is a source file that needs to be created in
@@ -82,21 +81,16 @@ public static class FileUpload
             var bktExistArgs = new BucketExistsArgs()
                 .WithBucket(bucketName);
             var found = await newtera.BucketExistsAsync(bktExistArgs).ConfigureAwait(false);
-            if (!found)
+            if (found)
             {
-                var mkBktArgs = new MakeBucketArgs()
+                var putObjectArgs = new PutObjectArgs()
                     .WithBucket(bucketName)
-                    .WithLocation(location);
-                await newtera.MakeBucketAsync(mkBktArgs).ConfigureAwait(false);
+                    .WithObject(objectName)
+                    .WithFileName(filePath)
+                    .WithContentType(contentType);
+                _ = await newtera.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                Console.WriteLine($"\nSuccessfully uploaded {objectName}\n");
             }
-
-            var putObjectArgs = new PutObjectArgs()
-                .WithBucket(bucketName)
-                .WithObject(objectName)
-                .WithFileName(filePath)
-                .WithContentType(contentType);
-            _ = await newtera.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
-            Console.WriteLine($"\nSuccessfully uploaded {objectName}\n");
         }
         catch (Exception e)
         {

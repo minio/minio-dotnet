@@ -47,7 +47,7 @@ public static class Program
         var characters = "0123456789abcdefghijklmnopqrstuvwxyz";
         var result = new StringBuilder(5);
         for (var i = 0; i < 5; i++) _ = result.Append(characters[rnd.Next(characters.Length)]);
-        return "newtera-dotnet-example-" + result;
+        return "newtera-tdm-" + result;
     }
 
     [SuppressMessage("Design", "MA0051:Method is too long", Justification = "Needs to run all tests")]
@@ -81,17 +81,12 @@ public static class Program
         }
         else
         {
-            endPoint = "play.min.io";
-            accessKey = "Q3AM3UQ867SPQQA43P2F";
-            secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
-            isSecure = true;
-            port = 443;
+            endPoint = "localhost";
+            accessKey = "demo1";
+            secretKey = "888";
+            isSecure = false;
+            port = 8080;
         }
-
-#pragma warning disable MA0039 // Do not write your own certificate validation method
-        ServicePointManager.ServerCertificateValidationCallback +=
-            (sender, certificate, chain, sslPolicyErrors) => true;
-#pragma warning restore MA0039 // Do not write your own certificate validation method
 
         using var newteraClient = new NewteraClient()
             .WithEndpoint(endPoint, port)
@@ -100,13 +95,11 @@ public static class Program
             .Build();
 
         // Assign parameters before starting the test 
-        var bucketName = GetRandomName();
+        var bucketName = "tdm";
         var smallFileName = CreateFile(1 * UNIT_MB);
         var bigFileName = CreateFile(6 * UNIT_MB);
         var objectName = GetRandomName();
-        var destBucketName = GetRandomName();
-        var destObjectName = GetRandomName();
-        var lockBucketName = GetRandomName();
+        //var objectPrefix = @"Task-20230930-0023\慢充功能测试\电池循环充放电数据";
         var progress = new Progress<ProgressReport>(progressReport =>
         {
             Console.WriteLine(
@@ -118,20 +111,13 @@ public static class Program
         var objectsList = new List<string>();
         for (var i = 0; i < 10; i++) objectsList.Add(objectName + i);
 
-        // Set app Info 
-        //newteraClient.SetAppInfo("app-name", "app-version");
-
         // Set HTTP Tracing On
-        // newteraClient.SetTraceOn();
+        //newteraClient.SetTraceOn();
 
         // Set HTTP Tracing Off
         // newteraClient.SetTraceOff();
         // Check if bucket exists
         await BucketExists.Run(newteraClient, bucketName).ConfigureAwait(false);
-
-        // Create a new bucket
-        await MakeBucket.Run(newteraClient, bucketName).ConfigureAwait(false);
-        await MakeBucket.Run(newteraClient, destBucketName).ConfigureAwait(false);
 
         // Put an object to the new bucket
         await PutObject.Run(newteraClient, bucketName, objectName, smallFileName, progress).ConfigureAwait(false);
@@ -162,14 +148,10 @@ public static class Program
         await RemoveObject.Run(newteraClient, bucketName, objectName).ConfigureAwait(false);
 
         // Delete the object
-        await RemoveObject.Run(newteraClient, destBucketName, objectName).ConfigureAwait(false);
+        await RemoveObject.Run(newteraClient, bucketName, objectName).ConfigureAwait(false);
 
         // Tracing request with custom logger
         await CustomRequestLogger.Run(newteraClient).ConfigureAwait(false);
-
-        // Remove the buckets
-        await RemoveBucket.Run(newteraClient, bucketName).ConfigureAwait(false);
-        await RemoveBucket.Run(newteraClient, destBucketName).ConfigureAwait(false);
 
         // Remove the binary files created for test
         File.Delete(smallFileName);

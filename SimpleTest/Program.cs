@@ -22,15 +22,14 @@ namespace SimpleTest;
 
 public static class Program
 {
-    private static async Task Main(string[] args)
+    private static async Task Main()
     {
         // Note: s3 AccessKey and SecretKey needs to be added in App.config file
         // See instructions in README.md on running examples for more information.
         using var newtera = new NewteraClient()
-            .WithEndpoint("play.min.io")
-            .WithCredentials("Q3AM3UQ867SPQQA43P2F",
-                "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
-            .WithSSL()
+            .WithEndpoint("localhost:8080")
+            .WithCredentials("demo1",
+                "888")
             .Build();
 
         var listBuckets = await newtera.ListBucketsAsync().ConfigureAwait(false);
@@ -39,15 +38,7 @@ public static class Program
             Console.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
 
         //Supply a new bucket name
-        var bucketName = "mynewbucket";
-        if (await IsBucketExists(newtera, bucketName).ConfigureAwait(false))
-        {
-            var remBuckArgs = new RemoveBucketArgs().WithBucket(bucketName);
-            await newtera.RemoveBucketAsync(remBuckArgs).ConfigureAwait(false);
-        }
-
-        var mkBktArgs = new MakeBucketArgs().WithBucket(bucketName);
-        await newtera.MakeBucketAsync(mkBktArgs).ConfigureAwait(false);
+        var bucketName = "tdm";
 
         var found = await IsBucketExists(newtera, bucketName).ConfigureAwait(false);
         Console.WriteLine("Bucket exists? = " + found);

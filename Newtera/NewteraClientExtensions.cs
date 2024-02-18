@@ -227,28 +227,7 @@ public static class NewteraClientExtensions
         newteraClient.Config.HttpClient ??= newteraClient.Config.Proxy is null
             ? new HttpClient()
             : new HttpClient(httpClientHandler);
-        _ = newteraClient.Config.HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent",
-            newteraClient.Config.FullUserAgent);
         newteraClient.Config.HttpClient.Timeout = TimeSpan.FromMinutes(30);
-        return newteraClient;
-    }
-
-    /// <summary>
-    ///     Sets app version and name. Used for constructing User-Agent header in all HTTP requests
-    /// </summary>
-    /// <param name="newteraClient"></param>
-    /// <param name="appName"></param>
-    /// <param name="appVersion"></param>
-    public static INewteraClient SetAppInfo(this INewteraClient newteraClient, string appName, string appVersion)
-    {
-        if (string.IsNullOrEmpty(appName))
-            throw new ArgumentException("Appname cannot be null or empty", nameof(appName));
-
-        if (string.IsNullOrEmpty(appVersion))
-            throw new ArgumentException("Appversion cannot be null or empty", nameof(appVersion));
-
-        newteraClient.Config.CustomUserAgent = $"{appName}/{appVersion}";
-
         return newteraClient;
     }
 

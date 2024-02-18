@@ -176,20 +176,17 @@ namespace FileUploader
                 var beArgs = new BucketExistsArgs()
                     .WithBucket(bucketName);
                 bool found = await newtera.BucketExistsAsync(beArgs).ConfigureAwait(false);
-                if (!found)
+                if (found)
                 {
-                    var mbArgs = new MakeBucketArgs()
-                        .WithBucket(bucketName);
-                    await newtera.MakeBucketAsync(mbArgs).ConfigureAwait(false);
+                      // Upload a file to bucket.
+                    var putObjectArgs = new PutObjectArgs()
+                        .WithBucket(bucketName)
+                        .WithObject(objectName)
+                        .WithFileName(filePath)
+                        .WithContentType(contentType);
+                    await newtera.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                    Console.WriteLine("Successfully uploaded " + objectName );
                 }
-                // Upload a file to bucket.
-                var putObjectArgs = new PutObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(objectName)
-                    .WithFileName(filePath)
-                    .WithContentType(contentType);
-                await newtera.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
-                Console.WriteLine("Successfully uploaded " + objectName );
             }
             catch (NewteraException e)
             {
@@ -206,9 +203,7 @@ namespace FileUploader
 
 * Enter your credentials and bucket name, object name etc. in Newtera.Examples/Program.cs
 * Uncomment the example test cases such as below in Program.cs to run an example.
-```cs
-  //Cases.MakeBucket.Run(newteraClient, bucketName).Wait();
-```
+
 * Run the Newtera.Client.Examples project from Visual Studio
 
 ### On Linux
@@ -239,9 +234,6 @@ $ git clone https://github.com/newtera/newtera-dotnet && cd newtera-dotnet
 
 * Enter your credentials and bucket name, object name etc. in Newtera.Examples/Program.cs
   Uncomment the example test cases such as below in Program.cs to run an example.
-```cs
-  //Cases.MakeBucket.Run(newteraClient, bucketName).Wait();
-```
 
 ```
 dotnet build --configuration Release --no-restore
@@ -251,10 +243,8 @@ dotnet test ./Newtera.Tests/Newtera.Tests.csproj
 
 #### Bucket Operations
 
-* [MakeBucket.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/MakeBucket.cs)
 * [ListBuckets.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/ListBuckets.cs)
 * [BucketExists.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/BucketExists.cs)
-* [RemoveBucket.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/RemoveBucket.cs)
 * [ListObjects.cs](https://github.com/newtera/newtera-dotnet/blob/master/Newtera.Examples/Cases/ListObjects.cs)
 
 #### File Object Operations
