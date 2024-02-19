@@ -113,7 +113,6 @@ public partial class NewteraClient : IBucketOperations
             async (obs, ct) =>
             {
                 var isRunning = true;
-                var delimiter = args.Recursive ? string.Empty : "/";
                 var marker = string.Empty;
                 uint count = 0;
                 var versionIdMarker = string.Empty;
@@ -124,11 +123,8 @@ public partial class NewteraClient : IBucketOperations
                     var goArgs = new GetObjectListArgs()
                         .WithBucket(args.BucketName)
                         .WithPrefix(args.Prefix)
-                        .WithDelimiter(delimiter)
                         .WithContinuationToken(nextContinuationToken)
-                        .WithMarker(marker)
-                        .WithHeaders(args.Headers)
-                        .WithVersionIdMarker(versionIdMarker);
+                        .WithHeaders(args.Headers);
   
                     var objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
                     if (objectList.Item2.Count == 0 &&
@@ -175,19 +171,15 @@ public partial class NewteraClient : IBucketOperations
     /// </summary>
     /// <param name="bucketName">Bucket to list objects from</param>
     /// <param name="prefix">Filters all objects starting with a given prefix</param>
-    /// <param name="delimiter">Delimit the output upto this character</param>
-    /// <param name="marker">marks location in the iterator sequence</param>
     /// <returns>Task with a tuple populated with objects</returns>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     private Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix,
-        string delimiter, string marker, CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         // null values are treated as empty strings.
         var args = new GetObjectListArgs()
             .WithBucket(bucketName)
-            .WithPrefix(prefix)
-            .WithDelimiter(delimiter)
-            .WithMarker(marker);
+            .WithPrefix(prefix);
         return GetObjectListAsync(args, cancellationToken);
     }
 }

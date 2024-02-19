@@ -26,10 +26,18 @@ public abstract class ObjectArgs<T> : BucketArgs<T>
     internal string ObjectName { get; set; }
     internal ReadOnlyMemory<byte> RequestBody { get; set; }
 
+    internal string Prefix { get; private set; }
+
     public T WithObject(string obj)
     {
         ObjectName = obj;
         return (T)this;
+    }
+
+    public T WithPrefix(string prefix)
+    {
+        Prefix = prefix ?? string.Empty;
+        return (T) this;
     }
 
     public T WithRequestBody(ReadOnlyMemory<byte> data)

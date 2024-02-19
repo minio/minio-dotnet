@@ -20,12 +20,11 @@ public class ListObjectsArgs : BucketArgs<ListObjectsArgs>
 {
     public ListObjectsArgs()
     {
-        Versions = false;
+        RequestPath = "/api/blob/objects/";
     }
 
     internal string Prefix { get; private set; }
     internal bool Recursive { get; private set; }
-    internal bool Versions { get; private set; }
 
     public ListObjectsArgs WithPrefix(string prefix)
     {
@@ -36,12 +35,6 @@ public class ListObjectsArgs : BucketArgs<ListObjectsArgs>
     public ListObjectsArgs WithRecursive(bool rec)
     {
         Recursive = rec;
-        return this;
-    }
-
-    public ListObjectsArgs WithVersions(bool ver)
-    {
-        Versions = ver;
         return this;
     }
 }

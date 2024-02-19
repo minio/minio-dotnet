@@ -24,8 +24,10 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
     public PutObjectArgs()
     {
         RequestMethod = HttpMethod.Put;
+        RequestPath = "/api/blob/objects/";
         RequestBody = null;
         ObjectStreamData = null;
+        User = string.Empty;
         PartNumber = 0;
         ContentType = "application/octet-stream";
     }
@@ -33,8 +35,10 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
     internal PutObjectArgs(PutObjectPartArgs args)
     {
         RequestMethod = HttpMethod.Put;
+        RequestPath = "/api/blob/objects/";
         BucketName = args.BucketName;
         ContentType = args.ContentType ?? "application/octet-stream";
+        User = string.Empty;
         FileName = args.FileName;
         Headers = args.Headers;
         ObjectName = args.ObjectName;
@@ -43,6 +47,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         UploadId = args.UploadId;
     }
 
+    internal string User { get; private set; }
     internal string UploadId { get; private set; }
     internal int PartNumber { get; set; }
     internal string FileName { get; set; }
@@ -95,22 +100,18 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
             requestMessageBuilder.AddQueryParameter("partNumber", $"{PartNumber}");
         }
 
-        if (LegalHoldEnabled is not null)
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-legal-hold",
-                LegalHoldEnabled == true ? "ON" : "OFF");
+        if (!string.IsNullOrWhiteSpace(User))
+        {
+            requestMessageBuilder.AddQueryParameter("user", User);
+        }
+
+        if (!string.IsNullOrWhiteSpace(Prefix))
+        {
+            requestMessageBuilder.AddQueryParameter("prefix", Prefix);
+        }
 
         if (!RequestBody.IsEmpty)
         {
-#if NETSTANDARD
-            using var sha = SHA256.Create();
-            var hash
-                = sha.ComputeHash(RequestBody.ToArray());
-#else
-            var hash = SHA256.HashData(RequestBody.Span);
-#endif
-            var hex = BitConverter.ToString(hash).Replace("-", string.Empty, StringComparison.OrdinalIgnoreCase)
-                .ToLowerInvariant();
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-content-sha256", hex);
             requestMessageBuilder.SetBody(RequestBody);
         }
 
@@ -138,6 +139,12 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
 
         if (string.IsNullOrWhiteSpace(ContentType)) ContentType = "application/octet-stream";
         Headers["Content-Type"] = ContentType;
+        return this;
+    }
+
+    internal PutObjectArgs WithUser(string user = null)
+    {
+        User = user;
         return this;
     }
 

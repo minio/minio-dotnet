@@ -158,8 +158,7 @@ public partial class NewteraClient : IObjectOperations
             .WithBucket(args.BucketName)
             .WithObject(args.ObjectName)
             .WithHeaders(args.Headers)
-            .WithContentType(args.ContentType)
-            .WithLegalHold(args.LegalHoldEnabled);
+            .WithContentType(args.ContentType);
         // Get upload Id after creating new multi-part upload operation to
         // be used in putobject part, complete multipart upload operations.
         var uploadId = await NewMultipartUploadAsync(multipartUploadArgs, cancellationToken).ConfigureAwait(false);

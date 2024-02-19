@@ -27,16 +27,6 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
     internal long ObjectLength { get; private set; }
     internal bool OffsetLengthSet { get; set; }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
-    {
-        if (!string.IsNullOrEmpty(VersionId))
-            requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
-        if (Headers.TryGetValue(S3ZipExtractKey, out var value))
-            requestMessageBuilder.AddQueryParameter(S3ZipExtractKey, value);
-
-        return requestMessageBuilder;
-    }
-
     internal override void Validate()
     {
         base.Validate();

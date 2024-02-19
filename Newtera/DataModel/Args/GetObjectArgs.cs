@@ -71,8 +71,6 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {
-        if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
-
         requestMessageBuilder.ResponseWriter = CallBack;
 
         if (Headers.TryGetValue(S3ZipExtractKey, out var value))

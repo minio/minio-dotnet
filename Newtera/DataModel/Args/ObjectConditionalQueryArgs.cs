@@ -18,7 +18,7 @@ using Newtera.Helper;
 
 namespace Newtera.DataModel.Args;
 
-public abstract class ObjectConditionalQueryArgs<T> : ObjectVersionArgs<T>
+public abstract class ObjectConditionalQueryArgs<T> : ObjectArgs<T>
     where T : ObjectConditionalQueryArgs<T>
 {
     internal string MatchETag { get; set; }

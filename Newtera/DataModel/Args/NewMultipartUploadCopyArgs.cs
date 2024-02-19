@@ -22,7 +22,6 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
 {
     internal bool ReplaceMetadataDirective { get; set; }
     internal bool ReplaceTagsDirective { get; set; }
-    internal string StorageClass { get; set; }
     internal ObjectStat SourceObjectInfo { get; set; }
 
     internal override void Validate()
@@ -63,12 +62,6 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
         return this;
     }
 
-    internal NewMultipartUploadCopyArgs WithStorageClass(string storageClass)
-    {
-        StorageClass = storageClass;
-        return this;
-    }
-
     internal NewMultipartUploadCopyArgs WithReplaceMetadataDirective(bool replace)
     {
         ReplaceMetadataDirective = replace;
@@ -93,8 +86,6 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
 
         if (ReplaceMetadataDirective)
             requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-metadata-directive", "REPLACE");
-        if (!string.IsNullOrWhiteSpace(StorageClass))
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-storage-class", StorageClass);
 
         return requestMessageBuilder;
     }

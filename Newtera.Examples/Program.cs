@@ -99,7 +99,6 @@ public static class Program
         var smallFileName = CreateFile(1 * UNIT_MB);
         var bigFileName = CreateFile(6 * UNIT_MB);
         var objectName = GetRandomName();
-        //var objectPrefix = @"Task-20230930-0023\慢充功能测试\电池循环充放电数据";
         var progress = new Progress<ProgressReport>(progressReport =>
         {
             Console.WriteLine(
@@ -119,11 +118,11 @@ public static class Program
         // Check if bucket exists
         await BucketExists.Run(newteraClient, bucketName).ConfigureAwait(false);
 
-        // Put an object to the new bucket
-        await PutObject.Run(newteraClient, bucketName, objectName, smallFileName, progress).ConfigureAwait(false);
-
         // List the objects in the new bucket
         ListObjects.Run(newteraClient, bucketName);
+
+        // Put an object to the new bucket
+        await PutObject.Run(newteraClient, bucketName, objectName, smallFileName, progress).ConfigureAwait(false);
 
         // Get the file and Download the object as file
         await GetObject.Run(newteraClient, bucketName, objectName, smallFileName).ConfigureAwait(false);

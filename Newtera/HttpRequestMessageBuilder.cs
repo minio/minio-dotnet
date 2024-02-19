@@ -18,6 +18,7 @@
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Web;
 using Newtera.Exceptions;
 
 namespace Newtera;
@@ -59,6 +60,16 @@ internal class HttpRequestMessageBuilder
         get
         {
             var requestUriBuilder = new UriBuilder(RequestUri);
+            if (QueryParameters?.Count > 0)
+            {
+                var query = HttpUtility.ParseQueryString(requestUriBuilder.Query);
+                foreach (var queryParameter in QueryParameters)
+                {
+                    query[queryParameter.Key] = queryParameter.Value;
+                }
+                requestUriBuilder.Query = query.ToString();
+            }
+
             var requestUri = requestUriBuilder.Uri;
             var request = new HttpRequestMessage(Method, requestUri);
 

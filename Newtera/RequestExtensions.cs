@@ -88,7 +88,6 @@ public static class RequestExtensions
         var responseResult = new ResponseResult(request, response: null);
         try
         {
-            System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
             var response = await newteraClient.Config.HttpClient.SendAsync(request,
                     HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);

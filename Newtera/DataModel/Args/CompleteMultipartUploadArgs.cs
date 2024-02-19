@@ -26,7 +26,7 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
         RequestMethod = HttpMethod.Post;
     }
 
-    internal CompleteMultipartUploadArgs(MultipartCopyUploadArgs args)
+    internal CompleteMultipartUploadArgs(PutObjectPartArgs args)
     {
         // destBucketName, destObjectName, metadata, sseHeaders
         RequestMethod = HttpMethod.Post;

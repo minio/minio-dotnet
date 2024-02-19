@@ -16,7 +16,7 @@
 
 namespace Newtera.DataModel.Args;
 
-public class RemoveUploadArgs : EncryptionArgs<RemoveUploadArgs>
+public class RemoveUploadArgs : ObjectArgs<RemoveUploadArgs>
 {
     public RemoveUploadArgs()
     {

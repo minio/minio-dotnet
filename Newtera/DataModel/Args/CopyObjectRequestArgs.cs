@@ -30,7 +30,6 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
     internal Type CopyOperationObjectType { get; set; }
     internal bool ReplaceTagsDirective { get; set; }
     internal bool ReplaceMetadataDirective { get; set; }
-    internal string StorageClass { get; set; }
     internal Dictionary<string, string> QueryMap { get; set; }
     internal CopyConditions CopyCondition { get; set; }
     internal DateTime RetentionUntilDate { get; set; }

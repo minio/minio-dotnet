@@ -61,7 +61,6 @@ public partial class NewteraClient : INewteraClient
         var etag = objectStat.ETag;
 
         var tempFileName = $"{args.FileName}.{etag}.part.newtera";
-        if (!string.IsNullOrEmpty(args.VersionId)) tempFileName = $"{args.FileName}.{etag}.{args.VersionId}.part.newtera";
         if (File.Exists(args.FileName)) File.Delete(args.FileName);
 
         Utils.ValidateFile(tempFileName);
