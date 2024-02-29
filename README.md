@@ -60,7 +60,7 @@ public class ExampleController : ControllerBase
     public async Task<IActionResult> GetUrl(string bucketID)
     {
         return Ok(await minioClient.PresignedGetObjectAsync(new PresignedGetObjectArgs()
-                .WithBucket(bucketID)
+                .WithBucket(bucketID))
             .ConfigureAwait(false));
     }
 }
@@ -82,7 +82,7 @@ public class ExampleFactoryController : ControllerBase
         var minioClient = minioClientFactory.CreateClient(); //Has optional argument to configure specifics
 
         return Ok(await minioClient.PresignedGetObjectAsync(new PresignedGetObjectArgs()
-                .WithBucket(bucketID)
+                .WithBucket(bucketID))
             .ConfigureAwait(false));
     }
 }
