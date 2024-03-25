@@ -27,11 +27,11 @@ public static class IAMAWSProviderExample
     public static async Task Run()
     {
         var minioClient = new MinioClient()
-                          .WithEndpoint("s3.amazonaws.com")
-                          .WithSSL()
-                          .WithCredentials("fake_access", "fake_secret") // still required, but can be set to any valid string
-                          .WithRegion("us-west-2")
-                          .Build();
+            .WithEndpoint("s3.amazonaws.com")
+            .WithSSL()
+            .WithCredentials("fake_access", "fake_secret") // still required, but can be set to any valid string
+            .WithRegion("us-west-2")
+            .Build();
 
         // IAMAWSProvider should be assigned "after" the minio client has been build
         minioClient = minioClient.WithCredentialsProvider(new IAMAWSProvider(minioClient.Config.Endpoint, minioClient));
@@ -39,8 +39,8 @@ public static class IAMAWSProviderExample
         try
         {
             var statObjectArgs = new StatObjectArgs()
-                                 .WithBucket("my-bucket-name")
-                                 .WithObject("my-object-name");
+                .WithBucket("my-bucket-name")
+                .WithObject("my-object-name");
             var result = await minioClient.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
             Console.WriteLine("Object Stat: \n" + result);
         }
