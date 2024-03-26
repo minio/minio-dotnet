@@ -26,14 +26,16 @@ public static class IAMAWSProviderExample
     // Establish Credentials with AWS IAM Credentials
     public static async Task Run()
     {
-        var provider = new IAMAWSProvider();
-        using var minioClient = new MinioClient()
+        var minioClient = new MinioClient()
             .WithEndpoint("s3.amazonaws.com")
             .WithSSL()
-            .WithCredentialsProvider(provider)
+            .WithCredentials("fake_access", "fake_secret") // still required, but can be set to any valid string
             .WithRegion("us-west-2")
             .Build();
-        provider = provider.WithMinioClient(minioClient);
+
+        // IAMAWSProvider should be assigned "after" the minio client has been build
+        minioClient = minioClient.WithCredentialsProvider(new IAMAWSProvider(minioClient.Config.Endpoint, minioClient));
+
         try
         {
             var statObjectArgs = new StatObjectArgs()
@@ -44,7 +46,7 @@ public static class IAMAWSProviderExample
         }
         catch (MinioException me)
         {
-            Console.WriteLine($"[Bucket] IAMAWSProviderExample example case encountered Exception: {me}");
+            Console.WriteLine($"[Bucket] IAMAWSProviderExample example case encountered MinioException: {me}");
         }
         catch (Exception e)
         {
