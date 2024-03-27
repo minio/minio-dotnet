@@ -261,11 +261,10 @@ public static class MinioClientExtensions
             minioClient.Config.Endpoint = string.Format(CultureInfo.InvariantCulture, "{0}://{1}", scheme, host);
         else
             minioClient.Config.Endpoint = host;
-
-        var httpClientHandler = new HttpClientHandler { Proxy = minioClient.Config.Proxy };
+         
         minioClient.Config.HttpClient ??= minioClient.Config.Proxy is null
             ? new HttpClient()
-            : new HttpClient(httpClientHandler);
+            : new HttpClient(new HttpClientHandler { Proxy = minioClient.Config.Proxy });
         _ = minioClient.Config.HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent",
             minioClient.Config.FullUserAgent);
         minioClient.Config.HttpClient.Timeout = TimeSpan.FromMinutes(30);
