@@ -40,6 +40,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         ObjectName = args.ObjectName;
         ObjectSize = args.ObjectSize;
         PartNumber = args.PartNumber;
+        ObjectStreamData = args.ObjectStreamData;
         SSE = args.SSE;
         UploadId = args.UploadId;
     }
@@ -81,6 +82,8 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
             ObjectSize = fileInfo.Length;
             ObjectStreamData = new FileStream(FileName, FileMode.Open, FileAccess.Read);
         }
+
+        if (string.IsNullOrWhiteSpace(FileName) && ObjectSize <= 0) ObjectSize = ObjectStreamData.Length;
     }
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)

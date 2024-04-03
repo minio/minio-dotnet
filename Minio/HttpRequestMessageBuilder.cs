@@ -78,6 +78,7 @@ internal class HttpRequestMessageBuilder
                         case "content-type":
                             try
                             {
+                                val ??= "application/octet-stream";
                                 request.Content.Headers.ContentType = new MediaTypeHeaderValue(val);
                             }
                             catch

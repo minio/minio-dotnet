@@ -118,7 +118,6 @@ public static class RequestExtensions
                         responseResult.Exception = !found
                             ? new Exception("ThrowBucketNotFoundException")
                             : new ObjectNotFoundException();
-                        throw responseResult.Exception;
                     }
                 }
 

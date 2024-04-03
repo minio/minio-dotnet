@@ -27,6 +27,7 @@ using Minio.DataModel.ILM;
 using Minio.DataModel.Notification;
 using Minio.DataModel.ObjectLock;
 using Minio.DataModel.Replication;
+using Minio.DataModel.Response;
 using Minio.DataModel.Result;
 using Minio.DataModel.Tags;
 using Minio.Exceptions;
@@ -77,8 +78,7 @@ public partial class MinioClient : IBucketOperations
                 await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
                     cancellationToken: cancellationToken).ConfigureAwait(false);
             return response is not null &&
-                   (response.Exception is null ||
-                    response.Exception.GetType() != typeof(BucketNotFoundException));
+                   response.Exception?.GetType().Equals(typeof(BucketNotFoundException)) != true;
         }
         catch (InternalClientException ice)
         {
@@ -220,6 +220,7 @@ public partial class MinioClient : IBucketOperations
                         .WithPrefix(args.Prefix)
                         .WithDelimiter(delimiter)
                         .WithVersions(args.Versions)
+                        .WithUserMetadata(args.IncludeUserMetadata)
                         .WithContinuationToken(nextContinuationToken)
                         .WithMarker(marker)
                         .WithListObjectsV1(!args.UseV2)
@@ -228,18 +229,19 @@ public partial class MinioClient : IBucketOperations
                     if (args.Versions)
                     {
                         var objectList = await GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
-                        var listObjectsItemResponse = new ListObjectVersionResponse(args, objectList, obs);
+                        var listObjectsItemResponse = new ListObjectVersionResponse(objectList, obs);
                         if (objectList.Item2.Count == 0 && count == 0) return;
 
                         obs = listObjectsItemResponse.ItemObservable;
-                        marker = listObjectsItemResponse.NextKeyMarker;
                         versionIdMarker = listObjectsItemResponse.NextVerMarker;
                         isRunning = objectList.Item1.IsTruncated;
                     }
                     else
                     {
                         var objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
-                        if (objectList.Item2.Count == 0 && objectList.Item1.KeyCount.Equals("0") && count == 0)
+                        if (objectList.Item2.Count == 0 &&
+                            objectList.Item1.KeyCount.Equals("0", StringComparison.Ordinal) &&
+                            count == 0)
                             return;
 
                         var listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);
@@ -249,6 +251,7 @@ public partial class MinioClient : IBucketOperations
                             ? objectList.Item1.NextContinuationToken
                             : string.Empty;
                     }
+
                     cts.Token.ThrowIfCancellationRequested();
                     count++;
                 }
@@ -840,8 +843,7 @@ public partial class MinioClient : IBucketOperations
         var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var responseResult =
             await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+                cancellationToken: cancellationToken).ConfigureAwait(false);
         var getObjectsVersionsListResponse =
             new GetObjectsVersionsListResponse(responseResult.StatusCode, responseResult.Content);
         return getObjectsVersionsListResponse.ObjectsTuple;

@@ -20,9 +20,10 @@ namespace Minio.Helper;
 
 public class AmazonAwsS3XmlReader : XmlTextReader
 {
+    public new string NamespaceURI = "http://s3.amazonaws.com/doc/2006-03-01/";
+
     public AmazonAwsS3XmlReader(Stream stream) : base(stream)
     {
+        NamespaceURI = "http://s3.amazonaws.com/doc/2006-03-01/";
     }
-
-    public override string NamespaceURI => "http://s3.amazonaws.com/doc/2006-03-01/";
 }

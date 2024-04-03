@@ -31,9 +31,8 @@ public class ListVersionsResult
     public string Delimiter { get; set; }
     public bool IsTruncated { get; set; }
     public string EncodingType { get; set; }
-
     [XmlElement("Version")] public Collection<Item> Versions { get; set; }
-
     public string NextKeyMarker { get; set; }
     public string NextVersionIdMarker { get; set; }
+    public List<MetadataItem> UserMetadata { get; set; }
 }

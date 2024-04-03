@@ -27,6 +27,7 @@ internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
         UseV2 = true;
         Versions = false;
         Marker = string.Empty;
+        IncludeUserMetadata = false;
     }
 
     internal string Delimiter { get; private set; }
@@ -36,6 +37,7 @@ internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
     internal string VersionIdMarker { get; private set; }
     internal bool Versions { get; private set; }
     internal string ContinuationToken { get; set; }
+    internal bool IncludeUserMetadata { get; private set; }
 
     public GetObjectListArgs WithDelimiter(string delim)
     {
@@ -76,6 +78,12 @@ internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
     public GetObjectListArgs WithListObjectsV1(bool useV1)
     {
         UseV2 = !useV1;
+        return this;
+    }
+
+    public GetObjectListArgs WithUserMetadata(bool includeUserMetadata)
+    {
+        IncludeUserMetadata = includeUserMetadata;
         return this;
     }
 

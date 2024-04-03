@@ -105,13 +105,17 @@ internal static class Program
             Environment.Exit(0);
         }
 
-        ConcurrentBag<Task> functionalTestTasks = new();
+        ConcurrentBag<Task> functionalTestTasks = [];
 
         // Try catch as 'finally' section needs to run in the Functional Tests
         // Bucket notification is a minio specific feature.
         // If the following test is run against AWS, then the SDK throws
         // "Listening for bucket notification is specific only to `minio`
         // server endpoints".
+#if NET6_0_OR_GREATER
+        // Test async callback function to download an object
+        functionalTestTasks.Add(FunctionalTest.GetObject_AsyncCallback_Test1(minioClient));
+#endif
         await FunctionalTest.ListenBucketNotificationsAsync_Test1(minioClient).ConfigureAwait(false);
         functionalTestTasks.Add(FunctionalTest.ListenBucketNotificationsAsync_Test2(minioClient));
         functionalTestTasks.Add(FunctionalTest.ListenBucketNotificationsAsync_Test3(minioClient));
@@ -130,6 +134,9 @@ internal static class Program
         // Test removal of bucket
         functionalTestTasks.Add(FunctionalTest.RemoveBucket_Test1(minioClient));
         functionalTestTasks.Add(FunctionalTest.RemoveBucket_Test2(minioClient));
+
+        // Test List versioned objects in a bucket
+        functionalTestTasks.Add(FunctionalTest.ListObjectVersions_Test1(minioClient));
 
         // Test ListBuckets function
         functionalTestTasks.Add(FunctionalTest.ListBuckets_Test(minioClient));
@@ -157,10 +164,6 @@ internal static class Program
         // GetObject_Test4 and GetObject_Test5.
         functionalTestTasks.Add(FunctionalTest.GetObject_3_OffsetLength_Tests(minioClient));
 
-#if NET6_0_OR_GREATER
-        // Test async callback function to download an object
-        functionalTestTasks.Add(FunctionalTest.GetObject_AsyncCallback_Test1(minioClient));
-#endif
 
         // Test File GetObject and PutObject functions
         functionalTestTasks.Add(FunctionalTest.FGetObject_Test1(minioClient));

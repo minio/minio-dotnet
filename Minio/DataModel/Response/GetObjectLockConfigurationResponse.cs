@@ -15,8 +15,6 @@
  */
 
 using System.Net;
-using System.Text;
-using CommunityToolkit.HighPerformance;
 using Minio.DataModel.ObjectLock;
 using Minio.Helper;
 
@@ -33,8 +31,7 @@ internal class GetObjectLockConfigurationResponse : GenericResponse
             return;
         }
 
-        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-        LockConfiguration = Utils.DeserializeXml<ObjectLockConfiguration>(stream);
+        LockConfiguration = Utils.DeserializeXml<ObjectLockConfiguration>(responseContent);
     }
 
     internal ObjectLockConfiguration LockConfiguration { get; set; }

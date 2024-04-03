@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Xml.Serialization;
 
@@ -24,7 +22,7 @@ namespace Minio.DataModel;
 [Serializable]
 public class Item
 {
-    private string etag;
+    [XmlIgnore] private string etag;
 
     public string Key { get; set; }
     public string LastModified { get; set; }
@@ -36,11 +34,10 @@ public class Item
     }
 
     public ulong Size { get; set; }
-
     public bool IsDir { get; set; }
-
     public string VersionId { get; set; }
     public bool IsLatest { get; set; }
+    public string StorageClass { get; set; }
 
     public DateTime? LastModifiedDateTime
     {
@@ -52,6 +49,5 @@ public class Item
         }
     }
 
-    [XmlIgnore]
-    public IEnumerable<MetadataItem> UserMetadata { get; set; }
+    [XmlElement] public List<MetadataItem> UserMetadata { get; set; }
 }

@@ -210,8 +210,7 @@ public static class Utils
 #if NET6_0_OR_GREATER
                 ParallelOptions parallelOptions = new()
                 {
-                    MaxDegreeOfParallelism
-                        = maxNoOfParallelProcesses
+                    MaxDegreeOfParallelism = maxNoOfParallelProcesses, CancellationToken = CancellationToken.None
                 };
                 await Parallel.ForEachAsync(source, parallelOptions,
                     async (task, cancellationToken) => await task.ConfigureAwait(false)).ConfigureAwait(false);
@@ -1040,7 +1039,7 @@ public static class Utils
         if (stream == null || stream.Length == 0) return default;
 
         var ns = GetNamespace<T>();
-        if (!string.IsNullOrWhiteSpace(ns) && string.Equals(ns, "http://s3.amazonaws.com/doc/2006-03-01/",
+        if (string.Equals(ns, "http://s3.amazonaws.com/doc/2006-03-01/",
                 StringComparison.OrdinalIgnoreCase))
         {
             using var amazonAwsS3XmlReader = new AmazonAwsS3XmlReader(stream);

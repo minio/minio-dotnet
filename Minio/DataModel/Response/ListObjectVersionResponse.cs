@@ -15,7 +15,6 @@
  */
 
 using System.Web;
-using Minio.DataModel.Args;
 using Minio.DataModel.Result;
 
 namespace Minio.DataModel.Response;
@@ -25,7 +24,7 @@ internal class ListObjectVersionResponse
     internal Item BucketObjectsLastItem;
     internal IObserver<Item> ItemObservable;
 
-    internal ListObjectVersionResponse(ListObjectsArgs args, Tuple<ListVersionsResult, List<Item>> objectList,
+    internal ListObjectVersionResponse(Tuple<ListVersionsResult, List<Item>> objectList,
         IObserver<Item> obs)
     {
         ItemObservable = obs;

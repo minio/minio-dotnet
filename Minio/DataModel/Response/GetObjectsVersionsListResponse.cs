@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-using System.Globalization;
 using System.Net;
-using System.Text;
 using System.Xml.Linq;
-using CommunityToolkit.HighPerformance;
 using Minio.DataModel.Result;
 using Minio.Helper;
 
@@ -32,30 +29,50 @@ internal class GetObjectsVersionsListResponse : GenericResponse
     internal GetObjectsVersionsListResponse(HttpStatusCode statusCode, string responseContent)
         : base(statusCode, responseContent)
     {
-        if (string.IsNullOrEmpty(responseContent) ||
-            HttpStatusCode.OK != statusCode)
-            return;
+        if (HttpStatusCode.OK != statusCode) return;
 
-        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-        BucketResult = Utils.DeserializeXml<ListVersionsResult>(stream);
+        BucketResult = Utils.DeserializeXml<ListVersionsResult>(responseContent);
 
+        List<Item> items = [];
+        List<MetadataItem> userMetadata = [];
         var root = XDocument.Parse(responseContent);
         XNamespace ns = Utils.DetermineNamespace(root);
 
-        var items = from c in root.Root.Descendants(ns + "Version")
-            select new Item
+        var versNodes = root.Root.Descendants(ns + "Version");
+        var userMtdt = versNodes.Descendants(ns + "UserMetadata");
+        if (userMtdt.Any())
+        {
+            var i = 0;
+            foreach (var mtData in userMtdt)
             {
-                Key = c.Element(ns + "Key").Value,
-                LastModified = c.Element(ns + "LastModified").Value,
-                ETag = c.Element(ns + "ETag").Value,
-                VersionId = c.Element(ns + "VersionId").Value,
-                Size = ulong.Parse(c.Element(ns + "Size").Value,
-                    CultureInfo.CurrentCulture),
-                IsDir = false
-            };
-        var prefixes = from c in root.Root.Descendants(ns + "CommonPrefixes")
-            select new Item { Key = c.Element(ns + "Prefix").Value, IsDir = true };
-        items = items.Concat(prefixes);
-        ObjectsTuple = Tuple.Create(BucketResult, items.ToList());
+                userMetadata[i].Key = mtData.Element(ns + "MetadataItem").Element(ns + "Key").Value;
+                userMetadata[i].Value = mtData.Element(ns + "MetadataItem").Element(ns + "Value").Value;
+                i++;
+            }
+        }
+
+        if (versNodes.Any())
+            for (var indx = 0; versNodes.Skip(indx).Any(); indx++)
+            {
+                var item = new Item
+                {
+                    Key = versNodes.ToList()[indx].Element(ns + "Key").Value,
+                    LastModified = versNodes.ToList()[indx].Element(ns + "LastModified").Value,
+                    ETag = versNodes.ToList()[indx].Element(ns + "ETag").Value,
+                    VersionId = versNodes.ToList()[indx].Element(ns + "VersionId").Value,
+                    StorageClass = versNodes.ToList()[indx].Element(ns + "StorageClass").Value,
+                    Size = ulong.Parse(versNodes.ToList()[indx].Element(ns + "Size").Value),
+                    IsLatest = bool.Parse(versNodes.ToList()[indx].Element(ns + "IsLatest").Value),
+                    UserMetadata = userMetadata,
+                    IsDir = BucketResult.Prefix is not null
+                };
+
+                items.Add(item);
+            }
+
+        // TO DO
+        // Is DeleteMarker = bool.Parse(c.Element(ns + "IsDeleteMarker").Value)
+        // Usertags = ...
+        ObjectsTuple = new Tuple<ListVersionsResult, List<Item>>(BucketResult, items);
     }
 }

@@ -29,7 +29,7 @@ public class ObjectMeta
 
     [JsonPropertyName("sequencer")] public string Sequencer { get; set; }
 
-    [JsonPropertyName("size")] public int Size { get; set; }
+    [JsonPropertyName("size")] public ulong Size { get; set; }
 
     [JsonPropertyName("userMetadata")]
     [SuppressMessage("Design", "MA0016:Prefer returning collection abstraction instead of implementation",

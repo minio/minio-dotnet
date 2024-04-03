@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-using System;
-using System.Linq;
+using Minio.DataModel.Args;
 
 namespace Minio.Examples.Cases;
 
 internal static class ListObjects
 {
     // List objects matching optional prefix in a specified bucket.
-<<<<<<< HEAD
     public static void Run(IMinioClient minio,
-=======
-    public static void Run(MinioClient minio,
->>>>>>> 5b3257d (return user metadata in case WithUserMetadata(true))
         string bucketName = "my-bucket-name",
         string prefix = null,
         bool recursive = true,
@@ -40,13 +35,11 @@ internal static class ListObjects
                 .WithBucket(bucketName)
                 .WithPrefix(prefix)
                 .WithRecursive(recursive)
+                .WithVersions(versions)
                 .WithUserMetadata(includeUserMetadata);
             var observable = minio.ListObjectsAsync(listArgs);
             var subscription = observable.Subscribe(
-                item =>
-                {
-                    Console.WriteLine($"Object: {item.Key}, content-type: {item.UserMetadata.ToList().First().Value}");
-                    },
+                item => Console.WriteLine($"Object: {item.Key}, content-type: {item.UserMetadata.ToList()[0].Value}"),
                 ex => Console.WriteLine($"OnError: {ex}"),
                 () => Console.WriteLine($"Listed all objects in bucket {bucketName}\n"));
         }
