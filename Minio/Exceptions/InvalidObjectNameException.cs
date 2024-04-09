@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.Runtime.Serialization;
 using Minio.DataModel.Result;
 
 namespace Minio.Exceptions;
@@ -46,11 +45,6 @@ public class InvalidObjectNameException : MinioException
     }
 
     public InvalidObjectNameException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
-
-    protected InvalidObjectNameException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(
-        serializationInfo, streamingContext)
     {
     }
 

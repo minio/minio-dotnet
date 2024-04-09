@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-using System.Runtime.Serialization;
-
 namespace Minio.Exceptions;
 
 [Serializable]
@@ -43,11 +41,6 @@ public class AuthorizationException : Exception
     }
 
     public AuthorizationException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
-
-    protected AuthorizationException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(
-        serializationInfo, streamingContext)
     {
     }
 }

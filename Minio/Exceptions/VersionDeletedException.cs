@@ -49,11 +49,6 @@ public class VersionDeletedException : MinioException
     {
     }
 
-    protected VersionDeletedException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(
-        serializationInfo, streamingContext)
-    {
-    }
-
     public override string ToString()
     {
         return $"{versionId}: {base.ToString()}";
