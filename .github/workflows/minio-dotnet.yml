@@ -175,7 +175,7 @@ jobs:
             sudo cp /tmp/minio-config/certs/public.crt /etc/ssl/certs/
             sudo cp /tmp/minio-config/certs/private.key /etc/ssl/private/
             /tmp/minio --certs-dir /tmp/minio-config/certs server /tmp/fs{1...4} &
-            dotnet Minio.Functional.Tests/bin/Release/net7.0/Minio.Functional.Tests.dll
+            dotnet Minio.Functional.Tests/bin/Release/net8.0/Minio.Functional.Tests.dll
 
   push_to_nuget:
     needs: [build, unit_tests, functional_tests, format-check]
