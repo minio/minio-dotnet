@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Minio.Credentials;
 using Minio.DataModel;
@@ -126,8 +126,6 @@ public static class RequestExtensions
                     request.Method == HttpMethod.Get)
                     responseResult.Exception = new MissingObjectLockConfigurationException();
             }
-
-            return responseResult;
         }
         catch (Exception ex) when (ex is not (OperationCanceledException or
                                        ObjectNotFoundException))
@@ -141,6 +139,9 @@ public static class RequestExtensions
                 responseResult = new ResponseResult(request, ex);
             return responseResult;
         }
+
+        minioClient.HandleIfErrorResponse(responseResult, errorHandlers, startTime);
+        return responseResult;
     }
 
     private static Task<ResponseResult> ExecuteWithRetry(this IMinioClient minioClient,
@@ -369,7 +370,7 @@ public static class RequestExtensions
             minioClient.LogRequest(response.Request, response, (now - startTime).TotalMilliseconds);
         }
 
-        if (response.Exception is null)
+        if (response.Exception is not null)
             throw response.Exception;
 
         if (handlers.Any())
