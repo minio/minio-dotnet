@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2017-2021 MinIO, Inc.
  *
@@ -364,7 +364,9 @@ public static class FunctionalTest
 
         try
         {
-            await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
+            if (await minio.BucketExistsAsync(beArgs).ConfigureAwait(false))
+                await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
+
             var found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
             Assert.IsFalse(found);
             await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
@@ -3505,8 +3507,9 @@ public static class FunctionalTest
             var stream = rsg.GenerateStreamFromSeed(objSize);
             var statObj = await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
                 stream, progress).ConfigureAwait(false);
-            Assert.IsTrue(percentage == 100);
-            Assert.IsTrue(totalBytesTransferred == objSize);
+            Assert.IsTrue(percentage == 100, "Reported percentage after finished upload was not 100 percent.");
+            Assert.IsTrue(totalBytesTransferred == objSize,
+                "Transfered object size does not match with the original object size.");
             new MintLogger(nameof(PutObject_Test9), putObjectSignature,
                 "Tests whether PutObject with progress passes for small object", TestStatus.PASS,
                 DateTime.Now - startTime,
@@ -3560,8 +3563,9 @@ public static class FunctionalTest
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
             _ = await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
                 rsg.GenerateStreamFromSeed(64 * MB), progress).ConfigureAwait(false);
-            Assert.IsTrue(percentage == 100);
-            Assert.IsTrue(totalBytesTransferred == 64 * MB);
+            Assert.IsTrue(percentage == 100, "Reported percentage after finished upload was not 100 percent.");
+            Assert.IsTrue(totalBytesTransferred == 64 * MB,
+                "Transfered object size does not match with the original object size.");
             new MintLogger(nameof(PutObject_Test10), putObjectSignature,
                 "Tests whether multipart PutObject with progress passes", TestStatus.PASS, DateTime.Now - startTime,
                 args: args).Log();
@@ -4121,9 +4125,9 @@ public static class FunctionalTest
             }
             catch (Exception ex)
             {
-                Assert.AreEqual(
+                Assert.IsTrue(ex.Message.StartsWith(
                     "MinIO API responded with message=At least one of the pre-conditions you specified did not hold",
-                    ex.Message);
+                    StringComparison.InvariantCulture));
             }
 
             new MintLogger("CopyObject_Test7", copyObjectSignature,
