@@ -245,3 +245,6 @@ ModelManifest.xml
 .fake/
 
 out/
+
+# JetBrains IDE
+.idea

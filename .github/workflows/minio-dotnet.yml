@@ -25,7 +25,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         configuration: [Release]
-        dotnet-version: ["7.0.x"]
+        dotnet-version: ["8.0.x"]
 
     steps:
       - name: Checkout
@@ -93,7 +93,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: "7.0.x"
+          dotnet-version: "8.0.x"
 
       # Install regitlint
       - name: Install tool dependencies
@@ -112,7 +112,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         configuration: [Release]
-        dotnet-version: ["7.0.x"]
+        dotnet-version: ["8.0.x"]
 
     steps:
       # Install .NET
@@ -139,7 +139,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         configuration: [Release]
-        dotnet-version: ["7.0.x"]
+        dotnet-version: ["8.0.x"]
 
     steps:
       # Install .NET
@@ -175,7 +175,7 @@ jobs:
             sudo cp /tmp/minio-config/certs/public.crt /etc/ssl/certs/
             sudo cp /tmp/minio-config/certs/private.key /etc/ssl/private/
             /tmp/minio --certs-dir /tmp/minio-config/certs server /tmp/fs{1...4} &
-            dotnet Minio.Functional.Tests/bin/Release/net7.0/Minio.Functional.Tests.dll
+            dotnet Minio.Functional.Tests/bin/Release/net8.0/Minio.Functional.Tests.dll
 
   push_to_nuget:
     needs: [build, unit_tests, functional_tests, format-check]
@@ -194,7 +194,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: "7.0.x"
+          dotnet-version: "8.0.x"
 
       # Push to NuGet
       - name: Push to NuGet

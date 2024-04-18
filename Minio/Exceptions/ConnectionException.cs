@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-using System.Runtime.Serialization;
 using Minio.DataModel.Result;
 
 namespace Minio.Exceptions;
@@ -40,11 +39,6 @@ public class ConnectionException : MinioException
     }
 
     public ConnectionException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
-
-    protected ConnectionException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(
-        serializationInfo, streamingContext)
     {
     }
 }
