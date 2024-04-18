@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.Runtime.Serialization;
 using Minio.DataModel.Result;
 
 namespace Minio.Exceptions;
