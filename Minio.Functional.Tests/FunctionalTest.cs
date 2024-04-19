@@ -3501,11 +3501,11 @@ public static class FunctionalTest
             totalBytesTransferred = progressReport.TotalBytesTransferred;
             // Console.WriteLine(
             //    $"PutObject_Test9 - Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
-            if (progressReport.Percentage != 100)
-            {
-                var topPosition = Console.CursorTop > 0 ? Console.CursorTop - 1 : Console.CursorTop;
-                Console.SetCursorPosition(0, topPosition);
-            }
+            // if (progressReport.Percentage != 100)
+            // {
+            //     var topPosition = Console.CursorTop > 0 ? Console.CursorTop - 1 : Console.CursorTop;
+            //     Console.SetCursorPosition(0, topPosition);
+            // }
             // else Console.WriteLine();
         });
         var args = new Dictionary<string, string>
@@ -3558,11 +3558,11 @@ public static class FunctionalTest
             totalBytesTransferred = progressReport.TotalBytesTransferred;
             // Console.WriteLine(
             //    $"PutObject_Test10 - Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
-            if (progressReport.Percentage != 100)
-            {
-                var topPosition = Console.CursorTop > 0 ? Console.CursorTop - 1 : Console.CursorTop;
-                Console.SetCursorPosition(0, topPosition);
-            }
+            // if (progressReport.Percentage != 100)
+            // {
+            //     var topPosition = Console.CursorTop > 0 ? Console.CursorTop - 1 : Console.CursorTop;
+            //     Console.SetCursorPosition(0, topPosition);
+            // }
             // else Console.WriteLine();
         });
         var args = new Dictionary<string, string>
