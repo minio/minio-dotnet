@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Minio.Credentials;
 using Minio.DataModel;
@@ -107,10 +107,10 @@ public static class RequestExtensions
                 if (request.Method == HttpMethod.Head)
                 {
                     if (responseResult.Exception?.GetType().Equals(typeof(BucketNotFoundException)) == true ||
-                        path?.ToList().Count == 1)
+                        path.Length == 1)
                         responseResult.Exception = new BucketNotFoundException();
 
-                    if (path?.ToList().Count > 1)
+                    if (path.Length > 1)
                     {
                         var found = await minioClient
                             .BucketExistsAsync(new BucketExistsArgs().WithBucket(path.ToList()[0]), cancellationToken)
