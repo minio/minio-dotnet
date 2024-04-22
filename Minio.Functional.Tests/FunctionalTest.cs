@@ -364,7 +364,11 @@ public static class FunctionalTest
 
         try
         {
-            await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
+            if (await minio.BucketExistsAsync(beArgs).ConfigureAwait(false))
+            {
+                await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
+            }
+
             var found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
             Assert.IsFalse(found);
             await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
