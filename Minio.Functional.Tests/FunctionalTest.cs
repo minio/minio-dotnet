@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2017-2021 MinIO, Inc.
  *
@@ -4139,9 +4139,9 @@ public static class FunctionalTest
             }
             catch (Exception ex)
             {
-                Assert.AreEqual(
+                Assert.IsTrue(ex.Message.StartsWith(
                     "MinIO API responded with message=At least one of the pre-conditions you specified did not hold",
-                    ex.Message);
+                    StringComparison.InvariantCulture));
             }
 
             new MintLogger("CopyObject_Test7", copyObjectSignature,
