@@ -165,7 +165,7 @@ namespace FileUploader
         }
 
         // File uploader task.
-        private async static Task Run(MinioClient minio)
+        private async static Task Run(IMinioClient minio)
         {
             var bucketName = "mymusic";
             var location   = "us-east-1";
