@@ -5244,7 +5244,8 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectNamePrefix = GetRandomName(10);
         var numObjects = 1015;
-        var args = new Dictionary<string, string>
+        var args
+         = new Dictionary<string, string>
             (StringComparer.Ordinal)
             {
                 { "bucketName", bucketName }, { "objectName", objectNamePrefix }, { "recursive", "false" }
@@ -5325,15 +5326,26 @@ public static class FunctionalTest
         {
             // Prepare the setup: create a versioned bucket, and objects
             const int numVersionedObjects = 8;
+            var customMetadataSizeList = new List<int>();
             await Setup_WithLock_Test(minio, bucketName).ConfigureAwait(false);
 
-            var extractHeader = new Dictionary<string, string>
-                (StringComparer.Ordinal) { { "x-minio-extract", "true" } };
-
             var tasks = new Task[numVersionedObjects];
+            var suffix = "xyz";
             for (int i = 0, taskIdx = 0; i < numVersionedObjects; i++)
-                tasks[taskIdx++] = PutObject_Task(minio, bucketName, objectName + i, null, null, 0, null,
-                    rsg.GenerateStreamFromSeed(1));
+            {
+                var indxdSfx = i.ToString(CultureInfo.InvariantCulture) + suffix;
+                var customMetadata = new Dictionary<string, string>(
+                    StringComparer.CurrentCultureIgnoreCase)
+                    {
+                        { "Content-Type" + indxdSfx, "application/css" + indxdSfx},
+                        { "Mynewkey" + indxdSfx, "test   test" + indxdSfx},
+                        { "Orig" + indxdSfx, "orig-valwithoutspaces" + indxdSfx}
+                    };
+                customMetadataSizeList.Add(customMetadata.Count);
+                tasks[taskIdx++] = PutObject_Task(minio, bucketName, objectName + i,
+                    null, null, 0, customMetadata, rsg.GenerateStreamFromSeed(1));
+            }
+
             await Task.WhenAll(tasks).ConfigureAwait(false);
             // Prep is DONE
 
@@ -5341,29 +5353,34 @@ public static class FunctionalTest
                 .WithBucket(bucketName)
                 .WithUserMetadata(true)
                 .WithRecursive(true)
-                .WithHeaders(extractHeader)
                 .WithVersions(true);
 
             var count = 0;
-            List<Tuple<string, string>> objectVersions = [];
             List<Item> items = [];
 
-            var observable =
-                minio.ListObjectsAsync(listObjectsArgs).TakeWhile((item, indx) => item is not null);
-
-            foreach (var item in observable)
+            foreach (var item in minio.ListObjectsAsync(listObjectsArgs).TakeWhile((item) => item is not null))
             {
                 items.Add(item);
                 Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
-                Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
-                count++;
-                Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
-                count++;
-                objectVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
+                var s = string.Join("; ", item.UserMetadata.Select(x => x.Key + "=" + x.Value));
                 count++;
             }
 
             Assert.AreEqual(numVersionedObjects, items.Count);
+            for (var i = 0; i < numVersionedObjects; i++ )
+            {
+                var indxdSfx = i.ToString(CultureInfo.InvariantCulture) + suffix;
+                var userMDataCount = 0;
+                foreach (var mtDt in items[i].UserMetadata)
+                {
+                    if (mtDt.Key.EndsWith(indxdSfx, StringComparison.Ordinal) && mtDt.Value.EndsWith(indxdSfx, StringComparison.Ordinal))
+                    {
+                        userMDataCount++;
+                    }
+                }
+                Assert.AreEqual(customMetadataSizeList[i], userMDataCount);
+            }
+
             new MintLogger("ListObjectVersions_Test1", listObjectsSignature,
                 "Tests whether ListObjects with versions lists all objects along with all version ids for each object matching a prefix non-recursive",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();

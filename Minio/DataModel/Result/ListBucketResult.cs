@@ -33,4 +33,5 @@ public class ListBucketResult
     public bool IsTruncated { get; set; }
     public string NextContinuationToken { get; set; }
     public string EncodingType { get; set; }
+    public List<MetadataItem> UserMetadata { get; set; }
 }
