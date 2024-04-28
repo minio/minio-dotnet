@@ -5245,11 +5245,11 @@ public static class FunctionalTest
         var objectNamePrefix = GetRandomName(10);
         var numObjects = 1015;
         var args
-         = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName }, { "objectName", objectNamePrefix }, { "recursive", "false" }
-            };
+            = new Dictionary<string, string>
+                (StringComparer.Ordinal)
+                {
+                    { "bucketName", bucketName }, { "objectName", objectNamePrefix }, { "recursive", "false" }
+                };
         var objectNamesSet = new HashSet<string>(StringComparer.Ordinal);
         try
         {
@@ -5308,8 +5308,7 @@ public static class FunctionalTest
     internal static async Task ListObjectVersions_Test1(IMinioClient minio)
     {
         var startTime = DateTime.Now;
-        // var bucketName = GetRandomName(15);
-        var bucketName = "ers";
+        var bucketName = GetRandomName(15);
         var prefix = "minix/";
         var objectName = prefix + GetRandomName(10);
         var args = new Dictionary<string, string>
@@ -5336,11 +5335,11 @@ public static class FunctionalTest
                 var indxdSfx = i.ToString(CultureInfo.InvariantCulture) + suffix;
                 var customMetadata = new Dictionary<string, string>(
                     StringComparer.CurrentCultureIgnoreCase)
-                    {
-                        { "Content-Type" + indxdSfx, "application/css" + indxdSfx},
-                        { "Mynewkey" + indxdSfx, "test   test" + indxdSfx},
-                        { "Orig" + indxdSfx, "orig-valwithoutspaces" + indxdSfx}
-                    };
+                {
+                    { "Content-Type" + indxdSfx, "application/css" + indxdSfx },
+                    { "Mynewkey" + indxdSfx, "test   test" + indxdSfx },
+                    { "Orig" + indxdSfx, "orig-valwithoutspaces" + indxdSfx }
+                };
                 customMetadataSizeList.Add(customMetadata.Count);
                 tasks[taskIdx++] = PutObject_Task(minio, bucketName, objectName + i,
                     null, null, 0, customMetadata, rsg.GenerateStreamFromSeed(1));
@@ -5358,7 +5357,7 @@ public static class FunctionalTest
             var count = 0;
             List<Item> items = [];
 
-            foreach (var item in minio.ListObjectsAsync(listObjectsArgs).TakeWhile((item) => item is not null))
+            foreach (var item in minio.ListObjectsAsync(listObjectsArgs).TakeWhile(item => item is not null))
             {
                 items.Add(item);
                 Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
@@ -5367,17 +5366,14 @@ public static class FunctionalTest
             }
 
             Assert.AreEqual(numVersionedObjects, items.Count);
-            for (var i = 0; i < numVersionedObjects; i++ )
+            for (var i = 0; i < numVersionedObjects; i++)
             {
                 var indxdSfx = i.ToString(CultureInfo.InvariantCulture) + suffix;
                 var userMDataCount = 0;
                 foreach (var mtDt in items[i].UserMetadata)
-                {
-                    if (mtDt.Key.EndsWith(indxdSfx, StringComparison.Ordinal) && mtDt.Value.EndsWith(indxdSfx, StringComparison.Ordinal))
-                    {
+                    if (mtDt.Key.EndsWith(indxdSfx, StringComparison.Ordinal) &&
+                        mtDt.Value.EndsWith(indxdSfx, StringComparison.Ordinal))
                         userMDataCount++;
-                    }
-                }
                 Assert.AreEqual(customMetadataSizeList[i], userMDataCount);
             }
 

@@ -105,7 +105,7 @@ internal static class Program
             Environment.Exit(0);
         }
 
-        ConcurrentBag<Task> functionalTestTasks = [];
+        ConcurrentBag<Task> functionalTestTasks = new();
 
         // Try catch as 'finally' section needs to run in the Functional Tests
         // Bucket notification is a minio specific feature.

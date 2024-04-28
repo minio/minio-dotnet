@@ -22,7 +22,7 @@ namespace Minio.DataModel;
 [Serializable]
 public class Item
 {
-    [XmlIgnore] private string etag;
+    private string etag;
 
     public string Key { get; set; }
     public string LastModified { get; set; }
