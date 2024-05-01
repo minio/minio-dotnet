@@ -18,7 +18,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
-using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using Minio.ApiEndpoints;
 using Minio.DataModel;
 using Minio.DataModel.Args;
@@ -93,38 +93,36 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    public IObservable<Upload> ListIncompleteUploads(ListIncompleteUploadsArgs args,
-        CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<Upload> ListIncompleteUploads(ListIncompleteUploadsArgs args,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        return Observable.Create<Upload>(
-            async obs =>
+        string nextKeyMarker = null;
+        string nextUploadIdMarker = null;
+        var isRunning = true;
+
+        while (isRunning)
+        {
+            var getArgs = new GetMultipartUploadsListArgs()
+                .WithBucket(args.BucketName)
+                .WithDelimiter(args.Delimiter)
+                .WithPrefix(args.Prefix)
+                .WithKeyMarker(nextKeyMarker)
+                .WithUploadIdMarker(nextUploadIdMarker);
+            var uploads = await GetMultipartUploadsListAsync(getArgs, cancellationToken).ConfigureAwait(false);
+            if (uploads is null)
             {
-                string nextKeyMarker = null;
-                string nextUploadIdMarker = null;
-                var isRunning = true;
+                isRunning = false;
+                continue;
+            }
 
-                while (isRunning)
-                {
-                    var getArgs = new GetMultipartUploadsListArgs()
-                        .WithBucket(args.BucketName)
-                        .WithDelimiter(args.Delimiter)
-                        .WithPrefix(args.Prefix)
-                        .WithKeyMarker(nextKeyMarker)
-                        .WithUploadIdMarker(nextUploadIdMarker);
-                    var uploads = await GetMultipartUploadsListAsync(getArgs, cancellationToken).ConfigureAwait(false);
-                    if (uploads is null)
-                    {
-                        isRunning = false;
-                        continue;
-                    }
-
-                    foreach (var upload in uploads.Item2) obs.OnNext(upload);
-                    nextKeyMarker = uploads.Item1.NextKeyMarker;
-                    nextUploadIdMarker = uploads.Item1.NextUploadIdMarker;
-                    isRunning = uploads.Item1.IsTruncated;
-                }
-            });
+            foreach (var upload in uploads.Item2) 
+                yield return upload;
+            
+            nextKeyMarker = uploads.Item1.NextKeyMarker;
+            nextUploadIdMarker = uploads.Item1.NextUploadIdMarker;
+            isRunning = uploads.Item1.IsTruncated;
+        }
     }
 
     /// <summary>
@@ -147,26 +145,24 @@ public partial class MinioClient : IObjectOperations
             .WithBucket(args.BucketName)
             .WithPrefix(args.ObjectName);
 
-        Upload[] uploads;
         try
         {
-            uploads = await ListIncompleteUploads(listUploadArgs, cancellationToken)?.ToArray();
+            await foreach (var upload in ListIncompleteUploads(listUploadArgs, cancellationToken).ConfigureAwait(false))
+            {
+                if (upload.Key.Equals(args.ObjectName, StringComparison.OrdinalIgnoreCase))
+                {
+                    var rmArgs = new RemoveUploadArgs()
+                        .WithBucket(args.BucketName)
+                        .WithObject(args.ObjectName)
+                        .WithUploadId(upload.UploadId);
+                    await RemoveUploadAsync(rmArgs, cancellationToken).ConfigureAwait(false);
+                }
+            }
         }
         catch (Exception ex) when (ex.GetType() == typeof(BucketNotFoundException))
         {
             throw;
         }
-
-        if (uploads is null) return;
-        foreach (var upload in uploads)
-            if (upload.Key.Equals(args.ObjectName, StringComparison.OrdinalIgnoreCase))
-            {
-                var rmArgs = new RemoveUploadArgs()
-                    .WithBucket(args.BucketName)
-                    .WithObject(args.ObjectName)
-                    .WithUploadId(upload.UploadId);
-                await RemoveUploadAsync(rmArgs, cancellationToken).ConfigureAwait(false);
-            }
     }
 
     /// <summary>
@@ -400,7 +396,7 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    public async Task<IObservable<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args,
+    public async Task<IList<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args,
         CancellationToken cancellationToken = default)
     {
         args?.Validate();
@@ -409,13 +405,7 @@ public partial class MinioClient : IObjectOperations
             ? await RemoveObjectVersionsHelper(args, errs.ToList(), cancellationToken).ConfigureAwait(false)
             : await RemoveObjectsHelper(args, errs, cancellationToken).ConfigureAwait(false);
 
-        return Observable.Create<DeleteError>( // From Current change
-            async obs =>
-            {
-                await Task.Yield();
-                foreach (var error in errs) obs.OnNext(error);
-            }
-        );
+        return errs;
     }
 
     /// <summary>

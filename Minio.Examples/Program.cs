@@ -210,7 +210,7 @@ public static class Program
         await FGetObject.Run(minioClient, destBucketName, objectName, bigFileName, ssec).ConfigureAwait(false);
 
         // List the incomplete uploads
-        ListIncompleteUploads.Run(minioClient, bucketName);
+        await ListIncompleteUploads.Run(minioClient, bucketName).ConfigureAwait(false);
 
         // Remove all the incomplete uploads
         await RemoveIncompleteUpload.Run(minioClient, bucketName, objectName).ConfigureAwait(false);

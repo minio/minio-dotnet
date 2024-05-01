@@ -1270,13 +1270,9 @@ public static class FunctionalTest
                 .WithBucket(bucketName)
                 .WithObjectsVersions(objVersions);
 
-            var rmObservable = await minio.RemoveObjectsAsync(removeObjectsArgs).ConfigureAwait(false);
+            var deList = await minio.RemoveObjectsAsync(removeObjectsArgs).ConfigureAwait(false);
 
-            var deList = new List<DeleteError>();
-            using var rmSub = rmObservable.Subscribe(
-                deList.Add,
-                ex => throw ex,
-                () => Task.Factory.StartNew(async () => await TearDown(minio, bucketName).ConfigureAwait(false)));
+            await TearDown(minio, bucketName).ConfigureAwait(false);
         
             await Task.Delay(2 * 1000).ConfigureAwait(false);
             new MintLogger("RemoveObjects_Test3", removeObjectSignature2,
@@ -1430,13 +1426,17 @@ public static class FunctionalTest
 
                 await minio.RemoveIncompleteUploadAsync(rmArgs).ConfigureAwait(false);
 
-                var listArgs = new ListIncompleteUploadsArgs()
-                    .WithBucket(bucketName);
-                var observable = minio.ListIncompleteUploads(listArgs);
-
-                var subscription = observable.Subscribe(
-                    item => Assert.Fail(),
-                    ex => Assert.Fail());
+                try
+                {
+                    var listArgs = new ListIncompleteUploadsArgs()
+                        .WithBucket(bucketName);
+                    await foreach (var item in minio.ListIncompleteUploads(listArgs).ConfigureAwait(false))
+                        Assert.Fail();
+                }
+                catch (Exception)
+                {
+                    Assert.Fail();
+                }
             }
 
             new MintLogger("RemoveIncompleteUpload_Test", removeIncompleteUploadSignature,
@@ -5774,13 +5774,17 @@ public static class FunctionalTest
             }
             catch (OperationCanceledException)
             {
-                var listArgs = new ListIncompleteUploadsArgs()
-                    .WithBucket(bucketName);
-                var observable = minio.ListIncompleteUploads(listArgs);
-
-                var subscription = observable.Subscribe(
-                    item => Assert.IsTrue(item.Key.Contains(objectName, StringComparison.Ordinal)),
-                    ex => Assert.Fail());
+                try
+                {
+                    var listArgs = new ListIncompleteUploadsArgs()
+                        .WithBucket(bucketName);
+                    await foreach (var item in minio.ListIncompleteUploads(listArgs).ConfigureAwait(false))
+                        Assert.IsTrue(item.Key.Contains(objectName, StringComparison.Ordinal));
+                }
+                catch (Exception)
+                {
+                    Assert.Fail();
+                }
             }
             catch (Exception ex)
             {
@@ -5835,15 +5839,19 @@ public static class FunctionalTest
             }
             catch (OperationCanceledException)
             {
-                var listArgs = new ListIncompleteUploadsArgs()
-                    .WithBucket(bucketName)
-                    .WithPrefix("minioprefix")
-                    .WithRecursive(false);
-                var observable = minio.ListIncompleteUploads(listArgs);
-
-                var subscription = observable.Subscribe(
-                    item => Assert.AreEqual(item.Key, objectName),
-                    ex => Assert.Fail());
+                try
+                {
+                    var listArgs = new ListIncompleteUploadsArgs()
+                        .WithBucket(bucketName)
+                        .WithPrefix("minioprefix")
+                        .WithRecursive(false);
+                    await foreach (var item in minio.ListIncompleteUploads(listArgs).ConfigureAwait(false))
+                        Assert.AreEqual(item.Key, objectName);
+                }
+                catch
+                {
+                    Assert.Fail();
+                }
             }
 
             new MintLogger("ListIncompleteUpload_Test2", listIncompleteUploadsSignature,
@@ -5892,15 +5900,19 @@ public static class FunctionalTest
             }
             catch (OperationCanceledException)
             {
-                var listArgs = new ListIncompleteUploadsArgs()
-                    .WithBucket(bucketName)
-                    .WithPrefix(prefix)
-                    .WithRecursive(true);
-                var observable = minio.ListIncompleteUploads(listArgs);
-
-                var subscription = observable.Subscribe(
-                    item => Assert.AreEqual(item.Key, objectName),
-                    ex => Assert.Fail());
+                try
+                {
+                    var listArgs = new ListIncompleteUploadsArgs()
+                        .WithBucket(bucketName)
+                        .WithPrefix(prefix)
+                        .WithRecursive(true);
+                    await foreach (var item in minio.ListIncompleteUploads(listArgs).ConfigureAwait(false))
+                        Assert.AreEqual(item.Key, objectName);
+                }
+                catch
+                {
+                    Assert.Fail();
+                }
             }
 
             new MintLogger("ListIncompleteUpload_Test3", listIncompleteUploadsSignature,
