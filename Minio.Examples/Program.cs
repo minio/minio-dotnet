@@ -159,7 +159,7 @@ public static class Program
         await StatObject.Run(minioClient, bucketName, objectName).ConfigureAwait(false);
 
         // List the objects in the new bucket
-        ListObjects.Run(minioClient, bucketName, null, true, false, true);
+        ListObjects.Run(minioClient, bucketName, includeUserMetadata: true);
 
         // Get the file and Download the object as file
         await GetObject.Run(minioClient, bucketName, objectName, smallFileName).ConfigureAwait(false);
