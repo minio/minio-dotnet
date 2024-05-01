@@ -585,7 +585,6 @@ public static class FunctionalTest
         var bktExists = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
         if (!bktExists)
             return;
-        var taskList = new List<Task>();
         var getVersions = false;
         // Get Versioning/Retention Info.
         var lockConfigurationArgs =
@@ -618,22 +617,16 @@ public static class FunctionalTest
             .WithBucket(bucketName)
             .WithRecursive(true)
             .WithVersions(getVersions);
-        var objectNamesVersions =
-            new List<Tuple<string, string>>();
+        
+        var objectNamesVersions = new List<Tuple<string, string>>();
         var objectNames = new List<string>();
-        var observable = minio.ListObjectsAsync(listObjectsArgs);
-
-        var exceptionList = new List<Exception>();
-        var subscription = observable.Subscribe(
-            item =>
-            {
-                if (getVersions)
-                    objectNamesVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
-                else
-                    objectNames.Add(item.Key);
-            },
-            exceptionList.Add,
-            () => { });
+        await foreach (var item in minio.ListObjectsAsync(listObjectsArgs).ConfigureAwait(false))
+        {
+            if (getVersions)
+                objectNamesVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
+            else
+                objectNames.Add(item.Key);
+        }
 
         await Task.Delay(20000).ConfigureAwait(false);
         if (lockConfig?.ObjectLockEnabled.Equals(ObjectLockConfiguration.LockEnabled,
@@ -1268,27 +1261,23 @@ public static class FunctionalTest
                 .WithBucket(bucketName)
                 .WithRecursive(true)
                 .WithVersions(true);
-            var observable = minio.ListObjectsAsync(listObjectsArgs);
+
             var objVersions = new List<Tuple<string, string>>();
-            var subscription = observable.Subscribe(
-                item => objVersions.Add(new Tuple<string, string>(item.Key, item.VersionId)),
+            await foreach (var item in minio.ListObjectsAsync(listObjectsArgs).ConfigureAwait(false))
+                objVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
+
+            var removeObjectsArgs = new RemoveObjectsArgs()
+                .WithBucket(bucketName)
+                .WithObjectsVersions(objVersions);
+
+            var rmObservable = await minio.RemoveObjectsAsync(removeObjectsArgs).ConfigureAwait(false);
+
+            var deList = new List<DeleteError>();
+            using var rmSub = rmObservable.Subscribe(
+                deList.Add,
                 ex => throw ex,
-                () => Task.Factory.StartNew(async () =>
-                {
-                    var removeObjectsArgs = new RemoveObjectsArgs()
-                        .WithBucket(bucketName)
-                        .WithObjectsVersions(objVersions);
-
-                    var rmObservable = await minio.RemoveObjectsAsync(removeObjectsArgs).ConfigureAwait(false);
-
-                    var deList = new List<DeleteError>();
-                    using var rmSub = rmObservable.Subscribe(
-                        deList.Add,
-                        ex => throw ex,
-                        () => Task.Factory.StartNew(async () =>
-                            await TearDown(minio, bucketName).ConfigureAwait(false)));
-                }));
-
+                () => Task.Factory.StartNew(async () => await TearDown(minio, bucketName).ConfigureAwait(false)));
+        
             await Task.Delay(2 * 1000).ConfigureAwait(false);
             new MintLogger("RemoveObjects_Test3", removeObjectSignature2,
                 "Tests whether RemoveObjectsAsync for multi objects/versions delete passes", TestStatus.PASS,
@@ -5282,21 +5271,19 @@ public static class FunctionalTest
                 .WithPrefix(objectNamePrefix)
                 .WithRecursive(false)
                 .WithVersions(false);
-            var observable = minio.ListObjectsAsync(listArgs);
-            var subscription = observable.Subscribe(
-                item =>
-                {
-                    Assert.IsTrue(item.Key.StartsWith(objectNamePrefix, StringComparison.OrdinalIgnoreCase));
-                    if (!objectNamesSet.Add(item.Key))
-                        new MintLogger("ListObjects_Test6", listObjectsSignature,
-                            "Tests whether ListObjects lists more than 1000 objects correctly(max-keys = 1000)",
-                            TestStatus.FAIL, DateTime.Now - startTime,
-                            "Failed to add. Object already exists: " + item.Key, "", args: args).Log();
+            await foreach (var item in minio.ListObjectsAsync(listArgs).ConfigureAwait(false))
+            {
+                Assert.IsTrue(item.Key.StartsWith(objectNamePrefix, StringComparison.OrdinalIgnoreCase));
+                if (!objectNamesSet.Add(item.Key))
+                    new MintLogger("ListObjects_Test6", listObjectsSignature,
+                        "Tests whether ListObjects lists more than 1000 objects correctly(max-keys = 1000)",
+                        TestStatus.FAIL, DateTime.Now - startTime,
+                        "Failed to add. Object already exists: " + item.Key, "", args: args).Log();
 
-                    count++;
-                },
-                ex => throw ex,
-                () => Assert.AreEqual(count, numObjects));
+                count++;
+            }
+
+            Assert.AreEqual(count, numObjects);
             await Task.Delay(3500).ConfigureAwait(false);
             new MintLogger("ListObjects_Test6", listObjectsSignature,
                 "Tests whether ListObjects lists more than 1000 objects correctly(max-keys = 1000)", TestStatus.PASS,
@@ -5355,16 +5342,13 @@ public static class FunctionalTest
             var count = 0;
             var numObjectVersions = 8;
 
-            var observable = minio.ListObjectsAsync(listObjectsArgs);
-            var subscription = observable.Subscribe(
-                item =>
-                {
-                    Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
-                    count++;
-                    objectVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
-                },
-                ex => throw ex,
-                () => Assert.AreEqual(count, numObjectVersions));
+            await foreach (var item in minio.ListObjectsAsync(listObjectsArgs).ConfigureAwait(false))
+            {
+                Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+                count++;
+                objectVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
+            }
+            Assert.AreEqual(count, numObjectVersions);
 
             await Task.Delay(4000).ConfigureAwait(false);
             new MintLogger("ListObjectVersions_Test1", listObjectsSignature,
@@ -5387,7 +5371,6 @@ public static class FunctionalTest
     internal static async Task ListObjects_Test(IMinioClient minio, string bucketName, string prefix, int numObjects,
         bool recursive = true, bool versions = false, Dictionary<string, string> headers = null)
     {
-        var startTime = DateTime.Now;
         var count = 0;
         var args = new ListObjectsArgs()
             .WithBucket(bucketName)
@@ -5397,28 +5380,20 @@ public static class FunctionalTest
             .WithVersions(versions);
         if (!versions)
         {
-            var observable = minio.ListObjectsAsync(args);
-            var subscription = observable.Subscribe(
-                item =>
-                {
-                    if (!string.IsNullOrEmpty(prefix))
-                        Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
-                    count++;
-                },
-                ex => throw ex,
-                () => { });
+            await foreach (var item in minio.ListObjectsAsync(args).ConfigureAwait(false))
+            {
+                if (!string.IsNullOrEmpty(prefix))
+                    Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+                count++;
+            }
         }
         else
         {
-            var observable = minio.ListObjectsAsync(args);
-            var subscription = observable.Subscribe(
-                item =>
-                {
-                    Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
-                    count++;
-                },
-                ex => throw ex,
-                () => { });
+            await foreach (var item in minio.ListObjectsAsync(args).ConfigureAwait(false))
+            {
+                Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+                count++;
+            }
         }
 
         await Task.Delay(40000).ConfigureAwait(false);
