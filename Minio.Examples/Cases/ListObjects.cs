@@ -21,7 +21,7 @@ namespace Minio.Examples.Cases;
 internal static class ListObjects
 {
     // List objects matching optional prefix in a specified bucket.
-    public static void Run(IMinioClient minio,
+    public static async Task RunAsync(IMinioClient minio,
         string bucketName = "my-bucket-name",
         string prefix = null,
         bool recursive = true,
@@ -38,10 +38,12 @@ internal static class ListObjects
                 .WithVersions(versions)
                 .WithUserMetadata(includeUserMetadata);
             var observable = minio.ListObjectsAsync(listArgs);
-            var subscription = observable.Subscribe(
+            var tcs = new TaskCompletionSource(observable);
+            using var subscription = observable.Subscribe(
                 item => Console.WriteLine($"Object: {item.Key}, content-type: {item.UserMetadata.ToList()[0].Value}"),
-                ex => Console.WriteLine($"OnError: {ex}"),
-                () => Console.WriteLine($"Listed all objects in bucket {bucketName}\n"));
+                tcs.SetException,
+                tcs.SetResult);
+            await tcs.Task.ConfigureAwait(false);
         }
         catch (Exception e)
         {

@@ -230,6 +230,7 @@ public partial class MinioClient : IBucketOperations
                     if (args.Versions)
                     {
                         var objectList = await GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
+                        if (objectList is null) return;
                         // Add user metadata information
                         if (goArgs.IncludeUserMetadata)
                         {
@@ -263,9 +264,10 @@ public partial class MinioClient : IBucketOperations
                     else
                     {
                         var objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
-                        if (objectList.Item2.Count == 0 &&
-                            objectList.Item1.KeyCount.Equals("0", StringComparison.Ordinal) &&
-                            count == 0)
+                        if (objectList is null ||
+                            (objectList.Item2.Count == 0 &&
+                             objectList.Item1.KeyCount.Equals("0", StringComparison.Ordinal) &&
+                             count == 0))
                             return;
 
                         // Add user metadata information

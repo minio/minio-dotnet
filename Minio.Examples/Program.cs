@@ -113,11 +113,11 @@ public static class Program
         var lockBucketName = GetRandomName();
         var progress = new SyncProgress<ProgressReport>(progressReport =>
         {
-            Console.WriteLine(
-                $"Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
-            if (progressReport.Percentage != 100)
-                Console.SetCursorPosition(0, Console.CursorTop - 1);
-            else Console.WriteLine();
+            // Console.WriteLine(
+            //     $"Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
+            // if (progressReport.Percentage != 100)
+            //     Console.SetCursorPosition(0, Console.CursorTop - 1);
+            // else Console.WriteLine();
         });
         var objectsList = new List<string>();
         for (var i = 0; i < 10; i++) objectsList.Add(objectName + i);
@@ -159,7 +159,8 @@ public static class Program
         await StatObject.Run(minioClient, bucketName, objectName).ConfigureAwait(false);
 
         // List the objects in the new bucket
-        ListObjects.Run(minioClient, bucketName, includeUserMetadata: true);
+        await ListObjects.RunAsync(minioClient, bucketName, versions: true, includeUserMetadata: true)
+            .ConfigureAwait(false);
 
         // Get the file and Download the object as file
         await GetObject.Run(minioClient, bucketName, objectName, smallFileName).ConfigureAwait(false);

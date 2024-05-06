@@ -50,4 +50,6 @@ public class Item
     }
 
     [XmlElement] public List<MetadataItem> UserMetadata { get; set; }
+
+    [XmlIgnore] public bool UserMetadataSpecified => UserMetadata?.Count < 1;
 }
