@@ -198,8 +198,10 @@ public static class Utils
         return !l2.Except(l1, StringComparer.Ordinal).Any();
     }
 
-    public static async Task ForEachAsync<TSource>(this IEnumerable<TSource> source, bool runInParallel = false,
-        int maxNoOfParallelProcesses = 4) where TSource : Task
+    public static async Task ForEachAsync<TSource>(this IEnumerable<TSource> source,
+        bool runInParallel = false,
+        int maxNoOfParallelProcesses = 4,
+        CancellationToken cancellationToken = default) where TSource : Task
     {
         if (source is null) throw new ArgumentNullException(nameof(source));
 
@@ -210,10 +212,10 @@ public static class Utils
 #if NET6_0_OR_GREATER
                 ParallelOptions parallelOptions = new()
                 {
-                    MaxDegreeOfParallelism = maxNoOfParallelProcesses, CancellationToken = CancellationToken.None
+                    MaxDegreeOfParallelism = maxNoOfParallelProcesses, CancellationToken = cancellationToken
                 };
                 await Parallel.ForEachAsync(source, parallelOptions,
-                    async (task, cancellationToken) => await task.ConfigureAwait(false)).ConfigureAwait(false);
+                    async (task, _) => await task.ConfigureAwait(false)).ConfigureAwait(false);
 #else
                 await Task.WhenAll(Partitioner.Create(source).GetPartitions(maxNoOfParallelProcesses)
                     .Select(partition => Task.Run(async delegate

@@ -258,6 +258,7 @@ public partial class MinioClient : IBucketOperations
                         if (objectList.Item2.Count == 0 && count == 0) return;
 
                         obs = listObjectsItemResponse.ItemObservable;
+                        marker = listObjectsItemResponse.NextKeyMarker;
                         versionIdMarker = listObjectsItemResponse.NextVerMarker;
                         isRunning = objectList.Item1.IsTruncated;
                     }

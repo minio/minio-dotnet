@@ -3496,12 +3496,6 @@ public static class FunctionalTest
         {
             percentage = progressReport.Percentage;
             totalBytesTransferred = progressReport.TotalBytesTransferred;
-            // if (percentage != 100)
-            // {
-            //     var topPosition = Console.CursorTop > 0 ? Console.CursorTop - 1 : Console.CursorTop;
-            //     Console.SetCursorPosition(0, topPosition);
-            // }
-            // else Console.WriteLine();
         });
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
@@ -3551,14 +3545,6 @@ public static class FunctionalTest
         {
             percentage = progressReport.Percentage;
             totalBytesTransferred = progressReport.TotalBytesTransferred;
-            // Console.WriteLine(
-            //    $"PutObject_Test10 - Percentage: {percentage.ToString(CultureInfo.InvariantCulture)}% TotalBytesTransferred: {totalBytesTransferred.ToString(CultureInfo.InvariantCulture)} bytes");
-            // if (percentage != 100)
-            // {
-            //     var topPosition = Console.CursorTop > 0 ? Console.CursorTop - 1 : Console.CursorTop;
-            //     Console.SetCursorPosition(0, topPosition);
-            // }
-            // else Console.WriteLine();
         });
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
