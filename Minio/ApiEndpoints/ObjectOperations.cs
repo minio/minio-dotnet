@@ -930,7 +930,7 @@ public partial class MinioClient : IObjectOperations
         }
 
         // This shouldn't happen where stream size is known.
-        if (partCount != numPartsUploaded && args.ObjectSize != -1)
+        if (args.ObjectSize != -1)
         {
             var removeUploadArgs = new RemoveUploadArgs()
                 .WithBucket(args.BucketName)
