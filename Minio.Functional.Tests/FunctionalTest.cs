@@ -3515,12 +3515,8 @@ public static class FunctionalTest
             var stream = rsg.GenerateStreamFromSeed(objSize);
             var statObj = await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
                 stream, progress).ConfigureAwait(false);
-            progress = new Progress<ProgressReport>(progressReport =>
-            {
-                percentage = progressReport.Percentage;
-                totalBytesTransferred = progressReport.TotalBytesTransferred;
-            });
-
+            Console.WriteLine($"\n\n\n ===>>>   percentage = {percentage.ToString(CultureInfo.InvariantCulture)}");
+            Console.WriteLine($" ===>>>   totalBytesTransferred = {totalBytesTransferred.ToString(CultureInfo.InvariantCulture)}\n\n\n");
             Assert.IsTrue(percentage == 100);
             Assert.IsTrue(totalBytesTransferred == objSize);
             new MintLogger(nameof(PutObject_Test9), putObjectSignature,
@@ -3568,11 +3564,6 @@ public static class FunctionalTest
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
             _ = await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
                 rsg.GenerateStreamFromSeed(64 * MB), progress).ConfigureAwait(false);
-            progress = new Progress<ProgressReport>(progressReport =>
-            {
-                percentage = progressReport.Percentage;
-                totalBytesTransferred = progressReport.TotalBytesTransferred;
-            });
             Assert.IsTrue(percentage == 100);
             Assert.IsTrue(totalBytesTransferred == 64 * MB);
             new MintLogger(nameof(PutObject_Test10), putObjectSignature,
