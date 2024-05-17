@@ -3499,14 +3499,6 @@ public static class FunctionalTest
         {
             percentage = progressReport.Percentage;
             totalBytesTransferred = progressReport.TotalBytesTransferred;
-            // Console.WriteLine(
-            //    $"PutObject_Test9 - Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
-            // if (progressReport.Percentage != 100)
-            // {
-            //     var topPosition = Console.CursorTop > 0 ? Console.CursorTop - 1 : Console.CursorTop;
-            //     Console.SetCursorPosition(0, topPosition);
-            // }
-            // else Console.WriteLine();
         });
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
@@ -3523,6 +3515,12 @@ public static class FunctionalTest
             var stream = rsg.GenerateStreamFromSeed(objSize);
             var statObj = await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
                 stream, progress).ConfigureAwait(false);
+            progress = new Progress<ProgressReport>(progressReport =>
+            {
+                percentage = progressReport.Percentage;
+                totalBytesTransferred = progressReport.TotalBytesTransferred;
+            });
+
             Assert.IsTrue(percentage == 100);
             Assert.IsTrue(totalBytesTransferred == objSize);
             new MintLogger(nameof(PutObject_Test9), putObjectSignature,
