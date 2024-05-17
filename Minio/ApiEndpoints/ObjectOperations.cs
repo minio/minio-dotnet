@@ -593,7 +593,7 @@ public partial class MinioClient : IObjectOperations
             args = args.WithRequestBody(bytes)
                 .WithStreamData(null)
                 .WithObjectSize(bytesRead);
-            return await PutObjectSinglePartAsync(args, cancellationToken, true).ConfigureAwait(false);
+            return await PutObjectSinglePartAsync(args, cancellationToken).ConfigureAwait(false);
         }
 
         // For all sizes greater than 5MiB do multipart.
@@ -830,10 +830,6 @@ public partial class MinioClient : IObjectOperations
     ///     Headers, SSE Headers
     /// </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <param name="singleFile">
-    ///     This boolean parameter differentiates single part file upload and
-    ///     multi part file upload as this function is shared by both.
-    /// </param>
     /// <returns></returns>
     /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
     /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
@@ -844,35 +840,38 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="InvalidOperationException">The file stream is currently in a read operation</exception>
     /// <exception cref="AccessDeniedException">For encrypted PUT operation, Access is denied if the key is wrong</exception>
     private async Task<PutObjectResponse> PutObjectSinglePartAsync(PutObjectArgs args,
-        CancellationToken cancellationToken = default,
-        bool singleFile = false)
+        CancellationToken cancellationToken = default)
     {
         //Skipping validate as we need the case where stream sends 0 bytes
-        var progressReport = new ProgressReport();
-        if (singleFile) args.Progress?.Report(progressReport);
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-
-        if (singleFile && args.Progress is not null)
+        if (args.ObjectSize < Constants.MinimumPartSize && args.ObjectSize >= 0)
         {
-            var statArgs = new StatObjectArgs()
-                .WithBucket(args.BucketName)
-                .WithObject(args.ObjectName);
-            var stat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
-            if (response.StatusCode == HttpStatusCode.OK)
+            var progressReport = new ProgressReport();
+            var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
+            using var response =
+                await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+            if (args.Progress is not null)
             {
-                progressReport.Percentage = 100;
-                progressReport.TotalBytesTransferred = stat.Size;
+                Console.WriteLine("\n\n\n ******   Inside   ******\n\n\n");
+                var statArgs = new StatObjectArgs()
+                    .WithBucket(args.BucketName)
+                    .WithObject(args.ObjectName);
+                var stat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    progressReport.Percentage = 100;
+                    progressReport.TotalBytesTransferred = stat.Size;
+                }
+
+                args.Progress.Report(progressReport);
             }
-
-            args.Progress.Report(progressReport);
+            return new PutObjectResponse(response.StatusCode, response.Content, response.Headers,
+                args.ObjectSize, args.ObjectName);
         }
-
-        return new PutObjectResponse(response.StatusCode, response.Content, response.Headers,
-            args.ObjectSize, args.ObjectName);
+        // The size should never be more than `Constants.MinimumPartSize`
+        // Throws an exception
+        throw new Exception($"Unexpected file size, {args.ObjectSize} cannot be > {Constants.MinimumPartSize}");
     }
 
     /// <summary>
