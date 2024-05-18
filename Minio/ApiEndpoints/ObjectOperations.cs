@@ -855,82 +855,14 @@ public partial class MinioClient : IObjectOperations
         if (args.Progress is not null &&
             response.StatusCode == HttpStatusCode.OK)
         {
-            // var statArgs = new StatObjectArgs()
-            //     .WithBucket(args.BucketName)
-            //     .WithObject(args.ObjectName);
-            // var stat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
-            // if (response.StatusCode == HttpStatusCode.OK)
-            // {
-                progressReport.Percentage = 100;
-                progressReport.TotalBytesTransferred = args.ObjectSize;
-            // }
-
+            progressReport.Percentage = 100;
+            progressReport.TotalBytesTransferred = args.ObjectSize;
             args.Progress.Report(progressReport);
         }
 
         return new PutObjectResponse(response.StatusCode, response.Content, response.Headers,
             args.ObjectSize, args.ObjectName);
     }
-
-
-    // /// <summary>
-    // ///     Upload object part to bucket for particular uploadId
-    // /// </summary>
-    // /// <param name="args">
-    // ///     PutObjectArgs encapsulates bucket name, object name, upload id, part number, object data(body),
-    // ///     Headers, SSE Headers
-    // /// </param>
-    // /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    // /// <returns></returns>
-    // /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-    // /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    // /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    // /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    // /// <exception cref="ObjectDisposedException">The file stream has been disposed</exception>
-    // /// <exception cref="NotSupportedException">The file stream cannot be read from</exception>
-    // /// <exception cref="InvalidOperationException">The file stream is currently in a read operation</exception>
-    // /// <exception cref="AccessDeniedException">For encrypted PUT operation, Access is denied if the key is wrong</exception>
-    // private async Task<PutObjectResponse> PutObjectSinglePartAsync(PutObjectArgs args,
-    //     CancellationToken cancellationToken = default)
-    // {
-    //     //Skipping validate as we need the case where stream sends 0 bytes
-    //     // if (args.ObjectSize < Constants.MinimumPartSize && args.ObjectSize >= 0)
-    //     // {
-    //         var progressReport = new ProgressReport();
-    //         var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-    //         using var response =
-    //             await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
-    //                     cancellationToken: cancellationToken)
-    //                 .ConfigureAwait(false);
-    //         var PutStatusCode = response.StatusCode;
-    //         // if (args.Progress is not null)
-
-    //         // {
-    //             // Console.WriteLine("\n\n\n ******   Inside Progress is NOT Null   ******\n\n\n");
-    //             var statArgs = new StatObjectArgs()
-    //                 .WithBucket(args.BucketName)
-    //                 .WithObject(args.ObjectName);
-    //             var stat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
-    //             if (PutStatusCode == HttpStatusCode.OK &&
-    //                 args.Progress is not null &&
-    //                 args.ObjectSize <= Constants.MinimumPUTPartSize)
-    //             {
-    //                 Console.WriteLine("\n\n\n ******   Inside PutStatusCode is HttpStatusCode.OK  ******\n\n\n");
-    //                 progressReport.Percentage = 100;
-    //                 progressReport.TotalBytesTransferred = stat.Size;
-    //             }
-
-    //             args.Progress.Report(progressReport);
-    //         // }
-
-    //         return new PutObjectResponse(response.StatusCode, response.Content, response.Headers,
-    //             args.ObjectSize, args.ObjectName);
-    //     // }
-
-    //     // The size should never be more than `Constants.MinimumPartSize`
-    //     // Throws an exception
-    //     // throw new Exception($"Unexpected file size, {args.ObjectSize} cannot be > {Constants.MinimumPartSize}");
-    // }
 
     /// <summary>
     ///     Upload object in multiple parts. Private Helper function
