@@ -3516,7 +3516,8 @@ public static class FunctionalTest
             var statObj = await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
                 stream, progress).ConfigureAwait(false);
             Console.WriteLine($"\n\n\n ===>>>   percentage = {percentage.ToString(CultureInfo.InvariantCulture)}");
-            Console.WriteLine($" ===>>>   totalBytesTransferred = {totalBytesTransferred.ToString(CultureInfo.InvariantCulture)}\n\n\n");
+            Console.WriteLine(
+                $" ===>>>   totalBytesTransferred = {totalBytesTransferred.ToString(CultureInfo.InvariantCulture)}\n\n\n");
             Console.WriteLine($" ===>>>   objSize = {objSize}\n\n\n");
             Assert.IsTrue(percentage == 100);
             Assert.IsTrue(totalBytesTransferred == objSize);

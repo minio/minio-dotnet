@@ -42,6 +42,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         PartNumber = args.PartNumber;
         SSE = args.SSE;
         UploadId = args.UploadId;
+        Progress = args.Progress;
     }
 
     internal string UploadId { get; private set; }

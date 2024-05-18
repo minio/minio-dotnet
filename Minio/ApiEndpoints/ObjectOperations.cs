@@ -851,24 +851,30 @@ public partial class MinioClient : IObjectOperations
                 await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
                         cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
+            var PutStatusCode = response.StatusCode;
+            Console.WriteLine($"\n\n\n ******   PutStatusCode = {PutStatusCode}   ******\n\n\n");
             if (args.Progress is not null)
+
             {
-                Console.WriteLine("\n\n\n ******   Inside   ******\n\n\n");
+                Console.WriteLine("\n\n\n ******   Inside Progress is NOT Null   ******\n\n\n");
                 var statArgs = new StatObjectArgs()
                     .WithBucket(args.BucketName)
                     .WithObject(args.ObjectName);
                 var stat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
-                if (response.StatusCode == HttpStatusCode.OK)
+                if (PutStatusCode == HttpStatusCode.OK)
                 {
+                    Console.WriteLine("\n\n\n ******   Inside HttpStatusCode.OK   ******\n\n\n");
                     progressReport.Percentage = 100;
                     progressReport.TotalBytesTransferred = stat.Size;
                 }
 
                 args.Progress.Report(progressReport);
             }
+
             return new PutObjectResponse(response.StatusCode, response.Content, response.Headers,
                 args.ObjectSize, args.ObjectName);
         }
+
         // The size should never be more than `Constants.MinimumPartSize`
         // Throws an exception
         throw new Exception($"Unexpected file size, {args.ObjectSize} cannot be > {Constants.MinimumPartSize}");
