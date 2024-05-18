@@ -3495,7 +3495,7 @@ public static class FunctionalTest
         const string contentType = "application/octet-stream";
         var percentage = 0;
         var totalBytesTransferred = 0L;
-        var progress = new Progress<ProgressReport>(progressReport =>
+        var progress = new SyncProgress<ProgressReport>(progressReport =>
         {
             percentage = progressReport.Percentage;
             totalBytesTransferred = progressReport.TotalBytesTransferred;
