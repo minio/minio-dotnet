@@ -843,8 +843,8 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken = default)
     {
         //Skipping validate as we need the case where stream sends 0 bytes
-        if (args.ObjectSize < Constants.MinimumPartSize && args.ObjectSize >= 0)
-        {
+        // if (args.ObjectSize < Constants.MinimumPartSize && args.ObjectSize >= 0)
+        // {
             var progressReport = new ProgressReport();
             var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
             using var response =
@@ -852,32 +852,33 @@ public partial class MinioClient : IObjectOperations
                         cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
             var PutStatusCode = response.StatusCode;
-            Console.WriteLine($"\n\n\n ******   PutStatusCode = {PutStatusCode}   ******\n\n\n");
-            if (args.Progress is not null)
+            // if (args.Progress is not null)
 
-            {
-                Console.WriteLine("\n\n\n ******   Inside Progress is NOT Null   ******\n\n\n");
+            // {
+                // Console.WriteLine("\n\n\n ******   Inside Progress is NOT Null   ******\n\n\n");
                 var statArgs = new StatObjectArgs()
                     .WithBucket(args.BucketName)
                     .WithObject(args.ObjectName);
                 var stat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
-                if (PutStatusCode == HttpStatusCode.OK)
+                if (PutStatusCode == HttpStatusCode.OK &&
+                    args.Progress is not null &&
+                    args.ObjectSize <= Constants.MinimumPUTPartSize)
                 {
-                    Console.WriteLine("\n\n\n ******   Inside HttpStatusCode.OK   ******\n\n\n");
+                    Console.WriteLine("\n\n\n ******   Inside PutStatusCode is HttpStatusCode.OK  ******\n\n\n");
                     progressReport.Percentage = 100;
                     progressReport.TotalBytesTransferred = stat.Size;
                 }
 
                 args.Progress.Report(progressReport);
-            }
+            // }
 
             return new PutObjectResponse(response.StatusCode, response.Content, response.Headers,
                 args.ObjectSize, args.ObjectName);
-        }
+        // }
 
         // The size should never be more than `Constants.MinimumPartSize`
         // Throws an exception
-        throw new Exception($"Unexpected file size, {args.ObjectSize} cannot be > {Constants.MinimumPartSize}");
+        // throw new Exception($"Unexpected file size, {args.ObjectSize} cannot be > {Constants.MinimumPartSize}");
     }
 
     /// <summary>
