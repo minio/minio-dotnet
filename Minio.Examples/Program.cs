@@ -24,6 +24,7 @@ using Minio.DataModel.Encryption;
 using Minio.DataModel.Notification;
 using Minio.DataModel.ObjectLock;
 using Minio.Examples.Cases;
+using Minio.Helper;
 
 namespace Minio.Examples;
 
@@ -110,7 +111,7 @@ public static class Program
         var destBucketName = GetRandomName();
         var destObjectName = GetRandomName();
         var lockBucketName = GetRandomName();
-        var progress = new Progress<ProgressReport>(progressReport =>
+        var progress = new SyncProgress<ProgressReport>(progressReport =>
         {
             Console.WriteLine(
                 $"Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");

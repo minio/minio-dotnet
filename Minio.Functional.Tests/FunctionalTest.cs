@@ -3552,7 +3552,7 @@ public static class FunctionalTest
         var contentType = "binary/octet-stream";
         var percentage = 0;
         var totalBytesTransferred = 0L;
-        var progress = new Progress<ProgressReport>(progressReport =>
+        var progress = new SyncProgress<ProgressReport>(progressReport =>
         {
             percentage = progressReport.Percentage;
             totalBytesTransferred = progressReport.TotalBytesTransferred;

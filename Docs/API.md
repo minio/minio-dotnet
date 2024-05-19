@@ -1874,6 +1874,7 @@ try
     var ssec = new SSEC(aesEncryption.Key);
     var progress = new Progress<ProgressReport>(progressReport =>
     {
+        // Progress events are delivered asynchronously (see remark below)
         Console.WriteLine(
                 $"Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
         if (progressReport.Percentage != 100)
@@ -1895,7 +1896,14 @@ catch(MinioException e)
     Console.WriteLine("Error occurred: " + e);
 }
 ```
-
+**Remark:** 
+Note that the default [Progress<T> class](https://learn.microsoft.com/en-us/dotnet/api/System.Progress-1) post progress
+updates to the SynchronizationContext when the instance was constructed
+([source](https://learn.microsoft.com/en-us/dotnet/api/system.progress-1#remarks)). This means that progress updates are
+sent asynchronous. If you do want to receive the events synchronous, then use the `Minio.Helper.SyncProgress<T>` instead,
+but make sure you understand the implications. Progress events are sent synchronous, so they may be invoked on an
+arbitrary thread (mostly a problem for UI applications) and performing long-running and/or blocking operations will
+degrade upload performance.
 
 <a name="statObject"></a>
 ### StatObjectAsync(StatObjectArgs args)
