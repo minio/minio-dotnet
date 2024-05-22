@@ -203,7 +203,8 @@ public partial class MinioClient : IBucketOperations
     ///     For example, if you call ListObjectsAsync on a bucket with versioning
     ///     enabled or object lock enabled
     /// </exception>
-    public async IAsyncEnumerable<Item> ListObjectsEnumAsync(ListObjectsArgs args, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<Item> ListObjectsEnumAsync(ListObjectsArgs args,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (args == null) throw new ArgumentNullException(nameof(args));
 
@@ -228,10 +229,13 @@ public partial class MinioClient : IBucketOperations
             cancellationToken.ThrowIfCancellationRequested();
 
             var requestMessageBuilder = await this.CreateRequest(goArgs).ConfigureAwait(false);
-            using var responseResult = await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken).ConfigureAwait(false);
+            using var responseResult = await this
+                .ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
 
             if (responseResult.StatusCode != HttpStatusCode.OK)
-                throw new ErrorResponseException($"HTTP status-code {responseResult.StatusCode:D}: {responseResult.StatusCode}", responseResult);
+                throw new ErrorResponseException(
+                    $"HTTP status-code {responseResult.StatusCode:D}: {responseResult.StatusCode}", responseResult);
 
 #if NET2_0_OR_GREATER
     var root = await XDocument.LoadAsync(responseResult.ContentStream, LoadOptions.None, ct).ConfigureAwait(false);
@@ -249,18 +253,22 @@ public partial class MinioClient : IBucketOperations
                 {
                     var xUserMetadata = t.Element(ns + "UserMetadata");
                     if (xUserMetadata == null)
-                        throw new InvalidOperationException("Client doesn't support metadata while listing objects (MinIO specific feature)");
+                        throw new InvalidOperationException(
+                            "Client doesn't support metadata while listing objects (MinIO specific feature)");
 
                     contentType = xUserMetadata.Element(ns + "content-type")?.Value;
                     expires = xUserMetadata.Element(ns + "expires")?.Value;
                     const string metaElementPrefix = "X-Amz-Meta-";
                     userMetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                    foreach (var xHeader in xUserMetadata.Elements().Where(x => x.Name.Namespace == ns && x.Name.LocalName.StartsWith(metaElementPrefix, StringComparison.OrdinalIgnoreCase)))
+                    foreach (var xHeader in xUserMetadata.Elements().Where(x =>
+                                 x.Name.Namespace == ns && x.Name.LocalName.StartsWith(metaElementPrefix,
+                                     StringComparison.OrdinalIgnoreCase)))
                     {
                         var key = xHeader.Name.LocalName[metaElementPrefix.Length..];
                         userMetaData[key] = xHeader.Value;
                     }
                 }
+
                 return new Item
                 {
                     Key = t.Element(ns + "Key")?.Value,

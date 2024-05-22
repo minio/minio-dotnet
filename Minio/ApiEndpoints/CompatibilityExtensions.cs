@@ -33,7 +33,7 @@ public static class CompatibilityExtensions
         {
             try
             {
-                await foreach (var item in self.ListIncompleteUploadsEnumAsync (args, ct).ConfigureAwait(false))
+                await foreach (var item in self.ListIncompleteUploadsEnumAsync(args, ct).ConfigureAwait(false))
                     obs.OnNext(item);
                 obs.OnCompleted();
             }

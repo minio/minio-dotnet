@@ -116,9 +116,9 @@ public partial class MinioClient : IObjectOperations
                 continue;
             }
 
-            foreach (var upload in uploads.Item2) 
+            foreach (var upload in uploads.Item2)
                 yield return upload;
-            
+
             nextKeyMarker = uploads.Item1.NextKeyMarker;
             nextUploadIdMarker = uploads.Item1.NextUploadIdMarker;
             isRunning = uploads.Item1.IsTruncated;
@@ -147,8 +147,8 @@ public partial class MinioClient : IObjectOperations
 
         try
         {
-            await foreach (var upload in ListIncompleteUploadsEnumAsync(listUploadArgs, cancellationToken).ConfigureAwait(false))
-            {
+            await foreach (var upload in ListIncompleteUploadsEnumAsync(listUploadArgs, cancellationToken)
+                               .ConfigureAwait(false))
                 if (upload.Key.Equals(args.ObjectName, StringComparison.OrdinalIgnoreCase))
                 {
                     var rmArgs = new RemoveUploadArgs()
@@ -157,7 +157,6 @@ public partial class MinioClient : IObjectOperations
                         .WithUploadId(upload.UploadId);
                     await RemoveUploadAsync(rmArgs, cancellationToken).ConfigureAwait(false);
                 }
-            }
         }
         catch (Exception ex) when (ex.GetType() == typeof(BucketNotFoundException))
         {

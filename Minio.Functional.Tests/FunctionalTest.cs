@@ -617,16 +617,14 @@ public static class FunctionalTest
             .WithBucket(bucketName)
             .WithRecursive(true)
             .WithVersions(getVersions);
-        
+
         var objectNamesVersions = new List<Tuple<string, string>>();
         var objectNames = new List<string>();
         await foreach (var item in minio.ListObjectsEnumAsync(listObjectsArgs).ConfigureAwait(false))
-        {
             if (getVersions)
                 objectNamesVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
             else
                 objectNames.Add(item.Key);
-        }
 
         await Task.Delay(20000).ConfigureAwait(false);
         if (lockConfig?.ObjectLockEnabled.Equals(ObjectLockConfiguration.LockEnabled,
@@ -1273,7 +1271,7 @@ public static class FunctionalTest
             var deList = await minio.RemoveObjectsAsync(removeObjectsArgs).ConfigureAwait(false);
 
             await TearDown(minio, bucketName).ConfigureAwait(false);
-        
+
             await Task.Delay(2 * 1000).ConfigureAwait(false);
             new MintLogger("RemoveObjects_Test3", removeObjectSignature2,
                 "Tests whether RemoveObjectsAsync for multi objects/versions delete passes", TestStatus.PASS,
@@ -5348,6 +5346,7 @@ public static class FunctionalTest
                 count++;
                 objectVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
             }
+
             Assert.AreEqual(count, numObjectVersions);
 
             await Task.Delay(4000).ConfigureAwait(false);
@@ -5369,7 +5368,8 @@ public static class FunctionalTest
     }
 
     internal static async Task ListObjects_Test(IMinioClient minio, string bucketName, string prefix, int numObjects,
-        bool recursive = true, bool versions = false, bool includeUserMedata = false, Dictionary<string, string> headers = null)
+        bool recursive = true, bool versions = false, bool includeUserMedata = false,
+        Dictionary<string, string> headers = null)
     {
         var count = 0;
         var args = new ListObjectsArgs()
@@ -5380,22 +5380,18 @@ public static class FunctionalTest
             .WithVersions(versions)
             .WithIncludeUserMetadata(includeUserMedata);
         if (!versions)
-        {
             await foreach (var item in minio.ListObjectsEnumAsync(args).ConfigureAwait(false))
             {
                 if (!string.IsNullOrEmpty(prefix))
                     Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
                 count++;
             }
-        }
         else
-        {
             await foreach (var item in minio.ListObjectsEnumAsync(args).ConfigureAwait(false))
             {
                 Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
                 count++;
             }
-        }
 
         await Task.Delay(40000).ConfigureAwait(false);
         Assert.AreEqual(numObjects, count);

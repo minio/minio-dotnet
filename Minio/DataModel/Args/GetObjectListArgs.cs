@@ -117,6 +117,7 @@ internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
         {
             throw new InvalidOperationException("Wrong set of properties set.");
         }
+
         if (IncludeUserMetadata)
             requestMessageBuilder.AddQueryParameter("metadata", "true");
 
