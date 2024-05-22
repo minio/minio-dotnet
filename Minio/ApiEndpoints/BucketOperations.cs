@@ -269,9 +269,13 @@ public partial class MinioClient : IBucketOperations
                     }
                 }
 
+                var objectKey = t.Element(ns + "Key")?.Value;
+                if (objectKey != null)
+                    objectKey = Uri.UnescapeDataString(objectKey);
+
                 return new Item
                 {
-                    Key = t.Element(ns + "Key")?.Value,
+                    Key = objectKey,
                     LastModified = t.Element(ns + "LastModified")?.Value,
                     ETag = t.Element(ns + "ETag")?.Value,
                     Size = ulong.TryParse(t.Element(ns + "Size")?.Value, out var size) ? size : 0,

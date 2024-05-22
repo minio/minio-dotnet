@@ -451,7 +451,7 @@ public static class FunctionalTest
                 rsg.GenerateStreamFromSeed(5));
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
-        
+
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal) { { "bucketName", bucketName }, { "x-minio-force-delete", "true" } };
 
