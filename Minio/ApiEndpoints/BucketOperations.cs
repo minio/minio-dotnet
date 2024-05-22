@@ -231,28 +231,6 @@ public partial class MinioClient : IBucketOperations
                     {
                         var objectList = await GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
                         if (objectList is null) return;
-                        // Add user metadata information
-                        if (goArgs.IncludeUserMetadata)
-                        {
-                            var indx = 0;
-                            foreach (var itm in objectList.Item2)
-                            {
-                                var statObjectArgs = new StatObjectArgs()
-                                    .WithBucket(args.BucketName)
-                                    .WithObject(itm.Key);
-                                var objStat = await StatObjectAsync(statObjectArgs, cancellationToken)
-                                    .ConfigureAwait(false);
-                                objectList.Item1.UserMetadata = [];
-                                itm.UserMetadata = [];
-                                foreach (var pair in objStat.MetaData)
-                                {
-                                    objectList.Item1.UserMetadata.Add(new MetadataItem(pair.Key, pair.Value));
-                                    itm.UserMetadata.Add(new MetadataItem(pair.Key, pair.Value));
-                                }
-
-                                indx++;
-                            }
-                        }
 
                         var listObjectsItemResponse = new ListObjectVersionResponse(objectList, obs);
                         if (objectList.Item2.Count == 0 && count == 0) return;
@@ -270,23 +248,6 @@ public partial class MinioClient : IBucketOperations
                              objectList.Item1.KeyCount.Equals("0", StringComparison.Ordinal) &&
                              count == 0))
                             return;
-
-                        // Add user metadata information
-                        if (goArgs.IncludeUserMetadata)
-                        {
-                            var indx = 0;
-                            foreach (var itm in objectList.Item2)
-                            {
-                                var statObjectArgs = new StatObjectArgs()
-                                    .WithBucket(args.BucketName)
-                                    .WithObject(itm.Key);
-                                var objStat = await StatObjectAsync(statObjectArgs, cancellationToken)
-                                    .ConfigureAwait(false);
-                                foreach (var pair in objStat.MetaData)
-                                    objectList.Item1.UserMetadata.Add(new MetadataItem(pair.Key, pair.Value));
-                                indx++;
-                            }
-                        }
 
                         var listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);
                         marker = listObjectsItemResponse.NextMarker;

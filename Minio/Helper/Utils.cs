@@ -46,6 +46,22 @@ public static class Utils
     private static readonly Lazy<IDictionary<string, string>> contentTypeMap = new(AddContentTypeMappings);
 
     /// <summary>
+    ///     Remove all xmlns/namespace values from an xml document
+    /// </summary>
+    /// <param name="e"> XElement</param>
+    public static XElement RemoveAllNamespaces(XElement e)
+    {
+        return new XElement(e.Name.LocalName, from n in e.Nodes()
+            select n is XElement ? RemoveAllNamespaces(n as XElement) : n,
+            e.HasAttributes
+                ? from a in e.Attributes()
+                where !a.IsNamespaceDeclaration
+                select new XAttribute(a.Name.LocalName, a.Value)
+                : null);
+    }
+
+
+    /// <summary>
     ///     IsValidBucketName - verify bucket name in accordance with
     ///     http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html
     /// </summary>

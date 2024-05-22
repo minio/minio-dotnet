@@ -79,12 +79,6 @@ internal static class Program
             .WithSSL(isSecure)
             .Build();
 
-        // // Assign parameters before starting the test
-        // var bucketName = FunctionalTest.GetRandomName();
-        // var objectName = FunctionalTest.GetRandomName();
-        // var destBucketName = FunctionalTest.GetRandomName();
-        // var destObjectName = FunctionalTest.GetRandomName();
-
         // Set app Info
         minioClient.SetAppInfo("app-name", "app-version");
         // Set HTTP Tracing On

@@ -34,45 +34,42 @@ internal class GetObjectsVersionsListResponse : GenericResponse
         BucketResult = Utils.DeserializeXml<ListVersionsResult>(responseContent);
 
         List<Item> items = [];
-        List<MetadataItem> userMetadata = [];
         var root = XDocument.Parse(responseContent);
         XNamespace ns = Utils.DetermineNamespace(root);
 
         var versNodes = root.Root.Descendants(ns + "Version");
         var userMtdt = versNodes.Descendants(ns + "UserMetadata");
-        if (userMtdt.Any())
+
+        for (var indx = 0; versNodes.Skip(indx).Any(); indx++)
         {
-            var i = 0;
-            foreach (var mtData in userMtdt)
+            var item = new Item
             {
-                userMetadata[i].Key = mtData.Element(ns + "MetadataItem").Element(ns + "Key").Value;
-                userMetadata[i].Value = mtData.Element(ns + "MetadataItem").Element(ns + "Value").Value;
-                i++;
-            }
-        }
+                Key = versNodes.ToList()[indx].Element(ns + "Key").Value,
+                LastModified = versNodes.ToList()[indx].Element(ns + "LastModified").Value,
+                ETag = versNodes.ToList()[indx].Element(ns + "ETag").Value,
+                VersionId = versNodes.ToList()[indx].Element(ns + "VersionId").Value,
+                StorageClass = versNodes.ToList()[indx].Element(ns + "StorageClass").Value,
+                Size = ulong.Parse(versNodes.ToList()[indx].Element(ns + "Size").Value),
+                IsLatest = bool.Parse(versNodes.ToList()[indx].Element(ns + "IsLatest").Value),
+                IsDir = BucketResult.Prefix is not null
+            };
 
-        if (versNodes.Any())
-            for (var indx = 0; versNodes.Skip(indx).Any(); indx++)
+            if (userMtdt.Any())
             {
-                var item = new Item
+                List<MetadataItem> userMetadata = [];
+                foreach (var el in userMtdt.ToList()[indx].Elements())
                 {
-                    Key = versNodes.ToList()[indx].Element(ns + "Key").Value,
-                    LastModified = versNodes.ToList()[indx].Element(ns + "LastModified").Value,
-                    ETag = versNodes.ToList()[indx].Element(ns + "ETag").Value,
-                    VersionId = versNodes.ToList()[indx].Element(ns + "VersionId").Value,
-                    StorageClass = versNodes.ToList()[indx].Element(ns + "StorageClass").Value,
-                    Size = ulong.Parse(versNodes.ToList()[indx].Element(ns + "Size").Value),
-                    IsLatest = bool.Parse(versNodes.ToList()[indx].Element(ns + "IsLatest").Value),
-                    UserMetadata = userMetadata,
-                    IsDir = BucketResult.Prefix is not null
-                };
+                    var strippedEl = Utils.RemoveAllNamespaces(el);
+                    if (strippedEl.Name.ToString().StartsWith("X-Amz-Meta-", StringComparison.Ordinal))
+                        userMetadata.Add(new MetadataItem(strippedEl.Name.ToString(), (string)strippedEl));
+                }
 
-                items.Add(item);
+                if (userMetadata.Count > 0)
+                    item.UserMetadata = userMetadata;
             }
 
-        // TO DO
-        // Is DeleteMarker = bool.Parse(c.Element(ns + "IsDeleteMarker").Value)
-        // Usertags = ...
+            items.Add(item);
+        }
         ObjectsTuple = new Tuple<ListVersionsResult, List<Item>>(BucketResult, items);
     }
 }

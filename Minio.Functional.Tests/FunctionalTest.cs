@@ -3492,10 +3492,16 @@ public static class FunctionalTest
         const string contentType = "application/octet-stream";
         var percentage = 0;
         var totalBytesTransferred = 0L;
+        // Display progress as a percentage
         var progress = new SyncProgress<ProgressReport>(progressReport =>
         {
             percentage = progressReport.Percentage;
             totalBytesTransferred = progressReport.TotalBytesTransferred;
+            // Console.WriteLine(
+            //         $"Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
+            // if (progressReport.Percentage != 100)
+            //     Console.SetCursorPosition(0, Console.CursorTop - 1);
+            // else Console.WriteLine();
         });
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
@@ -3541,10 +3547,19 @@ public static class FunctionalTest
         var contentType = "binary/octet-stream";
         var percentage = 0;
         var totalBytesTransferred = 0L;
+        // Display progress as a percentage
         var progress = new SyncProgress<ProgressReport>(progressReport =>
         {
             percentage = progressReport.Percentage;
             totalBytesTransferred = progressReport.TotalBytesTransferred;
+            // Console.WriteLine(
+            //    $"PutObject_Test10 - Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
+            // if (progressReport.Percentage != 100)
+            // {
+            //     var topPosition = Console.CursorTop > 0 ? Console.CursorTop - 1 : Console.CursorTop;
+            //     Console.SetCursorPosition(0, topPosition);
+            // }
+            // else Console.WriteLine();
         });
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
@@ -5347,7 +5362,6 @@ public static class FunctionalTest
             {
                 items.Add(item);
                 Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
-                var s = string.Join("; ", item.UserMetadata.Select(x => x.Key + "=" + x.Value));
                 count++;
             }
 
@@ -5357,7 +5371,8 @@ public static class FunctionalTest
                 var indxdSfx = i.ToString(CultureInfo.InvariantCulture) + suffix;
                 var userMDataCount = 0;
                 foreach (var mtDt in items[i].UserMetadata)
-                    if (mtDt.Key.EndsWith(indxdSfx, StringComparison.Ordinal) &&
+                    if (mtDt.Key.StartsWith("X-Amz-Meta-", StringComparison.Ordinal) &&
+                        mtDt.Key.EndsWith(indxdSfx, StringComparison.Ordinal) &&
                         mtDt.Value.EndsWith(indxdSfx, StringComparison.Ordinal))
                         userMDataCount++;
                 Assert.AreEqual(customMetadataSizeList[i], userMDataCount);

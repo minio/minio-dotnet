@@ -96,6 +96,8 @@ internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
         requestMessageBuilder.AddQueryParameter("max-keys", "1000");
         requestMessageBuilder.AddQueryParameter("encoding-type", "url");
         requestMessageBuilder.AddQueryParameter("prefix", Prefix);
+        if (IncludeUserMetadata) requestMessageBuilder.AddQueryParameter("metadata", "true");
+
         if (Versions)
         {
             requestMessageBuilder.AddQueryParameter("versions", "");
