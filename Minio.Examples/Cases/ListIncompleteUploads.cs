@@ -36,7 +36,7 @@ internal static class ListIncompleteUploads
                     .WithBucket(bucketName)
                     .WithPrefix(prefix)
                     .WithRecursive(recursive);
-                await foreach (var item in minio.ListIncompleteUploads(args).ConfigureAwait(false))
+                await foreach (var item in minio.ListIncompleteUploadsEnumAsync(args).ConfigureAwait(false))
                     Console.WriteLine($"OnNext: {item.Key}");
             }
             catch (Exception exc)

@@ -35,7 +35,7 @@ internal static class ListObjects
                 .WithPrefix(prefix)
                 .WithRecursive(recursive)
                 .WithVersions(versions);
-            await foreach (var item in minio.ListObjectsAsync(listArgs).ConfigureAwait(false))
+            await foreach (var item in minio.ListObjectsEnumAsync(listArgs).ConfigureAwait(false))
                 Console.WriteLine($"Object: {item.Key}");
             Console.WriteLine($"Listed all objects in bucket {bucketName}\n");
         }

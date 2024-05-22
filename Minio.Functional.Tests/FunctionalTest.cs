@@ -620,7 +620,7 @@ public static class FunctionalTest
         
         var objectNamesVersions = new List<Tuple<string, string>>();
         var objectNames = new List<string>();
-        await foreach (var item in minio.ListObjectsAsync(listObjectsArgs).ConfigureAwait(false))
+        await foreach (var item in minio.ListObjectsEnumAsync(listObjectsArgs).ConfigureAwait(false))
         {
             if (getVersions)
                 objectNamesVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
@@ -1263,7 +1263,7 @@ public static class FunctionalTest
                 .WithVersions(true);
 
             var objVersions = new List<Tuple<string, string>>();
-            await foreach (var item in minio.ListObjectsAsync(listObjectsArgs).ConfigureAwait(false))
+            await foreach (var item in minio.ListObjectsEnumAsync(listObjectsArgs).ConfigureAwait(false))
                 objVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
 
             var removeObjectsArgs = new RemoveObjectsArgs()
@@ -1430,7 +1430,7 @@ public static class FunctionalTest
                 {
                     var listArgs = new ListIncompleteUploadsArgs()
                         .WithBucket(bucketName);
-                    await foreach (var item in minio.ListIncompleteUploads(listArgs).ConfigureAwait(false))
+                    await foreach (var item in minio.ListIncompleteUploadsEnumAsync(listArgs).ConfigureAwait(false))
                         Assert.Fail();
                 }
                 catch (Exception)
@@ -5271,7 +5271,7 @@ public static class FunctionalTest
                 .WithPrefix(objectNamePrefix)
                 .WithRecursive(false)
                 .WithVersions(false);
-            await foreach (var item in minio.ListObjectsAsync(listArgs).ConfigureAwait(false))
+            await foreach (var item in minio.ListObjectsEnumAsync(listArgs).ConfigureAwait(false))
             {
                 Assert.IsTrue(item.Key.StartsWith(objectNamePrefix, StringComparison.OrdinalIgnoreCase));
                 if (!objectNamesSet.Add(item.Key))
@@ -5342,7 +5342,7 @@ public static class FunctionalTest
             var count = 0;
             var numObjectVersions = 8;
 
-            await foreach (var item in minio.ListObjectsAsync(listObjectsArgs).ConfigureAwait(false))
+            await foreach (var item in minio.ListObjectsEnumAsync(listObjectsArgs).ConfigureAwait(false))
             {
                 Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
                 count++;
@@ -5369,7 +5369,7 @@ public static class FunctionalTest
     }
 
     internal static async Task ListObjects_Test(IMinioClient minio, string bucketName, string prefix, int numObjects,
-        bool recursive = true, bool versions = false, Dictionary<string, string> headers = null)
+        bool recursive = true, bool versions = false, bool includeUserMedata = false, Dictionary<string, string> headers = null)
     {
         var count = 0;
         var args = new ListObjectsArgs()
@@ -5377,10 +5377,11 @@ public static class FunctionalTest
             .WithPrefix(prefix)
             .WithHeaders(headers)
             .WithRecursive(recursive)
-            .WithVersions(versions);
+            .WithVersions(versions)
+            .WithIncludeUserMetadata(includeUserMedata);
         if (!versions)
         {
-            await foreach (var item in minio.ListObjectsAsync(args).ConfigureAwait(false))
+            await foreach (var item in minio.ListObjectsEnumAsync(args).ConfigureAwait(false))
             {
                 if (!string.IsNullOrEmpty(prefix))
                     Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
@@ -5389,7 +5390,7 @@ public static class FunctionalTest
         }
         else
         {
-            await foreach (var item in minio.ListObjectsAsync(args).ConfigureAwait(false))
+            await foreach (var item in minio.ListObjectsEnumAsync(args).ConfigureAwait(false))
             {
                 Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
                 count++;
@@ -5778,7 +5779,7 @@ public static class FunctionalTest
                 {
                     var listArgs = new ListIncompleteUploadsArgs()
                         .WithBucket(bucketName);
-                    await foreach (var item in minio.ListIncompleteUploads(listArgs).ConfigureAwait(false))
+                    await foreach (var item in minio.ListIncompleteUploadsEnumAsync(listArgs).ConfigureAwait(false))
                         Assert.IsTrue(item.Key.Contains(objectName, StringComparison.Ordinal));
                 }
                 catch (Exception)
@@ -5845,7 +5846,7 @@ public static class FunctionalTest
                         .WithBucket(bucketName)
                         .WithPrefix("minioprefix")
                         .WithRecursive(false);
-                    await foreach (var item in minio.ListIncompleteUploads(listArgs).ConfigureAwait(false))
+                    await foreach (var item in minio.ListIncompleteUploadsEnumAsync(listArgs).ConfigureAwait(false))
                         Assert.AreEqual(item.Key, objectName);
                 }
                 catch
@@ -5906,7 +5907,7 @@ public static class FunctionalTest
                         .WithBucket(bucketName)
                         .WithPrefix(prefix)
                         .WithRecursive(true);
-                    await foreach (var item in minio.ListIncompleteUploads(listArgs).ConfigureAwait(false))
+                    await foreach (var item in minio.ListIncompleteUploadsEnumAsync(listArgs).ConfigureAwait(false))
                         Assert.AreEqual(item.Key, objectName);
                 }
                 catch

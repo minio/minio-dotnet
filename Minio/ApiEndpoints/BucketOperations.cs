@@ -16,7 +16,6 @@
  */
 
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Net;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
@@ -204,10 +203,10 @@ public partial class MinioClient : IBucketOperations
     ///     For example, if you call ListObjectsAsync on a bucket with versioning
     ///     enabled or object lock enabled
     /// </exception>
-    public async IAsyncEnumerable<Item> ListObjectsAsync(ListObjectsArgs args, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<Item> ListObjectsEnumAsync(ListObjectsArgs args, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (args == null) throw new ArgumentNullException(nameof(args));
-        
+
         args.Validate();
 
         var goArgs = new GetObjectListArgs()
@@ -215,6 +214,7 @@ public partial class MinioClient : IBucketOperations
             .WithPrefix(args.Prefix)
             .WithDelimiter(args.Recursive ? string.Empty : "/")
             .WithVersions(args.Versions)
+            .WithIncludeUserMetadata(args.IncludeUserMetadata)
             .WithMarker(string.Empty)
             .WithListObjectsV1(!args.UseV2)
             .WithHeaders(args.Headers)
@@ -226,34 +226,59 @@ public partial class MinioClient : IBucketOperations
         while (true)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             var requestMessageBuilder = await this.CreateRequest(goArgs).ConfigureAwait(false);
-            using var responseResult = await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken) .ConfigureAwait(false);
+            using var responseResult = await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (responseResult.StatusCode != HttpStatusCode.OK)
                 throw new ErrorResponseException($"HTTP status-code {responseResult.StatusCode:D}: {responseResult.StatusCode}", responseResult);
 
 #if NET2_0_OR_GREATER
-            var root = await XDocument.LoadAsync(responseResult.ContentStream, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+    var root = await XDocument.LoadAsync(responseResult.ContentStream, LoadOptions.None, ct).ConfigureAwait(false);
 #else
             var root = XDocument.Load(responseResult.ContentStream);
 #endif
 
-            var items = from c in root.Root.Descendants(tag)
-                select new Item
+            var items = root.Root.Descendants(tag).Select(t =>
+            {
+                string contentType = null;
+                string expires = null;
+                Dictionary<string, string> userMetaData = null;
+
+                if (args.IncludeUserMetadata)
                 {
-                    Key = c.Element(ns + "Key").Value,
-                    LastModified = c.Element(ns + "LastModified").Value,
-                    ETag = c.Element(ns + "ETag").Value,
-                    Size = ulong.Parse(c.Element(ns + "Size").Value, CultureInfo.InvariantCulture),
-                    VersionId = c.Element(ns + "VersionId")?.Value ?? string.Empty,
+                    var xUserMetadata = t.Element(ns + "UserMetadata");
+                    if (xUserMetadata == null)
+                        throw new InvalidOperationException("Client doesn't support metadata while listing objects (MinIO specific feature)");
+
+                    contentType = xUserMetadata.Element(ns + "content-type")?.Value;
+                    expires = xUserMetadata.Element(ns + "expires")?.Value;
+                    const string metaElementPrefix = "X-Amz-Meta-";
+                    userMetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var xHeader in xUserMetadata.Elements().Where(x => x.Name.Namespace == ns && x.Name.LocalName.StartsWith(metaElementPrefix, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        var key = xHeader.Name.LocalName[metaElementPrefix.Length..];
+                        userMetaData[key] = xHeader.Value;
+                    }
+                }
+                return new Item
+                {
+                    Key = t.Element(ns + "Key")?.Value,
+                    LastModified = t.Element(ns + "LastModified")?.Value,
+                    ETag = t.Element(ns + "ETag")?.Value,
+                    Size = ulong.TryParse(t.Element(ns + "Size")?.Value, out var size) ? size : 0,
+                    VersionId = t.Element(ns + "VersionId")?.Value,
+                    ContentType = contentType,
+                    Expires = expires,
+                    UserMetadata = userMetaData,
                     IsDir = false
                 };
+            });
             foreach (var item in items)
                 yield return item;
 
             var prefixes = from c in root.Root.Descendants(ns + "CommonPrefixes")
-                select new Item { Key = c.Element(ns + "Prefix").Value, IsDir = true };
+                select new Item { Key = c.Element(ns + "Prefix")?.Value, IsDir = true };
             foreach (var item in prefixes)
                 yield return item;
 

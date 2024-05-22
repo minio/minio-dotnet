@@ -22,11 +22,13 @@ public class ListObjectsArgs : BucketArgs<ListObjectsArgs>
     {
         UseV2 = true;
         Versions = false;
+        IncludeUserMetadata = false;
     }
 
     internal string Prefix { get; private set; }
     internal bool Recursive { get; private set; }
     internal bool Versions { get; private set; }
+    internal bool IncludeUserMetadata { get; private set; }
     internal bool UseV2 { get; private set; }
 
     public ListObjectsArgs WithPrefix(string prefix)
@@ -44,6 +46,12 @@ public class ListObjectsArgs : BucketArgs<ListObjectsArgs>
     public ListObjectsArgs WithVersions(bool ver)
     {
         Versions = ver;
+        return this;
+    }
+
+    public ListObjectsArgs WithIncludeUserMetadata(bool met)
+    {
+        IncludeUserMetadata = met;
         return this;
     }
 

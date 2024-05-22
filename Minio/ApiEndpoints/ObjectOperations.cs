@@ -93,7 +93,7 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    public async IAsyncEnumerable<Upload> ListIncompleteUploads(ListIncompleteUploadsArgs args,
+    public async IAsyncEnumerable<Upload> ListIncompleteUploadsEnumAsync(ListIncompleteUploadsArgs args,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         args?.Validate();
@@ -147,7 +147,7 @@ public partial class MinioClient : IObjectOperations
 
         try
         {
-            await foreach (var upload in ListIncompleteUploads(listUploadArgs, cancellationToken).ConfigureAwait(false))
+            await foreach (var upload in ListIncompleteUploadsEnumAsync(listUploadArgs, cancellationToken).ConfigureAwait(false))
             {
                 if (upload.Key.Equals(args.ObjectName, StringComparison.OrdinalIgnoreCase))
                 {
