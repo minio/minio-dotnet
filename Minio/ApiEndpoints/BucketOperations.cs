@@ -294,10 +294,10 @@ public partial class MinioClient : IBucketOperations
             foreach (var item in prefixes)
                 yield return item;
 
-            var nextMarker = root.Root.Element("NextMarker")?.Value;
-            if (string.IsNullOrEmpty(nextMarker)) break;
+            var nextContinuationToken = root.Root.Element(ns + "NextContinuationToken")?.Value;
+            if (string.IsNullOrEmpty(nextContinuationToken)) break;
 
-            _ = goArgs.WithContinuationToken(nextMarker);
+            goArgs.WithContinuationToken(nextContinuationToken);
         }
     }
 
