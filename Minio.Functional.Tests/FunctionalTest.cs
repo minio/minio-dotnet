@@ -451,8 +451,7 @@ public static class FunctionalTest
                 rsg.GenerateStreamFromSeed(5));
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
-        await Task.Delay(1000).ConfigureAwait(false);
-
+        
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal) { { "bucketName", bucketName }, { "x-minio-force-delete", "true" } };
 
@@ -626,7 +625,6 @@ public static class FunctionalTest
             else
                 objectNames.Add(item.Key);
 
-        await Task.Delay(20000).ConfigureAwait(false);
         if (lockConfig?.ObjectLockEnabled.Equals(ObjectLockConfiguration.LockEnabled,
                 StringComparison.OrdinalIgnoreCase) == true)
         {
@@ -1210,7 +1208,6 @@ public static class FunctionalTest
             }
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
-            await Task.Delay(1000).ConfigureAwait(false);
             new MintLogger("RemoveObjects_Test2", removeObjectSignature2,
                 "Tests whether RemoveObjectAsync for multi objects delete passes", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
@@ -1254,7 +1251,6 @@ public static class FunctionalTest
             }
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
-            await Task.Delay(1000).ConfigureAwait(false);
             var listObjectsArgs = new ListObjectsArgs()
                 .WithBucket(bucketName)
                 .WithRecursive(true)
@@ -1268,11 +1264,10 @@ public static class FunctionalTest
                 .WithBucket(bucketName)
                 .WithObjectsVersions(objVersions);
 
-            var deList = await minio.RemoveObjectsAsync(removeObjectsArgs).ConfigureAwait(false);
+            await minio.RemoveObjectsAsync(removeObjectsArgs).ConfigureAwait(false);
 
             await TearDown(minio, bucketName).ConfigureAwait(false);
 
-            await Task.Delay(2 * 1000).ConfigureAwait(false);
             new MintLogger("RemoveObjects_Test3", removeObjectSignature2,
                 "Tests whether RemoveObjectsAsync for multi objects/versions delete passes", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
@@ -4690,7 +4685,6 @@ public static class FunctionalTest
                 _ = await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
             }
 
-            await Task.Delay(1000).ConfigureAwait(false);
             new MintLogger("GetObject_Test1", getObjectSignature, "Tests whether GetObject as stream works",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
         }
@@ -5059,7 +5053,6 @@ public static class FunctionalTest
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
             await ListObjects_Test(minio, bucketName, prefix, 2, false).ConfigureAwait(false);
-            await Task.Delay(2000).ConfigureAwait(false);
             new MintLogger("ListObjects_Test1", listObjectsSignature,
                 "Tests whether ListObjects lists all objects matching a prefix non-recursive", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
@@ -5088,7 +5081,6 @@ public static class FunctionalTest
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
 
             await ListObjects_Test(minio, bucketName, null, 0).ConfigureAwait(false);
-            await Task.Delay(2000).ConfigureAwait(false);
             new MintLogger("ListObjects_Test2", listObjectsSignature,
                 "Tests whether ListObjects passes when bucket is empty", TestStatus.PASS, DateTime.Now - startTime,
                 args: args).Log();
@@ -5131,7 +5123,6 @@ public static class FunctionalTest
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
             await ListObjects_Test(minio, bucketName, prefix, 2).ConfigureAwait(false);
-            await Task.Delay(2000).ConfigureAwait(false);
             new MintLogger("ListObjects_Test3", listObjectsSignature,
                 "Tests whether ListObjects lists all objects matching a prefix and recursive", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
@@ -5170,7 +5161,6 @@ public static class FunctionalTest
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
             await ListObjects_Test(minio, bucketName, "", 2, false).ConfigureAwait(false);
-            await Task.Delay(2000).ConfigureAwait(false);
             new MintLogger("ListObjects_Test4", listObjectsSignature,
                 "Tests whether ListObjects lists all objects when no prefix is specified", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
@@ -5218,7 +5208,6 @@ public static class FunctionalTest
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
             await ListObjects_Test(minio, bucketName, objectNamePrefix, numObjects, false).ConfigureAwait(false);
-            await Task.Delay(5000).ConfigureAwait(false);
             new MintLogger("ListObjects_Test5", listObjectsSignature,
                 "Tests whether ListObjects lists all objects when number of objects == 100", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
@@ -5282,7 +5271,6 @@ public static class FunctionalTest
             }
 
             Assert.AreEqual(count, numObjects);
-            await Task.Delay(3500).ConfigureAwait(false);
             new MintLogger("ListObjects_Test6", listObjectsSignature,
                 "Tests whether ListObjects lists more than 1000 objects correctly(max-keys = 1000)", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
@@ -5332,7 +5320,6 @@ public static class FunctionalTest
 
             await ListObjects_Test(minio, bucketName, prefix, 2, false, true).ConfigureAwait(false);
 
-            await Task.Delay(2000).ConfigureAwait(false);
             var listObjectsArgs = new ListObjectsArgs()
                 .WithBucket(bucketName)
                 .WithRecursive(true)
@@ -5349,7 +5336,6 @@ public static class FunctionalTest
 
             Assert.AreEqual(count, numObjectVersions);
 
-            await Task.Delay(4000).ConfigureAwait(false);
             new MintLogger("ListObjectVersions_Test1", listObjectsSignature,
                 "Tests whether ListObjects with versions lists all objects along with all version ids for each object matching a prefix non-recursive",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
@@ -5393,7 +5379,6 @@ public static class FunctionalTest
                 count++;
             }
 
-        await Task.Delay(40000).ConfigureAwait(false);
         Assert.AreEqual(numObjects, count);
     }
 
